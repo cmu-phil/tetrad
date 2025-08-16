@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
@@ -14,14 +13,14 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Block-level CI test using RankTests.estimateWilksRankConditioned for the decision
- * and RankTests.pValueIndepConditioned for a reported p-value. Thread-safe LRU caches.
+ * Block-level CI test using RankTests.estimateWilksRankConditioned for the decision and
+ * RankTests.pValueIndepConditioned for a reported p-value. Thread-safe LRU caches.
  */
 public class IndTestBlocksWilksRankCachedTS implements IndependenceTest {
 
     // ---- Cache sizes (tune) ----
-    private static final int PV_CACHE_MAX     = 400_000;  // (x,y,Z,n,alpha) -> p
-    private static final int RANK_CACHE_MAX   = 400_000;  // (x,y,Z,n,alpha) -> rank
+    private static final int PV_CACHE_MAX = 400_000;  // (x,y,Z,n,alpha) -> p
+    private static final int RANK_CACHE_MAX = 400_000;  // (x,y,Z,n,alpha) -> rank
     private static final int ZBLOCK_CACHE_MAX = 150_000;  // Z -> concatenated embedded cols
 
     private final DataSet dataSet;
@@ -35,8 +34,8 @@ public class IndTestBlocksWilksRankCachedTS implements IndependenceTest {
 
     // Thread-safe LRUs
     private final LruMap<PKey, Integer> rankCache = new LruMap<>(RANK_CACHE_MAX);
-    private final LruMap<PKey, Double>  pvalCache = new LruMap<>(PV_CACHE_MAX);
-    private final LruMap<ZKey, int[]>   zblockCache = new LruMap<>(ZBLOCK_CACHE_MAX);
+    private final LruMap<PKey, Double> pvalCache = new LruMap<>(PV_CACHE_MAX);
+    private final LruMap<ZKey, int[]> zblockCache = new LruMap<>(ZBLOCK_CACHE_MAX);
 
     // knobs
     private double alpha = 0.01;
@@ -232,7 +231,10 @@ public class IndTestBlocksWilksRankCachedTS implements IndependenceTest {
                 map.put(k, v);
                 while (map.size() > maxSize) {
                     Iterator<Map.Entry<K, V>> it = map.entrySet().iterator();
-                    if (it.hasNext()) { it.next(); it.remove(); } else break;
+                    if (it.hasNext()) {
+                        it.next();
+                        it.remove();
+                    } else break;
                 }
             } finally {
                 lock.unlock();
@@ -241,13 +243,18 @@ public class IndTestBlocksWilksRankCachedTS implements IndependenceTest {
 
         void clear() {
             lock.lock();
-            try { map.clear(); } finally { lock.unlock(); }
+            try {
+                map.clear();
+            } finally {
+                lock.unlock();
+            }
         }
     }
 
     // === Key bits ===
 
-    private record KeyParts(int a, int b, int[] zVars, int[] xCols, int[] yCols, int[] zCols) {}
+    private record KeyParts(int a, int b, int[] zVars, int[] xCols, int[] yCols, int[] zCols) {
+    }
 
     private static final class PKey {
         final int xVarMin, yVarMax;  // normalized so xVarMin <= yVarMax
@@ -271,25 +278,37 @@ public class IndTestBlocksWilksRankCachedTS implements IndependenceTest {
             this.hash = h;
         }
 
-        @Override public boolean equals(Object o) {
+        @Override
+        public boolean equals(Object o) {
             if (!(o instanceof PKey k)) return false;
             return xVarMin == k.xVarMin && yVarMax == k.yVarMax && n == k.n
                    && alphaBits == k.alphaBits && Arrays.equals(zVars, k.zVars);
         }
-        @Override public int hashCode() { return hash; }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
     }
 
     private static final class ZKey {
         final int[] zVars; // sorted
         private final int hash;
+
         ZKey(int[] zVars) {
             this.zVars = zVars.clone();
             this.hash = Arrays.hashCode(this.zVars);
         }
-        @Override public boolean equals(Object o) {
+
+        @Override
+        public boolean equals(Object o) {
             if (!(o instanceof ZKey k)) return false;
             return Arrays.equals(zVars, k.zVars);
         }
-        @Override public int hashCode() { return hash; }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
     }
 }

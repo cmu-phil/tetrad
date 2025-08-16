@@ -8,89 +8,80 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.search.test.IndTestBlocksWilksRankCachedTS;
+import edu.cmu.tetrad.util.RankTests;
 
 import java.util.*;
 
 /**
- * Runs TSC to find clusters and then uses these as blocks of variables, together possibly with unclustered variables
- * considered as singleton blocks, to infer a graph over the blocks. The default is to use PC for the metagraph; BOSS is
- * also offered as an options.
+ * Runs TSC to find clusters and then uses these as blocks of variables (plus optional
+ * handling of unclustered singletons) to infer a graph over the blocks.
  *
- * @author josephramsey
+ * New in this version:
+ *  - Separate alpha for clustering vs. PC (alphaCluster, alphaPc)
+ *  - Separate PC depth (pcDepth)
+ *  - Singleton policy: INCLUDE, EXCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT
+ *  - attachTau threshold for ATTACH_TO_NEAREST
+ *  - Optional noise latent name
+ *
+ * Backward compatible: if you don't call the new setters, behavior
+ * defaults to the original (INCLUDE, same alpha/depth for both stages).
+ *
+ * @author josephramsey (+ tweaks)
  */
 public class TscPc implements IGraphSearch {
-    /**
-     * The raw unclustered dataset to use.
-     */
+
+    // ---------- Existing fields ----------
     private final DataSet dataSet;
-    /**
-     * A significance threshold for the rank test for finding clusters. This will be used both for clustering and for
-     * the PC search.
-     */
-    private double alpha = 0.01;
-    /**
-     * A depth of the PC search.
-     */
-    private int depth = 2;
-    /**
-     * The effective sample size to use.
-     */
-    private int effectiveSampleSize;
-    /**
-     * The penalty discount to use for the BOSS option.
-     */
+    private double alpha = 0.01;     // legacy single alpha (used if the stage-specific ones are not set)
+    private int depth = 2;           // legacy single depth (used if pcDepth not set)
+    private int effectiveSampleSize; // -1 => use from data
     private double penaltyDiscount = 2;
-    /**
-     * The number of random restarts to use for the BOSS option.
-     */
     private int numStarts = 1;
-    /**
-     * Whether to give verbose output.
-     */
     private boolean verbose = false;
-    /**
-     * A small non-negative value used as a ridge regularization parameter. It is added to the diagonal of correlation
-     * matrices to address issues such as singularity or near-singularity. This helps ensure numerical stability during
-     * computations. A typical default value is used, but it can be adjusted depending on the application needs.
-     */
     private double ridge = 1e-8;
-    /**
-     * EBIC gamma for the BOSS option.
-     */
     private double ebicGamma = 0;
-    /**
-     * Whether to use the BOSS option instead of PC.
-     */
     private boolean useBoss = false;
 
-    /**
-     * Constructor,
-     *
-     * @param dataSet The dataset. This should include at least all of the variables that are to be clustered by TSC.
-     */
+    // ---------- New knobs ----------
+    /** If set (non-NaN), overrides alpha for clustering (TSC). */
+    private double alphaCluster = Double.NaN;
+    /** If set (non-NaN), overrides alpha for PC over blocks. */
+    private double alphaPc = Double.NaN;
+    /** If not Integer.MIN_VALUE, overrides depth for PC over blocks. */
+    private int pcDepth = Integer.MIN_VALUE;
+
+    /** Policy for handling unclustered singletons. */
+    public enum SingletonPolicy { INCLUDE, EXCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT }
+    private SingletonPolicy singletonPolicy = SingletonPolicy.INCLUDE;
+
+    /** Threshold for ATTACH_TO_NEAREST (attach if max canonical corr^2 >= attachTau). */
+    private double attachTau = 0.15;
+
+    /** Name to use for the pooled "Noise" latent (COLLECT_AS_NOISE_LATENT). */
+    private String noiseLatentName = "Noise";
+
     public TscPc(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
-    /**
-     * Performs the search.
-     *
-     * @return The graph over the clusters, including any singleton (unclustered) variables. The graph will include
-     * latents for each cluster using names obtained from TSC.
-     * @throws InterruptedException If any.
-     */
     @Override
     public Graph search() throws InterruptedException {
         CorrelationMatrix corr = new CorrelationMatrix(dataSet);
 
+        // Resolve effective alpha/depth per stage (fallback to legacy)
+        final double aCluster = Double.isNaN(alphaCluster) ? alpha : alphaCluster;
+        final double aPc      = Double.isNaN(alphaPc)      ? alpha : alphaPc;
+        final int dPc         = (pcDepth == Integer.MIN_VALUE) ? depth : pcDepth;
+
+        // --- TSC clustering ---
         TrekSeparationClusters tsc = new TrekSeparationClusters(
                 corr.getVariables(),
                 corr,
                 effectiveSampleSize == -1 ? corr.getSampleSize() : effectiveSampleSize
         );
         tsc.setVerbose(verbose);
-        tsc.setDepth(depth);
-        tsc.setAlpha(alpha);
+        tsc.setDepth(depth);       // clustering depth (keep legacy)
+        tsc.setAlpha(aCluster);    // cluster alpha (stage-specific)
         tsc.setIncludeStructureModel(false);
 
         tsc.search(new int[][]{{2, 1}}, TrekSeparationClusters.Mode.METALOOP);
@@ -98,29 +89,66 @@ public class TscPc implements IGraphSearch {
         List<List<Integer>> clusters = tsc.getClusters();
         List<String> latentNames = tsc.getLatentNames();
 
-        // Build singleton set
+        // Build singleton set (unclustered variable indices)
         Set<Integer> clustered = new HashSet<>();
         for (List<Integer> c : clusters) clustered.addAll(c);
         List<Integer> singletons = new ArrayList<>();
         for (int j = 0; j < dataSet.getNumColumns(); j++) if (!clustered.contains(j)) singletons.add(j);
 
-        // Build blocks + block-level variables (singletons first, then clusters)
+        // If there are no true clusters, fallback to INCLUDE so we still have something to learn over.
+        boolean hasTrueCluster = clusters.stream().anyMatch(c -> c != null && c.size() > 1);
+        SingletonPolicy policy = (!hasTrueCluster && (singletonPolicy == SingletonPolicy.EXCLUDE
+                                                      || singletonPolicy == SingletonPolicy.ATTACH_TO_NEAREST
+                                                      || singletonPolicy == SingletonPolicy.COLLECT_AS_NOISE_LATENT))
+                ? SingletonPolicy.INCLUDE
+                : singletonPolicy;
+
+        // --- Build blocks + meta variables according to policy ---
         List<List<Integer>> blocks = new ArrayList<>();
         List<Node> metaVars = new ArrayList<>();
 
-        for (int s : singletons) {
-            blocks.add(Collections.singletonList(s));
-            metaVars.add(dataSet.getVariable(s)); // keep identity for singletons
-        }
-        for (int i = 0; i < clusters.size(); i++) {
-            blocks.add(clusters.get(i));
-            metaVars.add(new ContinuousVariable(latentNames.get(i)));
+        // Keep track of excluded singletons for post-attach (ATTACH_TO_NEAREST)
+        List<Integer> excludedSingletons = new ArrayList<>();
+
+        switch (policy) {
+            case INCLUDE -> {
+                // Singletons as their own blocks
+                for (int s : singletons) {
+                    blocks.add(Collections.singletonList(s));
+                    metaVars.add(dataSet.getVariable(s));
+                }
+                // Add clusters as latents
+                for (int i = 0; i < clusters.size(); i++) {
+                    blocks.add(clusters.get(i));
+                    metaVars.add(new ContinuousVariable(latentNames.get(i)));
+                }
+            }
+            case EXCLUDE, ATTACH_TO_NEAREST -> {
+                // Exclude singletons from latent PC; remember them for optional post-attach
+                excludedSingletons.addAll(singletons);
+                for (int i = 0; i < clusters.size(); i++) {
+                    blocks.add(clusters.get(i));
+                    metaVars.add(new ContinuousVariable(latentNames.get(i)));
+                }
+            }
+            case COLLECT_AS_NOISE_LATENT -> {
+                // Add clusters
+                for (int i = 0; i < clusters.size(); i++) {
+                    blocks.add(clusters.get(i));
+                    metaVars.add(new ContinuousVariable(latentNames.get(i)));
+                }
+                // Pool all singletons into one "Noise" latent (if any)
+                if (!singletons.isEmpty()) {
+                    List<Integer> noiseCols = new ArrayList<>(singletons);
+                    blocks.add(noiseCols);
+                    metaVars.add(new ContinuousVariable(makeUniqueName(metaVars, noiseLatentName)));
+                }
+            }
         }
 
+        // --- Learn meta-graph (PC or BOSS) on blocks/metaVars ---
         Graph cpdag;
-
         if (useBoss) {
-            // Score & search (be sure this is the fixed BlocksBicScore)
             BlocksBicScore score = new BlocksBicScore(dataSet, blocks, metaVars);
             score.setPenaltyDiscount(penaltyDiscount);
             score.setRidge(ridge);
@@ -134,18 +162,17 @@ public class TscPc implements IGraphSearch {
             cpdag = permutationSearch.search();
         } else {
             IndTestBlocksWilksRankCachedTS test = new IndTestBlocksWilksRankCachedTS(dataSet, blocks, metaVars);
-            test.setAlpha(alpha);
+            test.setAlpha(aPc);
 
             Pc pc = new Pc(test);
-            pc.setDepth(depth);
+            pc.setDepth(dPc);
             cpdag = pc.search();
         }
 
-        // Add latent→member edges for true clusters
+        // --- Add latent→member edges for true clusters (measurement model edges) ---
         for (int i = 0; i < blocks.size(); i++) {
             List<Integer> block = blocks.get(i);
             Node meta = metaVars.get(i);
-
             if (block.size() > 1) {
                 meta.setNodeType(NodeType.LATENT);
                 for (int col : block) {
@@ -156,114 +183,129 @@ public class TscPc implements IGraphSearch {
             }
         }
 
+        // --- Post-attach excluded singletons to their nearest latent (if requested) ---
+        if (policy == SingletonPolicy.ATTACH_TO_NEAREST && !excludedSingletons.isEmpty()) {
+            // Build correlation matrix once for maxCanonicalCorrSq
+            var S = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
+
+            // Build list of latent blocks (indices in 'blocks' where size > 1)
+            List<Integer> latentBlockIdx = new ArrayList<>();
+            for (int i = 0; i < blocks.size(); i++) if (blocks.get(i).size() > 1) latentBlockIdx.add(i);
+
+            for (int s : excludedSingletons) {
+                int[] sCols = new int[]{s};
+                double bestR2 = 0.0;
+                int bestLatent = -1;
+
+                for (int L : latentBlockIdx) {
+                    int[] Lcols = blocks.get(L).stream().mapToInt(Integer::intValue).toArray();
+                    double r2 = RankTests.maxCanonicalCorrSq(S, sCols, Lcols);
+                    if (r2 > bestR2) {
+                        bestR2 = r2;
+                        bestLatent = L;
+                    }
+                }
+
+                if (bestLatent >= 0 && bestR2 >= attachTau) {
+                    Node latent = metaVars.get(bestLatent);
+                    Node child = dataSet.getVariable(s);
+                    if (!cpdag.containsNode(child)) cpdag.addNode(child);
+                    // Attach as latent → singleton
+                    if (!cpdag.isAdjacentTo(latent, child)) cpdag.addDirectedEdge(latent, child);
+                }
+            }
+        }
+
         return cpdag;
     }
 
-    /**
-     * Sets the alpha parameter, which is used as a significance level for the rank tests for TSC.
-     *
-     * @param alpha the significance level or threshold value to be set, must be in [0, 1].
-     */
+    // ---------- Helpers ----------
+
+    /** Ensure the noise latent name is unique among metaVars. */
+    private static String makeUniqueName(List<Node> existing, String base) {
+        Set<String> names = new HashSet<>();
+        for (Node n : existing) names.add(n.getName());
+        if (!names.contains(base)) return base;
+        int k = 1;
+        while (names.contains(base + "_" + k)) k++;
+        return base + "_" + k;
+    }
+
+    // ---------- Setters (existing) ----------
+
     public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("alpha must be between 0.0 and 1.0");
-        }
+        if (alpha < 0.0 || alpha > 1.0) throw new IllegalArgumentException("alpha must be between 0.0 and 1.0");
         this.alpha = alpha;
     }
 
-    /**
-     * The 'depth', here being used to guide the sizes of variable sets employed for determining whether in-cluster
-     * tests fail. This is used to help weed out unwanted clusters.
-     *
-     * @param depth This depth. A value of -1 indicates unlimited depth.
-     */
     public void setDepth(int depth) {
-        if (!(depth == -1 || depth >= 0)) {
-            throw new IllegalArgumentException("depth must be non-negative or -1");
-        }
+        if (!(depth == -1 || depth >= 0)) throw new IllegalArgumentException("depth must be non-negative or -1");
         this.depth = depth;
     }
 
-    /**
-     * Whether verbose output should be generated.
-     *
-     * @param verbose Whether verbose output should be generated.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
+    public void setVerbose(boolean verbose) { this.verbose = verbose; }
 
-    /**
-     * Sets the effective sample size to be used for statistical computations or analysis.
-     *
-     * @param effectiveSampleSize The effective sample size to set. This should be a non-negative integer representing
-     *                            the number of samples effectively contributing to the analysis. A value of -1 is used
-     *                            to indicate that the sample size of the data is to be used.
-     */
     public void setEffectiveSampleSize(int effectiveSampleSize) {
-        if (effectiveSampleSize < -1 || effectiveSampleSize == 0) {
+        if (effectiveSampleSize < -1 || effectiveSampleSize == 0)
             throw new IllegalArgumentException("effectiveSampleSize must be -1 (auto) or > 0");
-        }
         this.effectiveSampleSize = effectiveSampleSize;
     }
 
-    /**
-     * Sets the penalty discount used for the BOSS step.
-     *
-     * @param penaltyDiscount The penalty discount value to set. This should be a non-negative double, representing the
-     *                        discount factor to apply for penalties.
-     */
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
+    public void setPenaltyDiscount(double penaltyDiscount) { this.penaltyDiscount = penaltyDiscount; }
 
-    /**
-     * Sets the number of starts for the BOSS step. This parameter determines the number of times BOSS will be
-     * initialized with different starting conditions to search for potentially better solutions.
-     *
-     * @param numStarts The number of starts to set. This must be a non-negative integer representing how many
-     *                  independent initializations the algorithm should run.
-     */
     public void setNumStarts(int numStarts) {
-        if (numStarts < 1) {
-            throw new IllegalArgumentException("numStarts must be > 0");
-        }
+        if (numStarts < 1) throw new IllegalArgumentException("numStarts must be > 0");
         this.numStarts = numStarts;
     }
 
-    /**
-     * Sets the value to use for the ridge. This should be a small non-negative number and is added to the diagonal of
-     * correlation matrices to avoid problems with singularity. A value of 0 means no ridge.
-     *
-     * @param ridge This small non-negative value.
-     */
     public void setRidge(double ridge) {
-        if (ridge < 0.0) {
-            throw new IllegalArgumentException("ridge must be >= 0");
-        }
+        if (ridge < 0.0) throw new IllegalArgumentException("ridge must be >= 0");
         this.ridge = ridge;
     }
 
-    /**
-     * Sets the gamma parameter for the EBIC (Extended Bayesian Information Criterion). The EBIC gamma parameter
-     * controls the penalty term for model complexity when performing model selection. This is used for the BOSS
-     * option.
-     *
-     * @param ebicGamma The EBIC gamma value to set. This should be a non-negative double, typically in the range [0,
-     *                  1], where 0 corresponds to the standard BIC and higher values increase the penalty for model
-     *                  complexity.
-     */
-    public void setEbicGamma(double ebicGamma) {
-        this.ebicGamma = ebicGamma;
+    public void setEbicGamma(double ebicGamma) { this.ebicGamma = ebicGamma; }
+
+    public void setUseBoss(boolean useBoss) { this.useBoss = useBoss; }
+
+    // ---------- New setters (stage-specific α/depth + singleton handling) ----------
+
+    /** Alpha for clustering (TSC). If unset, falls back to {@link #setAlpha(double)} value. */
+    public void setAlphaCluster(double alphaCluster) {
+        if (alphaCluster < 0.0 || alphaCluster > 1.0)
+            throw new IllegalArgumentException("alphaCluster must be between 0.0 and 1.0");
+        this.alphaCluster = alphaCluster;
     }
 
-    /**
-     * Configures whether to use the BOSS (Bayesian Optimization Structure Search) step in the algorithm.
-     *
-     * @param useBoss A boolean indicating whether the BOSS step should be used. If true, the BOSS step will be included
-     *                in the algorithm; if false, it will be skipped.
-     */
-    public void setUseBoss(boolean useBoss) {
-        this.useBoss = useBoss;
+    /** Alpha for PC over blocks. If unset, falls back to {@link #setAlpha(double)} value. */
+    public void setAlphaPc(double alphaPc) {
+        if (alphaPc < 0.0 || alphaPc > 1.0)
+            throw new IllegalArgumentException("alphaPc must be between 0.0 and 1.0");
+        this.alphaPc = alphaPc;
+    }
+
+    /** Depth for PC over blocks. If unset, falls back to {@link #setDepth(int)} value. */
+    public void setPcDepth(int pcDepth) {
+        if (!(pcDepth == -1 || pcDepth >= 0))
+            throw new IllegalArgumentException("pcDepth must be non-negative or -1");
+        this.pcDepth = pcDepth;
+    }
+
+    /** Policy for handling unclustered singletons. */
+    public void setSingletonPolicy(SingletonPolicy policy) {
+        this.singletonPolicy = Objects.requireNonNull(policy, "policy");
+    }
+
+    /** Threshold for ATTACH_TO_NEAREST (attach when max canonical corr^2 >= attachTau). */
+    public void setAttachTau(double attachTau) {
+        if (attachTau < 0.0 || attachTau > 1.0)
+            throw new IllegalArgumentException("attachTau must be in [0,1]");
+        this.attachTau = attachTau;
+    }
+
+    /** Set the name used for the pooled 'Noise' latent. */
+    public void setNoiseLatentName(String noiseLatentName) {
+        if (noiseLatentName == null || noiseLatentName.isEmpty())
+            throw new IllegalArgumentException("noiseLatentName must be non-empty");
+        this.noiseLatentName = noiseLatentName;
     }
 }
