@@ -32,7 +32,6 @@ public class TscPc implements IGraphSearch {
 
     // ---------- Existing fields ----------
     private final DataSet dataSet;
-    private double alpha = 0.01;     // legacy single alpha (used if the stage-specific ones are not set)
     private int depth = 2;           // legacy single depth (used if pcDepth not set)
     private int effectiveSampleSize; // -1 => use from data
     private double penaltyDiscount = 2;
@@ -43,10 +42,8 @@ public class TscPc implements IGraphSearch {
     private boolean useBoss = false;
 
     // ---------- New knobs ----------
-    /** If set (non-NaN), overrides alpha for clustering (TSC). */
-    private double alphaCluster = Double.NaN;
-    /** If set (non-NaN), overrides alpha for PC over blocks. */
-    private double alphaPc = Double.NaN;
+    private double alphaCluster = 0.01;
+    private double alphaPc = 0.01;
     /** If not Integer.MIN_VALUE, overrides depth for PC over blocks. */
     private int pcDepth = Integer.MIN_VALUE;
 
@@ -68,11 +65,6 @@ public class TscPc implements IGraphSearch {
     public Graph search() throws InterruptedException {
         CorrelationMatrix corr = new CorrelationMatrix(dataSet);
 
-        // Resolve effective alpha/depth per stage (fallback to legacy)
-        final double aCluster = Double.isNaN(alphaCluster) ? alpha : alphaCluster;
-        final double aPc      = Double.isNaN(alphaPc)      ? alpha : alphaPc;
-        final int dPc         = (pcDepth == Integer.MIN_VALUE) ? depth : pcDepth;
-
         // --- TSC clustering ---
         TrekSeparationClusters tsc = new TrekSeparationClusters(
                 corr.getVariables(),
@@ -80,11 +72,9 @@ public class TscPc implements IGraphSearch {
                 effectiveSampleSize == -1 ? corr.getSampleSize() : effectiveSampleSize
         );
         tsc.setVerbose(verbose);
-        tsc.setDepth(depth);       // clustering depth (keep legacy)
-        tsc.setAlpha(aCluster);    // cluster alpha (stage-specific)
-        tsc.setIncludeStructureModel(false);
+        tsc.setAlpha(alphaCluster);    // cluster alpha (stage-specific)
 
-        tsc.search(new int[][]{{2, 1}}, TrekSeparationClusters.Mode.METALOOP);
+        tsc.search();
 
         List<List<Integer>> clusters = tsc.getClusters();
         List<String> latentNames = tsc.getLatentNames();
@@ -162,10 +152,10 @@ public class TscPc implements IGraphSearch {
             cpdag = permutationSearch.search();
         } else {
             IndTestBlocksWilksRankCachedTS test = new IndTestBlocksWilksRankCachedTS(dataSet, blocks, metaVars);
-            test.setAlpha(aPc);
+            test.setAlpha(alphaPc);
 
             Pc pc = new Pc(test);
-            pc.setDepth(dPc);
+            pc.setDepth(pcDepth);
             cpdag = pc.search();
         }
 
@@ -233,11 +223,6 @@ public class TscPc implements IGraphSearch {
 
     // ---------- Setters (existing) ----------
 
-    public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) throw new IllegalArgumentException("alpha must be between 0.0 and 1.0");
-        this.alpha = alpha;
-    }
-
     public void setDepth(int depth) {
         if (!(depth == -1 || depth >= 0)) throw new IllegalArgumentException("depth must be non-negative or -1");
         this.depth = depth;
@@ -267,16 +252,14 @@ public class TscPc implements IGraphSearch {
 
     public void setUseBoss(boolean useBoss) { this.useBoss = useBoss; }
 
-    // ---------- New setters (stage-specific α/depth + singleton handling) ----------
-
-    /** Alpha for clustering (TSC). If unset, falls back to {@link #setAlpha(double)} value. */
+    /** Alpha for clustering (TSC). */
     public void setAlphaCluster(double alphaCluster) {
         if (alphaCluster < 0.0 || alphaCluster > 1.0)
             throw new IllegalArgumentException("alphaCluster must be between 0.0 and 1.0");
         this.alphaCluster = alphaCluster;
     }
 
-    /** Alpha for PC over blocks. If unset, falls back to {@link #setAlpha(double)} value. */
+    /** Alpha for PC over blocks. */
     public void setAlphaPc(double alphaPc) {
         if (alphaPc < 0.0 || alphaPc > 1.0)
             throw new IllegalArgumentException("alphaPc must be between 0.0 and 1.0");

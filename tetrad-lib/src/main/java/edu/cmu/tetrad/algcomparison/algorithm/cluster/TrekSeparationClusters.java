@@ -56,17 +56,10 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
-        int size = parameters.getInt(Params.TSC_CLUSTER_SIZE);
-        int rank = parameters.getInt(Params.TSC_CLUSTER_RANK);
-        int mode =  parameters.getInt(Params.TSC_MODE);
-
-        int[][] specs = new int[][]{{size, rank}};
-
         double alpha = parameters.getDouble(Params.FOFC_ALPHA);
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
         int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
-        boolean includeStructureModel = parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL);
 
         CovarianceMatrix covarianceMatrix = dataModel instanceof DataSet
                 ? new CorrelationMatrix((DataSet) dataModel) : new CorrelationMatrix((CovarianceMatrix) dataModel);
@@ -75,23 +68,11 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         edu.cmu.tetrad.search.TrekSeparationClusters search
                 = new edu.cmu.tetrad.search.TrekSeparationClusters(variables, covarianceMatrix,
                 ess == -1 ? covarianceMatrix.getSampleSize() : ess);
-        search.setIncludeStructureModel(includeStructureModel);
         search.setIncludeAllNodes(includeAllNodes);
         search.setAlpha(alpha);
-        search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(verbose);
 
-        edu.cmu.tetrad.search.TrekSeparationClusters.Mode _mode;
-
-        if (mode == 1) {
-            _mode = edu.cmu.tetrad.search.TrekSeparationClusters.Mode.METALOOP;
-        } else if (mode == 2) {
-            _mode = edu.cmu.tetrad.search.TrekSeparationClusters.Mode.SIZE_RANK;
-        } else {
-            throw new IllegalArgumentException("Invalid mode, should be 1 or 2: " + mode);
-        }
-
-        return search.search(specs, _mode);
+        return search.search();
     }
 
     /**
@@ -133,12 +114,8 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.DEPTH);
         parameters.add(Params.TSC_MODE);
-        parameters.add(Params.TSC_CLUSTER_SIZE);
-        parameters.add(Params.TSC_CLUSTER_RANK);
         parameters.add(Params.FOFC_ALPHA);
-        parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.INCLUDE_ALL_NODES);
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);
         parameters.add(Params.VERBOSE);

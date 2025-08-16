@@ -55,11 +55,12 @@ public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasK
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
 
         edu.cmu.tetrad.search.TscPc search = new edu.cmu.tetrad.search.TscPc((DataSet) dataModel);
-        search.setAlpha(parameters.getDouble(Params.FOFC_ALPHA));
+        search.setAlphaCluster(parameters.getDouble(Params.FOFC_ALPHA));
+        search.setAlphaPc(parameters.getDouble(Params.FOFC_ALPHA));
         search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setEffectiveSampleSize(parameters.getInt(Params.EXPECTED_SAMPLE_SIZE));
-        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setPcDepth(parameters.getInt(Params.DEPTH));
         search.setRidge(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
         search.setEbicGamma(parameters.getDouble(Params.EBIC_GAMMA));
         search.setUseBoss(parameters.getBoolean(Params.TSC_PC_USE_BOSS));
