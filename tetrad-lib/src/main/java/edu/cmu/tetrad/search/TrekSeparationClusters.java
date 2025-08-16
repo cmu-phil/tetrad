@@ -31,15 +31,7 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
 
 /**
  * The {@code TrekSeparationClusters} class is designed to analyze and identify clusters in data based on trek
- * separation principles. It offers robust functionalities for working with graph structures, covariance matrices, and
- * clustering methodologies. The class utilizes concepts like rank evaluation, structure models, and canonical
- * correlation analysis (CCA) to identify latent variables and interrelationships in data.
- * <p>
- * This class provides capabilities for: - Precomputation of binomial coefficients for efficiency. - Conversion
- * utilities for matrix representations. - Handling and merging of overlapping clusters. - Performing sequential
- * clustering with rank and size constraints. - Integration of latent structure edges into a graph.
- * <p>
- * The class is designed to address complex analytical tasks related to clusters and latent variable modeling.
+ * separation principles.
  */
 public class TrekSeparationClusters {
     /**
@@ -86,7 +78,23 @@ public class TrekSeparationClusters {
      * The latent names for the most recent clusters found.
      */
     private List<String> latentNames = new ArrayList<>();
+    /**
+     * A map that associates a set of integers representing a cluster to its corresponding rank. Each entry in the map
+     * defines a cluster and its computed rank, where the rank is typically used to evaluate or compare clusters in the
+     * context of hierarchical clustering or other rank-based analyses.
+     */
     private Map<Set<Integer>, Integer> clusterToRank;
+    /**
+     * Represents a mapping between clusters (sets of integers) and their reduced ranks.
+     * <p>
+     * Each key in the map is a set of integers representing a cluster of variables. Each value in the map is an integer
+     * that corresponds to the reduced rank of the associated cluster. This reduced rank may reflect a specific
+     * computation or adjustment performed during the analysis, such as handling overlapping clusters or accounting for
+     * rank deficiencies.
+     * <p>
+     * The variable is used as part of the hierarchical clustering and rank estimation processes within the context of
+     * trek separation clusters.
+     */
     private Map<Set<Integer>, Integer> reducedRank;
 
     /**
@@ -501,15 +509,6 @@ public class TrekSeparationClusters {
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             List<Integer> complement = allVariables();
             complement.removeAll(cluster);
-
-//            Set<Integer> trimmed = trim(cluster);
-//
-//            if (!trimmed.equals(cluster)) {
-//                clusterToRank.remove(cluster);
-//                reducedRank.remove(cluster);
-//                clusterToRank.put(trimmed, r);
-//                reducedRank.put(cluster, r);
-//            }
 
             if (failsSubsetTest(S, cluster, sampleSize, alpha)) {
                 clusterToRank.remove(cluster);
