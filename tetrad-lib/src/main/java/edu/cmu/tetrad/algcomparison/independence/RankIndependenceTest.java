@@ -94,7 +94,6 @@ public class RankIndependenceTest implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
-        params.add(Params.SINGULARITY_LAMBDA);
         return params;
     }
 }

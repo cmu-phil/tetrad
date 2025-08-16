@@ -14,19 +14,21 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for BF-LRT.
- *
- * @author josephramsey
- * @author bryanandrews
- * @version $Id: $Id
- */
-@TestOfIndependence(
-        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
-        command = "bf-lr-test",
-        dataType = DataType.Mixed
-)
-@Mixed
+// Using the Blocks BIC score version instead.
+
+///**
+// * Wrapper for BF-LRT.
+// *
+// * @author josephramsey
+// * @author bryanandrews
+// * @version $Id: $Id
+// */
+//@TestOfIndependence(
+//        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
+//        command = "bf-lr-test",
+//        dataType = DataType.Mixed
+//)
+//@Mixed
 public class BasisFunctionLrt implements IndependenceWrapper {
 
     @Serial

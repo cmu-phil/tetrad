@@ -14,19 +14,14 @@ import org.ejml.simple.SimpleMatrix;
 import java.util.*;
 
 /**
- * Runs TSC to find clusters and then uses these as blocks of variables (plus optional
- * handling of unclustered singletons) to infer a graph over the blocks.
- *
- * New in this version:
- *  - Separate alpha for clustering vs. PC (alphaCluster, alphaPc)
- *  - Separate PC depth (pcDepth)
- *  - Singleton policy: INCLUDE, EXCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT
- *  - attachTau threshold for ATTACH_TO_NEAREST
- *  - Optional noise latent name
- *  - (NEW) Optional hierarchical latent edges among clusters via Wilks rank-drop
- *
- * Backward compatible: if you don't call the new setters, behavior
- * defaults to the original (INCLUDE, same alpha/depth for both stages).
+ * Runs TSC to find clusters and then uses these as blocks of variables (plus optional handling of unclustered
+ * singletons) to infer a graph over the blocks.
+ * <p>
+ * New in this version: - Separate alpha for clustering vs. PC (alphaCluster, alphaPc) - Separate PC depth (pcDepth) -
+ * Singleton policy: INCLUDE, EXCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT - attachTau threshold for
+ * ATTACH_TO_NEAREST - Optional noise latent name - (NEW) Optional hierarchical latent edges among clusters via Wilks
+ * rank-drop
+ * <p>
  *
  * @author josephramsey (+ tweaks)
  */
@@ -45,28 +40,57 @@ public class TscPc implements IGraphSearch {
     // ---------- New knobs ----------
     private double alphaCluster = 0.01;
     private double alphaPc = 0.01;
-    /** If not Integer.MIN_VALUE, overrides depth for PC over blocks. */
+    /**
+     * If not Integer.MIN_VALUE, overrides depth for PC over blocks.
+     */
     private int pcDepth = Integer.MIN_VALUE;
-
-    /** Policy for handling unclustered singletons. */
-    public enum SingletonPolicy { INCLUDE, EXCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT }
     private SingletonPolicy singletonPolicy = SingletonPolicy.INCLUDE;
-
-    /** Threshold for ATTACH_TO_NEAREST (attach if max canonical corr^2 >= attachTau). */
+    /**
+     * Threshold for ATTACH_TO_NEAREST (attach if max canonical corr^2 >= attachTau).
+     */
     private double attachTau = 0.15;
-
-    /** Name to use for the pooled "Noise" latent (COLLECT_AS_NOISE_LATENT). */
+    /**
+     * Name to use for the pooled "Noise" latent (COLLECT_AS_NOISE_LATENT).
+     */
     private String noiseLatentName = "Noise";
+    /**
+     * If true, add latent->latent hierarchy edges using Wilks rank-drop.
+     */
+    private boolean enableHierarchy = true;
 
     // ---------- NEW: hierarchy controls ----------
-    /** If true, add latent->latent hierarchy edges using Wilks rank-drop. */
-    private boolean enableHierarchy = true;
-    /** Require at least this much drop to add La -> Lb: rank(Cb,D) - rank(Cb,D|Ca) >= minRankDrop. */
+    /**
+     * Require at least this much drop to add La -> Lb: rank(Cb,D) - rank(Cb,D|Ca) >= minRankDrop.
+     */
     private int minRankDrop = 1;
-
     public TscPc(DataSet dataSet) {
         this.dataSet = dataSet;
     }
+
+    private static int[] minus(int[] universe, int[] remove) {
+        BitSet rm = new BitSet();
+        for (int v : remove) rm.set(v);
+        int cnt = 0;
+        for (int v : universe) if (!rm.get(v)) cnt++;
+        int[] out = new int[cnt];
+        int i = 0;
+        for (int v : universe) if (!rm.get(v)) out[i++] = v;
+        return out;
+    }
+
+    /**
+     * Ensure the noise latent name is unique among metaVars.
+     */
+    private static String makeUniqueName(List<Node> existing, String base) {
+        Set<String> names = new HashSet<>();
+        for (Node n : existing) names.add(n.getName());
+        if (!names.contains(base)) return base;
+        int k = 1;
+        while (names.contains(base + "_" + k)) k++;
+        return base + "_" + k;
+    }
+
+    // ---------- NEW: Hierarchy helper -------------------------------------------
 
     @Override
     public Graph search() throws InterruptedException {
@@ -222,14 +246,12 @@ public class TscPc implements IGraphSearch {
         return cpdag;
     }
 
-    // ---------- NEW: Hierarchy helper -------------------------------------------
-
     /**
-     * Add latent->latent edges when conditioning on parent indicators lowers the Wilks rank
-     * between child indicators and the rest of the observed variables by at least minRankDrop.
-     *
-     * For each ordered pair (La, Lb), let Ca, Cb be their indicator sets and D = V \ Cb.
-     * If rank(Cb, D | Ca) <= rank(Cb, D) - minRankDrop, add La -> Lb, avoiding directed cycles.
+     * Add latent->latent edges when conditioning on parent indicators lowers the Wilks rank between child indicators
+     * and the rest of the observed variables by at least minRankDrop.
+     * <p>
+     * For each ordered pair (La, Lb), let Ca, Cb be their indicator sets and D = V \ Cb. If rank(Cb, D | Ca) <=
+     * rank(Cb, D) - minRankDrop, add La -> Lb, avoiding directed cycles.
      */
     private void addHierarchyEdges(Graph g,
                                    List<List<Integer>> blocks,
@@ -252,7 +274,14 @@ public class TscPc implements IGraphSearch {
         class Cand {
             final int ia, ib; // indices in 'blocks' / 'metaVars'
             final int r0, r1, drop;
-            Cand(int ia, int ib, int r0, int r1) { this.ia = ia; this.ib = ib; this.r0 = r0; this.r1 = r1; this.drop = r0 - r1; }
+
+            Cand(int ia, int ib, int r0, int r1) {
+                this.ia = ia;
+                this.ib = ib;
+                this.r0 = r0;
+                this.r1 = r1;
+                this.drop = r0 - r1;
+            }
         }
         List<Cand> cands = new ArrayList<>();
 
@@ -288,10 +317,10 @@ public class TscPc implements IGraphSearch {
 
         for (Cand c : cands) {
             Node from = metaVars.get(c.ia);
-            Node to   = metaVars.get(c.ib);
+            Node to = metaVars.get(c.ib);
             if (createsDirectedCycle(g, from, to)) continue;
             if (!g.containsNode(from)) g.addNode(from);
-            if (!g.containsNode(to))   g.addNode(to);
+            if (!g.containsNode(to)) g.addNode(to);
             if (!g.isAdjacentTo(from, to)) {
                 g.addDirectedEdge(from, to);
                 if (verbose) {
@@ -302,22 +331,12 @@ public class TscPc implements IGraphSearch {
         }
     }
 
-    private static int[] minus(int[] universe, int[] remove) {
-        BitSet rm = new BitSet();
-        for (int v : remove) rm.set(v);
-        int cnt = 0;
-        for (int v : universe) if (!rm.get(v)) cnt++;
-        int[] out = new int[cnt];
-        int i = 0;
-        for (int v : universe) if (!rm.get(v)) out[i++] = v;
-        return out;
-    }
-
     // Cycle check: adding from->to must not create a directed cycle
     private boolean createsDirectedCycle(Graph g, Node from, Node to) {
         Set<Node> seen = new HashSet<>();
         return dfsChildrenReach(g, to, from, seen);
     }
+
     private boolean dfsChildrenReach(Graph g, Node cur, Node target, Set<Node> seen) {
         if (cur.equals(target)) return true;
         if (!seen.add(cur)) return false;
@@ -329,19 +348,11 @@ public class TscPc implements IGraphSearch {
 
     // ---------- Helpers ----------
 
-    /** Ensure the noise latent name is unique among metaVars. */
-    private static String makeUniqueName(List<Node> existing, String base) {
-        Set<String> names = new HashSet<>();
-        for (Node n : existing) names.add(n.getName());
-        if (!names.contains(base)) return base;
-        int k = 1;
-        while (names.contains(base + "_" + k)) k++;
-        return base + "_" + k;
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     // ---------- Setters (existing) ----------
-
-    public void setVerbose(boolean verbose) { this.verbose = verbose; }
 
     public void setEffectiveSampleSize(int effectiveSampleSize) {
         if (effectiveSampleSize < -1 || effectiveSampleSize == 0)
@@ -349,7 +360,9 @@ public class TscPc implements IGraphSearch {
         this.effectiveSampleSize = effectiveSampleSize;
     }
 
-    public void setPenaltyDiscount(double penaltyDiscount) { this.penaltyDiscount = penaltyDiscount; }
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
 
     public void setNumStarts(int numStarts) {
         if (numStarts < 1) throw new IllegalArgumentException("numStarts must be > 0");
@@ -361,60 +374,85 @@ public class TscPc implements IGraphSearch {
         this.ridge = ridge;
     }
 
-    public void setEbicGamma(double ebicGamma) { this.ebicGamma = ebicGamma; }
+    public void setEbicGamma(double ebicGamma) {
+        this.ebicGamma = ebicGamma;
+    }
 
-    public void setUseBoss(boolean useBoss) { this.useBoss = useBoss; }
+    public void setUseBoss(boolean useBoss) {
+        this.useBoss = useBoss;
+    }
 
-    /** Alpha for clustering (TSC). */
+    /**
+     * Alpha for clustering (TSC).
+     */
     public void setAlphaCluster(double alphaCluster) {
         if (alphaCluster < 0.0 || alphaCluster > 1.0)
             throw new IllegalArgumentException("alphaCluster must be between 0.0 and 1.0");
         this.alphaCluster = alphaCluster;
     }
 
-    /** Alpha for PC over blocks. */
+    /**
+     * Alpha for PC over blocks.
+     */
     public void setAlphaPc(double alphaPc) {
         if (alphaPc < 0.0 || alphaPc > 1.0)
             throw new IllegalArgumentException("alphaPc must be between 0.0 and 1.0");
         this.alphaPc = alphaPc;
     }
 
-    /** Depth for PC over blocks. */
+    /**
+     * Depth for PC over blocks.
+     */
     public void setPcDepth(int pcDepth) {
         if (!(pcDepth == -1 || pcDepth >= 0))
             throw new IllegalArgumentException("pcDepth must be non-negative or -1");
         this.pcDepth = pcDepth;
     }
 
-    /** Policy for handling unclustered singletons. */
+    /**
+     * Policy for handling unclustered singletons.
+     */
     public void setSingletonPolicy(SingletonPolicy policy) {
         this.singletonPolicy = Objects.requireNonNull(policy, "policy");
     }
 
-    /** Threshold for ATTACH_TO_NEAREST (attach when max canonical corr^2 >= attachTau). */
+    /**
+     * Threshold for ATTACH_TO_NEAREST (attach when max canonical corr^2 >= attachTau).
+     */
     public void setAttachTau(double attachTau) {
         if (attachTau < 0.0 || attachTau > 1.0)
             throw new IllegalArgumentException("attachTau must be in [0,1]");
         this.attachTau = attachTau;
     }
 
-    /** Set the name used for the pooled 'Noise' latent. */
+    /**
+     * Set the name used for the pooled 'Noise' latent.
+     */
     public void setNoiseLatentName(String noiseLatentName) {
         if (noiseLatentName == null || noiseLatentName.isEmpty())
             throw new IllegalArgumentException("noiseLatentName must be non-empty");
         this.noiseLatentName = noiseLatentName;
     }
 
-    // ---------- Setters (new) ----------
-
-    /** Enable/disable adding hierarchical latent edges after PC/BOSS over blocks. */
+    /**
+     * Enable/disable adding hierarchical latent edges after PC/BOSS over blocks.
+     */
     public void setEnableHierarchy(boolean enableHierarchy) {
         this.enableHierarchy = enableHierarchy;
     }
 
-    /** Require at least this drop in Wilks rank to add La -> Lb (default 1). */
+    // ---------- Setters (new) ----------
+
+    /**
+     * Require at least this drop in Wilks rank to add La -> Lb (default 1).
+     */
     public void setMinRankDrop(int minRankDrop) {
         if (minRankDrop < 1) throw new IllegalArgumentException("minRankDrop must be >= 1");
         this.minRankDrop = minRankDrop;
     }
+
+    /**
+     * Policy for handling unclustered singletons.
+     */
+    public enum SingletonPolicy {INCLUDE, EXCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT}
 }

@@ -5,12 +5,15 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndTestBlocks;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -45,20 +48,22 @@ public class RankBicScore implements ScoreWrapper {
      * {@inheritDoc}
      */
     @Override
-    public Score getScore(DataModel dataSet, Parameters parameters) {
-        this.dataSet = dataSet;
+    public Score getScore(DataModel dataModel, Parameters parameters) {
+        List<Node> nodes = dataModel.getVariables();
+        List<Node> blockVars = new ArrayList<>();
+        List<List<Integer>> blocks = new ArrayList<>();
 
-        edu.cmu.tetrad.search.score.RankBicScore rankBicScore;
-
-        if (dataSet instanceof DataSet) {
-            rankBicScore = new edu.cmu.tetrad.search.score.RankBicScore((DataSet) this.dataSet);
-        } else {
-            throw new IllegalArgumentException("Expecting a dataset.");
+        for (int i = 0; i < nodes.size(); i++) {
+            blockVars.add(nodes.get(i));
+            blocks.add(Collections.singletonList(i));
         }
 
-        rankBicScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        // If you’re using the Wilks-rank test:
+        BlocksBicScore score = new BlocksBicScore((DataSet) dataModel, blocks, blockVars);
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setEbicGamma(parameters.getDouble(Params.EBIC_GAMMA));
 
-        return rankBicScore;
+        return score;
     }
 
     /**
@@ -90,10 +95,7 @@ public class RankBicScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.SEM_BIC_STRUCTURE_PRIOR);
-        parameters.add(Params.SEM_BIC_RULE);
-        parameters.add(Params.PRECOMPUTE_COVARIANCES);
-        parameters.add(Params.SINGULARITY_LAMBDA);
+        parameters.add(Params.EBIC_GAMMA);
         return parameters;
     }
 
