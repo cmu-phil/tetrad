@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
-import edu.cmu.tetrad.search.test.IndTestBlocksWilksRankCachedTS;
+import edu.cmu.tetrad.search.test.IndTestBlocks;
 import edu.cmu.tetrad.util.RankTests;
 
 import java.util.*;
@@ -151,7 +151,7 @@ public class TscPc implements IGraphSearch {
             PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
             cpdag = permutationSearch.search();
         } else {
-            IndTestBlocksWilksRankCachedTS test = new IndTestBlocksWilksRankCachedTS(dataSet, blocks, metaVars);
+            IndTestBlocks test = new IndTestBlocks(dataSet, blocks, metaVars);
             test.setAlpha(alphaPc);
 
             Pc pc = new Pc(test);

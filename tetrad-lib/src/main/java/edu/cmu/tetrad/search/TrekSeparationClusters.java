@@ -2,12 +2,6 @@
  * Implements Trek Separation algorithm for finding latent variable clusters. This class analyzes covariance matrices to
  * identify clusters of observed variables that share common latent parents. It uses rank-based tests to determine trek
  * separations between variable sets.
- * <p>
- * Copyright (C) 1998-2022 by Peter Spirtes, Richard Scheines, Joseph Ramsey, and Clark Glymour.
- * <p>
- * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation; either version 2 of the License or (at your option) any later
- * version.
  */
 package edu.cmu.tetrad.search;
 
@@ -96,8 +90,6 @@ public class TrekSeparationClusters {
         }
 
         this.S = new CovarianceMatrix(cov).getMatrix().getSimpleMatrix();
-
-        // NOTE: removed global ForkJoinPool parallelism side-effect
     }
 
     // Pascal triangle, up to n choose k (inclusive on n)
@@ -195,8 +187,6 @@ public class TrekSeparationClusters {
         }).filter(Objects::nonNull).collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
     }
 
-
-
     // Fast overload: takes primitive IDs and uses canonical Key
     private int lookupRankFast(int[] ids) {
         Key k = new Key(ids);
@@ -221,7 +211,7 @@ public class TrekSeparationClusters {
         // Stable order: larger clusters first, then lexical by names
         List<Set<Integer>> clusterSets = clusterToRank.keySet().stream()
                 .sorted(Comparator.<Set<Integer>>comparingInt(Set::size).reversed()
-                        .thenComparing(s -> toNamesCluster(s)))
+                        .thenComparing(this::toNamesCluster))
                 .collect(Collectors.toList());
 
         List<Node> latents = defineLatents(clusterSets, clusterToRank, reducedRank);
@@ -322,11 +312,15 @@ public class TrekSeparationClusters {
                         Set<Integer> union = new HashSet<>(cluster);
                         union.addAll(candidate);
 
-                        if (union.size() <= cluster.size()) continue;
+                        // Only skip if union adds *no new elements* (i.e. union == cluster).
+                        // Using "==" instead of "<=" avoids blocking valid growth steps.
+                        if (union.size() == cluster.size()) continue;
 
                         int rankOfUnion = lookupRank(union);
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
+                        // With this choice, the only case we give up is forming a single cluster
+                        // that covers *all* observed variables, since then the complement is empty.
                         if (rankOfUnion == rank) {
                             // Accept this union, grow cluster and consume candidate from P1
                             cluster = union;

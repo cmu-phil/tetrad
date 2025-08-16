@@ -2,12 +2,12 @@ package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestBlocks;
-import edu.cmu.tetrad.search.test.IndTestBlocksWilksRankCachedTS;
-import edu.cmu.tetrad.search.test.RankConditionalIndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -49,7 +49,7 @@ public class RankIndependenceTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
-        List<Node> nodes  = dataModel.getVariables();
+        List<Node> nodes = dataModel.getVariables();
         List<Node> blockVars = new ArrayList<>();
         List<List<Integer>> blocks = new ArrayList<>();
 
@@ -59,7 +59,7 @@ public class RankIndependenceTest implements IndependenceWrapper {
         }
 
         // If you’re using the Wilks-rank test:
-        IndTestBlocksWilksRankCachedTS ind = new IndTestBlocksWilksRankCachedTS((DataSet) dataModel, blocks, blockVars);
+        IndTestBlocks ind = new IndTestBlocks((DataSet) dataModel, blocks, blockVars);
         ind.setAlpha(parameters.getDouble(Params.ALPHA));
 
         return ind;

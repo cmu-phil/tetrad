@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
@@ -14,27 +13,29 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Thread-safe, cached block-level CI test that delegates to RankTests' RCCA/Wilks pipeline.
- * Uses a lock-protected LRU cache (accessOrder=true) to avoid LinkedHashMap concurrency pitfalls.
+ * Block-level CI test using RankTests.estimateWilksRankConditioned for the decision and
+ * RankTests.pValueIndepConditioned for a reported p-value. Thread-safe LRU caches.
  */
-public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceTest {
+public class IndTestBlocks implements IndependenceTest {
 
-    // ---- Cache sizes (tune to taste) ----
-    private static final int PV_CACHE_MAX     = 400_000;  // (x,y,Z) -> p
+    // ---- Cache sizes (tune) ----
+    private static final int PV_CACHE_MAX = 400_000;  // (x,y,Z,n,alpha) -> p
+    private static final int RANK_CACHE_MAX = 400_000;  // (x,y,Z,n,alpha) -> rank
     private static final int ZBLOCK_CACHE_MAX = 150_000;  // Z -> concatenated embedded cols
 
     private final DataSet dataSet;
-    private final List<Node> variables;            // block-level variables, size == blocks.size()
-    private final Map<Node, Integer> nodeHash;     // block node -> block index
-    private final SimpleMatrix S;                  // correlation/covariance over dataset columns
-    private final int n;                           // sample size
+    private final List<Node> variables;
+    private final Map<Node, Integer> nodeHash;
+    private final SimpleMatrix S; // correlation (or covariance)
+    private final int n;
 
-    /** For each block b, the embedded/expanded column indices that compose it. */
-    private final int[][] allCols;                 // size = blocks.size()
+    // Block -> embedded/expanded column indices
+    private final int[][] allCols;
 
-    /** Thread-safe LRU caches */
+    // Thread-safe LRUs
+    private final LruMap<PKey, Integer> rankCache = new LruMap<>(RANK_CACHE_MAX);
     private final LruMap<PKey, Double> pvalCache = new LruMap<>(PV_CACHE_MAX);
-    private final LruMap<ZKey, int[]>  zblockCache = new LruMap<>(ZBLOCK_CACHE_MAX);
+    private final LruMap<ZKey, int[]> zblockCache = new LruMap<>(ZBLOCK_CACHE_MAX);
 
     // knobs
     private double alpha = 0.01;
@@ -47,8 +48,7 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
 
         final int B = blocks.size();
         if (blockVariables.size() != B) {
-            throw new IllegalArgumentException(
-                    "blockVariables.size() (" + blockVariables.size() + ") != blocks.size() (" + B + ")");
+            throw new IllegalArgumentException("blockVariables.size() (" + blockVariables.size() + ") != blocks.size() (" + B + ")");
         }
 
         this.dataSet = dataSet;
@@ -65,9 +65,9 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
 
         this.n = dataSet.getNumRows();
         this.S = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
-        // this.S = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix()); // optional
+        // If you prefer covariance:
+        // this.S = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix());
 
-        // Precompute block columns
         final int D = dataSet.getNumColumns();
         this.allCols = new int[B][];
         for (int b = 0; b < B; b++) {
@@ -79,8 +79,7 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
                 for (int k = 0; k < cols.size(); k++) {
                     int col = cols.get(k);
                     if (col < 0 || col >= D) {
-                        throw new IllegalArgumentException(
-                                "Block " + b + " references column " + col + " outside dataset width " + D);
+                        throw new IllegalArgumentException("Block " + b + " references column " + col + " outside dataset width " + D);
                     }
                     a[k] = col;
                 }
@@ -94,7 +93,7 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double pValue = getPValue(x, y, z);
-        boolean independent = pValue > alpha;
+        boolean independent = getEstimatedRank(x, y, z) == 0; // decision from Wilks-rank
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);
     }
 
@@ -123,29 +122,55 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
 
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("Alpha must be in (0,1).");
-        this.alpha = alpha; // alpha does not affect cached p-values
+        this.alpha = alpha;  // alpha participates in cache key
+        // (No need to clear caches eagerly; keys include alpha.)
     }
 
-    /**
-     * Not supported for block-based tests. Use checkIndependence(Node, Node, Set) on the dataset with configured blocks.
-     */
-    @Override
-    public double computePValue(double[] x, double[] y) {
-        throw new UnsupportedOperationException(
-                "IndTestBlocksCachedTS does not support computePValue(double[],double[]). " +
-                "Use checkIndependence(Node,Node,Set) with the dataset and configured blocks.");
-    }
+    // === Core ===
 
-    // === Core: delegate to RankTests with thread-safe caching ===
+    private int getEstimatedRank(Node x, Node y, Set<Node> z) {
+        KeyParts kp = buildKeyParts(x, y, z);
+        PKey key = new PKey(kp.a, kp.b, kp.zVars, n, alpha);
+
+        Integer cached = rankCache.get(key);
+        if (cached != null) return cached;
+
+        // Map to RankTests API: C = X, VminusC = Y (Z handled internally)
+        int rank = RankTests.estimateWilksRankConditioned(S, kp.xCols, kp.yCols, kp.zCols, n, alpha);
+        if (rank < 0) rank = 0; // defensive
+        rankCache.put(key, rank);
+        return rank;
+    }
 
     private double getPValue(Node x, Node y, Set<Node> z) {
+        KeyParts kp = buildKeyParts(x, y, z);
+        PKey key = new PKey(kp.a, kp.b, kp.zVars, n, alpha);
+
+        Double cached = pvalCache.get(key);
+        if (cached != null) return cached;
+
+        if (kp.xCols.length == 0 || kp.yCols.length == 0) {
+            pvalCache.put(key, 1.0);
+            return 1.0;
+        }
+
+        // Report p using the robust RankTests path (consistent with Wilks rank)
+        double p = RankTests.pValueIndepConditioned(S, kp.xCols, kp.yCols, kp.zCols, n);
+        if (Double.isNaN(p) || Double.isInfinite(p)) p = 1.0;
+        p = Math.max(0.0, Math.min(1.0, p));
+
+        pvalCache.put(key, p);
+        return p;
+    }
+
+    // Gather indices + build stable key parts
+    private KeyParts buildKeyParts(Node x, Node y, Set<Node> z) {
         Integer xiVar = nodeHash.get(x);
         Integer yiVar = nodeHash.get(y);
         if (xiVar == null || yiVar == null) {
             throw new IllegalArgumentException("Unknown node(s): " + x + ", " + y);
         }
 
-        // Build sorted Z block indices
         int[] zVars = new int[z.size()];
         int t = 0;
         for (Node zn : z) {
@@ -155,25 +180,12 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
         }
         Arrays.sort(zVars);
 
-        // Normalize (x,y) in key for symmetry
         int a = Math.min(xiVar, yiVar);
         int b = Math.max(xiVar, yiVar);
-        PKey key = new PKey(a, b, zVars);
 
-        Double cached = pvalCache.get(key);
-        if (cached != null) return cached;
-
-        // Embedded indices for these blocks
+        // Embedded columns
         int[] xCols = allCols[xiVar];
         int[] yCols = allCols[yiVar];
-
-        if (xCols.length == 0 || yCols.length == 0) {
-            if (verbose) {
-                System.out.printf("IndTestBlocksCachedTS: empty block for %s or %s%n", x.getName(), y.getName());
-            }
-            pvalCache.put(key, 1.0);
-            return 1.0;
-        }
 
         // Concatenate Z embedded columns (cached)
         ZKey zkey = new ZKey(zVars);
@@ -190,16 +202,7 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
             }
             zblockCache.put(zkey, zCols);
         }
-
-        // Delegate: RankTests does the robust RCCA/Wilks computation (with its own caches)
-        double pValue = RankTests.pValueIndepConditioned(S, xCols, yCols, zCols, n);
-
-        // Clamp bad numerics, cache, return
-        if (Double.isNaN(pValue) || Double.isInfinite(pValue)) pValue = 1.0;
-        pValue = Math.max(0.0, Math.min(1.0, pValue));
-
-        pvalCache.put(key, pValue);
-        return pValue;
+        return new KeyParts(a, b, zVars, xCols, yCols, zCols);
     }
 
     // === Small, thread-safe LRU (access-order) ===
@@ -226,7 +229,6 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
             lock.lock();
             try {
                 map.put(k, v);
-                // manual eviction (no removeEldestEntry races)
                 while (map.size() > maxSize) {
                     Iterator<Map.Entry<K, V>> it = map.entrySet().iterator();
                     if (it.hasNext()) {
@@ -249,29 +251,38 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
         }
     }
 
-    // === Cache keys ===
+    // === Key bits ===
+
+    private record KeyParts(int a, int b, int[] zVars, int[] xCols, int[] yCols, int[] zCols) {
+    }
 
     private static final class PKey {
         final int xVarMin, yVarMax;  // normalized so xVarMin <= yVarMax
-        final int[] zVars; // sorted
+        final int[] zVars;           // sorted
+        final int n;                 // sample size
+        final long alphaBits;        // quantized alpha
         private final int hash;
 
-        PKey(int xVarMin, int yVarMax, int[] zVars) {
+        PKey(int xVarMin, int yVarMax, int[] zVars, int n, double alpha) {
             this.xVarMin = xVarMin;
             this.yVarMax = yVarMax;
             this.zVars = zVars.clone();
+            this.n = n;
+            this.alphaBits = Double.doubleToLongBits(Math.rint(alpha * 1e12) / 1e12);
             int h = 1;
             h = 31 * h + xVarMin;
             h = 31 * h + yVarMax;
             h = 31 * h + Arrays.hashCode(this.zVars);
+            h = 31 * h + n;
+            h = 31 * h + Long.hashCode(alphaBits);
             this.hash = h;
         }
 
         @Override
         public boolean equals(Object o) {
             if (!(o instanceof PKey k)) return false;
-            return xVarMin == k.xVarMin && yVarMax == k.yVarMax
-                   && Arrays.equals(zVars, k.zVars);
+            return xVarMin == k.xVarMin && yVarMax == k.yVarMax && n == k.n
+                   && alphaBits == k.alphaBits && Arrays.equals(zVars, k.zVars);
         }
 
         @Override
