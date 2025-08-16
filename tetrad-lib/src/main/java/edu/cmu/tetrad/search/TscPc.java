@@ -310,6 +310,8 @@ public class TscPc implements IGraphSearch {
             }
         }
 
+
+
         // Greedy: biggest rank drop first; tiebreak by names to be deterministic
         cands.sort(Comparator.<Cand>comparingInt(c -> c.drop).reversed()
                 .thenComparing(c -> metaVars.get(c.ia).getName())
@@ -318,15 +320,16 @@ public class TscPc implements IGraphSearch {
         for (Cand c : cands) {
             Node from = metaVars.get(c.ia);
             Node to = metaVars.get(c.ib);
-            if (createsDirectedCycle(g, from, to)) continue;
+//            if (createsDirectedCycle(g, from, to)) continue;
             if (!g.containsNode(from)) g.addNode(from);
             if (!g.containsNode(to)) g.addNode(to);
             if (!g.isAdjacentTo(from, to)) {
-                g.addDirectedEdge(from, to);
-                if (verbose) {
-                    System.out.printf("Hierarchy: %s -> %s (drop=%d; r0=%d, r1=%d)%n",
-                            from.getName(), to.getName(), (c.r0 - c.r1), c.r0, c.r1);
-                }
+//                g.addDirectedEdge(from, to);
+            }
+
+            if (verbose) {
+                System.out.printf("Hierarchy: %s -> %s (drop=%d; r0=%d, r1=%d)%n",
+                        from.getName(), to.getName(), (c.r0 - c.r1), c.r0, c.r1);
             }
         }
     }

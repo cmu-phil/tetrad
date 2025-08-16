@@ -60,7 +60,7 @@ public class TrekSeparationClusters {
     private Map<Set<Integer>, Integer> reducedRank;
 
     // ---- Hierarchy (new) --------------------------------------------------------
-    private boolean enableHierarchy = true;   // infer latent -> latent edges
+    private boolean enableHierarchy = false;   // infer latent -> latent edges
     private int minRankDrop = 1;              // require at least this drop in Wilks rank to add an edge
 
     // ---- Canonical key for caching ranks (immutable, sorted) -------------------
@@ -610,15 +610,15 @@ public class TrekSeparationClusters {
 
         for (Cand c : cands) {
             Node from = latents.get(c.a);
-            Node to   = latents.get(c.b);
+            Node to = latents.get(c.b);
             if (createsDirectedCycle(g, from, to)) continue;
             if (!g.containsNode(from)) g.addNode(from);
-            if (!g.containsNode(to))   g.addNode(to);
+            if (!g.containsNode(to)) g.addNode(to);
             if (!g.isAdjacentTo(from, to)) {
                 g.addDirectedEdge(from, to);
-                log(String.format("Hierarchy: %s -> %s (drop %d: r0=%d, r1=%d)",
-                        from.getName(), to.getName(), c.drop, c.r0, c.r1));
             }
+            log(String.format("Hierarchy: %s -> %s (drop %d: r0=%d, r1=%d)",
+                        from.getName(), to.getName(), c.drop, c.r0, c.r1));
         }
     }
 
