@@ -54,6 +54,9 @@ public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasK
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
 
+        int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
+        edu.cmu.tetrad.search.TscPc.SingletonPolicy singletonPolicy = edu.cmu.tetrad.search.TscPc.SingletonPolicy.values()[_singletonPolicy - 1];
+
         edu.cmu.tetrad.search.TscPc search = new edu.cmu.tetrad.search.TscPc((DataSet) dataModel);
         search.setAlphaCluster(parameters.getDouble(Params.FOFC_ALPHA));
         search.setAlphaPc(parameters.getDouble(Params.FOFC_ALPHA));
@@ -64,6 +67,9 @@ public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasK
         search.setRidge(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
         search.setEbicGamma(parameters.getDouble(Params.EBIC_GAMMA));
         search.setUseBoss(parameters.getBoolean(Params.TSC_PC_USE_BOSS));
+        search.setSingletonPolicy(singletonPolicy);
+        search.setEnableHierarchy(parameters.getBoolean(Params.TSC_ENABLE_HIERARCHY));
+        search.setMinRankDrop(parameters.getInt(Params.TSC_MIN_RANK_DROP));
         search.setVerbose(verbose);
         return search.search();
     }
@@ -107,6 +113,9 @@ public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasK
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);
         parameters.add(Params.REGULARIZATION_LAMBDA);
         parameters.add(Params.TSC_PC_USE_BOSS);
+        parameters.add(Params.TSC_SINGLETON_POLICY);
+        parameters.add(Params.TSC_ENABLE_HIERARCHY);
+        parameters.add(Params.TSC_MIN_RANK_DROP);
         parameters.add(Params.VERBOSE);
         return parameters;
     }

@@ -1071,6 +1071,18 @@ public final class Params {
      * Constant <code>TSC_PC_USE_BOSS="tscPcUseBoss"</code>
      */
     public static final String TSC_PC_USE_BOSS = "tscPcUseBoss";
+    /**
+     * Constant <code>TSC_SINGLETON_POLICY="tscSingletonPolicy"</code>
+     */
+    public static final String TSC_SINGLETON_POLICY = "tscSingletonPolicy";
+    /**
+     * Constant <code>TSC_ENABLE_HIERARCHY="tscEnableHierarchy"</code>
+     */
+    public static final String TSC_ENABLE_HIERARCHY = "tscEnableHierarchy";
+    /**
+     * Constant <code>TSC_MIN_RANK_DROP="tscMinRankDrop"</code>
+     */
+    public static final String TSC_MIN_RANK_DROP = "tscMinRankDrop";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

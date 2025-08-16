@@ -98,7 +98,9 @@ public class TrekSeparationClusters {
 
     // Public knobs for hierarchy
     public void setEnableHierarchy(boolean v) { this.enableHierarchy = v; }
-    public void setMinRankDrop(int k) { this.minRankDrop = Math.max(1, k); }
+    public void setMinRankDrop(int k) {
+        this.minRankDrop = Math.max(1, k);
+    }
 
     // Pascal triangle, up to n choose k (inclusive on n)
     static long[][] precomputeBinom(int n, int k) {
