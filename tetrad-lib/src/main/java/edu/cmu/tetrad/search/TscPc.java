@@ -14,14 +14,14 @@ import java.util.*;
 /**
  * Runs TSC to find clusters and then uses these as blocks of variables (plus optional handling of unclustered
  * singletons) to infer a graph over the blocks.
- * <p>
- * New in this version: - Separate alpha for clustering vs. PC (alphaCluster, alphaPc) - Separate PC depth (pcDepth) -
- * Singleton policy: INCLUDE, EXCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT - attachTau threshold for
- * ATTACH_TO_NEAREST - Optional noise latent name - (NEW) Optional hierarchical latent edges among clusters via Wilks
- * rank-drop
- * <p>
  *
- * @author josephramsey (+ tweaks)
+ * New in this version:
+ *  - Separate alpha for clustering vs. PC (alphaCluster, alphaPc)
+ *  - Separate PC depth (pcDepth)
+ *  - Singleton policy: INCLUDE, EXCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT
+ *  - attachTau threshold for ATTACH_TO_NEAREST
+ *  - Optional noise latent name
+ *  - (NEW) Optional hierarchical latent edges among clusters via HierarchyFinder
  */
 public class TscPc implements IGraphSearch {
 
@@ -38,37 +38,33 @@ public class TscPc implements IGraphSearch {
     // ---------- New knobs ----------
     private double alphaCluster = 0.01;
     private double alphaPc = 0.01;
-    /**
-     * If not Integer.MIN_VALUE, overrides depth for PC over blocks.
-     */
+    /** If not Integer.MIN_VALUE, overrides depth for PC over blocks. */
     private int pcDepth = Integer.MIN_VALUE;
     private SingletonPolicy singletonPolicy = SingletonPolicy.INCLUDE;
-    /**
-     * Threshold for ATTACH_TO_NEAREST (attach if max canonical corr^2 >= attachTau).
-     */
+    /** Threshold for ATTACH_TO_NEAREST (attach if max canonical corr^2 >= attachTau). */
     private double attachTau = 0.15;
-    /**
-     * Name to use for the pooled "Noise" latent (COLLECT_AS_NOISE_LATENT).
-     */
+    /** Name to use for the pooled "Noise" latent (COLLECT_AS_NOISE_LATENT). */
     private String noiseLatentName = "Noise";
-    /**
-     * If true, add latent->latent hierarchy edges using Wilks rank-drop.
-     */
-    private boolean enableHierarchy = true;
 
-    // ---------- NEW: hierarchy controls ----------
-    /**
-     * Require at least this much drop to add La -> Lb: rank(Cb,D) - rank(Cb,D|Ca) >= minRankDrop.
-     */
+    /** If true, add latent->latent hierarchy edges after PC/BOSS. */
+    private boolean enableHierarchy = true;
+    /** Require at least this Wilks rank drop to add La->Lb. */
     private int minRankDrop = 1;
 
-    public TscPc(DataSet dataSet) {
-        this.dataSet = dataSet;
-    }
+    // ---------- HierarchyFinder controls ----------
+    private HierarchyFinder.Strategy hierarchyStrategy = HierarchyFinder.Strategy.PC1;
+    /** Only used for PC1; 0 disables confounder control. */
+    private int topKConf = 1;
+    /** Use alphaCluster for hierarchy tests unless overridden. */
+    private Double alphaHierarchy = null;  // null => use alphaCluster
+    /** Optional PC1 improvements. */
+    private boolean hierarchyOrthogonalize = true;
+    private boolean hierarchySpecificityGate = true;
+    private double hierarchyRidge = 1e-6;
 
-    /**
-     * Ensure the noise latent name is unique among metaVars.
-     */
+    public TscPc(DataSet dataSet) { this.dataSet = dataSet; }
+
+    /** Ensure the noise latent name is unique among metaVars. */
     private static String makeUniqueName(List<Node> existing, String base) {
         Set<String> names = new HashSet<>();
         for (Node n : existing) names.add(n.getName());
@@ -77,8 +73,6 @@ public class TscPc implements IGraphSearch {
         while (names.contains(base + "_" + k)) k++;
         return base + "_" + k;
     }
-
-    // ---------- NEW: Hierarchy helper -------------------------------------------
 
     @Override
     public Graph search() throws InterruptedException {
@@ -95,7 +89,7 @@ public class TscPc implements IGraphSearch {
                 N
         );
         tsc.setVerbose(verbose);
-        tsc.setAlpha(alphaCluster);    // cluster alpha (stage-specific)
+        tsc.setAlpha(alphaCluster); // cluster alpha
 
         tsc.search();
 
@@ -108,7 +102,7 @@ public class TscPc implements IGraphSearch {
         List<Integer> singletons = new ArrayList<>();
         for (int j = 0; j < dataSet.getNumColumns(); j++) if (!clustered.contains(j)) singletons.add(j);
 
-        // If there are no true clusters, fallback to INCLUDE so we still have something to learn over.
+        // If there are no true clusters, fallback so we still have something to learn over.
         boolean hasTrueCluster = clusters.stream().anyMatch(c -> c != null && c.size() > 1);
         SingletonPolicy policy = (!hasTrueCluster && (singletonPolicy == SingletonPolicy.EXCLUDE
                                                       || singletonPolicy == SingletonPolicy.ATTACH_TO_NEAREST
@@ -137,7 +131,6 @@ public class TscPc implements IGraphSearch {
                 }
             }
             case EXCLUDE, ATTACH_TO_NEAREST -> {
-                // Exclude singletons from latent PC; remember them for optional post-attach
                 excludedSingletons.addAll(singletons);
                 for (int i = 0; i < clusters.size(); i++) {
                     blocks.add(clusters.get(i));
@@ -145,12 +138,10 @@ public class TscPc implements IGraphSearch {
                 }
             }
             case COLLECT_AS_NOISE_LATENT -> {
-                // Add clusters
                 for (int i = 0; i < clusters.size(); i++) {
                     blocks.add(clusters.get(i));
                     metaVars.add(new ContinuousVariable(latentNames.get(i)));
                 }
-                // Pool all singletons into one "Noise" latent (if any)
                 if (!singletons.isEmpty()) {
                     List<Integer> noiseCols = new ArrayList<>(singletons);
                     blocks.add(noiseCols);
@@ -226,34 +217,42 @@ public class TscPc implements IGraphSearch {
             }
         }
 
-        // --- NEW: Add hierarchical latent edges among latent blocks --------------
+        // --- Add hierarchical latent edges among latent blocks (via HierarchyFinder) ---
         if (enableHierarchy) {
-            addHierarchyEdges(cpdag, tsc, blocks, metaVars, S);
+            addHierarchyEdges(cpdag, blocks, metaVars, S, N);
         }
 
         return cpdag;
     }
 
-    /**
-     * Add latent->latent edges when conditioning on parent indicators lowers the Wilks rank between child indicators
-     * and the rest of the observed variables by at least minRankDrop.
-     * <p>
-     * For each ordered pair (La, Lb), let Ca, Cb be their indicator sets and D = V \ Cb. If rank(Cb, D | Ca) <=
-     * rank(Cb, D) - minRankDrop, add La -> Lb, avoiding directed cycles.
-     */
-    private void addHierarchyEdges(Graph g, TrekSeparationClusters tsc, List<List<Integer>> blocks,
-                                   List<Node> metaVars, SimpleMatrix S) {
-        List<Edge>  edges = tsc.getHierarchyEdges(blocks, metaVars, S, dataSet.getNumRows(), alphaCluster, minRankDrop);
+    /** Add La->Lb based on HierarchyFinder proposals; prevents directed cycles. */
+    private void addHierarchyEdges(Graph g,
+                                   List<List<Integer>> blocks,
+                                   List<Node> metaVars,
+                                   SimpleMatrix S,
+                                   int sampleSize) {
 
-        for (Edge edge : edges) {
-            Node from = Edges.getDirectedEdgeTail(edge);
-            Node to = Edges.getDirectedEdgeHead(edge);
+        double aH = (alphaHierarchy == null) ? alphaCluster : alphaHierarchy;
+
+        List<HierarchyFinder.Proposal> props = HierarchyFinder.propose(
+                S, blocks, metaVars, sampleSize,
+                /*alpha=*/aH,
+                /*minRankDrop=*/minRankDrop,
+                hierarchyStrategy,
+                /*topKConf=*/topKConf,
+                /*orthogonalizeScores=*/hierarchyOrthogonalize,
+                /*specificityGate=*/hierarchySpecificityGate,
+                /*ridgeScore=*/hierarchyRidge,
+                /*verbose=*/verbose
+        );
+
+        for (HierarchyFinder.Proposal pr : props) {
+            Node from = metaVars.get(pr.fromBlock);
+            Node to   = metaVars.get(pr.toBlock);
             if (createsDirectedCycle(g, from, to)) continue;
             if (!g.containsNode(from)) g.addNode(from);
             if (!g.containsNode(to)) g.addNode(to);
-            if (!g.isAdjacentTo(from, to)) {
-                g.addEdge(edge);
-            }
+            if (!g.isAdjacentTo(from, to)) g.addDirectedEdge(from, to);
         }
     }
 
@@ -272,13 +271,9 @@ public class TscPc implements IGraphSearch {
         return false;
     }
 
-    // ---------- Helpers ----------
+    // ---------- Helpers / setters ----------
 
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    // ---------- Setters (existing) ----------
+    public void setVerbose(boolean verbose) { this.verbose = verbose; }
 
     public void setEffectiveSampleSize(int effectiveSampleSize) {
         if (effectiveSampleSize < -1 || effectiveSampleSize == 0)
@@ -286,9 +281,7 @@ public class TscPc implements IGraphSearch {
         this.effectiveSampleSize = effectiveSampleSize;
     }
 
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
+    public void setPenaltyDiscount(double penaltyDiscount) { this.penaltyDiscount = penaltyDiscount; }
 
     public void setNumStarts(int numStarts) {
         if (numStarts < 1) throw new IllegalArgumentException("numStarts must be > 0");
@@ -300,76 +293,82 @@ public class TscPc implements IGraphSearch {
         this.ridge = ridge;
     }
 
-    public void setEbicGamma(double ebicGamma) {
-        this.ebicGamma = ebicGamma;
-    }
+    public void setEbicGamma(double ebicGamma) { this.ebicGamma = ebicGamma; }
 
-    public void setUseBoss(boolean useBoss) {
-        this.useBoss = useBoss;
-    }
+    public void setUseBoss(boolean useBoss) { this.useBoss = useBoss; }
 
-    /**
-     * Alpha for clustering (TSC).
-     */
+    /** Alpha for clustering (TSC). */
     public void setAlphaCluster(double alphaCluster) {
         if (alphaCluster < 0.0 || alphaCluster > 1.0)
             throw new IllegalArgumentException("alphaCluster must be between 0.0 and 1.0");
         this.alphaCluster = alphaCluster;
     }
 
-    /**
-     * Alpha for PC over blocks.
-     */
+    /** Alpha for PC over blocks. */
     public void setAlphaPc(double alphaPc) {
         if (alphaPc < 0.0 || alphaPc > 1.0)
             throw new IllegalArgumentException("alphaPc must be between 0.0 and 1.0");
         this.alphaPc = alphaPc;
     }
 
-    /**
-     * Depth for PC over blocks.
-     */
+    /** Depth for PC over blocks. */
     public void setPcDepth(int pcDepth) {
         if (!(pcDepth == -1 || pcDepth >= 0))
             throw new IllegalArgumentException("pcDepth must be non-negative or -1");
         this.pcDepth = pcDepth;
     }
 
-    /**
-     * Policy for handling unclustered singletons.
-     */
+    /** Policy for handling unclustered singletons. */
     public void setSingletonPolicy(SingletonPolicy policy) {
         this.singletonPolicy = Objects.requireNonNull(policy, "policy");
     }
 
-    /**
-     * Set the name used for the pooled 'Noise' latent.
-     */
+    /** Set the name used for the pooled 'Noise' latent. */
     public void setNoiseLatentName(String noiseLatentName) {
         if (noiseLatentName == null || noiseLatentName.isEmpty())
             throw new IllegalArgumentException("noiseLatentName must be non-empty");
         this.noiseLatentName = noiseLatentName;
     }
 
-    /**
-     * Enable/disable adding hierarchical latent edges after PC/BOSS over blocks.
-     */
-    public void setEnableHierarchy(boolean enableHierarchy) {
-        this.enableHierarchy = enableHierarchy;
-    }
+    /** Enable/disable adding hierarchical latent edges after PC/BOSS over blocks. */
+    public void setEnableHierarchy(boolean enableHierarchy) { this.enableHierarchy = enableHierarchy; }
 
-    // ---------- Setters (new) ----------
-
-    /**
-     * Require at least this drop in Wilks rank to add La -> Lb (default 1).
-     */
+    /** Require at least this drop in Wilks rank to add La -> Lb (default 1). */
     public void setMinRankDrop(int minRankDrop) {
         if (minRankDrop < 1) throw new IllegalArgumentException("minRankDrop must be >= 1");
         this.minRankDrop = minRankDrop;
     }
 
-    /**
-     * Policy for handling unclustered singletons.
-     */
-    public enum SingletonPolicy {INCLUDE, EXCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT}
+    /** Strategy for hierarchy detection (PC1 or INDICATORS). */
+    public void setHierarchyStrategy(HierarchyFinder.Strategy strategy) {
+        this.hierarchyStrategy = Objects.requireNonNull(strategy, "strategy");
+    }
+
+    /** Number of top confounder scores to condition on (PC1 only). */
+    public void setTopKConf(int topKConf) {
+        if (topKConf < 0) throw new IllegalArgumentException("topKConf must be >= 0");
+        this.topKConf = topKConf;
+    }
+
+    /** Optional separate alpha for hierarchy tests; null => use alphaCluster. */
+    public void setAlphaHierarchy(Double alphaHierarchy) {
+        if (alphaHierarchy != null && (alphaHierarchy < 0.0 || alphaHierarchy > 1.0))
+            throw new IllegalArgumentException("alphaHierarchy must be in [0,1]");
+        this.alphaHierarchy = alphaHierarchy;
+    }
+
+    /** PC1 orthogonalization toggle. */
+    public void setHierarchyOrthogonalize(boolean b) { this.hierarchyOrthogonalize = b; }
+
+    /** Specificity gate toggle. */
+    public void setHierarchySpecificityGate(boolean b) { this.hierarchySpecificityGate = b; }
+
+    /** Ridge added when inverting confounder score correlation. */
+    public void setHierarchyRidge(double r) {
+        if (r < 0.0) throw new IllegalArgumentException("ridge must be >= 0");
+        this.hierarchyRidge = r;
+    }
+
+    /** Policy for handling unclustered singletons. */
+    public enum SingletonPolicy { INCLUDE, EXCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT }
 }
