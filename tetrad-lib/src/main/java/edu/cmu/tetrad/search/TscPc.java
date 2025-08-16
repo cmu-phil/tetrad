@@ -3,9 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.search.test.IndTestBlocks;
 import edu.cmu.tetrad.util.RankTests;
@@ -63,19 +61,9 @@ public class TscPc implements IGraphSearch {
      * Require at least this much drop to add La -> Lb: rank(Cb,D) - rank(Cb,D|Ca) >= minRankDrop.
      */
     private int minRankDrop = 1;
+
     public TscPc(DataSet dataSet) {
         this.dataSet = dataSet;
-    }
-
-    private static int[] minus(int[] universe, int[] remove) {
-        BitSet rm = new BitSet();
-        for (int v : remove) rm.set(v);
-        int cnt = 0;
-        for (int v : universe) if (!rm.get(v)) cnt++;
-        int[] out = new int[cnt];
-        int i = 0;
-        for (int v : universe) if (!rm.get(v)) out[i++] = v;
-        return out;
     }
 
     /**
@@ -240,7 +228,7 @@ public class TscPc implements IGraphSearch {
 
         // --- NEW: Add hierarchical latent edges among latent blocks --------------
         if (enableHierarchy) {
-            addHierarchyEdges(cpdag, blocks, metaVars, S, N, alphaPc);
+            addHierarchyEdges(cpdag, tsc, blocks, metaVars, S);
         }
 
         return cpdag;
@@ -253,83 +241,18 @@ public class TscPc implements IGraphSearch {
      * For each ordered pair (La, Lb), let Ca, Cb be their indicator sets and D = V \ Cb. If rank(Cb, D | Ca) <=
      * rank(Cb, D) - minRankDrop, add La -> Lb, avoiding directed cycles.
      */
-    private void addHierarchyEdges(Graph g,
-                                   List<List<Integer>> blocks,
-                                   List<Node> metaVars,
-                                   SimpleMatrix S,
-                                   int sampleSize,
-                                   double alpha) {
-        // Consider only latent blocks (size > 1) as candidates
-        List<Integer> latentIdx = new ArrayList<>();
-        for (int i = 0; i < blocks.size(); i++) if (blocks.get(i).size() > 1) latentIdx.add(i);
-        final int m = latentIdx.size();
-        if (m <= 1) return;
+    private void addHierarchyEdges(Graph g, TrekSeparationClusters tsc, List<List<Integer>> blocks,
+                                   List<Node> metaVars, SimpleMatrix S) {
+        List<Edge>  edges = tsc.getHierarchyEdges(blocks, metaVars, S, dataSet.getNumRows(), alphaCluster, minRankDrop);
 
-        // Universe of observed variable indices
-        int p = dataSet.getNumColumns();
-        int[] all = new int[p];
-        for (int j = 0; j < p; j++) all[j] = j;
-
-        // Candidate edges with rank drops
-        class Cand {
-            final int ia, ib; // indices in 'blocks' / 'metaVars'
-            final int r0, r1, drop;
-
-            Cand(int ia, int ib, int r0, int r1) {
-                this.ia = ia;
-                this.ib = ib;
-                this.r0 = r0;
-                this.r1 = r1;
-                this.drop = r0 - r1;
-            }
-        }
-        List<Cand> cands = new ArrayList<>();
-
-        for (int aPos = 0; aPos < m; aPos++) {
-            int ia = latentIdx.get(aPos);
-            int[] Ca = blocks.get(ia).stream().mapToInt(Integer::intValue).toArray();
-
-            for (int bPos = 0; bPos < m; bPos++) {
-                int ib = latentIdx.get(bPos);
-                if (ia == ib) continue;
-
-                int[] Cb = blocks.get(ib).stream().mapToInt(Integer::intValue).toArray();
-                if (Cb.length == 0) continue;
-
-                int[] D = minus(all, Cb);
-                if (D.length == 0) continue;
-
-                int r0 = RankTests.estimateWilksRank(S, Cb, D, sampleSize, alpha);
-                if (r0 <= 0) continue;
-
-                int r1 = RankTests.estimateWilksRankConditioned(S, Cb, D, Ca, sampleSize, alpha);
-
-                if (r0 - r1 >= minRankDrop) {
-                    cands.add(new Cand(ia, ib, r0, r1));
-                }
-            }
-        }
-
-
-
-        // Greedy: biggest rank drop first; tiebreak by names to be deterministic
-        cands.sort(Comparator.<Cand>comparingInt(c -> c.drop).reversed()
-                .thenComparing(c -> metaVars.get(c.ia).getName())
-                .thenComparing(c -> metaVars.get(c.ib).getName()));
-
-        for (Cand c : cands) {
-            Node from = metaVars.get(c.ia);
-            Node to = metaVars.get(c.ib);
-//            if (createsDirectedCycle(g, from, to)) continue;
+        for (Edge edge : edges) {
+            Node from = Edges.getDirectedEdgeTail(edge);
+            Node to = Edges.getDirectedEdgeHead(edge);
+            if (createsDirectedCycle(g, from, to)) continue;
             if (!g.containsNode(from)) g.addNode(from);
             if (!g.containsNode(to)) g.addNode(to);
             if (!g.isAdjacentTo(from, to)) {
-//                g.addDirectedEdge(from, to);
-            }
-
-            if (verbose) {
-                System.out.printf("Hierarchy: %s -> %s (drop=%d; r0=%d, r1=%d)%n",
-                        from.getName(), to.getName(), (c.r0 - c.r1), c.r0, c.r1);
+                g.addEdge(edge);
             }
         }
     }
@@ -417,15 +340,6 @@ public class TscPc implements IGraphSearch {
      */
     public void setSingletonPolicy(SingletonPolicy policy) {
         this.singletonPolicy = Objects.requireNonNull(policy, "policy");
-    }
-
-    /**
-     * Threshold for ATTACH_TO_NEAREST (attach when max canonical corr^2 >= attachTau).
-     */
-    public void setAttachTau(double attachTau) {
-        if (attachTau < 0.0 || attachTau > 1.0)
-            throw new IllegalArgumentException("attachTau must be in [0,1]");
-        this.attachTau = attachTau;
     }
 
     /**

@@ -39,47 +39,22 @@ public class TrekSeparationClusters {
 
     // Covariance/correlation matrix
     private final SimpleMatrix S;
-
+    // Cache of previously computed ranks
+    private final Map<Key, Integer> rankCache = new ConcurrentHashMap<>();
     // Alpha level for rank tests
     private double alpha = 0.01;
-
     // Whether to include all nodes in the output graph
     private boolean includeAllNodes = false;
-
     // Verbose logging
     private boolean verbose = false;
-
     // Most recent clusters found
     private List<List<Integer>> clusters = new ArrayList<>();
-
     // Latent names for the most recent clusters found
     private List<String> latentNames = new ArrayList<>();
-
     // Maps for final and reduced ranks
     private Map<Set<Integer>, Integer> clusterToRank;
     private Map<Set<Integer>, Integer> reducedRank;
-
     // ---- Hierarchy (new) --------------------------------------------------------
-    private boolean enableHierarchy = false;   // infer latent -> latent edges
-    private int minRankDrop = 1;              // require at least this drop in Wilks rank to add an edge
-
-    // ---- Canonical key for caching ranks (immutable, sorted) -------------------
-    private static final class Key {
-        final int[] a;
-        Key(Collection<Integer> s) {
-            this.a = s.stream().mapToInt(Integer::intValue).sorted().toArray();
-        }
-        Key(int[] ids) {
-            this.a = Arrays.stream(ids).sorted().toArray();
-        }
-        @Override public int hashCode() { return Arrays.hashCode(a); }
-        @Override public boolean equals(Object o) {
-            return (o instanceof Key) && Arrays.equals(a, ((Key) o).a);
-        }
-    }
-
-    // Cache of previously computed ranks
-    private final Map<Key, Integer> rankCache = new ConcurrentHashMap<>();
 
     /**
      * Constructs a TrekSeparationClusters object.
@@ -94,12 +69,6 @@ public class TrekSeparationClusters {
         }
 
         this.S = new CovarianceMatrix(cov).getMatrix().getSimpleMatrix();
-    }
-
-    // Public knobs for hierarchy
-    public void setEnableHierarchy(boolean v) { this.enableHierarchy = v; }
-    public void setMinRankDrop(int k) {
-        this.minRankDrop = Math.max(1, k);
     }
 
     // Pascal triangle, up to n choose k (inclusive on n)
@@ -148,6 +117,18 @@ public class TrekSeparationClusters {
             r -= choose(C, v, i);
             bound = v;
         }
+    }
+
+    private static int[] minus(int[] universe, int[] remove) {
+        // universe and remove are small; simple scan is fine
+        BitSet rm = new BitSet();
+        for (int v : remove) rm.set(v);
+        int cnt = 0;
+        for (int v : universe) if (!rm.get(v)) cnt++;
+        int[] out = new int[cnt];
+        int i = 0;
+        for (int v : universe) if (!rm.get(v)) out[i++] = v;
+        return out;
     }
 
     // ---- Enumerate k-combos of vars and test ranks -----------------------------
@@ -226,11 +207,6 @@ public class TrekSeparationClusters {
 
         List<Node> latents = defineLatents(clusterSets, clusterToRank, reducedRank);
         Graph graph = convertSearchGraphClusters(clusterSets, latents, includeAllNodes);
-
-        // ===== NEW: infer latent -> latent hierarchy edges (optional) ===========
-        if (enableHierarchy) {
-            addHierarchyEdges(graph, clusterSets, latents);
-        }
 
         this.latentNames = new ArrayList<>();
         for (Node latent : latents) {
@@ -555,100 +531,90 @@ public class TrekSeparationClusters {
         return false;
     }
 
-    // ===== NEW: Hierarchy glue ==================================================
     /**
-     * Add latent->latent edges when conditioning on parent indicators lowers the Wilks rank
-     * between child indicators and the rest of the observed variables by at least minRankDrop.
-     *
-     * For each ordered pair (La, Lb), let Ca, Cb be their indicator sets and D = V \ Cb.
-     * If rank(Cb, D | Ca) <= rank(Cb, D) - minRankDrop, add La -> Lb, avoiding directed cycles.
+     * Add latent->latent edges when conditioning on parent indicators lowers the Wilks rank between child indicators
+     * and the rest of the observed variables by at least minRankDrop.
+     * <p>
+     * For each ordered pair (La, Lb), let Ca, Cb be their indicator sets and D = V \ Cb. If rank(Cb, D | Ca) <=
+     * rank(Cb, D) - minRankDrop, add La -> Lb, avoiding directed cycles.
      */
-    private void addHierarchyEdges(Graph g, List<Set<Integer>> clusters, List<Node> latents) {
-        final int m = clusters.size();
-        if (m <= 1) return;
+    public List<Edge> getHierarchyEdges(List<List<Integer>> blocks,
+                                         List<Node> metaVars,
+                                         SimpleMatrix S,
+                                         int sampleSize,
+                                         double alpha, int minRankDrop) {
 
-        // Precompute arrays for speed
-        final List<int[]> C = new ArrayList<>(m);
-        for (int i = 0; i < m; i++) {
-            int[] arr = clusters.get(i).stream().mapToInt(Integer::intValue).toArray();
-            C.add(arr);
-        }
-        final int[] all = allVariables().stream().mapToInt(Integer::intValue).toArray();
+        List<Edge> edges = new ArrayList<>();
 
-        // Build candidate edges with drops
+        // Consider only latent blocks (size > 1) as candidates
+        List<Integer> latentIdx = new ArrayList<>();
+        for (int i = 0; i < blocks.size(); i++) if (blocks.get(i).size() > 1) latentIdx.add(i);
+        final int m = latentIdx.size();
+        if (m <= 1) return new ArrayList<>();
+
+        // Universe of observed variable indices
+        int p = variables.size();
+        int[] all = new int[p];
+        for (int j = 0; j < p; j++) all[j] = j;
+
+        // Candidate edges with rank drops
         class Cand {
-            final int a, b, r0, r1, drop;
-            Cand(int a, int b, int r0, int r1) { this.a=a; this.b=b; this.r0=r0; this.r1=r1; this.drop=r0 - r1; }
+            final int ia, ib; // indices in 'blocks' / 'metaVars'
+            final int r0, r1, drop;
+
+            Cand(int ia, int ib, int r0, int r1) {
+                this.ia = ia;
+                this.ib = ib;
+                this.r0 = r0;
+                this.r1 = r1;
+                this.drop = r0 - r1;
+            }
         }
         List<Cand> cands = new ArrayList<>();
 
-        for (int a = 0; a < m; a++) {
-            for (int b = 0; b < m; b++) {
-                if (a == b) continue;
+        for (int aPos = 0; aPos < m; aPos++) {
+            int ia = latentIdx.get(aPos);
+            int[] Ca = blocks.get(ia).stream().mapToInt(Integer::intValue).toArray();
 
-                // D = V \ Cb
-                int[] Cb = C.get(b);
-                int[] D = minus(all, Cb);        // complement once per pair
-                if (D.length == 0 || Cb.length == 0) continue;
+            for (int bPos = 0; bPos < m; bPos++) {
+                int ib = latentIdx.get(bPos);
+                if (ia == ib) continue;
+
+                int[] Cb = blocks.get(ib).stream().mapToInt(Integer::intValue).toArray();
+                if (Cb.length == 0) continue;
+
+                int[] D = minus(all, Cb);
+                if (D.length == 0) continue;
 
                 int r0 = RankTests.estimateWilksRank(S, Cb, D, sampleSize, alpha);
                 if (r0 <= 0) continue;
 
-                int[] Ca = C.get(a);
                 int r1 = RankTests.estimateWilksRankConditioned(S, Cb, D, Ca, sampleSize, alpha);
 
                 if (r0 - r1 >= minRankDrop) {
-                    cands.add(new Cand(a, b, r0, r1));
+                    cands.add(new Cand(ia, ib, r0, r1));
                 }
             }
         }
 
-        // Greedy add in order of largest drop first, avoid directed cycles
+        // Greedy: biggest rank drop first; tiebreak by names to be deterministic
         cands.sort(Comparator.<Cand>comparingInt(c -> c.drop).reversed()
-                .thenComparing((Cand c) -> latents.get(c.a).getName())
-                .thenComparing((Cand c) -> latents.get(c.b).getName()));
+                .thenComparing(c -> metaVars.get(c.ia).getName())
+                .thenComparing(c -> metaVars.get(c.ib).getName()));
 
         for (Cand c : cands) {
-            Node from = latents.get(c.a);
-            Node to = latents.get(c.b);
-            if (createsDirectedCycle(g, from, to)) continue;
-            if (!g.containsNode(from)) g.addNode(from);
-            if (!g.containsNode(to)) g.addNode(to);
-            if (!g.isAdjacentTo(from, to)) {
-                g.addDirectedEdge(from, to);
+            Node from = metaVars.get(c.ia);
+            Node to = metaVars.get(c.ib);
+            edges.add(Edges.directedEdge(from, to));
+
+            if (verbose) {
+                System.out.printf("Hierarchy: %s -> %s (drop=%d; r0=%d, r1=%d)%n",
+                        from.getName(), to.getName(), (c.r0 - c.r1), c.r0, c.r1);
             }
-            log(String.format("Hierarchy: %s -> %s (drop %d: r0=%d, r1=%d)",
-                        from.getName(), to.getName(), c.drop, c.r0, c.r1));
         }
-    }
 
-    // DFS over children to detect cycles if we add from -> to
-    private boolean createsDirectedCycle(Graph g, Node from, Node to) {
-        // If there's already a (directed) path from 'to' back to 'from', adding from->to would create a cycle.
-        Set<Node> seen = new HashSet<>();
-        return dfsChildrenReach(g, to, from, seen);
+        return edges;
     }
-    private boolean dfsChildrenReach(Graph g, Node cur, Node target, Set<Node> seen) {
-        if (cur.equals(target)) return true;
-        if (!seen.add(cur)) return false;
-        for (Node child : g.getChildren(cur)) {
-            if (dfsChildrenReach(g, child, target, seen)) return true;
-        }
-        return false;
-    }
-
-    private static int[] minus(int[] universe, int[] remove) {
-        // universe and remove are small; simple scan is fine
-        BitSet rm = new BitSet();
-        for (int v : remove) rm.set(v);
-        int cnt = 0;
-        for (int v : universe) if (!rm.get(v)) cnt++;
-        int[] out = new int[cnt];
-        int i = 0;
-        for (int v : universe) if (!rm.get(v)) out[i++] = v;
-        return out;
-    }
-    // ===== END hierarchy glue ===================================================
 
     /**
      * Cached rank lookup via canonical key
@@ -661,6 +627,7 @@ public class TrekSeparationClusters {
         rankCache.put(k, r);
         return r;
     }
+    // ===== END hierarchy glue ===================================================
 
     private @NotNull StringBuilder toNamesCluster(Collection<Integer> cluster) {
         StringBuilder _sb = new StringBuilder();
@@ -740,5 +707,28 @@ public class TrekSeparationClusters {
 
     public List<String> getLatentNames() {
         return new ArrayList<>(this.latentNames);
+    }
+
+    // ---- Canonical key for caching ranks (immutable, sorted) -------------------
+    private static final class Key {
+        final int[] a;
+
+        Key(Collection<Integer> s) {
+            this.a = s.stream().mapToInt(Integer::intValue).sorted().toArray();
+        }
+
+        Key(int[] ids) {
+            this.a = Arrays.stream(ids).sorted().toArray();
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(a);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return (o instanceof Key) && Arrays.equals(a, ((Key) o).a);
+        }
     }
 }
