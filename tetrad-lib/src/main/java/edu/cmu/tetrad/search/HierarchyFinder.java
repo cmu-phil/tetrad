@@ -307,6 +307,7 @@ public final class HierarchyFinder {
                         for (int i = 0; i < Zconf.length; i++)
                             for (int j = 0; j < Zconf.length; j++)
                                 Rscsc.set(i, j, Splus.get(Zconf[i], Zconf[j]));
+//                        double ridgeScore = 1e-6;
                         if (ridgeScore > 0) {
                             for (int i = 0; i < Zconf.length; i++) {
                                 Rscsc.set(i, i, Rscsc.get(i, i) + ridgeScore);
@@ -350,11 +351,9 @@ public final class HierarchyFinder {
                     if (rConfOnly == -1) {
                         rConfOnly = RankTests.estimateWilksRankConditioned(Splus, Cb, Y, Zconf, sampleSize, alpha);
                     }
-                    if (!(r1 < rConfOnly)) { // no extra reduction beyond confounders
+                    if (!(r1 < rConfOnly)) {
                         if (verbose) {
-                            System.out.printf("skip(PC1%s%s) %s -> %s : r0=%d, r1=%d, drop=%d, rConf=%d%n",
-                                    orthogonalizeScores ? "+orth" : "",
-                                    specificityGate ? "+spec" : "",
+                            System.out.printf("skip(PC1) %s -> %s : r0=%d, r1=%d, drop=%d, rConf=%d%n",
                                     metaVars.get(latentIdx.get(aPos)).getName(),
                                     metaVars.get(latentIdx.get(bPos)).getName(),
                                     r0, r1, drop, rConfOnly);
@@ -372,15 +371,11 @@ public final class HierarchyFinder {
                     );
                     props.add(pr);
                     if (verbose) {
-                        System.out.printf("hier(PC1%s%s) %s -> %s : r0=%d, r1=%d, drop=%d%n",
-                                orthogonalizeScores ? "+orth" : "",
-                                specificityGate ? "+spec" : "",
+                        System.out.printf("hier(PC1) %s -> %s : r0=%d, r1=%d, drop=%d%n",
                                 pr.fromName, pr.toName, pr.r0, pr.r1, pr.drop);
                     }
                 } else if (verbose) {
-                    System.out.printf("skip(PC1%s%s) %s -> %s : r0=%d, r1=%d, drop=%d%n",
-                            orthogonalizeScores ? "+orth" : "",
-                            specificityGate ? "+spec" : "",
+                    System.out.printf("skip(PC1) %s -> %s : r0=%d, r1=%d, drop=%d%n",
                             metaVars.get(latentIdx.get(aPos)).getName(),
                             metaVars.get(latentIdx.get(bPos)).getName(),
                             r0, r1, drop);
@@ -471,5 +466,37 @@ public final class HierarchyFinder {
         int i = 0;
         for (int v : universe) if (!rm.get(v)) out[i++] = v;
         return out;
+    }
+
+    /* ==================== NEW: the drop-in wrapper you’re calling ==================== */
+
+    /**
+     * Convenience wrapper used by TscPc.search(...).
+     * Defaults to Strategy.INDICATORS, topKConf=0, verbose=false.
+     *
+     * @param S            correlation/covariance of observed variables
+     * @param sampleSize   effective N
+     * @param alpha        test alpha for Wilks-rank decisions
+     * @param minRankDrop  minimum drop r0 - r1 to accept La -> Lb
+     * @param pObserved    number of observed variables (redundant with S.numCols(), kept for compatibility)
+     * @param blocks       list of blocks (each block is list of observed indices); only blocks with size>1 are treated as latents
+     * @param metaVars     meta variables corresponding 1-1 with blocks
+     * @return list of directed edges La -> Lb to add
+     */
+    public static List<Edge> findHierarchyEdges(SimpleMatrix S,
+                                                int sampleSize,
+                                                double alpha,
+                                                int minRankDrop,
+                                                int pObserved,
+                                                List<List<Integer>> blocks,
+                                                List<Node> metaVars) {
+        // sanity (no hard failure if mismatch; just rely on S)
+        // if (S.numCols() != pObserved) System.err.println("Warning: pObserved != S.numCols()");
+        return computeEdges(
+                S, blocks, metaVars,
+                sampleSize, alpha, minRankDrop,
+                Strategy.INDICATORS, /*topKConf=*/0,
+                /*verbose=*/false
+        );
     }
 }
