@@ -185,6 +185,22 @@ public class TrekSeparationClusters {
 
     public void setAlpha(double alpha) { this.alpha = alpha; }
     public void setIncludeAllNodes(boolean includeAllNodes) { this.includeAllNodes = includeAllNodes; }
+
+    // --- Observed-leaf preference (optional) ---------------------------------
+    private boolean enforceObservedLeaves = false;
+    /** Require at least this rank drop when conditioning on a candidate member v to mark it as "proxy-like". */
+    private int antiProxyDrop = 1;
+
+    public void setEnforceObservedLeaves(boolean enforceObservedLeaves) {
+        this.enforceObservedLeaves = enforceObservedLeaves;
+    }
+
+    /** 0 disables the guard; 1 is a good default if enabled. */
+    public void setAntiProxyDrop(int antiProxyDrop) {
+        if (antiProxyDrop < 0) throw new IllegalArgumentException("antiProxyDrop must be >= 0");
+        this.antiProxyDrop = antiProxyDrop;
+    }
+
     public void setVerbose(boolean verbose) { this.verbose = verbose; }
 
     private @NotNull Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> clusterSearchMetaLoop() {
@@ -239,12 +255,39 @@ public class TrekSeparationClusters {
                         int rankOfUnion = lookupRank(union);
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
-                        if (rankOfUnion == rank && allSubclustersPresent(union, P, size)) {
+                        if (rankOfUnion == rank) {
+
+                            // >>> NEW: anti-proxy guard (optional)
+                            if (enforceObservedLeaves && antiProxyDrop > 0) {
+                                // Only the new elements being proposed
+                                Set<Integer> add = new HashSet<>(candidate);
+                                add.removeAll(cluster);
+
+                                boolean proxy = false;
+                                for (int v : add) {
+                                    if (isProxyLike(cluster, v)) {
+                                        proxy = true;
+                                        log("Rejecting addition of " + nodes.get(v).getName() + " as proxy-like (observed hub).");
+                                        break;
+                                    }
+                                }
+                                if (proxy) continue;
+                            }
+                            // <<< END NEW
+
+                            // Accept this union
                             cluster = union;
                             it.remove();
                             extended = true;
                             break;
                         }
+//
+//                        if (rankOfUnion == rank && allSubclustersPresent(union, P, size)) {
+//                            cluster = union;
+//                            it.remove();
+//                            extended = true;
+//                            break;
+//                        }
                     }
                 } while (extended);
 
@@ -607,6 +650,36 @@ public class TrekSeparationClusters {
             latents.add(latent);
         }
         return latents;
+    }
+
+    private int[] complementOf(Set<Integer> C) {
+        // V \ C
+        int n = variables.size();
+        BitSet inC = new BitSet(n);
+        for (int v : C) inC.set(v);
+        int[] out = new int[n - C.size()];
+        int k = 0;
+        for (int i = 0; i < n; i++) if (!inC.get(i)) out[k++] = i;
+        return out;
+    }
+
+    /** True if v behaves like a proxy/hub for C (conditioning on v collapses rank by >= antiProxyDrop). */
+    private boolean isProxyLike(Set<Integer> C, int v) {
+        if (!enforceObservedLeaves || antiProxyDrop == 0) return false;
+
+        // Use complement of (C ∪ {v}) as "D", same convention as your rank() tests.
+        Set<Integer> Cplus = new HashSet<>(C);
+        Cplus.add(v);
+        if (Cplus.size() >= variables.size() - Cplus.size()) return false; // guard: invalid split
+
+        int[] Carr = C.stream().mapToInt(Integer::intValue).toArray();
+        int[] Darr  = complementOf(Cplus);
+        if (Carr.length == 0 || Darr.length == 0) return false;
+
+        int r0   = RankTests.estimateWilksRank(S, Carr, Darr, sampleSize, alpha);
+        int rCond= RankTests.estimateWilksRankConditioned(S, Carr, Darr, new int[]{v}, sampleSize, alpha);
+
+        return (r0 - rCond) >= antiProxyDrop;
     }
 
     private void log(String s) { if (verbose) TetradLogger.getInstance().log(s); }

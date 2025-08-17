@@ -70,6 +70,7 @@ public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasK
         search.setSingletonPolicy(singletonPolicy);
         search.setEnableHierarchy(parameters.getBoolean(Params.TSC_ENABLE_HIERARCHY));
         search.setMinRankDrop(parameters.getInt(Params.TSC_MIN_RANK_DROP));
+        search.setEdgePolicy(edu.cmu.tetrad.search.TscPc.EdgePolicy.ALLOW_MEASURE_TO_MEASURE);
         search.setVerbose(verbose);
         return search.search();
     }
