@@ -121,7 +121,7 @@ public class TrekSeparationClusters {
     }
 
     // ---- New fast variant: enumerate k-combos of vars and test ranks -----------
-    private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
+    private Set<Set<Integer>> findClustersAtRankTesting(List<Integer> vars, int size, int rank) {
         final int n = vars.size();
         final int k = size;
 
@@ -161,6 +161,130 @@ public class TrekSeparationClusters {
             for (int i = 0; i < k; i++) cluster.add(ids[i]);
             return cluster;
         }).filter(Objects::nonNull).collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
+    }
+
+    // ---- New scored variant plugged into the old signature -----------------------
+    private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int targetRank) {
+        final int n = vars.size();
+        final int k = size;
+
+        if (targetRank < 0) throw new IllegalArgumentException("targetRank must be >= 0");
+        if (k <= 0 || k > n) return Collections.emptySet();
+        // If D = V\C would be empty, enumeration isn’t meaningful.
+        if (k >= n - k) return Collections.emptySet();
+
+        // combinadic over local indices 0..n-1, then map to global var ids
+        final int[] varIds = new int[n];
+        for (int i = 0; i < n; i++) varIds[i] = vars.get(i);
+
+        final long[][] Cbin = binom(n, k);
+        final long total = Cbin[n][k];
+
+        final ThreadLocal<int[]> tlIdxs = ThreadLocal.withInitial(() -> new int[k]);
+        final ThreadLocal<int[]> tlIds  = ThreadLocal.withInitial(() -> new int[k]);
+
+        final Set<Set<Integer>> accepted = java.util.concurrent.ConcurrentHashMap.newKeySet();
+        final java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
+
+        // knobs (kept local for now; you can expose setters later if you like)
+        final double ridge = 1e-8;     // RCCA regularizer for RankTests.getRccaEntry
+        final double c     = 1.0;      // BIC penalty discount
+        final double gamma = 0.0;      // EBIC extra penalty (0 disables)
+        final double epsMargin = 0.0;  // require score(k) - score(k±1) >= epsMargin (0 to disable)
+
+        LongStream.range(0, total).parallel().forEach(m -> {
+            if (Thread.currentThread().isInterrupted()) return;
+
+            int _c = counter.incrementAndGet();
+            if (verbose && (_c % 5000 == 0)) {
+                log("Scored find: examined " + _c + " / " + total);
+            }
+
+            // decode the k-combination in colex order
+            int[] idxs = tlIdxs.get();
+            combinadicDecodeColex(m, n, k, Cbin, idxs);
+
+            // map to global column ids (sorted)
+            int[] Carr = tlIds.get();
+            for (int i = 0; i < k; i++) Carr[i] = varIds[idxs[i]];
+            Arrays.sort(Carr);
+
+            // D = (vars) \ C  -> build as a Set then back to array using existing helper
+            Set<Integer> Cset = new HashSet<>(k * 2);
+            for (int v : Carr) Cset.add(v);
+            int[] Darr = complementOf(Cset);  // already returns sorted indices over full V
+            if (Darr.length == 0) return;
+
+            // sweep RCCA-BIC over r = 0..m, pick argmax
+            ScoreSweep sw = rccaScoreSweep(S, Carr, Darr, sampleSize, ridge, c, gamma);
+            if (sw.mMax < 0) return; // unsupported
+
+            boolean marginsOk =
+                    (Double.isNaN(sw.scKm1) || sw.scBest >= sw.scKm1 + epsMargin) &&
+                    (Double.isNaN(sw.scKp1) || sw.scBest >= sw.scKp1 + epsMargin);
+
+            if (sw.rStar == targetRank && marginsOk) {
+                // accept this cluster
+                accepted.add(Cset);
+            }
+        });
+
+        return accepted;
+    }
+
+    // ---- helper: do the RCCA-BIC rank sweep using RankTests cache ---------------
+    private static final class ScoreSweep {
+        final int mMax;       // max admissible rank
+        final int rStar;      // argmax rank
+        final double scBest;  // score at rStar
+        final double scKm1;   // score at rStar-1 (NaN if not defined)
+        final double scKp1;   // score at rStar+1 (NaN if not defined)
+        ScoreSweep(int mMax, int rStar, double scBest, double scKm1, double scKp1) {
+            this.mMax = mMax; this.rStar = rStar; this.scBest = scBest; this.scKm1 = scKm1; this.scKp1 = scKp1;
+        }
+    }
+
+    private ScoreSweep rccaScoreSweep(SimpleMatrix S,
+                                      int[] C, int[] D,
+                                      int n, double ridge,
+                                      double c, double gamma) {
+        edu.cmu.tetrad.util.RankTests.RccaEntry ent = RankTests.getRccaEntry(S, C, D, ridge);
+        if (ent == null || ent.suffixLogs == null) return new ScoreSweep(-1, -1, Double.NEGATIVE_INFINITY, Double.NaN, Double.NaN);
+
+        int p = C.length, q = D.length;
+        int m = Math.min(Math.min(p, q), n - 1);
+        m = Math.min(m, ent.suffixLogs.length - 1);
+        if (m < 0) return new ScoreSweep(-1, -1, Double.NEGATIVE_INFINITY, Double.NaN, Double.NaN);
+        if (m == 0) return new ScoreSweep(0, 0, 0.0, Double.NaN, Double.NaN);
+
+        // Bartlett-ish effective n (same spirit as BlocksBicScore)
+        double nEff = n - 1.0 - 0.5 * (p + q + 1.0);
+        if (nEff < 1.0) nEff = 1.0;
+
+        // EBIC pool: treat |D| as proxy for available predictors
+        int Ppool = Math.max(q, 2);
+
+        double[] suf = ent.suffixLogs;  // suf[0] == 0 by contract
+        double base = suf[0];
+
+        int rStar = 0;
+        double scStar = -1e300;
+        double[] sc = new double[m + 1];
+
+        for (int r = 0; r <= m; r++) {
+            double sumLogsTopR = base - suf[r];      // sum_{i=1..r} log(1 - rho_i^2)
+            double fit = -nEff * sumLogsTopR;
+            int kParams = r * (p + q - r);
+            double pen = c * kParams * Math.log(n);
+            if (gamma > 0.0) pen += 2.0 * gamma * kParams * Math.log(Ppool);
+            double scR = fit - pen;
+            sc[r] = scR;
+            if (scR > scStar) { scStar = scR; rStar = r; }
+        }
+
+        double scKm1 = (rStar - 1 >= 0) ? sc[rStar - 1] : Double.NaN;
+        double scKp1 = (rStar + 1 <= m) ? sc[rStar + 1] : Double.NaN;
+        return new ScoreSweep(m, rStar, scStar, scKm1, scKp1);
     }
 
     // Fast overload: takes primitive IDs and uses canonical Key
