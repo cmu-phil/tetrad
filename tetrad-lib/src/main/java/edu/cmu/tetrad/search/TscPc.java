@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
+import edu.cmu.tetrad.search.test.IndTestBlocks;
 import edu.cmu.tetrad.search.test.IndTestBlocksLemma10;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
@@ -62,7 +63,7 @@ public class TscPc implements IGraphSearch {
     private int minRankDrop = 1;
 
     // ---------- HierarchyFinder controls ----------
-    private HierarchyFinder.Strategy hierarchyStrategy = HierarchyFinder.Strategy.PC1;
+    private HierarchyFinder.Strategy hierarchyStrategy = HierarchyFinder.Strategy.INDICATORS;
     /**
      * Only used for PC1; 0 disables confounder control.
      */
@@ -219,6 +220,7 @@ public class TscPc implements IGraphSearch {
             Boss suborderSearch = new Boss(score);
             suborderSearch.setVerbose(verbose);
             suborderSearch.setNumStarts(numStarts);
+            suborderSearch.setVerbose(verbose);
 
             PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
             permutationSearch.setKnowledge(knowledge);
@@ -226,12 +228,12 @@ public class TscPc implements IGraphSearch {
         } else {
 //            IndTestBlocks test = new IndTestBlocks(dataSet, blocks, metaVars);
             IndTestBlocksLemma10 test = new IndTestBlocksLemma10(dataSet, blocks, metaVars);
-
-            test.setAlpha(alphaPc);
+            test.setAlpha(alphaCluster);
 
             Pc pc = new Pc(test);
             pc.setDepth(pcDepth);
             pc.setKnowledge(knowledge);
+            pc.setVerbose(verbose);
             cpdag = pc.search();
         }
 

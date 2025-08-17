@@ -59,7 +59,7 @@ public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasK
 
         edu.cmu.tetrad.search.TscPc search = new edu.cmu.tetrad.search.TscPc((DataSet) dataModel);
         search.setAlphaCluster(parameters.getDouble(Params.FOFC_ALPHA));
-        search.setAlphaPc(parameters.getDouble(Params.FOFC_ALPHA));
+        search.setAlphaPc(parameters.getDouble(Params.ALPHA));
         search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setEffectiveSampleSize(parameters.getInt(Params.EXPECTED_SAMPLE_SIZE));
@@ -107,6 +107,7 @@ public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasK
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
+        parameters.add(Params.ALPHA);
         parameters.add(Params.FOFC_ALPHA);
         parameters.add(Params.EBIC_GAMMA);
         parameters.add(Params.PENALTY_DISCOUNT);
