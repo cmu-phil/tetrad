@@ -41,8 +41,12 @@ public class TrekSeparationClusters {
 
     // ---- NEW: optional RLCD-style guard (off by default) -----------------------
     private boolean useAtomicCoverGuard = false;
-
-    public void setUseAtomicCoverGuard(boolean b) { this.useAtomicCoverGuard = b; }
+    // --- Observed-leaf preference (optional) ---------------------------------
+    private boolean enforceObservedLeaves = false;
+    /**
+     * Require at least this rank drop when conditioning on a candidate member v to mark it as "proxy-like".
+     */
+    private int antiProxyDrop = 1;
 
     // ---- ctor ----
     public TrekSeparationClusters(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
@@ -67,11 +71,17 @@ public class TrekSeparationClusters {
         }
         return C;
     }
-    static long choose(long[][] C, int x, int j) { if (x < j || j < 0) return 0L; return C[x][j]; }
+
+    static long choose(long[][] C, int x, int j) {
+        if (x < j || j < 0) return 0L;
+        return C[x][j];
+    }
+
     private static long[][] binom(int n, int k) {
         long key = (((long) n) << 32) ^ k;
         return BINOM_CACHE.computeIfAbsent(key, binom -> precomputeBinom(n, k));
     }
+
     private static void combinadicDecodeColex(long m, int n, int k, long[][] C, int[] out) { /* ... unchanged ... */
         long r = m;
         int bound = n;
@@ -80,12 +90,34 @@ public class TrekSeparationClusters {
             while (lo <= hi) {
                 int mid = (lo + hi) >>> 1;
                 long c = choose(C, mid, i);
-                if (c <= r) { v = mid; lo = mid + 1; } else { hi = mid - 1; }
+                if (c <= r) {
+                    v = mid;
+                    lo = mid + 1;
+                } else {
+                    hi = mid - 1;
+                }
             }
             out[i - 1] = v;
             r -= choose(C, v, i);
             bound = v;
         }
+    }
+
+    // ---- NEW helpers for optional guard ---------------------------------------
+    static int[] makeRightSide(int p, int[] C, int[] X) {
+        BitSet bs = new BitSet(); // start with V \ C
+        for (int i = 0; i < p; i++) bs.set(i);
+        for (int v : C) bs.clear(v);
+        // union X
+        for (int v : X) bs.set(v);
+        int n = bs.cardinality();
+        int[] out = new int[n];
+        for (int i = bs.nextSetBit(0), k = 0; i >= 0; i = bs.nextSetBit(i + 1)) out[k++] = i;
+        return out;
+    }
+
+    public void setUseAtomicCoverGuard(boolean b) {
+        this.useAtomicCoverGuard = b;
     }
 
     // ---- New fast variant: enumerate k-combos of vars and test ranks -----------
@@ -143,7 +175,9 @@ public class TrekSeparationClusters {
         return r;
     }
 
-    /** Searches for latent clusters using specified size and rank parameters. */
+    /**
+     * Searches for latent clusters using specified size and rank parameters.
+     */
     public Graph search() {
         Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> ret = estimateClusters();
         clusterToRank = ret.getFirst();
@@ -183,25 +217,29 @@ public class TrekSeparationClusters {
         return _variables;
     }
 
-    public void setAlpha(double alpha) { this.alpha = alpha; }
-    public void setIncludeAllNodes(boolean includeAllNodes) { this.includeAllNodes = includeAllNodes; }
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
 
-    // --- Observed-leaf preference (optional) ---------------------------------
-    private boolean enforceObservedLeaves = false;
-    /** Require at least this rank drop when conditioning on a candidate member v to mark it as "proxy-like". */
-    private int antiProxyDrop = 1;
+    public void setIncludeAllNodes(boolean includeAllNodes) {
+        this.includeAllNodes = includeAllNodes;
+    }
 
     public void setEnforceObservedLeaves(boolean enforceObservedLeaves) {
         this.enforceObservedLeaves = enforceObservedLeaves;
     }
 
-    /** 0 disables the guard; 1 is a good default if enabled. */
+    /**
+     * 0 disables the guard; 1 is a good default if enabled.
+     */
     public void setAntiProxyDrop(int antiProxyDrop) {
         if (antiProxyDrop < 0) throw new IllegalArgumentException("antiProxyDrop must be >= 0");
         this.antiProxyDrop = antiProxyDrop;
     }
 
-    public void setVerbose(boolean verbose) { this.verbose = verbose; }
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 
     private @NotNull Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> clusterSearchMetaLoop() {
         List<Integer> remainingVars = new ArrayList<>(allVariables());
@@ -299,7 +337,7 @@ public class TrekSeparationClusters {
                     // Simple choice: pick one element into X, rest into C (works for k = rank).
                     int k = rank; // expected rank
                     int[] all = cluster.stream().mapToInt(Integer::intValue).toArray();
-                    int[] X = new int[]{ all[0] };
+                    int[] X = new int[]{all[0]};
                     int[] C = Arrays.copyOfRange(all, 1, all.length);
 
                     int p = variables.size();
@@ -383,10 +421,10 @@ public class TrekSeparationClusters {
         log("Now we will consider whether any of the penultimate clusters should be discarded (as from a non-latent DAG, e.g.).");
 
         boolean penultimateRemoved = false;
-        for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
 
+        // Try to split instead of outright reject (Dong-style refinement)
+        for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             if (failsSubsetTest(S, cluster, sampleSize, alpha)) {
-                // Try to split instead of outright reject (Dong-style refinement)
                 Optional<List<Set<Integer>>> split = trySplitByRule1(cluster);
                 if (split.isPresent()) {
                     // Remove the original
@@ -439,11 +477,10 @@ public class TrekSeparationClusters {
     }
 
     /**
-     * Try to split a cluster C into two smaller clusters C1, C2 if Rule 1 fails.
-     * We search over nontrivial bipartitions (iterates via SublistGenerator like your Rule 1),
-     * and prefer the split that (a) violates Rule 1 the most (largest l - r), and
-     * (b) yields both sides nonempty and with valid complement sizes.
-     *
+     * Try to split a cluster C into two smaller clusters C1, C2 if Rule 1 fails. We search over nontrivial bipartitions
+     * (iterates via SublistGenerator like your Rule 1), and prefer the split that (a) violates Rule 1 the most (largest
+     * l - r), and (b) yields both sides nonempty and with valid complement sizes.
+     * <p>
      * Returns Optional.of(List.of(C1, C2)) if a split is suggested; otherwise Optional.empty().
      */
     private Optional<List<Set<Integer>>> trySplitByRule1(Set<Integer> cluster) {
@@ -663,7 +700,9 @@ public class TrekSeparationClusters {
         return out;
     }
 
-    /** True if v behaves like a proxy/hub for C (conditioning on v collapses rank by >= antiProxyDrop). */
+    /**
+     * True if v behaves like a proxy/hub for C (conditioning on v collapses rank by >= antiProxyDrop).
+     */
     private boolean isProxyLike(Set<Integer> C, int v) {
         if (!enforceObservedLeaves || antiProxyDrop == 0) return false;
 
@@ -673,39 +712,51 @@ public class TrekSeparationClusters {
         if (Cplus.size() >= variables.size() - Cplus.size()) return false; // guard: invalid split
 
         int[] Carr = C.stream().mapToInt(Integer::intValue).toArray();
-        int[] Darr  = complementOf(Cplus);
+        int[] Darr = complementOf(Cplus);
         if (Carr.length == 0 || Darr.length == 0) return false;
 
-        int r0   = RankTests.estimateWilksRank(S, Carr, Darr, sampleSize, alpha);
-        int rCond= RankTests.estimateWilksRankConditioned(S, Carr, Darr, new int[]{v}, sampleSize, alpha);
+        int r0 = RankTests.estimateWilksRank(S, Carr, Darr, sampleSize, alpha);
+        int rCond = RankTests.estimateWilksRankConditioned(S, Carr, Darr, new int[]{v}, sampleSize, alpha);
 
         return (r0 - rCond) >= antiProxyDrop;
     }
 
-    private void log(String s) { if (verbose) TetradLogger.getInstance().log(s); }
-    private String toNamesCluster(Set<Integer> cluster) { return cluster.stream().map(i -> nodes.get(i).getName()).collect(Collectors.joining(" ", "{", "}")); }
-    public List<List<Integer>> getClusters() { return new ArrayList<>(this.clusters); }
-    public List<String> getLatentNames() { return new ArrayList<>(this.latentNames); }
+    private void log(String s) {
+        if (verbose) TetradLogger.getInstance().log(s);
+    }
+
+    private String toNamesCluster(Set<Integer> cluster) {
+        return cluster.stream().map(i -> nodes.get(i).getName()).collect(Collectors.joining(" ", "{", "}"));
+    }
+
+    public List<List<Integer>> getClusters() {
+        return new ArrayList<>(this.clusters);
+    }
+
+    public List<String> getLatentNames() {
+        return new ArrayList<>(this.latentNames);
+    }
 
     // ---- Canonical key for caching ranks (immutable, sorted) -------------------
     private static final class Key {
         final int[] a;
-        Key(Collection<Integer> s) { this.a = s.stream().mapToInt(Integer::intValue).sorted().toArray(); }
-        Key(int[] ids) { this.a = Arrays.stream(ids).sorted().toArray(); }
-        @Override public int hashCode() { return Arrays.hashCode(a); }
-        @Override public boolean equals(Object o) { return (o instanceof Key) && Arrays.equals(a, ((Key) o).a); }
-    }
 
-    // ---- NEW helpers for optional guard ---------------------------------------
-    static int[] makeRightSide(int p, int[] C, int[] X) {
-        BitSet bs = new BitSet(); // start with V \ C
-        for (int i = 0; i < p; i++) bs.set(i);
-        for (int v : C) bs.clear(v);
-        // union X
-        for (int v : X) bs.set(v);
-        int n = bs.cardinality();
-        int[] out = new int[n];
-        for (int i = bs.nextSetBit(0), k = 0; i >= 0; i = bs.nextSetBit(i + 1)) out[k++] = i;
-        return out;
+        Key(Collection<Integer> s) {
+            this.a = s.stream().mapToInt(Integer::intValue).sorted().toArray();
+        }
+
+        Key(int[] ids) {
+            this.a = Arrays.stream(ids).sorted().toArray();
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(a);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return (o instanceof Key) && Arrays.equals(a, ((Key) o).a);
+        }
     }
 }
