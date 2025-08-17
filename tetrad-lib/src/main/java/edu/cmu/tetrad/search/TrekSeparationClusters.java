@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -238,7 +239,7 @@ public class TrekSeparationClusters {
                         int rankOfUnion = lookupRank(union);
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
-                        if (rankOfUnion == rank) {
+                        if (rankOfUnion == rank && allSubclustersPresent(union, P, size)) {
                             cluster = union;
                             it.remove();
                             extended = true;
@@ -340,16 +341,117 @@ public class TrekSeparationClusters {
 
         boolean penultimateRemoved = false;
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
+
             if (failsSubsetTest(S, cluster, sampleSize, alpha)) {
-                clusterToRank.remove(cluster);
-                reducedRank.remove(cluster);
-                penultimateRemoved = true;
+                // Try to split instead of outright reject (Dong-style refinement)
+                Optional<List<Set<Integer>>> split = trySplitByRule1(cluster);
+                if (split.isPresent()) {
+                    // Remove the original
+                    clusterToRank.remove(cluster);
+                    reducedRank.remove(cluster);
+
+                    // Add the two subclusters with fresh ranks (inherit rC as a guess; recompute anyway)
+                    for (Set<Integer> sub : split.get()) {
+                        int rSub = lookupRank(sub); // uses your cached rank()
+                        if (sub.size() > 1 && rSub >= 0) {
+                            clusterToRank.put(sub, rSub);
+                            // You can also re-run your augmentation step for each sub, if desired.
+                        }
+                    }
+                    penultimateRemoved = true; // we changed the set
+                    log("Split cluster " + toNamesCluster(cluster) + " into " +
+                        toNamesCluster(split.get().get(0)) + " and " + toNamesCluster(split.get().get(1)));
+                } else {
+                    // Fall back to rejection if no clean split found
+                    clusterToRank.remove(cluster);
+                    reducedRank.remove(cluster);
+                    penultimateRemoved = true;
+                    log("Removed cluster " + toNamesCluster(cluster) + " (no valid split found).");
+                }
             }
         }
         if (!penultimateRemoved) log("No penultimate clusters were removed.");
 
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet()));
         return new Pair<>(clusterToRank, reducedRank);
+    }
+
+    private boolean allSubclustersPresent(Set<Integer> union, Set<Set<Integer>> P, int size) {
+        ChoiceGenerator gen = new ChoiceGenerator(union.size(), size);
+        int[] choice;
+        List<Integer> unionList = new ArrayList<>(union);
+
+        while ((choice = gen.next()) != null) {
+            Set<Integer> C = new HashSet<>();
+            for (int i : choice) {
+                C.add(unionList.get(i));
+            }
+
+            if (!P.contains(C)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Try to split a cluster C into two smaller clusters C1, C2 if Rule 1 fails.
+     * We search over nontrivial bipartitions (iterates via SublistGenerator like your Rule 1),
+     * and prefer the split that (a) violates Rule 1 the most (largest l - r), and
+     * (b) yields both sides nonempty and with valid complement sizes.
+     *
+     * Returns Optional.of(List.of(C1, C2)) if a split is suggested; otherwise Optional.empty().
+     */
+    private Optional<List<Set<Integer>>> trySplitByRule1(Set<Integer> cluster) {
+        final List<Integer> C = new ArrayList<>(cluster);
+        final int[] Carray = C.stream().mapToInt(Integer::intValue).toArray();
+        final int rC = clusterToRank.getOrDefault(cluster, 0);
+
+        // we consider all non-empty proper subsets
+        SublistGenerator gen = new SublistGenerator(C.size(), C.size() - 1);
+        int[] choice;
+
+        int bestGain = Integer.MIN_VALUE;
+        Set<Integer> bestC1 = null, bestC2 = null;
+
+        while ((choice = gen.next()) != null) {
+            if (choice.length == 0 || choice.length == C.size()) continue;
+
+            Set<Integer> C1 = new HashSet<>(choice.length * 2);
+            for (int i : choice) C1.add(C.get(i));
+            Set<Integer> C2 = new HashSet<>(cluster);
+            C2.removeAll(C1);
+            if (C2.isEmpty()) continue;
+
+            // Require |C1| < |V\C1| and |C2| < |V\C2|, otherwise rank() is undefined by construction
+            if (C1.size() >= variables.size() - C1.size()) continue;
+            if (C2.size() >= variables.size() - C2.size()) continue;
+
+            int[] c1 = C1.stream().mapToInt(Integer::intValue).toArray();
+            int[] c2 = C2.stream().mapToInt(Integer::intValue).toArray();
+
+            int minpq = Math.min(c1.length, c2.length);
+            int l = Math.min(minpq, Math.max(0, rC));
+
+            int r = RankTests.estimateWilksRank(S, c1, c2, sampleSize, alpha);
+
+            // If Rule 1 fails for this bipartition (r < l), it's a candidate split.
+            if (r < l) {
+                int gain = l - r; // how badly Rule 1 fails
+                if (gain > bestGain) {
+                    bestGain = gain;
+                    bestC1 = C1;
+                    bestC2 = C2;
+                }
+            }
+        }
+
+        if (bestC1 != null && bestC2 != null) {
+            return Optional.of(Arrays.asList(bestC1, bestC2));
+        } else {
+            return Optional.empty();
+        }
     }
 
     // ---- existing failsSubsetTest, rank(), logging, etc. (unchanged) ----
@@ -379,7 +481,11 @@ public class TrekSeparationClusters {
                 l = Math.min(minpq, Math.max(0, l));
 
                 int r = RankTests.estimateWilksRank(S, c1Array, c2Array, sampleSize, alpha);
-                if (r < l) return true;
+                if (r < l) {
+                    log("Deficient! rank(" + toNamesCluster(C1) + ", " + toNamesCluster(C2) + ") = "
+                        + r + " < " + l + "; removing " + toNamesCluster(cluster));
+                    return true;
+                }
             }
         }
         { // Rule 2
@@ -397,7 +503,11 @@ public class TrekSeparationClusters {
                 l = Math.min(minpq, Math.max(0, l));
 
                 int r = RankTests.estimateWilksRank(S, _cArray, dArray, sampleSize, alpha);
-                if (r < l) return true;
+                if (r < l) {
+                    log("rank(" + toNamesCluster(_C) + ", D) = " + r + " < r = " + l
+                        + "; removing cluster " + toNamesCluster(cluster));
+                    return true;
+                }
             }
         }
         { // Rule 3
@@ -420,7 +530,10 @@ public class TrekSeparationClusters {
                 int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
 
                 int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, sampleSize, alpha);
-                if (rZ == 0) return true;
+                if (rZ == 0) {
+                    log("rank(_C = " + toNamesCluster(_C) + ", D | Z = " + toNamesCluster(Z) + ") = 0; removing cluster " + toNamesCluster(cluster) + ".");
+                    return true;
+                }
             }
         }
         return false;
