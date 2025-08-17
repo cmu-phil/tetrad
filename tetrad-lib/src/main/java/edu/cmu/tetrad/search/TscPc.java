@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
-import edu.cmu.tetrad.search.test.IndTestBlocks;
+import edu.cmu.tetrad.search.test.IndTestBlocksLemma10;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
@@ -224,7 +224,9 @@ public class TscPc implements IGraphSearch {
             permutationSearch.setKnowledge(knowledge);
             cpdag = permutationSearch.search();
         } else {
-            IndTestBlocks test = new IndTestBlocks(dataSet, blocks, metaVars);
+//            IndTestBlocks test = new IndTestBlocks(dataSet, blocks, metaVars);
+            IndTestBlocksLemma10 test = new IndTestBlocksLemma10(dataSet, blocks, metaVars);
+
             test.setAlpha(alphaPc);
 
             Pc pc = new Pc(test);

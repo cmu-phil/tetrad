@@ -8,6 +8,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestBlocks;
+import edu.cmu.tetrad.search.test.IndTestBlocksLemma10;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -60,6 +61,7 @@ public class RankIndependenceTest implements IndependenceWrapper {
 
         // If you’re using the Wilks-rank test:
         IndTestBlocks ind = new IndTestBlocks((DataSet) dataModel, blocks, blockVars);
+//        IndTestBlocksLemma10 ind = new IndTestBlocksLemma10((DataSet) dataModel, blocks, blockVars);
         ind.setAlpha(parameters.getDouble(Params.ALPHA));
 
         return ind;
