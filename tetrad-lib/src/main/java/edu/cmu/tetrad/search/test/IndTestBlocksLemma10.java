@@ -153,11 +153,11 @@ public class IndTestBlocksLemma10 implements IndependenceTest {
         // p-value: same Wilks machinery, treat as unconditioned on empty Z
         double pValue = getPValue(parts.ACcols, parts.BCcols);
 
-        if (verbose) {
-            System.out.printf("Lemma10: %s _||_ %s | %s ? estRank=%d, |C|=%d, mode=%s, tol=%d, p=%.4g -> %s%n",
-                    parts.xName, parts.yName, parts.zNames, estRank, parts.Csize, mode, tol, pValue,
-                    indep ? "INDEP" : "DEP");
-        }
+//        if (verbose) {
+//            System.out.printf("Lemma10: %s _||_ %s | %s ? estRank=%d, |C|=%d, mode=%s, tol=%d, p=%.4g -> %s%n",
+//                    parts.xName, parts.yName, parts.zNames, estRank, parts.Csize, mode, tol, pValue,
+//                    indep ? "INDEP" : "DEP");
+//        }
 
         return new IndependenceResult(
                 new IndependenceFact(parts.xNode, parts.yNode, z),

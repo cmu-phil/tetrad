@@ -38,13 +38,15 @@ public class TrekSeparationClustersScored {
     private final Map<Key, Integer> rankCache = new ConcurrentHashMap<>();
     private final Map<Key, Integer> scoredRankCache = new ConcurrentHashMap<>();
     // --- RCCA sweep cache (C,D) -> ScoreSweep (reduces repeated work during seed/grow) ---
-    private final Map<Long, ScoreSweep> sweepCache =
-            new LinkedHashMap<>(4096, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<Long, ScoreSweep> e) {
-                    return size() > 20000;
-                }
-            };
+    // replace current sweepCache with:
+    private final Map<Long, ScoreSweep> sweepCache = new java.util.concurrent.ConcurrentHashMap<>();
+//    private final Map<Long, ScoreSweep> sweepCache =
+//            new LinkedHashMap<>(4096, 0.75f, true) {
+//                @Override
+//                protected boolean removeEldestEntry(Map.Entry<Long, ScoreSweep> e) {
+//                    return size() > 20000;
+//                }
+//            };
     private double alpha = 0.01;
     private boolean includeAllNodes = false;
     private boolean verbose = false;
@@ -56,10 +58,10 @@ public class TrekSeparationClustersScored {
     private boolean useAtomicCoverGuard = false;
     // --- Observed-leaf preference (optional) ---------------------------------
 //    private boolean enforceObservedLeaves = false;
-    /**
-     * Require at least this rank drop when conditioning on v to call it "proxy-like".
-     */
-    private int antiProxyDrop = 1;
+//    /**
+//     * Require at least this rank drop when conditioning on v to call it "proxy-like".
+//     */
+//    private int antiProxyDrop = 1;
     /**
      * RCCA ridge regularizer used in RankTests.getRccaEntry.
      */
@@ -187,9 +189,11 @@ public class TrekSeparationClustersScored {
         final int n = vars.size();
         final int k = size;
 
-        if (rank + 1 >= n - (rank + 1)) {
-            throw new IllegalArgumentException("rank too high for clusters at rank");
-        }
+//        if (rank + 1 >= n - (rank + 1)) {
+//            throw new IllegalArgumentException("rank too high for clusters at rank");
+//        }
+
+        if (rank + 1 >= n - (rank + 1)) return Collections.emptySet();
 
         final int[] varIds = new int[n];
         for (int i = 0; i < n; i++) varIds[i] = vars.get(i);
@@ -230,6 +234,8 @@ public class TrekSeparationClustersScored {
         final int n = vars.size();
         final int k = size;
 
+        if (targetRank + 1 >= n - (targetRank + 1)) return Collections.emptySet();
+
         if (targetRank < 0) throw new IllegalArgumentException("targetRank must be >= 0");
         if (k <= 0 || k > n) return Collections.emptySet();
         if (k >= n - k) return Collections.emptySet(); // D would be empty
@@ -250,7 +256,7 @@ public class TrekSeparationClustersScored {
             if (Thread.currentThread().isInterrupted()) return;
 
             int _c = counter.incrementAndGet();
-            if (verbose && (_c % 20000 == 0)) log("Scored find: examined " + _c + " / " + total);
+            if (verbose && (_c % Math.max(20000, total/50 + 1) == 0)) log("Scored find: examined " + _c + " / " + total);
 
             // decode k-combination
             int[] idxs = tlIdxs.get();
@@ -409,6 +415,7 @@ public class TrekSeparationClustersScored {
 
     public void setAlpha(double alpha) {
         this.alpha = alpha;
+        rankCache.clear(); // Wilks rank depends on alpha
     }
 
     public void setIncludeAllNodes(boolean includeAllNodes) {
@@ -419,13 +426,13 @@ public class TrekSeparationClustersScored {
 //        this.enforceObservedLeaves = enforceObservedLeaves;
 //    }
 
-    /**
-     * 0 disables the guard; 1 is a good default if enabled.
-     */
-    public void setAntiProxyDrop(int antiProxyDrop) {
-        if (antiProxyDrop < 0) throw new IllegalArgumentException("antiProxyDrop must be >= 0");
-        this.antiProxyDrop = antiProxyDrop;
-    }
+//    /**
+//     * 0 disables the guard; 1 is a good default if enabled.
+//     */
+//    public void setAntiProxyDrop(int antiProxyDrop) {
+//        if (antiProxyDrop < 0) throw new IllegalArgumentException("antiProxyDrop must be >= 0");
+//        this.antiProxyDrop = antiProxyDrop;
+//    }
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -434,17 +441,20 @@ public class TrekSeparationClustersScored {
     // --- new setters for scoring knobs / mode ---
     public void setRidge(double ridge) {
         this.ridge = ridge;
-        scoredRankCache.clear();
+//        scoredRankCache.clear();
+        scoredRankCache.clear(); sweepCache.clear();
     }
 
     public void setPenaltyDiscount(double c) {
         this.penaltyDiscount = c;
-        scoredRankCache.clear();
+//        scoredRankCache.clear();
+        scoredRankCache.clear(); sweepCache.clear();
     }
 
     public void setEbicGamma(double gamma) {
         this.ebicGamma = gamma;
-        scoredRankCache.clear();
+//        scoredRankCache.clear();
+        scoredRankCache.clear(); sweepCache.clear();
     }
 
     public void setScoreMargin(double margin) {

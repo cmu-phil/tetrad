@@ -103,7 +103,7 @@ public class TscBoss implements IGraphSearch {
                 N
         );
         tsc.setVerbose(verbose);
-        tsc.setAntiProxyDrop(1);  // try 1; 2 is stricter
+//        tsc.setAntiProxyDrop(1);  // try 1; 2 is stricter
 
         tsc.setMode(TrekSeparationClustersScored.Mode.Testing);
 
