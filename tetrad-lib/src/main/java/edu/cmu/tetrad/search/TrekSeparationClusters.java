@@ -39,15 +39,6 @@ public class TrekSeparationClusters {
     private Map<Set<Integer>, Integer> clusterToRank;
     private Map<Set<Integer>, Integer> reducedRank;
 
-    // ---- NEW: optional RLCD-style guard (off by default) -----------------------
-    private boolean useAtomicCoverGuard = false;
-    // --- Observed-leaf preference (optional) ---------------------------------
-    private boolean enforceObservedLeaves = false;
-    /**
-     * Require at least this rank drop when conditioning on a candidate member v to mark it as "proxy-like".
-     */
-    private int antiProxyDrop = 1;
-
     // ---- ctor ----
     public TrekSeparationClusters(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
         this.nodes = new ArrayList<>(variables);
@@ -116,10 +107,6 @@ public class TrekSeparationClusters {
         return out;
     }
 
-    public void setUseAtomicCoverGuard(boolean b) {
-        this.useAtomicCoverGuard = b;
-    }
-
     // ---- New fast variant: enumerate k-combos of vars and test ranks -----------
     private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
         final int n = vars.size();
@@ -159,8 +146,28 @@ public class TrekSeparationClusters {
 
             Set<Integer> cluster = new HashSet<>(k * 2);
             for (int i = 0; i < k; i++) cluster.add(ids[i]);
+
+            if (!isAtomic(cluster, rank)) return null;
+
             return cluster;
         }).filter(Objects::nonNull).collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
+    }
+
+    private boolean isAtomic(Set<Integer> C, int k) {
+        // Reject if ANY (|C|-1)-subset has the same rank k
+        if (C.size() <= k + 1) return true; // smallest possible witness size is k+1
+        List<Integer> L = new ArrayList<>(C);
+        SublistGenerator gen = new SublistGenerator(L.size(), L.size() - 1);
+        int[] choice;
+        while ((choice = gen.next()) != null) {
+            if (choice.length == 0 || choice.length == L.size()) continue;
+            // Build the (|C|-1)-subset
+            Set<Integer> sub = new HashSet<>(choice.length * 2);
+            for (int idx : choice) sub.add(L.get(idx));
+            int r = rank(sub);
+            if (r == k) return false; // non-atomic: subset already witnesses rank k
+        }
+        return true;
     }
 
     // ---- helper: do the RCCA-BIC rank sweep using RankTests cache ---------------
@@ -280,18 +287,6 @@ public class TrekSeparationClusters {
         this.includeAllNodes = includeAllNodes;
     }
 
-    public void setEnforceObservedLeaves(boolean enforceObservedLeaves) {
-        this.enforceObservedLeaves = enforceObservedLeaves;
-    }
-
-    /**
-     * 0 disables the guard; 1 is a good default if enabled.
-     */
-    public void setAntiProxyDrop(int antiProxyDrop) {
-        if (antiProxyDrop < 0) throw new IllegalArgumentException("antiProxyDrop must be >= 0");
-        this.antiProxyDrop = antiProxyDrop;
-    }
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
@@ -349,61 +344,15 @@ public class TrekSeparationClusters {
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
                         if (rankOfUnion == rank) {
-
-                            // >>> NEW: anti-proxy guard (optional)
-                            if (enforceObservedLeaves && antiProxyDrop > 0) {
-                                // Only the new elements being proposed
-                                Set<Integer> add = new HashSet<>(candidate);
-                                add.removeAll(cluster);
-
-                                boolean proxy = false;
-                                for (int v : add) {
-                                    if (isProxyLike(cluster, v)) {
-                                        proxy = true;
-                                        log("Rejecting addition of " + nodes.get(v).getName() + " as proxy-like (observed hub).");
-                                        break;
-                                    }
-                                }
-                                if (proxy) continue;
-                            }
-                            // <<< END NEW
-
-                            // Accept this union
                             cluster = union;
                             it.remove();
                             extended = true;
                             break;
                         }
-//
-//                        if (rankOfUnion == rank && allSubclustersPresent(union, P, size)) {
-//                            cluster = union;
-//                            it.remove();
-//                            extended = true;
-//                            break;
-//                        }
                     }
                 } while (extended);
 
                 int finalRank = lookupRank(cluster);
-
-                // ---- NEW: optional RLCD-style atomic-cover equality check right after discovery
-                if (useAtomicCoverGuard && finalRank == rank && cluster.size() > 1) {
-                    // Partition cluster into C (left) and X (right) minimally to test equality.
-                    // Simple choice: pick one element into X, rest into C (works for k = rank).
-                    int k = rank; // expected rank
-                    int[] all = cluster.stream().mapToInt(Integer::intValue).toArray();
-                    int[] X = new int[]{all[0]};
-                    int[] C = Arrays.copyOfRange(all, 1, all.length);
-
-                    int p = variables.size();
-                    int[] D = makeRightSide(p, C, X); // (V \ C) ∪ X, disjoint from left
-                    boolean ok = RankEqualities.atomicCoverEquality(S, C, X, D, k, sampleSize, alpha);
-                    if (!ok) {
-                        log("Atomic-cover guard failed for cluster " + toNamesCluster(cluster) + "; discarding.");
-                        finalRank = -1; // force discard below
-                    }
-                }
-                // ---- end optional guard
 
                 if (finalRank == rank) {
                     newClusters.removeIf(cluster::containsAll);  // Avoid nesting
@@ -742,38 +691,6 @@ public class TrekSeparationClusters {
             latents.add(latent);
         }
         return latents;
-    }
-
-    private int[] complementOf(Set<Integer> C) {
-        // V \ C
-        int n = variables.size();
-        BitSet inC = new BitSet(n);
-        for (int v : C) inC.set(v);
-        int[] out = new int[n - C.size()];
-        int k = 0;
-        for (int i = 0; i < n; i++) if (!inC.get(i)) out[k++] = i;
-        return out;
-    }
-
-    /**
-     * True if v behaves like a proxy/hub for C (conditioning on v collapses rank by >= antiProxyDrop).
-     */
-    private boolean isProxyLike(Set<Integer> C, int v) {
-        if (!enforceObservedLeaves || antiProxyDrop == 0) return false;
-
-        // Use complement of (C ∪ {v}) as "D", same convention as your rank() tests.
-        Set<Integer> Cplus = new HashSet<>(C);
-        Cplus.add(v);
-        if (Cplus.size() >= variables.size() - Cplus.size()) return false; // guard: invalid split
-
-        int[] Carr = C.stream().mapToInt(Integer::intValue).toArray();
-        int[] Darr = complementOf(Cplus);
-        if (Carr.length == 0 || Darr.length == 0) return false;
-
-        int r0 = RankTests.estimateWilksRank(S, Carr, Darr, sampleSize, alpha);
-        int rCond = RankTests.estimateWilksRankConditioned(S, Carr, Darr, new int[]{v}, sampleSize, alpha);
-
-        return (r0 - rCond) >= antiProxyDrop;
     }
 
     private void log(String s) {

@@ -40,7 +40,7 @@ public class TrekSeparationClustersScored {
     // --- RCCA sweep cache (C,D) -> ScoreSweep (reduces repeated work during seed/grow) ---
     // replace current sweepCache with:
     private final Map<Long, ScoreSweep> sweepCache = new java.util.concurrent.ConcurrentHashMap<>();
-//    private final Map<Long, ScoreSweep> sweepCache =
+    //    private final Map<Long, ScoreSweep> sweepCache =
 //            new LinkedHashMap<>(4096, 0.75f, true) {
 //                @Override
 //                protected boolean removeEldestEntry(Map.Entry<Long, ScoreSweep> e) {
@@ -55,7 +55,6 @@ public class TrekSeparationClustersScored {
     private Map<Set<Integer>, Integer> clusterToRank;
     private Map<Set<Integer>, Integer> reducedRank;
     // ---- NEW: optional RLCD-style guard (off by default) -----------------------
-    private boolean useAtomicCoverGuard = false;
     // --- Observed-leaf preference (optional) ---------------------------------
 //    private boolean enforceObservedLeaves = false;
 //    /**
@@ -81,6 +80,8 @@ public class TrekSeparationClustersScored {
      */
     private double scoreMargin = 0.0;
     private Mode mode = Mode.Testing;
+    private boolean atomicCoverRebuild = true;
+    private boolean prefilterByWilkes = true;
 
     // ---- ctor ----
     public TrekSeparationClustersScored(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
@@ -180,10 +181,6 @@ public class TrekSeparationClustersScored {
         return s;
     }
 
-    public void setUseAtomicCoverGuard(boolean b) {
-        this.useAtomicCoverGuard = b;
-    }
-
     // ---- test-based enumerator (kept for reference) ----------------------------
     private Set<Set<Integer>> findClustersAtRankTesting(List<Integer> vars, int size, int rank) {
         final int n = vars.size();
@@ -225,6 +222,7 @@ public class TrekSeparationClustersScored {
 
             Set<Integer> cluster = new HashSet<>(k * 2);
             for (int i = 0; i < k; i++) cluster.add(ids[i]);
+
             return cluster;
         }).filter(Objects::nonNull).collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
     }
@@ -256,7 +254,8 @@ public class TrekSeparationClustersScored {
             if (Thread.currentThread().isInterrupted()) return;
 
             int _c = counter.incrementAndGet();
-            if (verbose && (_c % Math.max(20000, total/50 + 1) == 0)) log("Scored find: examined " + _c + " / " + total);
+            if (verbose && (_c % Math.max(20000, total / 50 + 1) == 0))
+                log("Scored find: examined " + _c + " / " + total);
 
             // decode k-combination
             int[] idxs = tlIdxs.get();
@@ -273,9 +272,11 @@ public class TrekSeparationClustersScored {
             int[] Darr = complementOf(Cset);
             if (Darr.length == 0) return;
 
-            // --- NEW: fast Wilks pre-filter to avoid expensive RCCA when impossible
-            int rWilks = RankTests.estimateWilksRank(S, Carr, Darr, sampleSize, Math.min(0.05, alpha));
-            if (rWilks != targetRank) return;
+            if (prefilterByWilkes) {
+                // --- NEW: fast Wilks pre-filter to avoid expensive RCCA when impossible
+                int rWilks = RankTests.estimateWilksRank(S, Carr, Darr, sampleSize, Math.min(0.05, alpha));
+                if (rWilks != targetRank) return;
+            }
 
             // RCCA-BIC sweep (cached)
             ScoreSweep sw = rccaScoreSweepCached(Carr, Darr);
@@ -291,6 +292,23 @@ public class TrekSeparationClustersScored {
         });
 
         return accepted;
+    }
+
+    private boolean isAtomic(Set<Integer> C, int k) {
+        // Reject if ANY (|C|-1)-subset has the same rank k
+        if (C.size() <= k + 1) return true; // smallest possible witness size is k+1
+        List<Integer> L = new ArrayList<>(C);
+        SublistGenerator gen = new SublistGenerator(L.size(), L.size() - 1);
+        int[] choice;
+        while ((choice = gen.next()) != null) {
+            if (choice.length == 0 || choice.length == L.size()) continue;
+            // Build the (|C|-1)-subset
+            Set<Integer> sub = new HashSet<>(choice.length * 2);
+            for (int idx : choice) sub.add(L.get(idx));
+            int r = rank(sub);
+            if (r == k) return false; // non-atomic: subset already witnesses rank k
+        }
+        return true;
     }
 
     private ScoreSweep rccaScoreSweep(SimpleMatrix S,
@@ -339,6 +357,32 @@ public class TrekSeparationClustersScored {
         double scKp1 = (rStar + 1 <= m) ? sc[rStar + 1] : Double.NaN;
         return new ScoreSweep(m, rStar, scStar, scKm1, scKp1);
     }
+
+    private int rankOf(Set<Integer> C) {
+        return (mode == Mode.Scoring) ? rankByScore(C) : ranksByTest(C);
+    }
+
+    private Set<Integer> shrinkToAtomicCore(Set<Integer> C, int k) {
+        // Make a modifiable copy
+        Set<Integer> cur = new HashSet<>(C);
+        boolean changed;
+        do {
+            changed = false;
+            // Try removing each element; if rank stays k, drop it
+            for (Integer v : new ArrayList<>(cur)) {
+                if (cur.size() <= k) return cur; // can’t go smaller than k elements
+                cur.remove(v);
+                if (rankOf(cur) == k) {
+                    changed = true;     // keep v removed and restart scan
+                    break;
+                } else {
+                    cur.add(v);         // needed; put it back
+                }
+            }
+        } while (changed);
+        return cur;
+    }
+
 
     // ---- scored-rank helper (C vs D = V\C) + cache -----------------------------
     private int rankByScore(Set<Integer> C) {
@@ -442,19 +486,22 @@ public class TrekSeparationClustersScored {
     public void setRidge(double ridge) {
         this.ridge = ridge;
 //        scoredRankCache.clear();
-        scoredRankCache.clear(); sweepCache.clear();
+        scoredRankCache.clear();
+        sweepCache.clear();
     }
 
     public void setPenaltyDiscount(double c) {
         this.penaltyDiscount = c;
 //        scoredRankCache.clear();
-        scoredRankCache.clear(); sweepCache.clear();
+        scoredRankCache.clear();
+        sweepCache.clear();
     }
 
     public void setEbicGamma(double gamma) {
         this.ebicGamma = gamma;
 //        scoredRankCache.clear();
-        scoredRankCache.clear(); sweepCache.clear();
+        scoredRankCache.clear();
+        sweepCache.clear();
     }
 
     public void setScoreMargin(double margin) {
@@ -544,28 +591,11 @@ public class TrekSeparationClustersScored {
                     }
                 } while (extended);
 
-                int finalRank = mode == Mode.Scoring ? rankByScore(cluster) : ranksByTest(cluster);
+                int clusterRank = mode == Mode.Scoring ? rankByScore(cluster) : ranksByTest(cluster);
 
-                // ---- optional RLCD-style atomic-cover equality check right after discovery
-                if (useAtomicCoverGuard && finalRank == rank && cluster.size() > 1) {
-                    int k = rank; // expected rank
-                    int[] all = cluster.stream().mapToInt(Integer::intValue).toArray();
-                    int[] X = new int[]{all[0]};
-                    int[] C = Arrays.copyOfRange(all, 1, all.length);
-
-                    int p = variables.size();
-                    int[] D = makeRightSide(p, C, X); // (V \ C) ∪ X
-                    boolean ok = RankEqualities.atomicCoverEquality(S, C, X, D, k, sampleSize, alpha);
-                    if (!ok) {
-                        log("Atomic-cover guard failed for cluster " + toNamesCluster(cluster) + "; discarding.");
-                        finalRank = -1; // force discard below
-                    }
-                }
-                // ---- end optional guard
-
-                if (finalRank == rank) {
+                if (clusterRank == rank) {
                     newClusters.removeIf(cluster::containsAll);  // Avoid nesting
-                    log("Adding cluster to new clusters: " + toNamesCluster(cluster) + " rank = " + finalRank);
+                    log("Adding cluster to new clusters: " + toNamesCluster(cluster) + " rank = " + clusterRank);
                     newClusters.add(cluster);
                     used.addAll(cluster);
                     remainingVars.removeAll(cluster);
@@ -638,31 +668,74 @@ public class TrekSeparationClustersScored {
         // Try to split instead of outright reject (Dong-style refinement)
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             if (failsSubsetTest(S, cluster, sampleSize, alpha)) {
-                Optional<List<Set<Integer>>> split = trySplitByRule1(cluster);
-                if (split.isPresent()) {
-                    // Remove the original
+//                Optional<List<Set<Integer>>> split = trySplitByRule1(cluster);
+//                if (split.isPresent()) {
+//                    // Remove the original
+//                    clusterToRank.remove(cluster);
+//                    reducedRank.remove(cluster);
+//
+//                    // Add the two subclusters with fresh ranks
+//                    for (Set<Integer> sub : split.get()) {
+//                        int rSub = mode == Mode.Scoring ? rankByScore(sub) : ranksByTest(sub);
+//                        if (sub.size() > 1 && rSub >= 0) {
+//                            clusterToRank.put(sub, rSub);
+//                        }
+//                    }
+//                    penultimateRemoved = true;
+//                    log("Split cluster " + toNamesCluster(cluster) + " into " +
+//                        toNamesCluster(split.get().get(0)) + " and " + toNamesCluster(split.get().get(1)));
+//                } else {
                     clusterToRank.remove(cluster);
                     reducedRank.remove(cluster);
-
-                    // Add the two subclusters with fresh ranks
-                    for (Set<Integer> sub : split.get()) {
-                        int rSub = mode == Mode.Scoring ? rankByScore(sub) : ranksByTest(sub);
-                        if (sub.size() > 1 && rSub >= 0) {
-                            clusterToRank.put(sub, rSub);
-                        }
-                    }
                     penultimateRemoved = true;
-                    log("Split cluster " + toNamesCluster(cluster) + " into " +
-                        toNamesCluster(split.get().get(0)) + " and " + toNamesCluster(split.get().get(1)));
-                } else {
-                    clusterToRank.remove(cluster);
-                    reducedRank.remove(cluster);
-                    penultimateRemoved = true;
-                    log("Removed cluster " + toNamesCluster(cluster) + " (no valid split found).");
-                }
+                    log("Removed cluster " + toNamesCluster(cluster) + " (no va lid split found).");
+//                }
             }
         }
         if (!penultimateRemoved) log("No penultimate clusters were removed.");
+
+        // --- Atomic-core postprocess (keep large clusters, group by atomic cores) ---
+        if (atomicCoverRebuild) {
+            Map<Key, Set<Integer>> coreToMax = new LinkedHashMap<>();
+            Map<Set<Integer>, Set<Integer>> clusterToCore = new LinkedHashMap<>(); // optional: keep mapping
+
+            for (Set<Integer> C : new ArrayList<>(clusterToRank.keySet())) {
+                int k = clusterToRank.getOrDefault(C, 0);
+                if (k <= 0 || C.size() <= k) {
+                    // trivial case; nothing to shrink
+                    clusterToCore.put(C, new HashSet<>(C));
+                    coreToMax.putIfAbsent(new Key(C), new HashSet<>(C));
+                    continue;
+                }
+
+                Set<Integer> core = shrinkToAtomicCore(C, k);
+                clusterToCore.put(C, core);
+
+                Key ck = new Key(core);
+                Set<Integer> maxForCore = coreToMax.get(ck);
+                if (maxForCore == null) {
+                    coreToMax.put(ck, new HashSet<>(C));
+                } else {
+                    maxForCore.addAll(C);  // unify multiple grown clusters sharing the same core
+                }
+            }
+
+            // Replace clusterToRank with the maximal unions per core (keeping rank k)
+            Map<Set<Integer>, Integer> collapsed = new LinkedHashMap<>();
+            for (Map.Entry<Key, Set<Integer>> e : coreToMax.entrySet()) {
+                Set<Integer> maxC = e.getValue();
+                // Rank is the same k as the core’s (recompute or get from any representative)
+                int k = rankOf(maxC);
+                collapsed.put(maxC, k);
+            }
+
+            // Swap in the collapsed set (optional: only if you *want* “one latent per core”)
+            clusterToRank.clear();
+            clusterToRank.putAll(collapsed);
+
+            // (Optional) if you want to expose cores externally, stash them somewhere:
+            // this.atomicCores = new HashMap<>(clusterToCore);
+        }
 
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet()));
         return new Pair<>(clusterToRank, reducedRank);

@@ -104,12 +104,12 @@ public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasK
         parameters.add(Params.DEPTH);
         parameters.add(Params.ALPHA);
         parameters.add(Params.FOFC_ALPHA);
-        parameters.add(Params.EBIC_GAMMA);
-        parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.NUM_STARTS);
+//        parameters.add(Params.EBIC_GAMMA);
+//        parameters.add(Params.PENALTY_DISCOUNT);
+//        parameters.add(Params.NUM_STARTS);
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);
         parameters.add(Params.REGULARIZATION_LAMBDA);
-        parameters.add(Params.TSC_PC_USE_BOSS);
+//        parameters.add(Params.TSC_PC_USE_BOSS);
         parameters.add(Params.TSC_SINGLETON_POLICY);
         parameters.add(Params.TSC_ENABLE_HIERARCHY);
         parameters.add(Params.TSC_MIN_RANK_DROP);

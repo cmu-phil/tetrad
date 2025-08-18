@@ -19,18 +19,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * Find One Factor Clusters.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "TSC",
-        command = "tsc",
-        algoType = AlgType.search_for_structure_over_latents
-)
-@Bootstrapping
+///**
+// * Find One Factor Clusters.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "TSC",
+//        command = "tsc",
+//        algoType = AlgType.search_for_structure_over_latents
+//)
+//@Bootstrapping
 public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
         TakesCovarianceMatrix {
 
@@ -66,13 +66,13 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
                 ? new CorrelationMatrix((DataSet) dataModel) : new CorrelationMatrix((CovarianceMatrix) dataModel);
         List<Node> variables = dataModel.getVariables();
 
-        edu.cmu.tetrad.search.TrekSeparationClustersScored search
-                = new edu.cmu.tetrad.search.TrekSeparationClustersScored(variables, covarianceMatrix,
+        edu.cmu.tetrad.search.TrekSeparationClusters search
+                = new edu.cmu.tetrad.search.TrekSeparationClusters(variables, covarianceMatrix,
                 ess == -1 ? covarianceMatrix.getSampleSize() : ess);
         search.setIncludeAllNodes(includeAllNodes);
         search.setAlpha(alpha);
         search.setVerbose(verbose);
-        search.setMode(TrekSeparationClustersScored.Mode.Scoring);
+//        search.setMode(TrekSeparationClustersScored.Mode.Scoring);
 
         return search.search();
     }
@@ -116,7 +116,6 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.TSC_MODE);
         parameters.add(Params.FOFC_ALPHA);
         parameters.add(Params.INCLUDE_ALL_NODES);
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);

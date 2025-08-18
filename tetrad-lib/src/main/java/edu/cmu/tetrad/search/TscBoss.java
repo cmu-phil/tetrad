@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
+import edu.cmu.tetrad.search.test.IndTestBlocks;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
@@ -71,6 +72,7 @@ public class TscBoss implements IGraphSearch {
     private double hierarchyRidge = 1e-6;
     // Default: strict (the classic FOFC/TSC assumption)
     private EdgePolicy edgePolicy = EdgePolicy.STRICT;
+    private double alpha = 0.01;
 
     public TscBoss(DataSet dataSet) {
         this.dataSet = dataSet;
@@ -102,10 +104,13 @@ public class TscBoss implements IGraphSearch {
                 corr,
                 N
         );
+
+        tsc.setAlpha(alpha);
+
         tsc.setVerbose(verbose);
 //        tsc.setAntiProxyDrop(1);  // try 1; 2 is stricter
 
-        tsc.setMode(TrekSeparationClustersScored.Mode.Testing);
+        tsc.setMode(TrekSeparationClustersScored.Mode.Scoring);
 
         tsc.search();
 
@@ -199,20 +204,26 @@ public class TscBoss implements IGraphSearch {
 
         System.out.println("Knowledge" + knowledge);
 
+        IndTestBlocks test = new IndTestBlocks(dataSet, blocks, metaVars);
+        test.setAlpha(alpha);
+
         // --- Learn meta-graph (PC or BOSS) on blocks/metaVars ---
         BlocksBicScore score = new BlocksBicScore(dataSet, blocks, metaVars);
         score.setPenaltyDiscount(penaltyDiscount);
         score.setRidge(ridge);
         score.setEbicGamma(ebicGamma);
 
-        Boss suborderSearch = new Boss(score);
-        suborderSearch.setVerbose(verbose);
-        suborderSearch.setNumStarts(numStarts);
-        suborderSearch.setVerbose(verbose);
+//        Boss suborderSearch = new Boss(score);
+//        suborderSearch.setVerbose(verbose);
+//        suborderSearch.setNumStarts(numStarts);
+//        suborderSearch.setVerbose(verbose);
+//
+//        PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
+//        permutationSearch.setKnowledge(knowledge);
+//        Graph cpdag = permutationSearch.search();
 
-        PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
-        permutationSearch.setKnowledge(knowledge);
-        Graph cpdag = permutationSearch.search();
+        BossFci fcit = new BossFci(test, score);
+        Graph graph = fcit.search();
 
         // --- Add latent→member edges for true clusters (measurement model edges) ---
         for (int i = 0; i < blocks.size(); i++) {
@@ -222,8 +233,8 @@ public class TscBoss implements IGraphSearch {
                 meta.setNodeType(NodeType.LATENT);
                 for (int col : block) {
                     Node child = dataSet.getVariable(col);
-                    if (!cpdag.containsNode(child)) cpdag.addNode(child);
-                    if (!cpdag.isAdjacentTo(meta, child)) cpdag.addDirectedEdge(meta, child);
+                    if (!graph.containsNode(child)) graph.addNode(child);
+                    if (!graph.isAdjacentTo(meta, child)) graph.addDirectedEdge(meta, child);
                 }
             }
         }
@@ -251,19 +262,19 @@ public class TscBoss implements IGraphSearch {
                 if (bestLatent >= 0 && bestR2 >= attachTau) {
                     Node latent = metaVars.get(bestLatent);
                     Node child = dataSet.getVariable(s);
-                    if (!cpdag.containsNode(child)) cpdag.addNode(child);
+                    if (!graph.containsNode(child)) graph.addNode(child);
                     // Attach as latent → singleton
-                    if (!cpdag.isAdjacentTo(latent, child)) cpdag.addDirectedEdge(latent, child);
+                    if (!graph.isAdjacentTo(latent, child)) graph.addDirectedEdge(latent, child);
                 }
             }
         }
 
         // --- Add hierarchical latent edges among latent blocks (via HierarchyFinder) ---
         if (enableHierarchy) {
-            addHierarchyEdges(cpdag, blocks, metaVars, S, N);
+            addHierarchyEdges(graph, blocks, metaVars, S, N);
         }
 
-        return cpdag;
+        return graph;
     }
 
     /**
@@ -423,6 +434,10 @@ public class TscBoss implements IGraphSearch {
 
     public void setEdgePolicy(EdgePolicy policy) {
         this.edgePolicy = Objects.requireNonNull(policy, "edgePolicy");
+    }
+
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
     }
 
     /**

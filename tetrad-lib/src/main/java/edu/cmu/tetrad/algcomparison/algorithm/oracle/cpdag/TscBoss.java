@@ -58,6 +58,7 @@ public class TscBoss extends AbstractBootstrapAlgorithm implements Algorithm, Ha
         edu.cmu.tetrad.search.TscBoss.SingletonPolicy singletonPolicy = edu.cmu.tetrad.search.TscBoss.SingletonPolicy.values()[_singletonPolicy - 1];
 
         edu.cmu.tetrad.search.TscBoss search = new edu.cmu.tetrad.search.TscBoss((DataSet) dataModel);
+        search.setAlpha(parameters.getDouble(Params.FOFC_ALPHA));
         search.setAlphaHierarchy(parameters.getDouble(Params.FOFC_ALPHA));
         search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));

@@ -99,7 +99,7 @@ public class TscPc implements IGraphSearch {
                 : effectiveSampleSize;
 
         // --- TSC clustering ---
-        TrekSeparationClusters tsc = new TrekSeparationClusters(
+        TrekSeparationClustersScored tsc = new TrekSeparationClustersScored(
                 corr.getVariables(),
                 corr,
                 N
@@ -109,7 +109,7 @@ public class TscPc implements IGraphSearch {
 //        tsc.setEnforceObservedLeaves(false);
 //        tsc.setAntiProxyDrop(1);  // try 1; 2 is stricter
 
-//        tsc.setMode(TrekSeparationClustersScored.Mode.Testing);
+        tsc.setMode(TrekSeparationClustersScored.Mode.Testing);
 
         tsc.search();
 
