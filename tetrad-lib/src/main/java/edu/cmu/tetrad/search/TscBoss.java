@@ -7,7 +7,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.test.IndTestBlocksLemma10;
+import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
@@ -22,25 +22,23 @@ import java.util.*;
  * ATTACH_TO_NEAREST - Optional noise latent name - (NEW) Optional hierarchical latent edges among clusters via
  * HierarchyFinder
  */
-public class TscPc implements IGraphSearch {
+public class TscBoss implements IGraphSearch {
 
     // ---------- Existing fields ----------
     private final DataSet dataSet;
     private int effectiveSampleSize; // -1 => use from data
+    private double penaltyDiscount = 2;
+    private int numStarts = 1;
     private boolean verbose = false;
+    private double ridge = 1e-8;
+    private double ebicGamma = 0;
 
     // ---------- New knobs ----------
-    private double alphaCluster = 0.01;
-    private double alphaPc = 0.01;
-    /**
-     * If not Integer.MIN_VALUE, overrides depth for PC over blocks.
-     */
-    private int pcDepth = Integer.MIN_VALUE;
     private SingletonPolicy singletonPolicy = SingletonPolicy.INCLUDE;
     /**
      * Threshold for ATTACH_TO_NEAREST (attach if max canonical corr^2 >= attachTau).
      */
-    private final double attachTau = 0.15;
+    private double attachTau = 0.15;
     /**
      * Name to use for the pooled "Noise" latent (COLLECT_AS_NOISE_LATENT).
      */
@@ -64,7 +62,7 @@ public class TscPc implements IGraphSearch {
     /**
      * Use alphaCluster for hierarchy tests unless overridden.
      */
-    private Double alphaHierarchy = null;  // null => use alphaCluster
+    private Double alphaHierarchy = 0.001;
     /**
      * Optional PC1 improvements.
      */
@@ -74,7 +72,7 @@ public class TscPc implements IGraphSearch {
     // Default: strict (the classic FOFC/TSC assumption)
     private EdgePolicy edgePolicy = EdgePolicy.STRICT;
 
-    public TscPc(DataSet dataSet) {
+    public TscBoss(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -105,8 +103,6 @@ public class TscPc implements IGraphSearch {
                 N
         );
         tsc.setVerbose(verbose);
-        tsc.setAlpha(alphaCluster); // cluster alpha
-//        tsc.setEnforceObservedLeaves(false);
         tsc.setAntiProxyDrop(1);  // try 1; 2 is stricter
 
         tsc.setMode(TrekSeparationClustersScored.Mode.Testing);
@@ -204,14 +200,19 @@ public class TscPc implements IGraphSearch {
         System.out.println("Knowledge" + knowledge);
 
         // --- Learn meta-graph (PC or BOSS) on blocks/metaVars ---
-        IndTestBlocksLemma10 test = new IndTestBlocksLemma10(dataSet, blocks, metaVars);
-        test.setAlpha(alphaPc);
+        BlocksBicScore score = new BlocksBicScore(dataSet, blocks, metaVars);
+        score.setPenaltyDiscount(penaltyDiscount);
+        score.setRidge(ridge);
+        score.setEbicGamma(ebicGamma);
 
-        Pc pc = new Pc(test);
-        pc.setDepth(pcDepth);
-        pc.setKnowledge(knowledge);
-        pc.setVerbose(verbose);
-        Graph cpdag = pc.search();
+        Boss suborderSearch = new Boss(score);
+        suborderSearch.setVerbose(verbose);
+        suborderSearch.setNumStarts(numStarts);
+        suborderSearch.setVerbose(verbose);
+
+        PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
+        permutationSearch.setKnowledge(knowledge);
+        Graph cpdag = permutationSearch.search();
 
         // --- Add latent→member edges for true clusters (measurement model edges) ---
         for (int i = 0; i < blocks.size(); i++) {
@@ -274,7 +275,7 @@ public class TscPc implements IGraphSearch {
                                    SimpleMatrix S,
                                    int sampleSize) {
 
-        double aH = (alphaHierarchy == null) ? alphaCluster : alphaHierarchy;
+        double aH = alphaHierarchy;
 
         List<HierarchyFinder.Proposal> props = HierarchyFinder.propose(
                 S, blocks, metaVars, sampleSize,
@@ -325,31 +326,22 @@ public class TscPc implements IGraphSearch {
         this.effectiveSampleSize = effectiveSampleSize;
     }
 
-    /**
-     * Alpha for clustering (TSC).
-     */
-    public void setAlphaCluster(double alphaCluster) {
-        if (alphaCluster < 0.0 || alphaCluster > 1.0)
-            throw new IllegalArgumentException("alphaCluster must be between 0.0 and 1.0");
-        this.alphaCluster = alphaCluster;
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
     }
 
-    /**
-     * Alpha for PC over blocks.
-     */
-    public void setAlphaPc(double alphaPc) {
-        if (alphaPc < 0.0 || alphaPc > 1.0)
-            throw new IllegalArgumentException("alphaPc must be between 0.0 and 1.0");
-        this.alphaPc = alphaPc;
+    public void setNumStarts(int numStarts) {
+        if (numStarts < 1) throw new IllegalArgumentException("numStarts must be > 0");
+        this.numStarts = numStarts;
     }
 
-    /**
-     * Depth for PC over blocks.
-     */
-    public void setPcDepth(int pcDepth) {
-        if (!(pcDepth == -1 || pcDepth >= 0))
-            throw new IllegalArgumentException("pcDepth must be non-negative or -1");
-        this.pcDepth = pcDepth;
+    public void setRidge(double ridge) {
+        if (ridge < 0.0) throw new IllegalArgumentException("ridge must be >= 0");
+        this.ridge = ridge;
+    }
+
+    public void setEbicGamma(double ebicGamma) {
+        this.ebicGamma = ebicGamma;
     }
 
     /**

@@ -28,12 +28,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "TSC-PC",
-        command = "tsc-pc",
+        name = "TSC-BOSS",
+        command = "tsc-boss",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class TscBoss extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -47,7 +47,7 @@ public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasK
     /**
      * <p>Constructor for Pc.</p>
      */
-    public TscPc() {
+    public TscBoss() {
     }
 
     @Override
@@ -55,18 +55,21 @@ public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasK
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
 
         int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
-        edu.cmu.tetrad.search.TscPc.SingletonPolicy singletonPolicy = edu.cmu.tetrad.search.TscPc.SingletonPolicy.values()[_singletonPolicy - 1];
+        edu.cmu.tetrad.search.TscBoss.SingletonPolicy singletonPolicy = edu.cmu.tetrad.search.TscBoss.SingletonPolicy.values()[_singletonPolicy - 1];
 
-        edu.cmu.tetrad.search.TscPc search = new edu.cmu.tetrad.search.TscPc((DataSet) dataModel);
-        search.setAlphaCluster(parameters.getDouble(Params.FOFC_ALPHA));
-        search.setAlphaPc(parameters.getDouble(Params.ALPHA));
+        edu.cmu.tetrad.search.TscBoss search = new edu.cmu.tetrad.search.TscBoss((DataSet) dataModel);
+        search.setAlphaHierarchy(parameters.getDouble(Params.FOFC_ALPHA));
+        search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setEffectiveSampleSize(parameters.getInt(Params.EXPECTED_SAMPLE_SIZE));
-        search.setPcDepth(parameters.getInt(Params.DEPTH));
+        search.setRidge(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
+        search.setEbicGamma(parameters.getDouble(Params.EBIC_GAMMA));
         search.setSingletonPolicy(singletonPolicy);
         search.setEnableHierarchy(parameters.getBoolean(Params.TSC_ENABLE_HIERARCHY));
         search.setMinRankDrop(parameters.getInt(Params.TSC_MIN_RANK_DROP));
-        search.setEdgePolicy(edu.cmu.tetrad.search.TscPc.EdgePolicy.ALLOW_MEASURE_TO_MEASURE);
+        search.setEdgePolicy(edu.cmu.tetrad.search.TscBoss.EdgePolicy.ALLOW_MEASURE_TO_MEASURE);
         search.setVerbose(verbose);
+
         return search.search();
     }
 
@@ -84,7 +87,7 @@ public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasK
      */
     @Override
     public String getDescription() {
-        return "TSC-PC";
+        return "TSC-BOSS";
     }
 
     /**
@@ -101,15 +104,15 @@ public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasK
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.DEPTH);
-        parameters.add(Params.ALPHA);
         parameters.add(Params.FOFC_ALPHA);
+        parameters.add(Params.TSC_SINGLETON_POLICY);
+        parameters.add(Params.TSC_ENABLE_HIERARCHY);
+        parameters.add(Params.TSC_MIN_RANK_DROP);
         parameters.add(Params.EBIC_GAMMA);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.NUM_STARTS);
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);
         parameters.add(Params.REGULARIZATION_LAMBDA);
-        parameters.add(Params.TSC_PC_USE_BOSS);
         parameters.add(Params.TSC_SINGLETON_POLICY);
         parameters.add(Params.TSC_ENABLE_HIERARCHY);
         parameters.add(Params.TSC_MIN_RANK_DROP);

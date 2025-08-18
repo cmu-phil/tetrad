@@ -10,6 +10,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.TrekSeparationClustersScored;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -65,12 +66,13 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
                 ? new CorrelationMatrix((DataSet) dataModel) : new CorrelationMatrix((CovarianceMatrix) dataModel);
         List<Node> variables = dataModel.getVariables();
 
-        edu.cmu.tetrad.search.TrekSeparationClusters search
-                = new edu.cmu.tetrad.search.TrekSeparationClusters(variables, covarianceMatrix,
+        edu.cmu.tetrad.search.TrekSeparationClustersScored search
+                = new edu.cmu.tetrad.search.TrekSeparationClustersScored(variables, covarianceMatrix,
                 ess == -1 ? covarianceMatrix.getSampleSize() : ess);
         search.setIncludeAllNodes(includeAllNodes);
         search.setAlpha(alpha);
         search.setVerbose(verbose);
+        search.setMode(TrekSeparationClustersScored.Mode.Scoring);
 
         return search.search();
     }

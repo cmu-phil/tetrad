@@ -21,11 +21,9 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
 
 /**
  * Implements Trek Separation algorithm for finding latent variable clusters.
- *
- * This version:
- *  - Finds base clusters with RCCA-BIC (scoring).
- *  - Uses the same scoring-based argmax rank for the union decision in grow.
- *  - Optionally uses scored ranks everywhere (toggle).
+ * <p>
+ * This version: - Finds base clusters with RCCA-BIC (scoring). - Uses the same scoring-based argmax rank for the union
+ * decision in grow. - Optionally uses scored ranks everywhere (toggle).
  */
 public class TrekSeparationClustersScored {
 
@@ -39,15 +37,6 @@ public class TrekSeparationClustersScored {
     // caches: Wilks ranks (legacy) and scored ranks (optional)
     private final Map<Key, Integer> rankCache = new ConcurrentHashMap<>();
     private final Map<Key, Integer> scoredRankCache = new ConcurrentHashMap<>();
-
-    private double alpha = 0.01;
-    private boolean includeAllNodes = false;
-    private boolean verbose = false;
-    private List<List<Integer>> clusters = new ArrayList<>();
-    private List<String> latentNames = new ArrayList<>();
-    private Map<Set<Integer>, Integer> clusterToRank;
-    private Map<Set<Integer>, Integer> reducedRank;
-
     // --- RCCA sweep cache (C,D) -> ScoreSweep (reduces repeated work during seed/grow) ---
     private final Map<Long, ScoreSweep> sweepCache =
             new LinkedHashMap<>(4096, 0.75f, true) {
@@ -56,47 +45,40 @@ public class TrekSeparationClustersScored {
                     return size() > 20000;
                 }
             };
-
-    /** Simple 64-bit key from the two arrays; stable across calls for same content. */
-    private long pairKey(int[] C, int[] D) {
-        int h1 = Arrays.hashCode(C);
-        int h2 = Arrays.hashCode(D);
-        long k = 1469598103934665603L;       // FNV offset basis
-        k ^= (long) h1;
-        k *= 1099511628211L;                 // FNV prime
-        k ^= (long) h2;
-        k *= 1099511628211L;
-        return k;
-    }
-
-    /** Cached version of the RCCA-BIC sweep. */
-    private ScoreSweep rccaScoreSweepCached(int[] C, int[] D) {
-        long k = pairKey(C, D);
-        ScoreSweep s = sweepCache.get(k);
-        if (s != null) return s;
-        s = rccaScoreSweep(S, C, D, sampleSize, ridge, penaltyDiscount, ebicGamma);
-        sweepCache.put(k, s);
-        return s;
-    }
-
+    private double alpha = 0.01;
+    private boolean includeAllNodes = false;
+    private boolean verbose = false;
+    private List<List<Integer>> clusters = new ArrayList<>();
+    private List<String> latentNames = new ArrayList<>();
+    private Map<Set<Integer>, Integer> clusterToRank;
+    private Map<Set<Integer>, Integer> reducedRank;
     // ---- NEW: optional RLCD-style guard (off by default) -----------------------
     private boolean useAtomicCoverGuard = false;
     // --- Observed-leaf preference (optional) ---------------------------------
-    private boolean enforceObservedLeaves = false;
-    /** Require at least this rank drop when conditioning on v to call it "proxy-like". */
+//    private boolean enforceObservedLeaves = false;
+    /**
+     * Require at least this rank drop when conditioning on v to call it "proxy-like".
+     */
     private int antiProxyDrop = 1;
+    /**
+     * RCCA ridge regularizer used in RankTests.getRccaEntry.
+     */
+    private double ridge = 1e-8;
+    /**
+     * BIC penalty discount c (1.0 = standard BIC).
+     */
+    private double penaltyDiscount = 1.0;
 
     // ---- NEW knobs for scoring -------------------------------------------------
-    /** RCCA ridge regularizer used in RankTests.getRccaEntry. */
-    private double ridge = 1e-8;
-    /** BIC penalty discount c (1.0 = standard BIC). */
-    private double penaltyDiscount = 1.0;
-    /** EBIC gamma (0 disables EBIC term). */
+    /**
+     * EBIC gamma (0 disables EBIC term).
+     */
     private double ebicGamma = 0.0;
-    /** Optional margin: require sc(k*) >= sc(k*±1) + margin. */
+    /**
+     * Optional margin: require sc(k*) >= sc(k*±1) + margin.
+     */
     private double scoreMargin = 0.0;
-    /** If true, use scored ranks for all rank queries (not just union decision). */
-    private boolean useScoredRanksEverywhere = false;
+    private Mode mode = Mode.Testing;
 
     // ---- ctor ----
     public TrekSeparationClustersScored(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
@@ -166,7 +148,39 @@ public class TrekSeparationClustersScored {
         return out;
     }
 
-    public void setUseAtomicCoverGuard(boolean b) { this.useAtomicCoverGuard = b; }
+    public void setMode(Mode mode) {
+        this.mode = mode;
+    }
+
+    /**
+     * Simple 64-bit key from the two arrays; stable across calls for same content.
+     */
+    private long pairKey(int[] C, int[] D) {
+        int h1 = Arrays.hashCode(C);
+        int h2 = Arrays.hashCode(D);
+        long k = 1469598103934665603L;       // FNV offset basis
+        k ^= (long) h1;
+        k *= 1099511628211L;                 // FNV prime
+        k ^= (long) h2;
+        k *= 1099511628211L;
+        return k;
+    }
+
+    /**
+     * Cached version of the RCCA-BIC sweep.
+     */
+    private ScoreSweep rccaScoreSweepCached(int[] C, int[] D) {
+        long k = pairKey(C, D);
+        ScoreSweep s = sweepCache.get(k);
+        if (s != null) return s;
+        s = rccaScoreSweep(S, C, D, sampleSize, ridge, penaltyDiscount, ebicGamma);
+        sweepCache.put(k, s);
+        return s;
+    }
+
+    public void setUseAtomicCoverGuard(boolean b) {
+        this.useAtomicCoverGuard = b;
+    }
 
     // ---- test-based enumerator (kept for reference) ----------------------------
     private Set<Set<Integer>> findClustersAtRankTesting(List<Integer> vars, int size, int rank) {
@@ -212,7 +226,7 @@ public class TrekSeparationClustersScored {
     }
 
     // ---- scored enumerator (this is what the meta-loop calls) ------------------
-    private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int targetRank) {
+    private Set<Set<Integer>> findClustersAtRankScoring(List<Integer> vars, int size, int targetRank) {
         final int n = vars.size();
         final int k = size;
 
@@ -227,7 +241,7 @@ public class TrekSeparationClustersScored {
         final long total = Cbin[n][k];
 
         final ThreadLocal<int[]> tlIdxs = ThreadLocal.withInitial(() -> new int[k]);
-        final ThreadLocal<int[]> tlIds  = ThreadLocal.withInitial(() -> new int[k]);
+        final ThreadLocal<int[]> tlIds = ThreadLocal.withInitial(() -> new int[k]);
 
         final Set<Set<Integer>> accepted = java.util.concurrent.ConcurrentHashMap.newKeySet();
         final java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
@@ -273,24 +287,13 @@ public class TrekSeparationClustersScored {
         return accepted;
     }
 
-    // ---- helper: RCCA-BIC sweep ------------------------------------------------
-    private static final class ScoreSweep {
-        final int mMax;       // max admissible rank
-        final int rStar;      // argmax rank
-        final double scBest;  // score at rStar
-        final double scKm1;   // score at rStar-1 (NaN if not defined)
-        final double scKp1;   // score at rStar+1 (NaN if not defined)
-        ScoreSweep(int mMax, int rStar, double scBest, double scKm1, double scKp1) {
-            this.mMax = mMax; this.rStar = rStar; this.scBest = scBest; this.scKm1 = scKm1; this.scKp1 = scKp1;
-        }
-    }
-
     private ScoreSweep rccaScoreSweep(SimpleMatrix S,
                                       int[] C, int[] D,
                                       int n, double ridge,
                                       double c, double gamma) {
         RankTests.RccaEntry ent = RankTests.getRccaEntry(S, C, D, ridge);
-        if (ent == null || ent.suffixLogs == null) return new ScoreSweep(-1, -1, Double.NEGATIVE_INFINITY, Double.NaN, Double.NaN);
+        if (ent == null || ent.suffixLogs == null)
+            return new ScoreSweep(-1, -1, Double.NEGATIVE_INFINITY, Double.NaN, Double.NaN);
 
         int p = C.length, q = D.length;
         int m = Math.min(Math.min(p, q), n - 1);
@@ -320,7 +323,10 @@ public class TrekSeparationClustersScored {
             if (gamma > 0.0) pen += 2.0 * gamma * kParams * Math.log(Ppool);
             double scR = fit - pen;
             sc[r] = scR;
-            if (scR > scStar) { scStar = scR; rStar = r; }
+            if (scR > scStar) {
+                scStar = scR;
+                rStar = r;
+            }
         }
 
         double scKm1 = (rStar - 1 >= 0) ? sc[rStar - 1] : Double.NaN;
@@ -401,22 +407,49 @@ public class TrekSeparationClustersScored {
         return _variables;
     }
 
-    public void setAlpha(double alpha) { this.alpha = alpha; }
-    public void setIncludeAllNodes(boolean includeAllNodes) { this.includeAllNodes = includeAllNodes; }
-    public void setEnforceObservedLeaves(boolean enforceObservedLeaves) { this.enforceObservedLeaves = enforceObservedLeaves; }
-    /** 0 disables the guard; 1 is a good default if enabled. */
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
+
+    public void setIncludeAllNodes(boolean includeAllNodes) {
+        this.includeAllNodes = includeAllNodes;
+    }
+
+//    public void setEnforceObservedLeaves(boolean enforceObservedLeaves) {
+//        this.enforceObservedLeaves = enforceObservedLeaves;
+//    }
+
+    /**
+     * 0 disables the guard; 1 is a good default if enabled.
+     */
     public void setAntiProxyDrop(int antiProxyDrop) {
         if (antiProxyDrop < 0) throw new IllegalArgumentException("antiProxyDrop must be >= 0");
         this.antiProxyDrop = antiProxyDrop;
     }
-    public void setVerbose(boolean verbose) { this.verbose = verbose; }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 
     // --- new setters for scoring knobs / mode ---
-    public void setRidge(double ridge) { this.ridge = ridge; scoredRankCache.clear(); }
-    public void setPenaltyDiscount(double c) { this.penaltyDiscount = c; scoredRankCache.clear(); }
-    public void setEbicGamma(double gamma) { this.ebicGamma = gamma; scoredRankCache.clear(); }
-    public void setScoreMargin(double margin) { this.scoreMargin = Math.max(0.0, margin); }
-    public void setUseScoredRanksEverywhere(boolean b) { this.useScoredRanksEverywhere = b; }
+    public void setRidge(double ridge) {
+        this.ridge = ridge;
+        scoredRankCache.clear();
+    }
+
+    public void setPenaltyDiscount(double c) {
+        this.penaltyDiscount = c;
+        scoredRankCache.clear();
+    }
+
+    public void setEbicGamma(double gamma) {
+        this.ebicGamma = gamma;
+        scoredRankCache.clear();
+    }
+
+    public void setScoreMargin(double margin) {
+        this.scoreMargin = Math.max(0.0, margin);
+    }
 
     private @NotNull Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> clusterSearchMetaLoop() {
         List<Integer> remainingVars = new ArrayList<>(allVariables());
@@ -429,7 +462,8 @@ public class TrekSeparationClustersScored {
             if (size >= remainingVars.size() - size) continue;
 
             log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
-            Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
+            Set<Set<Integer>> P = mode == Mode.Scoring ? findClustersAtRankScoring(remainingVars, size, rank)
+                    : findClustersAtRankTesting(remainingVars, size, rank);
             log("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P)));
             Set<Set<Integer>> P1 = new HashSet<>(P);
 
@@ -449,7 +483,7 @@ public class TrekSeparationClustersScored {
 
                 if (seed.size() >= this.variables.size() - seed.size()) continue;
 
-                int seedRankShown = useScoredRanksEverywhere ? rankByScore(seed) : lookupRank(seed);
+                int seedRankShown = mode == Mode.Scoring ? rankByScore(seed) : ranksByTest(seed);
                 log("Picking seed from the list: " + toNamesCluster(seed) + " rank = " + seedRankShown);
 
                 boolean extended;
@@ -474,22 +508,22 @@ public class TrekSeparationClustersScored {
 
                         if (rankOfUnion == rank) {
 
-                            // >>> anti-proxy guard (optional)
-                            if (enforceObservedLeaves && antiProxyDrop > 0) {
-                                Set<Integer> add = new HashSet<>(candidate);
-                                add.removeAll(cluster);
-
-                                boolean proxy = false;
-                                for (int v : add) {
-                                    if (isProxyLike(cluster, v)) {
-                                        proxy = true;
-                                        log("Rejecting addition of " + nodes.get(v).getName() + " as proxy-like (observed hub).");
-                                        break;
-                                    }
-                                }
-                                if (proxy) continue;
-                            }
-                            // <<< END
+//                            // >>> anti-proxy guard (optional)
+//                            if (enforceObservedLeaves && antiProxyDrop > 0) {
+//                                Set<Integer> add = new HashSet<>(candidate);
+//                                add.removeAll(cluster);
+//
+//                                boolean proxy = false;
+//                                for (int v : add) {
+//                                    if (isProxyLike(cluster, v)) {
+//                                        proxy = true;
+//                                        log("Rejecting addition of " + nodes.get(v).getName() + " as proxy-like (observed hub).");
+//                                        break;
+//                                    }
+//                                }
+//                                if (proxy) continue;
+//                            }
+//                            // <<< END
 
                             // Accept this union
                             cluster = union;
@@ -500,7 +534,7 @@ public class TrekSeparationClustersScored {
                     }
                 } while (extended);
 
-                int finalRank = useScoredRanksEverywhere ? rankByScore(cluster) : lookupRank(cluster);
+                int finalRank = mode == Mode.Scoring ? rankByScore(cluster) : ranksByTest(cluster);
 
                 // ---- optional RLCD-style atomic-cover equality check right after discovery
                 if (useAtomicCoverGuard && finalRank == rank && cluster.size() > 1) {
@@ -552,7 +586,7 @@ public class TrekSeparationClustersScored {
 
                         if (C2.size() >= this.variables.size() - C2.size()) continue;
 
-                        int newRank = useScoredRanksEverywhere ? rankByScore(C2) : lookupRank(C2);
+                        int newRank = mode == Mode.Scoring ? rankByScore(C2) : ranksByTest(C2);
 
                         if (C2.size() == _size + 1 && newRank < rank && newRank >= 1) {
                             if (newClusters.contains(C2)) continue;
@@ -602,7 +636,7 @@ public class TrekSeparationClustersScored {
 
                     // Add the two subclusters with fresh ranks
                     for (Set<Integer> sub : split.get()) {
-                        int rSub = useScoredRanksEverywhere ? rankByScore(sub) : lookupRank(sub);
+                        int rSub = mode == Mode.Scoring ? rankByScore(sub) : ranksByTest(sub);
                         if (sub.size() > 1 && rSub >= 0) {
                             clusterToRank.put(sub, rSub);
                         }
@@ -779,8 +813,8 @@ public class TrekSeparationClustersScored {
         return false;
     }
 
-    private int lookupRank(Set<Integer> cluster) {
-        if (useScoredRanksEverywhere) return rankByScore(cluster);
+    private int ranksByTest(Set<Integer> cluster) {
+        if (mode == Mode.Scoring) return rankByScore(cluster);
         Key k = new Key(cluster);
         Integer cached = rankCache.get(k);
         if (cached != null) return cached;
@@ -861,41 +895,81 @@ public class TrekSeparationClustersScored {
         return out;
     }
 
-    /** True if v behaves like a proxy/hub for C (conditioning on v collapses rank by >= antiProxyDrop). */
-    private boolean isProxyLike(Set<Integer> C, int v) {
-        if (!enforceObservedLeaves || antiProxyDrop == 0) return false;
+//    /**
+//     * True if v behaves like a proxy/hub for C (conditioning on v collapses rank by >= antiProxyDrop).
+//     */
+//    private boolean isProxyLike(Set<Integer> C, int v) {
+//        if (!enforceObservedLeaves || antiProxyDrop == 0) return false;
+//
+//        Set<Integer> Cplus = new HashSet<>(C);
+//        Cplus.add(v);
+//        if (Cplus.size() >= variables.size() - Cplus.size()) return false; // guard
+//
+//        int[] Carr = C.stream().mapToInt(Integer::intValue).toArray();
+//        int[] Darr = complementOf(Cplus);
+//        if (Carr.length == 0 || Darr.length == 0) return false;
+//
+//        int r0 = RankTests.estimateWilksRank(S, Carr, Darr, sampleSize, alpha);
+//        int rCond = RankTests.estimateWilksRankConditioned(S, Carr, Darr, new int[]{v}, sampleSize, alpha);
+//
+//        return (r0 - rCond) >= antiProxyDrop;
+//    }
 
-        Set<Integer> Cplus = new HashSet<>(C);
-        Cplus.add(v);
-        if (Cplus.size() >= variables.size() - Cplus.size()) return false; // guard
-
-        int[] Carr = C.stream().mapToInt(Integer::intValue).toArray();
-        int[] Darr = complementOf(Cplus);
-        if (Carr.length == 0 || Darr.length == 0) return false;
-
-        int r0 = RankTests.estimateWilksRank(S, Carr, Darr, sampleSize, alpha);
-        int rCond = RankTests.estimateWilksRankConditioned(S, Carr, Darr, new int[]{v}, sampleSize, alpha);
-
-        return (r0 - rCond) >= antiProxyDrop;
+    private void log(String s) {
+        if (verbose) TetradLogger.getInstance().log(s);
     }
-
-    private void log(String s) { if (verbose) TetradLogger.getInstance().log(s); }
 
     private String toNamesCluster(Set<Integer> cluster) {
         return cluster.stream().map(i -> nodes.get(i).getName()).collect(Collectors.joining(" ", "{", "}"));
     }
 
-    public List<List<Integer>> getClusters() { return new ArrayList<>(this.clusters); }
-    public List<String> getLatentNames() { return new ArrayList<>(this.latentNames); }
+    public List<List<Integer>> getClusters() {
+        return new ArrayList<>(this.clusters);
+    }
+
+    public List<String> getLatentNames() {
+        return new ArrayList<>(this.latentNames);
+    }
+
+    public enum Mode {Testing, Scoring}
+
+    // ---- helper: RCCA-BIC sweep ------------------------------------------------
+    private static final class ScoreSweep {
+        final int mMax;       // max admissible rank
+        final int rStar;      // argmax rank
+        final double scBest;  // score at rStar
+        final double scKm1;   // score at rStar-1 (NaN if not defined)
+        final double scKp1;   // score at rStar+1 (NaN if not defined)
+
+        ScoreSweep(int mMax, int rStar, double scBest, double scKm1, double scKp1) {
+            this.mMax = mMax;
+            this.rStar = rStar;
+            this.scBest = scBest;
+            this.scKm1 = scKm1;
+            this.scKp1 = scKp1;
+        }
+    }
 
     // ---- Canonical key for caching ranks (immutable, sorted) -------------------
     private static final class Key {
         final int[] a;
 
-        Key(Collection<Integer> s) { this.a = s.stream().mapToInt(Integer::intValue).sorted().toArray(); }
-        Key(int[] ids) { this.a = Arrays.stream(ids).sorted().toArray(); }
+        Key(Collection<Integer> s) {
+            this.a = s.stream().mapToInt(Integer::intValue).sorted().toArray();
+        }
 
-        @Override public int hashCode() { return Arrays.hashCode(a); }
-        @Override public boolean equals(Object o) { return (o instanceof Key) && Arrays.equals(a, ((Key) o).a); }
+        Key(int[] ids) {
+            this.a = Arrays.stream(ids).sorted().toArray();
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(a);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return (o instanceof Key) && Arrays.equals(a, ((Key) o).a);
+        }
     }
 }
