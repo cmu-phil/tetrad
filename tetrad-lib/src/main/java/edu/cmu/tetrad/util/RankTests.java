@@ -1008,7 +1008,7 @@ public class RankTests {
             rho2.add(val);
         }
 
-// ... inside getRccaEntryConditioned
+        // ... inside getRccaEntryConditioned
 
         if (rho2.isEmpty()) {
             return new RccaEntry(new double[0], new double[]{0.0});
