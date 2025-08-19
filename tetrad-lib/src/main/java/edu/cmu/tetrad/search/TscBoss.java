@@ -31,7 +31,7 @@ public class TscBoss implements IGraphSearch {
     private double penaltyDiscount = 2;
     private int numStarts = 1;
     private boolean verbose = false;
-    private double ridge = 1e-8;
+    private double ridge = 1e-4;
     private double ebicGamma = 0;
 
     // ---------- New knobs ----------
@@ -68,7 +68,7 @@ public class TscBoss implements IGraphSearch {
      * Optional PC1 improvements.
      */
     private boolean hierarchyOrthogonalize = true;
-    private boolean hierarchySpecificityGate = true;
+    private boolean hierarchySpecificityGate = false;
     private double hierarchyRidge = 1e-6;
     // Default: strict (the classic FOFC/TSC assumption)
     private EdgePolicy edgePolicy = EdgePolicy.STRICT;
@@ -213,17 +213,18 @@ public class TscBoss implements IGraphSearch {
         score.setRidge(ridge);
         score.setEbicGamma(ebicGamma);
 
-//        Boss suborderSearch = new Boss(score);
-//        suborderSearch.setVerbose(verbose);
-//        suborderSearch.setNumStarts(numStarts);
-//        suborderSearch.setVerbose(verbose);
-//
-//        PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
-//        permutationSearch.setKnowledge(knowledge);
-//        Graph cpdag = permutationSearch.search();
+        Boss suborderSearch = new Boss(score);
+        suborderSearch.setVerbose(verbose);
+        suborderSearch.setNumStarts(numStarts);
+        suborderSearch.setVerbose(verbose);
 
-        BossFci fcit = new BossFci(test, score);
-        Graph graph = fcit.search();
+        PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
+        permutationSearch.setKnowledge(knowledge);
+        Graph graph = permutationSearch.search();
+
+//        Fcit fcit = new Fcit(test, score);
+//        fcit.setKnowledge(knowledge);
+//        Graph graph = fcit.search();
 
         // --- Add latent→member edges for true clusters (measurement model edges) ---
         for (int i = 0; i < blocks.size(); i++) {
@@ -268,6 +269,11 @@ public class TscBoss implements IGraphSearch {
                 }
             }
         }
+
+//        HierarchyFinder.setUseScoredRanks(true);      // turn on RCCA-BIC ranks
+//        HierarchyFinder.setScoreRidge(1e-6);          // try 1e-6 .. 1e-4
+//        HierarchyFinder.setScorePenaltyDiscount(1); // BIC (c)
+//        HierarchyFinder.setScoreEbicGamma(0);       // EBIC gamma off initially
 
         // --- Add hierarchical latent edges among latent blocks (via HierarchyFinder) ---
         if (enableHierarchy) {

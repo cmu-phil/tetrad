@@ -919,6 +919,143 @@ public class RankTests {
         return entry;
     }
 
+    // ==== Add this to RankTests ====
+
+    /**
+     * RCCA entry for (C, D) after partialing out Z:
+     *   S_|Z = S - S_{.,Z} * inv(S_{Z,Z} + ridge*I) * S_{Z,.}
+     * Then run RCCA on (C, D) blocks of S_|Z with the same ridge regularization
+     * on R_cc and R_dd that getRccaEntry(...) uses.
+     *
+     * @param S          correlation/covariance over observed variables
+     * @param C          left index set
+     * @param D          right index set
+     * @param Z          conditioning index set
+     * @param ridge      small diagonal added to R_cc and R_dd (and to S_ZZ before inverting)
+     * @return           RccaEntry whose suffixLogs has suf[0] == 0 and
+     *                   suf[r] = sum_{i=1..r} log(1 - rho_i^2) in the order of
+     *                   descending canonical correlations
+     */
+    public static RccaEntry getRccaEntryConditioned(SimpleMatrix S,
+                                                    int[] C, int[] D, int[] Z,
+                                                    double ridge) {
+        if (C == null || D == null || Z == null) return null;
+        if (C.length == 0 || D.length == 0) return new RccaEntry(new double[0], new double[]{0.0});
+
+        // If no conditioning, defer to the unconditioned RCCA.
+        if (Z.length == 0) {
+            return getRccaEntry(S, C, D, ridge);
+        }
+
+        final int p = S.numCols();
+        // --- Build S_|Z via Schur complement: S - S_{.,Z} inv(S_{Z,Z}+ridgeI) S_{Z,.}
+        SimpleMatrix S_ZZ = submatrix(S, Z, Z).copy();
+        // ridge on S_ZZ for numerical stability
+        for (int i = 0; i < S_ZZ.numRows(); i++) {
+            S_ZZ.set(i, i, S_ZZ.get(i, i) + ridge);
+        }
+        SimpleMatrix invS_ZZ;
+        try {
+            invS_ZZ = S_ZZ.invert();
+        } catch (Exception e) {
+            // Singular even after ridge: fall back to unconditioned RCCA
+            return getRccaEntry(S, C, D, ridge);
+        }
+
+        SimpleMatrix S_XZ = submatrix(S, all(p), Z);
+        SimpleMatrix S_ZX = S_XZ.transpose();
+        SimpleMatrix S_cond = S.minus(S_XZ.mult(invS_ZZ).mult(S_ZX));
+
+        // Extract C/D blocks on the conditioned matrix
+        SimpleMatrix Rcc = submatrix(S_cond, C, C).copy();
+        SimpleMatrix Rdd = submatrix(S_cond, D, D).copy();
+        SimpleMatrix Rcd = submatrix(S_cond, C, D).copy();
+
+        // Add ridge to the diagonals of Rcc / Rdd before inversion
+        for (int i = 0; i < Rcc.numRows(); i++) Rcc.set(i, i, Rcc.get(i, i) + ridge);
+        for (int i = 0; i < Rdd.numRows(); i++) Rdd.set(i, i, Rdd.get(i, i) + ridge);
+
+        SimpleMatrix invRcc, invRdd;
+        try {
+            invRcc = Rcc.invert();
+            invRdd = Rdd.invert();
+        } catch (Exception e) {
+            // If still singular, bail out gracefully
+            return null;
+        }
+
+        // M = inv(Rcc) * Rcd * inv(Rdd) * Rdc ; eigenvalues are canonical rho^2
+        SimpleMatrix M = invRcc.mult(Rcd).mult(invRdd).mult(Rcd.transpose());
+
+        // Symmetrize to kill tiny asymmetries
+        M = symmetrize(M);
+
+        // Eigen-decomposition
+        org.ejml.simple.SimpleEVD<SimpleMatrix> evd;
+        try {
+            evd = M.eig();
+        } catch (Exception e) {
+            return null;
+        }
+
+        int m = Math.min(C.length, D.length);
+        List<Double> rho2 = new ArrayList<>(m);
+        for (int i = 0; i < Math.min(m, M.numRows()); i++) {
+            double val = evd.getEigenvalue(i).getReal();
+            if (Double.isNaN(val) || Double.isInfinite(val)) continue;
+            // clamp to [0,1] for safety
+            val = Math.max(0.0, Math.min(1.0, val));
+            rho2.add(val);
+        }
+
+// ... inside getRccaEntryConditioned
+
+        if (rho2.isEmpty()) {
+            return new RccaEntry(new double[0], new double[]{0.0});
+        }
+
+        // Sort descending by rho (i.e., descending rho^2)
+        rho2.sort(Comparator.reverseOrder());
+
+        // Convert to canonical correlations (not squared)
+        double[] svals = new double[rho2.size()];
+        for (int i = 0; i < rho2.size(); i++) {
+            svals[i] = Math.sqrt(rho2.get(i));
+        }
+
+        // Build suffix logs: suffixLogs[i] = Σ_{j=i}^{end} log(1 - s_j^2)
+        double[] suffixLogs = new double[svals.length + 1];
+        suffixLogs[svals.length] = 0.0; // last element is 0
+        for (int i = svals.length - 1; i >= 0; i--) {
+            double oneMinus = Math.max(1e-16, 1.0 - svals[i] * svals[i]);
+            suffixLogs[i] = suffixLogs[i + 1] + Math.log(oneMinus);
+        }
+
+        return new RccaEntry(svals, suffixLogs);
+    }
+
+    /* --------------------- small local helpers (keep private) --------------------- */
+
+    private static int[] all(int n) {
+        int[] a = new int[n];
+        for (int i = 0; i < n; i++) a[i] = i;
+        return a;
+    }
+
+    private static SimpleMatrix submatrix(SimpleMatrix S, int[] rows, int[] cols) {
+        SimpleMatrix out = new SimpleMatrix(rows.length, cols.length);
+        for (int i = 0; i < rows.length; i++) {
+            for (int j = 0; j < cols.length; j++) {
+                out.set(i, j, S.get(rows[i], cols[j]));
+            }
+        }
+        return out;
+    }
+
+    private static SimpleMatrix symmetrize(SimpleMatrix A) {
+        return A.plus(A.transpose()).scale(0.5);
+    }
+
     /**
      * Computes the union of the elements from the given array and a single integer value. The union is returned as an
      * array of unique integers.

@@ -383,7 +383,6 @@ public class TrekSeparationClustersScored {
         return cur;
     }
 
-
     // ---- scored-rank helper (C vs D = V\C) + cache -----------------------------
     private int rankByScore(Set<Integer> C) {
         Key key = new Key(C);
@@ -466,18 +465,6 @@ public class TrekSeparationClustersScored {
         this.includeAllNodes = includeAllNodes;
     }
 
-//    public void setEnforceObservedLeaves(boolean enforceObservedLeaves) {
-//        this.enforceObservedLeaves = enforceObservedLeaves;
-//    }
-
-//    /**
-//     * 0 disables the guard; 1 is a good default if enabled.
-//     */
-//    public void setAntiProxyDrop(int antiProxyDrop) {
-//        if (antiProxyDrop < 0) throw new IllegalArgumentException("antiProxyDrop must be >= 0");
-//        this.antiProxyDrop = antiProxyDrop;
-//    }
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
@@ -485,21 +472,18 @@ public class TrekSeparationClustersScored {
     // --- new setters for scoring knobs / mode ---
     public void setRidge(double ridge) {
         this.ridge = ridge;
-//        scoredRankCache.clear();
         scoredRankCache.clear();
         sweepCache.clear();
     }
 
     public void setPenaltyDiscount(double c) {
         this.penaltyDiscount = c;
-//        scoredRankCache.clear();
         scoredRankCache.clear();
         sweepCache.clear();
     }
 
     public void setEbicGamma(double gamma) {
         this.ebicGamma = gamma;
-//        scoredRankCache.clear();
         scoredRankCache.clear();
         sweepCache.clear();
     }

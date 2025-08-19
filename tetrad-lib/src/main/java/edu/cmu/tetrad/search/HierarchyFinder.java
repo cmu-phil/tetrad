@@ -18,9 +18,6 @@ import java.util.*;
  *     makes S_a ⟂ S_conf in the augmented correlation.
  *  2) Strategy.INDICATORS: Condition directly on the parent indicator set Ca (legacy).
  *
- * (Optional) Specificity gate: accept a->b only if the drop with S_a (+confounders) is strictly
- * larger than the drop with confounders alone.
- *
  * Returns candidate edges sorted by rank drop (largest first).
  * The caller is responsible for cycle checks and final insertion into the graph.
  */
@@ -39,25 +36,38 @@ public final class HierarchyFinder {
         public final int r0;            // baseline rank
         public final int r1;            // conditioned rank (with Sa [+ conf])
         public final int drop;          // r0 - r1
-
         public Proposal(int fromBlock, int toBlock, String fromName, String toName, int r0, int r1) {
-            this.fromBlock = fromBlock;
-            this.toBlock = toBlock;
-            this.fromName = fromName;
-            this.toName = toName;
-            this.r0 = r0;
-            this.r1 = r1;
-            this.drop = r0 - r1;
+            this.fromBlock = fromBlock; this.toBlock = toBlock;
+            this.fromName = fromName; this.toName = toName;
+            this.r0 = r0; this.r1 = r1; this.drop = r0 - r1;
         }
-
         @Override public String toString() {
             return "Proposal{" + fromName + "->" + toName + ", drop=" + drop + ", r0=" + r0 + ", r1=" + r1 + "}";
         }
     }
 
-    /* ============================== PUBLIC API ============================== */
+    /* ======== NEW: scoring toggles & knobs (defaults keep legacy behavior) ======== */
+    private static boolean useScoredRanks = false;
+    private static double scoreRidge = 1e-6;          // RCCA ridge
+    private static double scorePenaltyDiscount = 1.0; // BIC c
+    private static double scoreEbicGamma = 0.0;       // EBIC gamma
 
-    /** Original convenience API (kept for drop-in compatibility). */
+    public static void setUseScoredRanks(boolean b) { useScoredRanks = b; }
+    public static void setScoreRidge(double r) {
+        if (r < 0.0) throw new IllegalArgumentException("ridge >= 0");
+        scoreRidge = r;
+    }
+    public static void setScorePenaltyDiscount(double c) {
+        if (c <= 0.0) throw new IllegalArgumentException("penaltyDiscount > 0");
+        scorePenaltyDiscount = c;
+    }
+    public static void setScoreEbicGamma(double gamma) {
+        if (gamma < 0.0) throw new IllegalArgumentException("ebicGamma >= 0");
+        scoreEbicGamma = gamma;
+    }
+
+    /* ============================== PUBLIC API (unchanged) ============================== */
+
     public static List<Edge> computeEdges(SimpleMatrix S,
                                           List<List<Integer>> blocks,
                                           List<Node> metaVars,
@@ -77,7 +87,6 @@ public final class HierarchyFinder {
         return edges;
     }
 
-    /** Original main API (kept for drop-in compatibility). */
     public static List<Proposal> propose(SimpleMatrix S,
                                          List<List<Integer>> blocks,
                                          List<Node> metaVars,
@@ -92,7 +101,7 @@ public final class HierarchyFinder {
                 /*ridgeScore=*/1e-6, verbose);
     }
 
-    /* -------- NEW overloads with orthogonalization + specificity gate -------- */
+    /* -------- Overloads with orthogonalization + specificity gate -------- */
 
     public static List<Edge> computeEdges(SimpleMatrix S,
                                           List<List<Integer>> blocks,
@@ -125,7 +134,7 @@ public final class HierarchyFinder {
                                          int topKConf,
                                          boolean orthogonalizeScores,
                                          boolean specificityGate,
-                                         double ridgeScore,
+                                         double ridgeScoreProxy,
                                          boolean verbose) {
 
         Objects.requireNonNull(S, "S");
@@ -134,7 +143,7 @@ public final class HierarchyFinder {
         Objects.requireNonNull(strategy, "strategy");
         if (minRankDrop < 1) throw new IllegalArgumentException("minRankDrop must be >= 1");
         if (topKConf < 0) throw new IllegalArgumentException("topKConf must be >= 0");
-        if (ridgeScore < 0.0) throw new IllegalArgumentException("ridgeScore must be >= 0");
+        if (ridgeScoreProxy < 0.0) throw new IllegalArgumentException("ridgeScore must be >= 0");
 
         // Candidate latent indices: blocks with |block| > 1
         List<Integer> latentIdx = new ArrayList<>();
@@ -142,7 +151,7 @@ public final class HierarchyFinder {
         final int L = latentIdx.size();
         if (L <= 1) return Collections.emptyList();
 
-        final int p = S.numCols(); // observed variables
+        final int p = S.getNumCols(); // observed
         final int[][] Cblock = new int[L][];
         final BitSet[] Cbit = new BitSet[L];
         for (int pos = 0; pos < L; pos++) {
@@ -156,7 +165,8 @@ public final class HierarchyFinder {
 
         if (strategy == Strategy.PC1) {
             return proposeWithPC1(S, p, blocks, metaVars, latentIdx, Cblock, Cbit,
-                    sampleSize, alpha, minRankDrop, topKConf, orthogonalizeScores, specificityGate, ridgeScore, verbose);
+                    sampleSize, alpha, minRankDrop, topKConf,
+                    orthogonalizeScores, specificityGate, ridgeScoreProxy, verbose);
         } else {
             return proposeWithIndicators(S, p, blocks, metaVars, latentIdx, Cblock,
                     sampleSize, alpha, minRankDrop, verbose);
@@ -178,32 +188,29 @@ public final class HierarchyFinder {
                                                  int topKConf,
                                                  boolean orthogonalizeScores,
                                                  boolean specificityGate,
-                                                 double ridgeScore,
+                                                 double ridgeScoreProxy,
                                                  boolean verbose) {
 
         final int L = latentIdx.size();
         final double EPS = 1e-12;
 
-        // Augment S with all scores at once: Splus is (p+L) x (p+L)
+        // Augment S with all PC1 scores at once: Splus is (p+L) x (p+L)
         SimpleMatrix Splus = new SimpleMatrix(p + L, p + L);
-        // copy base S
         for (int i = 0; i < p; i++) for (int j = 0; j < p; j++) Splus.set(i, j, S.get(i, j));
 
-        int[] scoreIndex = new int[L];                 // index of each score
-        // build PC1 score for each block
+        int[] scoreIndex = new int[L];
         for (int pos = 0; pos < L; pos++) {
             int[] Ca = Cblock[pos];
             int si = p + pos;
             scoreIndex[pos] = si;
 
-            if (Ca.length < 2) {
-                // trivial score: zero correlation to observed, unit variance
+            if (Ca.length < 2) { // degenerate score
                 for (int j = 0; j < p; j++) { Splus.set(si, j, 0.0); Splus.set(j, si, 0.0); }
                 Splus.set(si, si, 1.0);
                 continue;
             }
 
-            // PCA on S[Ca, Ca] -> first eigenvector (w) and eigenvalue (lambda1)
+            // PCA on S[Ca, Ca]
             SimpleMatrix S_Ca = new SimpleMatrix(Ca.length, Ca.length);
             for (int u = 0; u < Ca.length; u++)
                 for (int v = 0; v < Ca.length; v++)
@@ -223,13 +230,12 @@ public final class HierarchyFinder {
                 double acc = 0.0;
                 for (int t = 0; t < Ca.length; t++) acc += S.get(j, Ca[t]) * w.get(t, 0);
                 double r = acc / scale;
-                Splus.set(si, j, r);
-                Splus.set(j, si, r);
+                Splus.set(si, j, r); Splus.set(j, si, r);
             }
             Splus.set(si, si, 1.0);
         }
 
-        // Optional: pick top-K confounder scores per child by unconditional rank with Cb
+        // Pick top-K confounder scores per child by unconditional rank with Cb (Wilks for speed)
         int[][] confParents = new int[L][];
         if (topKConf > 0) {
             for (int bPos = 0; bPos < L; bPos++) {
@@ -279,53 +285,37 @@ public final class HierarchyFinder {
                 int[] Y = new int[ySize];
                 for (int idx = Ybit.nextSetBit(0), k = 0; idx >= 0; idx = Ybit.nextSetBit(idx + 1)) Y[k++] = idx;
 
-                // Baseline rank on augmented S (scores live beyond p)
-                int r0 = RankTests.estimateWilksRank(Splus, Cb, Y, sampleSize, alpha);
-                if (r0 <= 0) continue;
+                // Baseline rank r0 on augmented S
+                int r0 = rankUncond(Splus, Cb, Y, sampleSize, alpha);
 
-                // Z_conf = confounder score indices for this child (exclude aPos if present)
+                // Confounder score indices for child (exclude aPos if present)
                 int finalAPos = aPos;
-                int[] Zconf = Arrays.stream(confParents[bPos])
-                        .filter(cp -> cp != finalAPos)
-                        .map(cp -> p + cp)
-                        .toArray();
+                int[] Zconf = Arrays.stream(confParents[bPos]).filter(cp -> cp != finalAPos).map(cp -> p + cp).toArray();
 
                 // (Optional) Specificity baseline: r_confOnly = rank(Cb, Y | Z_conf)
-                int rConfOnly = -1;
+                Integer rConfOnly = null;
                 if (specificityGate && Zconf.length > 0) {
-                    rConfOnly = RankTests.estimateWilksRankConditioned(Splus, Cb, Y, Zconf, sampleSize, alpha);
+                    rConfOnly = rankCond(Splus, Cb, Y, Zconf, sampleSize, alpha);
                 }
 
-                // Z = {Sa} ∪ Z_conf, possibly with Sa orthogonalized against Z_conf
+                // Z = {Sa} ∪ Z_conf (+ optional orthogonalization)
                 int Sa = p + aPos;
-
                 if (orthogonalizeScores && Zconf.length > 0) {
-                    // Make Sa ⟂ Z_conf in the augmented correlation (residualize Sa on Z_conf).
                     SimpleMatrix inv = invR_scsc.get(bPos);
                     if (inv == null) {
                         SimpleMatrix Rscsc = new SimpleMatrix(Zconf.length, Zconf.length);
                         for (int i = 0; i < Zconf.length; i++)
                             for (int j = 0; j < Zconf.length; j++)
                                 Rscsc.set(i, j, Splus.get(Zconf[i], Zconf[j]));
-//                        double ridgeScore = 1e-6;
-                        if (ridgeScore > 0) {
-                            for (int i = 0; i < Zconf.length; i++) {
-                                Rscsc.set(i, i, Rscsc.get(i, i) + ridgeScore);
-                            }
-                        }
+                        if (ridgeScoreProxy > 0) for (int i = 0; i < Zconf.length; i++) Rscsc.set(i, i, Rscsc.get(i, i) + ridgeScoreProxy);
                         inv = Rscsc.invert();
                         invR_scsc.put(bPos, inv);
                     }
-
-                    // temp = r_{Sa, Zconf} * inv(R_{Zconf,Zconf})   (1 x k)
                     SimpleMatrix rSaZ = new SimpleMatrix(1, Zconf.length);
                     for (int i = 0; i < Zconf.length; i++) rSaZ.set(0, i, Splus.get(Sa, Zconf[i]));
-                    SimpleMatrix temp = rSaZ.mult(inv); // 1 x k
-
-                    // For every j in 0..p+L-1: r'_Sa,j = r_Sa,j - temp * r_{Zconf, j}
+                    SimpleMatrix temp = rSaZ.mult(inv);
                     int dim = p + L;
                     for (int j = 0; j < dim; j++) {
-                        // gather r_{Zconf, j}
                         SimpleMatrix rZj = new SimpleMatrix(Zconf.length, 1);
                         for (int i = 0; i < Zconf.length; i++) rZj.set(i, 0, Splus.get(Zconf[i], j));
                         double proj = temp.mult(rZj).get(0, 0);
@@ -333,61 +323,48 @@ public final class HierarchyFinder {
                         Splus.set(Sa, j, rNew);
                         Splus.set(j, Sa, rNew);
                     }
-                    // Force Sa ⟂ Z_conf exactly and keep var(Sa)=1
                     for (int idx : Zconf) { Splus.set(Sa, idx, 0.0); Splus.set(idx, Sa, 0.0); }
                     Splus.set(Sa, Sa, 1.0);
                 }
 
-                // Build Z = {Sa} ∪ Z_conf
-                int[] Z = new int[1 + Zconf.length];
-                Z[0] = Sa;
-                System.arraycopy(Zconf, 0, Z, 1, Zconf.length);
+                int[] Z = (Zconf.length == 0) ? new int[]{ Sa } : concat(new int[]{Sa}, Zconf);
 
-                int r1 = RankTests.estimateWilksRankConditioned(Splus, Cb, Y, Z, sampleSize, alpha);
-                int drop = r0 - r1;
+                int r1 = rankCond(Splus, Cb, Y, Z, sampleSize, alpha);
 
-                // (Optional) Specificity gate
+                // Specificity gate
                 if (specificityGate && Zconf.length > 0) {
-                    if (rConfOnly == -1) {
-                        rConfOnly = RankTests.estimateWilksRankConditioned(Splus, Cb, Y, Zconf, sampleSize, alpha);
-                    }
-                    if (!(r1 < rConfOnly)) {
+                    int rCOnly = (rConfOnly != null) ? rConfOnly : rankCond(Splus, Cb, Y, Zconf, sampleSize, alpha);
+                    if (!(r1 < rCOnly)) {
                         if (verbose) {
-                            System.out.printf("skip(PC1) %s -> %s : r0=%d, r1=%d, drop=%d, rConf=%d%n",
+                            System.out.printf("skip(PC1) %s -> %s : r0=%d, r1=%d, rConf=%d%n",
                                     metaVars.get(latentIdx.get(aPos)).getName(),
-                                    metaVars.get(latentIdx.get(bPos)).getName(),
-                                    r0, r1, drop, rConfOnly);
+                                    metaVars.get(latentIdx.get(bPos)).getName(), r0, r1, rCOnly);
                         }
                         continue;
                     }
                 }
 
+                int drop = r0 - r1;
                 if (drop >= minRankDrop) {
-                    Proposal pr = new Proposal(
-                            latentIdx.get(aPos), latentIdx.get(bPos),
+                    Proposal pr = new Proposal(latentIdx.get(aPos), latentIdx.get(bPos),
                             metaVars.get(latentIdx.get(aPos)).getName(),
-                            metaVars.get(latentIdx.get(bPos)).getName(),
-                            r0, r1
-                    );
+                            metaVars.get(latentIdx.get(bPos)).getName(), r0, r1);
                     props.add(pr);
                     if (verbose) {
                         System.out.printf("hier(PC1) %s -> %s : r0=%d, r1=%d, drop=%d%n",
-                                pr.fromName, pr.toName, pr.r0, pr.r1, pr.drop);
+                                pr.fromName, pr.toName, pr.r0, pr.r1, drop);
                     }
                 } else if (verbose) {
                     System.out.printf("skip(PC1) %s -> %s : r0=%d, r1=%d, drop=%d%n",
                             metaVars.get(latentIdx.get(aPos)).getName(),
-                            metaVars.get(latentIdx.get(bPos)).getName(),
-                            r0, r1, drop);
+                            metaVars.get(latentIdx.get(bPos)).getName(), r0, r1, drop);
                 }
             }
         }
 
-        // Sort proposals: biggest drop first, then names for determinism
         props.sort(Comparator.<Proposal>comparingInt(pv -> pv.drop).reversed()
                 .thenComparing(pv -> pv.fromName)
                 .thenComparing(pv -> pv.toName));
-
         return props;
     }
 
@@ -422,15 +399,13 @@ public final class HierarchyFinder {
                 int[] Cb = Cblock[bPos];
                 if (Cb.length == 0) continue;
 
-                // IMPORTANT: make Y disjoint from Z: use Y = (V \ Cb) \ Ca
+                // IMPORTANT: Y disjoint from Z: Y = (V \ Cb) \ Ca
                 int[] Db = minus(all, Cb);
                 int[] Y  = minus(Db, Ca);
                 if (Y.length == 0) continue;
 
-                int r0 = RankTests.estimateWilksRank(S, Cb, Y, sampleSize, alpha);
-                if (r0 <= 0) continue;
-
-                int r1 = RankTests.estimateWilksRankConditioned(S, Cb, Y, Ca, sampleSize, alpha);
+                int r0 = rankUncond(S, Cb, Y, sampleSize, alpha);
+                int r1 = rankCond(S, Cb, Y, Ca, sampleSize, alpha);
                 int drop = r0 - r1;
 
                 if (drop >= minRankDrop) {
@@ -438,7 +413,7 @@ public final class HierarchyFinder {
                     props.add(pr);
                     if (verbose) {
                         System.out.printf("hier(IND) %s -> %s : r0=%d, r1=%d, drop=%d%n",
-                                pr.fromName, pr.toName, pr.r0, pr.r1, pr.drop);
+                                pr.fromName, pr.toName, pr.r0, pr.r1, drop);
                     }
                 } else if (verbose) {
                     System.out.printf("skip(IND) %s -> %s : r0=%d, r1=%d, drop=%d%n",
@@ -450,8 +425,64 @@ public final class HierarchyFinder {
         props.sort(Comparator.<Proposal>comparingInt(pv -> pv.drop).reversed()
                 .thenComparing(pv -> pv.fromName)
                 .thenComparing(pv -> pv.toName));
-
         return props;
+    }
+
+    /* ==================== Rank helpers (Wilks vs Scored) ==================== */
+
+    private static int rankUncond(SimpleMatrix S, int[] C, int[] D, int n, double alpha) {
+        if (!useScoredRanks) {
+            return RankTests.estimateWilksRank(S, C, D, n, alpha);
+        }
+        RankTests.RccaEntry ent = RankTests.getRccaEntry(S, C, D, scoreRidge);
+        return (ent == null) ? 0 : argmaxRankBIC(ent, C.length, D.length, n);
+    }
+
+    private static int rankCond(SimpleMatrix S, int[] C, int[] D, int[] Z, int n, double alpha) {
+        if (!useScoredRanks) {
+            return RankTests.estimateWilksRankConditioned(S, C, D, Z, n, alpha);
+        }
+        // Try conditioned RCCA entry if available; otherwise fall back to Wilks.
+        RankTests.RccaEntry ent;
+        try {
+            ent = RankTests.getRccaEntryConditioned(S, C, D, Z, scoreRidge);
+        } catch (Throwable t) {
+            ent = null;
+        }
+        if (ent == null) {
+            // Fallback: Wilks for conditioned case if RCCA-conditioned is not implemented.
+            return RankTests.estimateWilksRankConditioned(S, C, D, Z, n, alpha);
+        }
+        return argmaxRankBIC(ent, C.length, D.length, n);
+    }
+
+    /** BIC/EBIC sweep on RCCA suffix logs; returns argmax r. */
+    private static int argmaxRankBIC(RankTests.RccaEntry ent, int p, int q, int n) {
+        if (ent == null || ent.suffixLogs == null) return 0;
+        int m = Math.min(Math.min(p, q), n - 1);
+        m = Math.min(m, ent.suffixLogs.length - 1);
+        if (m <= 0) return 0;
+
+        double[] suf = ent.suffixLogs; // suf[0]==0
+        double base = suf[0];
+
+        // Bartlett-style effective n (same spirit as BlocksBicScore)
+        double nEff = n - 1.0 - 0.5 * (p + q + 1.0);
+        if (nEff < 1.0) nEff = 1.0;
+        int Ppool = Math.max(q, 2);
+
+        int rStar = 0;
+        double best = -1e300;
+        for (int r = 0; r <= m; r++) {
+            double sumTop = base - suf[r];   // sum_{i=1..r} log(1 - rho_i^2)
+            double fit = -nEff * sumTop;
+            int kParams = r * (p + q - r);
+            double pen = scorePenaltyDiscount * kParams * Math.log(nEff);
+            if (scoreEbicGamma > 0.0) pen += 2.0 * scoreEbicGamma * kParams * Math.log(Ppool);
+            double sc = fit - pen;
+            if (sc > best) { best = sc; rStar = r; }
+        }
+        return Math.max(0, rStar);
     }
 
     /* ==================== helpers ==================== */
@@ -468,21 +499,15 @@ public final class HierarchyFinder {
         return out;
     }
 
-    /* ==================== NEW: the drop-in wrapper you’re calling ==================== */
+    private static int[] concat(int[] a, int[] b) {
+        int[] out = new int[a.length + b.length];
+        System.arraycopy(a, 0, out, 0, a.length);
+        System.arraycopy(b, 0, out, a.length, b.length);
+        return out;
+    }
 
-    /**
-     * Convenience wrapper used by TscPc.search(...).
-     * Defaults to Strategy.INDICATORS, topKConf=0, verbose=false.
-     *
-     * @param S            correlation/covariance of observed variables
-     * @param sampleSize   effective N
-     * @param alpha        test alpha for Wilks-rank decisions
-     * @param minRankDrop  minimum drop r0 - r1 to accept La -> Lb
-     * @param pObserved    number of observed variables (redundant with S.numCols(), kept for compatibility)
-     * @param blocks       list of blocks (each block is list of observed indices); only blocks with size>1 are treated as latents
-     * @param metaVars     meta variables corresponding 1-1 with blocks
-     * @return list of directed edges La -> Lb to add
-     */
+    /* ==================== Convenience wrapper you already call ==================== */
+
     public static List<Edge> findHierarchyEdges(SimpleMatrix S,
                                                 int sampleSize,
                                                 double alpha,
@@ -490,8 +515,6 @@ public final class HierarchyFinder {
                                                 int pObserved,
                                                 List<List<Integer>> blocks,
                                                 List<Node> metaVars) {
-        // sanity (no hard failure if mismatch; just rely on S)
-        // if (S.numCols() != pObserved) System.err.println("Warning: pObserved != S.numCols()");
         return computeEdges(
                 S, blocks, metaVars,
                 sampleSize, alpha, minRankDrop,

@@ -59,7 +59,7 @@ public class TscBoss extends AbstractBootstrapAlgorithm implements Algorithm, Ha
 
         edu.cmu.tetrad.search.TscBoss search = new edu.cmu.tetrad.search.TscBoss((DataSet) dataModel);
         search.setAlpha(parameters.getDouble(Params.FOFC_ALPHA));
-        search.setAlphaHierarchy(parameters.getDouble(Params.FOFC_ALPHA));
+        search.setAlphaHierarchy(.2);
         search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setEffectiveSampleSize(parameters.getInt(Params.EXPECTED_SAMPLE_SIZE));
