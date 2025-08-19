@@ -190,7 +190,7 @@ public class TrekSeparationClustersScored {
 //            throw new IllegalArgumentException("rank too high for clusters at rank");
 //        }
 
-        if (rank + 1 >= n - (rank + 1)) return Collections.emptySet();
+//        if (rank + 1 >= n - (rank + 1)) return Collections.emptySet();
 
         final int[] varIds = new int[n];
         for (int i = 0; i < n; i++) varIds[i] = vars.get(i);
@@ -232,7 +232,7 @@ public class TrekSeparationClustersScored {
         final int n = vars.size();
         final int k = size;
 
-        if (targetRank + 1 >= n - (targetRank + 1)) return Collections.emptySet();
+//        if (targetRank + 1 >= n - (targetRank + 1)) return Collections.emptySet();
 
         if (targetRank < 0) throw new IllegalArgumentException("targetRank must be >= 0");
         if (k <= 0 || k > n) return Collections.emptySet();
