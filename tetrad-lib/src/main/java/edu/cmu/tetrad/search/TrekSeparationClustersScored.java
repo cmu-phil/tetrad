@@ -582,7 +582,7 @@ public class TrekSeparationClustersScored {
                     log("Adding cluster to new clusters: " + toNamesCluster(cluster) + " rank = " + clusterRank);
                     newClusters.add(cluster);
                     used.addAll(cluster);
-                    remainingVars.removeAll(cluster);
+//                    remainingVars.removeAll(cluster);
                 }
             }
 
@@ -719,24 +719,24 @@ public class TrekSeparationClustersScored {
         return new Pair<>(clusterToRank, reducedRank);
     }
 
-    private boolean allSubclustersPresent(Set<Integer> union, Set<Set<Integer>> P, int size) {
-        ChoiceGenerator gen = new ChoiceGenerator(union.size(), size);
-        int[] choice;
-        List<Integer> unionList = new ArrayList<>(union);
-
-        while ((choice = gen.next()) != null) {
-            Set<Integer> C = new HashSet<>();
-            for (int i : choice) {
-                C.add(unionList.get(i));
-            }
-
-            if (!P.contains(C)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
+//    private boolean allSubclustersPresent(Set<Integer> union, Set<Set<Integer>> P, int size) {
+//        ChoiceGenerator gen = new ChoiceGenerator(union.size(), size);
+//        int[] choice;
+//        List<Integer> unionList = new ArrayList<>(union);
+//
+//        while ((choice = gen.next()) != null) {
+//            Set<Integer> C = new HashSet<>();
+//            for (int i : choice) {
+//                C.add(unionList.get(i));
+//            }
+//
+//            if (!P.contains(C)) {
+//                return false;
+//            }
+//        }
+//
+//        return true;
+//    }
 
     /**
      * Try to split a cluster C into two smaller clusters C1, C2 if Rule 1 fails.

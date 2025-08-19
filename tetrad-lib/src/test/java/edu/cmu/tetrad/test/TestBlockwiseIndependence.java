@@ -61,6 +61,101 @@ public class TestBlockwiseIndependence {
         runOnce(lm, NoiseType.UNIFORM, "Uniform(-1,1)");
     }
 
+    // --- helper: build random incoherent blocks from all observed variables ---
+    private static List<BlockCase> buildRandomIncoherentCases(List<Node> observed, int n, int blockSize) {
+        if (3 * blockSize > observed.size()) {
+            throw new IllegalArgumentException("Not enough observed variables for three disjoint incoherent blocks.");
+        }
+        List<BlockCase> out = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            List<Node> shuffled = new ArrayList<>(observed);
+            Collections.shuffle(shuffled, rng);
+            List<Node> X = new ArrayList<>(shuffled.subList(0, blockSize));
+            List<Node> Y = new ArrayList<>(shuffled.subList(blockSize, 2 * blockSize));
+            List<Node> Z = new ArrayList<>(shuffled.subList(2 * blockSize, 3 * blockSize));
+            out.add(new BlockCase(X, Y, Z, "INC_X", "INC_Y", "INC_Z")); // cluster labels unused here
+        }
+        return out;
+    }
+
+    /**
+     * Incoherent clusters study:
+     * - X, Y, Z are random disjoint blocks drawn from all observed variables (not aligned to true latent clusters).
+     * - For each case, we initialize a *fresh* blocks-based CI test with just these three blocks and ask:
+     *     [X] ⟂ [Y] | [Z]
+     * - Ground truth: pairwise m-separation on the full latent DAG using observed X, Y, Z.
+     */
+    @Test
+    public void testIncoherentBlocks() {
+        final int incoherentBlockSize = 4;   // e.g., size-4 random blocks as in your example
+        final int nIncoherentCases   = 50;   // number of test cases
+
+        System.out.println("\n=== Incoherent Blocks: [X] ⟂ [Y] | [Z] with random blocks ===");
+        System.out.println("blockSize=" + incoherentBlockSize + ", cases=" + nIncoherentCases + ", n=" + nSamples + ", alpha=" + alpha);
+
+        // Use the same latent model structure; simulate with Gaussian (or swap to your preferred noise)
+        LatentModel lm = buildLatentChainModel(numObservedPerLatent);
+        SimResult sim = simulateLatentData(lm, nSamples, NoiseType.EXPONENTIAL);
+
+        // Build random (incoherent) cases over all observed variables
+        List<BlockCase> cases = buildRandomIncoherentCases(sim.observedNodes, nIncoherentCases, incoherentBlockSize);
+
+        // Metrics for the two blockwise tests
+        Metrics mBlocks = new Metrics("IndTestBlocks (incoherent)");
+        Metrics mLemma  = new Metrics("IndTestBlocksLemma10 (incoherent)");
+
+        // Ground-truth m-separation on the full latent DAG
+        MsepTest dsep = new MsepTest(lm.fullGraph);
+
+        List<Node> allVars = sim.data.getVariables();
+
+        for (BlockCase bc : cases) {
+            // Truth: all (x in X, y in Y) m-separated given Z (observed)
+            boolean truthIndep = allPairsMSep(dsep, bc.X, bc.Y, bc.Z);
+
+            // Build blocks = {X, Y, Z} for THIS case; other variables are ignored (or could be added as singletons if you wish)
+            List<List<Integer>> blocks = new ArrayList<>();
+            List<Node> meta = new ArrayList<>();
+
+            // [X]
+            List<Integer> idxX = new ArrayList<>();
+            for (Node x : bc.X) idxX.add(allVars.indexOf(x));
+            blocks.add(idxX);
+            Node mvX = new ContinuousVariable("INC_X"); ((ContinuousVariable) mvX).setNodeType(NodeType.LATENT);
+            meta.add(mvX);
+
+            // [Y]
+            List<Integer> idxY = new ArrayList<>();
+            for (Node y : bc.Y) idxY.add(allVars.indexOf(y));
+            blocks.add(idxY);
+            Node mvY = new ContinuousVariable("INC_Y"); ((ContinuousVariable) mvY).setNodeType(NodeType.LATENT);
+            meta.add(mvY);
+
+            // [Z]
+            List<Integer> idxZ = new ArrayList<>();
+            for (Node z : bc.Z) idxZ.add(allVars.indexOf(z));
+            blocks.add(idxZ);
+            Node mvZ = new ContinuousVariable("INC_Z"); ((ContinuousVariable) mvZ).setNodeType(NodeType.LATENT);
+            meta.add(mvZ);
+
+            // Initialize fresh block tests on these incoherent blocks
+            IndTestBlocks testBlocks = new IndTestBlocks(sim.data, blocks, meta);
+            testBlocks.setAlpha(alpha);
+            IndTestBlocksLemma10 testLemma = new IndTestBlocksLemma10(sim.data, blocks, meta);
+            testLemma.setAlpha(alpha);
+
+            boolean predBlocksIndep = testBlocks.checkIndependence(mvX, mvY, Collections.singleton(mvZ)).isIndependent();
+            boolean predLemmaIndep  = testLemma.checkIndependence(mvX, mvY, Collections.singleton(mvZ)).isIndependent();
+
+            mBlocks.addCase(truthIndep, predBlocksIndep);
+            mLemma.addCase(truthIndep, predLemmaIndep);
+        }
+
+        System.out.println("\n--- Results: Incoherent block tests ---");
+        mBlocks.print();
+        mLemma.print();
+    }
+
     private void runOnce(LatentModel lm, NoiseType noise, String label) {
         // Simulate data with the requested noise type (both latent and observed errors use same distribution)
         SimResult sim = simulateLatentData(lm, nSamples, noise);
