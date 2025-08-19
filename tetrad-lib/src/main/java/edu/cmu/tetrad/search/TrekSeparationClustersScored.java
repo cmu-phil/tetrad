@@ -236,7 +236,7 @@ public class TrekSeparationClustersScored {
 
         if (targetRank < 0) throw new IllegalArgumentException("targetRank must be >= 0");
         if (k <= 0 || k > n) return Collections.emptySet();
-        if (k >= n - k) return Collections.emptySet(); // D would be empty
+//        if (k >= n - k) return Collections.emptySet(); // D would be empty
 
         final int[] varIds = new int[n];
         for (int i = 0; i < n; i++) varIds[i] = vars.get(i);
@@ -669,10 +669,10 @@ public class TrekSeparationClustersScored {
 //                    log("Split cluster " + toNamesCluster(cluster) + " into " +
 //                        toNamesCluster(split.get().get(0)) + " and " + toNamesCluster(split.get().get(1)));
 //                } else {
-                    clusterToRank.remove(cluster);
-                    reducedRank.remove(cluster);
-                    penultimateRemoved = true;
-                    log("Removed cluster " + toNamesCluster(cluster) + " (no va lid split found).");
+                clusterToRank.remove(cluster);
+                reducedRank.remove(cluster);
+                penultimateRemoved = true;
+//                    log("Removed cluster " + toNamesCluster(cluster) + " (no valid split found).");
 //                }
             }
         }
@@ -681,19 +681,16 @@ public class TrekSeparationClustersScored {
         // --- Atomic-core postprocess (keep large clusters, group by atomic cores) ---
         if (atomicCoverRebuild) {
             Map<Key, Set<Integer>> coreToMax = new LinkedHashMap<>();
-            Map<Set<Integer>, Set<Integer>> clusterToCore = new LinkedHashMap<>(); // optional: keep mapping
 
             for (Set<Integer> C : new ArrayList<>(clusterToRank.keySet())) {
                 int k = clusterToRank.getOrDefault(C, 0);
                 if (k <= 0 || C.size() <= k) {
                     // trivial case; nothing to shrink
-                    clusterToCore.put(C, new HashSet<>(C));
                     coreToMax.putIfAbsent(new Key(C), new HashSet<>(C));
                     continue;
                 }
 
                 Set<Integer> core = shrinkToAtomicCore(C, k);
-                clusterToCore.put(C, core);
 
                 Key ck = new Key(core);
                 Set<Integer> maxForCore = coreToMax.get(ck);
@@ -716,9 +713,6 @@ public class TrekSeparationClustersScored {
             // Swap in the collapsed set (optional: only if you *want* “one latent per core”)
             clusterToRank.clear();
             clusterToRank.putAll(collapsed);
-
-            // (Optional) if you want to expose cores externally, stash them somewhere:
-            // this.atomicCores = new HashMap<>(clusterToCore);
         }
 
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet()));
