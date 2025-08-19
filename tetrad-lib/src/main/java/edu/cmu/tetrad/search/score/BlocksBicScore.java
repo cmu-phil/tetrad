@@ -10,17 +10,21 @@ import java.util.*;
 
 /**
  * BlocksBicScore: BIC-style local score over block representations using cached RCCA singular values from RankTests.
+ * <p>
+ * fit(r) = -nEff * sum_{i=0}^{r-1} log(1 - rho_i^2) pen(r) = c * [ r * (p + q - r) ] * log(n) + 2 * gamma * [ r * (p +
+ * q - r) ] * log(P_pool)
+ * <p>
+ * where p = |X_block|, q = |Y_block|, r in {0..min(p,q,n-1)}, and nEff = n - 1 - (p + q + 1)/2 (floored at 1). P_pool
+ * excludes Y's own block.
+ * <p>
+ * CONTRACT: - 'blocks' maps each block index b (0..B-1) to the list of embedded column indices in THIS dataset for that
+ * block. - 'blockVariables' is exactly the list of Nodes to score over, one per block, same order (size B). -
+ * getVariables() returns exactly 'blockVariables'.
+ * <p>
+ * This is Wilks' Lambda test statistic for canonical correlations: 2ℓ = -(n_eff) * Σ log(1 - rho_i^2) (see Mardia, Kent
+ * & Bibby 1979, §12.6; Anderson 2003, §12.3.2) This is already in "2 log-likelihood" units, so the BIC penalty can be
+ * applied directly as 2ℓ - c k log n.
  *
- * fit(r) = -nEff * sum_{i=0}^{r-1} log(1 - rho_i^2)
- * pen(r) = c * [ r * (p + q - r) ] * log(n) + 2 * gamma * [ r * (p + q - r) ] * log(P_pool)
- *
- * where p = |X_block|, q = |Y_block|, r in {0..min(p,q,n-1)}, and
- * nEff = n - 1 - (p + q + 1)/2 (floored at 1). P_pool excludes Y's own block.
- *
- * CONTRACT:
- *  - 'blocks' maps each block index b (0..B-1) to the list of embedded column indices in THIS dataset for that block.
- *  - 'blockVariables' is exactly the list of Nodes to score over, one per block, same order (size B).
- *  - getVariables() returns exactly 'blockVariables'.
  */
 public class BlocksBicScore implements Score {
     // --- Caches ---
@@ -39,7 +43,8 @@ public class BlocksBicScore implements Score {
     private final int totalEmbeddedCols;         // sum of all embedded widths across blocks
 
     /**
-     * LRU cache for full local scores per (y, parents, knobs). Not thread-safe; wrap externally if running multi-threaded.
+     * LRU cache for full local scores per (y, parents, knobs). Not thread-safe; wrap externally if running
+     * multi-threaded.
      */
     private final Map<FamilyKey, Double> scoreCache =
             new LinkedHashMap<>(2048, 0.75f, true) {
