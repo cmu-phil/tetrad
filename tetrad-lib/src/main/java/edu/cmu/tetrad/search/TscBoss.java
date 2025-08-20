@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.search.test.IndTestBlocks;
 import edu.cmu.tetrad.util.RankTests;
@@ -204,7 +205,7 @@ public class TscBoss implements IGraphSearch {
 
         System.out.println("Knowledge" + knowledge);
 
-        IndTestBlocks test = new IndTestBlocks(dataSet, blocks, metaVars);
+        IndTestBlocks test = new IndTestBlocks(dataSet, new BlockSpec(blocks, metaVars));
         test.setAlpha(alpha);
 
         // --- Learn meta-graph (PC or BOSS) on blocks/metaVars ---

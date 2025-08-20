@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.utils.Embedding;
 import org.ejml.simple.SimpleMatrix;
 
@@ -73,7 +74,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
         // 2) Delegate CI testing to IndTestBlocks:
         //    IMPORTANT: pass *this.variables* (the same Node objects you expose)
-        this.blocksTest = new IndTestBlocks(embeddedDs, this.blocks, this.variables);
+        this.blocksTest = new IndTestBlocks(embeddedDs, new BlockSpec(this.blocks, this.variables));
     }
 
     // ====== IndependenceTest API ======

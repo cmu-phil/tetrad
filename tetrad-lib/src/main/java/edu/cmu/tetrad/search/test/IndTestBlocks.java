@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
@@ -17,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * leftover observed pool and, if needed, by subsetting X to |Y|.
  * Thread-safe LRU caches preserved.
  */
-public class IndTestBlocks implements IndependenceTest {
+public class IndTestBlocks implements IndependenceTest, BlockTest {
 
     // ---- Cache sizes (tune) ----
     private static final int PV_CACHE_MAX = 400_000;   // (x,y,Z,n,alpha) -> p
@@ -34,13 +35,13 @@ public class IndTestBlocks implements IndependenceTest {
     private final int[][] allCols;
 
     // Universe of observed column indices (0..D-1) for padding
-    private final int[] universeCols;
     private final BitSet universeBits;
 
     // Thread-safe LRUs
     private final LruMap<PKey, Integer> rankCache = new LruMap<>(RANK_CACHE_MAX);
     private final LruMap<PKey, Double> pvalCache = new LruMap<>(PV_CACHE_MAX);
     private final LruMap<ZKey, int[]> zblockCache = new LruMap<>(ZBLOCK_CACHE_MAX);
+    private final BlockSpec blockSpec;
 
     // knobs
     private double alpha = 0.01;
@@ -50,19 +51,15 @@ public class IndTestBlocks implements IndependenceTest {
     private boolean padY = true;              // try to grow Y from the complement pool
     private boolean subsetXIfNeeded = true;   // if still |Y| < |X|, shrink X to |Y|
 
-    public IndTestBlocks(DataSet dataSet, List<List<Integer>> blocks, List<Node> blockVariables) {
+    public IndTestBlocks(DataSet dataSet, BlockSpec blockSpec) {
         if (dataSet == null) throw new IllegalArgumentException("dataSet == null");
-        if (blocks == null) throw new IllegalArgumentException("blocks == null");
-        if (blockVariables == null) throw new IllegalArgumentException("blockVariables == null");
+        if (blockSpec == null) throw new IllegalArgumentException("blockSpec == null");
+        this.blockSpec = blockSpec;
 
-        final int B = blocks.size();
-        if (blockVariables.size() != B) {
-            throw new IllegalArgumentException("blockVariables.size() (" + blockVariables.size()
-                                               + ") != blocks.size() (" + B + ")");
-        }
+        final int B = blockSpec.blocks().size();
 
         this.dataSet = dataSet;
-        this.variables = new ArrayList<>(blockVariables);
+        this.variables = new ArrayList<>(blockSpec.blockVariables());
         Map<Node, Integer> nodesHash = new HashMap<>();
         for (int j = 0; j < this.variables.size(); j++) {
             Node v = this.variables.get(j);
@@ -81,7 +78,7 @@ public class IndTestBlocks implements IndependenceTest {
         final int D = dataSet.getNumColumns();
         this.allCols = new int[B][];
         for (int b = 0; b < B; b++) {
-            List<Integer> cols = blocks.get(b);
+            List<Integer> cols = blockSpec.blocks().get(b);
             if (cols == null || cols.isEmpty()) {
                 allCols[b] = new int[0];
             } else {
@@ -98,8 +95,6 @@ public class IndTestBlocks implements IndependenceTest {
             }
         }
         // Universe for padding
-        this.universeCols = new int[D];
-        for (int i = 0; i < D; i++) universeCols[i] = i;
         this.universeBits = new BitSet(D);
         this.universeBits.set(0, D);
     }
@@ -249,6 +244,11 @@ public class IndTestBlocks implements IndependenceTest {
         }
         while (i < A.length) tmp[k++] = A[i++];
         return Arrays.copyOf(tmp, k);
+    }
+
+    @Override
+    public BlockSpec getBlockSpec() {
+        return blockSpec;
     }
 
     private record XY(int[] xAdj, int[] yAdj) {}

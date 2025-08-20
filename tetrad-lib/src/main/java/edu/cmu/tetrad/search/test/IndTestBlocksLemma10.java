@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
@@ -25,7 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>
  * Thread-safe LRU caches (like IndTestBlocks).
  */
-public class IndTestBlocksLemma10 implements IndependenceTest {
+public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
 
     // ---- Cache sizes (tune) ----
     private static final int PV_CACHE_MAX = 400_000;  // (AC,BC,n,alpha,mode,tol) -> p
@@ -45,24 +46,20 @@ public class IndTestBlocksLemma10 implements IndependenceTest {
     private final LruMap<RKey, Integer> rankCache = new LruMap<>(RANK_CACHE_MAX);
     private final LruMap<PKey, Double> pvalCache = new LruMap<>(PV_CACHE_MAX);
     private final LruMap<ZKey, int[]> zblockCache = new LruMap<>(ZBLOCK_CACHE_MAX);
+    private final BlockSpec blockSpec;
 
     // knobs
     private double alpha = 0.01;
     private boolean verbose = false;
     private EqualityMode mode = EqualityMode.LE; // robust default: accept rank <= |C|
     private int tol = 0;                         // integer tolerance on the equality (0 = strict)
-    public IndTestBlocksLemma10(DataSet dataSet, List<List<Integer>> blocks, List<Node> blockVariables) {
+    public IndTestBlocksLemma10(DataSet dataSet, BlockSpec blockSpec) {
         if (dataSet == null) throw new IllegalArgumentException("dataSet == null");
-        if (blocks == null) throw new IllegalArgumentException("blocks == null");
-        if (blockVariables == null) throw new IllegalArgumentException("blockVariables == null");
-
-        final int B = blocks.size();
-        if (blockVariables.size() != B) {
-            throw new IllegalArgumentException("blockVariables.size() (" + blockVariables.size() + ") != blocks.size() (" + B + ")");
-        }
+        if (blockSpec == null) throw new IllegalArgumentException("blockspec == null");
+        this.blockSpec = blockSpec;
 
         this.dataSet = dataSet;
-        this.variables = new ArrayList<>(blockVariables);
+        this.variables = new ArrayList<>(blockSpec.blockVariables());
         Map<Node, Integer> nodesHash = new HashMap<>();
         for (int j = 0; j < this.variables.size(); j++) {
             Node v = this.variables.get(j);
@@ -76,10 +73,11 @@ public class IndTestBlocksLemma10 implements IndependenceTest {
         this.n = dataSet.getNumRows();
         this.S = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
 
+        final int B = blockSpec.blocks().size();
         final int D = dataSet.getNumColumns();
         this.allCols = new int[B][];
         for (int b = 0; b < B; b++) {
-            List<Integer> cols = blocks.get(b);
+            List<Integer> cols = blockSpec.blocks().get(b);
             if (cols == null || cols.isEmpty()) {
                 allCols[b] = new int[0];
             } else {
@@ -280,6 +278,11 @@ public class IndTestBlocksLemma10 implements IndependenceTest {
         int[] BC = unionSorted(Bcols, Ccols);
 
         return new Parts(x, y, x.getName(), y.getName(), zNames(z), z, AC, BC, Ccols.length);
+    }
+
+    @Override
+    public BlockSpec getBlockSpec() {
+        return blockSpec;
     }
 
     // === Key bits ===
