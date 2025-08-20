@@ -43,6 +43,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+    private List<List<Integer>> blocks = new ArrayList<>();
 
     /**
      * <p>Constructor for Fofc.</p>
@@ -162,6 +163,11 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
+    }
+
+    @Override
+    public List<List<Integer>> getBlocks() {
+        return new ArrayList<>(blocks);
     }
 }
 

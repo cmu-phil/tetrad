@@ -47,6 +47,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+    private List<List<Integer>> blocks = new ArrayList<>();
 
     /**
      * <p>Constructor for Fofc.</p>
@@ -92,7 +93,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         List<Node> latents = new ArrayList<>(spec.blockVariables());
 
         // Build the measurement graph from blocks + latents
-        Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph(dataModel.getVariables());
         List<Node> observed = dataSet.getVariables();
         for (int i = 0; i < blocks.size(); ++i) {
             Node latent = latents.get(i);
@@ -251,6 +252,12 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
+    }
+
+
+    @Override
+    public List<List<Integer>> getBlocks() {
+        return new ArrayList<>(blocks);
     }
 
     /**

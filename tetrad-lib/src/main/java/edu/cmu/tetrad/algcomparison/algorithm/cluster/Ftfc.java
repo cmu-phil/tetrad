@@ -38,6 +38,7 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+    private List<List<Integer>> blocks = new ArrayList<>();
 
     /**
      * <p>Constructor for Ftfc.</p>
@@ -156,4 +157,8 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         this.knowledge = new Knowledge(knowledge);
     }
 
+    @Override
+    public List<List<Integer>> getBlocks() {
+        return new ArrayList<>(blocks);
+    }
 }

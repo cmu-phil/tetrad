@@ -43,6 +43,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+    private List<List<Integer>> blocks;
 
     /**
      * <p>Constructor for Fofc.</p>
@@ -81,13 +82,14 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
 
         edu.cmu.tetrad.search.Bpc search = new edu.cmu.tetrad.search.Bpc(test, dataSet, alpha);
         List<List<Integer>> blocks = search.getClusters();
+        this.blocks = blocks;
 
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
 
         Graph graph = new EdgeListGraph(includeAllNodes ? dataSet.getVariables() : new ArrayList<>());
         List<Node> latents = new ArrayList<>();
 
-        for (int i = 0; i < dataSet.getVariables().size(); i++) {
+        for (int i = 0; i < blocks.size(); i++) {
             Node latent = new ContinuousVariable("L" + (i + 1));
             latent.setNodeType(NodeType.LATENT);
             latents.add(latent);
@@ -109,7 +111,6 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
             return graph;
         } else {
-            Clusters clusters = ClusterUtils.mimClusters(graph);
             Graph structureGraph;
             Graph fullGraph;
 
@@ -237,5 +238,10 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
+    }
+
+    @Override
+    public List<List<Integer>> getBlocks() {
+        return new ArrayList<>(blocks);
     }
 }

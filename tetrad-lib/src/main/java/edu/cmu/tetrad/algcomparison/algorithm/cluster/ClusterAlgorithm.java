@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 
-import edu.cmu.tetrad.graph.Node;
-
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,4 +10,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public interface ClusterAlgorithm {
+    default List<List<Integer>> getBlocks() {
+        return new ArrayList<>();
+    }
 }
