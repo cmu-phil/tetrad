@@ -89,18 +89,36 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
 
         List<List<String>> _clusters = search.getClusters();
 
-        int latentCount = 0;
         Graph graph = new EdgeListGraph(includeAllNodes ? dataSet.getVariables() : new ArrayList<>());
+        List<Node> latents = new ArrayList<>();
+        List<List<Integer>> blocks = new ArrayList<>();
+        List<String> observedNames = dataSet.getVariableNames();
 
+        int latentCount = 0;
         for (List<String> cluster : _clusters) {
             Node latent = new ContinuousVariable("L" + (++latentCount));
             latent.setNodeType(NodeType.LATENT);
+            latents.add(latent);
+
+            List<Integer> block = new ArrayList<>();
+
+            for (String s : cluster) {
+                block.add(observedNames.indexOf(s));
+            }
+
+            blocks.add(block);
+        }
+
+        List<Node> observed = dataSet.getVariables();
+
+        for (int i = 0; i < blocks.size(); ++i) {
+            List<Integer> block = blocks.get(i);
+            Node latent = latents.get(i);
             graph.addNode(latent);
 
-            for (String name : cluster) {
-                Node measure = new ContinuousVariable(name);
-                graph.addNode(measure);
-                graph.addDirectedEdge(latent, measure);
+            for (Integer j : block) {
+                graph.addNode(observed.get(j));
+                graph.addDirectedEdge(latent, observed.get(j));
             }
         }
 
@@ -118,7 +136,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
             };
 
             if (mimbuildType == Fofc.MimbuildType.PCA) {
-                MimbuildPca mimbuild = new MimbuildPca();
+                MimbuildPca mimbuild = new MimbuildPca(dataSet, blocks, latents);
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
                 List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
@@ -130,7 +148,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
                 }
 
                 try {
-                    structureGraph = mimbuild.search(partition, latentNames, dataSet);
+                    structureGraph = mimbuild.search();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } catch (SingularMatrixException e) {
@@ -148,7 +166,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             } else {
-                Mimbuild mimbuild = new Mimbuild();
+                Mimbuild mimbuild = new Mimbuild(dataSet, blocks, latents);
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
                 List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
@@ -160,7 +178,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
                 }
 
                 try {
-                    structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix(dataSet));
+                    structureGraph = mimbuild.search();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } catch (SingularMatrixException e) {

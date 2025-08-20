@@ -7,10 +7,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.MimbuildPca;
 import edu.cmu.tetrad.search.ntad_test.*;
@@ -19,6 +16,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.ejml.data.SingularMatrixException;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -87,38 +85,40 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
                 = new edu.cmu.tetrad.search.Fofc(dataSet, test, alpha);
         search.setIncludeAllNodes(includeAllNodes);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
         Graph graph = search.search();
+
+        Clusters clusters = ClusterUtils.mimClusters(graph);
+        Graph structureGraph;
+        Graph fullGraph;
+
+        Fofc.MimbuildType mimbuildType = switch (parameters.getInt(Params.MIMBUILD_TYPE)) {
+            case 1 -> Fofc.MimbuildType.PCA;
+            case 2 -> Fofc.MimbuildType.BOLLEN;
+            default -> Fofc.MimbuildType.PCA;
+        };
+
+        edu.cmu.tetrad.search.Fofc.Blocks result = getBlocks(clusters, dataSet);
+        List<Node> observed = dataSet.getVariables();
+
+        for (int i = 0; i < result.blocks().size(); ++i) {
+            List<Integer> block = result.blocks().get(i);
+            Node latent = result.latents().get(i);
+            graph.addNode(latent);
+
+            for (Integer j : block) {
+                graph.addDirectedEdge(latent, observed.get(j));
+            }
+        }
 
         if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
             return graph;
         } else {
-
-            Clusters clusters = ClusterUtils.mimClusters(graph);
-            Graph structureGraph = null;
-            Graph fullGraph = null;
-
-
-            MimbuildType mimbuildType =  switch (parameters.getInt(Params.MIMBUILD_TYPE)) {
-                case 1 -> MimbuildType.PCA;
-                case 2 -> MimbuildType.BOLLEN;
-                default -> MimbuildType.PCA;
-            };
-
-            if (mimbuildType == MimbuildType.PCA) {
-                MimbuildPca mimbuild = new MimbuildPca();
+            if (mimbuildType == Fofc.MimbuildType.PCA) {
+                MimbuildPca mimbuild = new MimbuildPca(dataSet, result.blocks(), result.latents());
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
-                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
-
-                List<String> latentNames = new ArrayList<>();
-
-                for (int i = 0; i < clusters.getNumClusters(); i++) {
-                    latentNames.add(clusters.getClusterName(i));
-                }
-
                 try {
-                    structureGraph = mimbuild.search(partition, latentNames, dataSet);
+                    structureGraph = mimbuild.search();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } catch (SingularMatrixException e) {
@@ -136,19 +136,11 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             } else {
-                Mimbuild mimbuild = new Mimbuild();
+                Mimbuild mimbuild = new Mimbuild(dataSet, result.blocks(), result.latents());
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
-                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
-
-                List<String> latentNames = new ArrayList<>();
-
-                for (int i = 0; i < clusters.getNumClusters(); i++) {
-                    latentNames.add(clusters.getClusterName(i));
-                }
-
                 try {
-                    structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix(dataSet));
+                    structureGraph = mimbuild.search();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } catch (SingularMatrixException e) {
@@ -169,6 +161,25 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
             return fullGraph;
         }
+    }
+
+    public static @NotNull edu.cmu.tetrad.search.Fofc.Blocks getBlocks(Clusters clusters, DataSet dataSet) {
+        List<List<Integer>> blocks = new ArrayList<>();
+        int latentCount = 0;
+        List<Node> latents = new ArrayList<>();
+        for (int i = 0; i < clusters.getNumClusters(); i++) {
+            List<String> names = clusters.getCluster(i);
+            List<Integer> block = new ArrayList<>();
+            for (String name : names) {
+                int j = dataSet.getVariableNames().indexOf(name);
+                block.add(j);
+            }
+            blocks.add(block);
+            ContinuousVariable latent = new  ContinuousVariable("L" + (++latentCount));
+            latent.setNodeType(NodeType.LATENT);
+            latents.add(latent);
+        }
+        return new edu.cmu.tetrad.search.Fofc.Blocks(blocks, latents);
     }
 
     /**

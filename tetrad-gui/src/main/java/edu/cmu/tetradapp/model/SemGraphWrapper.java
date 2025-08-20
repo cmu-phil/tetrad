@@ -329,15 +329,6 @@ public class SemGraphWrapper implements GraphSource,
     }
 
     /**
-     * <p>Constructor for SemGraphWrapper.</p>
-     *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.MimBuildRunner} object
-     */
-    public SemGraphWrapper(MimBuildRunner wrapper) {
-        this(new SemGraph(wrapper.getResultGraph()));
-    }
-
-    /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object

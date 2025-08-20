@@ -704,6 +704,9 @@ public class Fofc {
     }
 
     private enum Purity {PURE, IMPURE, UNDECIDED}
+
+    public record Blocks(List<List<Integer>> blocks, List<Node> latents) {
+    }
 }
 
 

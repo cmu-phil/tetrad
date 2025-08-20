@@ -179,17 +179,6 @@ public class SemPmWrapper implements SessionModel {
     /**
      * <p>Constructor for SemPmWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.MimBuildRunner} object
-     */
-    public SemPmWrapper(MimBuildRunner wrapper) {
-        SemPm pm = wrapper.getSemPm();
-        setSemPm(pm);
-
-    }
-
-    /**
-     * <p>Constructor for SemPmWrapper.</p>
-     *
      * @param wrapper a {@link edu.cmu.tetradapp.model.BuildPureClustersRunner} object
      */
     public SemPmWrapper(BuildPureClustersRunner wrapper) {

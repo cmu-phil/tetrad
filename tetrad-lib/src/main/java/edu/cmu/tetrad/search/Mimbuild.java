@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
@@ -97,10 +98,134 @@ public class Mimbuild {
      */
     private double penaltyDiscount = 1;
 
+    // --- New fields for IndTestBlocks-style construction ---
+    private final DataSet dataSet;                       // observed data
+    private final List<List<Integer>> blocks;            // clusters as column indices into dataSet
+    private final List<Node> blockVariables;             // latent nodes corresponding 1:1 to blocks
+
     /**
-     * Constructs a new Mimbuild search.
+     * New constructor matching IndTestBlocks-style usage.
+     * @param dataSet observed data
+     * @param blocks clusters as lists of column indices into dataSet (must be non-empty, disjoint)
+     * @param blockVariables latent variables (size must equal blocks.size(), names must be unique)
      */
-    public Mimbuild() {
+    public Mimbuild(DataSet dataSet, List<List<Integer>> blocks, List<Node> blockVariables) {
+        if (dataSet == null) throw new IllegalArgumentException("dataSet == null");
+        if (blocks == null) throw new IllegalArgumentException("blocks == null");
+        if (blockVariables == null) throw new IllegalArgumentException("blockVariables == null");
+
+        final int B = blocks.size();
+        if (blockVariables.size() != B) {
+            throw new IllegalArgumentException("#blockVariables (" + blockVariables.size() + ") != #blocks (" + B + ")");
+        }
+
+        // Validate columns and block non-emptiness
+        final int D = dataSet.getNumColumns();
+        for (int b = 0; b < B; b++) {
+            List<Integer> cols = blocks.get(b);
+            if (cols == null || cols.isEmpty()) {
+                throw new IllegalArgumentException("Block " + b + " is null or empty.");
+            }
+            for (int c : cols) {
+                if (c < 0 || c >= D) {
+                    throw new IllegalArgumentException("Block " + b + " references column " + c + " outside dataset width " + D);
+                }
+            }
+        }
+        // Validate disjointness of blocks
+        java.util.HashSet<Integer> seen = new java.util.HashSet<>();
+        for (int b = 0; b < B; b++) {
+            for (int c : blocks.get(b)) {
+                if (!seen.add(c)) {
+                    throw new IllegalArgumentException("Blocks must be disjoint; repeated column index: " + c);
+                }
+            }
+        }
+        // Validate blockVariables are non-null and have distinct names
+        java.util.HashSet<String> names = new java.util.HashSet<>();
+        for (int i = 0; i < blockVariables.size(); i++) {
+            Node v = blockVariables.get(i);
+            if (v == null) throw new IllegalArgumentException("blockVariables[" + i + "] is null");
+            if (!names.add(v.getName())) {
+                throw new IllegalArgumentException("Duplicate latent name: " + v.getName());
+            }
+        }
+
+        this.dataSet = dataSet;
+        this.blocks = new ArrayList<>(blocks);
+        this.blockVariables = new ArrayList<>(blockVariables);
+    }
+
+    /**
+     * Runs the legacy optimization-based Mimbuild using constructor-provided (dataSet, blocks, blockVariables).
+     * This constructs a covariance over the *measured variables that appear in blocks*, builds the clustering,
+     * and then calls the existing search(List<List<Node>>, List<String>, ICovarianceMatrix).
+     */
+    public Graph search() throws InterruptedException {
+        if (this.dataSet == null || this.blocks == null || this.blockVariables == null) {
+            throw new IllegalStateException("Use the (DataSet, blocks, blockVariables) constructor or call a legacy search overload.");
+        }
+
+        // Build measured node list in block order and a mapping of blocks to those nodes
+        List<List<Node>> clusteringNodes = new ArrayList<>();
+        List<Node> measuredNodesFlat = new ArrayList<>();
+        for (List<Integer> block : this.blocks) {
+            List<Node> blockNodes = new ArrayList<>();
+            for (int col : block) {
+                Node var = dataSet.getVariable(col);
+                blockNodes.add(var);
+                measuredNodesFlat.add(var);
+            }
+            clusteringNodes.add(blockNodes);
+        }
+
+        // Compute sample covariance (n-1) over the measured nodes referenced by blocks
+        int n = dataSet.getNumRows();
+        int p = measuredNodesFlat.size();
+        double[][] cov = new double[p][p];
+
+        // Build column index map for the selected variables
+        int[] cols = new int[p];
+        for (int j = 0; j < p; j++) {
+            cols[j] = dataSet.getColumnIndex(measuredNodesFlat.get(j));
+        }
+
+        // Compute means
+        double[] means = new double[p];
+        for (int r = 0; r < n; r++) {
+            for (int j = 0; j < p; j++) {
+                means[j] += dataSet.getDouble(r, cols[j]);
+            }
+        }
+        for (int j = 0; j < p; j++) means[j] /= Math.max(1, n);
+
+        // Compute covariance with (n-1) denominator
+        for (int r = 0; r < n; r++) {
+            for (int j = 0; j < p; j++) {
+                double xj = dataSet.getDouble(r, cols[j]) - means[j];
+                for (int k = j; k < p; k++) {
+                    double xk = dataSet.getDouble(r, cols[k]) - means[k];
+                    cov[j][k] += xj * xk;
+                }
+            }
+        }
+        int dof = Math.max(1, n - 1);
+        for (int j = 0; j < p; j++) {
+            for (int k = j; k < p; k++) {
+                cov[j][k] /= dof;
+                cov[k][j] = cov[j][k];
+            }
+        }
+
+        // Pack into an ICovarianceMatrix aligned with measuredNodesFlat
+        ICovarianceMatrix measurescov = new CovarianceMatrix(measuredNodesFlat, new Matrix(cov), n);
+
+        // Latent names from provided blockVariables
+        List<String> latentNames = new ArrayList<>(blockVariables.size());
+        for (Node node : blockVariables) latentNames.add(node.getName());
+
+        // Delegate to legacy pipeline (will also set this.clustering and this.latents)
+        return search(clusteringNodes, latentNames, measurescov);
     }
 
     /**
@@ -120,7 +245,7 @@ public class Mimbuild {
      * @throws IllegalArgumentException If the clustering contains invalid indices or overlapping clusters.
      * @throws NullPointerException     If any of the arguments are null.
      */
-    public Graph search(int[][] clustering, String[] measureNames, String[] latentNames, double[][] measuresCov) throws InterruptedException {
+    private Graph search(int[][] clustering, String[] measureNames, String[] latentNames, double[][] measuresCov) throws InterruptedException {
 
         // Check nullity.
         if (clustering == null || measureNames == null || latentNames == null || measuresCov == null) {
@@ -199,7 +324,7 @@ public class Mimbuild {
      * @return The inferred structure graph over the latent variables.
      * @throws InterruptedException If the search is interrupted.
      */
-    public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix
+    private Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix
             measurescov) throws InterruptedException {
 
         // Check nullity.

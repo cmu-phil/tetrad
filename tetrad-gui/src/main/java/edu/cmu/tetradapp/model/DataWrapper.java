@@ -308,22 +308,6 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
-     * Constructs a data wrapper using a new DataSet as data model.
-     *
-     * @param mimBuild   the mim build to use.
-     * @param parameters the parameters to use.
-     */
-    public DataWrapper(MimBuildRunner mimBuild, Parameters parameters) {
-        this.parameters = new Parameters(parameters);
-
-        ICovarianceMatrix cov = mimBuild.getCovMatrix();
-
-        DataModelList dataModelList = new DataModelList();
-        dataModelList.add(cov);
-        this.dataModelList = dataModelList;
-    }
-
-    /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object

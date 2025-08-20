@@ -325,17 +325,6 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
     /**
      * <p>Constructor for GeneralizedSemPmWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.MimBuildRunner} object
-     */
-    public GeneralizedSemPmWrapper(MimBuildRunner wrapper) {
-        SemPm oldSemPm = wrapper.getSemPm();
-        this.semPm = new GeneralizedSemPm(oldSemPm);
-        log(this.semPm);
-    }
-
-    /**
-     * <p>Constructor for GeneralizedSemPmWrapper.</p>
-     *
      * @param wrapper a {@link edu.cmu.tetradapp.model.BuildPureClustersRunner} object
      */
     public GeneralizedSemPmWrapper(BuildPureClustersRunner wrapper) {
