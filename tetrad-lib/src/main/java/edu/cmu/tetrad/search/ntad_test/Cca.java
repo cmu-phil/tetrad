@@ -55,8 +55,6 @@ public class Cca extends NtadTest {
         int[] b = ntad[1];
         int n = resample ? (int) (frac * this.n) : this.n;
 
-        System.out.println("Rank for (" + Arrays.toString(a) + ", " + Arrays.toString(b) + ", " + n + ") = " + RankTests.estimateWilksRank(S, a, b, n, 0.01));
-
         // Use the getCcaPValueRankD method for rank r = 1 (or make r configurable if needed)
         int r = Math.min(a.length, b.length) - 1;
         return RankTests.rankLeByWilks(S, a, b, n, r);

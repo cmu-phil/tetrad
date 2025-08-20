@@ -6,13 +6,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -70,7 +65,26 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-        return search.search();
+        List<List<Integer>> blocks = search.findClusters();
+        List<Node> latents = new ArrayList<>(blocks.size());
+        for (int i = 0; i < blocks.size(); i++) {
+            ContinuousVariable latent = new ContinuousVariable("L" + (i + 1));
+            latent.setNodeType(NodeType.LATENT);
+            latents.add(latent);
+        }
+
+        // Build the measurement graph from blocks + latents
+        List<Node> observed = dataSet.getVariables();
+        Graph graph = new EdgeListGraph(observed);
+        for (int i = 0; i < blocks.size(); ++i) {
+            Node latent = latents.get(i);
+            graph.addNode(latent);
+            for (Integer j : blocks.get(i)) {
+                graph.addDirectedEdge(latent, observed.get(j));
+            }
+        }
+
+        return graph;
     }
 
     /**

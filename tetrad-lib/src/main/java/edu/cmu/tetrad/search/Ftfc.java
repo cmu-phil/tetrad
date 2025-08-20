@@ -129,23 +129,13 @@ public class Ftfc {
      *
      * @return This graph.
      */
-    public Graph search() {
+    public List<List<Integer>> findClusters() {
         this.pureSextets = new HashSet<>();
         this.impureSextets = new HashSet<>();
 
-        Set<List<Integer>> allClusters;
+        Set<List<Integer>> allClusters = estimateClustersSag();
 
-        allClusters = estimateClustersSag();
-        this.clusters = ClusterSignificance.variablesForIndices(allClusters, variables);
-
-        log("clusters = " + this.clusters);
-
-        if (verbose) {
-            ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
-            clusterSignificance.printClusterPValues(allClusters);
-        }
-
-        return convertToGraph(allClusters, includeAllNodes);
+        return new ArrayList<>(allClusters);
     }
 
     /**

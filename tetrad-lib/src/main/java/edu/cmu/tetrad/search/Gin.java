@@ -3,9 +3,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.blocks.BlocksUtil;
 import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
-import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.util.RankTests;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -20,59 +20,52 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * The Gin class implements an algorithm for causal discovery, leveraging
- * statistical independence tests and clustering techniques to infer
- * latent structures and build a graphical representation of causal relationships.
- *
- * This class executes a multi-step process including the identification of
- * causal clusters, creation of latent nodes linked to observed variables,
- * and orientation of directed edges among the latent variables.
- *
- * Key functionalities:
- * - Use of a raw marginal independence test to compute p-values for
- *   independence checks.
- * - Identification of causal clusters using FOFC (fast orientation for causation)
- *   and further refinement via statistical tests.
- * - Construction of a causal graph accommodating both observed and latent nodes.
- *
- * The algorithm relies heavily on covariance matrices and additional statistical
- * procedures such as Fisher's method for p-value combination and singular value
- * decomposition (SVD).
- *
- * The algorithm is tailored for use with time-series or multivariate datasets,
- * where causal inference in the presence of latent confounding variables is necessary.
- *
+ * The Gin class implements an algorithm for causal discovery, leveraging statistical independence tests and clustering
+ * techniques to infer latent structures and build a graphical representation of causal relationships.
+ * <p>
+ * This class executes a multi-step process including the identification of causal clusters, creation of latent nodes
+ * linked to observed variables, and orientation of directed edges among the latent variables.
+ * <p>
+ * Key functionalities: - Use of a raw marginal independence test to compute p-values for independence checks. -
+ * Identification of causal clusters using FOFC (fast orientation for causation) and further refinement via statistical
+ * tests. - Construction of a causal graph accommodating both observed and latent nodes.
+ * <p>
+ * The algorithm relies heavily on covariance matrices and additional statistical procedures such as Fisher's method for
+ * p-value combination and singular value decomposition (SVD).
+ * <p>
+ * The algorithm is tailored for use with time-series or multivariate datasets, where causal inference in the presence
+ * of latent confounding variables is necessary.
+ * <p>
  * Thread-safety: Not guaranteed. This class is not designed to be thread-safe.
  */
 public class Gin {
 
     /**
-     * The significance level threshold used in statistical tests to determine causal
-     * relationships or dependencies within the data. This parameter typically ranges
-     * between 0 and 1, where a smaller value indicates stricter criteria for significance.
+     * The significance level threshold used in statistical tests to determine causal relationships or dependencies
+     * within the data. This parameter typically ranges between 0 and 1, where a smaller value indicates stricter
+     * criteria for significance.
      */
     private final double alpha;
     /**
-     * An instance of {@link RawMarginalIndependenceTest} used to perform tests
-     * for marginal independence between variables during computations within
-     * the {@code Gin} class.
-     *
-     * This field encapsulates the logic for evaluating statistical independence
-     * between pairs of variables, which is a foundational operation for the
-     * methods provided by the enclosing class.
+     * An instance of {@link RawMarginalIndependenceTest} used to perform tests for marginal independence between
+     * variables during computations within the {@code Gin} class.
+     * <p>
+     * This field encapsulates the logic for evaluating statistical independence between pairs of variables, which is a
+     * foundational operation for the methods provided by the enclosing class.
      */
     private final RawMarginalIndependenceTest test;
+    private final NormalDistribution normal = new NormalDistribution(0, 1);
     private CorrelationMatrix corr;
     private SimpleMatrix S;
     private DataSet dataSet;
     private List<Node> variables;
-    private final NormalDistribution normal = new NormalDistribution(0, 1);
 
     /**
      * Constructs a Gin object with the specified significance level and marginal independence test.
      *
      * @param alpha the significance level to be used for the hypothesis tests; must be a value between 0 and 1
-     * @param test an implementation of the {@code RawMarginalIndependenceTest} interface to perform variable independence testing
+     * @param test  an implementation of the {@code RawMarginalIndependenceTest} interface to perform variable
+     *              independence testing
      */
     public Gin(double alpha, RawMarginalIndependenceTest test) {
         this.alpha = alpha;
@@ -80,13 +73,13 @@ public class Gin {
     }
 
     /**
-     * Executes a causal discovery algorithm on the provided dataset to construct
-     * a graph representing the causal relationships between variables.
+     * Executes a causal discovery algorithm on the provided dataset to construct a graph representing the causal
+     * relationships between variables.
      *
-     * @param data the dataset containing variables and their associated covariance matrix;
-     *             must contain sufficient information for causal analysis.
-     * @return a graph structure representing causal relationships, including observed
-     *         and latent variables, derived from the input dataset.
+     * @param data the dataset containing variables and their associated covariance matrix; must contain sufficient
+     *             information for causal analysis.
+     * @return a graph structure representing causal relationships, including observed and latent variables, derived
+     * from the input dataset.
      */
     public Graph search(DataSet data) {
         SimpleMatrix cov = new SimpleMatrix(data.getCovarianceMatrix().getSimpleMatrix());
@@ -175,15 +168,14 @@ public class Gin {
     }
 
     /**
-     * Computes the result of a matrix operation based on the provided dataset, covariance matrix,
-     * and specified subsets of variables. This method extracts specific rows and columns
-     * based on the provided indices and performs singular value decomposition (SVD)
-     * to compute the resulting array.
+     * Computes the result of a matrix operation based on the provided dataset, covariance matrix, and specified subsets
+     * of variables. This method extracts specific rows and columns based on the provided indices and performs singular
+     * value decomposition (SVD) to compute the resulting array.
      *
      * @param data the dataset containing observations and values for variables
-     * @param cov the covariance matrix of the dataset
-     * @param X a list of indices indicating a subset of variables from the dataset
-     * @param Z a list of indices identifying another subset of variables from the dataset
+     * @param cov  the covariance matrix of the dataset
+     * @param X    a list of indices indicating a subset of variables from the dataset
+     * @param Z    a list of indices identifying another subset of variables from the dataset
      * @return an array of computed double values resulting from the matrix operations
      */
     private double[] computeE(DataSet data, SimpleMatrix cov, List<Integer> X, List<Integer> Z) {
@@ -207,12 +199,12 @@ public class Gin {
     }
 
     /**
-     * Computes the Fisher's combined probability test statistic for a list of p-values
-     * and returns the cumulative probability from the chi-squared distribution.
+     * Computes the Fisher's combined probability test statistic for a list of p-values and returns the cumulative
+     * probability from the chi-squared distribution.
      *
      * @param pvals a list of p-values to combine; should not contain zero or NaN values.
-     * @return the cumulative probability resulting from the Fisher's test, or 0 if the
-     *         input list is empty or contains invalid values.
+     * @return the cumulative probability resulting from the Fisher's test, or 0 if the input list is empty or contains
+     * invalid values.
      */
     private double fisher(List<Double> pvals) {
         if (pvals.isEmpty()) return 0;
@@ -342,8 +334,6 @@ public class Gin {
     }
 
 
-
-
     private List<Integer> allVariables() {
         List<Integer> _variables = new ArrayList<>();
         for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
@@ -352,38 +342,26 @@ public class Gin {
 
     private List<List<Integer>> findCausalClusters(DataSet data, SimpleMatrix cov, SimpleMatrix rawData) {
         Fofc fofc = new Fofc(data, new Cca(data.getDoubleData().getSimpleMatrix(), false), alpha);
-        Graph fofcGraph = fofc.search();
+        List<List<Integer>> blocks = fofc.findClusters();
         List<Node> vars = data.getVariables();
 
-        List<Node> fofcLatents = ReidentifyVariables.getLatents(fofcGraph);
-
-        List<List<Integer>> clusters = new ArrayList<>();
-
-        for (Node l : fofcLatents) {
-            List<Node> children = fofcGraph.getChildren(l);
-            List<Integer> cluster = new ArrayList<>();
-            for (Node n : children) {
-                int e = vars.indexOf(n);
-                cluster.add(e);
-            }
-
-            clusters.add(cluster);
-        }
+        List<Node> latents = BlocksUtil.makeBlockVariables(blocks, dataSet);
+        Graph graph = new EdgeListGraph();
 
         int numVars = data.getNumColumns();
         Set<Integer> candidates = new HashSet<>();
         for (int i = 0; i < numVars; i++) candidates.add(i);
         List<Node> nodes = data.getVariables();
 
-        for (List<Integer> cluster : clusters) {
-            cluster.forEach(candidates::remove);
+        for (List<Integer> block : blocks) {
+            block.forEach(candidates::remove);
         }
 
-        for (List<Integer> cluster : new ArrayList<>(clusters)) {
+        for (List<Integer> block : blocks) {
             Set<Integer> remainder = new HashSet<>(candidates);
-            cluster.forEach(remainder::remove);
+            block.forEach(remainder::remove);
 
-            double[] e = computeE(data, cov, cluster, new ArrayList<>(remainder));
+            double[] e = computeE(data, cov, block, new ArrayList<>(remainder));
             List<Double> pvals = new ArrayList<>();
             for (int z : remainder) {
                 double[] zData = rawData.extractVector(false, z).getDDRM().getData();
@@ -401,13 +379,13 @@ public class Gin {
                 grown = false;
                 K:
                 for (int k : new HashSet<>(remainder)) {
-                    List<Integer> candidate = new ArrayList<>(cluster);
+                    List<Integer> candidate = new ArrayList<>(block);
                     candidate.add(k);
 
-                    for (int k1 = 0; k1 < cluster.size(); k1++) {
-                        for (int l1 = k1 + 1; l1 < cluster.size(); l1++) {
+                    for (int k1 = 0; k1 < block.size(); k1++) {
+                        for (int l1 = k1 + 1; l1 < block.size(); l1++) {
                             try {
-                                if (!((IndependenceTest) test).checkIndependence(nodes.get(cluster.get(k1)), nodes.get(cluster.get(l1))).isDependent()) {
+                                if (!((IndependenceTest) test).checkIndependence(nodes.get(block.get(k1)), nodes.get(block.get(l1))).isDependent()) {
                                     continue K;
                                 }
                             } catch (InterruptedException ex) {
@@ -431,7 +409,7 @@ public class Gin {
                         }
                     }
                     if (fisher(pvals) >= alpha) {
-                        cluster = candidate;
+                        block = candidate;
                         remainder.remove(k);
                         grown = true;
                         break;
@@ -439,12 +417,12 @@ public class Gin {
                 }
             } while (grown);
 
-            clusters.add(cluster);
-            cluster.forEach(candidates::remove);
+            blocks.add(block);
+            block.forEach(candidates::remove);
         }
 
-        for (List<Integer> cluster : clusters) {
-            candidates.removeAll(cluster);
+        for (List<Integer> block : blocks) {
+            block.forEach(candidates::remove);
         }
 
         for (int i = 0; i < numVars; i++) {
@@ -525,12 +503,12 @@ public class Gin {
                     }
                 } while (grown);
 
-                clusters.add(cluster);
+                blocks.add(cluster);
                 cluster.forEach(candidates::remove);
             }
         }
 
 
-        return clusters;
+        return blocks;
     }
 }
