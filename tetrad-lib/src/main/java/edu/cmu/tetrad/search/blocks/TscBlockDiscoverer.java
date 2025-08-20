@@ -4,10 +4,11 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.TrekSeparationClusters;
 
-import java.util.ArrayList;
 import java.util.List;
 
-/** Adapter: TSC → BlockSpec. */
+/**
+ * Adapter: TSC → BlockSpec.
+ */
 public class TscBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
     private final double alpha; // or whatever hyperparams TSC needs

@@ -23,7 +23,7 @@ import java.util.List;
 
 
 /**
- * Trek Separation Slusters.
+ * Trek Separation Clusters.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -101,7 +101,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
      * This method returns a comparison graph that is obtained from the given true directed graph.
      *
      * @param graph The true directed graph, if there is one.
-     * @return The comparison graph obtained by applying the CPDAG algorithm to the true directed graph.
+     * @return The comparison graph obtained by applying the CPDAG algorithm to the true-directed graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
