@@ -249,8 +249,8 @@ public class MimbuildPca {
      *            its elements. This parameter must be an instance of SimpleMatrix.
      */
     private void centerColumns(SimpleMatrix mat) {
-        int rows = mat.numRows();
-        int cols = mat.numCols();
+        int rows = mat.getNumRows();
+        int cols = mat.getNumCols();
         for (int j = 0; j < cols; j++) {
             double mean = 0;
             for (int i = 0; i < rows; i++) mean += mat.get(i, j);

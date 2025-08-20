@@ -121,21 +121,21 @@ public class TestBlockwiseIndependence {
             List<Integer> idxX = new ArrayList<>();
             for (Node x : bc.X) idxX.add(allVars.indexOf(x));
             blocks.add(idxX);
-            Node mvX = new ContinuousVariable("INC_X"); ((ContinuousVariable) mvX).setNodeType(NodeType.LATENT);
+            ContinuousVariable mvX = new ContinuousVariable("INC_X"); mvX.setNodeType(NodeType.LATENT);
             meta.add(mvX);
 
             // [Y]
             List<Integer> idxY = new ArrayList<>();
             for (Node y : bc.Y) idxY.add(allVars.indexOf(y));
             blocks.add(idxY);
-            Node mvY = new ContinuousVariable("INC_Y"); ((ContinuousVariable) mvY).setNodeType(NodeType.LATENT);
+            ContinuousVariable mvY = new ContinuousVariable("INC_Y"); mvY.setNodeType(NodeType.LATENT);
             meta.add(mvY);
 
             // [Z]
             List<Integer> idxZ = new ArrayList<>();
             for (Node z : bc.Z) idxZ.add(allVars.indexOf(z));
             blocks.add(idxZ);
-            Node mvZ = new ContinuousVariable("INC_Z"); ((ContinuousVariable) mvZ).setNodeType(NodeType.LATENT);
+            ContinuousVariable mvZ = new ContinuousVariable("INC_Z"); mvZ.setNodeType(NodeType.LATENT);
             meta.add(mvZ);
 
             // Initialize fresh block tests on these incoherent blocks
