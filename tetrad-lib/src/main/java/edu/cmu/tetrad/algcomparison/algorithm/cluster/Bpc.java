@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Find One Factor Clusters.
+ * Build Pure Clusters.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -46,7 +46,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     private List<List<Integer>> blocks = new ArrayList<>();
 
     /**
-     * <p>Constructor for Fofc.</p>
+     * <p>Constructor.</p>
      */
     public Bpc() {
     }

@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FTFC.
+ * Find Two Factor Clusters.
  *
  * @author josephramsey
  * @version $Id: $Id
