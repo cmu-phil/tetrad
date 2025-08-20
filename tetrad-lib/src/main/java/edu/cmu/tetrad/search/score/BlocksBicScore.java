@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
@@ -26,7 +27,7 @@ import java.util.*;
  * applied directly as 2ℓ - c k log n.
  *
  */
-public class BlocksBicScore implements Score {
+public class BlocksBicScore implements Score, BlockScore {
     // --- Caches ---
     private static final int SCORE_CACHE_MAX = 100_000;
     private static final int XBLOCK_CACHE_MAX = 50_000;
@@ -64,6 +65,7 @@ public class BlocksBicScore implements Score {
                     return size() > XBLOCK_CACHE_MAX;
                 }
             };
+    private final BlockSpec blockSpec;
 
     // --- Knobs ---
     private double penaltyDiscount = 1.0;   // c
@@ -71,22 +73,17 @@ public class BlocksBicScore implements Score {
     private double ebicGamma = 0.0;         // gamma for EBIC-style extra penalty (0 disables)
 
     /**
-     * @param dataSet        dataset whose columns the 'blocks' indices refer to
-     * @param blocks         for each block b (0..B-1), the list of embedded column indices composing that block
-     * @param blockVariables the exact variables to expose to the scorer; size must equal blocks.size()
+     * @param dataSet   dataset whose columns the 'blocks' indices refer to
+     * @param blockSpec the block spec for the score
      */
-    public BlocksBicScore(DataSet dataSet, List<List<Integer>> blocks, List<Node> blockVariables) {
+    public BlocksBicScore(DataSet dataSet, BlockSpec blockSpec) {
         this.dataSet = Objects.requireNonNull(dataSet, "dataSet == null");
-        Objects.requireNonNull(blocks, "blocks == null");
-        Objects.requireNonNull(blockVariables, "blockVariables == null");
-        int B = blocks.size();
-        if (blockVariables.size() != B) {
-            throw new IllegalArgumentException("blockVariables.size() (" + blockVariables.size() +
-                                               ") != blocks.size() (" + B + ")");
-        }
+        this.blockSpec = Objects.requireNonNull(blockSpec, "blockspec == null");
+
+        int B = blockSpec.blocks().size();
 
         // block-level variables & index
-        this.variables = new ArrayList<>(blockVariables);
+        this.variables = new ArrayList<>(blockSpec.blockVariables());
         this.nodeIndex = new HashMap<>();
         for (int j = 0; j < variables.size(); j++) {
             Node v = variables.get(j);
@@ -105,7 +102,7 @@ public class BlocksBicScore implements Score {
         this.blockAllCols = new int[B][];
         int totalCols = 0;
         for (int b = 0; b < B; b++) {
-            List<Integer> cols = blocks.get(b);
+            List<Integer> cols = blockSpec.blocks().get(b);
             if (cols == null || cols.isEmpty()) {
                 this.blockAllCols[b] = new int[0];
             } else {
@@ -341,6 +338,11 @@ public class BlocksBicScore implements Score {
         List<Node> ps = new ArrayList<>(parents.length);
         for (int p : parents) ps.add(variables.get(p));
         return localScore(y, ps);
+    }
+
+    @Override
+    public BlockSpec getBlockSpec() {
+        return blockSpec;
     }
 
     // ----- Key types for caches -----
