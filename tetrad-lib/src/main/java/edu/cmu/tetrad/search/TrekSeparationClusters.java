@@ -240,22 +240,19 @@ public class TrekSeparationClusters {
     /**
      * Searches for latent clusters using specified size and rank parameters.
      */
-    public Graph search() {
+    public List<List<Integer>> findClusters() {
         Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> ret = estimateClusters();
         clusterToRank = ret.getFirst();
         reducedRank = ret.getSecond();
+        return convertToLists(clusterToRank.keySet());
+    }
 
-        List<Set<Integer>> clusterSets = clusterToRank.keySet().stream()
+    private List<List<Integer>> convertToLists(Set<Set<Integer>> clusters) {
+        return clusters.stream()
                 .sorted(Comparator.<Set<Integer>>comparingInt(Set::size).reversed()
                         .thenComparing(this::toNamesCluster))
+                .map(cluster -> new ArrayList<>(cluster))
                 .collect(Collectors.toList());
-
-        List<Node> latents = defineLatents(clusterSets, clusterToRank, reducedRank);
-        Graph graph = convertSearchGraphClusters(clusterSets, latents, includeAllNodes);
-
-        this.latentNames = new ArrayList<>();
-        for (Node latent : latents) latentNames.add(latent.getName());
-        return graph;
     }
 
     private Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> estimateClusters() {
@@ -699,10 +696,6 @@ public class TrekSeparationClusters {
 
     private String toNamesCluster(Set<Integer> cluster) {
         return cluster.stream().map(i -> nodes.get(i).getName()).collect(Collectors.joining(" ", "{", "}"));
-    }
-
-    public List<List<Integer>> getClusters() {
-        return new ArrayList<>(this.clusters);
     }
 
     public List<String> getLatentNames() {

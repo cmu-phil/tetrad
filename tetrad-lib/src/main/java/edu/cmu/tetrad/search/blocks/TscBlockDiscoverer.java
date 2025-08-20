@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.search.blocks;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.search.TrekSeparationClusters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,13 +19,9 @@ public class TscBlockDiscoverer implements BlockDiscoverer {
 
     @Override
     public BlockSpec discover() {
-        // TODO: call your TSC pipeline and get List<List<Integer>>.
-        // Example (pseudo):
-        // Tsc tsc = new Tsc(dataSet, alpha, ...);
-        // List<List<Integer>> blocks = tsc.getClustersAsIndices();
-
-        List<List<Integer>> blocks = new ArrayList<>(); // <— replace with real call
-
+        TrekSeparationClusters tsc = new TrekSeparationClusters(dataSet.getVariables(), new CorrelationMatrix(dataSet),
+                dataSet.getNumRows());
+        List<List<Integer>> blocks = tsc.findClusters();
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
         return BlocksUtil.toSpec(blocks, dataSet);

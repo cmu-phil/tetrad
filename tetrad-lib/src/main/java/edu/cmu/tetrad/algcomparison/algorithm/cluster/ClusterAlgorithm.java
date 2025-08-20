@@ -1,5 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 
+import edu.cmu.tetrad.graph.Node;
+
+import java.util.List;
+
 /**
  * Tags an algorithm that generates clusters.
  *

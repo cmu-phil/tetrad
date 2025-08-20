@@ -7,10 +7,13 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.TrekSeparationClustersScored;
+import edu.cmu.tetrad.search.blocks.BlockDiscoverer;
+import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -19,18 +22,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-///**
-// * Find One Factor Clusters.
-// *
-// * @author josephramsey
-// * @version $Id: $Id
-// */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "TSC",
-//        command = "tsc",
-//        algoType = AlgType.search_for_structure_over_latents
-//)
-//@Bootstrapping
+/**
+ * Trek Separation Slusters.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "TSC",
+        command = "tsc",
+        algoType = AlgType.search_for_structure_over_latents
+)
+@Bootstrapping
 public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
         TakesCovarianceMatrix {
 
@@ -62,19 +65,36 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
 
-        CovarianceMatrix covarianceMatrix = dataModel instanceof DataSet
-                ? new CorrelationMatrix((DataSet) dataModel) : new CorrelationMatrix((CovarianceMatrix) dataModel);
+        DataSet dataSet = (DataSet) dataModel;
         List<Node> variables = dataModel.getVariables();
 
+        // === NEW: use the unified FOFC BlockDiscoverer ===
+        BlockDiscoverer discoverer = BlockDiscoverers.tsc(dataSet, alpha);
+        BlockSpec spec = discoverer.discover();
+        List<List<Integer>> blocks = new ArrayList<>(spec.blocks());
+        List<Node> latents = new ArrayList<>(spec.blockVariables());
+
         edu.cmu.tetrad.search.TrekSeparationClusters search
-                = new edu.cmu.tetrad.search.TrekSeparationClusters(variables, covarianceMatrix,
-                ess == -1 ? covarianceMatrix.getSampleSize() : ess);
+                = new edu.cmu.tetrad.search.TrekSeparationClusters(variables, new CorrelationMatrix(dataSet),
+                ess == -1 ? ((DataSet) dataModel).getNumRows() : ess);
         search.setIncludeAllNodes(includeAllNodes);
         search.setAlpha(alpha);
         search.setVerbose(verbose);
 //        search.setMode(TrekSeparationClustersScored.Mode.Scoring);
 
-        return search.search();
+        List<List<Integer>> clusters = search.findClusters();
+        List<Node> observed = dataSet.getVariables();
+        // Build the measurement graph from blocks + latents
+        Graph graph = new EdgeListGraph(observed);
+        for (int i = 0; i < blocks.size(); ++i) {
+            Node latent = latents.get(i);
+            graph.addNode(latent);
+            for (Integer j : blocks.get(i)) {
+                graph.addDirectedEdge(latent, observed.get(j));
+            }
+        }
+
+        return graph;
     }
 
     /**

@@ -947,11 +947,11 @@ public class RankTests {
             return getRccaEntry(S, C, D, ridge);
         }
 
-        final int p = S.numCols();
+        final int p = S.getNumCols();
         // --- Build S_|Z via Schur complement: S - S_{.,Z} inv(S_{Z,Z}+ridgeI) S_{Z,.}
         SimpleMatrix S_ZZ = submatrix(S, Z, Z).copy();
         // ridge on S_ZZ for numerical stability
-        for (int i = 0; i < S_ZZ.numRows(); i++) {
+        for (int i = 0; i < S_ZZ.getNumRows(); i++) {
             S_ZZ.set(i, i, S_ZZ.get(i, i) + ridge);
         }
         SimpleMatrix invS_ZZ;
@@ -972,8 +972,8 @@ public class RankTests {
         SimpleMatrix Rcd = submatrix(S_cond, C, D).copy();
 
         // Add ridge to the diagonals of Rcc / Rdd before inversion
-        for (int i = 0; i < Rcc.numRows(); i++) Rcc.set(i, i, Rcc.get(i, i) + ridge);
-        for (int i = 0; i < Rdd.numRows(); i++) Rdd.set(i, i, Rdd.get(i, i) + ridge);
+        for (int i = 0; i < Rcc.getNumRows(); i++) Rcc.set(i, i, Rcc.get(i, i) + ridge);
+        for (int i = 0; i < Rdd.getNumRows(); i++) Rdd.set(i, i, Rdd.get(i, i) + ridge);
 
         SimpleMatrix invRcc, invRdd;
         try {
@@ -1000,7 +1000,7 @@ public class RankTests {
 
         int m = Math.min(C.length, D.length);
         List<Double> rho2 = new ArrayList<>(m);
-        for (int i = 0; i < Math.min(m, M.numRows()); i++) {
+        for (int i = 0; i < Math.min(m, M.getNumRows()); i++) {
             double val = evd.getEigenvalue(i).getReal();
             if (Double.isNaN(val) || Double.isInfinite(val)) continue;
             // clamp to [0,1] for safety

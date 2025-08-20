@@ -637,7 +637,7 @@ public class Kci implements IndependenceTest, RowsSettable, RawMarginalIndepende
     }
 
     private SimpleMatrix centerKernel(SimpleMatrix K) {
-        int n = K.numRows();
+        int n = K.getNumRows();
         SimpleMatrix I = SimpleMatrix.identity(n);
         SimpleMatrix oneN = new SimpleMatrix(n, n);
         oneN.fill(1.0 / n);
