@@ -43,7 +43,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-    private List<List<Integer>> blocks;
+    private List<List<Integer>> blocks = new ArrayList<>();
 
     /**
      * <p>Constructor for Fofc.</p>
@@ -82,7 +82,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
 
         edu.cmu.tetrad.search.Bpc search = new edu.cmu.tetrad.search.Bpc(test, dataSet, alpha);
         List<List<Integer>> blocks = search.getClusters();
-        this.blocks = blocks;
+        this.blocks = new ArrayList<>(blocks);
 
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
 

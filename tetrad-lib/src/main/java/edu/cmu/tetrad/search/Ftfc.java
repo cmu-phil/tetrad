@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ntad_test.BollenTing;
@@ -74,10 +73,6 @@ public class Ftfc {
      */
     private final double alpha;
     /**
-     * The data.
-     */
-    private final transient DataModel dataModel;
-    /**
      * A standard normal distribution object used for statistical calculations within the Fofc class. The distribution
      * is characterized by a mean of 0 and a standard deviation of 1.
      */
@@ -94,12 +89,6 @@ public class Ftfc {
      * Whether verbose output is desired.
      */
     private boolean verbose;
-    /**
-     * Indicates whether all nodes should be included in the graph construction or processing. When set to true, the
-     * algorithm will incorporate all nodes into the resulting graph, regardless of specific clustering or filtering
-     * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
-     */
-    private boolean includeAllNodes = false;
     /**
      * A cache of pure sextets.
      */
@@ -120,7 +109,6 @@ public class Ftfc {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.test = test;
-        this.dataModel = dataSet;
         this.corr = new CorrelationMatrix(dataSet);
     }
 
@@ -183,13 +171,6 @@ public class Ftfc {
         Set<List<Integer>> mixedClusters = findMixedClusters(unionClustered);
         Set<List<Integer>> allClusters = new HashSet<>(pureClusters);
         allClusters.addAll(mixedClusters);
-
-//        int count = 0;
-//        boolean changed;
-//
-//        do {
-//            changed = exchange(allClusters);
-//        } while (changed && count++ < 500);
 
         Set<List<Integer>> finalClusters = new HashSet<>();
 
@@ -749,17 +730,6 @@ public class Ftfc {
         if (this.verbose) {
             TetradLogger.getInstance().log(s);
         }
-    }
-
-    /*
-     * Indicates whether all nodes should be included in the graph construction or processing. When set to true, the
-     * algorithm will incorporate all nodes into the resulting graph, regardless of specific clustering or filtering
-     * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
-     *
-     * @param includeAllNodes True if all nodes should be included in the graph output.
-     */
-    public void setIncludeAllNodes(boolean includeAllNodes) {
-        this.includeAllNodes = includeAllNodes;
     }
 
     private enum Purity {PURE, IMPURE, UNDECIDED}

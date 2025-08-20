@@ -73,6 +73,8 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         BlockDiscoverer discoverer = BlockDiscoverers.tsc(dataSet, alpha);
         BlockSpec spec = discoverer.discover();
         List<List<Integer>> blocks = new ArrayList<>(spec.blocks());
+        this.blocks = new ArrayList<>(blocks);
+
         List<Node> latents = new ArrayList<>(spec.blockVariables());
 
         edu.cmu.tetrad.search.TrekSeparationClusters search

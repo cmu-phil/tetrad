@@ -63,10 +63,11 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
                 = new edu.cmu.tetrad.search.Ftfc((DataSet) dataSet,
                 new Cca(((DataSet) dataSet).getDoubleData().getSimpleMatrix(), false),
                 alpha);
-        search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         List<List<Integer>> blocks = search.findClusters();
+        this.blocks = new ArrayList<>(blocks);
+
         List<Node> latents = new ArrayList<>(blocks.size());
         for (int i = 0; i < blocks.size(); i++) {
             ContinuousVariable latent = new ContinuousVariable("L" + (i + 1));

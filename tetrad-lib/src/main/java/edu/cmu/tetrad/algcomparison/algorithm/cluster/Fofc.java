@@ -90,6 +90,8 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         BlockDiscoverer discoverer = BlockDiscoverers.fofc(dataSet, test, alpha);
         BlockSpec spec = discoverer.discover();
         List<List<Integer>> blocks = new ArrayList<>(spec.blocks());
+        this.blocks = new ArrayList<>(blocks);
+
         List<Node> latents = new ArrayList<>(spec.blockVariables());
 
         // Build the measurement graph from blocks + latents
