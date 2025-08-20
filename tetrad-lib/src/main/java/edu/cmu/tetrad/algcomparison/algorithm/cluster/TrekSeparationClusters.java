@@ -82,8 +82,8 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         search.setVerbose(verbose);
 //        search.setMode(TrekSeparationClustersScored.Mode.Scoring);
 
-        List<List<Integer>> clusters = search.findClusters();
         List<Node> observed = dataSet.getVariables();
+
         // Build the measurement graph from blocks + latents
         Graph graph = new EdgeListGraph(observed);
         for (int i = 0; i < blocks.size(); ++i) {
