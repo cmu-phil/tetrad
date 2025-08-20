@@ -43,7 +43,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-    private List<List<Integer>> blocks = new ArrayList<>();
+    private BlockSpec blockSpec;
 
     /**
      * <p>Constructor for Fofc.</p>
@@ -69,30 +69,18 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         DataSet dataSet = (DataSet) dataModel;
         List<Node> variables = dataModel.getVariables();
 
-        // === NEW: use the unified FOFC BlockDiscoverer ===
         BlockDiscoverer discoverer = BlockDiscoverers.tsc(dataSet, alpha);
         BlockSpec spec = discoverer.discover();
-        List<List<Integer>> blocks = new ArrayList<>(spec.blocks());
-        this.blocks = new ArrayList<>(blocks);
-
-        List<Node> latents = new ArrayList<>(spec.blockVariables());
-
-        edu.cmu.tetrad.search.TrekSeparationClusters search
-                = new edu.cmu.tetrad.search.TrekSeparationClusters(variables, new CorrelationMatrix(dataSet),
-                ess == -1 ? ((DataSet) dataModel).getNumRows() : ess);
-        search.setIncludeAllNodes(includeAllNodes);
-        search.setAlpha(alpha);
-        search.setVerbose(verbose);
-//        search.setMode(TrekSeparationClustersScored.Mode.Scoring);
+        this.blockSpec = spec;
 
         List<Node> observed = dataSet.getVariables();
 
         // Build the measurement graph from blocks + latents
         Graph graph = new EdgeListGraph(observed);
-        for (int i = 0; i < blocks.size(); ++i) {
-            Node latent = latents.get(i);
+        for (int i = 0; i < spec.blocks().size(); ++i) {
+            Node latent = spec.blockVariables().get(i);
             graph.addNode(latent);
-            for (Integer j : blocks.get(i)) {
+            for (Integer j : blockSpec.blocks().get(i)) {
                 graph.addDirectedEdge(latent, observed.get(j));
             }
         }
@@ -168,8 +156,8 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
     }
 
     @Override
-    public List<List<Integer>> getBlocks() {
-        return new ArrayList<>(blocks);
+    public BlockSpec getBlockSpec() {
+        return blockSpec;
     }
 }
 

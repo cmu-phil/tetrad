@@ -10,21 +10,18 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.MimbuildPca;
+import edu.cmu.tetrad.search.blocks.BlockDiscoverer;
+import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.ntad_test.*;
-import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.ejml.data.SingularMatrixException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
-
-import edu.cmu.tetrad.search.blocks.BlockDiscoverer;
-import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
-import edu.cmu.tetrad.search.blocks.BlockSpec;
 
 /**
  * Find One Factor Clusters.
@@ -47,7 +44,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-    private List<List<Integer>> blocks = new ArrayList<>();
+    private BlockSpec blockSpec;
 
     /**
      * <p>Constructor for Fofc.</p>
@@ -90,15 +87,13 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         BlockDiscoverer discoverer = BlockDiscoverers.fofc(dataSet, test, alpha);
         BlockSpec spec = discoverer.discover();
         List<List<Integer>> blocks = new ArrayList<>(spec.blocks());
-        this.blocks = new ArrayList<>(blocks);
-
-        List<Node> latents = new ArrayList<>(spec.blockVariables());
+        this.blockSpec = spec;
 
         // Build the measurement graph from blocks + latents
         Graph graph = new EdgeListGraph(dataModel.getVariables());
         List<Node> observed = dataSet.getVariables();
         for (int i = 0; i < blocks.size(); ++i) {
-            Node latent = latents.get(i);
+            Node latent = spec.blockVariables().get(i);
             graph.addNode(latent);
             for (Integer j : blocks.get(i)) {
                 graph.addDirectedEdge(latent, observed.get(j));
@@ -121,7 +116,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         Graph fullGraph;
 
         if (mimbuildType == Fofc.MimbuildType.PCA) {
-            MimbuildPca mimbuild = new MimbuildPca(dataSet, blocks, latents);
+            MimbuildPca mimbuild = new MimbuildPca(dataSet, blocks, blockSpec.blockVariables());
             mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
             try {
@@ -142,7 +137,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             LayoutUtil.defaultLayout(fullGraph);
             LayoutUtil.fruchtermanReingoldLayout(fullGraph);
         } else {
-            Mimbuild mimbuild = new Mimbuild(dataSet, blocks, latents);
+            Mimbuild mimbuild = new Mimbuild(dataSet, blocks, blockSpec.blockVariables());
             mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
             try {
@@ -165,25 +160,6 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         }
 
         return fullGraph;
-    }
-
-    public static @NotNull edu.cmu.tetrad.search.Fofc.Blocks getBlocks(Clusters clusters, DataSet dataSet) {
-        List<List<Integer>> blocks = new ArrayList<>();
-        int latentCount = 0;
-        List<Node> latents = new ArrayList<>();
-        for (int i = 0; i < clusters.getNumClusters(); i++) {
-            List<String> names = clusters.getCluster(i);
-            List<Integer> block = new ArrayList<>();
-            for (String name : names) {
-                int j = dataSet.getVariableNames().indexOf(name);
-                block.add(j);
-            }
-            blocks.add(block);
-            ContinuousVariable latent = new  ContinuousVariable("L" + (++latentCount));
-            latent.setNodeType(NodeType.LATENT);
-            latents.add(latent);
-        }
-        return new edu.cmu.tetrad.search.Fofc.Blocks(blocks, latents);
     }
 
     /**
@@ -258,34 +234,31 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
 
     @Override
-    public List<List<Integer>> getBlocks() {
-        return new ArrayList<>(blocks);
+    public BlockSpec getBlockSpec() {
+        return blockSpec;
     }
 
     /**
-     * The MimbuildType enum represents the different types of model construction
-     * strategies available for specific use in algorithms within the Fofc class.
-     * It specifies selectable methods for building models based on input data.
-     *
-     * The enum includes the following types:
-     * - PCA: Principal Component Analysis-based model building.
-     * - BOLLEN: Model building method inspired by Bollen's statistical techniques.
+     * The MimbuildType enum represents the different types of model construction strategies available for specific use
+     * in algorithms within the Fofc class. It specifies selectable methods for building models based on input data.
+     * <p>
+     * The enum includes the following types: - PCA: Principal Component Analysis-based model building. - BOLLEN: Model
+     * building method inspired by Bollen's statistical techniques.
      */
-    public enum MimbuildType{
+    public enum MimbuildType {
 
         /**
-         * Represents the Principal Component Analysis (PCA)-based model building strategy
-         * within the MimbuildType enum. PCA is a dimensionality reduction technique commonly
-         * used in statistical and machine learning algorithms to transform input data into
-         * a set of uncorrelated features, reducing complexity while preserving key information.
+         * Represents the Principal Component Analysis (PCA)-based model building strategy within the MimbuildType enum.
+         * PCA is a dimensionality reduction technique commonly used in statistical and machine learning algorithms to
+         * transform input data into a set of uncorrelated features, reducing complexity while preserving key
+         * information.
          */
         PCA,
 
         /**
-         * Represents the model building method inspired by Bollen's statistical techniques
-         * within the MimbuildType enum. This method is often employed to develop models
-         * that utilize sophisticated statistical principles, aiming to analyze and interpret
-         * structural relationships between variables in complex datasets.
+         * Represents the model building method inspired by Bollen's statistical techniques within the MimbuildType
+         * enum. This method is often employed to develop models that utilize sophisticated statistical principles,
+         * aiming to analyze and interpret structural relationships between variables in complex datasets.
          */
         BOLLEN
     }

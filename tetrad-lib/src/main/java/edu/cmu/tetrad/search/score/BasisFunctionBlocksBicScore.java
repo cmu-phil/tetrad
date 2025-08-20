@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.utils.Embedding;
 import org.ejml.simple.SimpleMatrix;
 
@@ -60,7 +61,7 @@ public class BasisFunctionBlocksBicScore implements Score {
         this.Sphi = DataUtils.cov(this.Xphi);
 
         // 2) Delegate to BlocksBicScore with the SAME Node instances as the caller uses
-        this.delegate = new BlocksBicScore(embeddedDataSet, this.blocks, this.variables);
+        this.delegate = new BlocksBicScore(embeddedDataSet, new BlockSpec(this.blocks, this.variables));
     }
 
     // ---- Score interface ----

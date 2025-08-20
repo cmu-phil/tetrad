@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
@@ -67,7 +68,7 @@ public class BlockBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         BlocksBicScore score = new BlocksBicScore(
-                SimpleDataLoader.getMixedDataSet(dataSet), new ArrayList<>(), new ArrayList<>());
+                 SimpleDataLoader.getMixedDataSet(dataSet), new BlockSpec(new ArrayList<>(), new ArrayList<>()));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         return score;
     }

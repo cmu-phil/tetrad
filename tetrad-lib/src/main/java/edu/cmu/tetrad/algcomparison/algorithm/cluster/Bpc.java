@@ -10,8 +10,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.MimbuildPca;
+import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.ntad_test.*;
-import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -43,7 +44,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-    private List<List<Integer>> blocks = new ArrayList<>();
+    private BlockSpec blockSpec = null;
 
     /**
      * <p>Constructor.</p>
@@ -80,26 +81,17 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
             default -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
         };
 
-        edu.cmu.tetrad.search.Bpc search = new edu.cmu.tetrad.search.Bpc(test, dataSet, alpha);
-        List<List<Integer>> blocks = search.getClusters();
-        this.blocks = new ArrayList<>(blocks);
+        BlockSpec spec = BlockDiscoverers.bpc(dataSet, test, alpha).discover();
+        this.blockSpec = spec;
 
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
-
         Graph graph = new EdgeListGraph(includeAllNodes ? dataSet.getVariables() : new ArrayList<>());
-        List<Node> latents = new ArrayList<>();
-
-        for (int i = 0; i < blocks.size(); i++) {
-            Node latent = new ContinuousVariable("L" + (i + 1));
-            latent.setNodeType(NodeType.LATENT);
-            latents.add(latent);
-        }
 
         List<Node> observed = dataSet.getVariables();
 
-        for (int i = 0; i < blocks.size(); ++i) {
-            List<Integer> block = blocks.get(i);
-            Node latent = latents.get(i);
+        for (int i = 0; i < spec.blocks().size(); ++i) {
+            List<Integer> block = spec.blocks().get(i);
+            Node latent = spec.blockVariables().get(i);
             graph.addNode(latent);
 
             for (Integer j : block) {
@@ -121,7 +113,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
             };
 
             if (mimbuildType == Fofc.MimbuildType.PCA) {
-                MimbuildPca mimbuild = new MimbuildPca(dataSet, blocks, latents);
+                MimbuildPca mimbuild = new MimbuildPca(dataSet, blockSpec.blocks(), blockSpec.blockVariables());
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
                 try {
@@ -143,7 +135,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             } else {
-                Mimbuild mimbuild = new Mimbuild(dataSet, blocks, latents);
+                Mimbuild mimbuild = new Mimbuild(dataSet, blockSpec.blocks(), blockSpec.blockVariables());
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
                 try {
@@ -241,7 +233,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     @Override
-    public List<List<Integer>> getBlocks() {
-        return new ArrayList<>(blocks);
+    public BlockSpec getBlockSpec() {
+        return this.blockSpec;
     }
 }

@@ -8,6 +8,8 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -38,7 +40,7 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-    private List<List<Integer>> blocks = new ArrayList<>();
+    private BlockSpec blockSpec;
 
     /**
      * <p>Constructor for Ftfc.</p>
@@ -59,29 +61,18 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         double alpha = parameters.getDouble(Params.ALPHA);
 
         assert dataSet instanceof DataSet;
-        edu.cmu.tetrad.search.Ftfc search
-                = new edu.cmu.tetrad.search.Ftfc((DataSet) dataSet,
-                new Cca(((DataSet) dataSet).getDoubleData().getSimpleMatrix(), false),
-                alpha);
-        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        Cca cca = new Cca(((DataSet) dataSet).getDoubleData().getSimpleMatrix(), false);
+        BlockSpec spec = BlockDiscoverers.ftfc((DataSet) dataSet, cca, alpha).discover();
 
-        List<List<Integer>> blocks = search.findClusters();
-        this.blocks = new ArrayList<>(blocks);
-
-        List<Node> latents = new ArrayList<>(blocks.size());
-        for (int i = 0; i < blocks.size(); i++) {
-            ContinuousVariable latent = new ContinuousVariable("L" + (i + 1));
-            latent.setNodeType(NodeType.LATENT);
-            latents.add(latent);
-        }
+        this.blockSpec = spec;
 
         // Build the measurement graph from blocks + latents
         List<Node> observed = dataSet.getVariables();
         Graph graph = new EdgeListGraph(observed);
-        for (int i = 0; i < blocks.size(); ++i) {
-            Node latent = latents.get(i);
+        for (int i = 0; i < spec.blocks().size(); ++i) {
+            Node latent = spec.blockVariables().get(i);
             graph.addNode(latent);
-            for (Integer j : blocks.get(i)) {
+            for (Integer j : spec.blocks().get(i)) {
                 graph.addDirectedEdge(latent, observed.get(j));
             }
         }
@@ -159,7 +150,7 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     @Override
-    public List<List<Integer>> getBlocks() {
-        return new ArrayList<>(blocks);
+    public BlockSpec getBlockSpec() {
+        return blockSpec;
     }
 }

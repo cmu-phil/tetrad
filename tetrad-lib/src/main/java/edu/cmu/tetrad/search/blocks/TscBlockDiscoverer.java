@@ -22,6 +22,7 @@ public class TscBlockDiscoverer implements BlockDiscoverer {
     public BlockSpec discover() {
         TrekSeparationClusters tsc = new TrekSeparationClusters(dataSet.getVariables(), new CorrelationMatrix(dataSet),
                 dataSet.getNumRows());
+        tsc.setAlpha(alpha);
         List<List<Integer>> blocks = tsc.findClusters();
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);

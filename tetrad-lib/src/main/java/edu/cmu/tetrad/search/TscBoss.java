@@ -209,7 +209,7 @@ public class TscBoss implements IGraphSearch {
         test.setAlpha(alpha);
 
         // --- Learn meta-graph (PC or BOSS) on blocks/metaVars ---
-        BlocksBicScore score = new BlocksBicScore(dataSet, blocks, metaVars);
+        BlocksBicScore score = new BlocksBicScore(dataSet, new BlockSpec(blocks, metaVars));
         score.setPenaltyDiscount(penaltyDiscount);
         score.setRidge(ridge);
         score.setEbicGamma(ebicGamma);

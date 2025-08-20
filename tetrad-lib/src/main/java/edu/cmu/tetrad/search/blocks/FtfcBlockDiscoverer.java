@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.Fofc;
+import edu.cmu.tetrad.search.Ftfc;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
 
 import java.util.List;
@@ -24,8 +25,8 @@ public class FtfcBlockDiscoverer implements BlockDiscoverer {
 
     @Override
     public BlockSpec discover() {
-        Fofc fofc = new Fofc(dataSet, ntadTest, alpha);
-        List<List<Integer>> blocks = fofc.findClusters();
+        Ftfc ftfc = new Ftfc(dataSet, ntadTest, alpha);
+        List<List<Integer>> blocks = ftfc.findClusters();
 
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);

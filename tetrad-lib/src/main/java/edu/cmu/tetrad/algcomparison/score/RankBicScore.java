@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndTestBlocks;
@@ -59,7 +60,7 @@ public class RankBicScore implements ScoreWrapper {
         }
 
         // If you’re using the Wilks-rank test:
-        BlocksBicScore score = new BlocksBicScore((DataSet) dataModel, blocks, blockVars);
+        BlocksBicScore score = new BlocksBicScore((DataSet) dataModel, new BlockSpec(blocks, blockVars));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setEbicGamma(parameters.getDouble(Params.EBIC_GAMMA));
 
