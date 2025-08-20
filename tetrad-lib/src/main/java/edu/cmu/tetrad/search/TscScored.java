@@ -3,7 +3,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -25,7 +24,7 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
  * This version: - Finds base clusters with RCCA-BIC (scoring). - Uses the same scoring-based argmax rank for the union
  * decision in grow. - Optionally uses scored ranks everywhere (toggle).
  */
-public class TrekSeparationClustersScored {
+public class TscScored {
 
     // ---- existing fields (unchanged) ----
     private static final java.util.concurrent.ConcurrentHashMap<Long, long[][]> BINOM_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
@@ -84,7 +83,7 @@ public class TrekSeparationClustersScored {
     private boolean prefilterByWilkes = true;
 
     // ---- ctor ----
-    public TrekSeparationClustersScored(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
+    public TscScored(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
         this.nodes = new ArrayList<>(variables);
         this.sampleSize = sampleSize;
         this.variables = new ArrayList<>(variables.size());

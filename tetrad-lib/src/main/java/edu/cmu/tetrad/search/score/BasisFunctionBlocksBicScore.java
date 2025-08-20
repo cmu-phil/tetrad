@@ -61,7 +61,7 @@ public class BasisFunctionBlocksBicScore implements Score {
         this.Sphi = DataUtils.cov(this.Xphi);
 
         // 2) Delegate to BlocksBicScore with the SAME Node instances as the caller uses
-        this.delegate = new BlocksBicScore(embeddedDataSet, new BlockSpec(this.blocks, this.variables));
+        this.delegate = new BlocksBicScore(new BlockSpec(embeddedDataSet, this.blocks, this.variables));
     }
 
     // ---- Score interface ----

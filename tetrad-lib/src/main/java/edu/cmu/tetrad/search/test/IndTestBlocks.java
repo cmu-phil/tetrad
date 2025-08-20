@@ -25,7 +25,6 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
     private static final int RANK_CACHE_MAX = 400_000; // (x,y,Z,n,alpha) -> rank
     private static final int ZBLOCK_CACHE_MAX = 150_000; // Z -> concatenated embedded cols
 
-    private final DataSet dataSet;
     private final List<Node> variables;
     private final Map<Node, Integer> nodeHash;
     private final SimpleMatrix S; // correlation (or covariance)
@@ -51,14 +50,12 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
     private boolean padY = true;              // try to grow Y from the complement pool
     private boolean subsetXIfNeeded = true;   // if still |Y| < |X|, shrink X to |Y|
 
-    public IndTestBlocks(DataSet dataSet, BlockSpec blockSpec) {
-        if (dataSet == null) throw new IllegalArgumentException("dataSet == null");
+    public IndTestBlocks(BlockSpec blockSpec) {
         if (blockSpec == null) throw new IllegalArgumentException("blockSpec == null");
         this.blockSpec = blockSpec;
 
         final int B = blockSpec.blocks().size();
 
-        this.dataSet = dataSet;
         this.variables = new ArrayList<>(blockSpec.blockVariables());
         Map<Node, Integer> nodesHash = new HashMap<>();
         for (int j = 0; j < this.variables.size(); j++) {
@@ -70,12 +67,12 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
         }
         this.nodeHash = nodesHash;
 
-        this.n = dataSet.getNumRows();
-        this.S = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
+        this.n = blockSpec.dataSet().getNumRows();
+        this.S = new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix();
         // If you prefer covariance:
         // this.S = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix());
 
-        final int D = dataSet.getNumColumns();
+        final int D = blockSpec.dataSet().getNumColumns();
         this.allCols = new int[B][];
         for (int b = 0; b < B; b++) {
             List<Integer> cols = blockSpec.blocks().get(b);
@@ -115,7 +112,7 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
 
     @Override
     public DataModel getData() {
-        return dataSet;
+        return blockSpec.dataSet();
     }
 
     @Override

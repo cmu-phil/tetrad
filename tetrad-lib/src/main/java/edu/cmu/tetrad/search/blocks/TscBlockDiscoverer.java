@@ -2,7 +2,7 @@ package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.search.TrekSeparationClusters;
+import edu.cmu.tetrad.search.Tsc;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class TscBlockDiscoverer implements BlockDiscoverer {
 
     @Override
     public BlockSpec discover() {
-        TrekSeparationClusters tsc = new TrekSeparationClusters(dataSet.getVariables(), new CorrelationMatrix(dataSet),
+        Tsc tsc = new Tsc(dataSet.getVariables(), new CorrelationMatrix(dataSet),
                 dataSet.getNumRows());
         tsc.setAlpha(alpha);
         List<List<Integer>> blocks = tsc.findClusters();

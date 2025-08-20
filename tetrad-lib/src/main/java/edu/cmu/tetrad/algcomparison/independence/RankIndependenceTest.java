@@ -61,7 +61,7 @@ public class RankIndependenceTest implements IndependenceWrapper {
         }
 
         // If you’re using the Wilks-rank test:
-        IndTestBlocks ind = new IndTestBlocks((DataSet) dataModel, new BlockSpec(blocks, blockVars));
+        IndTestBlocks ind = new IndTestBlocks(new BlockSpec((DataSet) dataModel, blocks, blockVars));
 //        IndTestBlocksLemma10 ind = new IndTestBlocksLemma10((DataSet) dataModel, blocks, blockVars);
         ind.setAlpha(parameters.getDouble(Params.ALPHA));
 

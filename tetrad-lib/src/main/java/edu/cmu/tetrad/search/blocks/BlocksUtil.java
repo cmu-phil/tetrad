@@ -57,7 +57,7 @@ public final class BlocksUtil {
     /** Convenience to build BlockSpec with default names L1.. for each block. */
     public static BlockSpec toSpec(List<List<Integer>> blocks, DataSet dataSet) {
         List<List<Integer>> canon = canonicalizeBlocks(blocks);
-        return new BlockSpec(canon, makeBlockVariables(blocks, dataSet));
+        return new BlockSpec(dataSet, canon, makeBlockVariables(blocks, dataSet));
     }
 
     /** Keep blocks disjoint by preference order (bigger first), removing overlaps later in the list. */

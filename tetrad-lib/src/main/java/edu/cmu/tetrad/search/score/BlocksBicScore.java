@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.RankTests;
@@ -33,7 +32,6 @@ public class BlocksBicScore implements Score, BlockScore {
     private static final int XBLOCK_CACHE_MAX = 50_000;
 
     // --- Data / bookkeeping ---
-    private final DataSet dataSet;
     private final List<Node> variables;          // block-level variables, size == blocks.size()
     private final Map<Node, Integer> nodeIndex;  // block node -> block index
     private final SimpleMatrix Sphi;             // covariance (or correlation) of embedded data
@@ -73,11 +71,9 @@ public class BlocksBicScore implements Score, BlockScore {
     private double ebicGamma = 0.0;         // gamma for EBIC-style extra penalty (0 disables)
 
     /**
-     * @param dataSet   dataset whose columns the 'blocks' indices refer to
      * @param blockSpec the block spec for the score
      */
-    public BlocksBicScore(DataSet dataSet, BlockSpec blockSpec) {
-        this.dataSet = Objects.requireNonNull(dataSet, "dataSet == null");
+    public BlocksBicScore(BlockSpec blockSpec) {
         this.blockSpec = Objects.requireNonNull(blockSpec, "blockspec == null");
 
         int B = blockSpec.blocks().size();
@@ -93,12 +89,12 @@ public class BlocksBicScore implements Score, BlockScore {
             }
         }
 
-        this.n = dataSet.getNumRows();
-        this.Sphi = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
+        this.n = blockSpec.dataSet().getNumRows();
+        this.Sphi = new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix();
         // this.Sphi = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix()); // alternative
 
         // Precompute embedded column arrays for each block
-        int D = dataSet.getNumColumns();
+        int D = blockSpec.dataSet().getNumColumns();
         this.blockAllCols = new int[B][];
         int totalCols = 0;
         for (int b = 0; b < B; b++) {
@@ -323,7 +319,7 @@ public class BlocksBicScore implements Score, BlockScore {
 
     @Override
     public int getSampleSize() {
-        return dataSet.getNumRows();
+        return blockSpec.dataSet().getNumRows();
     }
 
     // --- Helpers ---

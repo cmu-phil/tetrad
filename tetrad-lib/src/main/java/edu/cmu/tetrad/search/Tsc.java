@@ -22,7 +22,7 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
 /**
  * Implements Trek Separation algorithm for finding latent variable clusters.
  */
-public class TrekSeparationClusters {
+public class Tsc {
 
     // ---- existing fields (unchanged) ----
     private static final java.util.concurrent.ConcurrentHashMap<Long, long[][]> BINOM_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
@@ -40,7 +40,7 @@ public class TrekSeparationClusters {
     private Map<Set<Integer>, Integer> reducedRank;
 
     // ---- ctor ----
-    public TrekSeparationClusters(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
+    public Tsc(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
         this.nodes = new ArrayList<>(variables);
         this.sampleSize = sampleSize;
         this.variables = new ArrayList<>(variables.size());

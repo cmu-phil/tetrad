@@ -100,7 +100,7 @@ public class TscBoss implements IGraphSearch {
                 : effectiveSampleSize;
 
         // --- TSC clustering ---
-        TrekSeparationClustersScored tsc = new TrekSeparationClustersScored(
+        TscScored tsc = new TscScored(
                 corr.getVariables(),
                 corr,
                 N
@@ -111,7 +111,7 @@ public class TscBoss implements IGraphSearch {
         tsc.setVerbose(verbose);
 //        tsc.setAntiProxyDrop(1);  // try 1; 2 is stricter
 
-        tsc.setMode(TrekSeparationClustersScored.Mode.Scoring);
+        tsc.setMode(TscScored.Mode.Scoring);
 
         tsc.search();
 
@@ -205,11 +205,11 @@ public class TscBoss implements IGraphSearch {
 
         System.out.println("Knowledge" + knowledge);
 
-        IndTestBlocks test = new IndTestBlocks(dataSet, new BlockSpec(blocks, metaVars));
+        IndTestBlocks test = new IndTestBlocks(new BlockSpec(dataSet, blocks, metaVars));
         test.setAlpha(alpha);
 
         // --- Learn meta-graph (PC or BOSS) on blocks/metaVars ---
-        BlocksBicScore score = new BlocksBicScore(dataSet, new BlockSpec(blocks, metaVars));
+        BlocksBicScore score = new BlocksBicScore(new BlockSpec(dataSet, blocks, metaVars));
         score.setPenaltyDiscount(penaltyDiscount);
         score.setRidge(ridge);
         score.setEbicGamma(ebicGamma);

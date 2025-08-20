@@ -34,7 +34,7 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
+public class Tsc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
         TakesCovarianceMatrix {
 
     @Serial
@@ -48,7 +48,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
     /**
      * <p>Constructor for Fofc.</p>
      */
-    public TrekSeparationClusters() {
+    public Tsc() {
     }
 
     /**

@@ -74,7 +74,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
         // 2) Delegate CI testing to IndTestBlocks:
         //    IMPORTANT: pass *this.variables* (the same Node objects you expose)
-        this.blocksTest = new IndTestBlocks(embeddedDs, new BlockSpec(this.blocks, this.variables));
+        this.blocksTest = new IndTestBlocks(new BlockSpec(embeddedDs, this.blocks, this.variables));
     }
 
     // ====== IndependenceTest API ======

@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -33,7 +32,6 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
     private static final int RANK_CACHE_MAX = 400_000;  // (AC,BC,n,alpha) -> rank
     private static final int ZBLOCK_CACHE_MAX = 150_000;  // Z (block vars) -> concatenated embedded cols
 
-    private final DataSet dataSet;
     private final List<Node> variables;
     private final Map<Node, Integer> nodeHash;
     private final SimpleMatrix S; // correlation (or covariance)
@@ -53,12 +51,11 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
     private boolean verbose = false;
     private EqualityMode mode = EqualityMode.LE; // robust default: accept rank <= |C|
     private int tol = 0;                         // integer tolerance on the equality (0 = strict)
-    public IndTestBlocksLemma10(DataSet dataSet, BlockSpec blockSpec) {
-        if (dataSet == null) throw new IllegalArgumentException("dataSet == null");
+
+    public IndTestBlocksLemma10(BlockSpec blockSpec) {
         if (blockSpec == null) throw new IllegalArgumentException("blockspec == null");
         this.blockSpec = blockSpec;
 
-        this.dataSet = dataSet;
         this.variables = new ArrayList<>(blockSpec.blockVariables());
         Map<Node, Integer> nodesHash = new HashMap<>();
         for (int j = 0; j < this.variables.size(); j++) {
@@ -70,11 +67,11 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
         }
         this.nodeHash = nodesHash;
 
-        this.n = dataSet.getNumRows();
-        this.S = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
+        this.n = blockSpec.dataSet().getNumRows();
+        this.S = new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix();
 
         final int B = blockSpec.blocks().size();
-        final int D = dataSet.getNumColumns();
+        final int D = blockSpec.dataSet().getNumColumns();
         this.allCols = new int[B][];
         for (int b = 0; b < B; b++) {
             List<Integer> cols = blockSpec.blocks().get(b);
@@ -172,7 +169,7 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
 
     @Override
     public DataModel getData() {
-        return dataSet;
+        return blockSpec.dataSet();
     }
 
     @Override

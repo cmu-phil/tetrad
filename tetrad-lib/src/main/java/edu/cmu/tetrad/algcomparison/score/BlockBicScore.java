@@ -68,7 +68,7 @@ public class BlockBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         BlocksBicScore score = new BlocksBicScore(
-                 SimpleDataLoader.getMixedDataSet(dataSet), new BlockSpec(new ArrayList<>(), new ArrayList<>()));
+                new BlockSpec(SimpleDataLoader.getMixedDataSet(dataSet), new ArrayList<>(), new ArrayList<>()));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         return score;
     }

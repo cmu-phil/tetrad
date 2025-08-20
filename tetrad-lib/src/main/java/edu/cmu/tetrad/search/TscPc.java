@@ -100,7 +100,7 @@ public class TscPc implements IGraphSearch {
                 : effectiveSampleSize;
 
         // --- TSC clustering ---
-        TrekSeparationClustersScored tsc = new TrekSeparationClustersScored(
+        TscScored tsc = new TscScored(
                 corr.getVariables(),
                 corr,
                 N
@@ -110,7 +110,7 @@ public class TscPc implements IGraphSearch {
 //        tsc.setEnforceObservedLeaves(false);
 //        tsc.setAntiProxyDrop(1);  // try 1; 2 is stricter
 
-        tsc.setMode(TrekSeparationClustersScored.Mode.Testing);
+        tsc.setMode(TscScored.Mode.Testing);
 
         tsc.search();
 
@@ -205,7 +205,7 @@ public class TscPc implements IGraphSearch {
         System.out.println("Knowledge" + knowledge);
 
         // --- Learn meta-graph (PC or BOSS) on blocks/metaVars ---
-        IndTestBlocksLemma10 test = new IndTestBlocksLemma10(dataSet, new BlockSpec(blocks, metaVars));
+        IndTestBlocksLemma10 test = new IndTestBlocksLemma10(new BlockSpec(dataSet, blocks, metaVars));
         test.setAlpha(alphaPc);
 
         Pc pc = new Pc(test);

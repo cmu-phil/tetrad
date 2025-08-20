@@ -60,7 +60,7 @@ public class RankBicScore implements ScoreWrapper {
         }
 
         // If you’re using the Wilks-rank test:
-        BlocksBicScore score = new BlocksBicScore((DataSet) dataModel, new BlockSpec(blocks, blockVars));
+        BlocksBicScore score = new BlocksBicScore(new BlockSpec((DataSet) dataModel, blocks, blockVars));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setEbicGamma(parameters.getDouble(Params.EBIC_GAMMA));
 
