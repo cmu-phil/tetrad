@@ -434,6 +434,21 @@ public class TscScored {
         return graph;
     }
 
+    public List<List<Integer>> findClusters() {
+        Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> ret = estimateClusters();
+        clusterToRank = ret.getFirst();
+        reducedRank = ret.getSecond();
+        return convertToLists(clusterToRank.keySet());
+    }
+
+    private List<List<Integer>> convertToLists(Set<Set<Integer>> clusters) {
+        return clusters.stream()
+                .sorted(Comparator.<Set<Integer>>comparingInt(Set::size).reversed()
+                        .thenComparing(this::toNamesCluster))
+                .map(cluster -> new ArrayList<>(cluster))
+                .collect(Collectors.toList());
+    }
+
     private Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> estimateClusters() {
         List<Integer> variables = allVariables();
         if (new HashSet<>(variables).size() != variables.size()) {

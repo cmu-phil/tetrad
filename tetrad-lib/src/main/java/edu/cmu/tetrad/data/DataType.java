@@ -35,6 +35,11 @@ public enum DataType {
     Covariance,
 
     /**
+     * Defined over blocks in the data.
+     */
+    Blocks,
+
+    /**
      * All.
      */
     All

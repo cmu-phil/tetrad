@@ -130,6 +130,8 @@ public final class ScoreModels {
                 return "datatype.discrete.score.default";
             case Mixed:
                 return "datatype.mixed.score.default";
+            case Blocks:
+                return "datatype.blocks.score.default";
             default:
                 return null;
         }

@@ -1088,6 +1088,31 @@
             ]]>
         </node-specific-message>
     </session-node>
+    <session-node id="Cluster">
+        <models>
+            <model name="Algorithms that Generate Clusters" acronym="Cluster" help="cluster" category="General">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.ClusterRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.ClusterEditor
+                </editor-class>
+            </model>
+        </models>
+        <display-component image="searchIcon.gif"/>
+        <model-chooser title="Types of Search Algorithms">
+            edu.cmu.tetradapp.app.CategorizingModelChooser
+        </model-chooser>
+        <node-specific-message>
+            <![CDATA[
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
+                 <br> (1) Data or Simulation, OR
+                 <br> (2) Graph (searches directly over graph) OR
+                 <br> Note that for the parent boxes, models need to have been created.
+               </html>
+            ]]>
+        </node-specific-message>
+    </session-node>
     <session-node id="Regression">
         <models>
             <model name="Multiple Linear Regression" acronym="Mult Lin Reg"

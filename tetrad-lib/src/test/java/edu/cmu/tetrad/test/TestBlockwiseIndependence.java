@@ -3,6 +3,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.test.IndTestBlocks;
 import edu.cmu.tetrad.search.test.IndTestBlocksLemma10;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
@@ -139,9 +140,9 @@ public class TestBlockwiseIndependence {
             meta.add(mvZ);
 
             // Initialize fresh block tests on these incoherent blocks
-            IndTestBlocks testBlocks = new IndTestBlocks(sim.data, blocks, meta);
+            IndTestBlocks testBlocks = new IndTestBlocks(new BlockSpec(sim.data, blocks, meta));
             testBlocks.setAlpha(alpha);
-            IndTestBlocksLemma10 testLemma = new IndTestBlocksLemma10(sim.data, blocks, meta);
+            IndTestBlocksLemma10 testLemma = new IndTestBlocksLemma10(new BlockSpec(sim.data, blocks, meta));
             testLemma.setAlpha(alpha);
 
             boolean predBlocksIndep = testBlocks.checkIndependence(mvX, mvY, Collections.singleton(mvZ)).isIndependent();
@@ -182,9 +183,9 @@ public class TestBlockwiseIndependence {
             metaVars.add(mv);
         }
 
-        IndTestBlocks blocksTest = new IndTestBlocks(sim.data, blocks, metaVars);
+        IndTestBlocks blocksTest = new IndTestBlocks(new BlockSpec(sim.data, blocks, metaVars));
         blocksTest.setAlpha(alpha);
-        IndTestBlocksLemma10 lemma10Test = new IndTestBlocksLemma10(sim.data, blocks, metaVars);
+        IndTestBlocksLemma10 lemma10Test = new IndTestBlocksLemma10(new BlockSpec(sim.data, blocks, metaVars));
         lemma10Test.setAlpha(alpha);
 
         // Build within-cluster cases with distinct cX, cY, cZ
@@ -295,7 +296,7 @@ public class TestBlockwiseIndependence {
                     metaVarsXY.add(mvz);
 
                     // rank-based block test (Lemma 10); alpha consistent with top-level
-                    IndTestBlocksLemma10 localLemma = new IndTestBlocksLemma10(data, blocksXY, metaVarsXY);
+                    IndTestBlocksLemma10 localLemma = new IndTestBlocksLemma10(new BlockSpec(data, blocksXY, metaVarsXY));
                     localLemma.setAlpha(alpha);
 
                     boolean indep;

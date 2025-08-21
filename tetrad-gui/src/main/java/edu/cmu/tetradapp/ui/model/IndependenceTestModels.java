@@ -129,6 +129,8 @@ public final class IndependenceTestModels {
                 return "datatype.discrete.test.default";
             case Mixed:
                 return "datatype.mixed.test.default";
+            case Blocks:
+                return "datatype.blocks.test.default";
             default:
                 return null;
         }
