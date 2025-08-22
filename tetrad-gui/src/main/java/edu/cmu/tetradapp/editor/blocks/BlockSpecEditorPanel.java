@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search.blocks.ui;
+package edu.cmu.tetradapp.editor.blocks;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
@@ -166,6 +166,8 @@ public final class BlockSpecEditorPanel extends JPanel {
 
         // Seed with empty text
         setText("");
+
+
     }
 
     /** Inserts a wrapped % comment block listing all variables. */
@@ -177,11 +179,13 @@ public final class BlockSpecEditorPanel extends JPanel {
     /** Build a % comment block of available variables, wrapped to maxWidth columns. */
     private String buildVariableListComment(int maxWidth, boolean includeIndices) {
         StringBuilder sb = new StringBuilder();
-        sb.append("% Available variables:\n% ");
+        sb.append("%\n% Available variables:\n% ");
         int col = 2; // "% " already on the line
+        List<Node> variables = dataSet.getVariables();
+        Collections.sort(variables);
 
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            Node v = dataSet.getVariable(i);
+            Node v = variables.get(i);
             String token = includeIndices ? (v.getName() + " (#" + i + ")") : v.getName();
 
             // +1 for trailing space we're about to add

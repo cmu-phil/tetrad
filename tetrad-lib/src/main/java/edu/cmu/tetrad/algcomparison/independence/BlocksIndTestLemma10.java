@@ -2,6 +2,8 @@ package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
@@ -31,6 +33,7 @@ public class BlocksIndTestLemma10 implements BlockIndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
+    private BlockSpec blockSpec;
 
     /**
      * Initializes a new instance of the DegenerateGaussianLrt class.
@@ -38,12 +41,16 @@ public class BlocksIndTestLemma10 implements BlockIndependenceWrapper {
     public BlocksIndTestLemma10() {
     }
 
+    public void setBlockSpec(BlockSpec blockSpec) {
+        this.blockSpec = blockSpec;
+    }
+
     /**
      * {@inheritDoc}x
      */
     @Override
-    public IndependenceTest getTest(BlockSpec spec, Parameters parameters) {
-        IndTestBlocksLemma10 test = new IndTestBlocksLemma10(spec);
+    public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
+        IndTestBlocksLemma10 test = new IndTestBlocksLemma10(blockSpec);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         return test;
     }
@@ -71,7 +78,7 @@ public class BlocksIndTestLemma10 implements BlockIndependenceWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
-        parameters.add(Params.TRUNCATION_LIMIT);
+//        parameters.add(Params.TRUNCATION_LIMIT);
         return parameters;
     }
 }

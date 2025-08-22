@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.TetradDesktop;
@@ -105,6 +106,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
      * The JSON result.
      */
     private String jsonResult;
+    private BlockSpec blockSpec = null;
 
     /**
      * <p>Constructor for GeneralAlgorithmEditor.</p>
@@ -114,7 +116,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     public GeneralAlgorithmEditor(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
-        this.algorithmCard = new AlgorithmCard(algorithmRunner);
+        this.algorithmCard = new AlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec());
         this.parameterCard = new ParameterCard(algorithmRunner);
         this.graphCard = new GraphCard(algorithmRunner);
 
@@ -278,6 +280,10 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
 
         return true;
+    }
+
+    public void setBlockSpec(BlockSpec blockSpec) {
+        this.blockSpec = blockSpec;
     }
 
     private static class SingleButtonCard extends JPanel {

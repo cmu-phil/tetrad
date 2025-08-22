@@ -19,7 +19,7 @@
 package edu.cmu.tetradapp.ui.model;
 
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.util.AlgorithmDescriptions;
@@ -76,7 +76,7 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
         this.algorithm = algorithm;
         this.name = algorithm.annotation().name();
         this.description = AlgorithmDescriptions.getInstance().get(algorithm.annotation().command());
-        this.requiredScore = UsesScoreWrapper.class.isAssignableFrom(algorithm.clazz());
+        this.requiredScore = TakesScoreWrapper.class.isAssignableFrom(algorithm.clazz());
         this.requiredTest = TakesIndependenceWrapper.class.isAssignableFrom(algorithm.clazz());
     }
 

@@ -37,7 +37,7 @@ import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
@@ -425,8 +425,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
         for (AlgorithmSpec algorithm : algorithms) {
             Algorithm algorithmImpl = algorithm.getAlgorithmImpl();
 
-            if (algorithmImpl instanceof UsesScoreWrapper) {
-                paramNamesSet.addAll(((UsesScoreWrapper) algorithmImpl).getScoreWrapper().getParameters());
+            if (algorithmImpl instanceof TakesScoreWrapper) {
+                paramNamesSet.addAll(((TakesScoreWrapper) algorithmImpl).getScoreWrapper().getParameters());
             }
         }
 
@@ -1469,16 +1469,16 @@ public class GridSearchModel implements SessionModel, GraphSource {
                     ((TakesIndependenceWrapper) algorithmImpl).setIndependenceWrapper(independenceWrapper);
                 }
 
-                if (algorithmImpl instanceof UsesScoreWrapper && scoreWrapper != null) {
-                    ((UsesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
+                if (algorithmImpl instanceof TakesScoreWrapper && scoreWrapper != null) {
+                    ((TakesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
                 }
 
                 if (algorithmImpl instanceof TakesIndependenceWrapper && independenceWrapper != null) {
                     ((TakesIndependenceWrapper) algorithmImpl).setIndependenceWrapper(independenceWrapper);
                 }
 
-                if (algorithmImpl instanceof UsesScoreWrapper && scoreWrapper != null) {
-                    ((UsesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
+                if (algorithmImpl instanceof TakesScoreWrapper && scoreWrapper != null) {
+                    ((TakesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
                 }
 
                 return algorithmImpl;

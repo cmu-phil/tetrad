@@ -21,7 +21,6 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.Parameters;
@@ -34,8 +33,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Stores a clustering calculated by the ClusterEditor.
@@ -43,7 +42,7 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class ClusterRunner implements ParamsResettable, SessionModel,
+public class LatentClustersRunner implements ParamsResettable, SessionModel,
         Unmarshallable/*IndTestProducer,*/ {
 
     @Serial
@@ -73,21 +72,12 @@ public class ClusterRunner implements ParamsResettable, SessionModel,
      * @param dataWrapper a {@link DataWrapper} object
      * @param parameters  a {@link Parameters} object
      */
-    public ClusterRunner(DataWrapper dataWrapper, Parameters parameters) {
+    public LatentClustersRunner(DataWrapper dataWrapper, Parameters parameters) {
         this.dataWrapper = dataWrapper;
         this.parameters = parameters;
     }
 
     //============================PUBLIC METHODS==========================//
-
-    /**
-     * {@inheritDoc}
-     */
-    public void execute() {
-        long start = System.currentTimeMillis();
-
-        List<Graph> graphList = new ArrayList<>();
-    }
 
     /**
      * <p>getDataModelList.</p>
@@ -205,7 +195,7 @@ public class ClusterRunner implements ParamsResettable, SessionModel,
     }
 
     public void setBlockSpec(BlockSpec blockSpec) {
-        this.blockSpec = blockSpec;
+        this.blockSpec = Objects.requireNonNull(blockSpec, "spec");
     }
 
     public BlockSpec getBlockSpec() {

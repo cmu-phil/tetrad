@@ -22,18 +22,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * Trek Separation Clusters.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "TSC",
-        command = "tsc",
-        algoType = AlgType.search_for_structure_over_latents
-)
-@Bootstrapping
+///**
+// * Trek Separation Clusters.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "TSC",
+//        command = "tsc",
+//        algoType = AlgType.search_for_structure_over_latents
+//)
+//@Bootstrapping
 public class Tsc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
         TakesCovarianceMatrix {
 

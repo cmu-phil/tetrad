@@ -26,8 +26,8 @@ public class TscBlockDiscoverer implements BlockDiscoverer {
         tsc.setEbicGamma(0.8);
         tsc.setRidge(1e-8);
         tsc.setIncludeAllNodes(true);
-        tsc.setPenaltyDiscount(1);
-        tsc.setMode(TscScored.Mode.Scoring);
+        tsc.setPenaltyDiscount(8);
+        tsc.setMode(TscScored.Mode.Testing);
         List<List<Integer>> blocks = tsc.findClusters();
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);

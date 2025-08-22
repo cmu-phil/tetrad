@@ -20,27 +20,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.blocks.ui.BlockClusteringWizard;
-import edu.cmu.tetrad.search.blocks.ui.BlockSpecEditorPanel;
-import edu.cmu.tetrad.util.JsonUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.editor.blocks.BlockClusteringWizard;
 import edu.cmu.tetradapp.app.TetradDesktop;
-import edu.cmu.tetradapp.editor.search.AlgorithmCard;
-import edu.cmu.tetradapp.editor.search.GraphCard;
-import edu.cmu.tetradapp.editor.search.ParameterCard;
-import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
-import edu.cmu.tetradapp.model.ClusterRunner;
-import edu.cmu.tetradapp.ui.PaddingPanel;
-import edu.cmu.tetradapp.ui.model.AlgorithmModel;
+import edu.cmu.tetradapp.model.LatentClustersRunner;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
-import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,7 +36,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serial;
-import java.util.List;
 
 /**
  * Edits some algorithm to search for Markov blanket CPDAGs.
@@ -60,14 +46,14 @@ import java.util.List;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  * @version $Id: $Id
  */
-public class ClusterEditor extends JPanel implements PropertyChangeListener, ActionListener, FinalizingEditor {
+public class LatentClustersEditor extends JPanel implements PropertyChangeListener, ActionListener, FinalizingEditor {
     @Serial
     private static final long serialVersionUID = -23L;
 
     /**
      * The algorithm card.
      */
-    private final ClusterRunner clusterRunner;
+    private final LatentClustersRunner runner;
 
     /**
      * The desktop.
@@ -78,17 +64,34 @@ public class ClusterEditor extends JPanel implements PropertyChangeListener, Act
     /**
      * <p>Constructor for GeneralAlgorithmEditor.</p>
      *
-     * @param clusterRunner a {@link ClusterRunner} object
+     * @param latentClustersRunner a {@link LatentClustersRunner} object
      */
-    public ClusterEditor(ClusterRunner clusterRunner) {
-        this.clusterRunner = clusterRunner;
+    public LatentClustersEditor(LatentClustersRunner latentClustersRunner) {
+        this.runner = latentClustersRunner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
-        DataModelList dataModelList = clusterRunner.getDataWrapper().getDataModelList();
+        DataModelList dataModelList = latentClustersRunner.getDataWrapper().getDataModelList();
         DataSet first = (DataSet) (dataModelList.getFirst());
         wizard = new BlockClusteringWizard(first);
         wizard.setPreferredSize(new Dimension(600, 400));
         setLayout( new BorderLayout());
         add(wizard, BorderLayout.CENTER);
+
+        // 1) Register to receive specs from BOTH Search and Apply
+        wizard.addBlockSpecListener(this::onBlockSpecAvailable);
+    }
+
+    private void onBlockSpecAvailable(BlockSpec spec) {
+        // Always on EDT because wizard fires from done()/EDT and from Apply (EDT)
+        try {
+            runner.setBlockSpec(spec);
+            // Optionally kick off the downstream block-based search now,
+            // or enable a "Run structure search" button, etc.
+            // runner.runStructureSearchAsync(); // if you have that
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Failed to set BlockSpec: " + ex.getMessage(),
+                    "Cluster Runner", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /**
@@ -107,12 +110,14 @@ public class ClusterEditor extends JPanel implements PropertyChangeListener, Act
 
     @Override
     public boolean finalizeEditor() {
-        BlockSpec blockSpec = this.clusterRunner.getBlockSpec();
+        BlockSpec blockSpec = this.runner.getBlockSpec();
         if (blockSpec == null) {
             int option = JOptionPane.showConfirmDialog(this, "You have not performed a clustering. Close anyway?", "Close?",
                     JOptionPane.YES_NO_OPTION);
             return option == JOptionPane.YES_OPTION;
         }
+
+        actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
 
         return true;
     }

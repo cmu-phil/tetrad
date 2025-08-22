@@ -33,19 +33,23 @@ public class BlocksIndTest implements BlockIndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
+    private BlockSpec blockSpec;
 
     /**
      * Initializes a new instance of the DegenerateGaussianLrt class.
      */
     public BlocksIndTest() {
+        System.out.println();
     }
 
-    /**
-     * {@inheritDoc}x
-     */
     @Override
-    public IndependenceTest getTest(BlockSpec spec, Parameters parameters) {
-        IndTestBlocks test = new IndTestBlocks(spec);
+    public void setBlockSpec(BlockSpec blockSpec) {
+        this.blockSpec = blockSpec;
+    }
+
+    @Override
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        IndTestBlocks test = new IndTestBlocks(blockSpec);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         return test;
     }
@@ -73,7 +77,7 @@ public class BlocksIndTest implements BlockIndependenceWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
-        parameters.add(Params.TRUNCATION_LIMIT);
+//        parameters.add(Params.TRUNCATION_LIMIT);
         return parameters;
     }
 }

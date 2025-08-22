@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search.blocks.ui;
+package edu.cmu.tetradapp.editor.blocks;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -13,6 +13,8 @@ import edu.cmu.tetrad.search.ntad_test.BollenTing;
 import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.search.ntad_test.Wishart;
+import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import java.awt.*;
@@ -55,12 +57,15 @@ public class BlockClusteringWizard extends JPanel {
     private final BlockSpecEditorPanel editorPanel;
     // ---- State ----
     private final DataSet dataSet;
+    private final java.util.List<BlockSpecListener> specListeners = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private BlockSpec blockSpec = null;
+    private double alpha = 0.01;
 
     public BlockClusteringWizard(DataSet dataSet) {
         super(new BorderLayout(8, 8));
         this.dataSet = Objects.requireNonNull(dataSet);
 
-        tfAlpha.setValue(0.01);
+        tfAlpha.setValue(alpha);
         tfAlpha.setColumns(6);
 
         // Page 1 (setup)
@@ -99,6 +104,10 @@ public class BlockClusteringWizard extends JPanel {
 
         // Page 2 (results)
         editorPanel = new BlockSpecEditorPanel(dataSet);
+        // in BlockClusteringWizard constructor, after creating editorPanel:
+        // forward Apply to the same listener bus
+        editorPanel.setOnApply(this::fireBlockSpec);
+
         JPanel resultTop = new JPanel(new BorderLayout());
         resultTop.add(btnBack, BorderLayout.WEST);
         lblResultTitle.setText(" Discovered Blocks for " + cbAlgorithm.getSelectedItem() + " (editable) ");
@@ -125,21 +134,6 @@ public class BlockClusteringWizard extends JPanel {
             status.setText("Ready.");
             cards.show(cardPanel, "setup");
         });
-    }
-
-    private static JFormattedTextField createAlphaField() {
-        java.text.DecimalFormat fmt = new java.text.DecimalFormat("0.############");
-        fmt.setGroupingUsed(false);
-        javax.swing.text.NumberFormatter nf = new javax.swing.text.NumberFormatter(fmt);
-        nf.setValueClass(Double.class);
-        nf.setMinimum(0.0);
-        nf.setMaximum(1.0);
-        nf.setAllowsInvalid(false);          // blocks non-numeric edits
-        nf.setCommitsOnValidEdit(true);      // updates value as you type
-        JFormattedTextField f = new JFormattedTextField(nf);
-        f.setColumns(6);
-        f.setValue(0.01);
-        return f;
     }
 
     public static void main(String[] args) {
@@ -210,6 +204,31 @@ public class BlockClusteringWizard extends JPanel {
         return new BoxDataSet(box, vars);
     }
 
+    public void addBlockSpecListener(BlockSpecListener l) {
+        if (l != null) specListeners.add(l);
+    }
+
+    public void removeBlockSpecListener(BlockSpecListener l) {
+        specListeners.remove(l);
+    }
+
+    private void fireBlockSpec(BlockSpec spec) {
+        specListeners.forEach(l -> l.onBlockSpec(spec));
+    }
+
+    private JFormattedTextField createAlphaField() {
+        java.text.DecimalFormat fmt = new java.text.DecimalFormat("0.############");
+        fmt.setGroupingUsed(false);
+        javax.swing.text.NumberFormatter nf = new javax.swing.text.NumberFormatter(fmt);
+        nf.setValueClass(Double.class);
+        nf.setMinimum(0.0);
+        nf.setMaximum(1.0);
+        nf.setCommitsOnValidEdit(true);      // updates value as you type
+        JFormattedTextField f = new JFormattedTextField(nf);
+        f.setColumns(6);
+        return f;
+    }
+
     // Add to class:
     private void refreshTestChoices() {
         String alg = (String) cbAlgorithm.getSelectedItem();
@@ -253,50 +272,39 @@ public class BlockClusteringWizard extends JPanel {
 
     // ---------- Run search ----------
     private void onSearch(ActionEvent evt) {
-        String alg = (String) cbAlgorithm.getSelectedItem();
-
-        Number alphaNum = (Number) tfAlpha.getValue();
-        if (alphaNum == null) {
-            JOptionPane.showMessageDialog(this, "Please enter a valid alpha in [0, 1].",
-                    "Parameters", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        double alpha = alphaNum.doubleValue();
-        String testName = cbTetradTest.isEnabled() ? (String) cbTetradTest.getSelectedItem() : null;
-
-        // Safety guard: enforce compatibility again (in case of weird UI states)
-        if ("FTFC".equals(alg) && TEST_WIS.equals(testName)) {
-            JOptionPane.showMessageDialog(this, "FTFC supports only CCA or Bollen-Ting.", "Test Selection", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        btnSearch.setEnabled(false);
-        status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : "") + " …");
-
-        new SwingWorker<BlockSpec, Void>() {
+        new WatchedProcess() {
             @Override
-            protected BlockSpec doInBackground() {
-                try {
-                    BlockDiscoverer discoverer = buildDiscoverer(alg, testName, alpha);
-                    return discoverer.discover();
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                    throw new RuntimeException(t);
+            public void watch() {
+                String alg = (String) cbAlgorithm.getSelectedItem();
+
+                setAlpha((Double) tfAlpha.getValue());
+                String testName = cbTetradTest.isEnabled() ? (String) cbTetradTest.getSelectedItem() : null;
+
+                // Safety guard: enforce compatibility again (in case of weird UI states)
+                if ("FTFC".equals(alg) && TEST_WIS.equals(testName)) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "FTFC supports only CCA or Bollen-Ting.", "Test Selection", JOptionPane.WARNING_MESSAGE);
+                    return;
                 }
-            }
 
-            @Override
-            protected void done() {
-                btnSearch.setEnabled(true);
+                btnSearch.setEnabled(false);
+                status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : "") + " …");
+
+                BlockDiscoverer discoverer = buildDiscoverer(alg, testName, alpha);
+                BlockSpec spec = discoverer.discover();
+
                 try {
-                    BlockSpec spec = get();
                     editorPanel.setDataSet(spec.dataSet());
                     editorPanel.setText(BlockSpecTextCodec.format(spec));
 
-                    // update the title now that we know what ran
+                    // update title…
                     String algRan = (String) cbAlgorithm.getSelectedItem();
-                    lblResultTitle.setText(" Discovered Blocks for " + cbAlgorithm.getSelectedItem() + " (editable) ");
+                    ((JLabel) ((BorderLayout) ((JPanel) pageResult.getComponent(0)).getLayout())
+                            .getLayoutComponent(BorderLayout.CENTER))
+                            .setText(" Discovered Blocks for " + algRan + " (editable) ");
+
+                    // NEW: notify listeners (ClusterEditor) that a fresh spec is ready
+                    fireBlockSpec(spec);
+
                     cards.show(cardPanel, "result");
                 } catch (Exception ex) {
                     Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
@@ -305,8 +313,16 @@ public class BlockClusteringWizard extends JPanel {
                             "Search", JOptionPane.ERROR_MESSAGE);
                     status.setText("Search failed.");
                 }
+
+                btnSearch.setEnabled(true);
             }
-        }.execute();
+        };
+
+//        new MyWatchedProcess().watch();
+    }
+
+    private void setAlpha(double alpha) {
+        this.alpha = alpha;
     }
 
     private BlockDiscoverer buildDiscoverer(String alg, String testName, double alpha) {
@@ -322,7 +338,9 @@ public class BlockClusteringWizard extends JPanel {
         }
 
         return switch (alg) {
-            case "TSC" -> BlockDiscoverers.tsc(dataSet, alpha);
+            case "TSC" -> {
+                yield BlockDiscoverers.tsc(dataSet, alpha);
+            }
             case "FOFC" -> {
                 if (test == null) {
                     test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false); // sensible default

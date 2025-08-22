@@ -21,10 +21,16 @@ package edu.cmu.tetradapp.editor.search;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
+import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.independence.BlocksIndTest;
+import edu.cmu.tetrad.algcomparison.score.BlockScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.*;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.score.BlockScore;
+import edu.cmu.tetrad.search.test.BlockTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -185,6 +191,7 @@ public class AlgorithmCard extends JPanel {
      * Multi-data algorithm.
      */
     private final boolean multiDataAlgo;
+    private final BlockSpec blockSpec;
 
     /**
      * Updating test models.
@@ -201,8 +208,9 @@ public class AlgorithmCard extends JPanel {
      *
      * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
      */
-    public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner) {
+    public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner, BlockSpec blockSpec) {
         this.algorithmRunner = algorithmRunner;
+        this.blockSpec = blockSpec; // typically null, only non-null for block tests and scores.
         this.dataType = getDataType(algorithmRunner);
         this.desktop = (TetradDesktop) DesktopController.getInstance();
         this.multiDataAlgo = algorithmRunner.getSourceGraph() == null && algorithmRunner.getDataModelList().size() > 1;
@@ -670,34 +678,107 @@ public class AlgorithmCard extends JPanel {
         this.scoreComboBox.setEnabled(this.scoreComboBox.getItemCount() > 0);
     }
 
+//    private void refreshTestList() {
+//        this.updatingTestModels = true;
+//        this.indTestComboBox.removeAllItems();
+//        AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
+//        if (algoModel != null && algoModel.isRequiredTest()) {
+//            List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(this.dataType);
+//            if (this.linearGaussianRadBtn.isSelected()) {
+//                models.stream()
+//                        .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(LinearGaussian.class))
+//                        .forEach(this.indTestComboBox::addItem);
+//            } else if (this.mixedRadBtn.isSelected()) {
+//                for (IndependenceTestModel e : models) {
+//                    if (e.getIndependenceTest().clazz().isAnnotationPresent(Mixed.class)) {
+//                        this.indTestComboBox.addItem(e);
+//                    }
+//                }
+//            } else if (this.generalRadBtn.isSelected()) {
+//                models.stream()
+//                        .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(General.class))
+//                        .forEach(this.indTestComboBox::addItem);
+//            } else if (this.allRadBtn.isSelected()) {
+//                models.forEach(this.indTestComboBox::addItem);
+//            }
+//        }
+//        this.updatingTestModels = false;
+//        if (this.indTestComboBox.getItemCount() > 0) {
+//            this.indTestComboBox.setEnabled(true);
+//
+//            Map<DataType, IndependenceTestModel> map = this.defaultIndTestModels.get(algoModel);
+//            if (map == null) {
+//                map = new EnumMap<>(DataType.class);
+//                this.defaultIndTestModels.put(algoModel, map);
+//            }
+//
+//            IndependenceTestModel testModel = map.get(this.dataType);
+//            if (testModel == null) {
+//                testModel = IndependenceTestModels.getInstance().getDefaultModel(this.dataType);
+//                if (testModel == null) {
+//                    testModel = this.indTestComboBox.getItemAt(0);
+//                }
+//            }
+//            this.indTestComboBox.setSelectedItem(testModel);
+//            this.indTestComboBox.getSelectedIndex();
+//        } else {
+//            this.indTestComboBox.setEnabled(false);
+//        }
+//
+//        if (this.indTestComboBox.getSelectedIndex() == -1) {
+//            this.testDescTextArea.setText("");
+//        }
+//    }
+
     private void refreshTestList() {
         this.updatingTestModels = true;
         this.indTestComboBox.removeAllItems();
+
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
         if (algoModel != null && algoModel.isRequiredTest()) {
             List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(this.dataType);
-            if (this.linearGaussianRadBtn.isSelected()) {
-                models.stream()
-                        .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(LinearGaussian.class))
-                        .forEach(this.indTestComboBox::addItem);
-            } else if (this.mixedRadBtn.isSelected()) {
-                for (IndependenceTestModel e : models) {
-                    if (e.getIndependenceTest().clazz().isAnnotationPresent(Mixed.class)) {
-                        this.indTestComboBox.addItem(e);
-                    }
+
+            // 1) Radio-button based type filter
+            java.util.function.Predicate<IndependenceTestModel> typeFilter = m -> {
+                Class<?> c = m.getIndependenceTest().clazz();
+                if (this.linearGaussianRadBtn.isSelected()) {
+                    return c.isAnnotationPresent(LinearGaussian.class);
+                } else if (this.mixedRadBtn.isSelected()) {
+                    return c.isAnnotationPresent(Mixed.class);
+                } else if (this.generalRadBtn.isSelected()) {
+                    return c.isAnnotationPresent(General.class);
+                } else if (this.allRadBtn.isSelected()) {
+                    return true;
                 }
-            } else if (this.generalRadBtn.isSelected()) {
-                models.stream()
-                        .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(General.class))
-                        .forEach(this.indTestComboBox::addItem);
-            } else if (this.allRadBtn.isSelected()) {
-                models.forEach(this.indTestComboBox::addItem);
-            }
+                return true;
+            };
+
+            // 2) Blocks gating based on presence of blockSpec
+            java.util.function.Predicate<IndependenceTestModel> blocksGate = m -> {
+                Class<?> c = m.getIndependenceTest().clazz();
+                boolean isBlocks = BlockIndependenceWrapper.class.isAssignableFrom(c);
+                if (this.blockSpec == null) {
+                    // No BlockSpec: hide block-based tests
+                    return !isBlocks;
+                } else {
+                    // Has BlockSpec: show only block-based tests
+                    return isBlocks;
+                }
+            };
+
+            // 3) Apply both filters and populate combo
+            models.stream()
+                    .filter(typeFilter)
+                    .filter(blocksGate)
+                    .forEach(this.indTestComboBox::addItem);
         }
+
         this.updatingTestModels = false;
+
         if (this.indTestComboBox.getItemCount() > 0) {
             this.indTestComboBox.setEnabled(true);
 
+            // Retain your default selection behavior, falling back safely if filtered out.
             Map<DataType, IndependenceTestModel> map = this.defaultIndTestModels.get(algoModel);
             if (map == null) {
                 map = new EnumMap<>(DataType.class);
@@ -707,12 +788,20 @@ public class AlgorithmCard extends JPanel {
             IndependenceTestModel testModel = map.get(this.dataType);
             if (testModel == null) {
                 testModel = IndependenceTestModels.getInstance().getDefaultModel(this.dataType);
-                if (testModel == null) {
-                    testModel = this.indTestComboBox.getItemAt(0);
-                }
             }
+            if (testModel == null) {
+                testModel = this.indTestComboBox.getItemAt(0);
+            } else {
+                // If the default isn’t present after filtering, fall back to first item.
+                boolean present = false;
+                for (int i = 0; i < this.indTestComboBox.getItemCount(); i++) {
+                    if (this.indTestComboBox.getItemAt(i).equals(testModel)) { present = true; break; }
+                }
+                if (!present) testModel = this.indTestComboBox.getItemAt(0);
+            }
+
             this.indTestComboBox.setSelectedItem(testModel);
-            this.indTestComboBox.getSelectedIndex();
+            this.indTestComboBox.getSelectedIndex(); // force selection commit
         } else {
             this.indTestComboBox.setEnabled(false);
         }
@@ -722,29 +811,101 @@ public class AlgorithmCard extends JPanel {
         }
     }
 
+//    private void refreshScoreList() {
+//        this.updatingScoreModels = true;
+//        this.scoreComboBox.removeAllItems();
+//        AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
+//        if (algoModel != null && algoModel.isRequiredScore()) {
+//            List<ScoreModel> models = ScoreModels.getInstance().getModels(this.dataType);
+//            if (this.linearGaussianRadBtn.isSelected()) {
+//                models.stream()
+//                        .filter(e -> e.getScore().clazz().isAnnotationPresent(LinearGaussian.class))
+//                        .forEach(this.scoreComboBox::addItem);
+//            } else if (this.mixedRadBtn.isSelected()) {
+//                models.stream()
+//                        .filter(e -> e.getScore().clazz().isAnnotationPresent(Mixed.class))
+//                        .forEach(this.scoreComboBox::addItem);
+//            } else if (this.generalRadBtn.isSelected()) {
+//                models.stream()
+//                        .filter(e -> e.getScore().clazz().isAnnotationPresent(General.class))
+//                        .forEach(this.scoreComboBox::addItem);
+//            } else if (this.allRadBtn.isSelected()) {
+//                models.forEach(this.scoreComboBox::addItem);
+//            }
+//        }
+//        this.updatingScoreModels = false;
+//        if (this.scoreComboBox.getItemCount() > 0) {
+//            this.scoreComboBox.setEnabled(true);
+//
+//            Map<DataType, ScoreModel> map = this.defaultScoreModels.get(algoModel);
+//            if (map == null) {
+//                map = new EnumMap<>(DataType.class);
+//                this.defaultScoreModels.put(algoModel, map);
+//            }
+//
+//            ScoreModel scoreModel = map.get(this.dataType);
+//            if (scoreModel == null) {
+//                scoreModel = ScoreModels.getInstance().getDefaultModel(this.dataType);
+//                if (scoreModel == null) {
+//                    scoreModel = this.scoreComboBox.getItemAt(0);
+//                }
+//            }
+//            this.scoreComboBox.setSelectedItem(scoreModel);
+//        } else {
+//            this.scoreComboBox.setEnabled(false);
+//        }
+//
+//        if (this.scoreComboBox.getSelectedIndex() == -1) {
+//            this.scoreDescTextArea.setText("");
+//        }
+//    }
+
+
     private void refreshScoreList() {
         this.updatingScoreModels = true;
         this.scoreComboBox.removeAllItems();
+
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
         if (algoModel != null && algoModel.isRequiredScore()) {
             List<ScoreModel> models = ScoreModels.getInstance().getModels(this.dataType);
-            if (this.linearGaussianRadBtn.isSelected()) {
-                models.stream()
-                        .filter(e -> e.getScore().clazz().isAnnotationPresent(LinearGaussian.class))
-                        .forEach(this.scoreComboBox::addItem);
-            } else if (this.mixedRadBtn.isSelected()) {
-                models.stream()
-                        .filter(e -> e.getScore().clazz().isAnnotationPresent(Mixed.class))
-                        .forEach(this.scoreComboBox::addItem);
-            } else if (this.generalRadBtn.isSelected()) {
-                models.stream()
-                        .filter(e -> e.getScore().clazz().isAnnotationPresent(General.class))
-                        .forEach(this.scoreComboBox::addItem);
-            } else if (this.allRadBtn.isSelected()) {
-                models.forEach(this.scoreComboBox::addItem);
-            }
+
+            // 1) Radio-button type filter
+            java.util.function.Predicate<ScoreModel> typeFilter = m -> {
+                Class<?> c = m.getScore().clazz();
+                if (this.linearGaussianRadBtn.isSelected()) {
+                    return c.isAnnotationPresent(LinearGaussian.class);
+                } else if (this.mixedRadBtn.isSelected()) {
+                    return c.isAnnotationPresent(Mixed.class);
+                } else if (this.generalRadBtn.isSelected()) {
+                    return c.isAnnotationPresent(General.class);
+                } else if (this.allRadBtn.isSelected()) {
+                    return true;
+                }
+                return true;
+            };
+
+            // 2) Blocks gating based on presence of blockSpec
+            java.util.function.Predicate<ScoreModel> blocksGate = m -> {
+                Class<?> c = m.getScore().clazz();
+                boolean isBlocks = BlockScoreWrapper.class.isAssignableFrom(c);
+                if (this.blockSpec == null) {
+                    // No BlockSpec: hide block-based scores
+                    return !isBlocks;
+                } else {
+                    // Has BlockSpec: show only block-based scores
+                    return isBlocks;
+                }
+            };
+
+            // 3) Apply both filters and populate combo
+            models.stream()
+                    .filter(typeFilter)
+                    .filter(blocksGate)
+                    .forEach(this.scoreComboBox::addItem);
         }
+
         this.updatingScoreModels = false;
+
         if (this.scoreComboBox.getItemCount() > 0) {
             this.scoreComboBox.setEnabled(true);
 
@@ -754,13 +915,22 @@ public class AlgorithmCard extends JPanel {
                 this.defaultScoreModels.put(algoModel, map);
             }
 
+            // Prefer the saved default; fall back to current global default; else first available
             ScoreModel scoreModel = map.get(this.dataType);
             if (scoreModel == null) {
                 scoreModel = ScoreModels.getInstance().getDefaultModel(this.dataType);
-                if (scoreModel == null) {
-                    scoreModel = this.scoreComboBox.getItemAt(0);
-                }
             }
+            if (scoreModel == null) {
+                scoreModel = this.scoreComboBox.getItemAt(0);
+            } else {
+                // If filtered out, fall back to first item
+                boolean present = false;
+                for (int i = 0; i < this.scoreComboBox.getItemCount(); i++) {
+                    if (this.scoreComboBox.getItemAt(i).equals(scoreModel)) { present = true; break; }
+                }
+                if (!present) scoreModel = this.scoreComboBox.getItemAt(0);
+            }
+
             this.scoreComboBox.setSelectedItem(scoreModel);
         } else {
             this.scoreComboBox.setEnabled(false);

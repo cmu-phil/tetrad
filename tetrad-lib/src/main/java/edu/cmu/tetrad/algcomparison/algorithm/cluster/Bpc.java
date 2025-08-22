@@ -22,18 +22,18 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Build Pure Clusters.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BPC",
-        command = "bpc",
-        algoType = AlgType.search_for_structure_over_latents
-)
-@Bootstrapping
+///**
+// * Build Pure Clusters.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BPC",
+//        command = "bpc",
+//        algoType = AlgType.search_for_structure_over_latents
+//)
+//@Bootstrapping
 public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
         TakesCovarianceMatrix {
 

@@ -1088,14 +1088,39 @@
             ]]>
         </node-specific-message>
     </session-node>
-    <session-node id="Cluster">
+    <session-node id="Latent_Clusters">
         <models>
-            <model name="Algorithms that Generate Clusters" acronym="Cluster" help="cluster" category="General">
+            <model name="Algorithms that Generate Clusters" acronym="Latent_Clusters" help="latent_clusters" category="General">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.ClusterRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.ClusterEditor
+                <model-class>edu.cmu.tetradapp.model.LatentClustersRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.LatentClustersEditor
+                </editor-class>
+            </model>
+        </models>
+        <display-component image="searchIcon.gif"/>
+        <model-chooser title="Types of Search Algorithms">
+            edu.cmu.tetradapp.app.CategorizingModelChooser
+        </model-chooser>
+        <node-specific-message>
+            <![CDATA[
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
+                 <br> (1) Data or Simulation, OR
+                 <br> (2) Graph (searches directly over graph) OR
+                 <br> Note that for the parent boxes, models need to have been created.
+               </html>
+            ]]>
+        </node-specific-message>
+    </session-node>
+    <session-node id="Latent_Structure">
+        <models>
+            <model name="Algorithms that Generate Graphs" acronym="Latent Structure" help="latent_structure" category="General">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.LatentStructureRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.LatentStructureEditor
                 </editor-class>
             </model>
         </models>
@@ -1388,16 +1413,16 @@
             <!--                <model-class>edu.cmu.tetradapp.model.IndependenceFactsModel</model-class>-->
             <!--                <editor-class>edu.cmu.tetradapp.knowledge_editor.IndependenceFactsEditor</editor-class>-->
             <!--            </model>-->
-            <model name="Measurement Model" acronym="Meas. Model" help="mm"
-                   category="Multiple Indicator Model searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Misc Fine Details" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.MeasurementModelWrapper</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.ClusterEditor
-                </editor-class>
-            </model>
+<!--            <model name="Measurement Model" acronym="Meas. Model" help="mm"-->
+<!--                   category="Multiple Indicator Model searches">-->
+<!--                <logger>-->
+<!--                    <event id="info" description="Information" default="on"/>-->
+<!--                    <event id="details" description="Misc Fine Details" default="on"/>-->
+<!--                </logger>-->
+<!--                <model-class>edu.cmu.tetradapp.model.MeasurementModelWrapper</model-class>-->
+<!--                <editor-class>edu.cmu.tetradapp.editor.LatentClustersEditor-->
+<!--                </editor-class>-->
+<!--            </model>-->
         </models>
         <display-component image="searchIcon.gif"/>
         <!--<display-component image="graduation_hat1.png"/>-->

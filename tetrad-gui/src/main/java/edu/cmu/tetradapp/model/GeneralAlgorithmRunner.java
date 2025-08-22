@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -23,20 +23,23 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
+import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.TakesGraph;
+import edu.cmu.tetrad.algcomparison.score.BlockScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.MSepScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -113,6 +116,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * The independence tests.
      */
     private transient List<IndependenceTest> independenceTests;
+
+    private BlockSpec blockSpec = null;
 
     /**
      * The elapsed time for the algorithm to run.
@@ -393,11 +398,14 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
 
         if (getDataModelList().isEmpty() && getSourceGraph() != null) {
-            if (algo instanceof UsesScoreWrapper) {
+            if (algo instanceof TakesScoreWrapper) {
                 // We inject the graph to the score to satisfy the tests like MSeparationScore - Zhou
-                ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWrapper();
+                ScoreWrapper scoreWrapper = ((TakesScoreWrapper) algo).getScoreWrapper();
                 if (scoreWrapper instanceof MSepScore) {
                     ((MSepScore) scoreWrapper).setGraph(getSourceGraph());
+                }
+                if (scoreWrapper instanceof BlockScoreWrapper) {
+                    ((BlockScoreWrapper) scoreWrapper).setBlockSpec(blockSpec);
                 }
             }
 
@@ -405,6 +413,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
                 if (wrapper instanceof MSeparationTest) {
                     ((MSeparationTest) wrapper).setGraph(getSourceGraph());
+                }
+                if (wrapper instanceof BlockIndependenceWrapper) {
+                    ((BlockIndependenceWrapper) wrapper).setBlockSpec(blockSpec);
                 }
             }
 
@@ -527,6 +538,23 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         Knowledge knowledgeFromData = data.getKnowledge();
                         if (!(knowledgeFromData == null || knowledgeFromData.getVariables().isEmpty())) {
                             this.knowledge = knowledgeFromData;
+                        }
+
+                        if (algo instanceof TakesScoreWrapper) {
+                            // We inject the graph to the score to satisfy the tests like MSeparationScore - Zhou
+                            ScoreWrapper scoreWrapper = ((TakesScoreWrapper) algo).getScoreWrapper();
+
+                            if (scoreWrapper instanceof BlockScoreWrapper) {
+                                ((BlockScoreWrapper) scoreWrapper).setBlockSpec(blockSpec);
+                            }
+                        }
+
+                        if (algo instanceof TakesIndependenceWrapper) {
+                            IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
+
+                            if (wrapper instanceof BlockIndependenceWrapper) {
+                                ((BlockIndependenceWrapper) wrapper).setBlockSpec(blockSpec);
+                            }
                         }
 
                         DataType algDataType = algo.getDataType();
@@ -813,16 +841,24 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     this.independenceTests = new ArrayList<>();
                 }
 
+                if (indTestWrapper instanceof BlockIndependenceWrapper) {
+                    ((BlockIndependenceWrapper) indTestWrapper).setBlockSpec(blockSpec);
+                }
+
                 // Grabbing this independence test for the independence tests interface. JR 2020.8.24
                 IndependenceTest test = indTestWrapper.getTest(getDataModelList().get(0), this.parameters);
                 this.independenceTests.add(test);
             }
-        } else if (algo instanceof UsesScoreWrapper) {
+        } else if (algo instanceof TakesScoreWrapper) {
             if (getDataModelList().size() == 1) {
-                ScoreWrapper wrapper = ((UsesScoreWrapper) getAlgorithm()).getScoreWrapper();
+                ScoreWrapper wrapper = ((TakesScoreWrapper) getAlgorithm()).getScoreWrapper();
 
                 if (this.independenceTests == null) {
                     this.independenceTests = new ArrayList<>();
+                }
+
+                if (wrapper instanceof BlockScoreWrapper) {
+                    ((BlockScoreWrapper) wrapper).setBlockSpec(blockSpec);
                 }
 
                 // Grabbing this independence score for the independence tests interface. JR 2020.8.24
@@ -1006,5 +1042,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      */
     public long getElapsedTime() {
         return elapsedTime;
+    }
+
+    public BlockSpec getBlockSpec() {
+        return blockSpec;
+    }
+
+    public void setBlockSpec(BlockSpec blockSpec) {
+        this.blockSpec = blockSpec;
     }
 }

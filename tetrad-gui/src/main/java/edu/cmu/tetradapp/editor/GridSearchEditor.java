@@ -7,7 +7,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
@@ -2116,8 +2116,8 @@ public class GridSearchEditor extends JPanel {
                     ((TakesIndependenceWrapper) algorithmImpl).setIndependenceWrapper(independenceWrapper);
                 }
 
-                if (algorithmImpl instanceof UsesScoreWrapper && scoreWrapper != null) {
-                    ((UsesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
+                if (algorithmImpl instanceof TakesScoreWrapper && scoreWrapper != null) {
+                    ((TakesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
                 }
 
                 model.addAlgorithm(new GridSearchModel.AlgorithmSpec("name", algorithmModel, test, score));
@@ -2452,8 +2452,8 @@ public class GridSearchEditor extends JPanel {
                 algorithmChoiceTextArea.append("Selected independence test = " + ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getDescription() + "\n");
             }
 
-            if (algorithm instanceof UsesScoreWrapper) {
-                algorithmChoiceTextArea.append("Selected score = " + ((UsesScoreWrapper) algorithm).getScoreWrapper().getDescription() + "\n");
+            if (algorithm instanceof TakesScoreWrapper) {
+                algorithmChoiceTextArea.append("Selected score = " + ((TakesScoreWrapper) algorithm).getScoreWrapper().getDescription() + "\n");
             }
 
         } else {
@@ -2468,8 +2468,8 @@ public class GridSearchEditor extends JPanel {
                     algorithmChoiceTextArea.append("Selected independence test = " + ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getDescription() + "\n");
                 }
 
-                if (algorithm instanceof UsesScoreWrapper) {
-                    algorithmChoiceTextArea.append("Selected score = " + ((UsesScoreWrapper) algorithm).getScoreWrapper().getDescription() + "\n");
+                if (algorithm instanceof TakesScoreWrapper) {
+                    algorithmChoiceTextArea.append("Selected score = " + ((TakesScoreWrapper) algorithm).getScoreWrapper().getDescription() + "\n");
                 }
             }
         }
@@ -2503,11 +2503,11 @@ public class GridSearchEditor extends JPanel {
         Set<String> scoreDescriptions = new HashSet<>();
 
         for (GridSearchModel.AlgorithmSpec algorithm : selectedAlgorithms) {
-            if (algorithm instanceof UsesScoreWrapper) {
+            if (algorithm instanceof TakesScoreWrapper) {
                 if (scoreDescriptions.contains(algorithm.getAlgorithmImpl().getDescription())) {
                     continue;
                 }
-                scoreWrappers.add(((UsesScoreWrapper) algorithm).getScoreWrapper());
+                scoreWrappers.add(((TakesScoreWrapper) algorithm).getScoreWrapper());
                 scoreDescriptions.add(algorithm.getAlgorithmImpl().getDescription());
             }
         }

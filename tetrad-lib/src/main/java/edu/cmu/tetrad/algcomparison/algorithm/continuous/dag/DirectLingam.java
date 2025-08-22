@@ -4,7 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
@@ -36,7 +36,7 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, ReturnsBootstrapGraphs {
+public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;

@@ -1094,8 +1094,8 @@
                 <logger>
                     <event id="info" description="Information" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.ClusterRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.ClusterEditor
+                <model-class>edu.cmu.tetradapp.model.LatentClustersRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.LatentClustersEditor
                 </editor-class>
             </model>
         </models>
@@ -1395,7 +1395,7 @@
                     <event id="details" description="Misc Fine Details" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.MeasurementModelWrapper</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.ClusterEditor
+                <editor-class>edu.cmu.tetradapp.editor.LatentClustersEditor
                 </editor-class>
             </model>
         </models>

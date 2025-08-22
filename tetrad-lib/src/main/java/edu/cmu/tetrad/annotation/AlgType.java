@@ -33,8 +33,8 @@ public enum AlgType {
      */
     orient_pairwise, // R3, RSkew, Skew
 
-    /**
-     * If an algorithm searches for structure over latents.
-     */
-    search_for_structure_over_latents // BPC, FOFC, FTFC
+//    /**
+//     * If an algorithm searches for structure over latents.
+//     */
+//    search_for_structure_over_latents // BPC, FOFC, FTFC
 }

@@ -53,6 +53,7 @@ public class BlocksBicScore implements BlockScoreWrapper {
      * The data set.
      */
     private DataModel dataSet;
+    private BlockSpec blockSpec;
 
     /**
      * Initializes a new instance of the BasisFunctionBicScore class.
@@ -61,14 +62,18 @@ public class BlocksBicScore implements BlockScoreWrapper {
 
     }
 
+    @Override
+    public void setBlockSpec(BlockSpec blockSpec) {
+        this.blockSpec = blockSpec;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
-    public Score getScore(BlockSpec spec, Parameters parameters) {
-        this.dataSet = spec.dataSet();
+    public Score getScore(DataModel model, Parameters parameters) {
         edu.cmu.tetrad.search.score.BlocksBicScore score = new edu.cmu.tetrad.search.score.BlocksBicScore(
-                spec);
+                blockSpec);
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         return score;
     }
@@ -95,7 +100,7 @@ public class BlocksBicScore implements BlockScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.TRUNCATION_LIMIT);
+//        parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.PENALTY_DISCOUNT);
         return parameters;
     }

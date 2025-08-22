@@ -22,7 +22,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 
 import java.util.List;
 
@@ -108,7 +108,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
      * @return true if the algorithm requires a score
      */
     public boolean requiresScore(Class clazz) {
-        return clazz != null && UsesScoreWrapper.class.isAssignableFrom(clazz);
+        return clazz != null && TakesScoreWrapper.class.isAssignableFrom(clazz);
     }
 
     /**

@@ -10,7 +10,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
  * @author josephramsey
  * @version $Id: $Id
  */
-public interface UsesScoreWrapper {
+public interface TakesScoreWrapper {
 
     /**
      * Returns the score wrapper.

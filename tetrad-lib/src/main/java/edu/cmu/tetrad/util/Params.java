@@ -20,7 +20,7 @@ package edu.cmu.tetrad.util;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 
 import java.util.Arrays;
@@ -1184,8 +1184,8 @@ public final class Params {
      * @return a {@link java.util.Set} object
      */
     public static Set<String> getScoreParameters(Algorithm algorithm) {
-        return (algorithm instanceof UsesScoreWrapper)
-                ? new HashSet<>(((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters())
+        return (algorithm instanceof TakesScoreWrapper)
+                ? new HashSet<>(((TakesScoreWrapper) algorithm).getScoreWrapper().getParameters())
                 : Collections.emptySet();
     }
 

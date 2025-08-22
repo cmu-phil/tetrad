@@ -21,18 +21,18 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Peter/Clark algorithm (PC).
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "TSC-BOSS",
-        command = "tsc-boss",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
+///**
+// * Peter/Clark algorithm (PC).
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "TSC-BOSS",
+//        command = "tsc-boss",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
 public class TscBoss extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 

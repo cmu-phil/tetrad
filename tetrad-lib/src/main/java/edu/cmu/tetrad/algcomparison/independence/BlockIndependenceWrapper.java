@@ -17,21 +17,23 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-public interface BlockIndependenceWrapper extends HasParameters, TetradSerializable {
+public interface BlockIndependenceWrapper extends IndependenceWrapper, HasParameters {
     /**
      * Constant <code>serialVersionUID=23L</code>
      */
     @Serial
     long serialVersionUID = 23L;
 
-    /**
-     * Returns true iff x and y are independent conditional on z for the given data set.
-     *
-     * @param spec    The block spec to use, which is a tuple of dataset, blocks, and block nodes.
-     * @param parameters The paramters of the test.
-     * @return True iff independence holds.
-     */
-    IndependenceTest getTest(BlockSpec spec, Parameters parameters);
+    void setBlockSpec(BlockSpec blockSpec);
+
+//    /**
+//     * Returns true iff x and y are independent conditional on z for the given data set.
+//     *
+//     * @param spec    The block spec to use, which is a tuple of dataset, blocks, and block nodes.
+//     * @param parameters The paramters of the test.
+//     * @return True iff independence holds.
+//     */
+//    IndependenceTest getTest(BlockSpec spec, Parameters parameters);
 
     /**
      * Returns a short of this independence test.

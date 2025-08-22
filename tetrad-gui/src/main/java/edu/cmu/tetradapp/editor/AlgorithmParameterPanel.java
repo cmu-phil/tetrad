@@ -23,7 +23,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.PagSampleRfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RfciBsc;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.util.ParamDescription;
@@ -155,7 +155,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
             params = Params.getScoreParameters(algorithm);
             if (!params.isEmpty()) {
-                String title = ((UsesScoreWrapper) algorithm).getScoreWrapper()
+                String title = ((TakesScoreWrapper) algorithm).getScoreWrapper()
                         .getClass().getAnnotation(Score.class).name();
                 this.mainPanel.add(createSubPanel(title, params, parameters));
                 this.mainPanel.add(Box.createVerticalStrut(10));

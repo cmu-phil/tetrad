@@ -23,18 +23,18 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Find One Factor Clusters.
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FOFC",
-        command = "fofc",
-        algoType = AlgType.search_for_structure_over_latents
-)
-@Bootstrapping
+///**
+// * Find One Factor Clusters.
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "FOFC",
+//        command = "fofc",
+//        algoType = AlgType.search_for_structure_over_latents
+//)
+//@Bootstrapping
 public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
         TakesCovarianceMatrix {
 

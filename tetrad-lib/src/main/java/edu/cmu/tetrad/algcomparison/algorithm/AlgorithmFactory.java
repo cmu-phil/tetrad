@@ -23,7 +23,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.graph.Graph;
 
@@ -74,7 +74,7 @@ public class AlgorithmFactory {
             ((TakesIndependenceWrapper) algorithm).setIndependenceWrapper(test);
         }
         if (scoreRequired) {
-            ((UsesScoreWrapper) algorithm).setScoreWrapper(score);
+            ((TakesScoreWrapper) algorithm).setScoreWrapper(score);
         }
 
         return algorithm;
