@@ -18,7 +18,12 @@ public final class BlockDiscoverers {
         return new FtfcBlockDiscoverer(data, ntad, alpha);
     }
 
-    public static BlockDiscoverer tsc(DataSet data, double alpha) {
-        return new TscBlockDiscoverer(data, alpha);
+    public static BlockDiscoverer tscTest(DataSet data, double alpha) {
+        return new TscTestBlockDiscoverer(data, alpha);
+    }
+
+    public static BlockDiscoverer tscScore(DataSet data, double alpha,
+                                           double ebicGamma, double ridge, double penaltyDiscount) {
+        return new TscScoreBlockDiscoverer(data, alpha, ebicGamma, ridge, penaltyDiscount);
     }
 }

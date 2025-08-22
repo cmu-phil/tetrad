@@ -4,8 +4,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -69,7 +67,7 @@ public class Tsc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         DataSet dataSet = (DataSet) dataModel;
         List<Node> variables = dataModel.getVariables();
 
-        BlockDiscoverer discoverer = BlockDiscoverers.tsc(dataSet, alpha);
+        BlockDiscoverer discoverer = BlockDiscoverers.tscTest(dataSet, alpha);
         BlockSpec spec = discoverer.discover();
         this.blockSpec = spec;
 

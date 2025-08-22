@@ -61,7 +61,7 @@ public class BlocksInvariantTest {
     @Test
     public void testTscAdapterSpec() {
         DataSet ds = getData();
-        BlockSpec spec = BlockDiscoverers.tsc(ds, 0.05).discover();
+        BlockSpec spec = BlockDiscoverers.tscTest(ds, 0.05).discover();
         assertSame(ds, spec.dataSet());
         assertEquals(spec.blocks().size(), spec.blockVariables().size());
         BlocksUtil.validateBlocks(spec.blocks(), spec.dataSet());

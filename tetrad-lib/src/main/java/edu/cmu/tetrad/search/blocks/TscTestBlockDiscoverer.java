@@ -9,11 +9,11 @@ import java.util.List;
 /**
  * Adapter: TSC → BlockSpec.
  */
-public class TscBlockDiscoverer implements BlockDiscoverer {
+public class TscTestBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
     private final double alpha; // or whatever hyperparams TSC needs
 
-    public TscBlockDiscoverer(DataSet dataSet, double alpha) {
+    public TscTestBlockDiscoverer(DataSet dataSet, double alpha) {
         this.dataSet = dataSet;
         this.alpha = alpha;
     }
@@ -23,10 +23,7 @@ public class TscBlockDiscoverer implements BlockDiscoverer {
         TscScored tsc = new TscScored(dataSet.getVariables(), new CorrelationMatrix(dataSet),
                 dataSet.getNumRows());
         tsc.setAlpha(alpha);
-        tsc.setEbicGamma(0.8);
-        tsc.setRidge(1e-8);
         tsc.setIncludeAllNodes(true);
-        tsc.setPenaltyDiscount(8);
         tsc.setMode(TscScored.Mode.Testing);
         List<List<Integer>> blocks = tsc.findClusters();
         BlocksUtil.validateBlocks(blocks, dataSet);

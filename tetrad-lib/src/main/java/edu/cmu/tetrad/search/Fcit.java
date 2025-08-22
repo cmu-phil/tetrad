@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import nu.xom.Nodes;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -428,6 +429,16 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
         }
 
+        // We make all latent variables at this point measured for the duration of the
+        // procedure so that the latent structure search will work.
+        List<Node> latents = new ArrayList<>();
+        for (Node node : dag.getNodes()) {
+            if (node.getNodeType() == NodeType.LATENT) {
+                latents.add(node);
+                node.setNodeType(NodeType.MEASURED);
+            }
+        }
+
         // The main procedure.
 
         MagToPag dagToPag = new MagToPag(GraphTransforms.dagToMag(dag));
@@ -466,6 +477,11 @@ public final class Fcit implements IGraphSearch {
 
         if (verbose) {
             System.out.println();
+        }
+
+        // Revert nodes made latent to latent.
+        for (Node node : latents) {
+            node.setNodeType(NodeType.MEASURED);
         }
 
         TetradLogger.getInstance().log("FCIT finished.");

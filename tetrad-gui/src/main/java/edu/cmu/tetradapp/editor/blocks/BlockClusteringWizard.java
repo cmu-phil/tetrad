@@ -45,7 +45,7 @@ public class BlockClusteringWizard extends JPanel {
     private final JPanel pageSetup = new JPanel(new BorderLayout(8, 8));
     private final JPanel pageResult = new JPanel(new BorderLayout());
     // ... UI fields ...
-    private final JComboBox<String> cbAlgorithm = new JComboBox<>(new String[]{"TSC", "FOFC", "BPC", "FTFC"});
+    private final JComboBox<String> cbAlgorithm = new JComboBox<>(new String[]{"FOFC", "BPC", "FTFC", "TSC Test", "TSC Score"});
 
     // Put near your fields
     private final JFormattedTextField tfAlpha = createAlphaField();
@@ -338,8 +338,11 @@ public class BlockClusteringWizard extends JPanel {
         }
 
         return switch (alg) {
-            case "TSC" -> {
-                yield BlockDiscoverers.tsc(dataSet, alpha);
+            case "TSC Test" -> {
+                yield BlockDiscoverers.tscTest(dataSet, alpha);
+            }
+            case "TSC Score" -> {
+                yield BlockDiscoverers.tscScore(dataSet, alpha, 0.8, 1e-8, 2);
             }
             case "FOFC" -> {
                 if (test == null) {
