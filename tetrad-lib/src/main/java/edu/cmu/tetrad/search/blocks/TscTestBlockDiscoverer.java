@@ -20,10 +20,10 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
 
     @Override
     public BlockSpec discover() {
-        TscScored tsc = new TscScored(dataSet.getVariables(), new CorrelationMatrix(dataSet),
-                dataSet.getNumRows());
+        TscScored tsc = new TscScored(dataSet.getVariables(), new CorrelationMatrix(dataSet));
         tsc.setAlpha(alpha);
         tsc.setIncludeAllNodes(true);
+        tsc.setExpectedSampleSize(dataSet.getNumRows());
         tsc.setMode(TscScored.Mode.Testing);
         List<List<Integer>> blocks = tsc.findClusters();
         BlocksUtil.validateBlocks(blocks, dataSet);

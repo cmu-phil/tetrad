@@ -102,10 +102,10 @@ public class TscPc implements IGraphSearch {
         // --- TSC clustering ---
         TscScored tsc = new TscScored(
                 corr.getVariables(),
-                corr,
-                N
+                corr
         );
         tsc.setVerbose(verbose);
+        tsc.setExpectedSampleSize(N);
         tsc.setAlpha(alphaCluster); // cluster alpha
 //        tsc.setEnforceObservedLeaves(false);
 //        tsc.setAntiProxyDrop(1);  // try 1; 2 is stricter

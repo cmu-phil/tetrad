@@ -102,11 +102,11 @@ public class TscBoss implements IGraphSearch {
         // --- TSC clustering ---
         TscScored tsc = new TscScored(
                 corr.getVariables(),
-                corr,
-                N
+                corr
         );
 
         tsc.setAlpha(alpha);
+        tsc.setExpectedSampleSize(N);
 
         tsc.setVerbose(verbose);
 //        tsc.setAntiProxyDrop(1);  // try 1; 2 is stricter

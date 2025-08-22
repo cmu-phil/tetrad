@@ -26,13 +26,13 @@ public class TscScoreBlockDiscoverer implements BlockDiscoverer {
 
     @Override
     public BlockSpec discover() {
-        TscScored tsc = new TscScored(dataSet.getVariables(), new CorrelationMatrix(dataSet),
-                dataSet.getNumRows());
+        TscScored tsc = new TscScored(dataSet.getVariables(), new CorrelationMatrix(dataSet));
         tsc.setAlpha(alpha);
         tsc.setEbicGamma(ebicGamma);
         tsc.setRidge(ridge);
         tsc.setIncludeAllNodes(true);
         tsc.setPenaltyDiscount(penaltyDiscount);
+        tsc.setExpectedSampleSize(dataSet.getNumRows());
         tsc.setMode(TscScored.Mode.Scoring);
         List<List<Integer>> blocks = tsc.findClusters();
         BlocksUtil.validateBlocks(blocks, dataSet);

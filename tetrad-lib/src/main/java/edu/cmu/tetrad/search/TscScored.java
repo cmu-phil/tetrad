@@ -32,13 +32,13 @@ public class TscScored {
     private final List<Integer> variables;
     private final int sampleSize;
     private final SimpleMatrix S;
-
     // caches: Wilks ranks (legacy) and scored ranks (optional)
     private final Map<Key, Integer> rankCache = new ConcurrentHashMap<>();
     private final Map<Key, Integer> scoredRankCache = new ConcurrentHashMap<>();
     // --- RCCA sweep cache (C,D) -> ScoreSweep (reduces repeated work during seed/grow) ---
     // replace current sweepCache with:
     private final Map<Long, ScoreSweep> sweepCache = new java.util.concurrent.ConcurrentHashMap<>();
+    private int expectedSampleSize = -1;
     //    private final Map<Long, ScoreSweep> sweepCache =
 //            new LinkedHashMap<>(4096, 0.75f, true) {
 //                @Override
@@ -79,16 +79,16 @@ public class TscScored {
      */
     private double scoreMargin = 0.0;
     private Mode mode = Mode.Testing;
-    private boolean atomicCoverRebuild = true;
-    private boolean prefilterByWilkes = true;
+    private final boolean atomicCoverRebuild = true;
+    private final boolean prefilterByWilkes = true;
 
     // ---- ctor ----
-    public TscScored(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
+    public TscScored(List<Node> variables, CovarianceMatrix cov) {
         this.nodes = new ArrayList<>(variables);
-        this.sampleSize = sampleSize;
         this.variables = new ArrayList<>(variables.size());
         for (int i = 0; i < variables.size(); i++) this.variables.add(i);
         this.S = new CovarianceMatrix(cov).getMatrix().getSimpleMatrix();
+        this.sampleSize = cov.getSampleSize();
     }
 
     // ---- binom machinery, combinadic, etc. (unchanged) ----
@@ -161,9 +161,9 @@ public class TscScored {
         int h1 = Arrays.hashCode(C);
         int h2 = Arrays.hashCode(D);
         long k = 1469598103934665603L;       // FNV offset basis
-        k ^= (long) h1;
+        k ^= h1;
         k *= 1099511628211L;                 // FNV prime
-        k ^= (long) h2;
+        k ^= h2;
         k *= 1099511628211L;
         return k;
     }
@@ -175,7 +175,7 @@ public class TscScored {
         long k = pairKey(C, D);
         ScoreSweep s = sweepCache.get(k);
         if (s != null) return s;
-        s = rccaScoreSweep(S, C, D, sampleSize, ridge, penaltyDiscount, ebicGamma);
+        s = rccaScoreSweep(S, C, D, expectedSampleSize, ridge, penaltyDiscount, ebicGamma);
         sweepCache.put(k, s);
         return s;
     }
@@ -273,7 +273,7 @@ public class TscScored {
 
             if (prefilterByWilkes) {
                 // --- NEW: fast Wilks pre-filter to avoid expensive RCCA when impossible
-                int rWilks = RankTests.estimateWilksRank(S, Carr, Darr, sampleSize, Math.min(0.05, alpha));
+                int rWilks = RankTests.estimateWilksRank(S, Carr, Darr, expectedSampleSize, Math.min(0.05, alpha));
                 if (rWilks != targetRank) return;
             }
 
@@ -665,7 +665,7 @@ public class TscScored {
 
         // Try to split instead of outright reject (Dong-style refinement)
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
-            if (failsSubsetTest(S, cluster, sampleSize, alpha)) {
+            if (failsSubsetTest(S, cluster, expectedSampleSize, alpha)) {
 //                Optional<List<Set<Integer>>> split = trySplitByRule1(cluster);
 //                if (split.isPresent()) {
 //                    // Remove the original
@@ -784,7 +784,7 @@ public class TscScored {
             int minpq = Math.min(c1.length, c2.length);
             int l = Math.min(minpq, Math.max(0, rC));
 
-            int r = RankTests.estimateWilksRank(S, c1, c2, sampleSize, alpha);
+            int r = RankTests.estimateWilksRank(S, c1, c2, expectedSampleSize, alpha);
 
             if (r < l) {
                 int gain = l - r;
@@ -804,7 +804,7 @@ public class TscScored {
     }
 
     // ---- subset tests (unchanged: still Wilks-based by design) -----------------
-    private boolean failsSubsetTest(SimpleMatrix S, Set<Integer> cluster, int sampleSize, double alpha) { /* ... unchanged ... */
+    private boolean failsSubsetTest(SimpleMatrix S, Set<Integer> cluster, int expectedSampleSize, double alpha) { /* ... unchanged ... */
         List<Integer> C = new ArrayList<>(cluster);
         List<Integer> D = allVariables();
         D.removeAll(cluster);
@@ -829,7 +829,7 @@ public class TscScored {
                 if (l == null) continue;
                 l = Math.min(minpq, Math.max(0, l));
 
-                int r = RankTests.estimateWilksRank(S, c1Array, c2Array, sampleSize, alpha);
+                int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
                 if (r < l) {
                     log("Deficient! rank(" + toNamesCluster(C1) + ", " + toNamesCluster(C2) + ") = "
                         + r + " < " + l + "; removing " + toNamesCluster(cluster));
@@ -851,7 +851,7 @@ public class TscScored {
                 Integer l = Optional.ofNullable(reducedRank.get(cluster)).orElse(clusterToRank.getOrDefault(cluster, 0));
                 l = Math.min(minpq, Math.max(0, l));
 
-                int r = RankTests.estimateWilksRank(S, _cArray, dArray, sampleSize, alpha);
+                int r = RankTests.estimateWilksRank(S, _cArray, dArray, expectedSampleSize, alpha);
                 if (r < l) {
                     log("rank(" + toNamesCluster(_C) + ", D) = " + r + " < r = " + l
                         + "; removing cluster " + toNamesCluster(cluster));
@@ -878,7 +878,7 @@ public class TscScored {
                 int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
                 int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
 
-                int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, sampleSize, alpha);
+                int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, expectedSampleSize, alpha);
                 if (rZ == 0) {
                     log("rank(_C = " + toNamesCluster(_C) + ", D | Z = " + toNamesCluster(Z) + ") = 0; removing cluster " + toNamesCluster(cluster) + ".");
                     return true;
@@ -931,7 +931,7 @@ public class TscScored {
         for (int i = 0; i < xSet.size(); i++) xIndices[i] = xSet.get(i);
         for (int i = 0; i < ySet.size(); i++) yIndices[i] = ySet.get(i);
 
-        return estimateWilksRank(S, xIndices, yIndices, sampleSize, alpha);
+        return estimateWilksRank(S, xIndices, yIndices, expectedSampleSize, alpha);
     }
 
     private Graph convertSearchGraphClusters(List<Set<Integer>> clusters, List<Node> latents, boolean includeAllNodes) {
@@ -1006,45 +1006,42 @@ public class TscScored {
         return new ArrayList<>(this.latentNames);
     }
 
+    public void setExpectedSampleSize(int expectedSampleSize) {
+        if (!(expectedSampleSize == -1 || expectedSampleSize > 0))
+            throw new IllegalArgumentException("Expected sample size = -1 or > 0");
+        this.expectedSampleSize = expectedSampleSize == -1 ? sampleSize : expectedSampleSize;
+    }
+
     public enum Mode {Testing, Scoring}
 
-    // ---- helper: RCCA-BIC sweep ------------------------------------------------
-    private static final class ScoreSweep {
-        final int mMax;       // max admissible rank
-        final int rStar;      // argmax rank
-        final double scBest;  // score at rStar
-        final double scKm1;   // score at rStar-1 (NaN if not defined)
-        final double scKp1;   // score at rStar+1 (NaN if not defined)
-
-        ScoreSweep(int mMax, int rStar, double scBest, double scKm1, double scKp1) {
-            this.mMax = mMax;
-            this.rStar = rStar;
-            this.scBest = scBest;
-            this.scKm1 = scKm1;
-            this.scKp1 = scKp1;
-        }
+    /**
+     * @param mMax   max admissible rank
+     * @param rStar  argmax rank
+     * @param scBest score at rStar
+     * @param scKm1  score at rStar-1 (NaN if not defined)
+     * @param scKp1  score at rStar+1 (NaN if not defined)
+     */ // ---- helper: RCCA-BIC sweep ------------------------------------------------
+        private record ScoreSweep(int mMax, int rStar, double scBest, double scKm1, double scKp1) {
     }
 
     // ---- Canonical key for caching ranks (immutable, sorted) -------------------
-    private static final class Key {
-        final int[] a;
+        private record Key(int[] a) {
+            Key(Collection<Integer> s) {
+                this(s.stream().mapToInt(Integer::intValue).sorted().toArray());
+            }
 
-        Key(Collection<Integer> s) {
-            this.a = s.stream().mapToInt(Integer::intValue).sorted().toArray();
-        }
+            private Key(int[] a) {
+                this.a = Arrays.stream(a).sorted().toArray();
+            }
 
-        Key(int[] ids) {
-            this.a = Arrays.stream(ids).sorted().toArray();
-        }
+            @Override
+            public int hashCode() {
+                return Arrays.hashCode(a);
+            }
 
-        @Override
-        public int hashCode() {
-            return Arrays.hashCode(a);
+            @Override
+            public boolean equals(Object o) {
+                return (o instanceof Key) && Arrays.equals(a, ((Key) o).a);
+            }
         }
-
-        @Override
-        public boolean equals(Object o) {
-            return (o instanceof Key) && Arrays.equals(a, ((Key) o).a);
-        }
-    }
 }
