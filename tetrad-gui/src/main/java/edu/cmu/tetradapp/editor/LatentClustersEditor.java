@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.blocks.BlockClusteringWizard;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.model.LatentClustersRunner;
@@ -59,6 +60,7 @@ public class LatentClustersEditor extends JPanel implements PropertyChangeListen
      * The desktop.
      */
     private final TetradDesktop desktop;
+    private final Parameters parameters;
     private BlockClusteringWizard wizard;
 
     /**
@@ -69,10 +71,11 @@ public class LatentClustersEditor extends JPanel implements PropertyChangeListen
     public LatentClustersEditor(LatentClustersRunner latentClustersRunner) {
         this.runner = latentClustersRunner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
+        this.parameters = latentClustersRunner.getParameters();
         DataModelList dataModelList = latentClustersRunner.getDataWrapper().getDataModelList();
-        DataSet first = (DataSet) (dataModelList.getFirst());
-        wizard = new BlockClusteringWizard(first);
-        wizard.setPreferredSize(new Dimension(600, 400));
+        DataSet data = (DataSet) (dataModelList.getFirst());
+        wizard = new BlockClusteringWizard(data, parameters);
+        wizard.setPreferredSize(new Dimension(800, 400));
         setLayout( new BorderLayout());
         add(wizard, BorderLayout.CENTER);
 

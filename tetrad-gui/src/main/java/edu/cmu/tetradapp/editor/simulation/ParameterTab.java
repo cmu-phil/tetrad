@@ -82,7 +82,7 @@ public class ParameterTab extends JPanel {
 
     @Serial
     private static final long serialVersionUID = 7074205549192562786L;
-    private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
+    public static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
 
     /**
      * The graph type dropdown.

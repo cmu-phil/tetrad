@@ -20,14 +20,22 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
 
     @Override
     public BlockSpec discover() {
+        if (!(alpha > 0 && alpha < 1)) {
+            throw new IllegalArgumentException("alpha must be in (0,1)");
+        }
+
         TscScored tsc = new TscScored(dataSet.getVariables(), new CorrelationMatrix(dataSet));
         tsc.setAlpha(alpha);
         tsc.setIncludeAllNodes(true);
         tsc.setExpectedSampleSize(dataSet.getNumRows());
         tsc.setMode(TscScored.Mode.Testing);
+
         List<List<Integer>> blocks = tsc.findClusters();
+
+        // OK for blocks to be empty; just ensure indices are sane and canonicalize.
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
+
         return BlocksUtil.toSpec(blocks, dataSet);
     }
 }

@@ -14,15 +14,19 @@ import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.search.ntad_test.Wishart;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetradapp.editor.simulation.ParameterTab;
+import edu.cmu.tetradapp.ui.PaddingPanel;
+import edu.cmu.tetradapp.util.ParameterComponents;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Random;
 
 /**
  * Wizard: Step 1: Choose clustering algorithm + tweak simple params, then Search. Step 2: View/Edit discovered blocks
@@ -42,13 +46,12 @@ public class BlockClusteringWizard extends JPanel {
     // ---- UI ----
     private final CardLayout cards = new CardLayout();
     private final JPanel cardPanel = new JPanel(cards);
-    private final JPanel pageSetup = new JPanel(new BorderLayout(8, 8));
+    private final Box pageSetup = Box.createVerticalBox();//  new JPanel(new BorderLayout(8, 8));
     private final JPanel pageResult = new JPanel(new BorderLayout());
     // ... UI fields ...
     private final JComboBox<String> cbAlgorithm = new JComboBox<>(new String[]{"FOFC", "BPC", "FTFC", "TSC Test", "TSC Score"});
 
     // Put near your fields
-    private final JFormattedTextField tfAlpha = createAlphaField();
     private final JComboBox<String> cbTetradTest = new JComboBox<>();
     private final JButton btnSearch = new JButton("Search");
     private final JLabel status = new JLabel("Ready.");
@@ -58,49 +61,45 @@ public class BlockClusteringWizard extends JPanel {
     // ---- State ----
     private final DataSet dataSet;
     private final java.util.List<BlockSpecListener> specListeners = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private final Parameters parameters;
     private BlockSpec blockSpec = null;
-    private double alpha = 0.01;
+    private JPanel parameterBox = new JPanel(new BorderLayout());
+    private Set<String> paramList = new HashSet<>();
 
-    public BlockClusteringWizard(DataSet dataSet) {
+    public BlockClusteringWizard(DataSet dataSet, Parameters parameters) {
         super(new BorderLayout(8, 8));
         this.dataSet = Objects.requireNonNull(dataSet);
-
-        tfAlpha.setValue(alpha);
-        tfAlpha.setColumns(6);
+        this.parameters = parameters;
 
         // Page 1 (setup)
-        JPanel top = new JPanel(new GridBagLayout());
-        GridBagConstraints gc = new GridBagConstraints();
-        gc.insets = new Insets(4, 4, 4, 4);
-        gc.anchor = GridBagConstraints.WEST;
-        gc.gridx = 0;
-        gc.gridy = 0;
-        top.add(new JLabel("Algorithm:"), gc);
-        gc.gridx = 1;
+        Box top = Box.createHorizontalBox();
+
+        top.add(new JLabel("Algorithm:"));
         cbAlgorithm.setSelectedItem("TSC");
-        top.add(cbAlgorithm, gc);
+        top.add(cbAlgorithm);
 
-        gc.gridx = 0;
-        gc.gridy = 1;
-        top.add(new JLabel("Alpha:"), gc);
-        gc.gridx = 1;
-        tfAlpha.setToolTipText("Significance level (e.g., 0.01)");
-        top.add(tfAlpha, gc);
+        parameterBox.setBorder(new TitledBorder("Parameters"));
 
-        gc.gridx = 0;
-        gc.gridy = 2;
-        top.add(new JLabel("Ntad test:"), gc);
-        gc.gridx = 1;
+        top.add(new JLabel("Ntad test:"));
         cbTetradTest.setSelectedItem("CCA");
-        top.add(cbTetradTest, gc);
+        top.add(cbTetradTest);
+        top.add(Box.createHorizontalGlue());
 
-        JPanel southSetup = new JPanel(new BorderLayout());
-        southSetup.add(status, BorderLayout.CENTER);
-        southSetup.add(btnSearch, BorderLayout.EAST);
+        Box southSetup = Box.createHorizontalBox();
 
-        pageSetup.add(top, BorderLayout.NORTH);
-        pageSetup.add(new JSeparator(), BorderLayout.CENTER);
-        pageSetup.add(southSetup, BorderLayout.SOUTH);
+        southSetup.add(status);
+        southSetup.add(Box.createHorizontalGlue());
+        southSetup.add(btnSearch);
+//        southSetup.setMaximumSize(southSetup.getPreferredSize());
+
+        pageSetup.add(top);
+        pageSetup.add(parameterBox);
+        pageSetup.add(Box.createVerticalGlue());
+        pageSetup.add(southSetup);
+
+
+        setParamList();
+        showParameters();
 
         // Page 2 (results)
         editorPanel = new BlockSpecEditorPanel(dataSet);
@@ -126,7 +125,13 @@ public class BlockClusteringWizard extends JPanel {
         refreshTestChoices();
 
         // listeners
-        cbAlgorithm.addActionListener(e -> refreshTestChoices());
+        cbAlgorithm.addActionListener(e -> {
+            refreshTestChoices();
+            String alg = (String) cbAlgorithm.getSelectedItem();
+            assert alg != null;
+            setParamList();
+            showParameters();
+        });
 
         // Listeners
         btnSearch.addActionListener(this::onSearch);
@@ -142,7 +147,7 @@ public class BlockClusteringWizard extends JPanel {
             DataSet ds = simulateMIM_Chain(5000, 5, 0.8, 0.8, 0.7, 0.6);
             JFrame f = new JFrame("Block Clustering Wizard (Demo)");
             f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            f.setContentPane(new BlockClusteringWizard(ds));
+            f.setContentPane(new BlockClusteringWizard(ds, new Parameters()));
             f.setSize(980, 700);
             f.setLocationRelativeTo(null);
             f.setVisible(true);
@@ -216,19 +221,6 @@ public class BlockClusteringWizard extends JPanel {
         specListeners.forEach(l -> l.onBlockSpec(spec));
     }
 
-    private JFormattedTextField createAlphaField() {
-        java.text.DecimalFormat fmt = new java.text.DecimalFormat("0.############");
-        fmt.setGroupingUsed(false);
-        javax.swing.text.NumberFormatter nf = new javax.swing.text.NumberFormatter(fmt);
-        nf.setValueClass(Double.class);
-        nf.setMinimum(0.0);
-        nf.setMaximum(1.0);
-        nf.setCommitsOnValidEdit(true);      // updates value as you type
-        JFormattedTextField f = new JFormattedTextField(nf);
-        f.setColumns(6);
-        return f;
-    }
-
     // Add to class:
     private void refreshTestChoices() {
         String alg = (String) cbAlgorithm.getSelectedItem();
@@ -250,10 +242,6 @@ public class BlockClusteringWizard extends JPanel {
                 tests = TESTS_FTFC;
                 enable = true;
             }
-            case "TSC" -> {
-                tests = TESTS_NONE;
-                enable = false;
-            }
             default -> {
                 tests = TESTS_NONE;
                 enable = false;
@@ -266,6 +254,8 @@ public class BlockClusteringWizard extends JPanel {
             // sensible default
             cbTetradTest.setSelectedItem(TEST_CCA);
         }
+
+        showParameters();
     }
 
     // ---------- Demo ----------
@@ -277,7 +267,6 @@ public class BlockClusteringWizard extends JPanel {
             public void watch() {
                 String alg = (String) cbAlgorithm.getSelectedItem();
 
-                setAlpha((Double) tfAlpha.getValue());
                 String testName = cbTetradTest.isEnabled() ? (String) cbTetradTest.getSelectedItem() : null;
 
                 // Safety guard: enforce compatibility again (in case of weird UI states)
@@ -289,7 +278,7 @@ public class BlockClusteringWizard extends JPanel {
                 btnSearch.setEnabled(false);
                 status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : "") + " …");
 
-                BlockDiscoverer discoverer = buildDiscoverer(alg, testName, alpha);
+                BlockDiscoverer discoverer = buildDiscoverer(alg, testName);
                 BlockSpec spec = discoverer.discover();
 
                 try {
@@ -321,11 +310,7 @@ public class BlockClusteringWizard extends JPanel {
 //        new MyWatchedProcess().watch();
     }
 
-    private void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
-
-    private BlockDiscoverer buildDiscoverer(String alg, String testName, double alpha) {
+    private BlockDiscoverer buildDiscoverer(String alg, String testName) {
         NtadTest test = null;
         if (testName != null) {
             switch (testName) {
@@ -337,33 +322,80 @@ public class BlockClusteringWizard extends JPanel {
             }
         }
 
+        setParamList();
+
         return switch (alg) {
             case "TSC Test" -> {
-                yield BlockDiscoverers.tscTest(dataSet, alpha);
+                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA));
             }
             case "TSC Score" -> {
-                yield BlockDiscoverers.tscScore(dataSet, alpha, 0.8, 1e-8, 2);
+                yield BlockDiscoverers.tscScore(dataSet, parameters.getDouble(Params.ALPHA),
+                        parameters.getDouble(Params.EBIC_GAMMA), parameters.getDouble(Params.REGULARIZATION_LAMBDA),
+                        parameters.getDouble(Params.PENALTY_DISCOUNT));
             }
             case "FOFC" -> {
                 if (test == null) {
                     test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false); // sensible default
                 }
-                yield BlockDiscoverers.fofc(dataSet, test, alpha);
+                yield BlockDiscoverers.fofc(dataSet, test, parameters.getDouble(Params.ALPHA));
             }
             case "BPC" -> {
                 if (test == null) {
                     test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
                 }
-                yield BlockDiscoverers.bpc(dataSet, test, alpha);
+                yield BlockDiscoverers.bpc(dataSet, test, parameters.getDouble(Params.ALPHA));
             }
             case "FTFC" -> {
                 if (test == null || TEST_WIS.equals(testName)) {
                     // enforce: FTFC cannot use Wishart
                     test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
                 }
-                yield BlockDiscoverers.ftfc(dataSet, test, alpha);
+                yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA));
             }
             default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
         };
+    }
+
+    private void setParamList() {
+        this.paramList.clear();
+        String alg = (String) cbAlgorithm.getSelectedItem();
+        assert alg != null;
+
+        if (alg.equals("TSC Score")) {
+            paramList.add(Params.ALPHA);
+            paramList.add(Params.EBIC_GAMMA);
+            paramList.add(Params.REGULARIZATION_LAMBDA);
+            paramList.add(Params.PENALTY_DISCOUNT);
+        } else {
+            paramList.add(Params.ALPHA);
+        }
+    }
+
+    private void showParameters() {
+        this.parameterBox.removeAll();
+
+        if (paramList.isEmpty()) {
+            JLabel noParamLbl = ParameterTab.NO_PARAM_LBL;
+            noParamLbl.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            this.parameterBox.add(noParamLbl, BorderLayout.NORTH);
+        } else {
+            Box parameters = Box.createVerticalBox();
+            Box[] paramBoxes = ParameterComponents.toArray(
+                    ParameterComponents.createParameterComponents(paramList, this.getParameters()));
+            int lastIndex = paramBoxes.length - 1;
+            for (int i = 0; i < lastIndex; i++) {
+                parameters.add(paramBoxes[i]);
+                parameters.add(Box.createVerticalStrut(10));
+            }
+            parameters.add(paramBoxes[lastIndex]);
+
+            this.parameterBox.add(new PaddingPanel(parameters), BorderLayout.CENTER);
+        }
+        this.parameterBox.validate();
+        this.parameterBox.repaint();
+    }
+
+    public Parameters getParameters() {
+        return parameters;
     }
 }
