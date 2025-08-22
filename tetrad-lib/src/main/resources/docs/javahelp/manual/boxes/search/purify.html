@@ -33,7 +33,7 @@
 </b><b>Introduction </b></font></p>
 <p>Purify is one of the three algorithms in Tetrad designed to build <font color="#000000"><b><a
         href="../../definitions/measurement_structural_graph.html">pure
-    measurement/structural models</a></b></font> (the others are the <font color="#000000"><b><a href="mimbuild.html">MIM
+    measurement/structural models</a></b></font> (the others are the <font color="#000000"><b><a href="mimbuildBollen.html">MIM
     Build algorithm</a></b></font> and the <font color="#000000"><b><a href="purify.html">Purify
     algorithm</a></b></font>).</p>
 <p> Purify should be used to select indicators of a given measurement model such
@@ -46,7 +46,7 @@
     model where observed variab<font color="#000000">les are linear indicators of
         the unknown latents, and that the given measurement model is correct, but perhaps
         impure. Notice that linearity among latents is not necessary (although it will
-        be necessary for the <b><a href="mimbuild.html">MIM Build algorithm</a></b>)
+        be necessary for the <b><a href="mimbuildBollen.html">MIM Build algorithm</a></b>)
         and latents do not need to be continuous. </font></p>
 <p><font color="#000000">All variables are assumed to be continuous, and therefore
     the current implementation of the algorithm accepts only continuous data sets
@@ -88,7 +88,7 @@
         measurement model, let's use three clusters.
     </li>
     <li><strong>edit cluster assignments</strong>: this is identical to the cluster
-        editor of the <font color="#000000"><b><a href="mimbuild.html">MIM Build algorithm</a></b></font>.
+        editor of the <font color="#000000"><b><a href="mimbuildBollen.html">MIM Build algorithm</a></b></font>.
         Consult its documentation for details. In our example, we should create the
         following clustering:
         <p><font color="#000000"><img height="319" src="../../images/purify3.png" width="590"></font></p>
@@ -129,7 +129,7 @@
 </blockquote>
 <p>Edges with circles at the endpoints are added only to distinguish latent variables
     from the indicators. Purify does not make any claims about the causal relationships
-    among latent variables (this is the role of the <font color="#000000"><b><a href="mimbuild.html">MIM
+    among latent variables (this is the role of the <font color="#000000"><b><a href="mimbuildBollen.html">MIM
         Build algorithm</a></b></font>). The labels given to the latent variables are
     arbitrary.</p>
 <p>Sometimes some latents will not have any indicator. As an important sidenote,

@@ -68,7 +68,7 @@ import java.util.List;
  * @see Boss
  * @see Knowledge
  */
-public class Mimbuild {
+public class MimbuildBollen {
     /**
      * The clustering from BPC or equivalent. Small clusters are removed.
      */
@@ -109,7 +109,7 @@ public class Mimbuild {
      * @param blocks clusters as lists of column indices into dataSet (must be non-empty, disjoint)
      * @param blockVariables latent variables (size must equal blocks.size(), names must be unique)
      */
-    public Mimbuild(DataSet dataSet, List<List<Integer>> blocks, List<Node> blockVariables) {
+    public MimbuildBollen(DataSet dataSet, List<List<Integer>> blocks, List<Node> blockVariables) {
         if (dataSet == null) throw new IllegalArgumentException("dataSet == null");
         if (blocks == null) throw new IllegalArgumentException("blocks == null");
         if (blockVariables == null) throw new IllegalArgumentException("blockVariables == null");

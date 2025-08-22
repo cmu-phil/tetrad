@@ -4,11 +4,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Mimbuild;
+import edu.cmu.tetrad.search.MimbuildBollen;
 import edu.cmu.tetrad.search.MimbuildPca;
 import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
@@ -135,11 +133,11 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             } else {
-                Mimbuild mimbuild = new Mimbuild(dataSet, blockSpec.blocks(), blockSpec.blockVariables());
-                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+                MimbuildBollen mimbuildBollen = new MimbuildBollen(dataSet, blockSpec.blocks(), blockSpec.blockVariables());
+                mimbuildBollen.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
                 try {
-                    structureGraph = mimbuild.search();
+                    structureGraph = mimbuildBollen.search();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } catch (SingularMatrixException e) {
@@ -149,11 +147,11 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
                 LayoutUtil.defaultLayout(structureGraph);
                 LayoutUtil.fruchtermanReingoldLayout(structureGraph);
 
-                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+                ICovarianceMatrix latentsCov = mimbuildBollen.getLatentsCov();
 
                 TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-                fullGraph = mimbuild.getFullGraph(includeAllNodes ? dataSet.getVariables() : new ArrayList<>());
+                fullGraph = mimbuildBollen.getFullGraph(includeAllNodes ? dataSet.getVariables() : new ArrayList<>());
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             }

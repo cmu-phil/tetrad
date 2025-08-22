@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ExtraLatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
@@ -897,6 +898,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @return a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
      */
     public Algorithm getAlgorithm() {
+        if (this.algorithm instanceof ExtraLatentStructureAlgorithm) {
+            ((ExtraLatentStructureAlgorithm) this.algorithm).setBlockSpec(blockSpec);
+        }
+
         return this.algorithm;
     }
 

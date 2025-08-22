@@ -20,9 +20,9 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
+import edu.cmu.tetrad.algcomparison.algorithm.ExtraLatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.independence.BlocksIndTest;
 import edu.cmu.tetrad.algcomparison.score.BlockScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
@@ -31,8 +31,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.*;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.score.BlockScore;
-import edu.cmu.tetrad.search.test.BlockTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -670,7 +668,7 @@ public class AlgorithmCard extends JPanel {
                     Class<?> c = m.getAlgorithm().clazz();
                     return TakesIndependenceWrapper.class.isAssignableFrom(c)
                            || TakesScoreWrapper.class.isAssignableFrom(c)
-                           || ExtraStructureSearchAlgorithm.class.isAssignableFrom(c);
+                           || ExtraLatentStructureAlgorithm.class.isAssignableFrom(c);
                 });
             }
 
@@ -1063,6 +1061,11 @@ public class AlgorithmCard extends JPanel {
 
             Arrays.stream(AlgType.values()).forEach(item -> {
                 String name = item.name();
+
+                // These have been moved to the Latent Cluster and Latent Structure buttons.
+                if (name.equals(AlgType.search_for_structure_over_latents.name())) {
+                    return;
+                }
 
                 JRadioButton radioButton = new JRadioButton(name.replace("_", " "));
                 radioButton.setActionCommand(name);

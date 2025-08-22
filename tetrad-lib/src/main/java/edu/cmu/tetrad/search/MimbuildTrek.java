@@ -50,7 +50,7 @@ import java.util.List;
  * @author adambrodie
  * @version $Id: $Id
  * @see Knowledge
- * @see Mimbuild
+ * @see MimbuildBollen
  */
 public class MimbuildTrek {
     /**
