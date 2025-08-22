@@ -107,10 +107,6 @@ public class BlockClusteringWizard extends JPanel {
         JPanel resultTop = new JPanel(new BorderLayout());
         resultTop.add(btnBack, BorderLayout.WEST);
 
-        if (cbAlgorithm.getSelectedItem() == null) {
-            System.out.println();
-        }
-
         lblResultTitle.setText(" Discovered Blocks for " + cbAlgorithm.getSelectedItem() + " (editable) ");
         resultTop.add(lblResultTitle, BorderLayout.CENTER);
         pageResult.add(resultTop, BorderLayout.NORTH);
@@ -229,10 +225,6 @@ public class BlockClusteringWizard extends JPanel {
     private void refreshTestChoices() {
         String alg = (String) cbAlgorithm.getSelectedItem();
 
-        if (alg == null) {
-            System.out.println();
-        }
-
         assert alg != null;
         cbTetradTest.removeAllItems();
 
@@ -282,11 +274,6 @@ public class BlockClusteringWizard extends JPanel {
             @Override
             public void watch() {
                 String alg = (String) cbAlgorithm.getSelectedItem();
-
-                if (alg == null) {
-                    System.out.println();
-                }
-
                 String testName = cbTetradTest.isEnabled() ? (String) cbTetradTest.getSelectedItem() : null;
 
                 // Safety guard: enforce compatibility again (in case of weird UI states)
@@ -314,10 +301,6 @@ public class BlockClusteringWizard extends JPanel {
 
                     // update title…
                     String algRan = (String) cbAlgorithm.getSelectedItem();
-
-                    if (algRan == null) {
-                        System.out.println();
-                    }
 
                     ((JLabel) ((BorderLayout) ((JPanel) pageResult.getComponent(0)).getLayout())
                             .getLayoutComponent(BorderLayout.CENTER))
@@ -396,11 +379,6 @@ public class BlockClusteringWizard extends JPanel {
     private void setParamList() {
         this.paramList.clear();
         String alg = (String) cbAlgorithm.getSelectedItem();
-
-        if (alg == null) {
-            System.out.println();
-        }
-
         assert alg != null;
 
         switch (alg) {
@@ -451,11 +429,6 @@ public class BlockClusteringWizard extends JPanel {
 
     public String getAlg() {
         String alg = (String) cbAlgorithm.getSelectedItem();
-
-        if (alg == null) {
-            System.out.println();
-        }
-
         assert alg != null;
         return alg;
     }
