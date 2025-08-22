@@ -36,6 +36,7 @@ import edu.cmu.tetrad.util.Unmarshallable;
 import edu.cmu.tetradapp.session.Executable;
 import edu.cmu.tetradapp.session.ParamsResettable;
 import edu.cmu.tetradapp.session.SessionModel;
+import edu.cmu.tetradapp.util.WatchedProcess;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -294,18 +295,23 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
     @Override
     public void execute() throws Exception {
 
-        BlockDiscoverer discoverer = buildDiscoverer(alg, test);
-        BlockSpec spec = discoverer.discover();
+        new WatchedProcess() {
+            public void watch() {
+                BlockDiscoverer discoverer = buildDiscoverer(alg, test);
+                BlockSpec spec = discoverer.discover();
 
-        int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
-        SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
+                int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
+                SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
 
-        if (policy == SingleClusterPolicy.NOISE_VAR) {
-            spec = BlocksUtil.renameLastVarAsNoise(spec);
-        }
+                if (policy == SingleClusterPolicy.NOISE_VAR) {
+                    spec = BlocksUtil.renameLastVarAsNoise(spec);
+                }
 
-        this.blockText = BlockSpecTextCodec.format(spec);
+                setBlockText(BlockSpecTextCodec.format(spec));
 
-        setBlockSpec(spec);
+                setBlockSpec(spec);
+            }
+        };
+
     }
 }
