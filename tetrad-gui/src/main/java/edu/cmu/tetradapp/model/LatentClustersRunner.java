@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetradapp.session.Executable;
 import edu.cmu.tetradapp.session.ParamsResettable;
 import edu.cmu.tetradapp.session.SessionModel;
 
@@ -49,7 +50,7 @@ import java.util.Objects;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class LatentClustersRunner implements ParamsResettable, SessionModel,
+public class LatentClustersRunner implements ParamsResettable, SessionModel, Executable,
         Unmarshallable/*IndTestProducer,*/ {
 
     @Serial
@@ -87,20 +88,6 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel,
         this.dataWrapper = dataWrapper;
         this.parameters = parameters;
         this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
-
-        BlockDiscoverer discoverer = buildDiscoverer(alg, test);
-        BlockSpec spec = discoverer.discover();
-
-        int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
-        SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
-
-        if (policy == SingleClusterPolicy.NOISE_VAR) {
-            spec = BlocksUtil.renameLastVarAsNoise(spec);
-        }
-
-        this.blockText = BlockSpecTextCodec.format(spec);
-
-        setBlockSpec(spec);
     }
 
     //============================PUBLIC METHODS==========================//
@@ -302,5 +289,23 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel,
             }
             default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
         };
+    }
+
+    @Override
+    public void execute() throws Exception {
+
+        BlockDiscoverer discoverer = buildDiscoverer(alg, test);
+        BlockSpec spec = discoverer.discover();
+
+        int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
+        SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
+
+        if (policy == SingleClusterPolicy.NOISE_VAR) {
+            spec = BlocksUtil.renameLastVarAsNoise(spec);
+        }
+
+        this.blockText = BlockSpecTextCodec.format(spec);
+
+        setBlockSpec(spec);
     }
 }
