@@ -106,7 +106,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     /**
      * The graph list.
      */
-    private List<Graph> graphList = new ArrayList<>();
+    List<Graph> graphList = new ArrayList<>();
 
     /**
      * The knowledge.
