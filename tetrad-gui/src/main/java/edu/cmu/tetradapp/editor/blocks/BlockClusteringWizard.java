@@ -314,8 +314,6 @@ public class BlockClusteringWizard extends JPanel {
                 btnSearch.setEnabled(true);
             }
         };
-
-//        new MyWatchedProcess().watch();
     }
 
     private BlockDiscoverer buildDiscoverer(String alg, String testName) {
