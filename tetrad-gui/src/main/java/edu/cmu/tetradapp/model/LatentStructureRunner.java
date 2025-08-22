@@ -1,6 +1,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
 import edu.cmu.tetrad.util.Parameters;
@@ -20,21 +21,26 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
         BlockSpec getBlockSpec();
     }
 
-    private final LatentClustersRunner source;
+    private final LatentClustersRunner runner;
 
     public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner, Parameters parameters) {
         super(data, parameters);
-        this.source = Objects.requireNonNull(latentClustersRunner, "ClusterRunner required");
+        this.runner = Objects.requireNonNull(latentClustersRunner, "ClusterRunner required");
     }
 
     /** Called by editor when user presses “Run”. */
     @Override
     public void execute() {
         // 1) Fetch BlockSpec from upstream
-        BlockSpec spec = source.getBlockSpec();
+        BlockSpec spec = runner.getBlockSpec();
         if (spec == null) {
             throw new IllegalStateException(
                     "No BlockSpec is available. Run a clustering algorithm first and/or click Apply in the blocks editor.");
+        }
+
+        if (!spec.dataSet().equals(getDataModel())) {
+            throw new IllegalStateException("The dataset for the supplied latent clusters is not the " +
+                                            "dataset given as a parent to this box.");
         }
 
         // 2) Defensive validations

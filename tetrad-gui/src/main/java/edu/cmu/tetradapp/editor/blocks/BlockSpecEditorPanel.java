@@ -16,12 +16,15 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -139,8 +142,8 @@ public final class BlockSpecEditorPanel extends JPanel {
         JPanel bottom = new JPanel(new BorderLayout(8, 0));
         JPanel buttonsLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
         JPanel buttonsRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
-        buttonsRight.add(btnImport);
-        buttonsRight.add(btnExport);
+//        buttonsRight.add(btnImport);
+//        buttonsRight.add(btnExport);
         buttonsRight.add(btnVars);        // <= add here
         buttonsRight.add(btnCanonicalize);
         buttonsRight.add(btnApply);
@@ -374,6 +377,22 @@ public final class BlockSpecEditorPanel extends JPanel {
     private void doImport() {
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle("Import Blocks");
+        String sessionSaveLocation = Preferences.userRoot().get(
+                "fileSaveLocation", Preferences.userRoot().absolutePath());
+        fc.setCurrentDirectory(new File(sessionSaveLocation));
+        fc.resetChoosableFileFilters();
+        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fc.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".blocks");
+            }
+
+            @Override
+            public String getDescription() {
+                return "Blocks Files";
+            }
+        });
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
                 String text = Files.readString(fc.getSelectedFile().toPath(), StandardCharsets.UTF_8);
@@ -387,10 +406,30 @@ public final class BlockSpecEditorPanel extends JPanel {
 
     private void doExport() {
         JFileChooser fc = new JFileChooser();
+        String sessionSaveLocation = Preferences.userRoot().get(
+                "fileSaveLocation", Preferences.userRoot().absolutePath());
+        fc.setCurrentDirectory(new File(sessionSaveLocation));
+        fc.resetChoosableFileFilters();
+        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fc.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".blocks");
+            }
+
+            @Override
+            public String getDescription() {
+                return "Blocks Files";
+            }
+        });
         fc.setDialogTitle("Export Blocks");
         if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
-                Files.writeString(fc.getSelectedFile().toPath(), getText(), StandardCharsets.UTF_8);
+                Path path = fc.getSelectedFile().toPath();
+                if (!path.toString().endsWith(".blocks")) {
+                    path = Path.of(path.toString() + ".blocks");
+                }
+                Files.writeString(path, getText(), StandardCharsets.UTF_8);
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Failed to write file:\n" + ex.getMessage(),
                         "Export", JOptionPane.ERROR_MESSAGE);
