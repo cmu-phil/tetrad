@@ -43,7 +43,6 @@ public class BlockClusteringWizard extends JPanel {
     // ---- UI ----
     private final CardLayout cards = new CardLayout();
     private final JPanel cardPanel = new JPanel(cards);
-    private final Box pageSetup = Box.createVerticalBox();//  new JPanel(new BorderLayout(8, 8));
     private final JPanel pageResult = new JPanel(new BorderLayout());
     // ... UI fields ...
     private final JComboBox<String> cbAlgorithm = new JComboBox<>(new String[]{"FOFC", "BPC", "FTFC", "TSC Test", "TSC Score"});
@@ -52,16 +51,13 @@ public class BlockClusteringWizard extends JPanel {
     private final JComboBox<String> cbTetradTest = new JComboBox<>();
     private final JButton btnSearch = new JButton("Search");
     private final JLabel status = new JLabel("Ready.");
-    private final JButton btnBack = new JButton("◀ Back");
-    private final JLabel lblResultTitle = new JLabel();
     private final BlockSpecEditorPanel editorPanel;
     // ---- State ----
     private final DataSet dataSet;
     private final java.util.List<BlockSpecListener> specListeners = new java.util.concurrent.CopyOnWriteArrayList<>();
     private final Parameters parameters;
-    private BlockSpec blockSpec = null;
-    private JPanel parameterBox = new JPanel(new BorderLayout());
-    private Set<String> paramList = new HashSet<>();
+    private final JPanel parameterBox = new JPanel(new BorderLayout());
+    private final Set<String> paramList = new HashSet<>();
 
     public BlockClusteringWizard(DataSet dataSet, String alg, String test, String blockText, Parameters parameters) {
         super(new BorderLayout(8, 8));
@@ -90,6 +86,8 @@ public class BlockClusteringWizard extends JPanel {
         southSetup.add(Box.createHorizontalGlue());
         southSetup.add(btnSearch);
 
+        //  new JPanel(new BorderLayout(8, 8));
+        Box pageSetup = Box.createVerticalBox();
         pageSetup.add(top);
         pageSetup.add(parameterBox);
         pageSetup.add(Box.createVerticalGlue());
@@ -105,8 +103,10 @@ public class BlockClusteringWizard extends JPanel {
         editorPanel.setOnApply(this::fireBlockSpec);
 
         JPanel resultTop = new JPanel(new BorderLayout());
+        JButton btnBack = new JButton("◀ Back");
         resultTop.add(btnBack, BorderLayout.WEST);
 
+        JLabel lblResultTitle = new JLabel();
         lblResultTitle.setText(" Discovered Blocks for " + cbAlgorithm.getSelectedItem() + " (editable) ");
         resultTop.add(lblResultTitle, BorderLayout.CENTER);
         pageResult.add(resultTop, BorderLayout.NORTH);
@@ -255,13 +255,6 @@ public class BlockClusteringWizard extends JPanel {
         if (!tests.isEmpty()) {
             cbTetradTest.setSelectedIndex(0);
         }
-
-//        if (enable && cbTetradTest.getItemCount() > 0) {
-//            cbTetradTest.setSelectedIndex(0);
-//
-////            // sensible default
-////            cbTetradTest.setSelectedItem(TEST_CCA);
-//        }
 
         showParameters();
     }
