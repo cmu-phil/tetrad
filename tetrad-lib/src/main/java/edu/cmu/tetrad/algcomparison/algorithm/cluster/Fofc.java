@@ -11,6 +11,7 @@ import edu.cmu.tetrad.search.MimbuildPca;
 import edu.cmu.tetrad.search.blocks.BlockDiscoverer;
 import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
 import edu.cmu.tetrad.search.ntad_test.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -81,7 +82,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
 
         // === NEW: use the unified FOFC BlockDiscoverer ===
-        BlockDiscoverer discoverer = BlockDiscoverers.fofc(dataSet, test, alpha);
+        BlockDiscoverer discoverer = BlockDiscoverers.fofc(dataSet, test, alpha, SingleClusterPolicy.EXCLUDE);
         BlockSpec spec = discoverer.discover();
         List<List<Integer>> blocks = new ArrayList<>(spec.blocks());
         this.blockSpec = spec;

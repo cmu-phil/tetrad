@@ -14,11 +14,13 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
     private final NtadTest ntadTest;
     private final double alpha;
+    private final SingleClusterPolicy policy;
 
-    public BpcBlockDiscoverer(DataSet dataSet, NtadTest ntadTest, double alpha) {
+    public BpcBlockDiscoverer(DataSet dataSet, NtadTest ntadTest, double alpha, SingleClusterPolicy policy) {
         this.dataSet = dataSet;
         this.ntadTest = ntadTest;
         this.alpha = alpha;
+        this.policy = policy;
     }
 
     @Override
@@ -26,6 +28,7 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
         Bpc bpc = new Bpc(ntadTest, dataSet, alpha);
         List<List<Integer>> blocks = bpc.getClusters();
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
+        blocks = BlocksUtil.applySingleClusterPolicy(policy, blocks, dataSet);
         return BlocksUtil.toSpec(blocks, dataSet);
     }
 }

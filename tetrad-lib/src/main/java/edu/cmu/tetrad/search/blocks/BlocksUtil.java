@@ -6,8 +6,6 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.NodeType;
 
 import java.util.*;
-import java.util.function.IntFunction;
-import java.util.stream.Collectors;
 
 public final class BlocksUtil {
     private BlocksUtil() {}
@@ -15,7 +13,6 @@ public final class BlocksUtil {
     /** Default latent/block names: L1, L2, ... (or pass a custom namer). */
     public static List<Node> makeBlockVariables(List<List<Integer>> blocks, DataSet dataSet) {
         int latentIndex = 1;
-        List<Node> nodes = dataSet.getVariables();
         List<Node> meta = new ArrayList<>();
         for (List<Integer> block : blocks) {
             if (block.size() == 1) {
@@ -119,5 +116,62 @@ public final class BlocksUtil {
         List<List<Integer>> disjoint = makeDisjointBySize(blocks);
         List<Node> blockVars = makeBlockVariables(disjoint, ds); // your existing helper
         return new BlockSpec(ds, disjoint, blockVars); // ranks default to 1s
+    }
+
+    public static List<List<Integer>> applySingleClusterPolicy(SingleClusterPolicy policy, List<List<Integer>> blocks, DataSet dataSet) {
+        switch (policy) {
+            case INCLUDE -> {
+                Set<Integer> used =  new HashSet<>();
+                for (List<Integer> block : blocks) {
+                    used.addAll(block);
+                }
+
+                List<List<Integer>> out = new ArrayList<>(blocks);
+
+                List<Integer> all = new ArrayList<>();
+                for (int i = 0; i < dataSet.getNumColumns(); i++) {
+                    all.add(i);
+                }
+
+                Set<Integer> unused = new HashSet<>(all);
+                unused.removeAll(used);
+
+                for (int i : unused) {
+                    out.add(Collections.singletonList(i));
+                }
+
+                return Collections.unmodifiableList(out);
+            }
+            case EXCLUDE -> {
+                return Collections.unmodifiableList(blocks);
+            }
+            case NOISE_VAR -> {
+                Set<Integer> used =  new HashSet<>();
+                for (List<Integer> block : blocks) {
+                    used.addAll(block);
+                }
+
+                List<List<Integer>> out = new ArrayList<>(blocks);
+
+                List<Integer> all = new ArrayList<>();
+                for (int i = 0; i < dataSet.getNumColumns(); i++) {
+                    all.add(i);
+                }
+
+                Set<Integer> unused = new HashSet<>(all);
+                unused.removeAll(used);
+
+                out.add(new ArrayList<>(unused));
+                return Collections.unmodifiableList(out);
+            }
+            default -> throw new IllegalArgumentException("Unknown policy: " + policy);
+        }
+    }
+
+    public static BlockSpec renameLastVarAsNoise(BlockSpec spec) {
+        List<Node> blockVars = spec.blockVariables();
+        Node noise = blockVars.getLast();
+        noise.setName("Noise");
+        return new BlockSpec(spec.dataSet(), spec.blocks(), blockVars, List.copyOf(spec.ranks()));
     }
 }

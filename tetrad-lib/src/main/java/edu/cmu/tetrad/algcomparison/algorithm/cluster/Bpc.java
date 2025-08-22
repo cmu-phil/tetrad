@@ -10,6 +10,7 @@ import edu.cmu.tetrad.search.MimbuildBollen;
 import edu.cmu.tetrad.search.MimbuildPca;
 import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
 import edu.cmu.tetrad.search.ntad_test.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -79,7 +80,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
             default -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
         };
 
-        BlockSpec spec = BlockDiscoverers.bpc(dataSet, test, alpha).discover();
+        BlockSpec spec = BlockDiscoverers.bpc(dataSet, test, alpha, SingleClusterPolicy.EXCLUDE).discover();
         this.blockSpec = spec;
 
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);

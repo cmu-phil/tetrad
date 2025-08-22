@@ -12,6 +12,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockDiscoverer;
 import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -67,7 +68,7 @@ public class Tsc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         DataSet dataSet = (DataSet) dataModel;
         List<Node> variables = dataModel.getVariables();
 
-        BlockDiscoverer discoverer = BlockDiscoverers.tscTest(dataSet, alpha);
+        BlockDiscoverer discoverer = BlockDiscoverers.tscTest(dataSet, alpha, SingleClusterPolicy.EXCLUDE);
         BlockSpec spec = discoverer.discover();
         this.blockSpec = spec;
 

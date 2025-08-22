@@ -4,12 +4,11 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
 import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -62,7 +61,7 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         assert dataSet instanceof DataSet;
         Cca cca = new Cca(((DataSet) dataSet).getDoubleData().getSimpleMatrix(), false);
-        BlockSpec spec = BlockDiscoverers.ftfc((DataSet) dataSet, cca, alpha).discover();
+        BlockSpec spec = BlockDiscoverers.ftfc((DataSet) dataSet, cca, alpha, SingleClusterPolicy.EXCLUDE).discover();
 
         this.blockSpec = spec;
 

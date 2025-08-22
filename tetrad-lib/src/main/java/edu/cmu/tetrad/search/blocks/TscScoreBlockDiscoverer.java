@@ -15,13 +15,16 @@ public class TscScoreBlockDiscoverer implements BlockDiscoverer {
     private final double ebicGamma;
     private final double ridge;
     private final double penaltyDiscount;
+    private final SingleClusterPolicy policy;
 
-    public TscScoreBlockDiscoverer(DataSet dataSet, double alpha, double ebicGamma, double ridge, double penaltyDiscount) {
+    public TscScoreBlockDiscoverer(DataSet dataSet, double alpha, double ebicGamma, double ridge, double penaltyDiscount,
+                                   SingleClusterPolicy policy) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ebicGamma = ebicGamma;
         this.ridge = ridge;
         this.penaltyDiscount = penaltyDiscount;
+        this.policy = policy;
     }
 
     @Override
@@ -46,6 +49,7 @@ public class TscScoreBlockDiscoverer implements BlockDiscoverer {
         // Defensive: empty result -> empty spec is fine; validate the rest.
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
+        blocks = BlocksUtil.applySingleClusterPolicy(policy, blocks, dataSet);
 
         return BlocksUtil.toSpec(blocks, dataSet);
     }

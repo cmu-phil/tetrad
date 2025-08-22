@@ -12,10 +12,12 @@ import java.util.List;
 public class TscTestBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
     private final double alpha; // or whatever hyperparams TSC needs
+    private final SingleClusterPolicy policy;
 
-    public TscTestBlockDiscoverer(DataSet dataSet, double alpha) {
+    public TscTestBlockDiscoverer(DataSet dataSet, double alpha, SingleClusterPolicy policy) {
         this.dataSet = dataSet;
         this.alpha = alpha;
+        this.policy = policy;
     }
 
     @Override
@@ -35,6 +37,7 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
         // OK for blocks to be empty; just ensure indices are sane and canonicalize.
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
+        blocks = BlocksUtil.applySingleClusterPolicy(policy, blocks, dataSet);
 
         return BlocksUtil.toSpec(blocks, dataSet);
     }

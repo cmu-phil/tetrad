@@ -5,10 +5,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.blocks.BlockDiscoverer;
-import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
-import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.blocks.BlockSpecTextCodec;
+import edu.cmu.tetrad.search.blocks.*;
 import edu.cmu.tetrad.search.ntad_test.BollenTing;
 import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
@@ -281,6 +278,13 @@ public class BlockClusteringWizard extends JPanel {
                 BlockDiscoverer discoverer = buildDiscoverer(alg, testName);
                 BlockSpec spec = discoverer.discover();
 
+                int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
+                SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
+
+                if (policy == SingleClusterPolicy.NOISE_VAR) {
+                    spec = BlocksUtil.renameLastVarAsNoise(spec);
+                }
+
                 try {
                     editorPanel.setDataSet(spec.dataSet());
                     editorPanel.setText(BlockSpecTextCodec.format(spec));
@@ -324,33 +328,36 @@ public class BlockClusteringWizard extends JPanel {
 
         setParamList();
 
+        int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
+        SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
+
         return switch (alg) {
             case "TSC Test" -> {
-                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA));
+                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA), policy);
             }
             case "TSC Score" -> {
                 yield BlockDiscoverers.tscScore(dataSet, parameters.getDouble(Params.ALPHA),
                         parameters.getDouble(Params.EBIC_GAMMA), parameters.getDouble(Params.REGULARIZATION_LAMBDA),
-                        parameters.getDouble(Params.PENALTY_DISCOUNT));
+                        parameters.getDouble(Params.PENALTY_DISCOUNT), policy);
             }
             case "FOFC" -> {
                 if (test == null) {
                     test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false); // sensible default
                 }
-                yield BlockDiscoverers.fofc(dataSet, test, parameters.getDouble(Params.ALPHA));
+                yield BlockDiscoverers.fofc(dataSet, test, parameters.getDouble(Params.ALPHA), policy);
             }
             case "BPC" -> {
                 if (test == null) {
                     test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
                 }
-                yield BlockDiscoverers.bpc(dataSet, test, parameters.getDouble(Params.ALPHA));
+                yield BlockDiscoverers.bpc(dataSet, test, parameters.getDouble(Params.ALPHA), policy);
             }
             case "FTFC" -> {
                 if (test == null || TEST_WIS.equals(testName)) {
                     // enforce: FTFC cannot use Wishart
                     test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
                 }
-                yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA));
+                yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA), policy);
             }
             default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
         };
@@ -369,6 +376,8 @@ public class BlockClusteringWizard extends JPanel {
         } else {
             paramList.add(Params.ALPHA);
         }
+
+        paramList.add(Params.TSC_SINGLETON_POLICY);
     }
 
     private void showParameters() {
