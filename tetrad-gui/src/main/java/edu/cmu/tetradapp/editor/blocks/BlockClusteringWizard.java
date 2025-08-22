@@ -333,12 +333,14 @@ public class BlockClusteringWizard extends JPanel {
 
         return switch (alg) {
             case "TSC Test" -> {
-                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA), policy);
+                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA), policy,
+                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE));
             }
             case "TSC Score" -> {
                 yield BlockDiscoverers.tscScore(dataSet, parameters.getDouble(Params.ALPHA),
                         parameters.getDouble(Params.EBIC_GAMMA), parameters.getDouble(Params.REGULARIZATION_LAMBDA),
-                        parameters.getDouble(Params.PENALTY_DISCOUNT), policy);
+                        parameters.getDouble(Params.PENALTY_DISCOUNT),
+                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy);
             }
             case "FOFC" -> {
                 if (test == null) {
@@ -368,13 +370,19 @@ public class BlockClusteringWizard extends JPanel {
         String alg = (String) cbAlgorithm.getSelectedItem();
         assert alg != null;
 
-        if (alg.equals("TSC Score")) {
-            paramList.add(Params.ALPHA);
-            paramList.add(Params.EBIC_GAMMA);
-            paramList.add(Params.REGULARIZATION_LAMBDA);
-            paramList.add(Params.PENALTY_DISCOUNT);
-        } else {
-            paramList.add(Params.ALPHA);
+        switch (alg) {
+            case "TSC Score" -> {
+                paramList.add(Params.ALPHA);
+                paramList.add(Params.EBIC_GAMMA);
+                paramList.add(Params.REGULARIZATION_LAMBDA);
+                paramList.add(Params.PENALTY_DISCOUNT);
+                paramList.add(Params.EXPECTED_SAMPLE_SIZE);
+            }
+            case "TSC Test" -> {
+                paramList.add(Params.ALPHA);
+                paramList.add(Params.EXPECTED_SAMPLE_SIZE);
+            }
+            default -> paramList.add(Params.ALPHA);
         }
 
         paramList.add(Params.TSC_SINGLETON_POLICY);

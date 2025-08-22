@@ -68,7 +68,7 @@ public class Tsc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         DataSet dataSet = (DataSet) dataModel;
         List<Node> variables = dataModel.getVariables();
 
-        BlockDiscoverer discoverer = BlockDiscoverers.tscTest(dataSet, alpha, SingleClusterPolicy.EXCLUDE);
+        BlockDiscoverer discoverer = BlockDiscoverers.tscTest(dataSet, alpha, SingleClusterPolicy.EXCLUDE, -1);
         BlockSpec spec = discoverer.discover();
         this.blockSpec = spec;
 

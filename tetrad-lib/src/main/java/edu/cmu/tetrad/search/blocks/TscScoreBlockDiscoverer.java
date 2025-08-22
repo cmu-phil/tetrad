@@ -15,15 +15,17 @@ public class TscScoreBlockDiscoverer implements BlockDiscoverer {
     private final double ebicGamma;
     private final double ridge;
     private final double penaltyDiscount;
+    private final int ess;
     private final SingleClusterPolicy policy;
 
     public TscScoreBlockDiscoverer(DataSet dataSet, double alpha, double ebicGamma, double ridge, double penaltyDiscount,
-                                   SingleClusterPolicy policy) {
+                                   int ess, SingleClusterPolicy policy) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ebicGamma = ebicGamma;
         this.ridge = ridge;
         this.penaltyDiscount = penaltyDiscount;
+        this.ess = ess;
         this.policy = policy;
     }
 
@@ -41,7 +43,7 @@ public class TscScoreBlockDiscoverer implements BlockDiscoverer {
         tsc.setRidge(ridge);
         tsc.setIncludeAllNodes(true);
         tsc.setPenaltyDiscount(penaltyDiscount);
-        tsc.setExpectedSampleSize(dataSet.getNumRows());
+        tsc.setExpectedSampleSize(ess);
         tsc.setMode(TscScored.Mode.Scoring);
 
         List<List<Integer>> blocks = tsc.findClusters();

@@ -11,12 +11,14 @@ import java.util.List;
  */
 public class TscTestBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
-    private final double alpha; // or whatever hyperparams TSC needs
+    private final double alpha;
+    private final int ess;
     private final SingleClusterPolicy policy;
 
-    public TscTestBlockDiscoverer(DataSet dataSet, double alpha, SingleClusterPolicy policy) {
+    public TscTestBlockDiscoverer(DataSet dataSet, double alpha, int ess, SingleClusterPolicy policy) {
         this.dataSet = dataSet;
         this.alpha = alpha;
+        this.ess = ess;
         this.policy = policy;
     }
 
@@ -29,7 +31,7 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
         TscScored tsc = new TscScored(dataSet.getVariables(), new CorrelationMatrix(dataSet));
         tsc.setAlpha(alpha);
         tsc.setIncludeAllNodes(true);
-        tsc.setExpectedSampleSize(dataSet.getNumRows());
+        tsc.setExpectedSampleSize(ess);
         tsc.setMode(TscScored.Mode.Testing);
 
         List<List<Integer>> blocks = tsc.findClusters();

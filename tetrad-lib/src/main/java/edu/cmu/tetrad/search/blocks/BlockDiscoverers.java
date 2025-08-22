@@ -18,12 +18,12 @@ public final class BlockDiscoverers {
         return new FtfcBlockDiscoverer(data, ntad, alpha, policy);
     }
 
-    public static BlockDiscoverer tscTest(DataSet data, double alpha, SingleClusterPolicy policy) {
-        return new TscTestBlockDiscoverer(data, alpha, policy);
+    public static BlockDiscoverer tscTest(DataSet data, double alpha, SingleClusterPolicy policy, int ess) {
+        return new TscTestBlockDiscoverer(data, alpha, ess, policy);
     }
 
     public static BlockDiscoverer tscScore(DataSet data, double alpha,
-                                           double ebicGamma, double ridge, double penaltyDiscount, SingleClusterPolicy policy) {
-        return new TscScoreBlockDiscoverer(data, alpha, ebicGamma, ridge, penaltyDiscount, policy);
+                                           double ebicGamma, double ridge, double penaltyDiscount, int ess, SingleClusterPolicy policy) {
+        return new TscScoreBlockDiscoverer(data, alpha, ebicGamma, ridge, penaltyDiscount, ess, policy);
     }
 }
