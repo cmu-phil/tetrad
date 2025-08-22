@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -29,7 +30,7 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 //@Experimental
-public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge {
+public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, LatentStructureAlgorithm {
 
     /**
      * Constant <code>PAG_SAMPLING_RFCI_PARAMETERS</code>

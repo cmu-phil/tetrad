@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
+import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -42,7 +43,7 @@ import java.util.List;
         dataType = DataType.All
 )
 @Bootstrapping
-public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWrapper {
+public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWrapper, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;

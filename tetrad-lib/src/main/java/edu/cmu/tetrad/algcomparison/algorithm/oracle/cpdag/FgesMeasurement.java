@@ -20,13 +20,13 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * FGES (the heuristic version).
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@Bootstrapping
+///**
+// * FGES (the heuristic version).
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@Bootstrapping
 public class FgesMeasurement extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
 
     @Serial

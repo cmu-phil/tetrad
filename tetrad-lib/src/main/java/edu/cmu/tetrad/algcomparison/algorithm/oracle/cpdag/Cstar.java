@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -37,7 +38,7 @@ import java.util.List;
         command = "cstar",
         algoType = AlgType.forbid_latent_common_causes
 )
-public class Cstar implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper {
+public class Cstar implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper, LatentStructureAlgorithm {
     @Serial
     private static final long serialVersionUID = 23L;
 

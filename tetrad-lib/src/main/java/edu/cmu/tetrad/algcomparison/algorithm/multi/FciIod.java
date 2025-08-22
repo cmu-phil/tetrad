@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
+import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -40,7 +41,7 @@ import java.util.List;
 )
 // Bootstrapping makes no sense here, since the algorithm pools the data from various sources, which may be federated
 // in principle, so we've removed the bootstrapping annotation from it and deleted the bootstrapping code.
-public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
+public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;

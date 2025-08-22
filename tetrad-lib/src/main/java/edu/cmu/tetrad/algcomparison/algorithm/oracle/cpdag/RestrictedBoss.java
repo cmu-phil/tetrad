@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
@@ -35,7 +36,8 @@ import java.util.*;
 //        algoType = AlgType.forbid_latent_common_causes
 //)
 @Bootstrapping
-public class RestrictedBoss extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, ReturnsBootstrapGraphs {
+public class RestrictedBoss extends AbstractBootstrapAlgorithm
+        implements Algorithm, TakesScoreWrapper, ReturnsBootstrapGraphs, LatentStructureAlgorithm {
     @Serial
     private static final long serialVersionUID = 23L;
 

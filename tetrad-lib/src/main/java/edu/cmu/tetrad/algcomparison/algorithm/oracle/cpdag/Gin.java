@@ -1,9 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
-import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -37,7 +34,7 @@ import java.util.List;
 @Bootstrapping
 @Experimental
 public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
     @Serial
     private static final long serialVersionUID = 23L;
     /**
