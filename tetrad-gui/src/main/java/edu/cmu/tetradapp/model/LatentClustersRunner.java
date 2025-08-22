@@ -17,13 +17,20 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.blocks.*;
+import edu.cmu.tetrad.search.ntad_test.BollenTing;
+import edu.cmu.tetrad.search.ntad_test.Cca;
+import edu.cmu.tetrad.search.ntad_test.NtadTest;
+import edu.cmu.tetrad.search.ntad_test.Wishart;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Unmarshallable;
 import edu.cmu.tetradapp.session.ParamsResettable;
@@ -47,17 +54,18 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel,
 
     @Serial
     private static final long serialVersionUID = 23L;
-
+    private static final String TEST_CCA = "CCA";
+    private static final String TEST_BT = "Bollen-Ting";
+    private static final String TEST_WIS = "Wishart";
     /**
      * The data model.
      */
     private final DataWrapper dataWrapper;
-
+    private final DataSet dataSet;
     /**
      * The name of the model.
      */
     private String name;
-
     /**
      * The params object, so the GUI can remember stuff for logging.
      */
@@ -78,6 +86,21 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel,
     public LatentClustersRunner(DataWrapper dataWrapper, Parameters parameters) {
         this.dataWrapper = dataWrapper;
         this.parameters = parameters;
+        this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
+
+        BlockDiscoverer discoverer = buildDiscoverer(alg, test);
+        BlockSpec spec = discoverer.discover();
+
+        int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
+        SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
+
+        if (policy == SingleClusterPolicy.NOISE_VAR) {
+            spec = BlocksUtil.renameLastVarAsNoise(spec);
+        }
+
+        this.blockText = BlockSpecTextCodec.format(spec);
+
+        setBlockSpec(spec);
     }
 
     //============================PUBLIC METHODS==========================//
@@ -142,8 +165,8 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel,
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.
@@ -197,12 +220,12 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel,
         return this.dataWrapper.getVariableNames();
     }
 
-    public void setBlockSpec(BlockSpec blockSpec) {
-        this.blockSpec = Objects.requireNonNull(blockSpec, "spec");
-    }
-
     public BlockSpec getBlockSpec() {
         return blockSpec;
+    }
+
+    public void setBlockSpec(BlockSpec blockSpec) {
+        this.blockSpec = Objects.requireNonNull(blockSpec, "spec");
     }
 
     public String getAlg() {
@@ -229,5 +252,55 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel,
     public void setBlockText(String blockText) {
         Objects.requireNonNull(blockText, "blockText");
         this.blockText = blockText;
+    }
+
+    private BlockDiscoverer buildDiscoverer(String alg, String testName) {
+        NtadTest test = null;
+
+        if (testName != null) {
+            switch (testName) {
+                case TEST_BT -> test = new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false);
+                case TEST_WIS -> test = new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false);
+                // case TEST_ARK -> test = new Ark(...); // still commented out
+                case TEST_CCA -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+                default -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+            }
+        }
+
+        int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
+        SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
+
+        return switch (alg) {
+            case "TSC Test" -> {
+                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA), policy,
+                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE));
+            }
+            case "TSC Score" -> {
+                yield BlockDiscoverers.tscScore(dataSet, parameters.getDouble(Params.ALPHA),
+                        parameters.getDouble(Params.EBIC_GAMMA), parameters.getDouble(Params.REGULARIZATION_LAMBDA),
+                        parameters.getDouble(Params.PENALTY_DISCOUNT),
+                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy);
+            }
+            case "FOFC" -> {
+                if (test == null) {
+                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false); // sensible default
+                }
+                yield BlockDiscoverers.fofc(dataSet, test, parameters.getDouble(Params.ALPHA), policy);
+            }
+            case "BPC" -> {
+                if (test == null) {
+                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+                }
+                yield BlockDiscoverers.bpc(dataSet, test, parameters.getDouble(Params.ALPHA), policy);
+            }
+            case "FTFC" -> {
+                if (test == null || TEST_WIS.equals(testName)) {
+                    // enforce: FTFC cannot use Wishart
+                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+                }
+                yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA), policy);
+            }
+            default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
+        };
     }
 }
