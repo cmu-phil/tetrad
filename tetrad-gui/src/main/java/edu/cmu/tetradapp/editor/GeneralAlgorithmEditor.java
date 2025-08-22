@@ -29,6 +29,7 @@ import edu.cmu.tetradapp.editor.search.AlgorithmCard;
 import edu.cmu.tetradapp.editor.search.GraphCard;
 import edu.cmu.tetradapp.editor.search.ParameterCard;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
+import edu.cmu.tetradapp.model.LatentStructureRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -119,6 +120,27 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         this.algorithmCard = new AlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec());
         this.parameterCard = new ParameterCard(algorithmRunner);
         this.graphCard = new GraphCard(algorithmRunner);
+
+        initComponents();
+        initListeners();
+
+        // repopulate all the previous selections if reopen the search box
+        if (algorithmRunner.getGraphs() != null && !algorithmRunner.getGraphs().isEmpty()) {
+            this.algorithmCard.refresh();
+            this.parameterCard.refresh();
+            this.graphCard.refresh();
+
+            showGraphCard();
+        }
+    }
+
+    public GeneralAlgorithmEditor(LatentStructureRunner algorithmRunner) {
+        this.algorithmRunner = algorithmRunner;
+        this.desktop = (TetradDesktop) DesktopController.getInstance();
+        this.algorithmCard = new AlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec());
+        this.parameterCard = new ParameterCard(algorithmRunner);
+        this.graphCard = new GraphCard(algorithmRunner);
+        this.blockSpec = algorithmRunner.getBlockSpec();
 
         initComponents();
         initListeners();

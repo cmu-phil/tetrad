@@ -63,7 +63,7 @@ public class BlockClusteringWizard extends JPanel {
     private JPanel parameterBox = new JPanel(new BorderLayout());
     private Set<String> paramList = new HashSet<>();
 
-    public BlockClusteringWizard(DataSet dataSet, Parameters parameters) {
+    public BlockClusteringWizard(DataSet dataSet, String alg, String test, String blockText, Parameters parameters) {
         super(new BorderLayout(8, 8));
         this.dataSet = Objects.requireNonNull(dataSet);
         this.parameters = parameters;
@@ -72,13 +72,15 @@ public class BlockClusteringWizard extends JPanel {
         Box top = Box.createHorizontalBox();
 
         top.add(new JLabel("Algorithm:"));
-        cbAlgorithm.setSelectedItem("TSC");
+        cbAlgorithm.setSelectedItem(alg);
         top.add(cbAlgorithm);
+
+        refreshTestChoices();
 
         parameterBox.setBorder(new TitledBorder("Parameters"));
 
         top.add(new JLabel("Ntad test:"));
-        cbTetradTest.setSelectedItem("CCA");
+        cbTetradTest.setSelectedItem(test);
         top.add(cbTetradTest);
         top.add(Box.createHorizontalGlue());
 
@@ -87,25 +89,28 @@ public class BlockClusteringWizard extends JPanel {
         southSetup.add(status);
         southSetup.add(Box.createHorizontalGlue());
         southSetup.add(btnSearch);
-//        southSetup.setMaximumSize(southSetup.getPreferredSize());
 
         pageSetup.add(top);
         pageSetup.add(parameterBox);
         pageSetup.add(Box.createVerticalGlue());
         pageSetup.add(southSetup);
 
-
         setParamList();
         showParameters();
 
         // Page 2 (results)
-        editorPanel = new BlockSpecEditorPanel(dataSet);
+        editorPanel = new BlockSpecEditorPanel(dataSet, blockText);
         // in BlockClusteringWizard constructor, after creating editorPanel:
         // forward Apply to the same listener bus
         editorPanel.setOnApply(this::fireBlockSpec);
 
         JPanel resultTop = new JPanel(new BorderLayout());
         resultTop.add(btnBack, BorderLayout.WEST);
+
+        if (cbAlgorithm.getSelectedItem() == null) {
+            System.out.println();
+        }
+
         lblResultTitle.setText(" Discovered Blocks for " + cbAlgorithm.getSelectedItem() + " (editable) ");
         resultTop.add(lblResultTitle, BorderLayout.CENTER);
         pageResult.add(resultTop, BorderLayout.NORTH);
@@ -118,14 +123,16 @@ public class BlockClusteringWizard extends JPanel {
         add(cardPanel, BorderLayout.CENTER);
 
         // constructor (after building controls, before listeners)
-        cbAlgorithm.setSelectedItem("TSC");
+        cbAlgorithm.setSelectedItem(alg);
         refreshTestChoices();
+
+        if (!editorPanel.getBlockText().isEmpty()) {
+            cards.show(cardPanel, "result");
+        }
 
         // listeners
         cbAlgorithm.addActionListener(e -> {
             refreshTestChoices();
-            String alg = (String) cbAlgorithm.getSelectedItem();
-            assert alg != null;
             setParamList();
             showParameters();
         });
@@ -144,7 +151,7 @@ public class BlockClusteringWizard extends JPanel {
             DataSet ds = simulateMIM_Chain(5000, 5, 0.8, 0.8, 0.7, 0.6);
             JFrame f = new JFrame("Block Clustering Wizard (Demo)");
             f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            f.setContentPane(new BlockClusteringWizard(ds, new Parameters()));
+            f.setContentPane(new BlockClusteringWizard(ds, "FOFC", "CCA", "", new Parameters()));
             f.setSize(980, 700);
             f.setLocationRelativeTo(null);
             f.setVisible(true);
@@ -221,6 +228,11 @@ public class BlockClusteringWizard extends JPanel {
     // Add to class:
     private void refreshTestChoices() {
         String alg = (String) cbAlgorithm.getSelectedItem();
+
+        if (alg == null) {
+            System.out.println();
+        }
+
         assert alg != null;
         cbTetradTest.removeAllItems();
 
@@ -247,10 +259,17 @@ public class BlockClusteringWizard extends JPanel {
 
         cbTetradTest.setEnabled(enable);
         for (String t : tests) cbTetradTest.addItem(t);
-        if (enable && cbTetradTest.getItemCount() > 0) {
-            // sensible default
-            cbTetradTest.setSelectedItem(TEST_CCA);
+
+        if (!tests.isEmpty()) {
+            cbTetradTest.setSelectedIndex(0);
         }
+
+//        if (enable && cbTetradTest.getItemCount() > 0) {
+//            cbTetradTest.setSelectedIndex(0);
+//
+////            // sensible default
+////            cbTetradTest.setSelectedItem(TEST_CCA);
+//        }
 
         showParameters();
     }
@@ -263,6 +282,10 @@ public class BlockClusteringWizard extends JPanel {
             @Override
             public void watch() {
                 String alg = (String) cbAlgorithm.getSelectedItem();
+
+                if (alg == null) {
+                    System.out.println();
+                }
 
                 String testName = cbTetradTest.isEnabled() ? (String) cbTetradTest.getSelectedItem() : null;
 
@@ -291,6 +314,11 @@ public class BlockClusteringWizard extends JPanel {
 
                     // update title…
                     String algRan = (String) cbAlgorithm.getSelectedItem();
+
+                    if (algRan == null) {
+                        System.out.println();
+                    }
+
                     ((JLabel) ((BorderLayout) ((JPanel) pageResult.getComponent(0)).getLayout())
                             .getLayoutComponent(BorderLayout.CENTER))
                             .setText(" Discovered Blocks for " + algRan + " (editable) ");
@@ -368,6 +396,11 @@ public class BlockClusteringWizard extends JPanel {
     private void setParamList() {
         this.paramList.clear();
         String alg = (String) cbAlgorithm.getSelectedItem();
+
+        if (alg == null) {
+            System.out.println();
+        }
+
         assert alg != null;
 
         switch (alg) {
@@ -414,5 +447,24 @@ public class BlockClusteringWizard extends JPanel {
 
     public Parameters getParameters() {
         return parameters;
+    }
+
+    public String getAlg() {
+        String alg = (String) cbAlgorithm.getSelectedItem();
+
+        if (alg == null) {
+            System.out.println();
+        }
+
+        assert alg != null;
+        return alg;
+    }
+
+    public String getTest() {
+        return (String) cbTetradTest.getSelectedItem();
+    }
+
+    public String getBlockTest() {
+        return editorPanel.getText();
     }
 }

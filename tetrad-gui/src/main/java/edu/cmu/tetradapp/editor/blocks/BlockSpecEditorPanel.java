@@ -72,7 +72,7 @@ public final class BlockSpecEditorPanel extends JPanel {
     // Reuse the same token pattern as the codec for canonicalize RHS
     private static final Pattern TOKEN = Pattern.compile("\"([^\"]*)\"|#(\\d+)|([^,\\s]+)");
 
-    public BlockSpecEditorPanel(DataSet dataSet) {
+    public BlockSpecEditorPanel(DataSet dataSet, String blockText) {
         super(new BorderLayout());
         this.dataSet = Objects.requireNonNull(dataSet, "DataSet is required");
 
@@ -168,9 +168,7 @@ public final class BlockSpecEditorPanel extends JPanel {
         add(bottom, BorderLayout.SOUTH);
 
         // Seed with empty text
-        setText("");
-
-
+        setText(blockText);
     }
 
     /** Inserts a wrapped % comment block listing all variables. */
@@ -600,6 +598,10 @@ public final class BlockSpecEditorPanel extends JPanel {
         textPane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, mask | InputEvent.SHIFT_DOWN_MASK), "REDO");
     }
 
+    public String getBlockText() {
+        return textPane.getText();
+    }
+
     // ---------------- Painter ----------------
 
     /** Simple squiggle underline painter for error/warning highlights. */
@@ -655,7 +657,7 @@ public final class BlockSpecEditorPanel extends JPanel {
             // TODO: replace with a real dataset from Tetrad runtime.
             DataSet ds = DemoData.smallDemoData();
 
-            BlockSpecEditorPanel panel = new BlockSpecEditorPanel(ds);
+            BlockSpecEditorPanel panel = new BlockSpecEditorPanel(ds,"");
             panel.setText("""
                     % Example
                     L1: X1, X2, "X 3"

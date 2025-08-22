@@ -16,7 +16,6 @@ public class LatentStructureEditor extends JPanel implements FinalizingEditor {
     public LatentStructureEditor(LatentStructureRunner runner) {
         super(new BorderLayout());
         this.delegate = new GeneralAlgorithmEditor(runner);
-        this.delegate.setBlockSpec(runner.getBlockSpec());
         add(delegate, BorderLayout.CENTER);
     }
 

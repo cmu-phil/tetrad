@@ -118,7 +118,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      */
     private transient List<IndependenceTest> independenceTests;
 
-    private BlockSpec blockSpec = null;
+    BlockSpec blockSpec = null;
 
     /**
      * The elapsed time for the algorithm to run.

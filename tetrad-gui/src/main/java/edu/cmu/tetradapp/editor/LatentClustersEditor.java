@@ -74,7 +74,12 @@ public class LatentClustersEditor extends JPanel implements PropertyChangeListen
         this.parameters = latentClustersRunner.getParameters();
         DataModelList dataModelList = latentClustersRunner.getDataWrapper().getDataModelList();
         DataSet data = (DataSet) (dataModelList.getFirst());
-        wizard = new BlockClusteringWizard(data, parameters);
+
+        String alg = runner.getAlg();
+        String test = runner.getTest();
+        String blockText = runner.getBlockText();
+
+        wizard = new BlockClusteringWizard(data, alg, test, blockText, parameters);
         wizard.setPreferredSize(new Dimension(800, 400));
         setLayout( new BorderLayout());
         add(wizard, BorderLayout.CENTER);
@@ -87,6 +92,10 @@ public class LatentClustersEditor extends JPanel implements PropertyChangeListen
         // Always on EDT because wizard fires from done()/EDT and from Apply (EDT)
         try {
             runner.setBlockSpec(spec);
+            runner.setAlg(wizard.getAlg());
+            runner.setTest(wizard.getTest());
+            runner.setBlockText(wizard.getBlockTest());
+
             // Optionally kick off the downstream block-based search now,
             // or enable a "Run structure search" button, etc.
             // runner.runStructureSearchAsync(); // if you have that

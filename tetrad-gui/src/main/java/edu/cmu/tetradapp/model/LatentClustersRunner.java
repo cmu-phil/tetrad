@@ -63,6 +63,9 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel,
      */
     private Parameters parameters;
     private BlockSpec blockSpec = null;
+    private String alg = "FOFC";
+    private String test = "CCA";
+    private String blockText = "";
 
     //===========================CONSTRUCTORS===========================//
 
@@ -200,5 +203,31 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel,
 
     public BlockSpec getBlockSpec() {
         return blockSpec;
+    }
+
+    public String getAlg() {
+        return alg;
+    }
+
+    public void setAlg(String alg) {
+        Objects.requireNonNull(alg, "alg");
+        this.alg = alg;
+    }
+
+    public String getTest() {
+        return test;
+    }
+
+    public void setTest(String test) {
+        this.test = test;
+    }
+
+    public String getBlockText() {
+        return blockText;
+    }
+
+    public void setBlockText(String blockText) {
+        Objects.requireNonNull(blockText, "blockText");
+        this.blockText = blockText;
     }
 }
