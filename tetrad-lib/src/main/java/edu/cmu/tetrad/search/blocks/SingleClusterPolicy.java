@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.search.blocks;
 
 public enum SingleClusterPolicy {
-    INCLUDE,
     EXCLUDE,
+    INCLUDE,
     NOISE_VAR
 }

@@ -437,7 +437,7 @@ public class TscPc implements IGraphSearch {
     /**
      * Policy for handling unclustered singletons.
      */
-    public enum SingletonPolicy {INCLUDE, EXCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT}
+    public enum SingletonPolicy {EXCLUDE, INCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT}
 
     /**
      * Policy for which cross-block edges are allowed in the block graph. - STRICT: No observed→latent, no
