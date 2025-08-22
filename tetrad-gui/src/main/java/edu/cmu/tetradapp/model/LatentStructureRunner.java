@@ -1,16 +1,13 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,7 +18,6 @@ import java.util.Objects;
 public class LatentStructureRunner extends GeneralAlgorithmRunner {
 
     private final LatentClustersRunner runner;
-    private Graph graph = new EdgeListGraph();
 
     public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner, Parameters parameters) {
         super(data, parameters);
@@ -92,27 +88,5 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
 
         super.graphList.clear();
         super.graphList.add(graph);
-    }
-
-    /**
-     * For factories/wrappers to access the current spec during construction.
-     */
-    public BlockSpec getCurrentSpecOrThrow() {
-        if (getBlockSpec() == null) {
-            throw new IllegalStateException("BlockSpec not initialized—call execute() first.");
-        }
-        return getBlockSpec();
-    }
-
-    // ---------- internal helpers ----------
-
-    /**
-     * Upstream block source (your ClusterRunner should implement this).
-     */
-    public interface BlockSpecProvider {
-        /**
-         * Must return non-null after clusters have been searched/applied.
-         */
-        BlockSpec getBlockSpec();
     }
 }
