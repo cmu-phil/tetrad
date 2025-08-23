@@ -52,6 +52,16 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
     private EqualityMode mode = EqualityMode.LE; // robust default: accept rank <= |C|
     private int tol = 0;                         // integer tolerance on the equality (0 = strict)
 
+    /**
+     * Constructs an instance of IndTestBlocksLemma10 using the provided block specification. Performs initialization,
+     * validation of inputs, and precomputes necessary structures for block-based independence tests.
+     *
+     * @param blockSpec The block specification containing details about variables, dataset, and block definitions. Must
+     *                  not be null.
+     * @throws IllegalArgumentException If blockSpec is null, if any variable or block in blockSpec is invalid, if there
+     *                                  are duplicate variables, or if a block references a column outside the dataset
+     *                                  dimensions.
+     */
     public IndTestBlocksLemma10(BlockSpec blockSpec) {
         if (blockSpec == null) throw new IllegalArgumentException("blockspec == null");
         this.blockSpec = blockSpec;
@@ -194,6 +204,8 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
 
     /**
      * Choose EQ/LE/GE equality mode for rank vs |C|. Default LE (robust).
+     *
+     * @param mode The equality mode.
      */
     public void setEqualityMode(EqualityMode mode) {
         this.mode = Objects.requireNonNull(mode, "mode");
@@ -201,6 +213,8 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
 
     /**
      * Integer tolerance on equality (e.g., 1 to allow off-by-one). Default 0.
+     *
+     * @param tol The tolerance value.
      */
     public void setTolerance(int tol) {
         if (tol < 0) throw new IllegalArgumentException("tol must be >= 0");
@@ -287,7 +301,23 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
     /**
      * Equality mode for the Lemma-10 criterion.
      */
-    public enum EqualityMode {EQ, LE, GE}
+    public enum EqualityMode {
+
+        /**
+         * Represents the equality mode for the Lemma-10 criterion, indicating exact equality.
+         */
+        EQ,
+
+        /**
+         * Represents the inequality mode "less than or equal to" for the Lemma-10 criterion.
+         */
+        LE,
+
+        /**
+         * Represents the inequality mode "greater than or equal to" for the Lemma-10 criterion.
+         */
+        GE
+    }
 
     // === Small, thread-safe LRU (access-order) ===
     private static final class LruMap<K, V> {

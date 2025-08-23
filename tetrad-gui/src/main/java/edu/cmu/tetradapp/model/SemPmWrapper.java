@@ -179,21 +179,6 @@ public class SemPmWrapper implements SessionModel {
     /**
      * <p>Constructor for SemPmWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.BuildPureClustersRunner} object
-     */
-    public SemPmWrapper(BuildPureClustersRunner wrapper) {
-        Graph graph = wrapper.getResultGraph();
-        if (graph == null) {
-            throw new IllegalArgumentException("No graph to display.");
-        }
-        SemPm pm = new SemPm(graph);
-        setSemPm(pm);
-
-    }
-
-    /**
-     * <p>Constructor for SemPmWrapper.</p>
-     *
      * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
      */
     public SemPmWrapper(Simulation simulation) {

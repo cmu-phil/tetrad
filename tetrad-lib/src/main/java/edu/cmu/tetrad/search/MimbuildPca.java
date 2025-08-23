@@ -2,11 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import org.ejml.simple.SimpleMatrix;
@@ -17,10 +13,10 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Mimbuild over first principal components of (pure) clusters.
- * Constructor matches IndTestBlocks: (dataSet, blocks, blockVariables).
- * Each cluster's latent is PC1 of its standardized indicators; latent scores are re-scaled to unit variance.
- * A latent–latent covariance is built using (n-1) and a tiny ridge, then BOSS (+PermutationSearch) scores it.
+ * Mimbuild over the first principal components of (pure) clusters. Constructor matches IndTestBlocks: (dataSet, blocks,
+ * blockVariables). Each cluster's latent is PC1 of its standardized indicators; latent scores are re-scaled to unit
+ * variance. A latent–latent covariance is built using (n-1) and a tiny ridge, then BOSS (+PermutationSearch) scores
+ * it.
  */
 public class MimbuildPca {
 
@@ -31,9 +27,6 @@ public class MimbuildPca {
     private double penaltyDiscount = 1.0;
 
     private List<Node> latents;                    // latent nodes (cloned with LATENT type)
-    private double[][] latentData;                 // n x B matrix of PC1 scores (unit variance)
-    private ICovarianceMatrix latentsCov;          // covariance over latents
-    private Graph structureGraph;                  // learned latent structure
 
     /**
      * Constructor in the same form as IndTestBlocks.
@@ -82,8 +75,31 @@ public class MimbuildPca {
         this.blockVariables = new ArrayList<>(blockVariables);
     }
 
+    private static void standardizeColumnsInPlace(SimpleMatrix X) {
+        int n = X.getNumRows();
+        int p = X.getNumCols();
+        for (int j = 0; j < p; j++) {
+            double mean = 0, m2 = 0;
+            for (int i = 0; i < n; i++) mean += X.get(i, j);
+            mean /= n;
+            for (int i = 0; i < n; i++) {
+                double d = X.get(i, j) - mean;
+                m2 += d * d;
+            }
+            double sd = Math.sqrt(m2 / Math.max(1, n - 1));
+            if (!Double.isFinite(sd) || sd == 0.0) sd = 1.0;
+            for (int i = 0; i < n; i++) {
+                X.set(i, j, (X.get(i, j) - mean) / sd);
+            }
+        }
+    }
+
+    // --- Helpers ---
+
     /**
      * Run PCA per block to get latent scores, build latent covariance, and learn a structure over latents using BOSS.
+     * @return the learned latent structure graph.
+     * @throws InterruptedException if the search is interrupted.
      */
     public Graph search() throws InterruptedException {
         final int nSamples = dataSet.getNumRows();
@@ -98,7 +114,8 @@ public class MimbuildPca {
         }
 
         // Build latent scores (PC1 per standardized block), unit-variance per latent
-        this.latentData = new double[nSamples][nLatents];
+        // n x B matrix of PC1 scores (unit variance)
+        double[][] latentData = new double[nSamples][nLatents];
         for (int bi = 0; bi < nLatents; bi++) {
             List<Integer> cols = blocks.get(bi);
 
@@ -149,85 +166,38 @@ public class MimbuildPca {
             latentCov.set(k, k, latentCov.get(k, k) + eps);
         }
 
-        this.latentsCov = new edu.cmu.tetrad.data.CovarianceMatrix(latents, new Matrix(latentCov), nSamples);
+        // covariance over latents
+        ICovarianceMatrix latentsCov = new edu.cmu.tetrad.data.CovarianceMatrix(latents, new Matrix(latentCov), nSamples);
 
         // Learn structure over latents
-        SemBicScore score = new SemBicScore(this.latentsCov);
+        SemBicScore score = new SemBicScore(latentsCov);
         score.setPenaltyDiscount(this.penaltyDiscount);
 
         PermutationSearch ps = new PermutationSearch(new Boss(score));
-        this.structureGraph = ps.search();
-        LayoutUtil.fruchtermanReingoldLayout(this.structureGraph);
-        return this.structureGraph;
-    }
-
-    // --- Helpers ---
-
-    private static void standardizeColumnsInPlace(SimpleMatrix X) {
-        int n = X.getNumRows();
-        int p = X.getNumCols();
-        for (int j = 0; j < p; j++) {
-            double mean = 0, m2 = 0;
-            for (int i = 0; i < n; i++) mean += X.get(i, j);
-            mean /= n;
-            for (int i = 0; i < n; i++) {
-                double d = X.get(i, j) - mean;
-                m2 += d * d;
-            }
-            double sd = Math.sqrt(m2 / Math.max(1, n - 1));
-            if (!Double.isFinite(sd) || sd == 0.0) sd = 1.0;
-            for (int i = 0; i < n; i++) {
-                X.set(i, j, (X.get(i, j) - mean) / sd);
-            }
-        }
-    }
-
-    // --- Accessors / options ---
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public double[][] getLatentData() {
-        return latentData;
-    }
-
-    public ICovarianceMatrix getLatentsCov() {
-        return latentsCov;
-    }
-
-    public List<Node> getLatents() {
-        return latents == null ? null : new ArrayList<>(latents);
-    }
-
-    public Graph getStructureGraph() {
+        // learned latent structure
+        Graph structureGraph = ps.search();
+        LayoutUtil.fruchtermanReingoldLayout(structureGraph);
         return structureGraph;
     }
 
     /**
-     * Builds a full graph by adding measured variables and edges latent -> measured for each block.
-     * You can call this after {@link #search()}.
+     * Sets the penalty discount value, which is used as a parameter to adjust the penalty applied during the structure
+     * learning process over latents.
+     *
+     * @param penaltyDiscount the penalty discount value to set
      */
-    public Graph getFullGraph(List<Node> includeNodes) {
-        Graph graph = new edu.cmu.tetrad.graph.EdgeListGraph(this.structureGraph);
-
-        for (int i = 0; i < this.latents.size(); i++) {
-            Node latent = this.latents.get(i);
-            List<Integer> cols = this.blocks.get(i);
-            for (int col : cols) {
-                Node measured = dataSet.getVariable(col);
-                if (!graph.containsNode(measured)) graph.addNode(measured);
-                graph.addDirectedEdge(latent, measured);
-            }
-        }
-
-        if (includeNodes != null) {
-            for (Node node : includeNodes) {
-                if (!graph.containsNode(node)) graph.addNode(node);
-            }
-        }
-
-        LayoutUtil.fruchtermanReingoldLayout(graph);
-        return graph;
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
     }
+
+    /**
+     * Returns a list of latent variables. If no latent variables are defined, the method returns null. Otherwise, it
+     * returns a new list as a copy of the existing latent variables to avoid exposing internal references.
+     *
+     * @return a list of latent variables, or null if no latent variables are defined
+     */
+    public List<Node> getLatents() {
+        return latents == null ? null : new ArrayList<>(latents);
+    }
+
 }

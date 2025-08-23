@@ -106,6 +106,7 @@ public class Ftfc {
      * @param dataSet The continuous dataset searched over.
      * @param test    The NTad test to use.
      * @param alpha   The alpha significance cutoff.
+     * @param ess     The effective sample size, or -1 is the actual sample size is to be used.
      */
     public Ftfc(DataSet dataSet, NtadTest test, double alpha, int ess) {
         if (!(ess == -1 || ess > 0)) {

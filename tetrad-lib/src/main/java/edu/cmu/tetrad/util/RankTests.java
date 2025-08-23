@@ -22,6 +22,7 @@ import java.util.*;
  * foundational to the CCA and RCCA computations.
  */
 public class RankTests {
+
     /**
      * The maximum number of entries allowed in the RCCA cache. This is used to control memory usage and performance for
      * caching results during Canonical Correlation Analysis (CCA) computations.
@@ -64,219 +65,18 @@ public class RankTests {
      */
     private static final double MIN_EIG = 1e-12;
 
-//    /**
-//     * Computes the p-value for Canonical Correlation Analysis (CCA) based on the hypothesis H0: canonical correlation
-//     * rank ≤ r versus H1: rank > r. The method uses the log-likelihood ratio test on the remaining min(p, q) - r
-//     * canonical correlations.
-//     *
-//     * @param S        The input correlation matrix as a SimpleMatrix.
-//     * @param xIndices Indices of the first variable group.
-//     * @param yIndices Indices of the second variable group.
-//     * @param n        Sample size.
-//     * @param rank     The hypothesized maximum rank under the null hypothesis.
-//     * @return p-value from the chi-squared test.
-//     */
-//    public static double getCcaPValueRankLE(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int rank) {
-//        try {
-//            int p = xIndices.length;
-//            int q = yIndices.length;
-//
-//            // Step 1: Extract submatrices
-//            SimpleMatrix Cxx = StatUtils.extractSubMatrix(S, xIndices, xIndices);
-//            SimpleMatrix Cyy = StatUtils.extractSubMatrix(S, yIndices, yIndices);
-//            SimpleMatrix Cxy = StatUtils.extractSubMatrix(S, xIndices, yIndices);
-//
-//            // Inverse square roots of Cxx and Cyy using eigen-decomposition
-//            SimpleMatrix Cxx_inv_sqrt = invSqrtSymmetric(Cxx);
-//            SimpleMatrix Cyy_inv_sqrt = invSqrtSymmetric(Cyy);
-//
-//            // Construct matrix M = Cxx^{-1/2} * Cxy * Cyy^{-1/2}
-//            SimpleMatrix M = Cxx_inv_sqrt.mult(Cxy).mult(Cyy_inv_sqrt);
-//
-//            // Perform SVD on M
-//            SimpleSVD<SimpleMatrix> svd = M.svd();
-//            double[] singularValues = svd.getW().diag().getDDRM().getData();
-//
-//            // Test statistic
-//            double stat = 0.0;
-//            for (int i = rank; i < Math.min(p, q); i++) {
-//                double s = singularValues[i];
-//                stat += Math.log(1 - s * s);
-//            }
-//            double scale = -(n - (p + q + 3) / 2.);
-//            stat *= scale;
-//
-//            // Degrees of freedom
-//            int df = (p - rank) * (q - rank);
-//
-//            // Compute p-value
-//            ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
-//            return 1.0 - chi2.cumulativeProbability(stat);
-//        } catch (Exception e) {
-//            return 0.0;
-//        }
-//    }
-
-//    /**
-//     * Computes the p-value for regularized Canonical Correlation Analysis (RCCA) rank test based on the null hypothesis
-//     * H0: canonical correlation rank ≤ r versus the alternative hypothesis H1: rank > r. The method applies a
-//     * chi-squared test using log-likelihood ratios for the remaining canonical correlations.
-//     *
-//     * @param S             The input covariance matrix as a SimpleMatrix.
-//     * @param xIdx          Indices representing the first group of variables.
-//     * @param yIdx          Indices representing the second group of variables.
-//     * @param n             The sample size.
-//     * @param rank          The hypothesized maximum rank under the null hypothesis.
-//     * @param regLambda     Regularization parameter (ridge) applied to the covariance matrix.
-//     * @param condThreshold Threshold for matrix conditioning to determine numerical stability.
-//     * @return The p-value associated with the chi-squared test. Returns 1.0 when rank is not valid or the degrees of
-//     * freedom are non-positive, and 0.0 in case of an exception or invalid computation.
-//     */
-//    public static double getRccaPValueRankLE(SimpleMatrix S,
-//                                             int[] xIdx, int[] yIdx,
-//                                             int n, int rank, double regLambda, double condThreshold) {
-//        try {
-//            final int p = xIdx.length, q = yIdx.length, rmin = Math.min(p, q);
-//            if (rank < 0 || rank >= rmin) return 1.0;
-//
-//            // 1) cache lookup
-//            RccaKey key = new RccaKey(xIdx, yIdx, regLambda);
-//            RccaEntry entry = cacheGet(key);
-//
-//            if (entry == null) {
-//                // MISS: compute svals via your fast Cholesky+solves pipeline
-//                // (same as the last working version you committed)
-//                SvdResult sv = computeSvalsHybrid(S, xIdx, yIdx, regLambda, condThreshold); // below
-//                if (sv == null) return 0.0;
-//
-//                double[] svals = sv.svals;
-//                // Build suffix sums of log(1 - s^2) from the end
-//                double[] suffix = new double[svals.length + 1]; // last is 0
-//                for (int i = svals.length - 1; i >= 0; i--) {
-//                    double s = Math.max(0.0, Math.min(svals[i], 1.0 - 1e-12));
-//                    suffix[i] = suffix[i + 1] + Math.log(1.0 - s * s);
-//                }
-//                entry = new RccaEntry(svals, suffix);
-//                cachePut(key, entry);
-//            }
-//
-//            // 2) O(1) stat for any rank: sum_{i=rank}^{rmin-1} log(1 - s_i^2)
-//            double sumLogs = entry.suffixLogs[rank] - entry.suffixLogs[rmin]; // suffix difference
-//            double scale = -(n - (p + q + 3) / 2.0);
-//            double stat = scale * sumLogs;
-//
-//            int df = (p - rank) * (q - rank);
-//            if (df <= 0) return 1.0;
-//
-//            return 1.0 - new org.apache.commons.math3.distribution.ChiSquaredDistribution(df)
-//                    .cumulativeProbability(stat);
-//        } catch (Exception e) {
-//            return 0.0;
-//        }
-//    }
-
-//    /**
-//     * ---- Public: compute singular values via hybrid whitening (Cholesky -> Eigen fallback)
-//     */
-//    private static SvdResult computeSvalsHybrid(SimpleMatrix S,
-//                                                int[] xIdx, int[] yIdx, double reg, double condThreshold) {
-//        SvdResult sv = computeSvalsCholeskyWhiten_withGuard(S, xIdx, yIdx, reg, condThreshold);
-//        if (sv != null) return sv;
-//        return computeSvalsEigenWhiten(S, xIdx, yIdx, reg);
-//    }
-
-//    /**
-//     * Cholesky whitening with stability guard; return null to trigger fallback.
-//     *
-//     * @param S             Covariance matrix.
-//     * @param xIdx          The indices of the one cluster.
-//     * @param yIdx          The indices of the other cluster.
-//     * @param regLambda     The regularization lambda. This will be added as a ridge to correlation matrices.
-//     * @param condThreshold A trigger on matrix conditioning to return null, to trigger fallback to using eigenvalue
-//     *                      whitening.
-//     */
-//    private static SvdResult computeSvalsCholeskyWhiten_withGuard(SimpleMatrix S,
-//                                                                  int[] xIdx, int[] yIdx,
-//                                                                  double regLambda,
-//                                                                  double condThreshold) {
-//        if (regLambda < 0) {
-//            throw new IllegalArgumentException("regLambda must be >= 0");
-//        }
-//
-//        if (condThreshold <= 0) {
-//            return null;
-//        }
-//
-//        final int p = xIdx.length, q = yIdx.length;
-//
-//        DMatrixRMaj Cxx = extract(S, xIdx, xIdx);
-//        DMatrixRMaj Cyy = extract(S, yIdx, yIdx);
-//        DMatrixRMaj Cxy = extract(S, xIdx, yIdx);
-//        addRidgeInPlace(Cxx, regLambda);
-//        addRidgeInPlace(Cyy, regLambda);
-//
-//        CholeskyDecomposition_F64<DMatrixRMaj> cholX = DecompositionFactory_DDRM.chol(p, true);
-//        CholeskyDecomposition_F64<DMatrixRMaj> cholY = DecompositionFactory_DDRM.chol(q, true);
-//        if (!cholX.decompose(Cxx) || !cholY.decompose(Cyy)) return null; // fail → fallback
-//
-//        DMatrixRMaj Lx = cholX.getT(null);
-//        DMatrixRMaj Ly = cholY.getT(null);
-//
-//        // Condition guard
-//        if (cholDiagCondition(Lx) > condThreshold || cholDiagCondition(Ly) > condThreshold) return null;
-//
-//        // Whitening: T = Lx^{-1} * Cxy * Ly^{-T}
-//        DMatrixRMaj X = Cxy.copy();
-//        forwardSolveLowerInPlace(Lx, X);
-//        DMatrixRMaj Xt = new DMatrixRMaj(X.numCols, X.numRows);
-//        CommonOps_DDRM.transpose(X, Xt);
-//        backwardSolveUpperFromLowerTransposeInPlace(Ly, Xt);
-//        DMatrixRMaj T = new DMatrixRMaj(X.numRows, X.numCols);
-//        CommonOps_DDRM.transpose(Xt, T);
-//
-//        if (!isFiniteMatrix(T)) return null;
-//
-//        SingularValueDecomposition_F64<DMatrixRMaj> svd =
-//                DecompositionFactory_DDRM.svd(T.numRows, T.numCols, false, false, true);
-//        if (!svd.decompose(T)) return null;
-//
-//        double[] s = svd.getSingularValues();
-//        for (double v : s) if (v > 1.0 + 1e-6 || !Double.isFinite(v)) return null;
-//
-//        return new SvdResult(s);
-//    }
-
-//    /**
-//     * Computes the squared condition number of the diagonal of a Cholesky factor matrix. This method evaluates the
-//     * ratio of the maximum to the minimum diagonal elements of a lower triangular Cholesky factor matrix and returns
-//     * its square as the condition number. If any diagonal element is non-positive or non-finite, it returns positive
-//     * infinity.
-//     *
-//     * @param L The lower triangular Cholesky factor matrix represented as a DMatrixRMaj. The matrix's diagonal must
-//     *          contain positive and finite entries.
-//     * @return The squared condition number defined as (max diagonal / min diagonal)^2, or Double.POSITIVE_INFINITY if
-//     * the input is invalid.
-//     */
-//    private static double cholDiagCondition(DMatrixRMaj L) {
-//        double dmin = Double.POSITIVE_INFINITY, dmax = 0.0;
-//        int n = L.numRows;
-//        for (int i = 0; i < n; i++) {
-//            double d = L.get(i, i);
-//            if (d <= 0 || !Double.isFinite(d)) return Double.POSITIVE_INFINITY;
-//            if (d < dmin) dmin = d;
-//            if (d > dmax) dmax = d;
-//        }
-//        double r = dmax / dmin;
-//        return r * r;
-//    }
-
-//    private static boolean isFiniteMatrix(DMatrixRMaj A) {
-//        double[] a = A.data;
-//        for (double v : a) {
-//            if (!Double.isFinite(v)) return false;
-//        }
-//        return true;
-//    }
+    /**
+     * The RankTests class provides utility methods for ranking-related evaluations. This class is not meant to be
+     * instantiated.
+     * <p>
+     * The existence of a private constructor ensures that the RankTests class cannot be instantiated or extended. It is
+     * designed only to contain static methods related to ranking operations or tests.
+     * <p>
+     * Attempting to instantiate this class will result in an AssertionError.
+     */
+    private RankTests() {
+        throw new AssertionError("This class is not meant to be instantiated.");
+    }
 
     /**
      * Computes the singular values using eigenvalue-based whitening for the given sub-matrices of a covariance matrix.
@@ -462,62 +262,6 @@ public class RankTests {
         }
     }
 
-//    /**
-//     * Solve L * X = B in-place (overwrite B with X), where L is lower-triangular with non-unit diagonal.
-//     */
-//    private static void forwardSolveLowerInPlace(DMatrixRMaj L, DMatrixRMaj B) {
-//        int n = L.numRows;
-//        int m = B.numCols;
-//        for (int col = 0; col < m; col++) {
-//            for (int i = 0; i < n; i++) {
-//                double sum = B.get(i, col);
-//                for (int k = 0; k < i; k++) {
-//                    sum -= L.get(i, k) * B.get(k, col);
-//                }
-//                B.set(i, col, sum / L.get(i, i));
-//            }
-//        }
-//    }
-
-//    /**
-//     * Solve (L^T) * X = B in-place (overwrite B with X), where L is lower-triangular. This is a backward substitution
-//     * using the implicit upper-triangular U = L^T.
-//     */
-//    private static void backwardSolveUpperFromLowerTransposeInPlace(DMatrixRMaj L, DMatrixRMaj B) {
-//        int n = L.numRows;   // also L.numCols
-//        int m = B.numCols;
-//        for (int col = 0; col < m; col++) {
-//            for (int i = n - 1; i >= 0; i--) {
-//                double sum = B.get(i, col);
-//                // U(i,j) = L(j,i), for j>i
-//                for (int j = i + 1; j < n; j++) {
-//                    sum -= L.get(j, i) * B.get(j, col);
-//                }
-//                B.set(i, col, sum / L.get(i, i)); // U(i,i)=L(i,i)
-//            }
-//        }
-//    }
-
-//    /**
-//     * Computes inverse square root of a symmetric positive definite matrix via eigendecomposition.
-//     */
-//    private static SimpleMatrix invSqrtSymmetric(SimpleMatrix S) {
-//        SimpleEVD<SimpleMatrix> eig = S.eig();
-//        int dim = S.getNumRows();
-//        SimpleMatrix D_inv_sqrt = new SimpleMatrix(dim, dim);
-//        SimpleMatrix V = new SimpleMatrix(dim, dim);
-//
-//        for (int i = 0; i < dim; i++) {
-//            double val = eig.getEigenvalue(i).getReal();
-//            if (val <= 0) throw new RuntimeException("Non-positive eigenvalue encountered.");
-//            SimpleMatrix v = eig.getEigenVector(i);
-//            V.insertIntoThis(0, i, v);
-//            D_inv_sqrt.set(i, i, 1.0 / Math.sqrt(val));
-//        }
-//
-//        return V.mult(D_inv_sqrt).mult(V.transpose());
-//    }
-
     /**
      * Estimates the regularized canonical correlation analysis (rCCA) rank by sequentially testing the rank using
      * Wilks' Lambda statistic.
@@ -583,8 +327,6 @@ public class RankTests {
             s[i] = svd.getSingleValue(i);
         }
 
-//        double[] s = svd.getSingularValues();
-
         // Defensive clamp + ensure we only use the first minpq values
         double sumLog = 0.0; // log Λ = Σ log(1 - ρ_i^2) over i = r..k-1
         for (int i = r; i < minpq; i++) {
@@ -647,7 +389,16 @@ public class RankTests {
     }
 
     /**
-     * Build a Scond over [X | Y] that is *conditioned on* Z, then call your estimator.
+     * Estimates the Wilks rank for variables X and Y conditioned on variables Z
+     * using the given covariance matrix and parameters.
+     *
+     * @param S the covariance matrix representing the relationships between all variables
+     * @param C an array of indices representing the variables in set C
+     * @param VminusC an array of indices representing the variables outside of set C
+     * @param Z an array of indices representing the variables in set Z on which to condition
+     * @param n the sample size used to calculate the covariance matrix S
+     * @param alpha the significance level for testing
+     * @return the estimated Wilks rank for the variables in X and Y conditioned on Z
      */
     public static int estimateWilksRankConditioned(
             SimpleMatrix S, int[] C, int[] VminusC, int[] Z,
@@ -778,63 +529,16 @@ public class RankTests {
     }
 
     /**
-     * Largest canonical correlation squared between X and Y after conditioning on Z.
-     */
-    public static double maxCanonicalCorrSqConditioned(
-            SimpleMatrix S, int[] X, int[] Y, int[] Z) {
-
-        // Remove any overlap with Z (same convention as estimateRccaRankConditioned)
-        int[] X0 = diff(X, Z);
-        int[] Y0 = diff(Y, Z);
-        if (X0.length == 0 || Y0.length == 0) return 0.0;
-
-        // Blocks
-        SimpleMatrix Sxx = block(S, X0, X0);
-        SimpleMatrix Syy = block(S, Y0, Y0);
-        SimpleMatrix Sxy = block(S, X0, Y0);
-
-        if (Z.length > 0) {
-            SimpleMatrix Sxz = block(S, X0, Z);
-            SimpleMatrix Syz = block(S, Y0, Z);
-            SimpleMatrix Szz = block(S, Z, Z);
-
-            // robust inverse of Szz (same ridge you use elsewhere)
-            SimpleMatrix SzzInv = invPsdWithRidge(Szz, 1e-8);
-
-            // Schur complements
-            Sxx = Sxx.minus(Sxz.mult(SzzInv).mult(Sxz.transpose()));
-            Syy = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
-            Sxy = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
-        }
-
-        // Whitening with your PSD inverse sqrt
-        SimpleMatrix Wxx = invSqrtPSD(Sxx);
-        SimpleMatrix Wyy = invSqrtPSD(Syy);
-
-        // Top canonical correlation (singular value of Wxx * Sxy * Wyy)
-        SimpleMatrix mult = Wxx.mult(Sxy).mult(Wyy);
-
-        SimpleSVD<SimpleMatrix> svd = mult.svd();
-        int minpq = Math.min(mult.getNumRows(), mult.getNumCols());
-        double[] sv = new double[minpq];
-        for (int i = 0; i < minpq; i++) {
-            sv[i] = svd.getSingleValue(i);
-        }
-
-        if (sv.length == 0) return 0.0;
-        double rho = Math.max(0.0, Math.min(1.0, sv[0]));
-        return rho * rho;
-    }
-
-    /**
-     * Largest canonical correlation squared (unconditioned).
-     */
-    public static double maxCanonicalCorrSq(SimpleMatrix S, int[] X, int[] Y) {
-        return maxCanonicalCorrSqConditioned(S, X, Y, new int[0]);
-    }
-
-    /**
      * p-value for H0: rank(X ⟂ Y | Z) ≤ 0 using Wilks/Bartlett on partial CCA.
+     *
+     * @param S The covariance matrix of all variables.
+     * @param X An array of indices representing the first subset of variables.
+     * @param Y An array of indices representing the second subset of variables.
+     * @param Z An array of indices representing the conditioning set of variables.
+     * @param n The number of samples used in calculating the covariance matrix.
+     * @return The p-value representing the probability of observing the computed test statistic under the null
+     * hypothesis of conditional independence. Returns 1.0 if the size of X or Y is zero after exclusion of Z, or if
+     * degrees of freedom (df) are less than or equal to zero.
      */
     public static double pValueIndepConditioned(SimpleMatrix S, int[] X, int[] Y, int[] Z, int n) {
         // Remove overlap with Z (same convention as your estimator)
@@ -880,20 +584,18 @@ public class RankTests {
         return 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
     }
 
-//    /**
-//     * Returns the largest r (≤ min(p,q)) such that H0: rank ≤ r is NOT rejected at alpha.
-//     */
-//    public static int estimateRankLastNonRejected(SimpleMatrix S, int[] xIdx, int[] yIdx, int n, double alpha) {
-//        int p = xIdx.length, q = yIdx.length, m = Math.min(p, q);
-//        int last = -1;
-//        for (int r = 0; r < m; r++) {
-//            if (rankLeByWilks(S, xIdx, yIdx, n, r) > alpha) last = r;
-//            else break;
-//        }
-//        return Math.max(last, 0);
-//    }
-
-    // --- PUBLIC: fetch RCCA svals (and suffix logs) using the existing cache + hybrid pipeline.
+    /**
+     * Retrieves or computes an RCCA (Regularized Canonical Correlation Analysis) entry for the given parameters. If the
+     * entry is cached, it retrieves the result from the cache. Otherwise, it computes the result based on the provided
+     * inputs.
+     *
+     * @param S         a SimpleMatrix representing the data matrix
+     * @param xIdx      an array of indices corresponding to the X variables
+     * @param yIdx      an array of indices corresponding to the Y variables
+     * @param regLambda a regularization parameter value
+     * @return an RccaEntry containing canonical correlation results including singular values and suffix logs for the
+     * given inputs, or null if the computation fails
+     */
     public static RccaEntry getRccaEntry(SimpleMatrix S,
                                          int[] xIdx, int[] yIdx,
                                          double regLambda) {
@@ -922,19 +624,16 @@ public class RankTests {
     // ==== Add this to RankTests ====
 
     /**
-     * RCCA entry for (C, D) after partialing out Z:
-     *   S_|Z = S - S_{.,Z} * inv(S_{Z,Z} + ridge*I) * S_{Z,.}
-     * Then run RCCA on (C, D) blocks of S_|Z with the same ridge regularization
-     * on R_cc and R_dd that getRccaEntry(...) uses.
+     * RCCA entry for (C, D) after partialing out Z: S_|Z = S - S_{.,Z} * inv(S_{Z,Z} + ridge*I) * S_{Z,.} Then run RCCA
+     * on (C, D) blocks of S_|Z with the same ridge regularization on R_cc and R_dd that getRccaEntry(...) uses.
      *
-     * @param S          correlation/covariance over observed variables
-     * @param C          left index set
-     * @param D          right index set
-     * @param Z          conditioning index set
-     * @param ridge      small diagonal added to R_cc and R_dd (and to S_ZZ before inverting)
-     * @return           RccaEntry whose suffixLogs has suf[0] == 0 and
-     *                   suf[r] = sum_{i=1..r} log(1 - rho_i^2) in the order of
-     *                   descending canonical correlations
+     * @param S     correlation/covariance over observed variables
+     * @param C     left index set
+     * @param D     right index set
+     * @param Z     conditioning index set
+     * @param ridge small diagonal added to R_cc and R_dd (and to S_ZZ before inverting)
+     * @return RccaEntry whose suffixLogs has suf[0] == 0 and suf[r] = sum_{i=1..r} log(1 - rho_i^2) in the order of
+     * descending canonical correlations
      */
     public static RccaEntry getRccaEntryConditioned(SimpleMatrix S,
                                                     int[] C, int[] D, int[] Z,
@@ -1152,7 +851,19 @@ public class RankTests {
      * of the `svals` array.
      */
     public static final class RccaEntry {
+        /**
+         * An array of singular values sorted in descending order. These values represent the singular values of a
+         * matrix in the context of Regularized Canonical Correlation Analysis (RCCA). This array is typically used for
+         * computations related to matrix decomposition or transformations.
+         */
         public final double[] svals;       // descending
+        /**
+         * An array where each element at index `i` represents the cumulative sum of the logarithms of (1 - squared
+         * singular values) from index `i` to the end of the corresponding singular values array. Specifically,
+         * `suffixLogs[i]` = Σ log(1 - s<sub>j</sub>²) for all `j` from `i` to the end. This array is precomputed for
+         * efficiency in mathematical or analytical operations related to matrix decomposition or canonical correlation
+         * analysis.
+         */
         public final double[] suffixLogs;  // suffixLogs[i] = sum_{j=i}^{end} log(1 - s_j^2)
 
         RccaEntry(double[] svals, double[] suffixLogs) {

@@ -26,13 +26,16 @@ public abstract class NtadTest {
     protected SimpleMatrix S;
 
     /**
-     * Constructs an NtadTest object with the provided data matrix and a flag indicating whether the input matrix
-     * represents covariances or raw data.
+     * Constructs an instance of NtadTest using the provided data matrix, whether to compute correlations, and the
+     * effective sample size (ESS).
      *
-     * @param df           the input data matrix as a SimpleMatrix object, where each row represents an observation and
-     *                     each column represents a variable
-     * @param correlations a boolean flag indicating whether the provided matrix is a covariance matrix (true) or raw
-     *                     data requiring covariance computation (false)
+     * @param df           the input data matrix represented as a SimpleMatrix object, where each row is an observation
+     *                     and each column is a variable.
+     * @param correlations a boolean flag indicating whether the provided data matrix should be interpreted directly
+     *                     as a correlation matrix. If false, correlations are computed from the data matrix.
+     * @param ess          the effective sample size, which must be -1 (to use the sample size from the data matrix)
+     *                     or greater than 1.
+     * @throws IllegalArgumentException if ess is not -1 and not greater than 1.
      */
     public NtadTest(SimpleMatrix df, boolean correlations, int ess) {
         if (!(ess == -1  || ess > 1)) {

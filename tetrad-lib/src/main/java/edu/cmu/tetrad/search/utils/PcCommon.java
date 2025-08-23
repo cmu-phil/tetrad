@@ -745,6 +745,11 @@ public final class PcCommon implements IGraphSearch {
         this.timeout = timeout;
     }
 
+    /**
+     * Retrieves the Fas instance associated with this object.
+     *
+     * @return the Fas object held by this instance, or null if not set.
+     */
     public Fas getFas() {
         return this.fas;
     }

@@ -220,6 +220,8 @@ public class Pc implements IGraphSearch {
      * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      *
+     * @param nodes The sublist of nodes.
+     * @return The result graph
      * @throws InterruptedException if any
      * @see Fci
      */

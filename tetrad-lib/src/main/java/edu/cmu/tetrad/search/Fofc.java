@@ -117,6 +117,7 @@ public class Fofc {
      * @param dataSet The continuous dataset searched over.
      * @param test    The NTad test to use.
      * @param alpha   The alpha significance cutoff.
+     * @param ess     The effective sample size, or -1 is the actual sample size is to be used.
      */
     public Fofc(DataSet dataSet, NtadTest test, double alpha, int ess) {
         this.variables = dataSet.getVariables();
@@ -416,6 +417,7 @@ public class Fofc {
 
     /**
      * Attempts to move nodes from one cluster to another to improve clustering,.
+     *
      * @param clusters The clusters to adjust.
      * @return True if a change was made.
      */
@@ -699,6 +701,16 @@ public class Fofc {
 
     private enum Purity {PURE, IMPURE, UNDECIDED}
 
+    /**
+     * Blocks is an immutable data structure that holds two main properties: - A list of lists of integers representing
+     * clusters or groups of variables. - A list of Node objects, representing latent variables associated with the
+     * clusters.
+     * <p>
+     * This class is primarily used to store and handle clustering-related data within the Fofc search algorithm.
+     *
+     * @param blocks  A list of lists where each inner list represents a cluster of variables.
+     * @param latents A list of latent variables corresponding to the clusters in the blocks.
+     */
     public record Blocks(List<List<Integer>> blocks, List<Node> latents) {
     }
 }

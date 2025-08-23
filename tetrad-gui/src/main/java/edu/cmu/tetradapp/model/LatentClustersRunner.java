@@ -50,7 +50,7 @@ import java.util.Objects;
  * @version $Id: $Id
  */
 public class LatentClustersRunner implements ParamsResettable, SessionModel, Executable,
-        Unmarshallable/*IndTestProducer,*/ {
+        Unmarshallable {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -198,48 +198,97 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the list of variables from the associated data wrapper.
+     *
+     * @return a list of {@link Node} objects representing the variables.
      */
     public List<Node> getVariables() {
         return this.dataWrapper.getVariables();
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves a list of variable names from the associated data wrapper.
+     *
+     * @return a list of variable names as {@link String} objects.
      */
     public List<String> getVariableNames() {
         return this.dataWrapper.getVariableNames();
     }
 
+    /**
+     * Retrieves the block specification associated with this instance.
+     *
+     * @return a {@link BlockSpec} object representing the block specification.
+     */
     public BlockSpec getBlockSpec() {
         return blockSpec;
     }
 
+    /**
+     * Sets the block specification for the instance.
+     *
+     * @param blockSpec the {@link BlockSpec} object representing the block specification to set
+     *                  for this instance. Must not be null.
+     * @throws NullPointerException if the provided blockSpec is null
+     */
     public void setBlockSpec(BlockSpec blockSpec) {
         this.blockSpec = Objects.requireNonNull(blockSpec, "spec");
     }
 
+    /**
+     * Retrieves the algorithm name associated with this instance.
+     *
+     * @return a string representing the name of the algorithm.
+     */
     public String getAlg() {
         return alg;
     }
 
+    /**
+     * Sets the algorithm name for the instance.
+     *
+     * @param alg the name of the algorithm to set. Must not be null.
+     * @throws NullPointerException if the provided alg is null.
+     */
     public void setAlg(String alg) {
         Objects.requireNonNull(alg, "alg");
         this.alg = alg;
     }
 
+    /**
+     * Retrieves the test value.
+     *
+     * @return a string representing the test value.
+     */
     public String getTest() {
         return test;
     }
 
+    /**
+     * Sets the test value for the instance.
+     *
+     * @param test the test value to set. Must not be null.
+     * @throws NullPointerException if the provided test is null.
+     */
     public void setTest(String test) {
         this.test = test;
     }
 
+    /**
+     * Retrieves the block text.
+     *
+     * @return a string representing the block text.
+     */
     public String getBlockText() {
         return blockText;
     }
 
+    /**
+     * Sets the block text for the instance.
+     *
+     * @param blockText the block text to set. Must not be null.
+     * @throws NullPointerException if the provided blockText is null.
+     */
     public void setBlockText(String blockText) {
         Objects.requireNonNull(blockText, "blockText");
         this.blockText = blockText;
@@ -295,6 +344,11 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         };
     }
 
+    /**
+     * Executes the algorithm and discovers the block specification.
+     *
+     * @throws Exception if an error occurs during execution.
+     */
     @Override
     public void execute() throws Exception {
 

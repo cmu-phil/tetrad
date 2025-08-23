@@ -7,10 +7,24 @@ import edu.cmu.tetrad.graph.NodeType;
 
 import java.util.*;
 
+/**
+ * Utility class for handling operations related to blocks, such as creating block variables,
+ * canonicalizing blocks, ensuring valid indices, and applying various cluster policies.
+ * This class includes methods to manipulate and process blocks and their corresponding data
+ * representations within a dataset.
+ */
 public final class BlocksUtil {
     private BlocksUtil() {}
 
-    /** Default latent/block names: L1, L2, ... (or pass a custom namer). */
+    /**
+     * Creates a list of block variables based on the provided list of blocks and the dataset.
+     * If a block contains a single index, the corresponding variable from the dataset is added
+     * to the result. For larger blocks, a new latent variable is created and added to the result.
+     *
+     * @param blocks a list of lists, where each inner list represents a block of indices
+     * @param dataSet the dataset associated with the specified blocks, providing the variables
+     * @return a list of Node objects representing the block variables, either existing or newly created
+     */
     public static List<Node> makeBlockVariables(List<List<Integer>> blocks, DataSet dataSet) {
         int latentIndex = 1;
         List<Node> meta = new ArrayList<>();
@@ -27,7 +41,14 @@ public final class BlocksUtil {
         return meta;
     }
 
-    /** Defensive copy + canonicalize (sort members, drop duplicates, drop empties). */
+    /**
+     * Canonicalizes a list of blocks by removing null or empty blocks, sorting the contents of
+     * each block, and ensuring the resulting blocks are unique. The returned list maintains
+     * the order of the first occurrence of each unique block.
+     *
+     * @param blocks a list of lists, where each inner list represents a block of indices to canonicalize
+     * @return a list of canonicalized blocks that are non-empty, sorted internally, and unique in order
+     */
     public static List<List<Integer>> canonicalizeBlocks(List<List<Integer>> blocks) {
         LinkedHashSet<List<Integer>> uniq = new LinkedHashSet<>();
         for (List<Integer> b : blocks) {
@@ -39,7 +60,14 @@ public final class BlocksUtil {
         return new ArrayList<>(uniq);
     }
 
-    /** Ensure indices are in-range for the given dataset. */
+    /**
+     * Validates the provided list of blocks to ensure that all indices within each block
+     * are non-negative, within the range of columns in the given dataset, and not null.
+     * Throws an IllegalArgumentException if any of these conditions are violated.
+     *
+     * @param blocks a list of lists, where each inner list represents a block of indices to validate
+     * @param data the dataset providing the number of columns for range validation
+     */
     public static void validateBlocks(List<List<Integer>> blocks, DataSet data) {
         int p = data.getNumColumns();
         for (List<Integer> b : blocks) {
@@ -51,18 +79,25 @@ public final class BlocksUtil {
         }
     }
 
+    /**
+     * Converts a list of block indices and a dataset into a BlockSpec object, ensuring the blocks
+     * are canonicalized and generating the appropriate block variables.
+     *
+     * @param blocks a list of lists, where each inner list represents a block of indices
+     * @param dataSet the dataset associated with the blocks
+     * @return a BlockSpec object containing the dataset, canonicalized blocks, and block variables
+     */
     public static BlockSpec toSpec(List<List<Integer>> blocks, DataSet dataSet) {
         List<List<Integer>> canon = canonicalizeBlocks(blocks);
         return new BlockSpec(dataSet, canon, makeBlockVariables(canon, dataSet));
     }
 
-    // Helper to set ranks parsed from text:
-    public static BlockSpec withRanks(BlockSpec base, List<Integer> ranks) {
-        if (ranks.size() != base.blocks().size()) throw new IllegalArgumentException("rank size mismatch");
-        return new BlockSpec(base.dataSet(), base.blocks(), base.blockVariables(), List.copyOf(ranks));
-    }
-
-    // Expand ranks -> per-latent variables named Lk-1..Lk-r
+    /**
+     * Expand ranks -> per-latent variables named Lk-1..Lk-r.
+     *
+     * @param spec the BlockSpec object containing the block variables to expand
+     * @return the expanded list of Node objects
+     */
     public static List<Node> expandLatents(BlockSpec spec) {
         List<Node> expanded = new ArrayList<>();
         for (int i = 0; i < spec.blocks().size(); i++) {
@@ -82,7 +117,14 @@ public final class BlocksUtil {
         return expanded;
     }
 
-    /** Keep blocks disjoint by preference order (bigger first), removing overlaps later in the list. */
+    /**
+     * Creates a list of disjoint blocks from the provided list of blocks, prioritizing larger blocks first.
+     * Each block is processed to ensure no overlapping indices, and elements within processed blocks are sorted.
+     * The resulting list is unmodifiable and contains unique, disjoint, and sorted blocks.
+     *
+     * @param blocks a list of lists, where each inner list represents a block of indices to be made disjoint
+     * @return a list of disjoint blocks, where each block is a sorted and unmodifiable list of indices
+     */
     public static List<List<Integer>> makeDisjointBySize(List<List<Integer>> blocks) {
         // Sort by descending size; work on copies so we don’t mutate inputs
         List<ArrayList<Integer>> sorted = blocks.stream()
@@ -112,12 +154,32 @@ public final class BlocksUtil {
         return Collections.unmodifiableList(out);
     }
 
+    /**
+     * Constructs a BlockSpec object using the provided DataSet and block definitions, ensuring that
+     * the blocks are made disjoint by prioritizing larger blocks first. The resulting BlockSpec includes
+     * the dataset, the disjoint blocks, and associated block variables.
+     *
+     * @param ds the dataset associated with the blocks
+     * @param blocks a list of lists, where each inner list represents a block of indices
+     * @return a BlockSpec object containing the dataset, disjoint blocks, and block variables
+     */
     public static BlockSpec makeDisjointSpec(DataSet ds, List<List<Integer>> blocks) {
         List<List<Integer>> disjoint = makeDisjointBySize(blocks);
         List<Node> blockVars = makeBlockVariables(disjoint, ds); // your existing helper
         return new BlockSpec(ds, disjoint, blockVars); // ranks default to 1s
     }
 
+    /**
+     * Applies the specified single cluster policy to the given set of blocks.
+     * Depending on the policy, this method may modify or extend the blocks to include
+     * singleton clusters, exclude them, or group them as noise variables.
+     *
+     * @param policy the single cluster policy to apply, determining how singleton clusters are handled
+     * @param blocks a list of lists where each inner list represents a cluster of indices
+     * @param dataSet the dataset associated with the blocks, providing information about column indices
+     * @return an unmodifiable list of lists representing the updated or unchanged clusters based on the specified policy
+     * @throws IllegalArgumentException if an unknown policy is provided
+     */
     public static List<List<Integer>> applySingleClusterPolicy(SingleClusterPolicy policy, List<List<Integer>> blocks, DataSet dataSet) {
         switch (policy) {
             case INCLUDE -> {
@@ -168,6 +230,13 @@ public final class BlocksUtil {
         }
     }
 
+    /**
+     * Renames the last variable in the block variables of the given BlockSpec to "Noise".
+     * This method modifies the name of the last variable while preserving other aspects of the BlockSpec.
+     *
+     * @param spec the BlockSpec object containing the block variables to modify
+     * @return a new BlockSpec object with the last variable renamed to "Noise"
+     */
     public static BlockSpec renameLastVarAsNoise(BlockSpec spec) {
         List<Node> blockVars = spec.blockVariables();
         Node noise = blockVars.getLast();

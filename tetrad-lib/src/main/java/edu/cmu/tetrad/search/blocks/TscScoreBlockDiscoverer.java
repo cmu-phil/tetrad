@@ -10,18 +10,17 @@ import java.util.List;
  * The TscScoreBlockDiscoverer class implements the BlockDiscoverer interface and provides functionality to discover
  * blocks or clusters of indices using the TSC scoring algorithm. It processes a dataset with specified parameters and
  * includes mechanisms for block validation, canonicalization, and policy-specific adjustments.
- *
+ * <p>
  * This class uses the TSC scoring framework to calculate clusters based on correlations and penalties, taking into
  * account domain-specific parameters such as alpha, EBIC gamma, ridge regularization, penalty discounting, and expected
  * sample size (ESS). The discovered blocks are processed to meet validation criteria and tailored to any specified
  * single-cluster policies.
- *
- * Key features of this class:
- * - Integration with the TSC scoring algorithm to compute clusters based on data and scoring parameters.
- * - Validation of resulting clusters to ensure they adhere to predefined correctness criteria.
- * - Canonicalization of blocks to maintain consistency and avoid redundant clusters.
- * - Enforcement of single-cluster policies, where applicable, to handle overlapping or conflicting clusters.
- * - Returns a BlockSpec instance encapsulating the final discovered clusters and related metadata.
+ * <p>
+ * Key features of this class: - Integration with the TSC scoring algorithm to compute clusters based on data and
+ * scoring parameters. - Validation of resulting clusters to ensure they adhere to predefined correctness criteria. -
+ * Canonicalization of blocks to maintain consistency and avoid redundant clusters. - Enforcement of single-cluster
+ * policies, where applicable, to handle overlapping or conflicting clusters. - Returns a BlockSpec instance
+ * encapsulating the final discovered clusters and related metadata.
  */
 public class TscScoreBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
@@ -35,13 +34,13 @@ public class TscScoreBlockDiscoverer implements BlockDiscoverer {
     /**
      * Initializes a new instance of the TscScoreBlockDiscoverer with the specified parameters.
      *
-     * @param dataSet The dataset to be used for block discovery.
-     * @param alpha The significance level for hypothesis testing.
-     * @param ebicGamma The gamma parameter for the Extended Bayesian Information Criterion (EBIC).
-     * @param ridge The ridge regularization parameter.
+     * @param dataSet         The dataset to be used for block discovery.
+     * @param alpha           The significance level for hypothesis testing.
+     * @param ebicGamma       The gamma parameter for the Extended Bayesian Information Criterion (EBIC).
+     * @param ridge           The ridge regularization parameter.
      * @param penaltyDiscount The discount factor for penalizing complexity.
-     * @param ess The equivalent sample size for scoring methods.
-     * @param policy The policy determining the handling of single clusters.
+     * @param ess             The equivalent sample size for scoring methods.
+     * @param policy          The policy determining the handling of single clusters.
      */
     public TscScoreBlockDiscoverer(DataSet dataSet, double alpha, double ebicGamma, double ridge, double penaltyDiscount,
                                    int ess, SingleClusterPolicy policy) {
@@ -55,14 +54,16 @@ public class TscScoreBlockDiscoverer implements BlockDiscoverer {
     }
 
     /**
-     * Discovers and returns a block specification based on the given dataset and parameters.
-     * The method applies a series of checks and processes, including validating input parameters,
-     * scoring clusters, and ensuring blocks adhere to the specified policy.
+     * Discovers and returns a block specification for the given dataset based on TscScoreBlockDiscoverer's configured
+     * parameters. This method performs validation of input values and utilizes the Tsc algorithm to identify clusters
+     * within the dataset. The identified clusters are then processed and adjusted according to the configured
+     * policies.
      *
-     * @return A {@code BlockSpec} object representing the discovered blocks.
-     * @throws IllegalArgumentException if any of the input parameters are invalid, such as:
-     *         {@code alpha} not in (0,1), {@code ebicGamma} < 0, {@code ridge} < 0,
-     *         or {@code penaltyDiscount} <= 0.
+     * @return A BlockSpec representing the discovered clusters, with all blocks validated, canonicalized, and adjusted
+     * based on the specified single cluster policy.
+     * @throws IllegalArgumentException If any parameter violates the expected constraints: - `alpha` must be in the
+     *                                  range (0, 1). - `ebicGamma` must be ≥ 0. - `ridge` must be ≥ 0. -
+     *                                  `penaltyDiscount` must be &gt; 0.
      */
     @Override
     public BlockSpec discover() {
@@ -76,7 +77,6 @@ public class TscScoreBlockDiscoverer implements BlockDiscoverer {
         tsc.setAlpha(alpha);
         tsc.setEbicGamma(ebicGamma);
         tsc.setRidge(ridge);
-        tsc.setIncludeAllNodes(true);
         tsc.setPenaltyDiscount(penaltyDiscount);
         tsc.setExpectedSampleSize(ess);
         tsc.setMode(Tsc.Mode.Scoring);

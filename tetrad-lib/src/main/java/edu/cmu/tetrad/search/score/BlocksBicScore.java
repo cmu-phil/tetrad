@@ -22,9 +22,8 @@ import java.util.*;
  * getVariables() returns exactly 'blockVariables'.
  * <p>
  * This is Wilks' Lambda test statistic for canonical correlations: 2ℓ = -(n_eff) * Σ log(1 - rho_i^2) (see Mardia, Kent
- * & Bibby 1979, §12.6; Anderson 2003, §12.3.2) This is already in "2 log-likelihood" units, so the BIC penalty can be
- * applied directly as 2ℓ - c k log n.
- *
+ * &amp; Bibby 1979, section 12.6; Anderson 2003, section 12.3.2) This is already in 2 log-likelihood units, so the BIC
+ * penalty can be applied directly as 2ℓ - c k log n.
  */
 public class BlocksBicScore implements Score, BlockScore {
     // --- Caches ---
@@ -71,7 +70,14 @@ public class BlocksBicScore implements Score, BlockScore {
     private double ebicGamma = 0.0;         // gamma for EBIC-style extra penalty (0 disables)
 
     /**
-     * @param blockSpec the block spec for the score
+     * Constructs a BlocksBicScore object using the provided BlockSpec configuration. This class prepares the necessary
+     * data structures and performs precomputations related to block-level variables, dataset dimensions, and embedded
+     * columns for scoring calculations.
+     *
+     * @param blockSpec The specification of the block-based structure, containing information such as dataset, blocks,
+     *                  and block variables. Must not be null. Throws an IllegalArgumentException if blockSpec is
+     *                  invalid or contains inconsistencies (e.g., null or duplicate variables, invalid column
+     *                  indices).
      */
     public BlocksBicScore(BlockSpec blockSpec) {
         this.blockSpec = Objects.requireNonNull(blockSpec, "blockspec == null");
@@ -118,8 +124,13 @@ public class BlocksBicScore implements Score, BlockScore {
         this.totalEmbeddedCols = totalCols;
     }
 
-    // --- Public API (mirrors SemBIC-style usage) ---
-
+    /**
+     * Computes the local score for a given node specified by its index and a set of parent nodes.
+     *
+     * @param i       the index of the target node whose local score is to be computed
+     * @param parents the indices of the parent nodes influencing the target node
+     * @return the computed local score for the target node given its parent nodes
+     */
     public double localScore(int i, int... parents) {
         Node y = variables.get(i);
         List<Node> _parents = new ArrayList<>();
@@ -128,8 +139,14 @@ public class BlocksBicScore implements Score, BlockScore {
     }
 
     /**
-     * Local block Rank-BIC score for Y given parents, reusing RCCA results from RankTests. Adds caching at the family
-     * level and for the concatenated parent X-block.
+     * Computes the local score of a target node given its parent nodes in a graph. The computation involves statistical
+     * evaluation and penalization based on the given data structure and parameters. If the target node or its parents
+     * are invalid or incompatible for the computation, a negative infinity score is returned.
+     *
+     * @param y       the target node for which the local score is calculated
+     * @param parents a list of parent nodes of the target node
+     * @return the computed local score for the node-parent configuration; returns a negative infinity score in cases of
+     * invalid configurations
      */
     public double localScore(Node y, List<Node> parents) {
         int yi = idx(y);
@@ -239,7 +256,14 @@ public class BlocksBicScore implements Score, BlockScore {
     }
 
     /**
-     * Convenience delta score helper (add/remove a single parent).
+     * Computes the difference in local score for a given node when a parenthood relationship is either added or
+     * removed. This method evaluates the impact of modifying the parent set on the local score of the specified node.
+     *
+     * @param y             the target node for which the local score difference is computed
+     * @param oldParents    the current list of parent nodes associated with the target node
+     * @param changedParent the parent node that is being added or removed from the parent set
+     * @param adding        a flag indicating whether the parent node is being added (true) or removed (false)
+     * @return the difference between the new local score (after adding or removing the parent) and the old local score
      */
     public double localScoreDelta(Node y, List<Node> oldParents, Node changedParent, boolean adding) {
         List<Node> newParents = new ArrayList<>(oldParents);
@@ -248,18 +272,35 @@ public class BlocksBicScore implements Score, BlockScore {
         return localScore(y, newParents) - localScore(y, oldParents);
     }
 
-    // --- Settings ---
+    /**
+     * Sets the penalty discount used in scoring calculations and clears the cached scores, since changing the penalty
+     * affects the score computations.
+     *
+     * @param c the new penalty discount value to be set
+     */
     public void setPenaltyDiscount(double c) {
         this.penaltyDiscount = c;
         scoreCache.clear(); // penalty affects scores
     }
 
+    /**
+     * Updates the ridge parameter and clears the score cache. The ridge parameter impacts computations and the cached
+     * results are invalidated upon its change.
+     *
+     * @param ridge the new ridge value to be set
+     */
     public void setRidge(double ridge) {
         this.ridge = ridge;
         scoreCache.clear(); // ridge affects rhos
         // RankTests has its own LRU keyed by regLambda.
     }
 
+    /**
+     * Sets the EBIC gamma parameter and clears the score cache. The EBIC gamma parameter impacts computations and the
+     * cached results are invalidated upon its change.
+     *
+     * @param gamma the new EBIC gamma value to be set
+     */
     public void setEbicGamma(double gamma) {
         this.ebicGamma = gamma;
         scoreCache.clear(); // gamma affects scores
@@ -306,17 +347,36 @@ public class BlocksBicScore implements Score, BlockScore {
         return concatBlocksFromSortedParentIdx(parentIdx);
     }
 
-    // --- Score interface ---
+    /**
+     * Computes the local score difference for a given node and its parents. This method evaluates the effect of adding
+     * a single parent to a node's parent set by calculating the difference in local scores.
+     *
+     * @param x the node being considered as an additional parent
+     * @param y the node for which the local score difference is being computed
+     * @param z the array of parent indices currently associated with node y
+     * @return the difference between the local score of y with (z + x) as parents and the local score of y with z as
+     * parents
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(variables.get(y), appendNodes(z, x)) - localScore(variables.get(y), z);
     }
 
+    /**
+     * Retrieves the list of variables associated with the current instance.
+     *
+     * @return a list of Node objects representing the variables
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Retrieves the sample size of the dataset associated with the block specification.
+     *
+     * @return the number of rows in the dataset.
+     */
     @Override
     public int getSampleSize() {
         return blockSpec.dataSet().getNumRows();

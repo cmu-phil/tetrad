@@ -37,6 +37,8 @@ public class BollenTing extends NtadTest {
      *                     each column represents a variable.
      * @param correlations a boolean flag that determines whether the input matrix is treated as a correlation matrix
      *                     (true) or as raw data from which correlations should be calculated (false).
+     * @param ess          the effective sample size used in the computation, or -1 if the actual sample size is to be
+     *                     used.
      */
     public BollenTing(SimpleMatrix df, boolean correlations, int ess) {
         super(df, correlations, ess);

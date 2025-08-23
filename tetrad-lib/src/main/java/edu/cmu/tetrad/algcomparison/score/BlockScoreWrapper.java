@@ -1,9 +1,7 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.Score;
@@ -14,10 +12,9 @@ import java.io.Serial;
 import java.util.List;
 
 /**
- * Interface that algorithm must implement.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * Represents an interface for scoring data models using predefined block structures. This interface extends
+ * {@code ScoreWrapper} and {@code TetradSerializable}, providing additional functionality for handling block-based
+ * scoring.
  */
 public interface BlockScoreWrapper extends ScoreWrapper, TetradSerializable {
     /**
@@ -26,13 +23,21 @@ public interface BlockScoreWrapper extends ScoreWrapper, TetradSerializable {
     @Serial
     long serialVersionUID = 23L;
 
+    /**
+     * Sets the block specification to be used by this implementation.
+     *
+     * @param blockSpec The block specification, which contains details about the dataset, blocks, and block nodes used
+     *                  in the algorithm.
+     */
     void setBlockSpec(BlockSpec blockSpec);
 
-    /// Returns true, iff x and y are independent, conditional on z for the given data set.
-    ///
-    /// @param spec    The block spec, which is a tuple of a dataset, blocks, and block nodes.
-    /// @param parameters The parameters of the test.
-    /// @return True iff independence holds.
+    /**
+     * Computes and returns a score for the given data model and parameters.
+     *
+     * @param model      The data model containing the data to be scored.
+     * @param parameters The parameters to be used for score computation.
+     * @return A Score object representing the computed score.
+     */
     Score getScore(DataModel model, Parameters parameters);
 
     /**

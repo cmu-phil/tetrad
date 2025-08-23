@@ -183,16 +183,6 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
     /**
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.BuildPureClustersRunner} object
-     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
-     */
-    public RemoveNonSkeletonEdgesModel(BuildPureClustersRunner wrapper, Parameters params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    /**
-     * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
-     *
      * @param wrapper a {@link edu.cmu.tetradapp.model.PurifyRunner} object
      * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */

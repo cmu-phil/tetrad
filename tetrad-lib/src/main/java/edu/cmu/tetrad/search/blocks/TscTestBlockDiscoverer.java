@@ -56,7 +56,6 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
 
         Tsc tsc = new Tsc(dataSet.getVariables(), new CorrelationMatrix(dataSet));
         tsc.setAlpha(alpha);
-        tsc.setIncludeAllNodes(true);
         tsc.setExpectedSampleSize(ess);
         tsc.setMode(Tsc.Mode.Testing);
 

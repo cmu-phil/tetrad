@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  * - Simple autocomplete for variable names (Cmd/Ctrl+Space)
  * - Undo/Redo (Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z)
  * - Import/Export buttons
- * - Canonicalize button that preserves comments & line order (rewrites RHS only)
+ * - Canonicalize button that preserves comments &amp; line order (rewrites RHS only)
  * - Apply button invokes a user-supplied callback with the current BlockSpec
  */
 public final class BlockSpecEditorPanel extends JPanel {

@@ -97,11 +97,28 @@ public class MimbuildBollen {
      * The penalty discount of the score used to infer the structure graph.
      */
     private double penaltyDiscount = 1;
-
-    // --- New fields for IndTestBlocks-style construction ---
-    private final DataSet dataSet;                       // observed data
-    private final List<List<Integer>> blocks;            // clusters as column indices into dataSet
-    private final List<Node> blockVariables;             // latent nodes corresponding 1:1 to blocks
+    /**
+     * The dataSet variable represents the observed data utilized in various operations within the MimbuildBollen class.
+     * It serves as the primary dataset containing measured variables, which are processed to infer latent structures
+     * and relationships among variables.
+     *
+     * This dataset acts as a foundational input to clustering operations, covariance matrix computations, and
+     * the construction of graphs depicting relationships between measured and latent variables. It must consist
+     * of valid, non-null data for successful execution of the associated methods.
+     */
+    private final DataSet dataSet;
+    /**
+     * Represents a collection of clusters, where each cluster is a list of column indices
+     * into the provided dataset. The clusters must be non-empty and disjoint.
+     * These clusters are used to identify groups of measured variables explained by latent variables.
+     */
+    private final List<List<Integer>> blocks;
+    /**
+     * A list of latent nodes, where each latent node corresponds one-to-one with a block of measured variables.
+     * This field is used to represent the latent variables associated with the clustering of measured variables,
+     * linking each block of variables to its respective latent variable.
+     */
+    private final List<Node> blockVariables;
 
     /**
      * New constructor matching IndTestBlocks-style usage.
@@ -159,7 +176,10 @@ public class MimbuildBollen {
     /**
      * Runs the legacy optimization-based Mimbuild using constructor-provided (dataSet, blocks, blockVariables).
      * This constructs a covariance over the *measured variables that appear in blocks*, builds the clustering,
-     * and then calls the existing search(List<List<Node>>, List<String>, ICovarianceMatrix).
+     * and then calls the existing search.
+     *
+     * @return The resulting graph after running the search.
+     * @throws InterruptedException If the search is interrupted.
      */
     public Graph search() throws InterruptedException {
         if (this.dataSet == null || this.blocks == null || this.blockVariables == null) {
@@ -608,55 +628,6 @@ public class MimbuildBollen {
         this.pValue = _p;
         return latentscov;
     }
-
-//    private void optimizeNonMeasureVariancesQuick(Matrix latentscov, double[][] loadings, Node[][] indicators, Matrix measurescov,
-//                                                  int[][] indicatorIndices) {
-//        int count = 0;
-//
-//        for (int i = 0; i < latentscov.getNumRows(); i++) {
-//            for (int j = i; j < latentscov.getNumRows(); j++) {
-//                if (i == j) {
-//                    if (latentscov.get(i, j) <= 0) {
-//                        throw new IllegalArgumentException("Diagonal element of latentcov is <= 0.");
-//                    }
-//                }
-//
-//                count++;
-//            }
-//        }
-//
-//        for (double[] loading : loadings) {
-//            for (int j = 0; j < loading.length; j++) {
-//                count++;
-//            }
-//        }
-//
-//        double[] values = new double[count];
-//        count = 0;
-//
-//        for (int i = 0; i < indicators.length; i++) {
-//            for (int j = i; j < indicators.length; j++) {
-//                values[count++] = latentscov.get(i, j);
-//            }
-//        }
-//
-//        for (int i = 0; i < indicators.length; i++) {
-//            for (int j = 0; j < indicators[i].length; j++) {
-//                values[count++] = loadings[i][j];
-//            }
-//        }
-//
-//        Function1 function1 = new Function1(latentscov, loadings, indicatorIndices, measurescov);
-//        MultivariateOptimizer search = new PowellOptimizer(1e-5, 1e-5);
-//
-//        PointValuePair pair = search.optimize(
-//                new InitialGuess(values),
-//                new ObjectiveFunction(function1),
-//                GoalType.MINIMIZE,
-//                new MaxEval(100000));
-//
-//        this.minimum = pair.getValue();
-//    }
 
     private int optimizeAllParamsSimultaneously(Node[][] indicators, Matrix measurescov,
                                                 Matrix latentscov, double[][] loadings,

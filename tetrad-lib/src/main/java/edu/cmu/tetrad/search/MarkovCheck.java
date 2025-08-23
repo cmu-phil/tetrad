@@ -701,6 +701,15 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                            " CirclePrecision = " + nf.format(cp) + " CircleRecall = " + nf.format(cr) + " \n");
     }
 
+    /**
+     * Calculates the F1 statistics for the entire graph by comparing an estimated graph
+     * to the true graph. The method computes F1 scores for different graph components,
+     * including adjacency, arrows, circles, and tails.
+     *
+     * @param estimatedGraph the graph that represents the estimated structure
+     * @param trueGraph the graph that represents the true structure
+     * @return a list of F1 statistics in the following order: adjacency F1 score, arrow F1 score, circle F1 score, and tail F1 score
+     */
     public List<Double> getF1StatsForWholeGraph(Graph estimatedGraph, Graph trueGraph) {
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         double f1Adj = new F1Adj().getValue(lookupGraph, estimatedGraph);
@@ -711,6 +720,16 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
     }
 
+    /**
+     * Computes the F1 statistics for the Markov blanket subgraph with the target node in the given estimated graph
+     * and true graph. The F1 statistics include F1 scores for adjacency, arrow, circle, and tail relationships.
+     *
+     * @param x the target node for which the Markov blanket subgraph will be evaluated.
+     * @param estimatedGraph the graph that represents the estimated structure.
+     * @param trueGraph the graph that represents the true structure of the data.
+     * @return a list of F1 statistics, where the elements are, in order:
+     *         F1 score for adjacency, F1 score for arrow, F1 score for circle, and F1 score for tail relationships.
+     */
     public List<Double> getF1StatsForTargetNodeMBSubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
@@ -724,6 +743,15 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
     }
 
+    /**
+     * Computes the F1 statistics (F1-Adjacency, F1-Arrow, F1-Circle, F1-Tail) between the parents subgraph
+     * of a given target node in the estimated graph and the corresponding parents subgraph in the true graph.
+     *
+     * @param x the target node for which the parents subgraph is analyzed
+     * @param estimatedGraph the graph containing the estimated structure
+     * @param trueGraph the graph containing the true structure
+     * @return a list of F1 statistics where the elements are, in order: F1-Adjacency, F1-Arrow, F1-Circle, and F1-Tail
+     */
     public List<Double> getF1StatsForTargetNodeParentsSubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xParentsLookupGraph = GraphUtils.getParentsSubgraphWithTargetNode(lookupGraph, x);
@@ -737,6 +765,17 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
     }
 
+    /**
+     * Calculates F1 statistics for a target node's adjacency subgraph in terms of adjacency, arrow types,
+     * circle types, and tail types. This is done by comparing the adjacency subgraph of the target node
+     * in the estimated graph against the corresponding adjacency subgraph in the reference (true) graph.
+     *
+     * @param x The target node for which the adjacency subgraph's F1 statistics are calculated.
+     * @param estimatedGraph The estimated graph whose adjacency subgraph will be evaluated.
+     * @param trueGraph The reference (true) graph used for comparison.
+     * @return A list of F1 scores, where the elements represent F1 statistics in the order:
+     *         adjacency (f1Adj), arrow type (f1Arrow), circle type (f1Circle), and tail type (f1Tail).
+     */
     public List<Double> getF1StatsForTargetNodeAdjacencySubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xAdjacencyLookupGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(lookupGraph, x);

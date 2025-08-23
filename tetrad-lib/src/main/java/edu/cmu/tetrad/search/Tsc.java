@@ -36,10 +36,8 @@ public class Tsc {
     private final boolean prefilterByWilkes = true;
     private int expectedSampleSize = -1;
     private double alpha = 0.01;
-    private boolean includeAllNodes = false;
     private boolean verbose = false;
     private List<List<Integer>> clusters = new ArrayList<>();
-    private List<String> latentNames = new ArrayList<>();
     private Map<Set<Integer>, Integer> clusterToRank;
     private Map<Set<Integer>, Integer> reducedRank;
 
@@ -61,12 +59,11 @@ public class Tsc {
     private double scoreMargin = 0.0;
     /**
      * Represents the operational mode of the TscScored class.
-     *
-     * The `mode` variable determines whether the algorithm functions in a
-     * testing mode or a scoring mode. In `Mode.Testing`, the operations focus
-     * on hypothesis tests, while in `Mode.Scoring`, the focus is on scoring
+     * <p>
+     * The `mode` variable determines whether the algorithm functions in a testing mode or a scoring mode. In
+     * `Mode.Testing`, the operations focus on hypothesis tests, while in `Mode.Scoring`, the focus is on scoring
      * clusters based on their statistical properties.
-     *
+     * <p>
      * Default value: `Mode.Testing`.
      */
     private Mode mode = Mode.Testing;
@@ -75,7 +72,7 @@ public class Tsc {
      * Constructs an instance of the TscScored class using the provided variables and covariance matrix.
      *
      * @param variables a list of Node elements representing variables to be included in the scoring process
-     * @param cov a CovarianceMatrix object representing the covariance matrix associated with the variables
+     * @param cov       a CovarianceMatrix object representing the covariance matrix associated with the variables
      */
     public Tsc(List<Node> variables, CovarianceMatrix cov) {
         this.nodes = new ArrayList<>(variables);
@@ -86,16 +83,15 @@ public class Tsc {
     }
 
     /**
-     * Precomputes the binomial coefficients using dynamic programming. The method
-     * generates a table of binomial coefficients C[n][k] for 0 <= n <= input n and
-     * 0 <= k <= input k. It ensures values are capped at Long.MAX_VALUE to handle
-     * potential overflow scenarios.
+     * Precomputes the binomial coefficients using dynamic programming. The method generates a table of binomial
+     * coefficients C[n][k] for 0 <= n <= input n and 0 <= k <= input k. It ensures values are capped at Long.MAX_VALUE
+     * to handle potential overflow scenarios.
      *
      * @param n the maximum row index for which binomial coefficients are to be computed
      * @param k the maximum column index for which binomial coefficients are to be computed
      * @return a 2D array where the value at C[i][j] represents the binomial coefficient "i choose j"
      */
-     private static long[][] precomputeBinom(int n, int k) { /* ... unchanged ... */
+    private static long[][] precomputeBinom(int n, int k) { /* ... unchanged ... */
         long[][] C = new long[n + 1][k + 1];
         for (int i = 0; i <= n; i++) {
             C[i][0] = 1;
@@ -117,7 +113,7 @@ public class Tsc {
      * @param j the second parameter of the binomial coefficient
      * @return the binomial coefficient "x choose j" if 0 <= j <= x; otherwise, returns 0
      */
-     private static long choose(long[][] C, int x, int j) {
+    private static long choose(long[][] C, int x, int j) {
         if (x < j || j < 0) return 0L;
         return C[x][j];
     }
@@ -149,11 +145,11 @@ public class Tsc {
     }
 
     /**
-     * Sets the mode for the TscScored instance. The mode determines the operational
-     * behavior of the TscScored class, selecting between Testing or Scoring modes.
+     * Sets the mode for the TscScored instance. The mode determines the operational behavior of the TscScored class,
+     * selecting between Testing or Scoring modes.
      *
-     * @param mode the operational mode to be set, where mode must be an instance of the
-     *             {@code Mode} enum (either {@code Mode.Testing} or {@code Mode.Scoring})
+     * @param mode the operational mode to be set, where mode must be an instance of the {@code Mode} enum (either
+     *             {@code Mode.Testing} or {@code Mode.Scoring})
      */
     public void setMode(Mode mode) {
         this.mode = mode;
@@ -230,11 +226,8 @@ public class Tsc {
         final int n = vars.size();
         final int k = size;
 
-//        if (targetRank + 1 >= n - (targetRank + 1)) return Collections.emptySet();
-
         if (targetRank < 0) throw new IllegalArgumentException("targetRank must be >= 0");
         if (k <= 0 || k > n) return Collections.emptySet();
-//        if (k >= n - k) return Collections.emptySet(); // D would be empty
 
         final int[] varIds = new int[n];
         for (int i = 0; i < n; i++) varIds[i] = vars.get(i);
@@ -413,33 +406,12 @@ public class Tsc {
     }
 
     /**
-     * Searches for latent clusters using specified size and rank parameters.
-     */
-    public Graph search() {
-        Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> ret = estimateClusters();
-        clusterToRank = ret.getFirst();
-        reducedRank = ret.getSecond();
-
-        List<Set<Integer>> clusterSets = clusterToRank.keySet().stream()
-                .sorted(Comparator.<Set<Integer>>comparingInt(Set::size).reversed()
-                        .thenComparing(this::toNamesCluster))
-                .collect(Collectors.toList());
-
-        List<Node> latents = defineLatents(clusterSets, clusterToRank, reducedRank);
-        Graph graph = convertSearchGraphClusters(clusterSets, latents, includeAllNodes);
-
-        this.latentNames = new ArrayList<>();
-        for (Node latent : latents) latentNames.add(latent.getName());
-        return graph;
-    }
-
-    /**
-     * Identifies and returns clusters of variables based on a predefined scoring or testing mechanism.
-     * This method processes the output of the clustering procedure and formats it as a list of lists of integers,
-     * where each inner list represents a single cluster of variables.
+     * Identifies and returns clusters of variables based on a predefined scoring or testing mechanism. This method
+     * processes the output of the clustering procedure and formats it as a list of lists of integers, where each inner
+     * list represents a single cluster of variables.
      *
-     * @return a list of clusters, with each cluster represented as a list of integers. The clusters are sorted
-     *         first by size in descending order and then lexicographically by their variable names or identifiers.
+     * @return a list of clusters, with each cluster represented as a list of integers. The clusters are sorted first by
+     * size in descending order and then lexicographically by their variable names or identifiers.
      */
     public List<List<Integer>> findClusters() {
         Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> ret = estimateClusters();
@@ -478,13 +450,12 @@ public class Tsc {
     }
 
     /**
-     * Sets the significance level alpha used in statistical computations.
-     * The significance level determines the threshold for hypothesis testing
-     * and affects the resulting ranks or scores. Updating this parameter
-     * clears the cached ranks as they depend on the current alpha value.
+     * Sets the significance level alpha used in statistical computations. The significance level determines the
+     * threshold for hypothesis testing and affects the resulting ranks or scores. Updating this parameter clears the
+     * cached ranks as they depend on the current alpha value.
      *
-     * @param alpha the significance level to be set, typically a value
-     *              between 0 and 1, where lower values indicate stricter thresholds.
+     * @param alpha the significance level to be set, typically a value between 0 and 1, where lower values indicate
+     *              stricter thresholds.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -492,36 +463,65 @@ public class Tsc {
     }
 
     /**
+     * Sets the verbose mode for the application or process.
      *
-     * @param includeAllNodes
+     * @param verbose a boolean value where {@code true} enables verbose mode and {@code false} disables it.
      */
-    public void setIncludeAllNodes(boolean includeAllNodes) {
-        this.includeAllNodes = includeAllNodes;
-    }
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    // --- new setters for scoring knobs / mode ---
+    /**
+     * Sets the ridge parameter used in computations. The ridge parameter is typically employed for regularization
+     * purposes to ensure numerical stability or to prevent overfitting. Updating this parameter clears the scored rank
+     * cache and the sweep cache to maintain consistency with the new ridge value.
+     *
+     * @param ridge the ridge value to be set, a non-negative double that influences the regularization strength in the
+     *              computations.
+     */
     public void setRidge(double ridge) {
         this.ridge = ridge;
         scoredRankCache.clear();
         sweepCache.clear();
     }
 
+    /**
+     * Sets the penalty discount used in scoring computations. The penalty discount adjusts the penalization term in the
+     * scoring process, influencing the trade-off between model complexity and fit. Updating this parameter clears the
+     * scored rank cache and the sweep cache to ensure consistency with the new setting.
+     *
+     * @param c the penalty discount value to be set, a double representing the adjustment factor for the penalization
+     *          term. It can take any valid numeric value, depending on the specific requirements of the scoring
+     *          method.
+     */
     public void setPenaltyDiscount(double c) {
         this.penaltyDiscount = c;
         scoredRankCache.clear();
         sweepCache.clear();
     }
 
+    /**
+     * Sets the EBIC gamma parameter used in scoring computations. The gamma parameter affects the penalization term in
+     * the Extended Bayesian Information Criterion (EBIC), where higher values of gamma impose a stronger penalty on
+     * model complexity. Updating this parameter clears the scored rank cache and the sweep cache to ensure consistency
+     * with the new gamma setting.
+     *
+     * @param gamma the EBIC gamma value to be set, a non-negative double typically in the range [0, 1], where 0
+     *              corresponds to the standard BIC and higher values prioritize simpler models.
+     */
     public void setEbicGamma(double gamma) {
         this.ebicGamma = gamma;
         scoredRankCache.clear();
         sweepCache.clear();
     }
 
+    /**
+     * Sets the score margin to the specified value. The margin represents a non-negative threshold used in scoring
+     * computations. If the provided margin is negative, it defaults to 0.0.
+     *
+     * @param margin the margin value to be set. A non-negative double value is expected. If a negative value is
+     *               provided, it will be adjusted to 0.0.
+     */
     public void setScoreMargin(double margin) {
         this.scoreMargin = Math.max(0.0, margin);
     }
@@ -582,23 +582,6 @@ public class Tsc {
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
                         if (rankOfUnion == rank) {
-
-//                            // >>> anti-proxy guard (optional)
-//                            if (enforceObservedLeaves && antiProxyDrop > 0) {
-//                                Set<Integer> add = new HashSet<>(candidate);
-//                                add.removeAll(cluster);
-//
-//                                boolean proxy = false;
-//                                for (int v : add) {
-//                                    if (isProxyLike(cluster, v)) {
-//                                        proxy = true;
-//                                        log("Rejecting addition of " + nodes.get(v).getName() + " as proxy-like (observed hub).");
-//                                        break;
-//                                    }
-//                                }
-//                                if (proxy) continue;
-//                            }
-//                            // <<< END
 
                             // Accept this union
                             cluster = union;
@@ -686,34 +669,15 @@ public class Tsc {
         // Try to split instead of outright reject (Dong-style refinement)
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             if (failsSubsetTest(S, cluster, expectedSampleSize, alpha)) {
-//                Optional<List<Set<Integer>>> split = trySplitByRule1(cluster);
-//                if (split.isPresent()) {
-//                    // Remove the original
-//                    clusterToRank.remove(cluster);
-//                    reducedRank.remove(cluster);
-//
-//                    // Add the two subclusters with fresh ranks
-//                    for (Set<Integer> sub : split.get()) {
-//                        int rSub = mode == Mode.Scoring ? rankByScore(sub) : ranksByTest(sub);
-//                        if (sub.size() > 1 && rSub >= 0) {
-//                            clusterToRank.put(sub, rSub);
-//                        }
-//                    }
-//                    penultimateRemoved = true;
-//                    log("Split cluster " + toNamesCluster(cluster) + " into " +
-//                        toNamesCluster(split.get().get(0)) + " and " + toNamesCluster(split.get().get(1)));
-//                } else {
                 clusterToRank.remove(cluster);
                 reducedRank.remove(cluster);
                 penultimateRemoved = true;
-//                    log("Removed cluster " + toNamesCluster(cluster) + " (no valid split found).");
-//                }
             }
         }
         if (!penultimateRemoved) log("No penultimate clusters were removed.");
 
         // --- Atomic-core postprocess (keep large clusters, group by atomic cores) ---
-        if (true) {
+        if (true) { // TODO Keep?
             Map<Key, Set<Integer>> coreToMax = new LinkedHashMap<>();
 
             for (Set<Integer> C : new ArrayList<>(clusterToRank.keySet())) {
@@ -752,25 +716,6 @@ public class Tsc {
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet()));
         return new Pair<>(clusterToRank, reducedRank);
     }
-
-//    private boolean allSubclustersPresent(Set<Integer> union, Set<Set<Integer>> P, int size) {
-//        ChoiceGenerator gen = new ChoiceGenerator(union.size(), size);
-//        int[] choice;
-//        List<Integer> unionList = new ArrayList<>(union);
-//
-//        while ((choice = gen.next()) != null) {
-//            Set<Integer> C = new HashSet<>();
-//            for (int i : choice) {
-//                C.add(unionList.get(i));
-//            }
-//
-//            if (!P.contains(C)) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
 
     /**
      * Try to split a cluster C into two smaller clusters C1, C2 if Rule 1 fails.
@@ -990,26 +935,6 @@ public class Tsc {
         return out;
     }
 
-//    /**
-//     * True if v behaves like a proxy/hub for C (conditioning on v collapses rank by >= antiProxyDrop).
-//     */
-//    private boolean isProxyLike(Set<Integer> C, int v) {
-//        if (!enforceObservedLeaves || antiProxyDrop == 0) return false;
-//
-//        Set<Integer> Cplus = new HashSet<>(C);
-//        Cplus.add(v);
-//        if (Cplus.size() >= variables.size() - Cplus.size()) return false; // guard
-//
-//        int[] Carr = C.stream().mapToInt(Integer::intValue).toArray();
-//        int[] Darr = complementOf(Cplus);
-//        if (Carr.length == 0 || Darr.length == 0) return false;
-//
-//        int r0 = RankTests.estimateWilksRank(S, Carr, Darr, sampleSize, alpha);
-//        int rCond = RankTests.estimateWilksRankConditioned(S, Carr, Darr, new int[]{v}, sampleSize, alpha);
-//
-//        return (r0 - rCond) >= antiProxyDrop;
-//    }
-
     private void log(String s) {
         if (verbose) TetradLogger.getInstance().log(s);
     }
@@ -1018,21 +943,47 @@ public class Tsc {
         return cluster.stream().map(i -> nodes.get(i).getName()).collect(Collectors.joining(" ", "{", "}"));
     }
 
+    /**
+     * Retrieves the list of clusters. Each cluster is represented as a list of integers, where each integer corresponds
+     * to a variable identifier.
+     *
+     * @return a list of clusters, where each cluster is represented as a list of integers
+     */
     public List<List<Integer>> getClusters() {
         return new ArrayList<>(this.clusters);
     }
 
-    public List<String> getLatentNames() {
-        return new ArrayList<>(this.latentNames);
-    }
-
+    /**
+     * Sets the expected sample size used in calculations. The expected sample size must be either -1, indicating it
+     * should default to the current sample size, or a positive integer greater than 0.
+     *
+     * @param expectedSampleSize the expected sample size to be set. Must be -1 or a positive integer greater than 0.
+     * @throws IllegalArgumentException if the provided expected sample size is not -1 and less than or equal to 0.
+     */
     public void setExpectedSampleSize(int expectedSampleSize) {
         if (!(expectedSampleSize == -1 || expectedSampleSize > 0))
             throw new IllegalArgumentException("Expected sample size = -1 or > 0");
         this.expectedSampleSize = expectedSampleSize == -1 ? sampleSize : expectedSampleSize;
     }
 
-    public enum Mode {Testing, Scoring}
+    /**
+     * Represents the operational modes available for the Tsc class. The mode determines the behavior of corresponding
+     * processing methods, which can perform either testing or scoring operations.
+     */
+    public enum Mode {
+
+        /**
+         * Represents the testing mode for the Tsc class. This mode configures the object's behavior to perform
+         * operations related to testing logic.
+         */
+        Testing,
+
+        /**
+         * Represents the scoring mode for the Tsc class. This mode configures the object's behavior to perform
+         * operations related to scoring logic.
+         */
+        Scoring
+    }
 
     /**
      * @param mMax   max admissible rank

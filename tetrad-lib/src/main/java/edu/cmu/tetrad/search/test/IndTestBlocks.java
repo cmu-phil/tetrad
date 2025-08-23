@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -14,9 +13,8 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Block-level CI test using Wilks-rank. Robust to |Y| < |X| by padding Y from the
- * leftover observed pool and, if needed, by subsetting X to |Y|.
- * Thread-safe LRU caches preserved.
+ * Block-level CI test using Wilks-rank. Robust to |Y| &lt; |X| by padding Y from the leftover observed pool and, if
+ * needed, by subsetting X to |Y|. Thread-safe LRU caches preserved.
  */
 public class IndTestBlocks implements IndependenceTest, BlockTest {
 
@@ -46,10 +44,13 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
     private double alpha = 0.01;
     private boolean verbose = false;
 
-    // NEW knobs: robustness for |Y| < |X|
-    private boolean padY = true;              // try to grow Y from the complement pool
-    private boolean subsetXIfNeeded = true;   // if still |Y| < |X|, shrink X to |Y|
-
+    /**
+     * Constructs an instance of IndTestBlocks using the provided block specification. This class is used for conducting
+     * independence tests based on a dataset's block structure.
+     *
+     * @param blockSpec the block specification containing metadata about blocks, variables, and the associated dataset.
+     *                  Must not be null. Throws IllegalArgumentException if blockSpec is null or invalid.
+     */
     public IndTestBlocks(BlockSpec blockSpec) {
         if (blockSpec == null) throw new IllegalArgumentException("blockSpec == null");
         this.blockSpec = blockSpec;
@@ -98,6 +99,35 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
 
     // === Public API ===
 
+    private static int[] uniqSorted(int[] a) {
+        if (a == null || a.length == 0) return new int[0];
+        int[] b = Arrays.copyOf(a, a.length);
+        Arrays.sort(b);
+        int m = 1;
+        for (int i = 1; i < b.length; i++) if (b[i] != b[m - 1]) b[m++] = b[i];
+        return Arrays.copyOf(b, m);
+    }
+
+    /**
+     * A \ B for sorted int arrays.
+     */
+    private static int[] minus(int[] A, int[] B) {
+        if (A.length == 0) return A;
+        if (B.length == 0) return Arrays.copyOf(A, A.length);
+        int i = 0, j = 0, k = 0;
+        int[] tmp = new int[A.length];
+        while (i < A.length && j < B.length) {
+            if (A[i] < B[j]) tmp[k++] = A[i++];
+            else if (A[i] > B[j]) j++;
+            else {
+                i++;
+                j++;
+            }
+        }
+        while (i < A.length) tmp[k++] = A[i++];
+        return Arrays.copyOf(tmp, k);
+    }
+
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double pValue = getPValue(x, y, z);
@@ -116,22 +146,24 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
     }
 
     @Override
-    public boolean isVerbose() { return this.verbose; }
-    public void setVerbose(boolean verbose) { this.verbose = verbose; }
+    public boolean isVerbose() {
+        return this.verbose;
+    }
 
-    public double getAlpha() { return alpha; }
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    // === Core ===
+
+    public double getAlpha() {
+        return alpha;
+    }
+
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("Alpha must be in (0,1).");
         this.alpha = alpha;  // alpha participates in cache key
     }
-
-    /** Enable/disable padding Y from complement. Default true. */
-    public void setPadY(boolean padY) { this.padY = padY; }
-
-    /** Enable/disable subsetting X to |Y| if still mismatched. Default true. */
-    public void setSubsetXIfNeeded(boolean subsetXIfNeeded) { this.subsetXIfNeeded = subsetXIfNeeded; }
-
-    // === Core ===
 
     private int getEstimatedRank(Node x, Node y, Set<Node> z) {
         KeyParts kp = buildKeyParts(x, y, z);
@@ -169,7 +201,9 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
         return p;
     }
 
-    /** Ensure Y ⟂ Z (by construction), pad Y if needed, subset X if still |Y|<|X|. */
+    /**
+     * Ensure Y ⟂ Z (by construction), pad Y if needed, subset X if still |Y|<|X|.
+     */
     private XY robustifyXY(int[] xCols0, int[] yCols0, int[] zCols) {
         // Deduplicate and sort for determinism
         int[] X = uniqSorted(xCols0);
@@ -183,6 +217,9 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
         }
 
         // If |Y| < |X|, try to pad Y from the complement R = V \ (X ∪ Y ∪ Z)
+        // NEW knobs: robustness for |Y| < |X|
+        // try to grow Y from the complement pool
+        boolean padY = true;
         if (padY && Y.length < X.length) {
             BitSet pool = (BitSet) universeBits.clone();
             for (int v : X) pool.clear(v);
@@ -208,6 +245,8 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
         }
 
         // If still |Y| < |X|, optionally subset X down to |Y|
+        // if still |Y| < |X|, shrink X to |Y|
+        boolean subsetXIfNeeded = true;
         if (subsetXIfNeeded && Y.length > 0 && Y.length < X.length) {
             // deterministic prefix (could also choose by leverage, but keep simple/fast)
             X = Arrays.copyOf(X, Y.length);
@@ -219,36 +258,15 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
         return new XY(X, Y);
     }
 
-    private static int[] uniqSorted(int[] a) {
-        if (a == null || a.length == 0) return new int[0];
-        int[] b = Arrays.copyOf(a, a.length);
-        Arrays.sort(b);
-        int m = 1;
-        for (int i = 1; i < b.length; i++) if (b[i] != b[m - 1]) b[m++] = b[i];
-        return Arrays.copyOf(b, m);
-    }
-
-    /** A \ B for sorted int arrays. */
-    private static int[] minus(int[] A, int[] B) {
-        if (A.length == 0) return A;
-        if (B.length == 0) return Arrays.copyOf(A, A.length);
-        int i = 0, j = 0, k = 0;
-        int[] tmp = new int[A.length];
-        while (i < A.length && j < B.length) {
-            if (A[i] < B[j]) tmp[k++] = A[i++];
-            else if (A[i] > B[j]) j++;
-            else { i++; j++; }
-        }
-        while (i < A.length) tmp[k++] = A[i++];
-        return Arrays.copyOf(tmp, k);
-    }
-
+    /**
+     * Retrieves the block specification associated with this instance of IndTestBlocks.
+     *
+     * @return the block specification containing metadata about blocks, variables, and the associated dataset.
+     */
     @Override
     public BlockSpec getBlockSpec() {
         return blockSpec;
     }
-
-    private record XY(int[] xAdj, int[] yAdj) {}
 
     // Gather indices + build stable key parts
     private KeyParts buildKeyParts(Node x, Node y, Set<Node> z) {
@@ -290,6 +308,9 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
             zblockCache.put(zkey, zCols);
         }
         return new KeyParts(a, b, zVars, xCols, yCols, zCols);
+    }
+
+    private record XY(int[] xAdj, int[] yAdj) {
     }
 
     // === Small, thread-safe LRU (access-order) ===
@@ -340,7 +361,8 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
 
     // === Key bits ===
 
-    private record KeyParts(int a, int b, int[] zVars, int[] xCols, int[] yCols, int[] zCols) {}
+    private record KeyParts(int a, int b, int[] zVars, int[] xCols, int[] yCols, int[] zCols) {
+    }
 
     private static final class PKey {
         final int xVarMin, yVarMax;  // normalized so xVarMin <= yVarMax
@@ -364,6 +386,13 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
             this.hash = h;
         }
 
+        /**
+         * Compares this object with the specified object for equality. Returns true if the specified object is also an
+         * instance of PKey and if all defined fields in both objects are equal.
+         *
+         * @param o the object to compare this PKey instance against
+         * @return true if the specified object is equal to this object; false otherwise
+         */
         @Override
         public boolean equals(Object o) {
             if (!(o instanceof PKey k)) return false;
@@ -371,8 +400,16 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
                    && alphaBits == k.alphaBits && Arrays.equals(zVars, k.zVars);
         }
 
+        /**
+         * Returns the precomputed hash code for this object. The hash code is calculated during object construction
+         * based on the values of the object's fields and remains constant for the lifetime of the object.
+         *
+         * @return the hash code value of this object
+         */
         @Override
-        public int hashCode() { return hash; }
+        public int hashCode() {
+            return hash;
+        }
     }
 
     private static final class ZKey {
@@ -384,13 +421,28 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
             this.hash = Arrays.hashCode(this.zVars);
         }
 
+        /**
+         * Compares this object with the specified object for equality. Two ZKey objects are considered equal if they
+         * have the same array of sorted integers in their zVars fields.
+         *
+         * @param o the object to be compared for equality with this object
+         * @return true if the specified object is equal to this object; false otherwise
+         */
         @Override
         public boolean equals(Object o) {
             if (!(o instanceof ZKey k)) return false;
             return Arrays.equals(zVars, k.zVars);
         }
 
+        /**
+         * Returns the hash code value for this object. The hash code is precomputed during the construction of the
+         * object based on the contents of the sorted array in the zVars field.
+         *
+         * @return the hash code value of this object
+         */
         @Override
-        public int hashCode() { return hash; }
+        public int hashCode() {
+            return hash;
+        }
     }
 }

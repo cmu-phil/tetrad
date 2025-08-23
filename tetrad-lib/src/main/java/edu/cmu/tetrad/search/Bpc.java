@@ -20,13 +20,11 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * within-group dependence. 2) Grow each seed to a local maximal pure group, but DO NOT mark variables as used. 3)
  * Perform global purification/merging passes: - Merge groups when their union remains pure. - Resolve overlaps by
  * globally assigning shared variables to the most compatible group. - Iterate until convergence. 4) Drop groups with
- * fewer than 3 indicators (paper’s Step: remove latents with < 3 children).
+ * fewer than 3 indicators (paper’s Step: remove latents with &lt; 3 children).
  * <p>
  * Notes: - We keep pairwise dependence as a simple Fisher-Z check on correlations. - Purification/overlap resolution
  * uses correlation-based tie-breaking; the paper gives several logically equivalent global rules—this is a practical,
  * deterministic variant.
- * <p>
- * // Pattern‑lite prepass and parallel seed enumeration reduce runtime substantially for larger p.
  */
 public class Bpc {
     /**
@@ -72,6 +70,16 @@ public class Bpc {
     // Pairwise dependence screen (pattern‑lite adjacency)
     private boolean[][] canLink; // set in buildPatternLite()
 
+    /**
+     * Constructor for the Bpc class.
+     *
+     * @param test An instance of NtadTest, which provides variables and methods required for testing tetrad constraints.
+     * @param dataSet A DataSet object containing the data to be used for clustering and correlation analysis.
+     * @param alpha The significance level for tetrad tests, used to determine the tolerance for statistical independence.
+     * @param ess The effective sample size (ESS) which can be set to -1 (indicating sample size) or a positive integer.
+     *            The chosen ESS impacts statistical decisions during the analysis.
+     * @throws IllegalArgumentException if the ess parameter is not -1 or a positive integer.
+     */
     public Bpc(NtadTest test, DataSet dataSet, double alpha, int ess) {
         this.ntadTest = test;
         this.alpha = alpha;
@@ -115,7 +123,13 @@ public class Bpc {
     }
 
     /**
-     * Main entry: find clusters.
+     * Identifies clusters of variables based on tetrad purity and pairwise dependence.
+     * Constructs initial clusters as locally maximal pure groups and refines them using
+     * global purification, merging, and overlap resolution until convergence.
+     *
+     * @return A list of clusters where each cluster is represented as a list of variable indices.
+     *         Each cluster satisfies purity and pairwise dependence constraints, and all groups
+     *         are disjoint after resolving overlaps. Returns an empty list if no valid clusters exist.
      */
     public List<List<Integer>> getClusters() {
         buildPatternLite();

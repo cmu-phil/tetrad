@@ -10,31 +10,35 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Text codec for BlockSpec:
- * - Supports LHS names with optional rank:  L1,  L1(2)
- * - Validates duplicate block names (ERROR)
- * - Warns if #index refers to a named variable (prefer name)
- * - Preserves user-supplied names and ranks; does not reorder blocks
- * - Sorts members within each block (stable) and removes within-line duplicates
+ * Text codec for BlockSpec: - Supports LHS names with optional rank:  L1,  L1(2) - Validates duplicate block names
+ * (ERROR) - Warns if #index refers to a named variable (prefer name) - Preserves user-supplied names and ranks; does
+ * not reorder blocks - Sorts members within each block (stable) and removes within-line duplicates
  */
 public final class BlockSpecTextCodec {
 
-    public enum Severity { ERROR, WARNING }
-    public record Issue(int line, int col, Severity severity, String message, String token) {}
-
     // LHS: name with optional "(rank)"
     private static final Pattern LHS = Pattern.compile("^(?<name>[A-Za-z_][A-Za-z0-9_\\-.]*)(?:\\((?<rank>\\d+)\\))?$");
-
     // Whole line:  optional LHS ":" then RHS
     private static final Pattern LINE =
             Pattern.compile("^\\s*(?:(?<lhs>[A-Za-z_][A-Za-z0-9_\\-.]*(?:\\(\\d+\\))?)\\s*:)?" +
                             "\\s*(?<rhs>.*?)\\s*$");
-
     // RHS tokens: "quoted", #123, or bare
     private static final Pattern TOKEN = Pattern.compile("\"([^\"]*)\"|#(\\d+)|([^,\\s]+)");
 
-    private BlockSpecTextCodec() {}
+    private BlockSpecTextCodec() {
+    }
 
+    /**
+     * Parses an input textual representation of block specifications into a structured format.
+     * <p>
+     * The input text is processed line-by-line to construct a block specification and validate the provided structure.
+     * Lines in the text that are either malformed, contain duplicates, or reference unknown variables are recorded as
+     * issues.
+     *
+     * @param text the input text defining the block specification
+     * @param ds   the dataset providing variable names and their corresponding indices
+     * @return a ParseResult record consisting of a constructed BlockSpec object and a list of encountered issues
+     */
     public static ParseResult parse(String text, DataSet ds) {
         List<List<Integer>> blocks = new ArrayList<>();
         List<Node> blockVars = new ArrayList<>();
@@ -199,7 +203,16 @@ public final class BlockSpecTextCodec {
         return new ParseResult(spec, issues);
     }
 
-    /** Format spec back to text; emits "(r)" only for ranks > 1. */
+    /**
+     * Formats the given BlockSpec object into a textual representation.
+     * <p>
+     * Generates a string description of the block specification, including the names of variables and latent nodes, and
+     * their ranks. The format includes line-by-line grouping of variables associated with blocks, using the structure
+     * of the given BlockSpec object.
+     *
+     * @param spec the BlockSpec object to be formatted
+     * @return a string representing the formatted textual description of the block specification
+     */
     public static String format(BlockSpec spec) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < spec.blocks().size(); i++) {
@@ -224,5 +237,63 @@ public final class BlockSpecTextCodec {
         return sb.toString();
     }
 
-    public record ParseResult(BlockSpec spec, List<Issue> issues) {}
+    /**
+     * Represents the severity level of a condition or situation.
+     * <p>
+     * The severity levels can either be ERROR, indicating a critical issue, or WARNING, indicating a less critical
+     * issue that might still require attention.
+     */
+    public enum Severity {
+
+        /**
+         * Represents a critical issue that requires immediate attention.
+         * <p>
+         * ERROR is used to indicate situations where a significant problem has occurred that needs to be addressed to
+         * ensure proper functionality or operation of the system.
+         */
+        ERROR,
+
+        /**
+         * Represents a less critical issue that might still require attention.
+         * <p>
+         * WARNING indicates a condition or situation that does not prevent the system from functioning but could
+         * potentially lead to issues or requires awareness to maintain optimal operation.
+         */
+        WARNING
+    }
+
+    /**
+     * Represents an issue encountered during the parsing or processing of block specifications.
+     * <p>
+     * An issue captures specific details related to a problem found in the input textual representation of block
+     * specifications. This includes the line and column where the issue occurred, its severity, a descriptive message,
+     * and the token associated with the issue.
+     * <p>
+     * The purpose of this class is to provide a structured way to convey problems that arise during parsing or
+     * validation, allowing for clear identification and resolution of such issues.
+     *
+     * @param line     The line number where the issue occurred. Lines are 1-based indexed.
+     * @param col      The column number where the issue occurred. Columns are 1-based indexed.
+     * @param severity The severity level of the issue, indicating whether it is an error or a warning.
+     * @param message  A descriptive message detailing the nature of the issue.
+     * @param token    The specific token or element in the input that caused the issue.
+     */
+    public record Issue(int line, int col, Severity severity, String message, String token) {
+    }
+
+    /**
+     * Represents the result of parsing a textual representation of a block specification.
+     * <p>
+     * The ParseResult record encapsulates two pieces of information: - A BlockSpec object, which represents the
+     * constructed block specification after parsing. - A list of issues encountered during the parsing process, which
+     * may include errors such as malformed lines, duplicate entries, or references to unknown variables.
+     * <p>
+     * Instances of this record are typically produced by the `parse` method and contain the structured output along
+     * with any issues identified during input processing.
+     *
+     * @param spec   the parsed block specification represented as a BlockSpec object
+     * @param issues a list of issues encountered during parsing
+     */
+    public record ParseResult(BlockSpec spec, List<Issue> issues) {
+    }
 }

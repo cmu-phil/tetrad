@@ -325,21 +325,6 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
     /**
      * <p>Constructor for GeneralizedSemPmWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.BuildPureClustersRunner} object
-     */
-    public GeneralizedSemPmWrapper(BuildPureClustersRunner wrapper) {
-        Graph graph = wrapper.getResultGraph();
-        if (graph == null) {
-            throw new IllegalArgumentException("No graph to display.");
-        }
-        SemPm oldSemPm = new SemPm(graph);
-        this.semPm = new GeneralizedSemPm(oldSemPm);
-        log(this.semPm);
-    }
-
-    /**
-     * <p>Constructor for GeneralizedSemPmWrapper.</p>
-     *
      * @param wrapper a {@link edu.cmu.tetradapp.model.AlgorithmRunner} object
      */
     public GeneralizedSemPmWrapper(AlgorithmRunner wrapper) {
