@@ -183,26 +183,6 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
     /**
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.PurifyRunner} object
-     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
-     */
-    public RemoveNonSkeletonEdgesModel(PurifyRunner wrapper, Parameters params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    /**
-     * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
-     *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
-     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
-     */
-    public RemoveNonSkeletonEdgesModel(MeasurementModelWrapper wrapper, Parameters params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    /**
-     * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
-     *
      * @param input  a {@link KnowledgeBoxInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */

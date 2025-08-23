@@ -1405,24 +1405,6 @@
                 <model-class>edu.cmu.tetradapp.model.FaskForbiddenGraphModel</model-class>
                 <editor-class>edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor</editor-class>
             </model>
-            <!--            <model name="Independence Facts" acronym="IndFacts" help="indfacts">-->
-            <!--                <logger>-->
-            <!--                    <event id="info" description="Information" default="on"/>-->
-            <!--                    <event id="knowledge" description="Knowledge" default="on"/>-->
-            <!--                </logger>-->
-            <!--                <model-class>edu.cmu.tetradapp.model.IndependenceFactsModel</model-class>-->
-            <!--                <editor-class>edu.cmu.tetradapp.knowledge_editor.IndependenceFactsEditor</editor-class>-->
-            <!--            </model>-->
-            <!--            <model name="Measurement Model" acronym="Meas. Model" help="mm"-->
-            <!--                   category="Multiple Indicator Model searches">-->
-            <!--                <logger>-->
-            <!--                    <event id="info" description="Information" default="on"/>-->
-            <!--                    <event id="details" description="Misc Fine Details" default="on"/>-->
-            <!--                </logger>-->
-            <!--                <model-class>edu.cmu.tetradapp.model.MeasurementModelWrapper</model-class>-->
-            <!--                <editor-class>edu.cmu.tetradapp.editor.LatentClustersEditor-->
-            <!--                </editor-class>-->
-            <!--            </model>-->
         </models>
         <display-component image="searchIcon.gif"/>
         <!--<display-component image="graduation_hat1.png"/>-->

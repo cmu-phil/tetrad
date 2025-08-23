@@ -181,26 +181,6 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
     /**
      * <p>Constructor for RequiredGraphModel.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.PurifyRunner} object
-     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
-     */
-    public RequiredGraphModel(PurifyRunner wrapper, Parameters params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    /**
-     * <p>Constructor for RequiredGraphModel.</p>
-     *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
-     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
-     */
-    public RequiredGraphModel(MeasurementModelWrapper wrapper, Parameters params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
-    /**
-     * <p>Constructor for RequiredGraphModel.</p>
-     *
      * @param input  a {@link KnowledgeBoxInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
