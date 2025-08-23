@@ -38,7 +38,7 @@ import java.util.List;
         command = "cstar",
         algoType = AlgType.forbid_latent_common_causes
 )
-public class Cstar implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper, LatentStructureAlgorithm {
+public class Cstar implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 

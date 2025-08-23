@@ -33,7 +33,7 @@ import java.util.List;
 @TimeSeries
 @Bootstrapping
 public class SvarFci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;

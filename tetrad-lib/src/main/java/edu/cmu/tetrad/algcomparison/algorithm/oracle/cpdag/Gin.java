@@ -34,7 +34,7 @@ import java.util.List;
 @Bootstrapping
 @Experimental
 public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
     @Serial
     private static final long serialVersionUID = 23L;
     /**

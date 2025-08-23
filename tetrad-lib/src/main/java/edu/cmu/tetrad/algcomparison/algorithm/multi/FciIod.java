@@ -41,7 +41,7 @@ import java.util.List;
 )
 // Bootstrapping makes no sense here, since the algorithm pools the data from various sources, which may be federated
 // in principle, so we've removed the bootstrapping annotation from it and deleted the bootstrapping code.
-public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper, LatentStructureAlgorithm {
+public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;

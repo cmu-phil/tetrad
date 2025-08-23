@@ -36,7 +36,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
-        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;

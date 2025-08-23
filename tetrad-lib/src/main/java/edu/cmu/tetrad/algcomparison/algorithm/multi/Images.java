@@ -43,7 +43,7 @@ import java.util.List;
         dataType = DataType.All
 )
 @Bootstrapping
-public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWrapper, LatentStructureAlgorithm {
+public class Images implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;

@@ -35,7 +35,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class PcMb extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
-        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
