@@ -58,9 +58,17 @@ public class MimbuildBollen implements Algorithm, ExtraLatentStructureAlgorithm 
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
 
+        if (blockSpec == null) {
+            throw new IllegalArgumentException("Expecting a block specification.");
+        }
+
+        if (!dataSet.equals(blockSpec.dataSet())) {
+            throw new IllegalArgumentException("Expecting the same dataset in the block specification.");
+        }
+
         try {
             edu.cmu.tetrad.search.MimbuildBollen mimbuildBollen
-                    = new edu.cmu.tetrad.search.MimbuildBollen(dataSet, blockSpec.blocks(), blockSpec.blockVariables());
+                    = new edu.cmu.tetrad.search.MimbuildBollen(blockSpec);
             mimbuildBollen.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
             return mimbuildBollen.search();

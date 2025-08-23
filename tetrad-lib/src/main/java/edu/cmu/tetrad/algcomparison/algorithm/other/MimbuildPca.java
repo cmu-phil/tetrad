@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.other;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ExtraLatentStructureAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
@@ -35,9 +34,8 @@ public class MimbuildPca implements Algorithm, ExtraLatentStructureAlgorithm {
     private static final long serialVersionUID = 23L;
 
     /**
-     * Represents the block specification used within the MimbuildPca algorithm.
-     * This variable defines the structure of blocks and the block variables to be used
-     * during the execution of the PCA-based search for latent structure.
+     * Represents the block specification used within the MimbuildPca algorithm. This variable defines the structure of
+     * blocks and the block variables to be used during the execution of the PCA-based search for latent structure.
      */
     private BlockSpec blockSpec;
 
@@ -60,9 +58,17 @@ public class MimbuildPca implements Algorithm, ExtraLatentStructureAlgorithm {
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
 
+        if (blockSpec == null) {
+            throw new IllegalArgumentException("Expecting a block specification.");
+        }
+
+        if (!dataSet.equals(blockSpec.dataSet())) {
+            throw new IllegalArgumentException("Expecting the same dataset in the block specification.");
+        }
+
         try {
             edu.cmu.tetrad.search.MimbuildPca mimbuildPca
-                    = new edu.cmu.tetrad.search.MimbuildPca(dataSet, blockSpec.blocks(), blockSpec.blockVariables());
+                    = new edu.cmu.tetrad.search.MimbuildPca(blockSpec);
             mimbuildPca.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             return mimbuildPca.search();
         } catch (InterruptedException e) {
