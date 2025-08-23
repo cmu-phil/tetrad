@@ -24,7 +24,6 @@ package edu.cmu.tetrad.algcomparison.score;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.Score;
@@ -50,9 +49,9 @@ public class BlocksBicScore implements BlockScoreWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
-     * The data set.
+     * Specifies the block structure for the score calculation. Used to organize variables into predefined blocks for
+     * analysis.
      */
-    private DataModel dataSet;
     private BlockSpec blockSpec;
 
     /**
@@ -62,13 +61,23 @@ public class BlocksBicScore implements BlockScoreWrapper {
 
     }
 
+    /**
+     * Sets the block specification to define the structure for organizing variables into predefined blocks for
+     * analysis.
+     *
+     * @param blockSpec the block specification to be set
+     */
     @Override
     public void setBlockSpec(BlockSpec blockSpec) {
         this.blockSpec = blockSpec;
     }
 
     /**
-     * {@inheritDoc}
+     * Computes and returns a score based on the provided data model and parameter settings.
+     *
+     * @param model      the data model that serves as the basis for the score computation
+     * @param parameters contains configuration and parameter values used during the score computation
+     * @return a {@code Score} object representing the computed result based on the given model and parameters
      */
     @Override
     public Score getScore(DataModel model, Parameters parameters) {
@@ -79,7 +88,10 @@ public class BlocksBicScore implements BlockScoreWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Provides a textual description of the score type.
+     *
+     * @return a string representing the description of the Blocks BIC score, indicating that it requires block
+     * specifications for computation.
      */
     @Override
     public String getDescription() {
@@ -87,7 +99,11 @@ public class BlocksBicScore implements BlockScoreWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the data type associated with this score wrapper.
+     *
+     * @return the data type, which indicates whether the data is continuous, discrete, mixed, or belongs to other
+     * specific categories such as covariance or graph. In this implementation, the data type is
+     * {@code DataType.Mixed}.
      */
     @Override
     public DataType getDataType() {
@@ -95,21 +111,27 @@ public class BlocksBicScore implements BlockScoreWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves a list of parameter keys used in the computation or configuration of the score.
+     *
+     * @return a list of parameter names as strings. These parameters are required for score computation or
+     * configuration and include elements such as penalty discounts or other algorithm-specific settings.
      */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-//        parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.PENALTY_DISCOUNT);
         return parameters;
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves a variable by its name from the associated data set.
+     *
+     * @param name the name of the variable to retrieve
+     * @return the {@code Node} object representing the variable with the specified name, or {@code null} if no such
+     * variable exists
      */
     @Override
     public Node getVariable(String name) {
-        return this.dataSet.getVariable(name);
+        return blockSpec.dataSet().getVariable(name);
     }
 }

@@ -32,6 +32,11 @@ public class MimbuildBollen implements Algorithm, ExtraLatentStructureAlgorithm 
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Represents a specification for blocks used in the Mimbuild Bollen algorithm.
+     * This variable manages the configuration of block-related information, such as
+     * the grouping of variables into blocks or other related structural considerations.
+     */
     private BlockSpec blockSpec;
 
     /**
@@ -64,6 +69,11 @@ public class MimbuildBollen implements Algorithm, ExtraLatentStructureAlgorithm 
         }
     }
 
+    /**
+     * Retrieves the data type required by the algorithm.
+     *
+     * @return The data type required by the algorithm, which in this case is {@code DataType.Mixed}.
+     */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
@@ -79,6 +89,11 @@ public class MimbuildBollen implements Algorithm, ExtraLatentStructureAlgorithm 
         return GraphUtils.undirectedGraph(graph);
     }
 
+    /**
+     * Returns a description of the MimbuildBollen algorithm.
+     *
+     * @return The description of the algorithm.
+     */
     @Override
     public String getDescription() {
         return "Mimbuild Bollen";
@@ -96,10 +111,20 @@ public class MimbuildBollen implements Algorithm, ExtraLatentStructureAlgorithm 
         return parameters;
     }
 
+    /**
+     * Retrieves the block specification associated with the algorithm.
+     *
+     * @return The current block specification of type {@code BlockSpec}.
+     */
     public BlockSpec getBlockSpec() {
         return blockSpec;
     }
 
+    /**
+     * Sets the block specification to be used by the MimbuildBollen algorithm.
+     *
+     * @param blockSpec the block specification of type {@code BlockSpec} to set
+     */
     public void setBlockSpec(BlockSpec blockSpec) {
         this.blockSpec = blockSpec;
     }

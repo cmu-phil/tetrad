@@ -34,6 +34,11 @@ public class MimbuildPca implements Algorithm, ExtraLatentStructureAlgorithm {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Represents the block specification used within the MimbuildPca algorithm.
+     * This variable defines the structure of blocks and the block variables to be used
+     * during the execution of the PCA-based search for latent structure.
+     */
     private BlockSpec blockSpec;
 
     /**
@@ -65,6 +70,11 @@ public class MimbuildPca implements Algorithm, ExtraLatentStructureAlgorithm {
         }
     }
 
+    /**
+     * Retrieves the data type associated with this algorithm.
+     *
+     * @return the data type used by this algorithm, represented as {@link DataType}.
+     */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
@@ -80,6 +90,11 @@ public class MimbuildPca implements Algorithm, ExtraLatentStructureAlgorithm {
         return GraphUtils.undirectedGraph(graph);
     }
 
+    /**
+     * Provides a brief description of the "Mimbuild Pca" algorithm.
+     *
+     * @return A one-line description of the algorithm as a string.
+     */
     @Override
     public String getDescription() {
         return "Mimbuild Pca";
@@ -97,10 +112,20 @@ public class MimbuildPca implements Algorithm, ExtraLatentStructureAlgorithm {
         return parameters;
     }
 
+    /**
+     * Retrieves the block specification for the current instance.
+     *
+     * @return the block specification as an instance of {@link BlockSpec}.
+     */
     public BlockSpec getBlockSpec() {
         return blockSpec;
     }
 
+    /**
+     * Sets the block specification for the current instance.
+     *
+     * @param blockSpec the block specification to be set, represented as an instance of {@link BlockSpec}
+     */
     public void setBlockSpec(BlockSpec blockSpec) {
         this.blockSpec = blockSpec;
     }

@@ -17,14 +17,12 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ExtraLatentStructureAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
@@ -73,54 +71,43 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * The name of the model.
      */
     private final Map<String, Object> userAlgoSelections = new HashMap<>();
-
-    /**
-     * The data model.
-     */
-    private DataWrapper dataWrapper;
-
-    /**
-     * The name of the model.
-     */
-    private String name;
-
-    /**
-     * The wrapped algorithm.
-     */
-    private Algorithm algorithm;
-
-    /**
-     * The params object, so the GUI can remember stuff for logging.
-     */
-    private Parameters parameters;
-
-    /**
-     * The graph source.
-     */
-    private Graph sourceGraph;
-
-    /**
-     * The external graph.
-     */
-    private Graph externalGraph;
-
     /**
      * The graph list.
      */
     List<Graph> graphList = new ArrayList<>();
-
+    BlockSpec blockSpec = null;
+    /**
+     * The data model.
+     */
+    private DataWrapper dataWrapper;
+    /**
+     * The name of the model.
+     */
+    private String name;
+    /**
+     * The wrapped algorithm.
+     */
+    private Algorithm algorithm;
+    /**
+     * The params object, so the GUI can remember stuff for logging.
+     */
+    private Parameters parameters;
+    /**
+     * The graph source.
+     */
+    private Graph sourceGraph;
+    /**
+     * The external graph.
+     */
+    private Graph externalGraph;
     /**
      * The knowledge.
      */
     private Knowledge knowledge;
-
     /**
      * The independence tests.
      */
     private transient List<IndependenceTest> independenceTests;
-
-    BlockSpec blockSpec = null;
-
     /**
      * The elapsed time for the algorithm to run.
      */
@@ -481,55 +468,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         throw new RuntimeException(e);
                     }
                 }
-            } else if (getAlgorithm() instanceof ClusterAlgorithm) {
-                for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
-                    getDataModelList().forEach(dataModel -> {
-                        if (dataModel instanceof ICovarianceMatrix dataSet) {
-
-                            if (algo instanceof TakesGraph) {
-                                ((TakesGraph) algo).setGraph(this.sourceGraph);
-                            }
-
-                            if (this.algorithm instanceof HasKnowledge) {
-                                ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
-                            }
-
-                            Graph graph = null;
-                            try {
-                                graph = this.algorithm.search(dataSet, this.parameters);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-
-                            LayoutUtil.defaultLayout(graph);
-
-                            graphList.add(graph);
-                        } else if (dataModel instanceof DataSet dataSet) {
-
-                            if (!dataSet.isContinuous()) {
-                                throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
-                            }
-
-                            if (algo instanceof TakesGraph) {
-                                ((TakesGraph) algo).setGraph(this.sourceGraph);
-                            }
-
-                            if (this.algorithm instanceof HasKnowledge) {
-                                ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
-                            }
-
-                            Graph graph = null;
-                            try {
-                                graph = this.algorithm.search(dataSet, this.parameters);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                            LayoutUtil.defaultLayout(graph);
-
-                            graphList.add(graph);
-                        }
-                    });
-                }
             } else {
                 if (getDataModelList().size() != 1) {
                     throw new IllegalArgumentException("Expecting a single dataset here.");
@@ -791,8 +729,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.
