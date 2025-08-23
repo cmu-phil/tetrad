@@ -481,7 +481,7 @@ public final class Fcit implements IGraphSearch {
 
         // Revert nodes made latent to latent.
         for (Node node : latents) {
-            node.setNodeType(NodeType.MEASURED);
+            node.setNodeType(NodeType.LATENT);
         }
 
         TetradLogger.getInstance().log("FCIT finished.");
