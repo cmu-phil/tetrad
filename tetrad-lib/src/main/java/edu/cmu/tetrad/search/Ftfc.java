@@ -81,6 +81,8 @@ public class Ftfc {
      * The sextad test to use.
      */
     private final NtadTest test;
+    private final int sampleSize;
+    private final int ess;
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
@@ -105,11 +107,17 @@ public class Ftfc {
      * @param test    The NTad test to use.
      * @param alpha   The alpha significance cutoff.
      */
-    public Ftfc(DataSet dataSet, NtadTest test, double alpha) {
+    public Ftfc(DataSet dataSet, NtadTest test, double alpha, int ess) {
+        if (!(ess == -1 || ess > 0)) {
+            throw new IllegalArgumentException("ESS should be -1 or > 0.");
+        }
+
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.test = test;
         this.corr = new CorrelationMatrix(dataSet);
+        this.sampleSize = this.corr.getSampleSize();
+        this.ess = ess == -1 ? this.sampleSize : ess;
     }
 
     /**

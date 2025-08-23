@@ -25,8 +25,8 @@ public class Wishart extends NtadTest {
      *                     each
      * @param correlations a boolean flag indicating whether to compute correlations.
      */
-    public Wishart(SimpleMatrix df, boolean correlations) {
-        super(df, correlations);
+    public Wishart(SimpleMatrix df, boolean correlations, int ess) {
+        super(df, correlations, ess);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class Wishart extends NtadTest {
         SimpleMatrix S = resample ? computeCorrelations(sampleRows(df, frac)) : this.S;
         int[] a = ntad[0];
         int[] b = ntad[1];
-        int n = resample ? (int) (frac * this.n) : this.n;
+        int n = resample ? (int) (frac * this.ess) : this.ess;
 
         double sigma2 = (double) (n + 1) / (n - 1) * determinant(StatUtils.extractSubMatrix(S, a, a)) * determinant(StatUtils.extractSubMatrix(S, b, b))
                         - determinant(StatUtils.extractSubMatrix(S, concat(a, b), concat(a, b))) / (n - 2);

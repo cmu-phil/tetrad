@@ -73,14 +73,14 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
 
         int testType = parameters.getInt(Params.TETRAD_TEST_FOFC);
         NtadTest test = switch (testType) {
-            case 1 -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
-            case 2 -> new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false);
-            case 3 -> new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false);
-            case 4 -> new Ark(dataSet.getDoubleData().getSimpleMatrix(), 1.0);
-            default -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+            case 1 -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, -1);
+            case 2 -> new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false, -1);
+            case 3 -> new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false, -1);
+            case 4 -> new Ark(dataSet.getDoubleData().getSimpleMatrix(), 1.0, -1);
+            default -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, -1);
         };
 
-        BlockSpec spec = BlockDiscoverers.bpc(dataSet, test, alpha, SingleClusterPolicy.EXCLUDE).discover();
+        BlockSpec spec = BlockDiscoverers.bpc(dataSet, test, alpha, -1, SingleClusterPolicy.EXCLUDE).discover();
         this.blockSpec = spec;
 
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);

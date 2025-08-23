@@ -63,6 +63,8 @@ public class Bpc {
     private final double alphaPairs;
     // Merge gate: allow union only if avg|r| doesn’t drop more than delta from either group
     private final double deltaMerge;
+    private final int ess;
+    private final int sampleSize;
     /**
      * Resulting clusters (indices)
      */
@@ -70,12 +72,19 @@ public class Bpc {
     // Pairwise dependence screen (pattern‑lite adjacency)
     private boolean[][] canLink; // set in buildPatternLite()
 
-    public Bpc(NtadTest test, DataSet dataSet, double alpha) {
+    public Bpc(NtadTest test, DataSet dataSet, double alpha, int ess) {
         this.ntadTest = test;
         this.alpha = alpha;
         this.numVars = test.variables().size();
         this.variableNames = dataSet.getVariableNames();
         this.corr = new CorrelationMatrix(dataSet);
+        this.sampleSize = this.corr.getSampleSize();
+
+        if (!(ess == -1 || ess > 0)) {
+            throw new IllegalArgumentException("esses must be -1 (sample size) or a positive integer");
+        }
+
+        this.ess = ess == -1 ? sampleSize : ess;
 
         // Implementation knobs (paper-faithful defaults)
         this.alphaPairs = Math.min(this.alpha * 2.0, 0.20); // looser than tetrad alpha
@@ -262,7 +271,7 @@ public class Bpc {
             return true;
         }
         // Fallback: direct Fisher-Z checks
-        int n = this.corr.getSampleSize();
+        int n = ess;//this.corr.getSampleSize();
         for (int i = 0; i < cluster.size(); i++) {
             for (int j = i + 1; j < cluster.size(); j++) {
                 double r = this.corr.getValue(cluster.get(i), cluster.get(j));
@@ -281,7 +290,7 @@ public class Bpc {
      */
     private void buildPatternLite() {
         canLink = new boolean[numVars][numVars];
-        int n = this.corr.getSampleSize();
+        int n = ess; //this.corr.getSampleSize();
         for (int i = 0; i < numVars; i++) {
             canLink[i][i] = true;
             for (int j = i + 1; j < numVars; j++) {

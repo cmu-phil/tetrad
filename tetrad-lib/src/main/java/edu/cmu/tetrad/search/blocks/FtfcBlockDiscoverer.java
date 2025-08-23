@@ -15,18 +15,20 @@ public class FtfcBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
     private final NtadTest ntadTest;
     private final double alpha;
+    private final int ess;
     private final SingleClusterPolicy policy;
 
-    public FtfcBlockDiscoverer(DataSet dataSet, NtadTest ntadTest, double alpha, SingleClusterPolicy policy) {
+    public FtfcBlockDiscoverer(DataSet dataSet, NtadTest ntadTest, double alpha, int ess, SingleClusterPolicy policy) {
         this.dataSet = dataSet;
         this.ntadTest = ntadTest;
         this.alpha = alpha;
+        this.ess = ess;
         this.policy = policy;
     }
 
     @Override
     public BlockSpec discover() {
-        Ftfc ftfc = new Ftfc(dataSet, ntadTest, alpha);
+        Ftfc ftfc = new Ftfc(dataSet, ntadTest, alpha, ess);
         List<List<Integer>> blocks = ftfc.findClusters();
 
         BlocksUtil.validateBlocks(blocks, dataSet);

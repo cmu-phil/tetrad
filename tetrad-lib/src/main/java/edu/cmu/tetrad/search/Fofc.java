@@ -86,6 +86,8 @@ public class Fofc {
      * The Tetrad test to use.
      */
     private final NtadTest test;
+    private final int sampleSize;
+    private final int ess;
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
@@ -116,9 +118,11 @@ public class Fofc {
      * @param test    The NTad test to use.
      * @param alpha   The alpha significance cutoff.
      */
-    public Fofc(DataSet dataSet, NtadTest test, double alpha) {
+    public Fofc(DataSet dataSet, NtadTest test, double alpha, int ess) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
+        this.sampleSize = dataSet.getNumRows();
+        this.ess = ess == -1 ? this.sampleSize : ess;
         this.test = test;
         this.dataModel = dataSet;
         this.corr = new CorrelationMatrix(dataSet);

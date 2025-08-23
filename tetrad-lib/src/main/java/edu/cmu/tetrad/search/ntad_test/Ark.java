@@ -35,8 +35,8 @@ public class Ark extends NtadTest {
      *           to the first segment of the split. If the given value is not valid, it is adjusted towards the
      *           complementary split (1 - sp instead of sp). Is the value is 1, the full dataset is used throughout.
      */
-    public Ark(SimpleMatrix df, double sp) {
-        super(df, false);
+    public Ark(SimpleMatrix df, double sp, int ess) {
+        super(df, false, ess);
         this.sp = sp > 0 ? sp : 1 - sp;
         int splitIndex = (int) (this.sp * df.getNumRows());
 
@@ -51,12 +51,12 @@ public class Ark extends NtadTest {
 
         if (resample) {
             SimpleMatrix sampledDf = sampleRows(df, frac);
-            n = sampledDf.getNumRows();
+            n = ess; //sampledDf.getNumRows();
             int splitIndex = (int) (this.sp * n);
             S1 = computeCorrelations(sampledDf.extractMatrix(0, splitIndex, 0, sampledDf.getNumCols()));
             S2 = computeCorrelations(sampledDf.extractMatrix(splitIndex, n, 0, sampledDf.getNumCols()));
         } else {
-            n = this.n;
+            n = this.ess;
             S1 = this.S1;
             S2 = this.S2;
         }

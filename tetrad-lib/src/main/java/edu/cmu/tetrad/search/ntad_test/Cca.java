@@ -30,8 +30,8 @@ public class Cca extends NtadTest {
      * @param correlations a boolean indicating whether the provided data matrix represents correlations (true) or raw
      *                     data (false). If false, the correlation matrix will be computed from the raw data.
      */
-    public Cca(SimpleMatrix df, boolean correlations) {
-        super(df, correlations);
+    public Cca(SimpleMatrix df, boolean correlations, int ess) {
+        super(df, correlations, ess);
     }
 
     /**
@@ -53,7 +53,7 @@ public class Cca extends NtadTest {
         SimpleMatrix S = resample ? computeCorrelations(sampleRows(df, frac)) : this.S;
         int[] a = ntad[0];
         int[] b = ntad[1];
-        int n = resample ? (int) (frac * this.n) : this.n;
+        int n = resample ? (int) (frac * this.ess) : this.ess;
 
         // Use the getCcaPValueRankD method for rank r = 1 (or make r configurable if needed)
         int r = Math.min(a.length, b.length) - 1;

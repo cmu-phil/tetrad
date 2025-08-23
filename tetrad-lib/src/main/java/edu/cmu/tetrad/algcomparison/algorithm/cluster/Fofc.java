@@ -72,17 +72,17 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         int testType = parameters.getInt(Params.TETRAD_TEST_FOFC);
         NtadTest test = switch (testType) {
-            case 1 -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
-            case 2 -> new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false);
-            case 3 -> new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false);
-            case 4 -> new Ark(dataSet.getDoubleData().getSimpleMatrix(), 1.0);
-            default -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+            case 1 -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, -1);
+            case 2 -> new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false, -1);
+            case 3 -> new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false, -1);
+            case 4 -> new Ark(dataSet.getDoubleData().getSimpleMatrix(), 1.0, -1);
+            default -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, -1);
         };
 
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
 
         // === NEW: use the unified FOFC BlockDiscoverer ===
-        BlockDiscoverer discoverer = BlockDiscoverers.fofc(dataSet, test, alpha, SingleClusterPolicy.EXCLUDE);
+        BlockDiscoverer discoverer = BlockDiscoverers.fofc(dataSet, test, alpha, -1, SingleClusterPolicy.EXCLUDE);
         BlockSpec spec = discoverer.discover();
         List<List<Integer>> blocks = new ArrayList<>(spec.blocks());
         this.blockSpec = spec;

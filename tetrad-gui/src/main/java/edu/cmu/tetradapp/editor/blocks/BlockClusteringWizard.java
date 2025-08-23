@@ -58,11 +58,14 @@ public class BlockClusteringWizard extends JPanel {
     private final Parameters parameters;
     private final JPanel parameterBox = new JPanel(new BorderLayout());
     private final Set<String> paramList = new HashSet<>();
+    private final int sampleSize;
 
     public BlockClusteringWizard(DataSet dataSet, String alg, String test, String blockText, Parameters parameters) {
         super(new BorderLayout(8, 8));
         this.dataSet = Objects.requireNonNull(dataSet);
         this.parameters = parameters;
+
+        this.sampleSize = this.dataSet.getNumRows();
 
         // Page 1 (setup)
         Box top = Box.createHorizontalBox();
@@ -71,12 +74,11 @@ public class BlockClusteringWizard extends JPanel {
         cbAlgorithm.setSelectedItem(alg);
         top.add(cbAlgorithm);
 
-        refreshTestChoices();
+        refreshTestChoices(test);
 
         parameterBox.setBorder(new TitledBorder("Parameters"));
 
         top.add(new JLabel("Ntad test:"));
-        cbTetradTest.setSelectedItem(test);
         top.add(cbTetradTest);
         top.add(Box.createHorizontalGlue());
 
@@ -120,7 +122,7 @@ public class BlockClusteringWizard extends JPanel {
 
         // constructor (after building controls, before listeners)
         cbAlgorithm.setSelectedItem(alg);
-        refreshTestChoices();
+        refreshTestChoices(test);
 
         if (!editorPanel.getBlockText().isEmpty()) {
             cards.show(cardPanel, "result");
@@ -128,7 +130,7 @@ public class BlockClusteringWizard extends JPanel {
 
         // listeners
         cbAlgorithm.addActionListener(e -> {
-            refreshTestChoices();
+            refreshTestChoices(test);
             setParamList();
             showParameters();
         });
@@ -222,7 +224,7 @@ public class BlockClusteringWizard extends JPanel {
     }
 
     // Add to class:
-    private void refreshTestChoices() {
+    private void refreshTestChoices(String test) {
         String alg = (String) cbAlgorithm.getSelectedItem();
 
         assert alg != null;
@@ -253,7 +255,11 @@ public class BlockClusteringWizard extends JPanel {
         for (String t : tests) cbTetradTest.addItem(t);
 
         if (!tests.isEmpty()) {
-            cbTetradTest.setSelectedIndex(0);
+            cbTetradTest.setSelectedItem(test);
+
+            if (cbTetradTest.getSelectedItem() == null) {
+                cbTetradTest.setSelectedIndex(0);
+            }
         }
 
         showParameters();
@@ -275,10 +281,13 @@ public class BlockClusteringWizard extends JPanel {
                     return;
                 }
 
-                btnSearch.setEnabled(false);
+//                btnSearch.setEnabled(false);
                 status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : "") + " …");
 
-                BlockDiscoverer discoverer = buildDiscoverer(alg, testName);
+                int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
+                ess = ess == -1 ? dataSet.getNumRows() : ess;
+
+                BlockDiscoverer discoverer = buildDiscoverer(alg, testName, ess);
                 BlockSpec spec = discoverer.discover();
 
                 int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
@@ -311,20 +320,20 @@ public class BlockClusteringWizard extends JPanel {
                     status.setText("Search failed.");
                 }
 
-                btnSearch.setEnabled(true);
+//                btnSearch.setEnabled(true);
             }
         };
     }
 
-    private BlockDiscoverer buildDiscoverer(String alg, String testName) {
+    private BlockDiscoverer buildDiscoverer(String alg, String testName, int ess) {
         NtadTest test = null;
         if (testName != null) {
             switch (testName) {
-                case TEST_BT -> test = new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false);
-                case TEST_WIS -> test = new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false);
+                case TEST_BT -> test = new BollenTing(dataSet.getDoubleData().getSimpleMatrix(),false, ess);
+                case TEST_WIS -> test = new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 // case TEST_ARK -> test = new Ark(...); // still commented out
-                case TEST_CCA -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
-                default -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+                case TEST_CCA -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
+                default -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
             }
         }
 
@@ -335,8 +344,9 @@ public class BlockClusteringWizard extends JPanel {
 
         return switch (alg) {
             case "TSC Test" -> {
-                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA), policy,
-                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE));
+                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA),
+                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy
+                );
             }
             case "TSC Score" -> {
                 yield BlockDiscoverers.tscScore(dataSet, parameters.getDouble(Params.ALPHA),
@@ -346,22 +356,24 @@ public class BlockClusteringWizard extends JPanel {
             }
             case "FOFC" -> {
                 if (test == null) {
-                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false); // sensible default
+                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess); // sensible default
                 }
-                yield BlockDiscoverers.fofc(dataSet, test, parameters.getDouble(Params.ALPHA), policy);
+                yield BlockDiscoverers.fofc(dataSet, test, parameters.getDouble(Params.ALPHA),
+                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy);
             }
             case "BPC" -> {
                 if (test == null) {
-                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 }
-                yield BlockDiscoverers.bpc(dataSet, test, parameters.getDouble(Params.ALPHA), policy);
+                yield BlockDiscoverers.bpc(dataSet, test, parameters.getDouble(Params.ALPHA),
+                        ess, policy);
             }
             case "FTFC" -> {
                 if (test == null || TEST_WIS.equals(testName)) {
                     // enforce: FTFC cannot use Wishart
-                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 }
-                yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA), policy);
+                yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA), ess, policy);
             }
             default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
         };
@@ -378,15 +390,14 @@ public class BlockClusteringWizard extends JPanel {
                 paramList.add(Params.EBIC_GAMMA);
                 paramList.add(Params.REGULARIZATION_LAMBDA);
                 paramList.add(Params.PENALTY_DISCOUNT);
-                paramList.add(Params.EXPECTED_SAMPLE_SIZE);
             }
             case "TSC Test" -> {
                 paramList.add(Params.ALPHA);
-                paramList.add(Params.EXPECTED_SAMPLE_SIZE);
             }
             default -> paramList.add(Params.ALPHA);
         }
 
+        paramList.add(Params.EXPECTED_SAMPLE_SIZE);
         paramList.add(Params.TSC_SINGLETON_POLICY);
     }
 

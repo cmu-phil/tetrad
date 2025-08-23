@@ -60,8 +60,8 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         double alpha = parameters.getDouble(Params.ALPHA);
 
         assert dataSet instanceof DataSet;
-        Cca cca = new Cca(((DataSet) dataSet).getDoubleData().getSimpleMatrix(), false);
-        BlockSpec spec = BlockDiscoverers.ftfc((DataSet) dataSet, cca, alpha, SingleClusterPolicy.EXCLUDE).discover();
+        Cca cca = new Cca(((DataSet) dataSet).getDoubleData().getSimpleMatrix(), false, -1);
+        BlockSpec spec = BlockDiscoverers.ftfc((DataSet) dataSet, cca, alpha, -1, SingleClusterPolicy.EXCLUDE).discover();
 
         this.blockSpec = spec;
 

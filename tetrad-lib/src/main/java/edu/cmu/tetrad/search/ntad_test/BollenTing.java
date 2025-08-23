@@ -23,8 +23,8 @@ public class BollenTing extends NtadTest {
      * @param df the input data matrix as a SimpleMatrix object, where each row represents an observation and each
      *           column represents a variable.
      */
-    public BollenTing(SimpleMatrix df) {
-        this(df, false);
+    public BollenTing(SimpleMatrix df, int ess) {
+        this(df, false, ess);
     }
 
     /**
@@ -37,8 +37,8 @@ public class BollenTing extends NtadTest {
      * @param correlations a boolean flag that determines whether the input matrix is treated as a correlation matrix
      *                     (true) or as raw data from which correlations should be calculated (false).
      */
-    public BollenTing(SimpleMatrix df, boolean correlations) {
-        super(df, correlations);
+    public BollenTing(SimpleMatrix df, boolean correlations, int ess) {
+        super(df, correlations, ess);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class BollenTing extends NtadTest {
     @Override
     public double ntads(List<int[][]> ntads, boolean resample, double frac) {
         SimpleMatrix S = resample ? computeCorrelations(sampleRows(df, frac)) : this.S;
-        int n = resample ? (int) (frac * this.n) : this.n;
+        int n = resample ? (int) (frac * this.ess) : this.ess;
 
         Set<Integer> V = new HashSet<>();
         for (int[][] tet : ntads) {

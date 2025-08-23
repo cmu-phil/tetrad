@@ -75,6 +75,8 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
     private String alg = "FOFC";
     private String test = "CCA";
     private String blockText = "";
+    private int sampleSize;
+    private int ess;
 
     //===========================CONSTRUCTORS===========================//
 
@@ -88,6 +90,9 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         this.dataWrapper = dataWrapper;
         this.parameters = parameters;
         this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
+        this.sampleSize = dataSet.getNumRows();
+        int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
+        this.ess = ess == -1 ? this.sampleSize : ess;
     }
 
     //============================PUBLIC METHODS==========================//
@@ -246,11 +251,11 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
 
         if (testName != null) {
             switch (testName) {
-                case TEST_BT -> test = new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false);
-                case TEST_WIS -> test = new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false);
+                case TEST_BT -> test = new BollenTing(dataSet.getDoubleData().getSimpleMatrix(),false, ess);
+                case TEST_WIS -> test = new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 // case TEST_ARK -> test = new Ark(...); // still commented out
-                case TEST_CCA -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
-                default -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+                case TEST_CCA -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
+                default -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
             }
         }
 
@@ -259,8 +264,8 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
 
         return switch (alg) {
             case "TSC Test" -> {
-                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA), policy,
-                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE));
+                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA), parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy
+                );
             }
             case "TSC Score" -> {
                 yield BlockDiscoverers.tscScore(dataSet, parameters.getDouble(Params.ALPHA),
@@ -270,22 +275,22 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
             }
             case "FOFC" -> {
                 if (test == null) {
-                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false); // sensible default
+                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess); // sensible default
                 }
-                yield BlockDiscoverers.fofc(dataSet, test, parameters.getDouble(Params.ALPHA), policy);
+                yield BlockDiscoverers.fofc(dataSet, test, parameters.getDouble(Params.ALPHA), ess, policy);
             }
             case "BPC" -> {
                 if (test == null) {
-                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 }
-                yield BlockDiscoverers.bpc(dataSet, test, parameters.getDouble(Params.ALPHA), policy);
+                yield BlockDiscoverers.bpc(dataSet, test, parameters.getDouble(Params.ALPHA), ess, policy);
             }
             case "FTFC" -> {
                 if (test == null || TEST_WIS.equals(testName)) {
                     // enforce: FTFC cannot use Wishart
-                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 }
-                yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA), policy);
+                yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA), ess, policy);
             }
             default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
         };

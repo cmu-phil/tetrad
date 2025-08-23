@@ -20,8 +20,9 @@ import static java.lang.Math.sqrt;
  */
 public abstract class NtadTest {
     protected SimpleMatrix df;
-    protected int n;
     protected int p;
+    protected int sampleSize;
+    protected int ess;
     protected SimpleMatrix S;
 
     /**
@@ -33,9 +34,14 @@ public abstract class NtadTest {
      * @param correlations a boolean flag indicating whether the provided matrix is a covariance matrix (true) or raw
      *                     data requiring covariance computation (false)
      */
-    public NtadTest(SimpleMatrix df, boolean correlations) {
+    public NtadTest(SimpleMatrix df, boolean correlations, int ess) {
+        if (!(ess == -1  || ess > 1)) {
+            throw new IllegalArgumentException("Ess should be -1 or > 0: " + ess);
+        }
+
         this.df = df;
-        this.n = df.getNumRows();
+        this.sampleSize = df.getNumRows();
+        this.ess = ess == -1 ? this.sampleSize : ess;
         this.p = df.getNumCols();
 
         if (correlations) {
