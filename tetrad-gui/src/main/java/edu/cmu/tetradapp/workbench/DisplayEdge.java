@@ -80,7 +80,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      */
     protected static final int HALF_ANCHORED = 0;
     /**
-     * Indicates that both ends of the edge are anchored to components.  The edge will move when those components move.
+     * Indicates that both ends of the edg  e are anchored to components.  The edge will move when those components move.
      */
     protected static final int ANCHORED_UNSELECTED = 1;
     /**

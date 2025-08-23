@@ -61,7 +61,9 @@ public class DataGraphUtils {
         List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numStructuralNodes; i++) {
-            vars.add(new ContinuousVariable("X" + (i + 1)));
+            ContinuousVariable var = new ContinuousVariable("L" + (i + 1));
+            var.setNodeType(NodeType.LATENT);
+            vars.add(var);
         }
 
         Graph dag;
@@ -96,20 +98,7 @@ public class DataGraphUtils {
                                   int numMeasuredMeasuredImpureParents,
                                   int numMeasuredMeasuredImpureAssociations, boolean arrangeGraph) {
         EdgeListGraph graph1 = new EdgeListGraph(graph);
-//        Graph graph1 = graph;
-
-        List<Node> latents = graph1.getNodes();
-
-        for (Node latent : latents) {
-            latent.setNodeType(NodeType.LATENT);
-
-            if (!(latent.getNodeType() == NodeType.LATENT)) {
-                throw new IllegalArgumentException("Expected latent.");
-            }
-
-            String newName = "L." + latent.getName();
-            graph1.changeName(latent.getName(), newName);
-        }
+        List<Node> latents = graph.getNodes();
 
         int measureIndex = 0;
 

@@ -3016,6 +3016,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             Object oldValue = e.getOldValue();
             Object newValue = e.getNewValue();
 
+            System.out.println("Property change: " + propName + " from " + oldValue + " to " + newValue);
+
             if ("nodeAdded".equals(propName)) {
                 this.workbench.addNode((Node) newValue);
                 addLast(workbench.getGraph());
