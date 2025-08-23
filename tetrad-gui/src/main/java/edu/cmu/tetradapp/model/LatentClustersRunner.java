@@ -35,7 +35,6 @@ import edu.cmu.tetrad.util.Unmarshallable;
 import edu.cmu.tetradapp.session.Executable;
 import edu.cmu.tetradapp.session.ParamsResettable;
 import edu.cmu.tetradapp.session.SessionModel;
-import edu.cmu.tetradapp.util.WatchedProcess;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -251,7 +250,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
 
         if (testName != null) {
             switch (testName) {
-                case TEST_BT -> test = new BollenTing(dataSet.getDoubleData().getSimpleMatrix(),false, ess);
+                case TEST_BT -> test = new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 case TEST_WIS -> test = new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 // case TEST_ARK -> test = new Ark(...); // still commented out
                 case TEST_CCA -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
@@ -299,23 +298,20 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
     @Override
     public void execute() throws Exception {
 
-        new WatchedProcess() {
-            public void watch() {
-                BlockDiscoverer discoverer = buildDiscoverer(alg, test);
-                BlockSpec spec = discoverer.discover();
+        // This can't be put into a watch thread because downstream session nodes are counting on
+        // a block spec being set when propagating downstream. jdramsey 2025-8-23
+        BlockDiscoverer discoverer = buildDiscoverer(alg, test);
+        BlockSpec spec = discoverer.discover();
 
-                int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
-                SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
+        int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
+        SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
 
-                if (policy == SingleClusterPolicy.NOISE_VAR) {
-                    spec = BlocksUtil.renameLastVarAsNoise(spec);
-                }
+        if (policy == SingleClusterPolicy.NOISE_VAR) {
+            spec = BlocksUtil.renameLastVarAsNoise(spec);
+        }
 
-                setBlockText(BlockSpecTextCodec.format(spec));
+        setBlockText(BlockSpecTextCodec.format(spec));
 
-                setBlockSpec(spec);
-            }
-        };
-
+        setBlockSpec(spec);
     }
 }
