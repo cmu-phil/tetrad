@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ntad_test.BollenTing;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
-import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.search.utils.Sextad;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -651,7 +650,7 @@ public class Ftfc {
         List<Node> latentsA = new ArrayList<>();
 
         for (int i = 0; i < clusters.size(); i++) {
-            Node latentA = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1) + ".A");
+            Node latentA = new GraphNode("L" + (i + 1) + ".A");
             latentA.setNodeType(NodeType.LATENT);
             latentsA.add(latentA);
             graph.addNode(latentA);
@@ -660,7 +659,7 @@ public class Ftfc {
         List<Node> latentsB = new ArrayList<>();
 
         for (int i = 0; i < clusters.size(); i++) {
-            Node latentB = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1) + ".B");
+            Node latentB = new GraphNode("L" + (i + 1) + ".B");
             latentB.setNodeType(NodeType.LATENT);
             latentsB.add(latentB);
             graph.addNode(latentB);

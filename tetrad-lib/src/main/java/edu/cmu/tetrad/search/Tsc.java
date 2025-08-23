@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -917,7 +916,7 @@ public class Tsc {
             int rank = ranks.get(clusters.get(i));
             Integer reduced = reducedRank.get(clusters.get(i));
             String rankSpec = rank + (reduced == null ? "" : ";" + reduced);
-            Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1) + "(" + rankSpec + ")");
+            Node latent = new GraphNode("L" + (i + 1) + "(" + rankSpec + ")");
             latent.setNodeType(NodeType.LATENT);
             latents.add(latent);
         }

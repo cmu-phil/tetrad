@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -66,13 +65,6 @@ public interface MimRunner extends SessionModel, Executable {
      * @return the graph that results from executing the algorithm, if the algorithm has been successfully executed.
      */
     Graph getResultGraph();
-
-    /**
-     * <p>getClusters.</p>
-     *
-     * @return the clusters that resulted from executing the algorithm, if the algorithm was successfully executed.
-     */
-    Clusters getClusters();
 
     /**
      * <p>getStructureGraph.</p>

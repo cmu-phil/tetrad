@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ntad_test.BollenTing;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
-import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -615,7 +614,7 @@ public class Fofc {
         List<Set<Node>> _clusters = new ArrayList<>(clusters);
 
         for (int i = 0; i < _clusters.size(); i++) {
-            Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
+            Node latent = new GraphNode("L" + (i + 1));
             latent.setNodeType(NodeType.LATENT);
             latents.add(latent);
             graph.addNode(latent);
