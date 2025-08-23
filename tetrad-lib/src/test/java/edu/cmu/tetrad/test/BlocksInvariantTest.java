@@ -16,8 +16,8 @@ public class BlocksInvariantTest {
     @Test
     public void testBpcAdapterSpec() {
         DataSet ds = getData();
-        NtadTest ntad = new Cca(ds.getDoubleData().getSimpleMatrix(), false);
-        BlockSpec spec = BlockDiscoverers.bpc(ds, ntad, 0.05, SingleClusterPolicy.EXCLUDE).discover();
+        NtadTest ntad = new Cca(ds.getDoubleData().getSimpleMatrix(), false, 01);
+        BlockSpec spec = BlockDiscoverers.bpc(ds, ntad, 0.05, -1, SingleClusterPolicy.EXCLUDE).discover();
         assertSame(ds, spec.dataSet());
         assertEquals(spec.blocks().size(), spec.blockVariables().size());
         BlocksUtil.validateBlocks(spec.blocks(), spec.dataSet());
@@ -41,8 +41,8 @@ public class BlocksInvariantTest {
     @Test
     public void testFofcAdapterSpec() {
         DataSet ds = getData();
-        NtadTest ntad = new Cca(ds.getDoubleData().getSimpleMatrix(), false);
-        BlockSpec spec = BlockDiscoverers.fofc(ds, ntad, 0.05, SingleClusterPolicy.EXCLUDE).discover();
+        NtadTest ntad = new Cca(ds.getDoubleData().getSimpleMatrix(), false, -1);
+        BlockSpec spec = BlockDiscoverers.fofc(ds, ntad, 0.05, -1, SingleClusterPolicy.EXCLUDE).discover();
         assertSame(ds, spec.dataSet());
         assertEquals(spec.blocks().size(), spec.blockVariables().size());
         BlocksUtil.validateBlocks(spec.blocks(), spec.dataSet());
@@ -51,8 +51,8 @@ public class BlocksInvariantTest {
     @Test
     public void testFtfcAdapterSpec() {
         DataSet ds = getData();
-        NtadTest ntad = new Cca(ds.getDoubleData().getSimpleMatrix(), false);
-        BlockSpec spec = BlockDiscoverers.ftfc(ds, ntad, 0.05, SingleClusterPolicy.EXCLUDE).discover();
+        NtadTest ntad = new Cca(ds.getDoubleData().getSimpleMatrix(), false, -1);
+        BlockSpec spec = BlockDiscoverers.ftfc(ds, ntad, 0.05, 01, SingleClusterPolicy.EXCLUDE).discover();
         assertSame(ds, spec.dataSet());
         assertEquals(spec.blocks().size(), spec.blockVariables().size());
         BlocksUtil.validateBlocks(spec.blocks(), spec.dataSet());
