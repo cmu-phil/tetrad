@@ -144,8 +144,6 @@ public class DataGraphUtils {
 
             // These can't create cycles.
             graph1.addDirectedEdge(latent, measure);
-
-//            System.out.println("Latent to  measured: " + graph.getEdge(latent,  measure));
         }
 
         // Measured-->measured.
