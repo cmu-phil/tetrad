@@ -7,8 +7,23 @@ import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import java.util.List;
 
 /**
- * Adapter: BPC -> BlockSpec (blocks of observed indices + one Node per block).
- * Assumes Bpc#findClusters() returns List<List<Integer>> (indices).
+ * The {@code BpcBlockDiscoverer} class is an implementation of the {@code BlockDiscoverer} interface, designed to
+ * discover clusters or "blocks" of indices within a dataset using the BPC (Bayesian Partitioning for Causal Discovery)
+ * algorithm. This class leverages statistical testing and clustering policies to identify and refine meaningful
+ * groupings of variables.
+ * <p>
+ * The discovery process involves utilizing BPC with a specified statistical test, significance threshold, and
+ * equivalent sample size to generate initial clusters. These clusters are then adjusted and validated according to
+ * predefined policies and canonicalization techniques.
+ * <p>
+ * Core functionality: - Discovers blocks of indices from a dataset using the BPC algorithm. - Validates and
+ * canonicalizes the resulting clusters to ensure consistency and correctness. - Applies a single-cluster policy to
+ * manage merging or refinement of blocks based on the given policy.
+ * <p>
+ * Constructor parameters: - {@code dataSet}: The data on which block discovery is performed. - {@code ntadTest}: The
+ * statistical test used by the BPC algorithm. - {@code alpha}: The significance threshold for the statistical test in
+ * BPC. - {@code ess}: The equivalent sample size parameter used in the BPC algorithm. - {@code policy}: The policy
+ * applied to adjust or refine single clusters during block discovery.
  */
 public class BpcBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
@@ -17,6 +32,16 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
     private final int ess;
     private final SingleClusterPolicy policy;
 
+    /**
+     * Constructor for the {@code BpcBlockDiscoverer} class, responsible for initiating the discovery of clusters or
+     * blocks of indices within a dataset using the BPC (Bayesian Partitioning for Causal Discovery) algorithm.
+     *
+     * @param dataSet  the dataset on which block discovery is performed
+     * @param ntadTest the statistical test used by the BPC algorithm
+     * @param alpha    the significance threshold for the statistical test in BPC
+     * @param ess      the equivalent sample size parameter used in the BPC algorithm
+     * @param policy   the policy applied to adjust or refine single clusters during block discovery
+     */
     public BpcBlockDiscoverer(DataSet dataSet, NtadTest ntadTest, double alpha, int ess, SingleClusterPolicy policy) {
         this.dataSet = dataSet;
         this.ntadTest = ntadTest;
@@ -25,6 +50,17 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
         this.policy = policy;
     }
 
+    /**
+     * Discovers and returns the specification of blocks (clusters of indices) within the dataset using the Bayesian
+     * Partitioning for Causal Discovery (BPC) algorithm.
+     * <p>
+     * The method: - Applies the BPC algorithm to find initial clusters based on the provided dataset, statistical test,
+     * significance threshold, and equivalent sample size. - Canonicalizes the discovered clusters for consistency. -
+     * Refines the clusters using the defined single-cluster policy. - Converts the resulting clusters into a BlockSpec
+     * object for further use.
+     *
+     * @return the discovered block specification, which encapsulates the refined and canonicalized cluster structure
+     */
     @Override
     public BlockSpec discover() {
         Bpc bpc = new Bpc(ntadTest, dataSet, alpha, ess);

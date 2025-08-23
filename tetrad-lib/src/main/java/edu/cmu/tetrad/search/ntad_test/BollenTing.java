@@ -16,12 +16,13 @@ import java.util.*;
 public class BollenTing extends NtadTest {
 
     /**
-     * Constructs a BollenTing object for performing statistical operations based on the given data matrix. This
-     * constructor initializes the instance using the input data matrix and sets a default value for the correlations
-     * flag (false), meaning the correlation matrices will be computed from the input data.
+     * Constructs a BollenTing object for performing statistical operations. This constructor initializes the instance
+     * using a data matrix and assumes the input matrix is treated as raw data from which correlations should be
+     * calculated.
      *
-     * @param df the input data matrix as a SimpleMatrix object, where each row represents an observation and each
-     *           column represents a variable.
+     * @param df  the input data matrix as a SimpleMatrix object, where each row represents an observation and each
+     *            column represents a variable.
+     * @param ess an integer value representing the effective sample size used in statistical computations.
      */
     public BollenTing(SimpleMatrix df, int ess) {
         this(df, false, ess);
@@ -41,11 +42,35 @@ public class BollenTing extends NtadTest {
         super(df, correlations, ess);
     }
 
+    /**
+     * Computes the NTAD statistic for a given 2D array of integer pairs. The method determines the fit of specified
+     * pairs in the provided NTAD based on correlation computations and statistical distribution measures. An optional
+     * flag allows for resampling based on input data with a specified fraction, altering the results dynamically.
+     *
+     * @param ntad     a 2D array where each sub-array contains pairs of integers indicating relationships to evaluate.
+     * @param resample a boolean flag that specifies whether the computations should involve resampling the data.
+     * @param frac     a double representing the fraction of the data to use if resampling is enabled.
+     * @return a double value representing the NTAD significance statistic, indicating fit or anomalies.
+     */
     @Override
     public double ntad(int[][] ntad, boolean resample, double frac) {
         return ntads(Collections.singletonList(ntad), resample, frac);
     }
 
+    /**
+     * Computes the NTADS for a given list of NTAD (Non-Testable Assumption Detection) structures. Each NTAD structure
+     * is represented as a 2D array of integer pairs, where each pair denotes a set of variables to evaluate. This
+     * method calculates the NTADS significance statistic using correlation matrices and chi-squared distribution for
+     * hypothesis testing. It optionally supports resampling to dynamically alter the effective sample size.
+     *
+     * @param ntads    a list of 2D arrays, where each 2D array contains integer pairs representing the NTAD structures
+     *                 to evaluate
+     * @param resample a boolean flag indicating whether resampling of the data rows should be performed for the
+     *                 calculations
+     * @param frac     a double representing the fraction of the data to sample when resampling is enabled
+     * @return a double value representing the NTADS significance statistic, with a higher value indicating a better fit
+     * or reduced anomalies
+     */
     @Override
     public double ntads(List<int[][]> ntads, boolean resample, double frac) {
         SimpleMatrix S = resample ? computeCorrelations(sampleRows(df, frac)) : this.S;
@@ -102,6 +127,14 @@ public class BollenTing extends NtadTest {
         return 1 - new ChiSquaredDistribution(ntads.size()).cumulativeProbability(T);
     }
 
+    /**
+     * Computes the NTAD statistic for a given 2D array of integer pairs. This method packages the single NTAD structure
+     * into a list and delegates the computation to the NTADS method.
+     *
+     * @param ntad a 2D array where each sub-array contains pairs of integers representing relationships to evaluate.
+     * @return a double value representing the NTAD significance statistic, based on the evaluation of the provided
+     * structure.
+     */
     @Override
     public double ntad(int[][] ntad) {
         List<int[][]> tetList = new ArrayList<>();
@@ -109,6 +142,16 @@ public class BollenTing extends NtadTest {
         return ntads(tetList);
     }
 
+    /**
+     * Computes the NTADS (Non-Testable Assumption Detection Score) for a given set of NTAD structures, each passed as a
+     * 2D array. This method converts variable-length NTAD arrays into a list and delegates the computation to the
+     * overloaded ntads method.
+     *
+     * @param ntads a variable-length array where each element is a 2D array containing integer pairs that define the
+     *              NTAD structures to evaluate.
+     * @return a double value representing the NTADS significance statistic, with a higher value indicating a better fit
+     * or reduced anomalies.
+     */
     @Override
     public double ntads(int[][]... ntads) {
         List<int[][]> tetList = new ArrayList<>();

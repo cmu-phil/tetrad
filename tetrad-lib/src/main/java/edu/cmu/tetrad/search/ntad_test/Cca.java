@@ -4,7 +4,6 @@ import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,12 +22,14 @@ import java.util.List;
 public class Cca extends NtadTest {
 
     /**
-     * Constructs a new Cca object based on the provided data matrix and correlation option.
+     * Constructs a Cca object with the provided data matrix, covariance flag, and sample size.
      *
      * @param df           the input data matrix as a SimpleMatrix object, where each row represents an observation and
-     *                     each column represents a variable.
-     * @param correlations a boolean indicating whether the provided data matrix represents correlations (true) or raw
-     *                     data (false). If false, the correlation matrix will be computed from the raw data.
+     *                     each column represents a variable
+     * @param correlations a boolean flag indicating whether the provided matrix is a covariance matrix (true) or raw
+     *                     data requiring covariance computation (false)
+     * @param ess          the effective sample size (ess), which should be -1 or greater than 1. If -1, the sample size
+     *                     of the data matrix is used.
      */
     public Cca(SimpleMatrix df, boolean correlations, int ess) {
         super(df, correlations, ess);
@@ -60,6 +61,16 @@ public class Cca extends NtadTest {
         return RankTests.rankLeByWilks(S, a, b, n, r);
     }
 
+    /**
+     * Computes the aggregate statistical measure based on a list of tetrad configurations. Each configuration specifies
+     * sets of indices representing structural relationships among variables. This method internally calls the
+     * overloaded version of `ntad` with optional resampling set to false and uses a default fraction of 1 for
+     * processing.
+     *
+     * @param ntad a list of 2D integer arrays where each array contains multiple tetrad configurations. Each
+     *             configuration defines sets of indices representing structural relationships among variables.
+     * @return a double value representing the sum of the statistical measures for all provided tetrad configurations.
+     */
     @Override
     public double ntad(int[][] ntad) {
         return ntad(ntad, false, 1);

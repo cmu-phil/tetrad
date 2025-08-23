@@ -3,7 +3,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -20,17 +19,22 @@ import java.util.stream.LongStream;
 import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
 
 /**
- * Implements Trek Separation algorithm for finding latent variable clusters.
+ * The TscScored class provides methods and mechanisms to perform rank-based cluster search operations under statistical
+ * constraints. This class supports scoring and enumeration of clusters using RCCA methods and provides a combination of
+ * cached computation and configurable scoring parameters to optimize search efficiency. It is designed for use in
+ * latent variable modeling and cluster discovery in high-dimensional datasets.
  */
 public class Tsc {
-
-    // ---- existing fields (unchanged) ----
     private static final java.util.concurrent.ConcurrentHashMap<Long, long[][]> BINOM_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
     private final List<Node> nodes;
     private final List<Integer> variables;
     private final int sampleSize;
     private final SimpleMatrix S;
     private final Map<Key, Integer> rankCache = new ConcurrentHashMap<>();
+    private final Map<Key, Integer> scoredRankCache = new ConcurrentHashMap<>();
+    private final Map<Long, ScoreSweep> sweepCache = new java.util.concurrent.ConcurrentHashMap<>();
+    private final boolean prefilterByWilkes = true;
+    private int expectedSampleSize = -1;
     private double alpha = 0.01;
     private boolean includeAllNodes = false;
     private boolean verbose = false;
@@ -39,17 +43,59 @@ public class Tsc {
     private Map<Set<Integer>, Integer> clusterToRank;
     private Map<Set<Integer>, Integer> reducedRank;
 
-    // ---- ctor ----
-    public Tsc(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
+    /**
+     * RCCA ridge regularizer used in RankTests.getRccaEntry.
+     */
+    private double ridge = 1e-8;
+    /**
+     * BIC penalty discount c (1.0 = standard BIC).
+     */
+    private double penaltyDiscount = 1.0;
+    /**
+     * EBIC gamma (0 disables EBIC term).
+     */
+    private double ebicGamma = 0.0;
+    /**
+     * Optional margin: require sc(k*) >= sc(k*±1) + margin.
+     */
+    private double scoreMargin = 0.0;
+    /**
+     * Represents the operational mode of the TscScored class.
+     *
+     * The `mode` variable determines whether the algorithm functions in a
+     * testing mode or a scoring mode. In `Mode.Testing`, the operations focus
+     * on hypothesis tests, while in `Mode.Scoring`, the focus is on scoring
+     * clusters based on their statistical properties.
+     *
+     * Default value: `Mode.Testing`.
+     */
+    private Mode mode = Mode.Testing;
+
+    /**
+     * Constructs an instance of the TscScored class using the provided variables and covariance matrix.
+     *
+     * @param variables a list of Node elements representing variables to be included in the scoring process
+     * @param cov a CovarianceMatrix object representing the covariance matrix associated with the variables
+     */
+    public Tsc(List<Node> variables, CovarianceMatrix cov) {
         this.nodes = new ArrayList<>(variables);
-        this.sampleSize = sampleSize;
         this.variables = new ArrayList<>(variables.size());
         for (int i = 0; i < variables.size(); i++) this.variables.add(i);
         this.S = new CovarianceMatrix(cov).getMatrix().getSimpleMatrix();
+        this.sampleSize = cov.getSampleSize();
     }
 
-    // ---- binom machinery, combinadic, etc. (unchanged) ----
-    static long[][] precomputeBinom(int n, int k) { /* ... unchanged ... */
+    /**
+     * Precomputes the binomial coefficients using dynamic programming. The method
+     * generates a table of binomial coefficients C[n][k] for 0 <= n <= input n and
+     * 0 <= k <= input k. It ensures values are capped at Long.MAX_VALUE to handle
+     * potential overflow scenarios.
+     *
+     * @param n the maximum row index for which binomial coefficients are to be computed
+     * @param k the maximum column index for which binomial coefficients are to be computed
+     * @return a 2D array where the value at C[i][j] represents the binomial coefficient "i choose j"
+     */
+     private static long[][] precomputeBinom(int n, int k) { /* ... unchanged ... */
         long[][] C = new long[n + 1][k + 1];
         for (int i = 0; i <= n; i++) {
             C[i][0] = 1;
@@ -63,7 +109,15 @@ public class Tsc {
         return C;
     }
 
-    static long choose(long[][] C, int x, int j) {
+    /**
+     * Computes a binomial coefficient using a precomputed table.
+     *
+     * @param C a precomputed 2D array representing binomial coefficients, where C[i][j] = "i choose j"
+     * @param x the first parameter of the binomial coefficient
+     * @param j the second parameter of the binomial coefficient
+     * @return the binomial coefficient "x choose j" if 0 <= j <= x; otherwise, returns 0
+     */
+     private static long choose(long[][] C, int x, int j) {
         if (x < j || j < 0) return 0L;
         return C[x][j];
     }
@@ -94,27 +148,47 @@ public class Tsc {
         }
     }
 
-    // ---- NEW helpers for optional guard ---------------------------------------
-    static int[] makeRightSide(int p, int[] C, int[] X) {
-        BitSet bs = new BitSet(); // start with V \ C
-        for (int i = 0; i < p; i++) bs.set(i);
-        for (int v : C) bs.clear(v);
-        // union X
-        for (int v : X) bs.set(v);
-        int n = bs.cardinality();
-        int[] out = new int[n];
-        for (int i = bs.nextSetBit(0), k = 0; i >= 0; i = bs.nextSetBit(i + 1)) out[k++] = i;
-        return out;
+    /**
+     * Sets the mode for the TscScored instance. The mode determines the operational
+     * behavior of the TscScored class, selecting between Testing or Scoring modes.
+     *
+     * @param mode the operational mode to be set, where mode must be an instance of the
+     *             {@code Mode} enum (either {@code Mode.Testing} or {@code Mode.Scoring})
+     */
+    public void setMode(Mode mode) {
+        this.mode = mode;
     }
 
-    // ---- New fast variant: enumerate k-combos of vars and test ranks -----------
-    private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
+    /**
+     * Simple 64-bit key from the two arrays; stable across calls for same content.
+     */
+    private long pairKey(int[] C, int[] D) {
+        int h1 = Arrays.hashCode(C);
+        int h2 = Arrays.hashCode(D);
+        long k = 1469598103934665603L;       // FNV offset basis
+        k ^= h1;
+        k *= 1099511628211L;                 // FNV prime
+        k ^= h2;
+        k *= 1099511628211L;
+        return k;
+    }
+
+    /**
+     * Cached version of the RCCA-BIC sweep.
+     */
+    private ScoreSweep rccaScoreSweepCached(int[] C, int[] D) {
+        long k = pairKey(C, D);
+        ScoreSweep s = sweepCache.get(k);
+        if (s != null) return s;
+        s = rccaScoreSweep(S, C, D, expectedSampleSize, ridge, penaltyDiscount, ebicGamma);
+        sweepCache.put(k, s);
+        return s;
+    }
+
+    // ---- test-based enumerator (kept for reference) ----------------------------
+    private Set<Set<Integer>> findClustersAtRankTesting(List<Integer> vars, int size, int rank) {
         final int n = vars.size();
         final int k = size;
-
-        if (rank + 1 >= n - (rank + 1)) {
-            throw new IllegalArgumentException("rank too high for clusters at rank");
-        }
 
         final int[] varIds = new int[n];
         for (int i = 0; i < n; i++) varIds[i] = vars.get(i);
@@ -147,10 +221,75 @@ public class Tsc {
             Set<Integer> cluster = new HashSet<>(k * 2);
             for (int i = 0; i < k; i++) cluster.add(ids[i]);
 
-            if (!isAtomic(cluster, rank)) return null;
-
             return cluster;
         }).filter(Objects::nonNull).collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
+    }
+
+    // ---- scored enumerator (this is what the meta-loop calls) ------------------
+    private Set<Set<Integer>> findClustersAtRankScoring(List<Integer> vars, int size, int targetRank) {
+        final int n = vars.size();
+        final int k = size;
+
+//        if (targetRank + 1 >= n - (targetRank + 1)) return Collections.emptySet();
+
+        if (targetRank < 0) throw new IllegalArgumentException("targetRank must be >= 0");
+        if (k <= 0 || k > n) return Collections.emptySet();
+//        if (k >= n - k) return Collections.emptySet(); // D would be empty
+
+        final int[] varIds = new int[n];
+        for (int i = 0; i < n; i++) varIds[i] = vars.get(i);
+
+        final long[][] Cbin = binom(n, k);
+        final long total = Cbin[n][k];
+
+        final ThreadLocal<int[]> tlIdxs = ThreadLocal.withInitial(() -> new int[k]);
+        final ThreadLocal<int[]> tlIds = ThreadLocal.withInitial(() -> new int[k]);
+
+        final Set<Set<Integer>> accepted = java.util.concurrent.ConcurrentHashMap.newKeySet();
+        final java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
+
+        LongStream.range(0, total).parallel().forEach(m -> {
+            if (Thread.currentThread().isInterrupted()) return;
+
+            int _c = counter.incrementAndGet();
+            if (verbose && (_c % Math.max(20000, total / 50 + 1) == 0))
+                log("Scored find: examined " + _c + " / " + total);
+
+            // decode k-combination
+            int[] idxs = tlIdxs.get();
+            combinadicDecodeColex(m, n, k, Cbin, idxs);
+
+            // map to global ids (sorted)
+            int[] Carr = tlIds.get();
+            for (int i = 0; i < k; i++) Carr[i] = varIds[idxs[i]];
+            Arrays.sort(Carr);
+
+            // D = V \ C
+            Set<Integer> Cset = new HashSet<>(k * 2);
+            for (int v : Carr) Cset.add(v);
+            int[] Darr = complementOf(Cset);
+            if (Darr.length == 0) return;
+
+            if (prefilterByWilkes) {
+                // --- NEW: fast Wilks pre-filter to avoid expensive RCCA when impossible
+                int rWilks = RankTests.estimateWilksRank(S, Carr, Darr, expectedSampleSize, Math.min(0.05, alpha));
+                if (rWilks != targetRank) return;
+            }
+
+            // RCCA-BIC sweep (cached)
+            ScoreSweep sw = rccaScoreSweepCached(Carr, Darr);
+            if (sw.mMax < 0) return;
+
+            boolean okMargins =
+                    (Double.isNaN(sw.scKm1) || sw.scBest >= sw.scKm1 + scoreMargin) &&
+                    (Double.isNaN(sw.scKp1) || sw.scBest >= sw.scKp1 + scoreMargin);
+
+            if (sw.rStar == targetRank && okMargins) {
+                accepted.add(Cset);
+            }
+        });
+
+        return accepted;
     }
 
     private boolean isAtomic(Set<Integer> C, int k) {
@@ -170,24 +309,13 @@ public class Tsc {
         return true;
     }
 
-    // ---- helper: do the RCCA-BIC rank sweep using RankTests cache ---------------
-    private static final class ScoreSweep {
-        final int mMax;       // max admissible rank
-        final int rStar;      // argmax rank
-        final double scBest;  // score at rStar
-        final double scKm1;   // score at rStar-1 (NaN if not defined)
-        final double scKp1;   // score at rStar+1 (NaN if not defined)
-        ScoreSweep(int mMax, int rStar, double scBest, double scKm1, double scKp1) {
-            this.mMax = mMax; this.rStar = rStar; this.scBest = scBest; this.scKm1 = scKm1; this.scKp1 = scKp1;
-        }
-    }
-
     private ScoreSweep rccaScoreSweep(SimpleMatrix S,
                                       int[] C, int[] D,
                                       int n, double ridge,
                                       double c, double gamma) {
-        edu.cmu.tetrad.util.RankTests.RccaEntry ent = RankTests.getRccaEntry(S, C, D, ridge);
-        if (ent == null || ent.suffixLogs == null) return new ScoreSweep(-1, -1, Double.NEGATIVE_INFINITY, Double.NaN, Double.NaN);
+        RankTests.RccaEntry ent = RankTests.getRccaEntry(S, C, D, ridge);
+        if (ent == null || ent.suffixLogs == null)
+            return new ScoreSweep(-1, -1, Double.NEGATIVE_INFINITY, Double.NaN, Double.NaN);
 
         int p = C.length, q = D.length;
         int m = Math.min(Math.min(p, q), n - 1);
@@ -217,7 +345,10 @@ public class Tsc {
             if (gamma > 0.0) pen += 2.0 * gamma * kParams * Math.log(Ppool);
             double scR = fit - pen;
             sc[r] = scR;
-            if (scR > scStar) { scStar = scR; rStar = r; }
+            if (scR > scStar) {
+                scStar = scR;
+                rStar = r;
+            }
         }
 
         double scKm1 = (rStar - 1 >= 0) ? sc[rStar - 1] : Double.NaN;
@@ -225,7 +356,51 @@ public class Tsc {
         return new ScoreSweep(m, rStar, scStar, scKm1, scKp1);
     }
 
-    // Fast overload: takes primitive IDs and uses canonical Key
+    private int rankOf(Set<Integer> C) {
+        return (mode == Mode.Scoring) ? rankByScore(C) : ranksByTest(C);
+    }
+
+    private Set<Integer> shrinkToAtomicCore(Set<Integer> C, int k) {
+        // Make a modifiable copy
+        Set<Integer> cur = new HashSet<>(C);
+        boolean changed;
+        do {
+            changed = false;
+            // Try removing each element; if rank stays k, drop it
+            for (Integer v : new ArrayList<>(cur)) {
+                if (cur.size() <= k) return cur; // can’t go smaller than k elements
+                cur.remove(v);
+                if (rankOf(cur) == k) {
+                    changed = true;     // keep v removed and restart scan
+                    break;
+                } else {
+                    cur.add(v);         // needed; put it back
+                }
+            }
+        } while (changed);
+        return cur;
+    }
+
+    // ---- scored-rank helper (C vs D = V\C) + cache -----------------------------
+    private int rankByScore(Set<Integer> C) {
+        Key key = new Key(C);
+        Integer cached = scoredRankCache.get(key);
+        if (cached != null) return cached;
+
+        int[] Carr = C.stream().mapToInt(Integer::intValue).sorted().toArray();
+        int[] Darr = complementOf(C);
+        if (Carr.length == 0 || Darr.length == 0) {
+            scoredRankCache.put(key, 0);
+            return 0;
+        }
+
+        ScoreSweep sw = rccaScoreSweepCached(Carr, Darr);
+        int r = Math.max(0, sw.rStar);
+        scoredRankCache.put(key, r);
+        return r;
+    }
+
+    // Fast overload: takes primitive IDs and uses canonical Key (Wilks path)
     private int lookupRankFast(int[] ids) {
         Key k = new Key(ids);
         Integer cached = rankCache.get(k);
@@ -239,6 +414,32 @@ public class Tsc {
 
     /**
      * Searches for latent clusters using specified size and rank parameters.
+     */
+    public Graph search() {
+        Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> ret = estimateClusters();
+        clusterToRank = ret.getFirst();
+        reducedRank = ret.getSecond();
+
+        List<Set<Integer>> clusterSets = clusterToRank.keySet().stream()
+                .sorted(Comparator.<Set<Integer>>comparingInt(Set::size).reversed()
+                        .thenComparing(this::toNamesCluster))
+                .collect(Collectors.toList());
+
+        List<Node> latents = defineLatents(clusterSets, clusterToRank, reducedRank);
+        Graph graph = convertSearchGraphClusters(clusterSets, latents, includeAllNodes);
+
+        this.latentNames = new ArrayList<>();
+        for (Node latent : latents) latentNames.add(latent.getName());
+        return graph;
+    }
+
+    /**
+     * Identifies and returns clusters of variables based on a predefined scoring or testing mechanism.
+     * This method processes the output of the clustering procedure and formats it as a list of lists of integers,
+     * where each inner list represents a single cluster of variables.
+     *
+     * @return a list of clusters, with each cluster represented as a list of integers. The clusters are sorted
+     *         first by size in descending order and then lexicographically by their variable names or identifiers.
      */
     public List<List<Integer>> findClusters() {
         Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> ret = estimateClusters();
@@ -276,16 +477,53 @@ public class Tsc {
         return _variables;
     }
 
+    /**
+     * Sets the significance level alpha used in statistical computations.
+     * The significance level determines the threshold for hypothesis testing
+     * and affects the resulting ranks or scores. Updating this parameter
+     * clears the cached ranks as they depend on the current alpha value.
+     *
+     * @param alpha the significance level to be set, typically a value
+     *              between 0 and 1, where lower values indicate stricter thresholds.
+     */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
+        rankCache.clear(); // Wilks rank depends on alpha
     }
 
+    /**
+     *
+     * @param includeAllNodes
+     */
     public void setIncludeAllNodes(boolean includeAllNodes) {
         this.includeAllNodes = includeAllNodes;
     }
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    // --- new setters for scoring knobs / mode ---
+    public void setRidge(double ridge) {
+        this.ridge = ridge;
+        scoredRankCache.clear();
+        sweepCache.clear();
+    }
+
+    public void setPenaltyDiscount(double c) {
+        this.penaltyDiscount = c;
+        scoredRankCache.clear();
+        sweepCache.clear();
+    }
+
+    public void setEbicGamma(double gamma) {
+        this.ebicGamma = gamma;
+        scoredRankCache.clear();
+        sweepCache.clear();
+    }
+
+    public void setScoreMargin(double margin) {
+        this.scoreMargin = Math.max(0.0, margin);
     }
 
     private @NotNull Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> clusterSearchMetaLoop() {
@@ -299,7 +537,8 @@ public class Tsc {
             if (size >= remainingVars.size() - size) continue;
 
             log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
-            Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
+            Set<Set<Integer>> P = mode == Mode.Scoring ? findClustersAtRankScoring(remainingVars, size, rank)
+                    : findClustersAtRankTesting(remainingVars, size, rank);
             log("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P)));
             Set<Set<Integer>> P1 = new HashSet<>(P);
 
@@ -319,7 +558,8 @@ public class Tsc {
 
                 if (seed.size() >= this.variables.size() - seed.size()) continue;
 
-                log("Picking seed from the list: " + toNamesCluster(seed) + " rank = " + lookupRank(seed));
+                int seedRankShown = mode == Mode.Scoring ? rankByScore(seed) : ranksByTest(seed);
+                log("Picking seed from the list: " + toNamesCluster(seed) + " rank = " + seedRankShown);
 
                 boolean extended;
                 do {
@@ -337,10 +577,30 @@ public class Tsc {
 
                         if (union.size() == cluster.size()) continue;
 
-                        int rankOfUnion = lookupRank(union);
+                        // --- IMPORTANT: rank of the union by SCORE to match the seeding criterion ---
+                        int rankOfUnion = rankByScore(union);
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
                         if (rankOfUnion == rank) {
+
+//                            // >>> anti-proxy guard (optional)
+//                            if (enforceObservedLeaves && antiProxyDrop > 0) {
+//                                Set<Integer> add = new HashSet<>(candidate);
+//                                add.removeAll(cluster);
+//
+//                                boolean proxy = false;
+//                                for (int v : add) {
+//                                    if (isProxyLike(cluster, v)) {
+//                                        proxy = true;
+//                                        log("Rejecting addition of " + nodes.get(v).getName() + " as proxy-like (observed hub).");
+//                                        break;
+//                                    }
+//                                }
+//                                if (proxy) continue;
+//                            }
+//                            // <<< END
+
+                            // Accept this union
                             cluster = union;
                             it.remove();
                             extended = true;
@@ -349,14 +609,14 @@ public class Tsc {
                     }
                 } while (extended);
 
-                int finalRank = lookupRank(cluster);
+                int clusterRank = mode == Mode.Scoring ? rankByScore(cluster) : ranksByTest(cluster);
 
-                if (finalRank == rank) {
+                if (clusterRank == rank) {
                     newClusters.removeIf(cluster::containsAll);  // Avoid nesting
-                    log("Adding cluster to new clusters: " + toNamesCluster(cluster) + " rank = " + finalRank);
+                    log("Adding cluster to new clusters: " + toNamesCluster(cluster) + " rank = " + clusterRank);
                     newClusters.add(cluster);
                     used.addAll(cluster);
-                    remainingVars.removeAll(cluster);
+//                    remainingVars.removeAll(cluster);
                 }
             }
 
@@ -384,7 +644,7 @@ public class Tsc {
 
                         if (C2.size() >= this.variables.size() - C2.size()) continue;
 
-                        int newRank = lookupRank(C2);
+                        int newRank = mode == Mode.Scoring ? rankByScore(C2) : ranksByTest(C2);
 
                         if (C2.size() == _size + 1 && newRank < rank && newRank >= 1) {
                             if (newClusters.contains(C2)) continue;
@@ -425,71 +685,101 @@ public class Tsc {
 
         // Try to split instead of outright reject (Dong-style refinement)
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
-            if (failsSubsetTest(S, cluster, sampleSize, alpha)) {
-                Optional<List<Set<Integer>>> split = trySplitByRule1(cluster);
-                if (split.isPresent()) {
-                    // Remove the original
-                    clusterToRank.remove(cluster);
-                    reducedRank.remove(cluster);
-
-                    // Add the two subclusters with fresh ranks (inherit rC as a guess; recompute anyway)
-                    for (Set<Integer> sub : split.get()) {
-                        int rSub = lookupRank(sub); // uses your cached rank()
-                        if (sub.size() > 1 && rSub >= 0) {
-                            clusterToRank.put(sub, rSub);
-                            // You can also re-run your augmentation step for each sub, if desired.
-                        }
-                    }
-                    penultimateRemoved = true; // we changed the set
-                    log("Split cluster " + toNamesCluster(cluster) + " into " +
-                        toNamesCluster(split.get().get(0)) + " and " + toNamesCluster(split.get().get(1)));
-                } else {
-                    // Fall back to rejection if no clean split found
-                    clusterToRank.remove(cluster);
-                    reducedRank.remove(cluster);
-                    penultimateRemoved = true;
-                    log("Removed cluster " + toNamesCluster(cluster) + " (no valid split found).");
-                }
+            if (failsSubsetTest(S, cluster, expectedSampleSize, alpha)) {
+//                Optional<List<Set<Integer>>> split = trySplitByRule1(cluster);
+//                if (split.isPresent()) {
+//                    // Remove the original
+//                    clusterToRank.remove(cluster);
+//                    reducedRank.remove(cluster);
+//
+//                    // Add the two subclusters with fresh ranks
+//                    for (Set<Integer> sub : split.get()) {
+//                        int rSub = mode == Mode.Scoring ? rankByScore(sub) : ranksByTest(sub);
+//                        if (sub.size() > 1 && rSub >= 0) {
+//                            clusterToRank.put(sub, rSub);
+//                        }
+//                    }
+//                    penultimateRemoved = true;
+//                    log("Split cluster " + toNamesCluster(cluster) + " into " +
+//                        toNamesCluster(split.get().get(0)) + " and " + toNamesCluster(split.get().get(1)));
+//                } else {
+                clusterToRank.remove(cluster);
+                reducedRank.remove(cluster);
+                penultimateRemoved = true;
+//                    log("Removed cluster " + toNamesCluster(cluster) + " (no valid split found).");
+//                }
             }
         }
         if (!penultimateRemoved) log("No penultimate clusters were removed.");
+
+        // --- Atomic-core postprocess (keep large clusters, group by atomic cores) ---
+        if (true) {
+            Map<Key, Set<Integer>> coreToMax = new LinkedHashMap<>();
+
+            for (Set<Integer> C : new ArrayList<>(clusterToRank.keySet())) {
+                int k = clusterToRank.getOrDefault(C, 0);
+                if (k <= 0 || C.size() <= k) {
+                    // trivial case; nothing to shrink
+                    coreToMax.putIfAbsent(new Key(C), new HashSet<>(C));
+                    continue;
+                }
+
+                Set<Integer> core = shrinkToAtomicCore(C, k);
+
+                Key ck = new Key(core);
+                Set<Integer> maxForCore = coreToMax.get(ck);
+                if (maxForCore == null) {
+                    coreToMax.put(ck, new HashSet<>(C));
+                } else {
+                    maxForCore.addAll(C);  // unify multiple grown clusters sharing the same core
+                }
+            }
+
+            // Replace clusterToRank with the maximal unions per core (keeping rank k)
+            Map<Set<Integer>, Integer> collapsed = new LinkedHashMap<>();
+            for (Map.Entry<Key, Set<Integer>> e : coreToMax.entrySet()) {
+                Set<Integer> maxC = e.getValue();
+                // Rank is the same k as the core’s (recompute or get from any representative)
+                int k = rankOf(maxC);
+                collapsed.put(maxC, k);
+            }
+
+            // Swap in the collapsed set (optional: only if you *want* “one latent per core”)
+            clusterToRank.clear();
+            clusterToRank.putAll(collapsed);
+        }
 
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet()));
         return new Pair<>(clusterToRank, reducedRank);
     }
 
-    private boolean allSubclustersPresent(Set<Integer> union, Set<Set<Integer>> P, int size) {
-        ChoiceGenerator gen = new ChoiceGenerator(union.size(), size);
-        int[] choice;
-        List<Integer> unionList = new ArrayList<>(union);
-
-        while ((choice = gen.next()) != null) {
-            Set<Integer> C = new HashSet<>();
-            for (int i : choice) {
-                C.add(unionList.get(i));
-            }
-
-            if (!P.contains(C)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
+//    private boolean allSubclustersPresent(Set<Integer> union, Set<Set<Integer>> P, int size) {
+//        ChoiceGenerator gen = new ChoiceGenerator(union.size(), size);
+//        int[] choice;
+//        List<Integer> unionList = new ArrayList<>(union);
+//
+//        while ((choice = gen.next()) != null) {
+//            Set<Integer> C = new HashSet<>();
+//            for (int i : choice) {
+//                C.add(unionList.get(i));
+//            }
+//
+//            if (!P.contains(C)) {
+//                return false;
+//            }
+//        }
+//
+//        return true;
+//    }
 
     /**
-     * Try to split a cluster C into two smaller clusters C1, C2 if Rule 1 fails. We search over nontrivial bipartitions
-     * (iterates via SublistGenerator like your Rule 1), and prefer the split that (a) violates Rule 1 the most (largest
-     * l - r), and (b) yields both sides nonempty and with valid complement sizes.
-     * <p>
-     * Returns Optional.of(List.of(C1, C2)) if a split is suggested; otherwise Optional.empty().
+     * Try to split a cluster C into two smaller clusters C1, C2 if Rule 1 fails.
      */
     private Optional<List<Set<Integer>>> trySplitByRule1(Set<Integer> cluster) {
         final List<Integer> C = new ArrayList<>(cluster);
-        final int[] Carray = C.stream().mapToInt(Integer::intValue).toArray();
         final int rC = clusterToRank.getOrDefault(cluster, 0);
 
-        // we consider all non-empty proper subsets
+        // non-empty proper subsets
         SublistGenerator gen = new SublistGenerator(C.size(), C.size() - 1);
         int[] choice;
 
@@ -505,7 +795,6 @@ public class Tsc {
             C2.removeAll(C1);
             if (C2.isEmpty()) continue;
 
-            // Require |C1| < |V\C1| and |C2| < |V\C2|, otherwise rank() is undefined by construction
             if (C1.size() >= variables.size() - C1.size()) continue;
             if (C2.size() >= variables.size() - C2.size()) continue;
 
@@ -515,11 +804,10 @@ public class Tsc {
             int minpq = Math.min(c1.length, c2.length);
             int l = Math.min(minpq, Math.max(0, rC));
 
-            int r = RankTests.estimateWilksRank(S, c1, c2, sampleSize, alpha);
+            int r = RankTests.estimateWilksRank(S, c1, c2, expectedSampleSize, alpha);
 
-            // If Rule 1 fails for this bipartition (r < l), it's a candidate split.
             if (r < l) {
-                int gain = l - r; // how badly Rule 1 fails
+                int gain = l - r;
                 if (gain > bestGain) {
                     bestGain = gain;
                     bestC1 = C1;
@@ -535,8 +823,8 @@ public class Tsc {
         }
     }
 
-    // ---- existing failsSubsetTest, rank(), logging, etc. (unchanged) ----
-    private boolean failsSubsetTest(SimpleMatrix S, Set<Integer> cluster, int sampleSize, double alpha) { /* ... unchanged ... */
+    // ---- subset tests (unchanged: still Wilks-based by design) -----------------
+    private boolean failsSubsetTest(SimpleMatrix S, Set<Integer> cluster, int expectedSampleSize, double alpha) { /* ... unchanged ... */
         List<Integer> C = new ArrayList<>(cluster);
         List<Integer> D = allVariables();
         D.removeAll(cluster);
@@ -561,7 +849,7 @@ public class Tsc {
                 if (l == null) continue;
                 l = Math.min(minpq, Math.max(0, l));
 
-                int r = RankTests.estimateWilksRank(S, c1Array, c2Array, sampleSize, alpha);
+                int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
                 if (r < l) {
                     log("Deficient! rank(" + toNamesCluster(C1) + ", " + toNamesCluster(C2) + ") = "
                         + r + " < " + l + "; removing " + toNamesCluster(cluster));
@@ -583,7 +871,7 @@ public class Tsc {
                 Integer l = Optional.ofNullable(reducedRank.get(cluster)).orElse(clusterToRank.getOrDefault(cluster, 0));
                 l = Math.min(minpq, Math.max(0, l));
 
-                int r = RankTests.estimateWilksRank(S, _cArray, dArray, sampleSize, alpha);
+                int r = RankTests.estimateWilksRank(S, _cArray, dArray, expectedSampleSize, alpha);
                 if (r < l) {
                     log("rank(" + toNamesCluster(_C) + ", D) = " + r + " < r = " + l
                         + "; removing cluster " + toNamesCluster(cluster));
@@ -610,7 +898,7 @@ public class Tsc {
                 int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
                 int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
 
-                int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, sampleSize, alpha);
+                int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, expectedSampleSize, alpha);
                 if (rZ == 0) {
                     log("rank(_C = " + toNamesCluster(_C) + ", D | Z = " + toNamesCluster(Z) + ") = 0; removing cluster " + toNamesCluster(cluster) + ".");
                     return true;
@@ -620,7 +908,8 @@ public class Tsc {
         return false;
     }
 
-    private int lookupRank(Set<Integer> cluster) {
+    private int ranksByTest(Set<Integer> cluster) {
+        if (mode == Mode.Scoring) return rankByScore(cluster);
         Key k = new Key(cluster);
         Integer cached = rankCache.get(k);
         if (cached != null) return cached;
@@ -662,7 +951,7 @@ public class Tsc {
         for (int i = 0; i < xSet.size(); i++) xIndices[i] = xSet.get(i);
         for (int i = 0; i < ySet.size(); i++) yIndices[i] = ySet.get(i);
 
-        return estimateWilksRank(S, xIndices, yIndices, sampleSize, alpha);
+        return estimateWilksRank(S, xIndices, yIndices, expectedSampleSize, alpha);
     }
 
     private Graph convertSearchGraphClusters(List<Set<Integer>> clusters, List<Node> latents, boolean includeAllNodes) {
@@ -690,6 +979,37 @@ public class Tsc {
         return latents;
     }
 
+    private int[] complementOf(Set<Integer> C) {
+        // V \ C
+        int n = variables.size();
+        BitSet inC = new BitSet(n);
+        for (int v : C) inC.set(v);
+        int[] out = new int[n - C.size()];
+        int k = 0;
+        for (int i = 0; i < n; i++) if (!inC.get(i)) out[k++] = i;
+        return out;
+    }
+
+//    /**
+//     * True if v behaves like a proxy/hub for C (conditioning on v collapses rank by >= antiProxyDrop).
+//     */
+//    private boolean isProxyLike(Set<Integer> C, int v) {
+//        if (!enforceObservedLeaves || antiProxyDrop == 0) return false;
+//
+//        Set<Integer> Cplus = new HashSet<>(C);
+//        Cplus.add(v);
+//        if (Cplus.size() >= variables.size() - Cplus.size()) return false; // guard
+//
+//        int[] Carr = C.stream().mapToInt(Integer::intValue).toArray();
+//        int[] Darr = complementOf(Cplus);
+//        if (Carr.length == 0 || Darr.length == 0) return false;
+//
+//        int r0 = RankTests.estimateWilksRank(S, Carr, Darr, sampleSize, alpha);
+//        int rCond = RankTests.estimateWilksRankConditioned(S, Carr, Darr, new int[]{v}, sampleSize, alpha);
+//
+//        return (r0 - rCond) >= antiProxyDrop;
+//    }
+
     private void log(String s) {
         if (verbose) TetradLogger.getInstance().log(s);
     }
@@ -698,20 +1018,40 @@ public class Tsc {
         return cluster.stream().map(i -> nodes.get(i).getName()).collect(Collectors.joining(" ", "{", "}"));
     }
 
+    public List<List<Integer>> getClusters() {
+        return new ArrayList<>(this.clusters);
+    }
+
     public List<String> getLatentNames() {
         return new ArrayList<>(this.latentNames);
     }
 
-    // ---- Canonical key for caching ranks (immutable, sorted) -------------------
-    private static final class Key {
-        final int[] a;
+    public void setExpectedSampleSize(int expectedSampleSize) {
+        if (!(expectedSampleSize == -1 || expectedSampleSize > 0))
+            throw new IllegalArgumentException("Expected sample size = -1 or > 0");
+        this.expectedSampleSize = expectedSampleSize == -1 ? sampleSize : expectedSampleSize;
+    }
 
+    public enum Mode {Testing, Scoring}
+
+    /**
+     * @param mMax   max admissible rank
+     * @param rStar  argmax rank
+     * @param scBest score at rStar
+     * @param scKm1  score at rStar-1 (NaN if not defined)
+     * @param scKp1  score at rStar+1 (NaN if not defined)
+     */ // ---- helper: RCCA-BIC sweep ------------------------------------------------
+    private record ScoreSweep(int mMax, int rStar, double scBest, double scKm1, double scKp1) {
+    }
+
+    // ---- Canonical key for caching ranks (immutable, sorted) -------------------
+    private record Key(int[] a) {
         Key(Collection<Integer> s) {
-            this.a = s.stream().mapToInt(Integer::intValue).sorted().toArray();
+            this(s.stream().mapToInt(Integer::intValue).sorted().toArray());
         }
 
-        Key(int[] ids) {
-            this.a = Arrays.stream(ids).sorted().toArray();
+        private Key(int[] a) {
+            this.a = Arrays.stream(a).sorted().toArray();
         }
 
         @Override

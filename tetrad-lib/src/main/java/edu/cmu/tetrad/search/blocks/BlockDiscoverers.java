@@ -3,27 +3,99 @@ package edu.cmu.tetrad.search.blocks;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
 
+/**
+ * A utility class providing static factory methods for creating instances of various {@code BlockDiscoverer}
+ * implementations. Each implementation represents a specific algorithm for discovering clusters or "blocks" of indices
+ * in a dataset, based on provided data, statistical criteria, and algorithm-specific parameters.
+ * <p>
+ * This class is immutable and cannot be instantiated.
+ */
 public final class BlockDiscoverers {
-    private BlockDiscoverers() {}
+    private BlockDiscoverers() {
+    }
 
+    /**
+     * Creates a new instance of a {@code BpcBlockDiscoverer}, which is an implementation of the {@code BlockDiscoverer}
+     * interface. This method utilizes the BPC algorithm to discover clusters or "blocks" of indices based on the
+     * provided dataset and statistical criteria.
+     * <p>
+     * The BPC algorithm is designed to perform block discovery using specific parameters such as statistical
+     * significance level and equivalent sample size, along with a policy for handling single-cluster constraints.
+     *
+     * @param data   the dataset on which the block discovery algorithm will operate
+     * @param ntad   a statistical test used to evaluate dependencies and relationships between variables
+     * @param alpha  the significance level used in statistical tests, typically between 0 and 1
+     * @param ess    the equivalent sample size, controlling the strength of prior information in scoring
+     * @param policy the single-cluster policy applied to manage how individual clusters or blocks are processed
+     * @return a {@code BpcBlockDiscoverer} instance configured with the specified parameters
+     */
     public static BlockDiscoverer bpc(DataSet data, NtadTest ntad, double alpha, int ess, SingleClusterPolicy policy) {
         return new BpcBlockDiscoverer(data, ntad, alpha, ess, policy);
     }
 
+    /**
+     * Constructs a {@code FofcBlockDiscoverer} instance, which implements the FOFC algorithm for discovering clusters
+     * or "blocks" of indices in a dataset. The FOFC algorithm uses statistical testing and configurable parameters to
+     * identify meaningful groupings of variables within the data.
+     *
+     * @param data   the dataset on which the block discovery algorithm will operate
+     * @param test   the statistical test applied to evaluate dependencies between variables in the dataset
+     * @param alpha  the significance level for the statistical tests, typically a value between 0 and 1
+     * @param ess    the equivalent sample size, which determines the strength of prior information used in scoring
+     * @param policy the policy for handling single-cluster constraints during block discovery
+     * @return a {@code FofcBlockDiscoverer} instance configured with the specified parameters
+     */
     public static BlockDiscoverer fofc(DataSet data, NtadTest test, double alpha,
                                        int ess, SingleClusterPolicy policy) {
         return new FofcBlockDiscoverer(data, test, alpha, ess, policy);
     }
 
+    /**
+     * Constructs an instance of {@code FtfcBlockDiscoverer}, which implements the FTFC algorithm for discovering
+     * clusters or "blocks" of indices within a dataset. The FTFC algorithm utilizes statistical testing and
+     * configurable parameters to identify meaningful groupings of variables.
+     *
+     * @param data   the dataset on which the block discovery algorithm will operate
+     * @param ntad   a statistical test used to evaluate dependencies and relationships between variables
+     * @param alpha  the significance level used in statistical tests, typically a value between 0 and 1
+     * @param ess    the equivalent sample size, controlling the strength of prior information in scoring
+     * @param policy the single-cluster policy applied to manage how individual clusters or blocks are processed
+     * @return a {@code FtfcBlockDiscoverer} instance configured with the specified parameters
+     */
     public static BlockDiscoverer ftfc(DataSet data, NtadTest ntad, double alpha,
                                        int ess, SingleClusterPolicy policy) {
         return new FtfcBlockDiscoverer(data, ntad, alpha, ess, policy);
     }
 
+    /**
+     * Creates a new instance of a {@code TscTestBlockDiscoverer}, which is an implementation of the
+     * {@code BlockDiscoverer} interface. This method uses the TSC algorithm to discover clusters or "blocks" of indices
+     * in a dataset by applying statistical tests based on the specified parameters.
+     *
+     * @param data   the dataset on which the block discovery algorithm will operate
+     * @param alpha  the significance level used in statistical tests, typically a value between 0 and 1
+     * @param ess    the equivalent sample size, which determines the strength of prior information used in scoring
+     * @param policy the single-cluster policy applied to handle constraints for managing individual clusters
+     * @return a {@code TscTestBlockDiscoverer} instance configured with the specified parameters
+     */
     public static BlockDiscoverer tscTest(DataSet data, double alpha, int ess, SingleClusterPolicy policy) {
         return new TscTestBlockDiscoverer(data, alpha, ess, policy);
     }
 
+    /**
+     * Constructs an instance of {@code TscScoreBlockDiscoverer}, which is an implementation of the
+     * {@code BlockDiscoverer} interface. This method leverages the TSC algorithm with configurable scoring and
+     * optimization parameters to discover clusters or "blocks" of indices in a dataset.
+     *
+     * @param data            the dataset on which the block discovery algorithm will operate
+     * @param alpha           the significance level used in statistical tests, typically a value between 0 and 1
+     * @param ebicGamma       the penalty parameter for the extended Bayesian information criterion (eBIC)
+     * @param ridge           the ridge regularization parameter used for numerical stability during scoring
+     * @param penaltyDiscount the discount factor applied to penalize model complexity during scoring
+     * @param ess             the equivalent sample size, controlling the strength of prior information in scoring
+     * @param policy          the single-cluster policy applied to manage how individual clusters are processed
+     * @return a {@code TscScoreBlockDiscoverer} instance configured with the specified parameters
+     */
     public static BlockDiscoverer tscScore(DataSet data, double alpha,
                                            double ebicGamma, double ridge, double penaltyDiscount, int ess, SingleClusterPolicy policy) {
         return new TscScoreBlockDiscoverer(data, alpha, ebicGamma, ridge, penaltyDiscount, ess, policy);

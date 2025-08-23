@@ -2,12 +2,18 @@ package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.search.TscScored;
+import edu.cmu.tetrad.search.Tsc;
 
 import java.util.List;
 
 /**
- * Adapter: TSC → BlockSpec.
+ * The {@code TscTestBlockDiscoverer} class is an implementation of the {@code BlockDiscoverer} interface that utilizes
+ * the Testing Strong Causal structures (TSC) algorithm to identify and discover clusters or blocks of variables from a
+ * given dataset. These blocks represent groups of variables that exhibit strong causal relationships.
+ * <p>
+ * This class supports functionality to validate, canonicalize, and apply policies to discovered blocks, ensuring
+ * consistency and compliance with specified single cluster policies. It operates using parameters such as statistical
+ * significance level (alpha), expected sample size (ess), and a policy for handling overlapping clusters.
  */
 public class TscTestBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
@@ -15,6 +21,15 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
     private final int ess;
     private final SingleClusterPolicy policy;
 
+    /**
+     * Constructs an instance of {@code TscTestBlockDiscoverer}, which discovers blocks of variables based on the TSC
+     * (Testing Strong Causal structures) algorithm.
+     *
+     * @param dataSet The dataset containing the variables to be clustered based on causal structure.
+     * @param alpha   The statistical significance level used for hypothesis tests, must be in the range (0, 1).
+     * @param ess     The expected sample size used for clustering and scoring computations.
+     * @param policy  The policy determining how to handle cases where multiple clusters overlap or conflict.
+     */
     public TscTestBlockDiscoverer(DataSet dataSet, double alpha, int ess, SingleClusterPolicy policy) {
         this.dataSet = dataSet;
         this.alpha = alpha;
@@ -22,17 +37,28 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
         this.policy = policy;
     }
 
+    /**
+     * Discovers and identifies blocks of variables using the TSC (Testing Strong Causal structures) algorithm.
+     * <p>
+     * This method applies the following steps: - Validates the alpha parameter to ensure it is within the range (0, 1).
+     * - Constructs a TscScored instance to compute clusters of variables based on the given dataset. - Ensures
+     * discovered clusters (blocks) are valid, canonicalized, and consistent with the specified single cluster policy. -
+     * Converts the final block structure to the {@code BlockSpec} format for further processing or use.
+     *
+     * @return The discovered {@code BlockSpec} which represents clusters of variables based on the TSC algorithm.
+     * @throws IllegalArgumentException If the alpha parameter is not in the range (0, 1).
+     */
     @Override
     public BlockSpec discover() {
         if (!(alpha > 0 && alpha < 1)) {
             throw new IllegalArgumentException("alpha must be in (0,1)");
         }
 
-        TscScored tsc = new TscScored(dataSet.getVariables(), new CorrelationMatrix(dataSet));
+        Tsc tsc = new Tsc(dataSet.getVariables(), new CorrelationMatrix(dataSet));
         tsc.setAlpha(alpha);
         tsc.setIncludeAllNodes(true);
         tsc.setExpectedSampleSize(ess);
-        tsc.setMode(TscScored.Mode.Testing);
+        tsc.setMode(Tsc.Mode.Testing);
 
         List<List<Integer>> blocks = tsc.findClusters();
 

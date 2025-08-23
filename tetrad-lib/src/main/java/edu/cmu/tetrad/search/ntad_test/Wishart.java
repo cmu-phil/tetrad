@@ -19,16 +19,32 @@ import java.util.List;
 public class Wishart extends NtadTest {
 
     /**
-     * Constructs a Wishart test object based on the given data matrix and correlation option. This method initializes
+     * Constructs a Wishart object using the provided data matrix, flag for correlation or covariance matrix, and the
+     * effective sample size.
      *
      * @param df           the input data matrix as a SimpleMatrix object, where each row represents an observation and
-     *                     each
-     * @param correlations a boolean flag indicating whether to compute correlations.
+     *                     each column represents a variable
+     * @param correlations a boolean flag indicating whether the provided matrix is a covariance matrix (true) or raw
+     *                     data requiring covariance computation (false)
+     * @param ess          the effective sample size; must be -1 or greater than 1. If -1, the sample size is assumed to
+     *                     be the number of rows in the data matrix
      */
     public Wishart(SimpleMatrix df, boolean correlations, int ess) {
         super(df, correlations, ess);
     }
 
+    /**
+     * Computes the p-value for testing the null hypothesis of tetrad constraints in a given correlation matrix. This
+     * method leverages resampling (if specified) to calculate the required submatrices of the correlation matrix for
+     * evaluating independence constraints between tetrad pairs.
+     *
+     * @param ntad     a 2D array where the first row represents the indices of the first group of variables (a) and the
+     *                 second row represents the indices of the second group of variables (b)
+     * @param resample a boolean flag indicating whether resampling should be applied to the input data
+     * @param frac     a double value representing the fraction of rows to sample for resampling, where 0.0 &lt;= frac
+     *                 &lt;= 1.0
+     * @return a double value representing the two-tailed p-value for the tetrad hypothesis test
+     */
     @Override
     public double ntad(int[][] ntad, boolean resample, double frac) {
         SimpleMatrix S = resample ? computeCorrelations(sampleRows(df, frac)) : this.S;
