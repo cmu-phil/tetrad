@@ -416,13 +416,13 @@ public final class Fges implements IGraphSearch, DagScorer {
     private void setScore(Score score) {
         this.score = score;
 
-        this.variables = new ArrayList<>();
+        this.variables = score.getVariables();// new ArrayList<>();
 
-        for (Node node : score.getVariables()) {
-            if (node.getNodeType() == NodeType.MEASURED) {
-                this.variables.add(node);
-            }
-        }
+//        for (Node node : score.getVariables()) {
+//            if (node.getNodeType() == NodeType.MEASURED) {
+//                this.variables.add(node);
+//            }
+//        }
 
         buildIndexing(score.getVariables());
 
