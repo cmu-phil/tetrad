@@ -60,6 +60,16 @@ public class BlockClusteringWizard extends JPanel {
     private final Set<String> paramList = new HashSet<>();
     private final int sampleSize;
 
+    /**
+     * Constructs a new BlockClusteringWizard with the given dataset, algorithm, test, block text, and parameters.
+     * This constructor sets up the user interface, initializes components, and establishes behavior for clustering operations.
+     *
+     * @param dataSet    The dataset to be used for block clustering analysis. Cannot be null.
+     * @param alg        The name of the selected algorithm for clustering.
+     * @param test       The name of the selected dependency test.
+     * @param blockText  The text representing the initial block structure or specification.
+     * @param parameters The parameters required for the selected clustering algorithm and test.
+     */
     public BlockClusteringWizard(DataSet dataSet, String alg, String test, String blockText, Parameters parameters) {
         super(new BorderLayout(8, 8));
         this.dataSet = Objects.requireNonNull(dataSet);
@@ -143,6 +153,14 @@ public class BlockClusteringWizard extends JPanel {
         });
     }
 
+    /**
+     * The main entry point of the application. It initializes a simulation of a
+     * multi-indicator model (MIM) with a latent variable chain, creates a block clustering
+     * wizard user interface, and displays it in a JFrame.
+     *
+     * @param args Command-line arguments passed to the program. These arguments are not
+     *             used within the application.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             // Simulate a 3-latent chain L1 -> L2 -> L3, 5 indicators each, n=5000
@@ -211,10 +229,22 @@ public class BlockClusteringWizard extends JPanel {
         return new BoxDataSet(box, vars);
     }
 
+    /**
+     * Adds a BlockSpecListener to the list of listeners.
+     * The listener will be notified when a BlockSpec event is fired.
+     *
+     * @param l The BlockSpecListener to add. If the provided listener is null, it will not be added.
+     */
     public void addBlockSpecListener(BlockSpecListener l) {
         if (l != null) specListeners.add(l);
     }
 
+    /**
+     * Removes a BlockSpecListener from the list of registered listeners.
+     * The listener will no longer be notified of any BlockSpec events.
+     *
+     * @param l The BlockSpecListener to remove. If the provided listener is null, no action will be taken.
+     */
     public void removeBlockSpecListener(BlockSpecListener l) {
         specListeners.remove(l);
     }
@@ -425,20 +455,43 @@ public class BlockClusteringWizard extends JPanel {
         this.parameterBox.repaint();
     }
 
+    /**
+     * Retrieves the current parameters associated with the BlockClusteringWizard.
+     *
+     * @return the Parameters object containing the configuration and settings for the block clustering operations
+     */
     public Parameters getParameters() {
         return parameters;
     }
 
+    /**
+     * Retrieves the currently selected algorithm from the combo box.
+     *
+     * @return the name of the currently selected algorithm as a String. The returned value
+     *         is guaranteed to be non-null.
+     */
     public String getAlg() {
         String alg = (String) cbAlgorithm.getSelectedItem();
         assert alg != null;
         return alg;
     }
 
+    /**
+     * Retrieves the currently selected tetrad test from the combo box.
+     *
+     * @return the name of the currently selected tetrad test as a String. The returned value
+     *         is guaranteed to be non-null.
+     */
     public String getTest() {
         return (String) cbTetradTest.getSelectedItem();
     }
 
+    /**
+     * Retrieves the currently selected block test from the editor panel.
+     *
+     * @return the text entered in the editor panel as a String. The returned value
+     *         is guaranteed to be non-null.
+     */
     public String getBlockTest() {
         return editorPanel.getText();
     }

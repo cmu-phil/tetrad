@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
@@ -30,47 +30,37 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Text-first BlockSpec editor using JTextPane + Highlighter.
- * - Live validation via BlockSpecTextCodec (red=error, orange=warning)
- * - Tooltips for issues
- * - Simple autocomplete for variable names (Cmd/Ctrl+Space)
- * - Undo/Redo (Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z)
- * - Import/Export buttons
- * - Canonicalize button that preserves comments &amp; line order (rewrites RHS only)
- * - Apply button invokes a user-supplied callback with the current BlockSpec
+ * Text-first BlockSpec editor using JTextPane + Highlighter. - Live validation via BlockSpecTextCodec (red=error,
+ * orange=warning) - Tooltips for issues - Simple autocomplete for variable names (Cmd/Ctrl+Space) - Undo/Redo
+ * (Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z) - Import/Export buttons - Canonicalize button that preserves comments &amp; line order
+ * (rewrites RHS only) - Apply button invokes a user-supplied callback with the current BlockSpec
  */
 public final class BlockSpecEditorPanel extends JPanel {
 
+    // Reuse the same token pattern as the codec for canonicalize RHS
+    private static final Pattern TOKEN = Pattern.compile("\"([^\"]*)\"|#(\\d+)|([^,\\s]+)");
     private final JTextPane textPane = new JTextPane();
     private final JLabel status = new JLabel("Ready");
-
     private final JButton btnImport = new JButton("Import…");
     private final JButton btnExport = new JButton("Export…");
     private final JButton btnVars = new JButton("Insert Vars");
     private final JButton btnCanonicalize = new JButton("Canonicalize");
     private final JButton btnApply = new JButton("Apply");
-
     private final JPopupMenu completionPopup = new JPopupMenu();
     private final JList<String> completionList = new JList<>();
     private final DefaultListModel<String> completionModel = new DefaultListModel<>();
-
     private final Highlighter.HighlightPainter errorPainter = new SquigglePainter(new Color(220, 50, 47));  // red
-    private final Highlighter.HighlightPainter warnPainter  = new SquigglePainter(new Color(203, 75, 22));  // orange
-
+    private final Highlighter.HighlightPainter warnPainter = new SquigglePainter(new Color(203, 75, 22));  // orange
     private final Timer debounce;
     private final UndoManager undo = new UndoManager();
-
+    private final AttributeSet COMMENT_STYLE =
+            StyleContext.getDefaultStyleContext().addAttribute(SimpleAttributeSet.EMPTY,
+                    StyleConstants.Foreground, Color.GRAY);
     private DataSet dataSet;
     private BlockSpec currentSpec;                 // last successful parse
     private List<BlockSpecTextCodec.Issue> issues; // last issues
     private Consumer<BlockSpec> onApply;           // user callback
     private String originalText = "";
-    private final AttributeSet COMMENT_STYLE =
-            StyleContext.getDefaultStyleContext().addAttribute(SimpleAttributeSet.EMPTY,
-                    StyleConstants.Foreground, Color.GRAY);
-
-    // Reuse the same token pattern as the codec for canonicalize RHS
-    private static final Pattern TOKEN = Pattern.compile("\"([^\"]*)\"|#(\\d+)|([^,\\s]+)");
 
     public BlockSpecEditorPanel(DataSet dataSet, String blockText) {
         super(new BorderLayout());
@@ -92,14 +82,23 @@ public final class BlockSpecEditorPanel extends JPanel {
 
         // Live validation
         textPane.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { debounce.restart(); }
-            public void removeUpdate(DocumentEvent e) { debounce.restart(); }
-            public void changedUpdate(DocumentEvent e) { debounce.restart(); }
+            public void insertUpdate(DocumentEvent e) {
+                debounce.restart();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                debounce.restart();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                debounce.restart();
+            }
         });
 
         // Tooltips for issues under mouse
         textPane.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override public void mouseMoved(MouseEvent e) {
+            @Override
+            public void mouseMoved(MouseEvent e) {
                 int pos = textPane.viewToModel2D(e.getPoint());
                 BlockSpecTextCodec.Issue hit = issueAtOffset(pos);
                 textPane.setToolTipText(hit == null ? null :
@@ -112,13 +111,19 @@ public final class BlockSpecEditorPanel extends JPanel {
                 KeyEvent.VK_SPACE, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
         textPane.getInputMap().put(ksAutocomplete, "AUTO_COMPLETE");
         textPane.getActionMap().put("AUTO_COMPLETE", new AbstractAction() {
-            @Override public void actionPerformed(ActionEvent e) { showCompletion(); }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showCompletion();
+            }
         });
 
         // Apply binding (Shift+Enter)
         textPane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK), "APPLY_SPEC");
         textPane.getActionMap().put("APPLY_SPEC", new AbstractAction() {
-            @Override public void actionPerformed(ActionEvent e) { applyIfClean(); }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                applyIfClean();
+            }
         });
 
         // Completion popup
@@ -126,12 +131,14 @@ public final class BlockSpecEditorPanel extends JPanel {
         completionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         completionList.setVisibleRowCount(8);
         completionList.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) {
+            @Override
+            public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) insertSelectedCompletion();
             }
         });
         completionList.addKeyListener(new KeyAdapter() {
-            @Override public void keyPressed(KeyEvent e) {
+            @Override
+            public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) insertSelectedCompletion();
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) completionPopup.setVisible(false);
             }
@@ -171,13 +178,49 @@ public final class BlockSpecEditorPanel extends JPanel {
         setText(blockText);
     }
 
-    /** Inserts a wrapped % comment block listing all variables. */
+    private static int indexOfToken(String line, String token) {
+        int p = line.indexOf(token);
+        if (p >= 0) return p;
+        String quoted = "\"" + token + "\"";
+        int q = line.indexOf(quoted);
+        return q >= 0 ? q + 1 : -1; // +1 to point inside the quotes
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame f = new JFrame("BlockSpec Editor");
+            f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+            // TODO: replace with a real dataset from Tetrad runtime.
+            DataSet ds = DemoData.smallDemoData();
+
+            BlockSpecEditorPanel panel = new BlockSpecEditorPanel(ds, "");
+            panel.setText("""
+                    % Example
+                    L1: X1, X2, "X 3"
+                    L2: X4, X5
+                    X6
+                    """);
+            f.setContentPane(panel);
+            f.setSize(800, 600);
+            f.setLocationRelativeTo(null);
+            f.setVisible(true);
+        });
+    }
+
+    /**
+     * Inserts a wrapped % comment block listing all variables.
+     */
     private void insertVariableListComment() {
         String block = buildVariableListComment(72, /* includeIndices */ false);
         insertTextAtCaret(block);
     }
 
-    /** Build a % comment block of available variables, wrapped to maxWidth columns. */
+    // ---------------- Public API ----------------
+
+    /**
+     * Build a % comment block of available variables, wrapped to maxWidth columns.
+     */
     private String buildVariableListComment(int maxWidth, boolean includeIndices) {
         StringBuilder sb = new StringBuilder();
         sb.append("%\n% Available variables:\n% ");
@@ -201,16 +244,17 @@ public final class BlockSpecEditorPanel extends JPanel {
         return sb.toString();
     }
 
-    /** Safe insert at caret, expanding undo correctly. */
+    /**
+     * Safe insert at caret, expanding undo correctly.
+     */
     private void insertTextAtCaret(String text) {
         try {
             Document doc = textPane.getDocument();
             int pos = textPane.getCaretPosition();
             doc.insertString(pos, text, null);
-        } catch (BadLocationException ignored) { }
+        } catch (BadLocationException ignored) {
+        }
     }
-
-    // ---------------- Public API ----------------
 
     public void setDataSet(DataSet ds) {
         this.dataSet = Objects.requireNonNull(ds);
@@ -219,10 +263,6 @@ public final class BlockSpecEditorPanel extends JPanel {
 
     public void setOnApply(Consumer<BlockSpec> onApply) {
         this.onApply = onApply;
-    }
-
-    public void setText(String text) {
-        setText(text, true);
     }
 
     public void setText(String text, boolean markOriginal) {
@@ -237,6 +277,12 @@ public final class BlockSpecEditorPanel extends JPanel {
         return textPane.getText();
     }
 
+    public void setText(String text) {
+        setText(text, true);
+    }
+
+    // ---------------- Core parsing & rendering ----------------
+
     public BlockSpec getCurrentSpec() {
         return currentSpec;
     }
@@ -244,8 +290,6 @@ public final class BlockSpecEditorPanel extends JPanel {
     public boolean isClean() {
         return issues == null || issues.stream().noneMatch(i -> i.severity() == BlockSpecTextCodec.Severity.ERROR);
     }
-
-    // ---------------- Core parsing & rendering ----------------
 
     private void parseAndRender() {
         // Remove old highlights
@@ -267,7 +311,8 @@ public final class BlockSpecEditorPanel extends JPanel {
                     hl.addHighlight(range[0], range[1],
                             is.severity() == BlockSpecTextCodec.Severity.ERROR ? errorPainter : warnPainter);
                 }
-            } catch (BadLocationException ignored) {}
+            } catch (BadLocationException ignored) {
+            }
         }
 
         // Status + spec
@@ -297,7 +342,6 @@ public final class BlockSpecEditorPanel extends JPanel {
         colorCommentLines();
     }
 
-
     // call this at the end of parseAndRender()
     private void colorCommentLines() {
         try {
@@ -316,7 +360,8 @@ public final class BlockSpecEditorPanel extends JPanel {
                             line.getEndOffset() - line.getStartOffset(), SimpleAttributeSet.EMPTY, true);
                 }
             }
-        } catch (BadLocationException ignored) {}
+        } catch (BadLocationException ignored) {
+        }
     }
 
     private int[] lineTokenRange(int oneBasedLine, String token) throws BadLocationException {
@@ -333,13 +378,7 @@ public final class BlockSpecEditorPanel extends JPanel {
         return new int[]{start + off, start + off + token.length()};
     }
 
-    private static int indexOfToken(String line, String token) {
-        int p = line.indexOf(token);
-        if (p >= 0) return p;
-        String quoted = "\"" + token + "\"";
-        int q = line.indexOf(quoted);
-        return q >= 0 ? q + 1 : -1; // +1 to point inside the quotes
-    }
+    // ---------------- Actions ----------------
 
     private BlockSpecTextCodec.Issue issueAtOffset(int pos) {
         if (issues == null) return null;
@@ -349,12 +388,11 @@ public final class BlockSpecEditorPanel extends JPanel {
             try {
                 int[] r = lineTokenRange(is.line(), is.token());
                 if (r != null && pos >= r[0] && pos <= r[1]) return is;
-            } catch (BadLocationException ignored) {}
+            } catch (BadLocationException ignored) {
+            }
         }
         return null;
     }
-
-    // ---------------- Actions ----------------
 
     private void applyIfClean() {
         if (isClean() && currentSpec != null) {
@@ -435,12 +473,11 @@ public final class BlockSpecEditorPanel extends JPanel {
         }
     }
 
+    // ---------------- Autocomplete ----------------
+
     /**
-     * Canonicalize RHS in-place:
-     * - Keep comments & blank lines as-is
-     * - Keep block order & names/ranks as-is
-     * - For lines with "lhs: rhs", rewrite rhs as sorted, de-duplicated member names
-     * - For singleton lines (no ":"), leave as-is
+     * Canonicalize RHS in-place: - Keep comments & blank lines as-is - Keep block order & names/ranks as-is - For lines
+     * with "lhs: rhs", rewrite rhs as sorted, de-duplicated member names - For singleton lines (no ":"), leave as-is
      */
     private void canonicalizePreservingComments() {
         Element root = textPane.getDocument().getDefaultRootElement();
@@ -503,7 +540,8 @@ public final class BlockSpecEditorPanel extends JPanel {
                         int k = Integer.parseInt(tok.substring(1));
                         String nm = idxToName.get(k);
                         if (nm != null) names.add(nm);
-                    } catch (NumberFormatException ignored) {}
+                    } catch (NumberFormatException ignored) {
+                    }
                 } else if (nameToIdx.containsKey(tok)) {
                     names.add(tok);
                 }
@@ -523,8 +561,6 @@ public final class BlockSpecEditorPanel extends JPanel {
         String newText = String.join("\n", rewritten);
         setText(newText, false); // don’t replace originalText; keep undo stack cleared
     }
-
-    // ---------------- Autocomplete ----------------
 
     private void showCompletion() {
         completionModel.clear();
@@ -558,6 +594,8 @@ public final class BlockSpecEditorPanel extends JPanel {
         completionList.requestFocusInWindow();
     }
 
+    // ---------------- Undo/Redo ----------------
+
     private void insertSelectedCompletion() {
         String sel = completionList.getSelectedValue();
         if (sel == null) return;
@@ -572,25 +610,32 @@ public final class BlockSpecEditorPanel extends JPanel {
                 else if (prev.equals(":")) ins = " " + ins;
             }
             doc.insertString(pos, ins, null);
-        } catch (BadLocationException ignored) {}
+        } catch (BadLocationException ignored) {
+        }
     }
-
-    // ---------------- Undo/Redo ----------------
 
     private void bindUndoRedo() {
         int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 
         textPane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, mask), "UNDO");
         textPane.getActionMap().put("UNDO", new AbstractAction() {
-            @Override public void actionPerformed(ActionEvent e) {
-                try { if (undo.canUndo()) undo.undo(); } catch (CannotUndoException ignored) {}
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    if (undo.canUndo()) undo.undo();
+                } catch (CannotUndoException ignored) {
+                }
             }
         });
 
         textPane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, mask), "REDO");
         textPane.getActionMap().put("REDO", new AbstractAction() {
-            @Override public void actionPerformed(ActionEvent e) {
-                try { if (undo.canRedo()) undo.redo(); } catch (CannotRedoException ignored) {}
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    if (undo.canRedo()) undo.redo();
+                } catch (CannotRedoException ignored) {
+                }
             }
         });
 
@@ -598,19 +643,25 @@ public final class BlockSpecEditorPanel extends JPanel {
         textPane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, mask | InputEvent.SHIFT_DOWN_MASK), "REDO");
     }
 
+    // ---------------- Painter ----------------
+
     public String getBlockText() {
         return textPane.getText();
     }
 
-    // ---------------- Painter ----------------
+    // ---------- Minimal demo ----------
 
-    /** Simple squiggle underline painter for error/warning highlights. */
+    /**
+     * Simple squiggle underline painter for error/warning highlights.
+     */
     private static final class SquigglePainter implements Highlighter.HighlightPainter {
         private final Color color;
         private final int amplitude = 2;
         private final int wavelength = 4;
 
-        SquigglePainter(Color color) { this.color = color; }
+        SquigglePainter(Color color) {
+            this.color = color;
+        }
 
         @Override
         public void paint(Graphics g, int offs0, int offs1, Shape bounds, JTextComponent c) {
@@ -632,7 +683,8 @@ public final class BlockSpecEditorPanel extends JPanel {
                     drawSquiggle(g2, r1.x - 6, r1.x, r1.y + r1.height - 2);
                 }
                 g2.dispose();
-            } catch (BadLocationException ignored) {}
+            } catch (BadLocationException ignored) {
+            }
         }
 
         private void drawSquiggle(Graphics2D g2, int x0, int x1, int y) {
@@ -645,30 +697,6 @@ public final class BlockSpecEditorPanel extends JPanel {
                 cur = nxt;
             }
         }
-    }
-
-    // ---------- Minimal demo ----------
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame f = new JFrame("BlockSpec Editor");
-            f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-            // TODO: replace with a real dataset from Tetrad runtime.
-            DataSet ds = DemoData.smallDemoData();
-
-            BlockSpecEditorPanel panel = new BlockSpecEditorPanel(ds,"");
-            panel.setText("""
-                    % Example
-                    L1: X1, X2, "X 3"
-                    L2: X4, X5
-                    X6
-                    """);
-            f.setContentPane(panel);
-            f.setSize(800, 600);
-            f.setLocationRelativeTo(null);
-            f.setVisible(true);
-        });
     }
 
     // Tiny stub so the demo runs; remove in production.
