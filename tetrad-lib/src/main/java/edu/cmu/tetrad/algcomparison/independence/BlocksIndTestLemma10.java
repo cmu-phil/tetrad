@@ -23,11 +23,11 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-@TestOfIndependence(
-        name = "Blocks-Test-Lemma10 (Requires blocks)",
-        command = "blocks-test-lemma10",
-        dataType = DataType.Mixed
-)
+//@TestOfIndependence(
+//        name = "Blocks-Test-Lemma10 (Requires blocks)",
+//        command = "blocks-test-lemma10",
+//        dataType = DataType.Mixed
+//)
 @Mixed
 public class BlocksIndTestLemma10 implements BlockIndependenceWrapper {
 

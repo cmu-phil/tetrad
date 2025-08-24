@@ -445,59 +445,60 @@ public final class GraphUtils {
      * @return A new, converted, graph.
      */
     public static Graph replaceNodes(Graph originalGraph, List<Node> newVariables) {
-        Map<String, Node> newNodes = new HashMap<>();
-        List<Node> _newNodes = new ArrayList<>();
-
+        // Map of name -> replacement node (keep your "no latents" rule)
+        Map<String, Node> replacements = new HashMap<>();
         for (Node node : newVariables) {
             if (node.getNodeType() != NodeType.LATENT) {
-                newNodes.put(node.getName(), node);
-                _newNodes.add(node);
+                replacements.put(node.getName(), node);
             }
         }
 
-        Graph convertedGraph = new EdgeListGraph(_newNodes);
+        // Build converted graph with ALL original nodes, but replaced by name when possible.
+        Graph convertedGraph = new EdgeListGraph();
+        // Ensure we reuse the same Node instance for each name in the converted graph
+        Map<String, Node> nameToConverted = new HashMap<>();
 
+        for (Node orig : originalGraph.getNodes()) {
+            Node rep = replacements.getOrDefault(orig.getName(), orig);
+            // Reuse a single instance per name in the new graph
+            Node toAdd = nameToConverted.computeIfAbsent(rep.getName(), k -> rep);
+            if (!convertedGraph.containsNode(toAdd)) {
+                convertedGraph.addNode(toAdd);
+            }
+        }
+
+        // Recreate edges with mapped endpoints
         for (Edge edge : originalGraph.getEdges()) {
-            Node node1 = newNodes.get(edge.getNode1().getName());
-            Node node2 = newNodes.get(edge.getNode2().getName());
-
-            if (node1 == null) {
-                node1 = edge.getNode1();
-            }
-
-            if (!convertedGraph.containsNode(node1)) {
-                convertedGraph.addNode(node1);
-            }
-
-            if (node2 == null) {
-                node2 = edge.getNode2();
-            }
-
-            if (!convertedGraph.containsNode(node2)) {
-                convertedGraph.addNode(node2);
-            }
-
-            Endpoint endpoint1 = edge.getEndpoint1();
-            Endpoint endpoint2 = edge.getEndpoint2();
-            Edge newEdge = new Edge(node1, node2, endpoint1, endpoint2);
+            Node a = nameToConverted.getOrDefault(edge.getNode1().getName(), edge.getNode1());
+            Node b = nameToConverted.getOrDefault(edge.getNode2().getName(), edge.getNode2());
+            Edge newEdge = new Edge(a, b, edge.getEndpoint1(), edge.getEndpoint2());
             convertedGraph.addEdge(newEdge);
         }
 
-        for (Triple triple : originalGraph.getUnderLines()) {
-            convertedGraph.addUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
+        // Copy triples using mapped nodes (safe lookups)
+        for (Triple t : originalGraph.getUnderLines()) {
+            Node x = nameToConverted.get(t.getX().getName());
+            Node y = nameToConverted.get(t.getY().getName());
+            Node z = nameToConverted.get(t.getZ().getName());
+            convertedGraph.addUnderlineTriple(x, y, z);
         }
 
-        for (Triple triple : originalGraph.getDottedUnderlines()) {
-            convertedGraph.addDottedUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
+        for (Triple t : originalGraph.getDottedUnderlines()) {
+            Node x = nameToConverted.get(t.getX().getName());
+            Node y = nameToConverted.get(t.getY().getName());
+            Node z = nameToConverted.get(t.getZ().getName());
+            convertedGraph.addDottedUnderlineTriple(x, y, z);
         }
 
-        for (Triple triple : originalGraph.getAmbiguousTriples()) {
-            convertedGraph.addAmbiguousTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
+        for (Triple t : originalGraph.getAmbiguousTriples()) {
+            Node x = nameToConverted.get(t.getX().getName());
+            Node y = nameToConverted.get(t.getY().getName());
+            Node z = nameToConverted.get(t.getZ().getName());
+            convertedGraph.addAmbiguousTriple(x, y, z);
         }
 
         return convertedGraph;
     }
-
     /**
      * Removes all latent nodes from the graph and returns the modified graph.
      *

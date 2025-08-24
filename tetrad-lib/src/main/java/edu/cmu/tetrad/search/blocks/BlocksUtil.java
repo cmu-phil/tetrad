@@ -249,48 +249,62 @@ public final class BlocksUtil {
         DataSet dataSet = spec.dataSet();
         List<Node> dataVars = dataSet.getVariables();
 
-        // Normalize true cluster lists -> sets for fast overlap checks
-        // Keep original name for overlap logic, but also precompute a sanitized display name.
-        Map<String, Set<String>> trueSets = new HashMap<>();
+        // Build canonical sets for true clusters (for robust matching)
+        Map<String, Set<String>> trueSetsCanon = new HashMap<>();
+        // Also keep sanitized display names for output
         Map<String, String> sanitizedTrueName = new HashMap<>();
         for (Map.Entry<String, List<String>> e : trueClusters.entrySet()) {
             String orig = e.getKey();
-            trueSets.put(orig, new HashSet<>(e.getValue()));
+            Set<String> canonSet = new HashSet<>();
+            for (String v : e.getValue()) {
+                canonSet.add(canon(v));
+            }
+            trueSetsCanon.put(orig, canonSet);
             sanitizedTrueName.put(orig, sanitizeName(orig));
         }
 
-        // To ensure unique names across blocks
+        // Ensure unique names across blocks
         Map<String, Integer> usedBaseCounts = new HashMap<>();
         List<String> newNames = new ArrayList<>(blocks.size());
 
         for (List<Integer> block : blocks) {
-            // This block's observed variable names
-            Set<String> blockSet = new HashSet<>(block.size());
-            for (int idx : block) blockSet.add(dataVars.get(idx).getName());
+            // Canonical set of variable names in this block
+            Set<String> blockCanon = new HashSet<>(block.size());
+            for (int idx : block) {
+                blockCanon.add(canon(dataVars.get(idx).getName()));
+            }
 
-            // Compute overlaps with each true cluster (precompute counts for deterministic sort)
+            // Compute overlaps against canonical true-cluster sets
+            int blockSize = blockCanon.size();
             List<Overlap> overlaps = new ArrayList<>();
-            for (Map.Entry<String, Set<String>> e : trueSets.entrySet()) {
+            String pureTrueName = null; // if fully contained in one true cluster
+
+            for (Map.Entry<String, Set<String>> e : trueSetsCanon.entrySet()) {
                 String trueName = e.getKey();
-                Set<String> trueSet = e.getValue();
+                Set<String> tset = e.getValue();
 
-                int count = 0;
-                // manual intersection count
-                for (String v : blockSet) if (trueSet.contains(v)) count++;
+                int cnt = 0;
+                for (String v : blockCanon) if (tset.contains(v)) cnt++;
 
-                if (count > 0) {
-                    overlaps.add(new Overlap(trueName, sanitizedTrueName.get(trueName), count));
+                if (cnt > 0) {
+                    overlaps.add(new Overlap(trueName, sanitizedTrueName.get(trueName), cnt));
+                    if (cnt == blockSize) {
+                        // fully contained: pure cluster
+                        pureTrueName = trueName;
+                    }
                 }
             }
 
             final String baseName;
-            if (!overlaps.isEmpty()) {
-                // Sort: descending count, then alphabetical by sanitized name for stability
+            if (pureTrueName != null) {
+                // Short-circuit: pure cluster
+                baseName = sanitizedTrueName.get(pureTrueName);
+            } else if (!overlaps.isEmpty()) {
+                // Mixed: sort by descending overlap, then alpha by sanitized name
                 overlaps.sort((o1, o2) -> {
                     if (o2.count != o1.count) return Integer.compare(o2.count, o1.count);
                     return o1.sanitized.compareTo(o2.sanitized);
                 });
-
                 // Join all overlapping sanitized names with '-'
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < overlaps.size(); i++) {
@@ -298,11 +312,9 @@ public final class BlocksUtil {
                     sb.append(overlaps.get(i).sanitized);
                 }
                 String joined = sb.toString();
-
-                // Ensure joined is non-empty after sanitization (ultra-defensive)
-                baseName = joined.isEmpty() ? "X" : joined;
+                baseName = joined.isEmpty() ? "X" : joined; // ultra-defensive
             } else {
-                // No overlap at all with any true cluster (rare in sim)—name it "Mixed"
+                // No overlap found (after canonicalization) → very rare in sims
                 baseName = "Mixed";
             }
 
@@ -325,28 +337,37 @@ public final class BlocksUtil {
         return new BlockSpec(dataSet, blocks, newLatents);
     }
 
-    /** Overlap record for sorting. */
+    /**
+     * Canonical form for matching (case/whitespace robust).
+     */
+    private static String canon(String s) {
+        return (s == null) ? "" : s.trim().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * Sanitize a cluster name to a stable identifier-like token for output.
+     */
+    private static String sanitizeName(String s) {
+        if (s == null) return "X";
+        String out = s.replaceAll("[^A-Za-z0-9_]+", "_"); // non-word -> _
+        out = out.replaceAll("_+", "_");                  // collapse __
+        out = out.replaceAll("^_+|_+$", "");              // trim _
+        if (out.isEmpty()) out = "X";
+        return out;
+    }
+
+    /**
+     * Overlap record for sorting.
+     */
     private static final class Overlap {
         final String original;
         final String sanitized;
         final int count;
+
         Overlap(String original, String sanitized, int count) {
             this.original = original;
             this.sanitized = sanitized;
             this.count = count;
         }
     }
-
-    /** Sanitize a cluster name to a stable identifier-like token. */
-    private static String sanitizeName(String s) {
-        if (s == null) return "X";
-        // Replace non [A-Za-z0-9_] with '_'
-        String out = s.replaceAll("[^A-Za-z0-9_]+", "_");
-        // Collapse multiple underscores
-        out = out.replaceAll("_+", "_");
-        // Trim leading/trailing underscores
-        out = out.replaceAll("^_+|_+$", "");
-        // Ensure non-empty
-        if (out.isEmpty()) out = "X";
-        return out;
-    }}
+}
