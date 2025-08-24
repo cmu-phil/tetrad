@@ -14,13 +14,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Trek-separation block-level CI test (IndTestBlocksTs):
- *
- * Given blocks X, Y, and conditioning blocks Z1..Zk that correspond to latent factors [X], [Y], [Z1]..[Zk],
- * split each Zi into two nearly-equal parts ZiA, ZiB. Form
- *   L = X ∪ Z1A ∪ ... ∪ ZkA,   R = Y ∪ Z1B ∪ ... ∪ ZkB
- * and estimate rank(Σ_{L,R}). Under linear measurement models with k conditioning latents, independence suggests
- *   rank(Σ_{L,R}) ≤ 2k.
- *
+ * <p>
+ * Given blocks X, Y, and conditioning blocks Z1..Zk that correspond to latent factors [X], [Y], [Z1]..[Zk], split each
+ * Zi into two nearly-equal parts ZiA, ZiB. Form L = X ∪ Z1A ∪ ... ∪ ZkA,   R = Y ∪ Z1B ∪ ... ∪ ZkB and estimate
+ * rank(Σ_{L,R}). Under linear measurement models with n conditioning latents, independence suggests rank(Σ_{L,R}) ≤
+ * 2k.
+ * <p>
  * Drop-in replacement matching the public surface of IndTestBlocksLemma10 (no p-values exposed).
  */
 public class IndTestBlocksTs implements IndependenceTest, BlockTest {
@@ -45,8 +44,6 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
     // knobs
     private double alpha = 0.01;
     private boolean verbose = false;
-    private EqualityMode mode = EqualityMode.LE; // accept rank <= 2k by default
-    private int tol = 0;                         // integer tolerance
 
     // split knobs
     private boolean randomizeSplits = true;
@@ -99,48 +96,140 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
 
     // === Public API knobs (matching Lemma10 style) ===
 
-    @Override
-    public List<Node> getVariables() { return new ArrayList<>(variables); }
+    private static String zNames(Set<Node> z) {
+        if (z == null || z.isEmpty()) return "{}";
+        List<String> names = new ArrayList<>(z.size());
+        for (Node n : z) names.add(n.getName());
+        Collections.sort(names);
+        return "{" + String.join(",", names) + "}";
+    }
+
+    /**
+     * Deterministic alternating split; if rng!=null, shuffle then half/half.
+     */
+    private static int[][] splitCols(int[] cols, Random rng, boolean leftGetsSmaller) {
+        if (cols == null || cols.length == 0) return new int[][]{new int[0], new int[0]};
+        int[] idx = Arrays.copyOf(cols, cols.length);
+        if (rng == null) {
+            // Alternate indices. If leftGetsSmaller and odd length, give left the smaller half (floor).
+            boolean leftGetsOddPositions = leftGetsSmaller; // odd positions count = floor(n/2)
+            int aCount = leftGetsOddPositions ? (idx.length / 2) : ((idx.length + 1) / 2);
+            int bCount = idx.length - aCount;
+            int[] A = new int[aCount];
+            int[] B = new int[bCount];
+            int ai = 0, bi = 0;
+            for (int i = 0; i < idx.length; i++) {
+                boolean toA = ((i & 1) == 1) == leftGetsOddPositions;
+                if (toA) A[ai++] = idx[i];
+                else B[bi++] = idx[i];
+            }
+            return new int[][]{A, B};
+        } else {
+            for (int i = idx.length - 1; i > 0; i--) {
+                int j = rng.nextInt(i + 1);
+                int tmp = idx[i];
+                idx[i] = idx[j];
+                idx[j] = tmp;
+            }
+            int half = idx.length / 2; // smaller half size when odd
+            int[] A = Arrays.copyOfRange(idx, 0, half);
+            int[] B = Arrays.copyOfRange(idx, half, idx.length);
+            return new int[][]{A, B};
+        }
+    }
+
+    private static List<Node> indicesToNodes(int[] idxs, List<Node> all) {
+        List<Node> out = new ArrayList<>(idxs.length);
+        for (int i : idxs) out.add(all.get(i));
+        return out;
+    }
 
     @Override
-    public DataModel getData() { return blockSpec.dataSet(); }
+    public List<Node> getVariables() {
+        return new ArrayList<>(variables);
+    }
 
     @Override
-    public boolean isVerbose() { return this.verbose; }
+    public DataModel getData() {
+        return blockSpec.dataSet();
+    }
 
-    public void setVerbose(boolean verbose) { this.verbose = verbose; }
+    @Override
+    public boolean isVerbose() {
+        return this.verbose;
+    }
 
-    public double getAlpha() { return alpha; }
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public double getAlpha() {
+        return alpha;
+    }
 
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("Alpha must be in (0,1).");
         this.alpha = alpha;
     }
 
-    /** Equality criterion vs 2k. Default LE (robust). */
-    public void setEqualityMode(EqualityMode mode) { this.mode = Objects.requireNonNull(mode, "mode"); }
-
-    /** Integer tolerance on the equality/inequality. */
-    public void setTolerance(int tol) { if (tol < 0) throw new IllegalArgumentException("tol >= 0"); this.tol = tol; }
-
-    /** Enable randomized Zi splits (min over {@code numTrials} trials). */
-    public void setRandomizeSplits(boolean randomize, long seed) { this.randomizeSplits = randomize; this.splitSeed = seed; }
-
-    /** Number of split trials; min-rank across trials is used. */
-    public void setNumTrials(int t) { if (t < 1) throw new IllegalArgumentException("numTrials >= 1"); this.numTrials = t; }
-
-    /** If true and |Zi| is odd, left gets floor(|Zi|/2); otherwise left gets ceil(|Zi|/2). */
-    public void setLeftGetsSmallerHalfWhenOdd(boolean flag) { this.leftGetsSmallerHalfWhenOdd = flag; }
-
-    @Override
-    public BlockSpec getBlockSpec() { return blockSpec; }
+    /**
+     * Enable randomized Zi splits (min over {@code numTrials} trials).
+     */
+    public void setRandomizeSplits(boolean randomize, long seed) {
+        this.randomizeSplits = randomize;
+        this.splitSeed = seed;
+    }
 
     // === Core test ===
 
+    /**
+     * Number of split trials; min-rank across trials is used.
+     */
+    public void setNumTrials(int t) {
+        if (t < 1) throw new IllegalArgumentException("numTrials >= 1");
+        this.numTrials = t;
+    }
+
+    // === Rank with trials ===
+
+    /**
+     * If true and |Zi| is odd, left gets floor(|Zi|/2); otherwise left gets ceil(|Zi|/2).
+     */
+    public void setLeftGetsSmallerHalfWhenOdd(boolean flag) {
+        this.leftGetsSmallerHalfWhenOdd = flag;
+    }
+
+    // === Rank via RankTests with LRU cache ===
+
+    @Override
+    public BlockSpec getBlockSpec() {
+        return blockSpec;
+    }
+
+    // === Build L/R from blocks and Z split ===
+
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+
         // Build sides L, R using split of each Zi
-        Build b = buildSides(x, y, z);
+        long baseSeed = this.splitSeed;
+        int bestRank = Integer.MAX_VALUE;
+        Build bestBuild = null;
+
+        for (int trial = 0; trial < Math.max(1, numTrials); trial++) {
+            if (randomizeSplits) this.splitSeed = baseSeed + trial;
+            Build b = buildSides(x, y, z);
+            int r = getRank(b.Lcols, b.Rcols);
+            if (r < bestRank) {
+                bestRank = r;
+                bestBuild = b; // keep the winner
+            }
+            if (!randomizeSplits) break;
+        }
+        this.splitSeed = baseSeed;
+
+        // use bestBuild for verbose and result context
+        Build b = (bestBuild != null) ? bestBuild : buildSides(x, y, z);
 
         if (verbose) {
             List<Node> leftVars = indicesToNodes(b.Lcols, dataVars);
@@ -151,20 +240,22 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         // Estimate rank for Σ_{L,R}
         int estRank = getRankMinOverTrials(b.Lcols, b.Rcols);
 
-        tol = 0;
-        mode = EqualityMode.EQ;
+        int k = b.n;
 
-        int k = b.k;
-        int target = k;
-        boolean indep = switch (mode) {
-            case EQ -> Math.abs(estRank - target) <= tol;
-            case LE -> estRank <= target + tol;
-            case GE -> estRank >= target - tol;
-        };
+        int target = 0;
+        for (Node _z : z) {
+            Integer i = nodeHash.get(_z);
+            if (i == null) throw new IllegalArgumentException("Conditioning node not found: " + _z);
+            Integer rk = blockSpec.ranks().get(i);
+            if (rk == null) throw new IllegalStateException("Missing rank for block index " + i + " (node=" + _z + ")");
+            target += rk;
+        }
+
+        boolean indep = estRank == k;
 
         if (verbose) {
-            System.out.printf("TS: %s _||_ %s | %s ? estRank=%d, 2k=%d, mode=%s, tol=%d -> %s%n",
-                    b.xName, b.yName, b.zNames, estRank, target, mode, tol, indep ? "INDEP" : "DEP");
+            System.out.printf("TS: %s _||_ %s | %s ? estRank=%d, n=%d -> %s%n",
+                    b.xName, b.yName, b.zNames, estRank, target, indep ? "INDEP" : "DEP");
         }
 
         return new IndependenceResult(
@@ -174,8 +265,6 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
                 Double.NaN  // score not used
         );
     }
-
-    // === Rank with trials ===
 
     private int getRankMinOverTrials(int[] L, int[] R) {
         int best = Integer.MAX_VALUE;
@@ -189,8 +278,6 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         return best;
     }
 
-    // === Rank via RankTests with LRU cache ===
-
     private int getRank(int[] L, int[] R) {
         RKey key = new RKey(L, R, n, alpha, splitSeed, randomizeSplits, numTrials);
         Integer cached = rankCache.get(key);
@@ -200,8 +287,6 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         rankCache.put(key, rank);
         return rank;
     }
-
-    // === Build L/R from blocks and Z split ===
 
     private Build buildSides(Node x, Node y, Set<Node> z) {
         Integer xiVar = nodeHash.get(x);
@@ -241,59 +326,19 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         return new Build(x, y, x.getName(), y.getName(), zNames(z), z, L, R, zVars.length);
     }
 
-    private static String zNames(Set<Node> z) {
-        if (z == null || z.isEmpty()) return "{}";
-        List<String> names = new ArrayList<>(z.size());
-        for (Node n : z) names.add(n.getName());
-        Collections.sort(names);
-        return "{" + String.join(",", names) + "}";
-    }
-
-    /** Deterministic alternating split; if rng!=null, shuffle then half/half. */
-    private static int[][] splitCols(int[] cols, Random rng, boolean leftGetsSmaller) {
-        if (cols == null || cols.length == 0) return new int[][]{ new int[0], new int[0] };
-        int[] idx = Arrays.copyOf(cols, cols.length);
-        if (rng == null) {
-            // Alternate indices. If leftGetsSmaller and odd length, give left the smaller half (floor).
-            boolean leftGetsOddPositions = leftGetsSmaller; // odd positions count = floor(n/2)
-            int aCount = leftGetsOddPositions ? (idx.length / 2) : ((idx.length + 1) / 2);
-            int bCount = idx.length - aCount;
-            int[] A = new int[aCount];
-            int[] B = new int[bCount];
-            int ai = 0, bi = 0;
-            for (int i = 0; i < idx.length; i++) {
-                boolean toA = (i & 1) == 1 ? leftGetsOddPositions : !leftGetsOddPositions;
-                if (toA) A[ai++] = idx[i]; else B[bi++] = idx[i];
-            }
-            return new int[][]{A, B};
-        } else {
-            for (int i = idx.length - 1; i > 0; i--) {
-                int j = rng.nextInt(i + 1);
-                int tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp;
-            }
-            int half = idx.length / 2; // smaller half size when odd
-            int[] A = Arrays.copyOfRange(idx, 0, half);
-            int[] B = Arrays.copyOfRange(idx, half, idx.length);
-            return new int[][]{A, B};
-        }
-    }
-
-    private static List<Node> indicesToNodes(int[] idxs, List<Node> all) {
-        List<Node> out = new ArrayList<>(idxs.length);
-        for (int i : idxs) out.add(all.get(i));
-        return out;
-    }
-
     // === Small utilities ===
-
-    public enum EqualityMode { EQ, LE, GE }
 
     private static final class IntBuilder {
         private final BitSet bs = new BitSet();
-        void addAll(int[] a) { if (a != null) for (int v : a) bs.set(v); }
+
+        void addAll(int[] a) {
+            if (a != null) for (int v : a) bs.set(v);
+        }
+
         int[] toArraySortedDistinct() {
             int[] out = new int[bs.cardinality()];
-            int k = 0; for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i+1)) out[k++] = i;
+            int k = 0;
+            for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) out[k++] = i;
             return out;
         }
     }
@@ -303,25 +348,90 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         private final ReentrantLock lock = new ReentrantLock();
         private final int maxSize;
         private final LinkedHashMap<K, V> map;
-        LruMap(int maxSize) { this.maxSize = Math.max(16, maxSize); this.map = new LinkedHashMap<>(1024, 0.75f, true); }
-        V get(K k) { lock.lock(); try { return map.get(k); } finally { lock.unlock(); } }
-        void put(K k, V v) { lock.lock(); try { map.put(k, v); while (map.size() > maxSize) { Iterator<Map.Entry<K,V>> it = map.entrySet().iterator(); if (it.hasNext()) { it.next(); it.remove(); } else break; } } finally { lock.unlock(); } }
-        void clear() { lock.lock(); try { map.clear(); } finally { lock.unlock(); } }
+
+        LruMap(int maxSize) {
+            this.maxSize = Math.max(16, maxSize);
+            this.map = new LinkedHashMap<>(1024, 0.75f, true);
+        }
+
+        V get(K k) {
+            lock.lock();
+            try {
+                return map.get(k);
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        void put(K k, V v) {
+            lock.lock();
+            try {
+                map.put(k, v);
+                while (map.size() > maxSize) {
+                    Iterator<Map.Entry<K, V>> it = map.entrySet().iterator();
+                    if (it.hasNext()) {
+                        it.next();
+                        it.remove();
+                    } else break;
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        void clear() {
+            lock.lock();
+            try {
+                map.clear();
+            } finally {
+                lock.unlock();
+            }
+        }
     }
 
     private record Build(Node xNode, Node yNode,
                          String xName, String yName, String zNames,
-                         Set<Node> zSet, int[] Lcols, int[] Rcols, int k) {}
+                         Set<Node> zSet, int[] Lcols, int[] Rcols, int n) {
+    }
 
     private static final class RKey {
-        final int[] L; final int[] R; final int n; final long alphaBits; final long seed; final boolean rand; final int trials; private final int hash;
+        final int[] L;
+        final int[] R;
+        final int n;
+        final long alphaBits;
+        final long seed;
+        final boolean rand;
+        final int trials;
+        private final int hash;
+
         RKey(int[] L, int[] R, int n, double alpha, long seed, boolean rand, int trials) {
-            this.L = L.clone(); this.R = R.clone(); this.n = n; this.alphaBits = Double.doubleToLongBits(Math.rint(alpha*1e12)/1e12);
-            this.seed = seed; this.rand = rand; this.trials = trials;
-            int h = 1; h = 31*h + Arrays.hashCode(this.L); h = 31*h + Arrays.hashCode(this.R); h = 31*h + n;
-            h = 31*h + Long.hashCode(alphaBits); h = 31*h + Long.hashCode(seed); h = 31*h + Boolean.hashCode(rand); h = 31*h + trials; this.hash = h;
+            this.L = L.clone();
+            this.R = R.clone();
+            this.n = n;
+            this.alphaBits = Double.doubleToLongBits(Math.rint(alpha * 1e12) / 1e12);
+            this.seed = seed;
+            this.rand = rand;
+            this.trials = trials;
+            int h = 1;
+            h = 31 * h + Arrays.hashCode(this.L);
+            h = 31 * h + Arrays.hashCode(this.R);
+            h = 31 * h + n;
+            h = 31 * h + Long.hashCode(alphaBits);
+            h = 31 * h + Long.hashCode(seed);
+            h = 31 * h + Boolean.hashCode(rand);
+            h = 31 * h + trials;
+            this.hash = h;
         }
-        @Override public boolean equals(Object o){ if(!(o instanceof RKey k)) return false; return n==k.n && alphaBits==k.alphaBits && seed==k.seed && rand==k.rand && trials==k.trials && Arrays.equals(L,k.L) && Arrays.equals(R,k.R);}
-        @Override public int hashCode(){ return hash; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof RKey k)) return false;
+            return n == k.n && alphaBits == k.alphaBits && seed == k.seed && rand == k.rand && trials == k.trials && Arrays.equals(L, k.L) && Arrays.equals(R, k.R);
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
     }
 }
