@@ -1,28 +1,27 @@
 package edu.cmu.tetrad.search.blocks;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.utils.ClusterSignificance;
 
 import java.util.*;
 
 /**
- * Utility class for handling operations related to blocks, such as creating block variables,
- * canonicalizing blocks, ensuring valid indices, and applying various cluster policies.
- * This class includes methods to manipulate and process blocks and their corresponding data
- * representations within a dataset.
+ * Utility class for handling operations related to blocks, such as creating block variables, canonicalizing blocks,
+ * ensuring valid indices, and applying various cluster policies. This class includes methods to manipulate and process
+ * blocks and their corresponding data representations within a dataset.
  */
 public final class BlocksUtil {
-    private BlocksUtil() {}
+    private BlocksUtil() {
+    }
 
     /**
-     * Creates a list of block variables based on the provided list of blocks and the dataset.
-     * If a block contains a single index, the corresponding variable from the dataset is added
-     * to the result. For larger blocks, a new latent variable is created and added to the result.
+     * Creates a list of block variables based on the provided list of blocks and the dataset. If a block contains a
+     * single index, the corresponding variable from the dataset is added to the result. For larger blocks, a new latent
+     * variable is created and added to the result.
      *
-     * @param blocks a list of lists, where each inner list represents a block of indices
+     * @param blocks  a list of lists, where each inner list represents a block of indices
      * @param dataSet the dataset associated with the specified blocks, providing the variables
      * @return a list of Node objects representing the block variables, either existing or newly created
      */
@@ -33,7 +32,7 @@ public final class BlocksUtil {
             if (block.size() == 1) {
                 meta.add(dataSet.getVariable(block.getFirst()));
             } else {
-                ContinuousVariable latent = new ContinuousVariable("L" +  latentIndex++);
+                ContinuousVariable latent = new ContinuousVariable("L" + latentIndex++);
                 latent.setNodeType(NodeType.LATENT);
                 meta.add(latent);
             }
@@ -43,9 +42,9 @@ public final class BlocksUtil {
     }
 
     /**
-     * Canonicalizes a list of blocks by removing null or empty blocks, sorting the contents of
-     * each block, and ensuring the resulting blocks are unique. The returned list maintains
-     * the order of the first occurrence of each unique block.
+     * Canonicalizes a list of blocks by removing null or empty blocks, sorting the contents of each block, and ensuring
+     * the resulting blocks are unique. The returned list maintains the order of the first occurrence of each unique
+     * block.
      *
      * @param blocks a list of lists, where each inner list represents a block of indices to canonicalize
      * @return a list of canonicalized blocks that are non-empty, sorted internally, and unique in order
@@ -62,12 +61,12 @@ public final class BlocksUtil {
     }
 
     /**
-     * Validates the provided list of blocks to ensure that all indices within each block
-     * are non-negative, within the range of columns in the given dataset, and not null.
-     * Throws an IllegalArgumentException if any of these conditions are violated.
+     * Validates the provided list of blocks to ensure that all indices within each block are non-negative, within the
+     * range of columns in the given dataset, and not null. Throws an IllegalArgumentException if any of these
+     * conditions are violated.
      *
      * @param blocks a list of lists, where each inner list represents a block of indices to validate
-     * @param data the dataset providing the number of columns for range validation
+     * @param data   the dataset providing the number of columns for range validation
      */
     public static void validateBlocks(List<List<Integer>> blocks, DataSet data) {
         int p = data.getNumColumns();
@@ -81,10 +80,10 @@ public final class BlocksUtil {
     }
 
     /**
-     * Converts a list of block indices and a dataset into a BlockSpec object, ensuring the blocks
-     * are canonicalized and generating the appropriate block variables.
+     * Converts a list of block indices and a dataset into a BlockSpec object, ensuring the blocks are canonicalized and
+     * generating the appropriate block variables.
      *
-     * @param blocks a list of lists, where each inner list represents a block of indices
+     * @param blocks  a list of lists, where each inner list represents a block of indices
      * @param dataSet the dataset associated with the blocks
      * @return a BlockSpec object containing the dataset, canonicalized blocks, and block variables
      */
@@ -119,9 +118,9 @@ public final class BlocksUtil {
     }
 
     /**
-     * Creates a list of disjoint blocks from the provided list of blocks, prioritizing larger blocks first.
-     * Each block is processed to ensure no overlapping indices, and elements within processed blocks are sorted.
-     * The resulting list is unmodifiable and contains unique, disjoint, and sorted blocks.
+     * Creates a list of disjoint blocks from the provided list of blocks, prioritizing larger blocks first. Each block
+     * is processed to ensure no overlapping indices, and elements within processed blocks are sorted. The resulting
+     * list is unmodifiable and contains unique, disjoint, and sorted blocks.
      *
      * @param blocks a list of lists, where each inner list represents a block of indices to be made disjoint
      * @return a list of disjoint blocks, where each block is a sorted and unmodifiable list of indices
@@ -156,11 +155,11 @@ public final class BlocksUtil {
     }
 
     /**
-     * Constructs a BlockSpec object using the provided DataSet and block definitions, ensuring that
-     * the blocks are made disjoint by prioritizing larger blocks first. The resulting BlockSpec includes
-     * the dataset, the disjoint blocks, and associated block variables.
+     * Constructs a BlockSpec object using the provided DataSet and block definitions, ensuring that the blocks are made
+     * disjoint by prioritizing larger blocks first. The resulting BlockSpec includes the dataset, the disjoint blocks,
+     * and associated block variables.
      *
-     * @param ds the dataset associated with the blocks
+     * @param ds     the dataset associated with the blocks
      * @param blocks a list of lists, where each inner list represents a block of indices
      * @return a BlockSpec object containing the dataset, disjoint blocks, and block variables
      */
@@ -171,20 +170,20 @@ public final class BlocksUtil {
     }
 
     /**
-     * Applies the specified single cluster policy to the given set of blocks.
-     * Depending on the policy, this method may modify or extend the blocks to include
-     * singleton clusters, exclude them, or group them as noise variables.
+     * Applies the specified single cluster policy to the given set of blocks. Depending on the policy, this method may
+     * modify or extend the blocks to include singleton clusters, exclude them, or group them as noise variables.
      *
-     * @param policy the single cluster policy to apply, determining how singleton clusters are handled
-     * @param blocks a list of lists where each inner list represents a cluster of indices
+     * @param policy  the single cluster policy to apply, determining how singleton clusters are handled
+     * @param blocks  a list of lists where each inner list represents a cluster of indices
      * @param dataSet the dataset associated with the blocks, providing information about column indices
-     * @return an unmodifiable list of lists representing the updated or unchanged clusters based on the specified policy
+     * @return an unmodifiable list of lists representing the updated or unchanged clusters based on the specified
+     * policy
      * @throws IllegalArgumentException if an unknown policy is provided
      */
     public static List<List<Integer>> applySingleClusterPolicy(SingleClusterPolicy policy, List<List<Integer>> blocks, DataSet dataSet) {
         switch (policy) {
             case INCLUDE -> {
-                Set<Integer> used =  new HashSet<>();
+                Set<Integer> used = new HashSet<>();
                 for (List<Integer> block : blocks) {
                     used.addAll(block);
                 }
@@ -209,7 +208,7 @@ public final class BlocksUtil {
                 return Collections.unmodifiableList(blocks);
             }
             case NOISE_VAR -> {
-                Set<Integer> used =  new HashSet<>();
+                Set<Integer> used = new HashSet<>();
                 for (List<Integer> block : blocks) {
                     used.addAll(block);
                 }
@@ -232,8 +231,8 @@ public final class BlocksUtil {
     }
 
     /**
-     * Renames the last variable in the block variables of the given BlockSpec to "Noise".
-     * This method modifies the name of the last variable while preserving other aspects of the BlockSpec.
+     * Renames the last variable in the block variables of the given BlockSpec to "Noise". This method modifies the name
+     * of the last variable while preserving other aspects of the BlockSpec.
      *
      * @param spec the BlockSpec object containing the block variables to modify
      * @return a new BlockSpec object with the last variable renamed to "Noise"
@@ -248,48 +247,106 @@ public final class BlocksUtil {
     public static BlockSpec giveGoodLatentNames(BlockSpec spec, Map<String, List<String>> trueClusters) {
         List<List<Integer>> blocks = spec.blocks();
         DataSet dataSet = spec.dataSet();
-        
         List<Node> dataVars = dataSet.getVariables();
-        
-        List<String> newNames = new ArrayList<>();
+
+        // Normalize true cluster lists -> sets for fast overlap checks
+        // Keep original name for overlap logic, but also precompute a sanitized display name.
+        Map<String, Set<String>> trueSets = new HashMap<>();
+        Map<String, String> sanitizedTrueName = new HashMap<>();
+        for (Map.Entry<String, List<String>> e : trueClusters.entrySet()) {
+            String orig = e.getKey();
+            trueSets.put(orig, new HashSet<>(e.getValue()));
+            sanitizedTrueName.put(orig, sanitizeName(orig));
+        }
+
+        // To ensure unique names across blocks
+        Map<String, Integer> usedBaseCounts = new HashMap<>();
+        List<String> newNames = new ArrayList<>(blocks.size());
 
         for (List<Integer> block : blocks) {
-            List<Node> blockNodes = ClusterSignificance.variablesForIndices(block, dataVars);
-            List<String> blockNames = new ArrayList<>();
-            for (Node blockNode : blockNodes) {
-                blockNames.add(blockNode.getName());
-            }
+            // This block's observed variable names
+            Set<String> blockSet = new HashSet<>(block.size());
+            for (int idx : block) blockSet.add(dataVars.get(idx).getName());
 
-            StringBuilder newName = new StringBuilder();
+            // Compute overlaps with each true cluster (precompute counts for deterministic sort)
+            List<Overlap> overlaps = new ArrayList<>();
+            for (Map.Entry<String, Set<String>> e : trueSets.entrySet()) {
+                String trueName = e.getKey();
+                Set<String> trueSet = e.getValue();
 
-            for (String trueName : trueClusters.keySet()) {
-                List<String> cluster = trueClusters.get(trueName);
+                int count = 0;
+                // manual intersection count
+                for (String v : blockSet) if (trueSet.contains(v)) count++;
 
-                if (new HashSet<>(cluster).containsAll(blockNames)) {
-                    if (!newName.isEmpty()) {
-                        newName.append("-");
-                    }
-
-                    newName.append(trueName);
+                if (count > 0) {
+                    overlaps.add(new Overlap(trueName, sanitizedTrueName.get(trueName), count));
                 }
             }
 
-            if (newNames.contains(newName.toString())) {
-                long count = newNames.stream().filter(name -> name.startsWith(newName.toString())).count();
-                newName.append("-").append(count + 1);
+            final String baseName;
+            if (!overlaps.isEmpty()) {
+                // Sort: descending count, then alphabetical by sanitized name for stability
+                overlaps.sort((o1, o2) -> {
+                    if (o2.count != o1.count) return Integer.compare(o2.count, o1.count);
+                    return o1.sanitized.compareTo(o2.sanitized);
+                });
+
+                // Join all overlapping sanitized names with '-'
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < overlaps.size(); i++) {
+                    if (i > 0) sb.append('-');
+                    sb.append(overlaps.get(i).sanitized);
+                }
+                String joined = sb.toString();
+
+                // Ensure joined is non-empty after sanitization (ultra-defensive)
+                baseName = joined.isEmpty() ? "X" : joined;
+            } else {
+                // No overlap at all with any true cluster (rare in sim)—name it "Mixed"
+                baseName = "Mixed";
             }
 
-            newNames.add(newName.toString());
+            // Ensure uniqueness (Base, Base-2, Base-3, ...)
+            int k = usedBaseCounts.getOrDefault(baseName, 0) + 1;
+            usedBaseCounts.put(baseName, k);
+            String finalName = (k == 1) ? baseName : (baseName + "-" + k);
+
+            newNames.add(finalName);
         }
 
-        List<Node> newLatents = new ArrayList<>();
-
+        // Build latent nodes with these names
+        List<Node> newLatents = new ArrayList<>(newNames.size());
         for (String name : newNames) {
-            Node newLatent = new ContinuousVariable(name);
-            newLatent.setNodeType(NodeType.LATENT);
-            newLatents.add(newLatent);
+            Node latent = new ContinuousVariable(name);
+            latent.setNodeType(NodeType.LATENT);
+            newLatents.add(latent);
         }
-        
+
         return new BlockSpec(dataSet, blocks, newLatents);
     }
-}
+
+    /** Overlap record for sorting. */
+    private static final class Overlap {
+        final String original;
+        final String sanitized;
+        final int count;
+        Overlap(String original, String sanitized, int count) {
+            this.original = original;
+            this.sanitized = sanitized;
+            this.count = count;
+        }
+    }
+
+    /** Sanitize a cluster name to a stable identifier-like token. */
+    private static String sanitizeName(String s) {
+        if (s == null) return "X";
+        // Replace non [A-Za-z0-9_] with '_'
+        String out = s.replaceAll("[^A-Za-z0-9_]+", "_");
+        // Collapse multiple underscores
+        out = out.replaceAll("_+", "_");
+        // Trim leading/trailing underscores
+        out = out.replaceAll("^_+|_+$", "");
+        // Ensure non-empty
+        if (out.isEmpty()) out = "X";
+        return out;
+    }}

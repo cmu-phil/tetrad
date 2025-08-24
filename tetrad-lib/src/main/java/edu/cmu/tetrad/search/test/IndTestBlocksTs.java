@@ -151,8 +151,11 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         // Estimate rank for Σ_{L,R}
         int estRank = getRankMinOverTrials(b.Lcols, b.Rcols);
 
+        tol = 0;
+        mode = EqualityMode.EQ;
+
         int k = b.k;
-        int target = 2 * k;
+        int target = k;
         boolean indep = switch (mode) {
             case EQ -> Math.abs(estRank - target) <= tol;
             case LE -> estRank <= target + tol;

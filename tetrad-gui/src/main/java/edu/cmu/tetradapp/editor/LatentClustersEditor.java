@@ -96,6 +96,8 @@ public class LatentClustersEditor extends JPanel implements PropertyChangeListen
             runner.setTest(wizard.getTest());
             runner.setBlockText(wizard.getBlockTest());
 
+            firePropertyChange("modelChanged", null, null);
+
             // Optionally kick off the downstream block-based search now,
             // or enable a "Run structure search" button, etc.
             // runner.runStructureSearchAsync(); // if you have that
