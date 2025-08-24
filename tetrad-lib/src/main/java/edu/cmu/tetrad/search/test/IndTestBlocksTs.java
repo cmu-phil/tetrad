@@ -240,8 +240,6 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         // Estimate rank for Σ_{L,R}
         int estRank = getRankMinOverTrials(b.Lcols, b.Rcols);
 
-        int nTotal = b.n;
-
         int target = 0;
         for (Node _z : z) {
             Integer i = nodeHash.get(_z);
