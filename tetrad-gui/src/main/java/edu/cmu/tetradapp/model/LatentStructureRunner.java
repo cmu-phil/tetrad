@@ -50,7 +50,7 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
     }
 
     /**
-     * Called by editor when user presses “Run”.
+     * Called by editor when user presses “Run.”
      */
     @Override
     public void execute() {
