@@ -82,15 +82,13 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
             return;
         }
 
-        for (Node node : spec.dataSet().getVariables()) {
-            graph.addNode(node);
-        }
-
         for (int i = 0; i < spec.blocks().size(); i++) {
             Node var = spec.blockVariables().get(i);
 
             for (int j : spec.blocks().get(i)) {
-                graph.addDirectedEdge(var, spec.dataSet().getVariables().get(j));
+                Node node2 = spec.dataSet().getVariables().get(j);
+                graph.addNode(node2);
+                graph.addDirectedEdge(var, node2);
             }
         }
 
