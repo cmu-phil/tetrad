@@ -267,9 +267,8 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
     private int getRankMinOverTrials(int[] L, int[] R) {
         int best = Integer.MAX_VALUE;
         for (int t = 0; t < numTrials; t++) {
-            int[] Lt = L, Rt = R;
             // When randomizing, re-split the Z blocks inside buildSides(); here we only cache by (L,R,alpha,...)
-            int r = getRank(Lt, Rt);
+            int r = getRank(L, R);
             if (r < best) best = r;
             if (!randomizeSplits) break; // deterministic: only one pass
         }
