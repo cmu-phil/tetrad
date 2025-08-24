@@ -240,7 +240,7 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         // Estimate rank for Σ_{L,R}
         int estRank = getRankMinOverTrials(b.Lcols, b.Rcols);
 
-        int k = b.n;
+        int nTotal = b.n;
 
         int target = 0;
         for (Node _z : z) {
@@ -251,7 +251,7 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
             target += rk;
         }
 
-        boolean indep = estRank == k;
+        boolean indep = estRank == target;
 
         if (verbose) {
             System.out.printf("TS: %s _||_ %s | %s ? estRank(min over trials)=%d, target(sum ranks)=%d -> %s%n",

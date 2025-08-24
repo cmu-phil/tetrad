@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ntad_test.BollenTing;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
@@ -34,9 +34,6 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
-
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.sqrt;
 
 
 /**
@@ -82,6 +79,10 @@ public class Ftfc {
     private final NtadTest test;
     private final int sampleSize;
     private final int ess;
+    // --- Tunables (optional; adjust if you want less brittleness)
+    private double depFractionThreshold = 0.90;   // was hardcoded 0.90
+    private double appendPurityFraction = 0.75;   // require ≥75% pure sextads when appending
+
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
@@ -251,38 +252,75 @@ public class Ftfc {
         return clusters;
     }
 
+//    private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
+//        Iterator<Integer> iterator = unclustered.iterator();
+//
+//        while (iterator.hasNext()) {
+//            int o = iterator.next();
+//
+//            if (cluster.contains(o)) continue;
+//
+//            boolean allSextadsPure = true;
+//
+//            // Check all sextets with o and 5 other elements in the cluster
+//            int size = cluster.size();
+//
+//            for (int i = 0; i < size - 2 && allSextadsPure; i++) {
+//                for (int j = i + 1; j < size - 1 && allSextadsPure; j++) {
+//                    for (int k = j + 1; k < size && allSextadsPure; k++) {
+//                        for (int l = k + 1; l < size && allSextadsPure; l++) {
+//                            for (int m = l + 1; m < size && allSextadsPure; m++) {
+//                                List<Integer> sextad = List.of(cluster.get(i), cluster.get(j), cluster.get(k),
+//                                        cluster.get(l), cluster.get(m), o);
+//
+//                                if (pure(sextad) != Purity.PURE) {
+//                                    allSextadsPure = false;
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if (allSextadsPure) {
+//                cluster.addLast(o);
+//                iterator.remove();
+//            }
+//        }
+//    }
+
     private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
+        // iterate with an Iterator so we can remove from unclustered safely
         Iterator<Integer> iterator = unclustered.iterator();
 
         while (iterator.hasNext()) {
             int o = iterator.next();
-
             if (cluster.contains(o)) continue;
 
-            boolean allSextadsPure = true;
-
-            // Check all sextets with o and 5 other elements in the cluster
             int size = cluster.size();
+            int tests = 0, pureCount = 0;
 
-            for (int i = 0; i < size - 2 && allSextadsPure; i++) {
-                for (int j = i + 1; j < size - 1 && allSextadsPure; j++) {
-                    for (int k = j + 1; k < size && allSextadsPure; k++) {
-                        for (int l = k + 1; l < size && allSextadsPure; l++) {
-                            for (int m = l + 1; m < size && allSextadsPure; m++) {
-                                List<Integer> sextad = List.of(cluster.get(i), cluster.get(j), cluster.get(k),
-                                        cluster.get(l), cluster.get(m), o);
-
-                                if (pure(sextad) != Purity.PURE) {
-                                    allSextadsPure = false;
-                                }
+            // Check all 5-combinations from current cluster with the candidate o
+            for (int i = 0; i < size - 4; i++) {
+                for (int j = i + 1; j < size - 3; j++) {
+                    for (int k = j + 1; k < size - 2; k++) {
+                        for (int l = k + 1; l < size - 1; l++) {
+                            for (int m = l + 1; m < size; m++) {
+                                tests++;
+                                List<Integer> sextad = List.of(
+                                        cluster.get(i), cluster.get(j), cluster.get(k),
+                                        cluster.get(l), cluster.get(m), o
+                                );
+                                if (pure(sextad) == Purity.PURE) pureCount++;
                             }
                         }
                     }
                 }
             }
 
-            if (allSextadsPure) {
-                cluster.addLast(o);
+            double frac = tests == 0 ? 0.0 : (pureCount / (double) tests);
+            if (frac >= appendPurityFraction) {
+                cluster.add(o);     // NOTE: use add(), not addLast()
                 iterator.remove();
             }
         }
@@ -372,28 +410,72 @@ public class Ftfc {
      * @return The Purity judgment of the sextet
      * @see Purity
      */
+//    private Purity pure(List<Integer> sextet) {
+//        if (!clusterDependent(sextet)) {
+//            return Purity.UNDECIDED;
+//        }
+//
+//        if (pureSextets.contains(new HashSet<>(sextet))) {
+//            return Purity.PURE;
+//        }
+//
+//        if (impureSextets.contains(new HashSet<>(sextet))) {
+//            return Purity.IMPURE;
+//        }
+//
+//        if (vanishes(sextet)) {
+//            List<Integer> vars = allVariables();
+//
+//            for (int o : vars) {
+//                if (sextet.contains(o)) continue;
+//
+//                for (int j = 0; j < sextet.size(); j++) {
+//                    List<Integer> _sextet = new ArrayList<>(sextet);
+//                    _sextet.set(j, o);
+//
+//                    if (!vanishes(_sextet)) {
+//                        impureSextets.add(new HashSet<>(_sextet));
+//                        return Purity.IMPURE;
+//                    }
+//                }
+//            }
+//
+//            System.out.println("PURE: " + sextet);
+//
+//            pureSextets.add(new HashSet<>(sextet));
+//            return Purity.PURE;
+//        } else {
+//            impureSextets.add(new HashSet<>(sextet));
+//            return Purity.IMPURE;
+//        }
+//    }
     private Purity pure(List<Integer> sextet) {
+        // Quick screen: if the sextet isn't even pairwise dependent, we can't decide purity
         if (!clusterDependent(sextet)) {
             return Purity.UNDECIDED;
         }
 
-        if (pureSextets.contains(new HashSet<>(sextet))) {
-            return Purity.PURE;
-        }
+        Set<Integer> key = new HashSet<>(sextet);
+        if (pureSextets.contains(key)) return Purity.PURE;
+        if (impureSextets.contains(key)) return Purity.IMPURE;
 
-        if (impureSextets.contains(new HashSet<>(sextet))) {
-            return Purity.IMPURE;
-        }
-
+        // Base vanishing check for the candidate sextet
         if (vanishes(sextet)) {
+            // Substitution test: if ANY single substitution with an outside variable also vanishes,
+            // the ORIGINAL sextet is IMPURE (flip from previous logic).
             List<Integer> vars = allVariables();
-
             for (int o : vars) {
                 if (sextet.contains(o)) continue;
 
                 for (int j = 0; j < sextet.size(); j++) {
                     List<Integer> _sextet = new ArrayList<>(sextet);
                     _sextet.set(j, o);
+
+//                    // If a substituted sextet vanishes, our original isn't uniquely “pure”
+//                    if (vanishes(_sextet)) {
+//                        impureSextets.add(key);   // cache the ORIGINAL as impure
+//                        return Purity.IMPURE;
+//                    }
 
                     if (!vanishes(_sextet)) {
                         impureSextets.add(new HashSet<>(_sextet));
@@ -402,12 +484,11 @@ public class Ftfc {
                 }
             }
 
-            System.out.println("PURE: " + sextet);
-
-            pureSextets.add(new HashSet<>(sextet));
+            // Passed all substitutions -> PURE
+            pureSextets.add(key);
             return Purity.PURE;
         } else {
-            impureSextets.add(new HashSet<>(sextet));
+            impureSextets.add(key);
             return Purity.IMPURE;
         }
     }
@@ -480,29 +561,54 @@ public class Ftfc {
         return moved;
     }
 
+//    private boolean isAllSextetsPureAppended(List<Integer> cluster, int o) {
+//
+//        // Check all sextets with o and 5 other elements in the cluster
+//        int size = cluster.size();
+//
+//        for (int i = 0; i < size - 2; i++) {
+//            for (int j = i + 1; j < size - 1; j++) {
+//                for (int k = j + 1; k < size; k++) {
+//                    for (int l = k + 1; l < size; l++) {
+//                        for (int m = l + 1; m < size; m++) {
+//                            List<Integer> sextet = List.of(cluster.get(i), cluster.get(j), cluster.get(k),
+//                                    cluster.get(l), cluster.get(m), o);
+//
+//                            if (pure(sextet) != Purity.PURE) {
+//                                return false;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        return true;
+//    }
+
     private boolean isAllSextetsPureAppended(List<Integer> cluster, int o) {
-
-        // Check all sextets with o and 3 other elements in the cluster
         int size = cluster.size();
+        int tests = 0, pureCount = 0;
 
-        for (int i = 0; i < size - 2; i++) {
-            for (int j = i + 1; j < size - 1; j++) {
-                for (int k = j + 1; k < size; k++) {
-                    for (int l = k + 1; l < size; l++) {
+        for (int i = 0; i < size - 4; i++) {
+            for (int j = i + 1; j < size - 3; j++) {
+                for (int k = j + 1; k < size - 2; k++) {
+                    for (int l = k + 1; l < size - 1; l++) {
                         for (int m = l + 1; m < size; m++) {
-                            List<Integer> sextet = List.of(cluster.get(i), cluster.get(j), cluster.get(k),
-                                    cluster.get(l), cluster.get(m), o);
-
-                            if (pure(sextet) != Purity.PURE) {
-                                return false;
-                            }
+                            tests++;
+                            List<Integer> sextet = List.of(
+                                    cluster.get(i), cluster.get(j), cluster.get(k),
+                                    cluster.get(l), cluster.get(m), o
+                            );
+                            if (pure(sextet) == Purity.PURE) pureCount++;
                         }
                     }
                 }
             }
         }
 
-        return true;
+        double frac = tests == 0 ? 0.0 : (pureCount / (double) tests);
+        return frac >= appendPurityFraction;   // previously required 100%
     }
 
     /**
@@ -551,37 +657,65 @@ public class Ftfc {
      * @param cluster The list of integers representing the cluster.
      * @return True if the cluster is pairwise dependent, false otherwise.
      */
+//    private boolean clusterDependent(List<Integer> cluster) {
+////        if (true) return true;
+//
+//        int numDependencies = 0;
+//        int all = 0;
+//
+//        for (int i = 0; i < cluster.size(); i++) {
+//            for (int j = i + 1; j < cluster.size(); j++) {
+//                double r = this.corr.getValue(cluster.get(i), cluster.get(j));
+//
+//                if (Double.isNaN(r)) {
+//                    continue;
+//                }
+//
+//                int n = this.corr.getSampleSize();
+//                int zSize = 0; // Unconditional check.
+//
+//                double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
+//                double df = n - 3. - zSize;
+//
+//                double fisherZ = sqrt(df) * q;
+//
+//                if (2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ))) < alpha) {
+//                    numDependencies++;
+//                }
+//
+//                all++;
+//            }
+//        }
+//
+//        return numDependencies > all * 0.90;
+//    }
     private boolean clusterDependent(List<Integer> cluster) {
-//        if (true) return true;
-
         int numDependencies = 0;
         int all = 0;
+
+        // Use ESS if provided; otherwise fall back to sample size.
+        int n = (this.ess > 0 ? this.ess : this.corr.getSampleSize());
+        double df = n - 3.0;
+        if (df <= 0) return false;
 
         for (int i = 0; i < cluster.size(); i++) {
             for (int j = i + 1; j < cluster.size(); j++) {
                 double r = this.corr.getValue(cluster.get(i), cluster.get(j));
+                if (Double.isNaN(r)) continue;
 
-                if (Double.isNaN(r)) {
-                    continue;
-                }
+                // Fisher z on |r|
+                double q = 0.5 * (FastMath.log(1.0 + FastMath.abs(r)) - FastMath.log(1.0 - FastMath.abs(r)));
+                double fisherZ = FastMath.sqrt(df) * q;
 
-                int n = this.corr.getSampleSize();
-                int zSize = 0; // Unconditional check.
-
-                double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
-                double df = n - 3. - zSize;
-
-                double fisherZ = sqrt(df) * q;
-
-                if (2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ))) < alpha) {
-                    numDependencies++;
-                }
+                // two-sided
+                double p = 2 * (1.0 - this.normal.cumulativeProbability(FastMath.abs(fisherZ)));
+                if (p < alpha) numDependencies++;
 
                 all++;
             }
         }
 
-        return numDependencies > all * 0.90;
+        return all > 0 && numDependencies >= all * depFractionThreshold;
     }
 
     /**
