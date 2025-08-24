@@ -79,7 +79,7 @@ public class LatentClustersEditor extends JPanel implements PropertyChangeListen
         String test = runner.getTest();
         String blockText = runner.getBlockText();
 
-        wizard = new BlockClusteringWizard(data, alg, test, blockText, parameters);
+        wizard = new BlockClusteringWizard(data, alg, test, blockText, runner.getTrueNamedClusters(), parameters);
         wizard.setPreferredSize(new Dimension(800, 400));
         setLayout( new BorderLayout());
         add(wizard, BorderLayout.CENTER);

@@ -59,21 +59,28 @@ public class BlockClusteringWizard extends JPanel {
     private final JPanel parameterBox = new JPanel(new BorderLayout());
     private final Set<String> paramList = new HashSet<>();
     private final int sampleSize;
+    private Map<String, List<String>> trueClusters;
 
     /**
-     * Constructs a new BlockClusteringWizard with the given dataset, algorithm, test, block text, and parameters.
-     * This constructor sets up the user interface, initializes components, and establishes behavior for clustering operations.
+     * Constructs a new BlockClusteringWizard with the given dataset, algorithm, test, block text, and parameters. This
+     * constructor sets up the user interface, initializes components, and establishes behavior for clustering
+     * operations.
      *
-     * @param dataSet    The dataset to be used for block clustering analysis. Cannot be null.
-     * @param alg        The name of the selected algorithm for clustering.
-     * @param test       The name of the selected dependency test.
-     * @param blockText  The text representing the initial block structure or specification.
-     * @param parameters The parameters required for the selected clustering algorithm and test.
+     * @param dataSet      The dataset to be used for block clustering analysis. Cannot be null.
+     *
+     * @param alg          The name of the selected algorithm for clustering.
+     * @param test         The name of the selected dependency test.
+     * @param blockText    The text representing the initial block structure or specification.
+     * @param trueClusters A map from latent names to true children of latents, to be used to help give estimated
+     *                     clusters good names.
+     * @param parameters   The parameters required for the selected clustering algorithm and test.
      */
-    public BlockClusteringWizard(DataSet dataSet, String alg, String test, String blockText, Parameters parameters) {
+    public BlockClusteringWizard(DataSet dataSet, String alg, String test, String blockText,
+                                 Map<String, List<String>> trueClusters, Parameters parameters) {
         super(new BorderLayout(8, 8));
         this.dataSet = Objects.requireNonNull(dataSet);
         this.parameters = parameters;
+        this.trueClusters = trueClusters;
 
         this.sampleSize = this.dataSet.getNumRows();
 
@@ -154,12 +161,10 @@ public class BlockClusteringWizard extends JPanel {
     }
 
     /**
-     * The main entry point of the application. It initializes a simulation of a
-     * multi-indicator model (MIM) with a latent variable chain, creates a block clustering
-     * wizard user interface, and displays it in a JFrame.
+     * The main entry point of the application. It initializes a simulation of a multi-indicator model (MIM) with a
+     * latent variable chain, creates a block clustering wizard user interface, and displays it in a JFrame.
      *
-     * @param args Command-line arguments passed to the program. These arguments are not
-     *             used within the application.
+     * @param args Command-line arguments passed to the program. These arguments are not used within the application.
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -167,7 +172,7 @@ public class BlockClusteringWizard extends JPanel {
             DataSet ds = simulateMIM_Chain(5000, 5, 0.8, 0.8, 0.7, 0.6);
             JFrame f = new JFrame("Block Clustering Wizard (Demo)");
             f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            f.setContentPane(new BlockClusteringWizard(ds, "FOFC", "CCA", "", new Parameters()));
+            f.setContentPane(new BlockClusteringWizard(ds, "FOFC", "CCA", "", new HashMap<>(), new Parameters()));
             f.setSize(980, 700);
             f.setLocationRelativeTo(null);
             f.setVisible(true);
@@ -230,8 +235,8 @@ public class BlockClusteringWizard extends JPanel {
     }
 
     /**
-     * Adds a BlockSpecListener to the list of listeners.
-     * The listener will be notified when a BlockSpec event is fired.
+     * Adds a BlockSpecListener to the list of listeners. The listener will be notified when a BlockSpec event is
+     * fired.
      *
      * @param l The BlockSpecListener to add. If the provided listener is null, it will not be added.
      */
@@ -240,8 +245,8 @@ public class BlockClusteringWizard extends JPanel {
     }
 
     /**
-     * Removes a BlockSpecListener from the list of registered listeners.
-     * The listener will no longer be notified of any BlockSpec events.
+     * Removes a BlockSpecListener from the list of registered listeners. The listener will no longer be notified of any
+     * BlockSpec events.
      *
      * @param l The BlockSpecListener to remove. If the provided listener is null, no action will be taken.
      */
@@ -319,6 +324,7 @@ public class BlockClusteringWizard extends JPanel {
 
                 BlockDiscoverer discoverer = buildDiscoverer(alg, testName, ess);
                 BlockSpec spec = discoverer.discover();
+                spec = BlocksUtil.giveGoodLatentNames(spec, trueClusters);
 
                 int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
                 SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
@@ -359,7 +365,7 @@ public class BlockClusteringWizard extends JPanel {
         NtadTest test = null;
         if (testName != null) {
             switch (testName) {
-                case TEST_BT -> test = new BollenTing(dataSet.getDoubleData().getSimpleMatrix(),false, ess);
+                case TEST_BT -> test = new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 case TEST_WIS -> test = new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 // case TEST_ARK -> test = new Ark(...); // still commented out
                 case TEST_CCA -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
@@ -467,8 +473,8 @@ public class BlockClusteringWizard extends JPanel {
     /**
      * Retrieves the currently selected algorithm from the combo box.
      *
-     * @return the name of the currently selected algorithm as a String. The returned value
-     *         is guaranteed to be non-null.
+     * @return the name of the currently selected algorithm as a String. The returned value is guaranteed to be
+     * non-null.
      */
     public String getAlg() {
         String alg = (String) cbAlgorithm.getSelectedItem();
@@ -479,8 +485,8 @@ public class BlockClusteringWizard extends JPanel {
     /**
      * Retrieves the currently selected tetrad test from the combo box.
      *
-     * @return the name of the currently selected tetrad test as a String. The returned value
-     *         is guaranteed to be non-null.
+     * @return the name of the currently selected tetrad test as a String. The returned value is guaranteed to be
+     * non-null.
      */
     public String getTest() {
         return (String) cbTetradTest.getSelectedItem();
@@ -489,8 +495,7 @@ public class BlockClusteringWizard extends JPanel {
     /**
      * Retrieves the currently selected block test from the editor panel.
      *
-     * @return the text entered in the editor panel as a String. The returned value
-     *         is guaranteed to be non-null.
+     * @return the text entered in the editor panel as a String. The returned value is guaranteed to be non-null.
      */
     public String getBlockTest() {
         return editorPanel.getText();

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.search.utils.ClusterSignificance;
 
 import java.util.*;
 
@@ -242,5 +243,53 @@ public final class BlocksUtil {
         Node noise = blockVars.getLast();
         noise.setName("Noise");
         return new BlockSpec(spec.dataSet(), spec.blocks(), blockVars, List.copyOf(spec.ranks()));
+    }
+
+    public static BlockSpec giveGoodLatentNames(BlockSpec spec, Map<String, List<String>> trueClusters) {
+        List<List<Integer>> blocks = spec.blocks();
+        DataSet dataSet = spec.dataSet();
+        
+        List<Node> dataVars = dataSet.getVariables();
+        
+        List<String> newNames = new ArrayList<>();
+
+        for (List<Integer> block : blocks) {
+            List<Node> blockNodes = ClusterSignificance.variablesForIndices(block, dataVars);
+            List<String> blockNames = new ArrayList<>();
+            for (Node blockNode : blockNodes) {
+                blockNames.add(blockNode.getName());
+            }
+
+            StringBuilder newName = new StringBuilder();
+
+            for (String trueName : trueClusters.keySet()) {
+                List<String> cluster = trueClusters.get(trueName);
+
+                if (new HashSet<>(cluster).containsAll(blockNames)) {
+                    if (!newName.isEmpty()) {
+                        newName.append("-");
+                    }
+
+                    newName.append(trueName);
+                }
+            }
+
+            if (newNames.contains(newName.toString())) {
+                long count = newNames.stream().filter(name -> name.startsWith(newName.toString())).count();
+                newName.append("-").append(count + 1);
+            }
+
+            newNames.add(newName.toString());
+        }
+
+        List<Node> newLatents = new ArrayList<>();
+
+        for (String name : newNames) {
+            Node newLatent = new ContinuousVariable(name);
+            newLatent.setNodeType(NodeType.LATENT);
+            newLatents.add(newLatent);
+        }
+        
+        return new BlockSpec(dataSet, blocks, newLatents);
     }
 }

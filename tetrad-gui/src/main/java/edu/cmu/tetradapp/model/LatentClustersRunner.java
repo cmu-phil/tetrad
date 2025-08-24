@@ -22,7 +22,9 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.blocks.*;
 import edu.cmu.tetrad.search.ntad_test.BollenTing;
 import edu.cmu.tetrad.search.ntad_test.Cca;
@@ -40,8 +42,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Stores a clustering calculated by the ClusterEditor.
@@ -62,6 +63,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      */
     private final DataWrapper dataWrapper;
     private final DataSet dataSet;
+    private final Map<String, List<String>> trueNamedClusters;
     /**
      * The name of the model.
      */
@@ -92,6 +94,32 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         this.sampleSize = dataSet.getNumRows();
         int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
         this.ess = ess == -1 ? this.sampleSize : ess;
+
+        // If we're in simulation mode, grab the true clusters and their latent names so we can use these to
+        // give good names to the estimated clusters. This helps avoid people having so much trouble figuring
+        // out which output clusters correspond to which true clusters.
+        trueNamedClusters = new HashMap<>();
+
+        if (dataWrapper instanceof Simulation simulation) {
+            Graph trueGraph = simulation.getGraph();
+
+            for (Node node : trueGraph.getNodes()) {
+                if (node.getNodeType() == NodeType.LATENT) {
+                    List<Node> clusterNodes = trueGraph.getChildren(node);
+
+                    clusterNodes.removeIf(_node -> _node.getNodeType() == NodeType.LATENT);
+
+                    List<String> clusterNames = new ArrayList<>();
+                    for (Node clusterNode : clusterNodes) {
+                        clusterNames.add(clusterNode.getName());
+                    }
+
+                    trueNamedClusters.put(node.getName(), clusterNames);
+                }
+            }
+        }
+
+        System.out.println("true named clusters: " + trueNamedClusters);
     }
 
     //============================PUBLIC METHODS==========================//
@@ -227,8 +255,8 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
     /**
      * Sets the block specification for the instance.
      *
-     * @param blockSpec the {@link BlockSpec} object representing the block specification to set
-     *                  for this instance. Must not be null.
+     * @param blockSpec the {@link BlockSpec} object representing the block specification to set for this instance. Must
+     *                  not be null.
      * @throws NullPointerException if the provided blockSpec is null
      */
     public void setBlockSpec(BlockSpec blockSpec) {
@@ -356,6 +384,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         // a block spec being set when propagating downstream. jdramsey 2025-8-23
         BlockDiscoverer discoverer = buildDiscoverer(alg, test);
         BlockSpec spec = discoverer.discover();
+        spec = BlocksUtil.giveGoodLatentNames(spec, trueNamedClusters);
 
         int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
         SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
@@ -367,5 +396,22 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         setBlockText(BlockSpecTextCodec.format(spec));
 
         setBlockSpec(spec);
+    }
+
+    /**
+     * Retrieves a map of true named clusters, if available, where each key represents the name of a cluster, and the
+     * corresponding value is a list of {@link Node} objects that belong to that cluster. The method returns a deep copy
+     * of the clusters to ensure the original data remains unaffected. The purpose of this is to all clusters to be
+     * given names that correspond to the names of the true latents in simulation mode. If the true clusters are not
+     * available, an empty map is returned.
+     *
+     * @return a map containing cluster names as keys and their associated lists of {@link Node} objects as values
+     */
+    public Map<String, List<String>> getTrueNamedClusters() {
+        Map<String, List<String>> map = new HashMap<>();
+        for (String s : trueNamedClusters.keySet()) {
+            map.put(s, new ArrayList<>(trueNamedClusters.get(s)));
+        }
+        return map;
     }
 }
