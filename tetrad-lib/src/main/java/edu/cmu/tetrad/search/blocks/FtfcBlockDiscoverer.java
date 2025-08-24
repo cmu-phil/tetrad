@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.Ftfc;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -61,6 +62,10 @@ public class FtfcBlockDiscoverer implements BlockDiscoverer {
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
         blocks = BlocksUtil.applySingleClusterPolicy(policy, blocks, dataSet);
-        return BlocksUtil.toSpec(blocks, dataSet);
+        List<Integer> ranks = new ArrayList<>();
+        for (int i = 0; i < blocks.size(); i++) {
+            ranks.add(2);
+        }
+        return BlocksUtil.toSpec(blocks, ranks, dataSet);
     }
 }

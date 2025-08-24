@@ -254,8 +254,8 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         boolean indep = estRank == k;
 
         if (verbose) {
-            System.out.printf("TS: %s _||_ %s | %s ? estRank=%d, n=%d -> %s%n",
-                    b.xName, b.yName, b.zNames, estRank, target, indep ? "INDEP" : "DEP");
+            System.out.printf("TS: %s _||_ %s | %s ? estRank(min over trials)=%d, target(sum ranks)=%d -> %s%n",
+                    b.xName, b.yName, b.zNames, bestRank, target, indep ? "INDEP" : "DEP");
         }
 
         return new IndependenceResult(

@@ -93,6 +93,20 @@ public final class BlocksUtil {
     }
 
     /**
+     * Converts a list of blocks, ranks, and a dataset into a BlockSpec object. The blocks are canonicalized to ensure
+     * uniformity, and block variables are generated based on the canonicalized blocks and dataset.
+     *
+     * @param blocks  a list of lists, where each inner list represents a block of indices
+     * @param ranks   a list of integers representing the ranks associated with the blocks
+     * @param dataSet the dataset associated with the blocks, providing the variables for block creation
+     * @return a BlockSpec object containing the dataset, canonicalized blocks, block variables, and ranks
+     */
+    public static BlockSpec toSpec(List<List<Integer>> blocks, List<Integer> ranks, DataSet dataSet) {
+        List<List<Integer>> canon = canonicalizeBlocks(blocks);
+        return new BlockSpec(dataSet, canon, makeBlockVariables(canon, dataSet), ranks);
+    }
+
+    /**
      * Expand ranks -> per-latent variables named Lk-1..Lk-r.
      *
      * @param spec the BlockSpec object containing the block variables to expand
@@ -249,6 +263,9 @@ public final class BlocksUtil {
         DataSet dataSet = spec.dataSet();
         List<Node> dataVars = dataSet.getVariables();
 
+        // Preserve ranks exactly as provided
+        List<Integer> ranks = spec.ranks() != null ? new ArrayList<>(spec.ranks()) : null;
+
         // Build canonical sets for true clusters (for robust matching)
         Map<String, Set<String>> trueSetsCanon = new HashMap<>();
         // Also keep sanitized display names for output
@@ -256,118 +273,127 @@ public final class BlocksUtil {
         for (Map.Entry<String, List<String>> e : trueClusters.entrySet()) {
             String orig = e.getKey();
             Set<String> canonSet = new HashSet<>();
-            for (String v : e.getValue()) {
-                canonSet.add(canon(v));
-            }
+            for (String v : e.getValue()) canonSet.add(canon(v));
             trueSetsCanon.put(orig, canonSet);
             sanitizedTrueName.put(orig, sanitizeName(orig));
         }
 
-        // Ensure unique names across blocks
-        Map<String, Integer> usedBaseCounts = new HashMap<>();
-        List<String> newNames = new ArrayList<>(blocks.size());
+        // Track used names to keep them unique while avoiding “B”/alphabet suffixing.
+        // Preference order when a collision occurs:
+        //   1) original latent name from spec (if unused)
+        //   2) baseName (if unused)
+        //   3) baseName-2, baseName-3, ... (numeric)
+        Set<String> used = new HashSet<>();
+        List<String> outNames = new ArrayList<>(blocks.size());
 
-        for (List<Integer> block : blocks) {
-            // Canonical set of variable names in this block
+        // Pull original latent names for potential reuse
+        List<Node> origLatents = spec.blockVariables();
+        List<String> origNames = new ArrayList<>(origLatents.size());
+        for (Node n : origLatents) origNames.add(n.getName());
+
+        for (int bi = 0; bi < blocks.size(); bi++) {
+            List<Integer> block = blocks.get(bi);
+
+            // Canonical names in this block
             Set<String> blockCanon = new HashSet<>(block.size());
-            for (int idx : block) {
-                blockCanon.add(canon(dataVars.get(idx).getName()));
-            }
+            for (int idx : block) blockCanon.add(canon(dataVars.get(idx).getName()));
 
-            // Compute overlaps against canonical true-cluster sets
+            // Overlaps and pure detection
             int blockSize = blockCanon.size();
             List<Overlap> overlaps = new ArrayList<>();
-            String pureTrueName = null; // if fully contained in one true cluster
+            String pureTrueName = null;
 
             for (Map.Entry<String, Set<String>> e : trueSetsCanon.entrySet()) {
                 String trueName = e.getKey();
                 Set<String> tset = e.getValue();
-
                 int cnt = 0;
                 for (String v : blockCanon) if (tset.contains(v)) cnt++;
-
                 if (cnt > 0) {
                     overlaps.add(new Overlap(trueName, sanitizedTrueName.get(trueName), cnt));
-                    if (cnt == blockSize) {
-                        // fully contained: pure cluster
-                        pureTrueName = trueName;
-                    }
+                    if (cnt == blockSize) pureTrueName = trueName; // fully contained
                 }
             }
 
+            // Build base name (sanitized)
             final String baseName;
             if (pureTrueName != null) {
-                // Short-circuit: pure cluster
                 baseName = sanitizedTrueName.get(pureTrueName);
             } else if (!overlaps.isEmpty()) {
-                // Mixed: sort by descending overlap, then alpha by sanitized name
                 overlaps.sort((o1, o2) -> {
                     if (o2.count != o1.count) return Integer.compare(o2.count, o1.count);
                     return o1.sanitized.compareTo(o2.sanitized);
                 });
-                // Join all overlapping sanitized names with '-'
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < overlaps.size(); i++) {
                     if (i > 0) sb.append('-');
                     sb.append(overlaps.get(i).sanitized);
                 }
                 String joined = sb.toString();
-                baseName = joined.isEmpty() ? "X" : joined; // ultra-defensive
+                baseName = joined.isEmpty() ? "X" : joined;
             } else {
-                // No overlap found (after canonicalization) → very rare in sims
                 baseName = "Mixed";
             }
 
-            // Ensure uniqueness (Base, Base-2, Base-3, ...)
-            int k = usedBaseCounts.getOrDefault(baseName, 0) + 1;
-            usedBaseCounts.put(baseName, k);
-            String finalName = (k == 1) ? baseName : (baseName + "-" + k);
+            // Preferred original latent name
+            String preferredOrig = sanitizeName(origNames.get(bi));
 
-            newNames.add(finalName);
+            // Choose final name with minimal disturbance and no “B”-style variants
+            String finalName;
+            if (!used.contains(preferredOrig)) {
+                finalName = preferredOrig;              // keep original if available
+            } else if (!used.contains(baseName)) {
+                finalName = baseName;                   // otherwise use computed base
+            } else {
+                // numeric disambiguation only if strictly necessary
+                int k = 2;
+                while (used.contains(baseName + "-" + k)) k++;
+                finalName = baseName + "-" + k;
+            }
+
+            used.add(finalName);
+            outNames.add(finalName);
         }
 
-        // Build latent nodes with these names
-        List<Node> newLatents = new ArrayList<>(newNames.size());
-        for (String name : newNames) {
+        // Build latent nodes with these names, preserving ranks exactly
+        List<Node> newLatents = new ArrayList<>(outNames.size());
+        for (String name : outNames) {
             Node latent = new ContinuousVariable(name);
             latent.setNodeType(NodeType.LATENT);
             newLatents.add(latent);
         }
 
-        return new BlockSpec(dataSet, blocks, newLatents);
+        // Return BlockSpec with unchanged blocks and ranks
+        if (ranks != null) {
+            return new BlockSpec(dataSet, blocks, newLatents, ranks);
+        } else {
+            // Fallback to constructor without ranks if ranks were not present
+            return new BlockSpec(dataSet, blocks, newLatents);
+        }
     }
 
-    /**
-     * Canonical form for matching (case/whitespace robust).
-     */
+    /** Canonical form for matching (case/whitespace robust). */
     private static String canon(String s) {
         return (s == null) ? "" : s.trim().toLowerCase(Locale.ROOT);
     }
 
-    /**
-     * Sanitize a cluster name to a stable identifier-like token for output.
-     */
+    /** Sanitize a cluster name to a stable identifier-like token for output. */
     private static String sanitizeName(String s) {
         if (s == null) return "X";
-        String out = s.replaceAll("[^A-Za-z0-9_]+", "_"); // non-word -> _
-        out = out.replaceAll("_+", "_");                  // collapse __
-        out = out.replaceAll("^_+|_+$", "");              // trim _
+        String out = s.replaceAll("[^A-Za-z0-9_]+", "_");
+        out = out.replaceAll("_+", "_");
+        out = out.replaceAll("^_+|_+$", "");
         if (out.isEmpty()) out = "X";
         return out;
     }
 
-    /**
-     * Overlap record for sorting.
-     */
+    /** Overlap record for sorting. */
     private static final class Overlap {
         final String original;
         final String sanitized;
         final int count;
-
         Overlap(String original, String sanitized, int count) {
             this.original = original;
             this.sanitized = sanitized;
             this.count = count;
         }
-    }
-}
+    }}
