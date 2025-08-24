@@ -231,12 +231,6 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         // use bestBuild for verbose and result context
         Build b = (bestBuild != null) ? bestBuild : buildSides(x, y, z);
 
-        if (verbose) {
-            List<Node> leftVars = indicesToNodes(b.Lcols, dataVars);
-            List<Node> rightVars = indicesToNodes(b.Rcols, dataVars);
-            System.out.println("TS split: left=" + leftVars + " right=" + rightVars);
-        }
-
         // Estimate rank for Σ_{L,R}
         int estRank = getRankMinOverTrials(b.Lcols, b.Rcols);
 
@@ -252,6 +246,10 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         boolean indep = estRank == target;
 
         if (verbose) {
+            List<Node> leftVars = indicesToNodes(b.Lcols, dataVars);
+            List<Node> rightVars = indicesToNodes(b.Rcols, dataVars);
+            System.out.println("TS split: left=" + leftVars + " right=" + rightVars);
+
             System.out.printf("TS: %s _||_ %s | %s ? estRank(min over trials)=%d, target(sum ranks)=%d -> %s%n",
                     b.xName, b.yName, b.zNames, bestRank, target, indep ? "INDEP" : "DEP");
         }
