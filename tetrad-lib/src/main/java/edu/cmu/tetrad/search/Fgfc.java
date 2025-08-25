@@ -5,7 +5,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.ejml.simple.SimpleMatrix;
 
@@ -23,8 +22,8 @@ import static org.apache.commons.math3.special.Erf.erf;
  * test here since we need to check rank, so we will check rank directly. (This is equivqalent to using the CCA n-tad
  * test.)
  * <p>
- * Kummerfeld, E., & Ramsey, J. (2016, August). Causal clustering for 1-factor measurement models. In Proceedings of
- * the 22nd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 1655-1664).
+ * Kummerfeld, E., & Ramsey, J. (2016, August). Causal clustering for 1-factor measurement models. In Proceedings of the
+ * 22nd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 1655-1664).
  * <p>
  * Spirtes, P., Glymour, C. N., Scheines, R., & Heckerman, D. (2000). Causation, prediction, and search. MIT press.
  *
@@ -35,25 +34,36 @@ import static org.apache.commons.math3.special.Erf.erf;
  * @see Ftfc
  */
 public class Fgfc {
-    /** Correlation matrix (shared, read-only). */
+    // --- Fast Chi-square critical via Wilson–Hilferty with cached normal z ---
+    private static final Map<Long, Double> CHI2_CRIT_CACHE = new ConcurrentHashMap<>();
+    /**
+     * Correlation matrix (shared, read-only).
+     */
     private final SimpleMatrix S;
-    /** All variables (shared, read-only). */
+    /**
+     * All variables (shared, read-only).
+     */
     private final List<Node> variables;
-    /** Significance level. */
+    /**
+     * Significance level.
+     */
     private final double alpha;
-    /** Sample size. */
+    /**
+     * Sample size.
+     */
     private final int n;
-    /** Verbosity. */
+    /**
+     * Verbosity.
+     */
     private boolean verbose = true;
-
-    /** Concurrent caches for purity (thread-safe). */
-    private Set<Set<Integer>> pureTets;
-    private Set<Set<Integer>> impureTets;
-
-    /** Parallel execution pool. */
+    /**
+     * Parallel execution pool.
+     */
     private ForkJoinPool fjPool;
 
-    /** Constructor. */
+    /**
+     * Constructor.
+     */
     public Fgfc(DataSet dataSet, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
@@ -63,14 +73,6 @@ public class Fgfc {
         this.fjPool = new ForkJoinPool(defaultPar);
     }
 
-    /** Optional: set max parallelism (>=1). */
-    public void setParallelism(int parallelism) {
-        int p = Math.max(1, parallelism);
-        ForkJoinPool old = this.fjPool;
-        this.fjPool = new ForkJoinPool(p);
-        if (old != null) old.shutdown();
-    }
-
     // Canonical, immutable key for clusters to avoid order/mutation hazards
     private static List<Integer> canonKey(Collection<Integer> xs) {
         List<Integer> s = new ArrayList<>(xs);
@@ -78,12 +80,111 @@ public class Fgfc {
         return Collections.unmodifiableList(s);
     }
 
-    /** Runs the search (rank-1 then rank-2) and returns clusters → rank. */
-    public Map<List<Integer>, Integer> findClusters() {
-        // thread-safe sets
-        this.pureTets = Collections.newSetFromMap(new ConcurrentHashMap<>());
-        this.impureTets = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    // helpers: symmetric eigvals with clamping
+    private static double[] eigSymmetricClamped(SimpleMatrix A) {
+        org.ejml.simple.SimpleEVD<SimpleMatrix> evd = A.eig();
+        int n = A.getNumCols();
+        double[] vals = new double[n];
+        for (int i = 0; i < n; i++) {
+            double v = evd.getEigenvalue(i).getReal();
+            if (Double.isNaN(v) || v < 0) v = 0;
+            if (v > 1) v = 1;
+            vals[i] = v;
+        }
+        return vals;
+    }
 
+    // submatrix utility (row/col index arrays)
+    private static SimpleMatrix submatrix(SimpleMatrix S, int[] rows, int[] cols) {
+        SimpleMatrix M = new SimpleMatrix(rows.length, cols.length);
+        for (int i = 0; i < rows.length; i++)
+            for (int j = 0; j < cols.length; j++)
+                M.set(i, j, S.get(rows[i], cols[j]));
+        return M;
+    }
+
+    private static double chi2CriticalWH(int nu, double alpha) {
+        // key (nu, alpha*1e9) packed into a long for small cache
+        long key = (((long) nu) << 32) ^ Double.valueOf(alpha).hashCode();
+        Double cv = CHI2_CRIT_CACHE.get(key);
+        if (cv != null) return cv;
+
+        // z_{1-alpha} using a very good rational approximation (AS241 style)
+        double z = invNormal1mAlpha(alpha);
+
+        // Wilson–Hilferty: Q_{1-a,ν} ≈ ν * [1 - 2/(9ν) + z * sqrt(2/(9ν))]^3
+        double n = nu;
+        double a = 2.0 / (9.0 * n);
+        double q = n * Math.pow(1.0 - a + z * Math.sqrt(a), 3.0);
+
+        CHI2_CRIT_CACHE.put(key, q);
+        return q;
+    }
+
+    /**
+     * Inverse normal for tail 1-alpha: returns z_{1-alpha}.
+     */
+    private static double invNormal1mAlpha(double alpha) {
+        // Moro/AS241 hybrid; good to ~1e-8 and branchless enough.
+        // Convert to p in (0,1), then use probit(p).
+        double p = 1.0 - alpha;
+
+        // Coefficients for central region
+        final double[] a = {-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02,
+                1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00};
+        final double[] b = {-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02,
+                6.680131188771972e+01, -1.328068155288572e+01};
+        final double[] c = {-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00,
+                -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00};
+        final double[] d = {7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00,
+                3.754408661907416e+00};
+
+        // Break-points
+        final double plow = 0.02425;
+        final double phigh = 1.0 - plow;
+        double q, r, x;
+
+        if (p < plow) {
+            // lower tail
+            q = Math.sqrt(-2.0 * Math.log(p));
+            x = (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+                ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0);
+        } else if (p > phigh) {
+            // upper tail
+            q = Math.sqrt(-2.0 * Math.log(1.0 - p));
+            x = -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+                ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0);
+        } else {
+            // central
+            q = p - 0.5;
+            r = q * q;
+            x = (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q /
+                (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1.0);
+        }
+
+        // One Newton step for polish
+        // Φ(x) via erf
+        double err = 0.5 * (1.0 + erf(x / Math.sqrt(2.0))) - p;
+        double pdf = Math.exp(-0.5 * x * x) / Math.sqrt(2.0 * Math.PI);
+        x -= err / pdf;
+
+        return x;
+    }
+
+    /**
+     * Optional: set max parallelism (>=1).
+     */
+    public void setParallelism(int parallelism) {
+        int p = Math.max(1, parallelism);
+        ForkJoinPool old = this.fjPool;
+        this.fjPool = new ForkJoinPool(p);
+        if (old != null) old.shutdown();
+    }
+
+    /**
+     * Runs the search (rank-1 then rank-2) and returns clusters → rank.
+     */
+    public Map<List<Integer>, Integer> findClusters() {
         Map<List<Integer>, Integer> clustersToRanks = new HashMap<>();
 
         for (int rank = 1; rank <= 2; rank++) {
@@ -92,7 +193,9 @@ public class Fgfc {
         return clustersToRanks;
     }
 
-    public void setVerbose(boolean verbose) { this.verbose = verbose; }
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 
     private List<Integer> allVariables() {
         List<Integer> _variables = new ArrayList<>();
@@ -100,7 +203,9 @@ public class Fgfc {
         return _variables;
     }
 
-    /** Rank phase: pure seeds then mixed seeds. */
+    /**
+     * Rank phase: pure seeds then mixed seeds.
+     */
     private void estimateClustersSag(int rank, Map<List<Integer>, Integer> clustersToRanks) {
         List<Integer> variables = allVariables();
         if (new HashSet<>(variables).size() != variables.size()) {
@@ -116,7 +221,9 @@ public class Fgfc {
         );
     }
 
-    /** Find seeds of size 2*(rank+1) among remaining variables, grow, accept, and lock out. */
+    /**
+     * Find seeds of size 2*(rank+1) among remaining variables, grow, accept, and lock out.
+     */
     private void findPureClusters(int rank, Map<List<Integer>, Integer> clustersToRanks) {
         List<Integer> variables = allVariables();
         int clusterSize = 2 * (rank + 1);
@@ -138,7 +245,10 @@ public class Fgfc {
             boolean ok = true;
             for (int c : choice) {
                 int v = pool.get(c);
-                if (!unclustered.contains(v)) { ok = false; break; }
+                if (!unclustered.contains(v)) {
+                    ok = false;
+                    break;
+                }
                 cluster.add(v);
             }
             if (!ok) continue;
@@ -156,7 +266,9 @@ public class Fgfc {
         }
     }
 
-    /** Grow a seed by testing all (k)-subsets + o for purity; k = min(|cluster|, tadSize-1). */
+    /**
+     * Grow a seed by testing all (k)-subsets + o for purity; k = min(|cluster|, tadSize-1).
+     */
     private void growCluster(List<Integer> cluster, int rank, Map<List<Integer>, Integer> clustersToRanks) {
         final int tadSize = 2 * (rank + 1);
 
@@ -200,7 +312,9 @@ public class Fgfc {
         cluster.addAll(toAdd);
     }
 
-    /** Find mixed clusters: size (2*(rank+1)-1) subsets C with ∀o∉C, vanishes(C∪{o}). */
+    /**
+     * Find mixed clusters: size (2*(rank+1)-1) subsets C with ∀o∉C, vanishes(C∪{o}).
+     */
     private void findMixedClusters(int rank, Map<List<Integer>, Integer> clustersToRanks) {
         final int tadSize = 2 * (rank + 1);
 
@@ -250,14 +364,11 @@ public class Fgfc {
         }
     }
 
-    /** Parallel-aware purity check with concurrent caching. */
+    /**
+     * Parallel-aware purity check with concurrent caching.
+     */
     private Purity pure(List<Integer> tad) {
-        Set<Integer> key = new HashSet<>(tad);
-        if (pureTets.contains(key))  return Purity.PURE;
-        if (impureTets.contains(key)) return Purity.IMPURE;
-
         if (!vanishes(tad)) {
-            impureTets.add(key);
             return Purity.IMPURE;
         }
 
@@ -280,15 +391,17 @@ public class Fgfc {
         );
 
         if (bad) {
-            impureTets.add(key);
+//            impureTets.add(key);
             return Purity.IMPURE;
         } else {
-            pureTets.add(key);
+//            pureTets.add(key);
             return Purity.PURE;
         }
     }
 
-    /** Vanishing: all bipartitions X|Y of equal/remaining sizes must have estimated rank = r. */
+    /**
+     * Vanishing: all bipartitions X|Y of equal/remaining sizes must have estimated rank = r.
+     */
     private boolean vanishes(List<Integer> cluster) {
         int leftSize = cluster.size() / 2;
         ChoiceGenerator gen = new ChoiceGenerator(cluster.size(), leftSize);
@@ -304,7 +417,12 @@ public class Fgfc {
             int yIndex = 0;
             for (int value : cluster) {
                 boolean found = false;
-                for (int xv : x) { if (xv == value) { found = true; break; } }
+                for (int xv : x) {
+                    if (xv == value) {
+                        found = true;
+                        break;
+                    }
+                }
                 if (!found) y[yIndex++] = value;
             }
 
@@ -316,19 +434,25 @@ public class Fgfc {
         return true;
     }
 
-    /** Union helper. */
+    /**
+     * Union helper.
+     */
     private Set<Integer> union(Set<List<Integer>> pureClusters) {
         Set<Integer> unionPure = new HashSet<>();
         for (Collection<Integer> cluster : pureClusters) unionPure.addAll(cluster);
         return unionPure;
     }
 
-    /** Logging helper. */
+    /**
+     * Logging helper.
+     */
     private void log(String s) {
         if (this.verbose) TetradLogger.getInstance().log(s);
     }
 
-    /** Submit a parallel task to our pool and get the result. */
+    /**
+     * Submit a parallel task to our pool and get the result.
+     */
     private <T> T submit(java.util.concurrent.Callable<T> task) {
         try {
             return fjPool.submit(task).get();
@@ -350,40 +474,31 @@ public class Fgfc {
         SimpleMatrix Syx = Sxy.transpose();
 
         // tiny ridge for numerical stability
-        double eps = 1e-10;
+        final double eps = 1e-10;
         for (int i = 0; i < p; i++) Sxx.set(i, i, Sxx.get(i, i) + eps);
         for (int i = 0; i < q; i++) Syy.set(i, i, Syy.get(i, i) + eps);
 
+        // inverses
         SimpleMatrix SxxInv = Sxx.invert();
         SimpleMatrix SyyInv = Syy.invert();
 
-        // M has eigenvalues = rho^2 (on the smaller side)
-        // Use the smaller dimension side for eigen-decomp
-        SimpleMatrix M;
-        boolean xSmall = (p <= q);
-        if (xSmall) {
-            M = SxxInv.mult(Sxy).mult(SyyInv).mult(Syx); // p x p
-        } else {
-            M = SyyInv.mult(Syx).mult(SxxInv).mult(Sxy); // q x q
-        }
+        // M should be symmetric PSD up to round-off; enforce symmetry to stabilize eigvals
+        SimpleMatrix M = SxxInv.mult(Sxy).mult(SyyInv).mult(Syx);
+        M = M.plus(M.transpose()).scale(0.5);
 
-        // eigenvalues (non-negative), sort descending, clamp to [0,1)
+        // eigenvalues ~ rho^2; clamp to [0,1)
         double[] evals = eigSymmetricClamped(M);
-        Arrays.sort(evals);
-        // reverse to descending
-        for (int i = 0; i < evals.length / 2; i++) {
-            double tmp = evals[i];
-            evals[i] = evals[evals.length - 1 - i];
-            evals[evals.length - 1 - i] = tmp;
-        }
+        Arrays.sort(evals);                 // ascending
+        // take descending into rho2[0..L-1]
         int L = Math.min(evals.length, m);
-        double[] rho2 = Arrays.copyOf(evals, L);
+        double[] rho2 = new double[L];
+        for (int i = 0; i < L; i++) rho2[i] = evals[evals.length - 1 - i];
 
-        // For r = 0..m-1, test H0: rank ≤ r using Bartlett χ² approx
-        // stat_r = - (n - 1 - (p+q+1)/2) * sum_{i=r+1..m} ln(1 - rho_i^2)
-        // ν_r = (p - r)(q - r)
+        // Bartlett factor; if invalid, bail out conservatively
         double c = (n - 1 - (p + q + 1) / 2.0);
-        int hat = 0;
+        if (c <= 0) return m;
+
+        // Find the SMALLEST r with non-rejection; if none, return m (full rank)
         for (int r = 0; r < m; r++) {
             double sum = 0.0;
             for (int i = r; i < L; i++) {
@@ -392,109 +507,12 @@ public class Fgfc {
             }
             double stat = -c * sum;
             int nu = (p - r) * (q - r);
-            if (nu <= 0) { hat = Math.max(hat, r); continue; }
+            if (nu <= 0) return r; // at this point, tail has zero dof → accept
 
             double crit = chi2CriticalWH(nu, alpha);
-            if (stat <= crit) {
-                hat = Math.max(hat, r); // fail to reject ⇒ rank ≤ r plausible
-            } else {
-                // reject H0(rank ≤ r); continue increasing r won’t help acceptance
-                // (stat decreases with larger r), but we still compute loop to keep it simple
-            }
+            if (stat <= crit) return r; // first non-rejection
         }
-        return hat;
-    }
-
-    // helpers: symmetric eigvals with clamping
-    private static double[] eigSymmetricClamped(SimpleMatrix A) {
-        org.ejml.simple.SimpleEVD<SimpleMatrix> evd = A.eig();
-        int n = A.numCols();
-        double[] vals = new double[n];
-        for (int i = 0; i < n; i++) {
-            double v = evd.getEigenvalue(i).getReal();
-            if (Double.isNaN(v) || v < 0) v = 0;
-            if (v > 1) v = 1;
-            vals[i] = v;
-        }
-        return vals;
-    }
-
-    // submatrix utility (row/col index arrays)
-    private static SimpleMatrix submatrix(SimpleMatrix S, int[] rows, int[] cols) {
-        SimpleMatrix M = new SimpleMatrix(rows.length, cols.length);
-        for (int i = 0; i < rows.length; i++)
-            for (int j = 0; j < cols.length; j++)
-                M.set(i, j, S.get(rows[i], cols[j]));
-        return M;
-    }
-
-    // --- Fast Chi-square critical via Wilson–Hilferty with cached normal z ---
-    private static final Map<Long, Double> CHI2_CRIT_CACHE = new ConcurrentHashMap<>();
-
-    private static double chi2CriticalWH(int nu, double alpha) {
-        // key (nu, alpha*1e9) packed into a long for small cache
-        long key = (((long) nu) << 32) ^ Double.valueOf(alpha).hashCode();
-        Double cv = CHI2_CRIT_CACHE.get(key);
-        if (cv != null) return cv;
-
-        // z_{1-alpha} using a very good rational approximation (AS241 style)
-        double z = invNormal1mAlpha(alpha);
-
-        // Wilson–Hilferty: Q_{1-a,ν} ≈ ν * [1 - 2/(9ν) + z * sqrt(2/(9ν))]^3
-        double n = nu;
-        double a = 2.0 / (9.0 * n);
-        double q = n * Math.pow(1.0 - a + z * Math.sqrt(a), 3.0);
-
-        CHI2_CRIT_CACHE.put(key, q);
-        return q;
-    }
-
-    /** Inverse normal for tail 1-alpha: returns z_{1-alpha}.  */
-    private static double invNormal1mAlpha(double alpha) {
-        // Moro/AS241 hybrid; good to ~1e-8 and branchless enough.
-        // Convert to p in (0,1), then use probit(p).
-        double p = 1.0 - alpha;
-
-        // Coefficients for central region
-        final double[] a = { -3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02,
-                1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00 };
-        final double[] b = { -5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02,
-                6.680131188771972e+01, -1.328068155288572e+01 };
-        final double[] c = { -7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00,
-                -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00 };
-        final double[] d = { 7.784695709041462e-03,  3.224671290700398e-01,  2.445134137142996e+00,
-                3.754408661907416e+00 };
-
-        // Break-points
-        final double plow = 0.02425;
-        final double phigh = 1.0 - plow;
-        double q, r, x;
-
-        if (p < plow) {
-            // lower tail
-            q = Math.sqrt(-2.0 * Math.log(p));
-            x = (((((c[0]*q + c[1])*q + c[2])*q + c[3])*q + c[4])*q + c[5]) /
-                ((((d[0]*q + d[1])*q + d[2])*q + d[3])*q + 1.0);
-        } else if (p > phigh) {
-            // upper tail
-            q = Math.sqrt(-2.0 * Math.log(1.0 - p));
-            x = -(((((c[0]*q + c[1])*q + c[2])*q + c[3])*q + c[4])*q + c[5]) /
-                ((((d[0]*q + d[1])*q + d[2])*q + d[3])*q + 1.0);
-        } else {
-            // central
-            q = p - 0.5;
-            r = q * q;
-            x = (((((a[0]*r + a[1])*r + a[2])*r + a[3])*r + a[4])*r + a[5]) * q /
-                (((((b[0]*r + b[1])*r + b[2])*r + b[3])*r + b[4])*r + 1.0);
-        }
-
-        // One Newton step for polish
-        // Φ(x) via erf
-        double err = 0.5 * (1.0 + erf(x / Math.sqrt(2.0))) - p;
-        double pdf = Math.exp(-0.5 * x * x) / Math.sqrt(2.0 * Math.PI);
-        x -= err / pdf;
-
-        return x;
+        return m; // rejected for all r
     }
 
     private enum Purity {PURE, IMPURE}
