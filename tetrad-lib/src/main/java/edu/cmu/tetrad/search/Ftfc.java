@@ -64,19 +64,9 @@ public class Ftfc {
      */
     private final double alpha;
     /**
-     * A standard normal distribution object used for statistical calculations within the Fofc class. The distribution
-     * is characterized by a mean of 0 and a standard deviation of 1.
-     */
-    private final NormalDistribution normal = new NormalDistribution(0, 1);
-    /**
      * The sextad test to use.
      */
     private final NtadTest test;
-
-    /**
-     * The clusters that are output by the algorithm from the last call to search().
-     */
-    private List<List<Node>> clusters;
     /**
      * Whether verbose output is desired.
      */
@@ -121,15 +111,6 @@ public class Ftfc {
         Set<List<Integer>> allClusters = estimateClustersSag();
 
         return new ArrayList<>(allClusters);
-    }
-
-    /**
-     * The clusters that are output by the algorithm from the last call to search().
-     *
-     * @return a {@link List} object
-     */
-    public List<List<Node>> getClusters() {
-        return this.clusters;
     }
 
     /**
@@ -446,8 +427,14 @@ public class Ftfc {
         Sextad t10 = new Sextad(n1, n5, n6, n2, n3, n4);
 
         List<Sextad[]> independents = new ArrayList<>();
-//        independents.add(new Sextad[]{t1, t2, t3, t5, t6});
-        independents.add(new Sextad[]{t1, t2, t3, t4, t5, t6, t7, t8, t9, t10});
+
+        if (test instanceof BollenTing) {
+
+            // For Bollen-Ting we need an independent subset of the sextads.
+            independents.add(new Sextad[]{t1, t2, t3, t5, t6});
+        } else {
+            independents.add(new Sextad[]{t1, t2, t3, t4, t5, t6, t7, t8, t9, t10});
+        }
 
         for (Sextad[] sextads : independents) {
             List<int[][]> _independents = new ArrayList<>();
@@ -514,7 +501,7 @@ public class Ftfc {
         this.appendPurityFraction = appendPurityFraction;
     }
 
-    private enum Purity {PURE, IMPURE, UNDECIDED}
+    private enum Purity {PURE, IMPURE}
 }
 
 

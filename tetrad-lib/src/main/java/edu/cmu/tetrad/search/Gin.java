@@ -341,7 +341,7 @@ public class Gin {
     }
 
     private List<List<Integer>> findCausalClusters(DataSet data, SimpleMatrix cov, SimpleMatrix rawData) {
-        Fofc fofc = new Fofc(data, new Cca(data.getDoubleData().getSimpleMatrix(), false, -1), alpha, -1);
+        Fofc fofc = new Fofc(data, new Cca(data.getDoubleData().getSimpleMatrix(), false, -1), alpha);
         List<List<Integer>> blocks = fofc.findClusters();
         List<Node> vars = data.getVariables();
 

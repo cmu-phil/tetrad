@@ -16,7 +16,7 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class Sextad implements TetradSerializable {
+public class Tetrad implements TetradSerializable {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -41,42 +41,28 @@ public class Sextad implements TetradSerializable {
     private final int l;
 
     /**
-     * The fifth node.
-     */
-    private final int m;
-
-    /**
-     * The sixth node.
-     */
-    private final int n;
-
-    /**
      * Constructor.
      *
      * @param i a int
      * @param j a int
      * @param k a int
      * @param l a int
-     * @param m a int
-     * @param n a int
      */
-    public Sextad(int i, int j, int k, int l, int m, int n) {
-        testDistinctness(i, j, k, l, m, n);
+    public Tetrad(int i, int j, int k, int l) {
+        testDistinctness(i, j, k, l);
         this.i = i;
         this.j = j;
         this.k = k;
         this.l = l;
-        this.m = m;
-        this.n = n;
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @return a {@link edu.cmu.tetrad.search.utils.Sextad} object
+     * @return a {@link Tetrad} object
      */
-    public static Sextad serializableInstance() {
-        return new Sextad(0, 1, 2, 3, 4, 5);
+    public static Tetrad serializableInstance() {
+        return new Tetrad(0, 1, 2, 3);
     }
 
     /**
@@ -116,31 +102,13 @@ public class Sextad implements TetradSerializable {
     }
 
     /**
-     * <p>Getter for the field <code>m</code>.</p>
-     *
-     * @return a int
-     */
-    public int getM() {
-        return this.m;
-    }
-
-    /**
-     * <p>Getter for the field <code>n</code>.</p>
-     *
-     * @return a int
-     */
-    public int getN() {
-        return this.n;
-    }
-
-    /**
      * <p>hashCode.</p>
      *
      * @return a int
      */
     public int hashCode() {
-        int hash = this.i * this.j * this.k;
-        hash += this.l * this.m * this.n;
+        int hash = this.i * this.j;
+        hash += this.k * this.l;
         return hash;
     }
 
@@ -150,21 +118,13 @@ public class Sextad implements TetradSerializable {
      * Returns a judgment of equality with another Sextad instance.
      */
     public boolean equals(Object o) {
-        if (!(o instanceof Sextad sextad)) return false;
+        if (!(o instanceof Tetrad sextad)) return false;
 
-        boolean leftEquals = (this.i == sextad.i && this.j == sextad.j && this.k == sextad.k) ||
-                             (this.i == sextad.i && this.j == sextad.k && this.k == sextad.j) ||
-                             (this.i == sextad.j && this.j == sextad.i && this.k == sextad.k) ||
-                             (this.i == sextad.j && this.j == sextad.k && this.k == sextad.i) ||
-                             (this.i == sextad.k && this.j == sextad.i && this.k == sextad.j) ||
-                             (this.i == sextad.k && this.j == sextad.j && this.k == sextad.i);
+        boolean leftEquals = (this.i == sextad.i && this.j == sextad.j)
+                             || (this.i == sextad.j && this.j == sextad.i);
 
-        boolean rightEquals = (this.l == sextad.l && this.m == sextad.m && this.n == sextad.n) ||
-                              (this.l == sextad.l && this.m == sextad.n && this.n == sextad.m) ||
-                              (this.l == sextad.m && this.m == sextad.l && this.n == sextad.n) ||
-                              (this.l == sextad.m && this.m == sextad.n && this.n == sextad.l) ||
-                              (this.l == sextad.n && this.m == sextad.l && this.n == sextad.m) ||
-                              (this.l == sextad.n && this.m == sextad.m && this.n == sextad.l);
+        boolean rightEquals = (this.k == sextad.k && this.l == sextad.k)
+                             || (this.k == sextad.l && this.l == sextad.j);
 
         return leftEquals && rightEquals;
     }
@@ -172,10 +132,10 @@ public class Sextad implements TetradSerializable {
     /**
      * <p>toString.</p>
      *
-     * @return a {@link java.lang.String} object
+     * @return a {@link String} object
      */
     public String toString() {
-        return "<" + this.i + ", " + this.j + ", " + this.k + "; " + this.l + ", " + this.m + ", " + this.n + ">";
+        return "<" + this.i + ", " + this.j + ", " + this.k + "; " + this.l + ">";
     }
 
     /**
@@ -189,29 +149,19 @@ public class Sextad implements TetradSerializable {
         nodes.add(this.j);
         nodes.add(this.k);
         nodes.add(this.l);
-        nodes.add(this.m);
-        nodes.add(this.n);
         return nodes;
     }
 
-    private void testDistinctness(int i, int j, int k, int l, int m, int n) {
-        if (i == j || i == k || i == l || i == m || i == n) {
+    private void testDistinctness(int i, int j, int k, int l) {
+        if (i == j || i == k || i == l) {
             throw new IllegalArgumentException("Nodes not distinct.");
         }
 
-        if (j == k || j == l || j == m || j == n) {
+        if (j == k || j == l) {
             throw new IllegalArgumentException("Nodes not distinct.");
         }
 
-        if (k == l || k == m || k == n) {
-            throw new IllegalArgumentException("Nodes not distinct.");
-        }
-
-        if (l == m || l == n) {
-            throw new IllegalArgumentException("Nodes not distinct.");
-        }
-
-        if (m == n) {
+        if (k == l) {
             throw new IllegalArgumentException("Nodes not distinct.");
         }
     }

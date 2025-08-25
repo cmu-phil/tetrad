@@ -50,7 +50,7 @@ public class FofcBlockDiscoverer implements BlockDiscoverer {
      */
     @Override
     public BlockSpec discover() {
-        Fofc fofc = new Fofc(dataSet, ntadTest, alpha, ess);
+        Fofc fofc = new Fofc(dataSet, ntadTest, alpha);
         List<List<Integer>> blocks = fofc.findClusters();
 
         BlocksUtil.validateBlocks(blocks, dataSet);
