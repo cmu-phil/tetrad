@@ -67,6 +67,11 @@ public final class BlockDiscoverers {
         return new FtfcBlockDiscoverer(data, ntad, alpha, ess, policy);
     }
 
+    public static BlockDiscoverer fgfc(DataSet data, double alpha,
+                                       int ess, SingleClusterPolicy policy) {
+        return new FgfcBlockDiscoverer(data, alpha, ess, policy);
+    }
+
     /**
      * Creates a new instance of a {@code TscTestBlockDiscoverer}, which is an implementation of the
      * {@code BlockDiscoverer} interface. This method uses the TSC algorithm to discover clusters or "blocks" of indices

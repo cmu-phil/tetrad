@@ -322,7 +322,7 @@ public class Ftfc {
             }
 
             mixedClusters.add(cluster);
-            variables.removeAll(cluster);
+            unclustered.removeAll(cluster);
 
             if (this.verbose) {
                 log("5-cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));

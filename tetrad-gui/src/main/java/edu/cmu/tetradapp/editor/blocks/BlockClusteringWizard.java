@@ -45,7 +45,7 @@ public class BlockClusteringWizard extends JPanel {
     private final JPanel cardPanel = new JPanel(cards);
     private final JPanel pageResult = new JPanel(new BorderLayout());
     // ... UI fields ...
-    private final JComboBox<String> cbAlgorithm = new JComboBox<>(new String[]{"FOFC", "BPC", "FTFC", "TSC Test", "TSC Score"});
+    private final JComboBox<String> cbAlgorithm = new JComboBox<>(new String[]{"FOFC", "BPC", "FTFC", "FGFC", "TSC Test", "TSC Score"});
 
     // Put near your fields
     private final JComboBox<String> cbTetradTest = new JComboBox<>();
@@ -410,6 +410,9 @@ public class BlockClusteringWizard extends JPanel {
                     test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 }
                 yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA), ess, policy);
+            }
+            case "FGFC" -> {
+                yield BlockDiscoverers.fgfc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy);
             }
             default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
         };
