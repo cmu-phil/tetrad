@@ -48,8 +48,10 @@ public class FgfcBlockDiscoverer implements BlockDiscoverer {
      */
     @Override
     public BlockSpec discover() {
-        Fgfc fofc = new Fgfc(dataSet, alpha);
-        Map<List<Integer>, Integer> clusters = fofc.findClusters();
+        Fgfc fgfc = new Fgfc(dataSet, alpha);
+        fgfc.setParallelism(Runtime.getRuntime().availableProcessors());
+
+        Map<List<Integer>, Integer> clusters = fgfc.findClusters();
         List<List<Integer>> blocks = new ArrayList<>(clusters.keySet());
         List<Integer> ranks = new ArrayList<>();
         for (List<Integer> block : blocks) {
