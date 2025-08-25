@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ntad_test.BollenTing;
@@ -32,7 +31,6 @@ import edu.cmu.tetrad.search.utils.Sextad;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -58,10 +56,6 @@ import java.util.*;
  */
 public class Ftfc {
     /**
-     * The type of test used.
-     */
-    private final CorrelationMatrix corr;
-    /**
      * The list of all variables.
      */
     private final List<Node> variables;
@@ -78,11 +72,6 @@ public class Ftfc {
      * The sextad test to use.
      */
     private final NtadTest test;
-    private final int sampleSize;
-    private final int ess;
-    // --- Tunables (optional; adjust if you want less brittleness)
-    private double depFractionThreshold = 0.90;   // was hardcoded 0.90
-    private double appendPurityFraction = 0.75;   // require ≥75% pure sextads when appending
 
     /**
      * The clusters that are output by the algorithm from the last call to search().
@@ -100,6 +89,12 @@ public class Ftfc {
      * A cache of impure sextets.
      */
     private Set<Set<Integer>> impureSextets;
+    /**
+     * Represents the fraction of purity required when appending variables to clusters.
+     * This value determines the strictness of the constraints applied during the clustering process.
+     * A higher value implies stricter requirements for purity when merging variables.
+     */
+    private double appendPurityFraction = 1;
 
     /**
      * Conctructor.
@@ -107,19 +102,11 @@ public class Ftfc {
      * @param dataSet The continuous dataset searched over.
      * @param test    The NTad test to use.
      * @param alpha   The alpha significance cutoff.
-     * @param ess     The effective sample size, or -1 is the actual sample size is to be used.
      */
-    public Ftfc(DataSet dataSet, NtadTest test, double alpha, int ess) {
-        if (!(ess == -1 || ess > 0)) {
-            throw new IllegalArgumentException("ESS should be -1 or > 0.");
-        }
-
+    public Ftfc(DataSet dataSet, NtadTest test, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.test = test;
-        this.corr = new CorrelationMatrix(dataSet);
-        this.sampleSize = this.corr.getSampleSize();
-        this.ess = ess == -1 ? this.sampleSize : ess;
     }
 
     /**
@@ -253,43 +240,6 @@ public class Ftfc {
         return clusters;
     }
 
-//    private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
-//        Iterator<Integer> iterator = unclustered.iterator();
-//
-//        while (iterator.hasNext()) {
-//            int o = iterator.next();
-//
-//            if (cluster.contains(o)) continue;
-//
-//            boolean allSextadsPure = true;
-//
-//            // Check all sextets with o and 5 other elements in the cluster
-//            int size = cluster.size();
-//
-//            for (int i = 0; i < size - 2 && allSextadsPure; i++) {
-//                for (int j = i + 1; j < size - 1 && allSextadsPure; j++) {
-//                    for (int k = j + 1; k < size && allSextadsPure; k++) {
-//                        for (int l = k + 1; l < size && allSextadsPure; l++) {
-//                            for (int m = l + 1; m < size && allSextadsPure; m++) {
-//                                List<Integer> sextad = List.of(cluster.get(i), cluster.get(j), cluster.get(k),
-//                                        cluster.get(l), cluster.get(m), o);
-//
-//                                if (pure(sextad) != Purity.PURE) {
-//                                    allSextadsPure = false;
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            if (allSextadsPure) {
-//                cluster.addLast(o);
-//                iterator.remove();
-//            }
-//        }
-//    }
-
     private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
         // iterate with an Iterator so we can remove from unclustered safely
         Iterator<Integer> iterator = unclustered.iterator();
@@ -320,6 +270,7 @@ public class Ftfc {
             }
 
             double frac = tests == 0 ? 0.0 : (pureCount / (double) tests);
+
             if (frac >= appendPurityFraction) {
                 cluster.add(o);     // NOTE: use add(), not addLast()
                 iterator.remove();
@@ -384,10 +335,6 @@ public class Ftfc {
                 List<Integer> _cluster = new ArrayList<>(cluster);
                 _cluster.add(o);
 
-//                if (!clusterDependent(cluster)) {
-//                    continue CHOICE;
-//                }
-
                 if (!vanishes(_cluster)) {
                     continue CHOICE;
                 }
@@ -404,66 +351,13 @@ public class Ftfc {
         return mixedClusters;
     }
 
-    /**
-     * Determines if a given sextet of variables satisfies the conditions for being considered pure.
-     *
-     * @param sextet The list of integers representing a sextet of variables.
-     * @return The Purity judgment of the sextet
-     * @see Purity
-     */
-//    private Purity pure(List<Integer> sextet) {
-//        if (!clusterDependent(sextet)) {
-//            return Purity.UNDECIDED;
-//        }
-//
-//        if (pureSextets.contains(new HashSet<>(sextet))) {
-//            return Purity.PURE;
-//        }
-//
-//        if (impureSextets.contains(new HashSet<>(sextet))) {
-//            return Purity.IMPURE;
-//        }
-//
-//        if (vanishes(sextet)) {
-//            List<Integer> vars = allVariables();
-//
-//            for (int o : vars) {
-//                if (sextet.contains(o)) continue;
-//
-//                for (int j = 0; j < sextet.size(); j++) {
-//                    List<Integer> _sextet = new ArrayList<>(sextet);
-//                    _sextet.set(j, o);
-//
-//                    if (!vanishes(_sextet)) {
-//                        impureSextets.add(new HashSet<>(_sextet));
-//                        return Purity.IMPURE;
-//                    }
-//                }
-//            }
-//
-//            System.out.println("PURE: " + sextet);
-//
-//            pureSextets.add(new HashSet<>(sextet));
-//            return Purity.PURE;
-//        } else {
-//            impureSextets.add(new HashSet<>(sextet));
-//            return Purity.IMPURE;
-//        }
-//    }
     private Purity pure(List<Integer> sextet) {
-        // Quick screen: if the sextet isn't even pairwise dependent, we can't decide purity
-        if (!clusterDependent(sextet)) {
-            return Purity.UNDECIDED;
-        }
-
         Set<Integer> key = new HashSet<>(sextet);
         if (pureSextets.contains(key)) return Purity.PURE;
         if (impureSextets.contains(key)) return Purity.IMPURE;
 
         // Base vanishing check for the candidate sextet
         if (vanishes(sextet)) {
-            // Substitution test: if ANY single substitution with an outside variable also vanishes,
-            // the ORIGINAL sextet is IMPURE (flip from previous logic).
             List<Integer> vars = allVariables();
             for (int o : vars) {
                 if (sextet.contains(o)) continue;
@@ -486,124 +380,6 @@ public class Ftfc {
             impureSextets.add(key);
             return Purity.IMPURE;
         }
-    }
-
-    /**
-     * Attempts to move nodes from one cluster to another to improve clustering,.
-     *
-     * @param clusters The clusters to adjust.
-     * @return True if a change was made.
-     */
-    private boolean exchange(Set<List<Integer>> clusters) {
-        boolean moved = false;
-
-        for (List<Integer> cluster : new HashSet<>(clusters)) {
-            if (cluster.size() != 6) {
-                continue;
-            }
-
-            for (Integer o : new HashSet<>(cluster)) {
-                for (List<Integer> _cluster : new HashSet<>(clusters)) {
-                    if (_cluster == cluster) {
-                        continue;
-                    }
-
-                    if (_cluster.contains(o)) continue;
-                    if (!cluster.contains(o)) continue;
-
-                    if (isAllSextetsPureAppended(_cluster, o)) {
-                        _cluster.add(o);
-
-                        if (clusterDependent(_cluster)) {
-                            cluster.remove(o);
-                            clusters.remove(cluster);
-                            moved = true;
-                        } else {
-                            _cluster.remove(o);
-                        }
-                    }
-                }
-            }
-
-            Set<Integer> unclustered = new HashSet<>(allVariables());
-            Set<Integer> clustered = union(clusters);
-            unclustered.removeAll(clustered);
-
-            for (Integer o : new HashSet<>(unclustered)) {
-                for (List<Integer> _cluster : new HashSet<>(clusters)) {
-                    if (_cluster == cluster) {
-                        continue;
-                    }
-
-                    if (_cluster.contains(o)) continue;
-                    if (!cluster.contains(o)) continue;
-
-                    if (isAllSextetsPureAppended(_cluster, o)) {
-                        _cluster.add(o);
-
-                        if (clusterDependent(_cluster)) {
-                            cluster.remove(o);
-                            clusters.remove(cluster);
-                            moved = true;
-                        } else {
-                            _cluster.remove(o);
-                        }
-                    }
-                }
-            }
-        }
-
-        return moved;
-    }
-
-//    private boolean isAllSextetsPureAppended(List<Integer> cluster, int o) {
-//
-//        // Check all sextets with o and 5 other elements in the cluster
-//        int size = cluster.size();
-//
-//        for (int i = 0; i < size - 2; i++) {
-//            for (int j = i + 1; j < size - 1; j++) {
-//                for (int k = j + 1; k < size; k++) {
-//                    for (int l = k + 1; l < size; l++) {
-//                        for (int m = l + 1; m < size; m++) {
-//                            List<Integer> sextet = List.of(cluster.get(i), cluster.get(j), cluster.get(k),
-//                                    cluster.get(l), cluster.get(m), o);
-//
-//                            if (pure(sextet) != Purity.PURE) {
-//                                return false;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        return true;
-//    }
-
-    private boolean isAllSextetsPureAppended(List<Integer> cluster, int o) {
-        int size = cluster.size();
-        int tests = 0, pureCount = 0;
-
-        for (int i = 0; i < size - 4; i++) {
-            for (int j = i + 1; j < size - 3; j++) {
-                for (int k = j + 1; k < size - 2; k++) {
-                    for (int l = k + 1; l < size - 1; l++) {
-                        for (int m = l + 1; m < size; m++) {
-                            tests++;
-                            List<Integer> sextet = List.of(
-                                    cluster.get(i), cluster.get(j), cluster.get(k),
-                                    cluster.get(l), cluster.get(m), o
-                            );
-                            if (pure(sextet) == Purity.PURE) pureCount++;
-                        }
-                    }
-                }
-            }
-        }
-
-        double frac = tests == 0 ? 0.0 : (pureCount / (double) tests);
-        return frac >= appendPurityFraction;   // previously required 100%
     }
 
     /**
@@ -647,75 +423,6 @@ public class Ftfc {
     }
 
     /**
-     * Checks if a given cluster is pairwise dependent.
-     *
-     * @param cluster The list of integers representing the cluster.
-     * @return True if the cluster is pairwise dependent, false otherwise.
-     */
-//    private boolean clusterDependent(List<Integer> cluster) {
-////        if (true) return true;
-//
-//        int numDependencies = 0;
-//        int all = 0;
-//
-//        for (int i = 0; i < cluster.size(); i++) {
-//            for (int j = i + 1; j < cluster.size(); j++) {
-//                double r = this.corr.getValue(cluster.get(i), cluster.get(j));
-//
-//                if (Double.isNaN(r)) {
-//                    continue;
-//                }
-//
-//                int n = this.corr.getSampleSize();
-//                int zSize = 0; // Unconditional check.
-//
-//                double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
-//                double df = n - 3. - zSize;
-//
-//                double fisherZ = sqrt(df) * q;
-//
-//                if (2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ))) < alpha) {
-//                    numDependencies++;
-//                }
-//
-//                all++;
-//            }
-//        }
-//
-//        return numDependencies > all * 0.90;
-//    }
-    private boolean clusterDependent(List<Integer> cluster) {
-        if (true) return true;
-
-        int numDependencies = 0;
-        int all = 0;
-
-        // Use ESS if provided; otherwise fall back to sample size.
-        int n = (this.ess > 0 ? this.ess : this.corr.getSampleSize());
-        double df = n - 3.0;
-        if (df <= 0) return false;
-
-        for (int i = 0; i < cluster.size(); i++) {
-            for (int j = i + 1; j < cluster.size(); j++) {
-                double r = this.corr.getValue(cluster.get(i), cluster.get(j));
-                if (Double.isNaN(r)) continue;
-
-                // Fisher z on |r|
-                double q = 0.5 * (FastMath.log(1.0 + FastMath.abs(r)) - FastMath.log(1.0 - FastMath.abs(r)));
-                double fisherZ = FastMath.sqrt(df) * q;
-
-                // two-sided
-                double p = 2 * (1.0 - this.normal.cumulativeProbability(FastMath.abs(fisherZ)));
-                if (p < alpha) numDependencies++;
-
-                all++;
-            }
-        }
-
-        return all > 0 && numDependencies >= all * depFractionThreshold;
-    }
-
-    /**
      * Checks if the given numbers follow the vanishing pattern.
      *
      * @param n1 first number
@@ -739,7 +446,8 @@ public class Ftfc {
         Sextad t10 = new Sextad(n1, n5, n6, n2, n3, n4);
 
         List<Sextad[]> independents = new ArrayList<>();
-        independents.add(new Sextad[]{t1, t2, t3, t5, t6});
+//        independents.add(new Sextad[]{t1, t2, t3, t5, t6});
+        independents.add(new Sextad[]{t1, t2, t3, t4, t5, t6, t7, t8, t9, t10});
 
         for (Sextad[] sextads : independents) {
             List<int[][]> _independents = new ArrayList<>();
@@ -800,6 +508,10 @@ public class Ftfc {
         if (this.verbose) {
             TetradLogger.getInstance().log(s);
         }
+    }
+
+    public void setAppendPurityFraction(double appendPurityFraction) {
+        this.appendPurityFraction = appendPurityFraction;
     }
 
     private enum Purity {PURE, IMPURE, UNDECIDED}

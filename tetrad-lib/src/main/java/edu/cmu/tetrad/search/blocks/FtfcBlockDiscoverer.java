@@ -56,7 +56,7 @@ public class FtfcBlockDiscoverer implements BlockDiscoverer {
      */
     @Override
     public BlockSpec discover() {
-        Ftfc ftfc = new Ftfc(dataSet, ntadTest, alpha, ess);
+        Ftfc ftfc = new Ftfc(dataSet, ntadTest, alpha);
         List<List<Integer>> blocks = ftfc.findClusters();
 
         BlocksUtil.validateBlocks(blocks, dataSet);
