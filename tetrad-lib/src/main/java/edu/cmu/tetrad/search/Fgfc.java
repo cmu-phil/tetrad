@@ -58,12 +58,6 @@ public class Fgfc {
      * A cache of impure tetrads.
      */
     private Set<Set<Integer>> impureTets;
-//    /**
-//     * Represents the fraction of purity required when appending variables to clusters. This value determines the
-//     * strictness of the constraints applied during the clustering process. A higher value implies stricter requirements
-//     * for purity when merging variables.
-//     */
-//    private double appendPurityFraction = 1;
 
     /**
      * Conctructor.
@@ -235,14 +229,10 @@ public class Fgfc {
                 tests++;
                 if (pure(tad) != Purity.PURE) {
                     continue O;
-//                    pureCount++;
                 }
             }
 
-//            double frac = tests == 0 ? 0.0 : (pureCount / (double) tests);
-//            if (frac >= appendPurityFraction) {
             toAdd.add(o);
-//            }
         }
 
         // Now (and only now) mutate the cluster
@@ -418,10 +408,6 @@ public class Fgfc {
             TetradLogger.getInstance().log(s);
         }
     }
-//
-//    public void setAppendPurityFraction(double appendPurityFraction) {
-//        this.appendPurityFraction = appendPurityFraction;
-//    }
 
     private enum Purity {PURE, IMPURE}
 }
