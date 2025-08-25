@@ -178,15 +178,10 @@ public class Fgfc {
                     log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
                 }
 
-                clustersToRanks.put(sort(cluster), rank);
+                clustersToRanks.put(canonKey(cluster), rank);
                 unclustered.removeAll(cluster);
             }
         }
-    }
-
-    private List<Integer> sort(List<Integer> _variables) {
-        Collections.sort(_variables);
-        return _variables;
     }
 
     private void growCluster(List<Integer> cluster, int rank, Map<List<Integer>, Integer> clustersToRanks) {
@@ -299,11 +294,12 @@ public class Fgfc {
                 }
             }
 
-            clustersToRanks.put(sort(cluster), rank);
+            clustersToRanks.put(canonKey(cluster), rank);
             unclustered.removeAll(cluster);
 
             if (this.verbose) {
-                log("5-cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
+                log((2 * (rank + 1) - 1) + "-cluster found: " +
+                    ClusterSignificance.variablesForIndices(cluster, this.variables));
             }
         }
 
@@ -311,11 +307,12 @@ public class Fgfc {
 
     private Purity pure(List<Integer> tad) {
         Set<Integer> key = new HashSet<>(tad);
-        if (pureTets.contains(key)) return Purity.PURE;
+        if (pureTets.contains(key))  return Purity.PURE;
         if (impureTets.contains(key)) return Purity.IMPURE;
 
         // Base vanishing check for the candidate tad
         if (vanishes(tad)) {
+            // Substitution test: every single-position substitution by any other variable must also vanish
             List<Integer> vars = allVariables();
             for (int o : vars) {
                 if (tad.contains(o)) continue;
@@ -325,20 +322,53 @@ public class Fgfc {
                     _tad.set(j, o);
 
                     if (!vanishes(_tad)) {
+                        // Cache both the bad substitution and the original key as IMPURE
                         impureTets.add(new HashSet<>(_tad));
+                        impureTets.add(key);
                         return Purity.IMPURE;
                     }
                 }
             }
-
             // Passed all substitutions -> PURE
             pureTets.add(key);
             return Purity.PURE;
         } else {
+            // Cache the original as IMPURE
             impureTets.add(key);
             return Purity.IMPURE;
         }
     }
+
+//    private Purity pure(List<Integer> tad) {
+//        Set<Integer> key = new HashSet<>(tad);
+//        if (pureTets.contains(key)) return Purity.PURE;
+//        if (impureTets.contains(key)) return Purity.IMPURE;
+//
+//        // Base vanishing check for the candidate tad
+//        if (vanishes(tad)) {
+//            List<Integer> vars = allVariables();
+//            for (int o : vars) {
+//                if (tad.contains(o)) continue;
+//
+//                for (int j = 0; j < tad.size(); j++) {
+//                    List<Integer> _tad = new ArrayList<>(tad);
+//                    _tad.set(j, o);
+//
+//                    if (!vanishes(_tad)) {
+//                        impureTets.add(new HashSet<>(_tad));
+//                        return Purity.IMPURE;
+//                    }
+//                }
+//            }
+//
+//            // Passed all substitutions -> PURE
+//            pureTets.add(key);
+//            return Purity.PURE;
+//        } else {
+//            impureTets.add(key);
+//            return Purity.IMPURE;
+//        }
+//    }
 
     /**
      * Determines if a given cluster of variables "vanishes".
@@ -412,6 +442,13 @@ public class Fgfc {
         if (this.verbose) {
             TetradLogger.getInstance().log(s);
         }
+    }
+
+    // Canonical, immutable key for clusters to avoid order/mutation hazards
+    private static List<Integer> canonKey(Collection<Integer> xs) {
+        List<Integer> s = new ArrayList<>(xs);
+        Collections.sort(s);
+        return Collections.unmodifiableList(s);
     }
 
     public void setAppendPurityFraction(double appendPurityFraction) {
