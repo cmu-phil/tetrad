@@ -217,9 +217,6 @@ public class Fgfc {
         for (int o : unclustered) {
             if (Thread.currentThread().isInterrupted()) return;
 
-            int tests = 0;
-            int pureCount = 0;
-
             for (List<Integer> sub : subsets) {
                 // Make tad = sub ∪ {o}
                 List<Integer> tad = new ArrayList<>(sub.size() + 1);
