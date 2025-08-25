@@ -78,6 +78,13 @@ public class Fgfc {
         this.n = dataSet.getNumRows();
     }
 
+    // Canonical, immutable key for clusters to avoid order/mutation hazards
+    private static List<Integer> canonKey(Collection<Integer> xs) {
+        List<Integer> s = new ArrayList<>(xs);
+        Collections.sort(s);
+        return Collections.unmodifiableList(s);
+    }
+
     /**
      * Runs the search and returns a graph of clusters with the ir respective latent parents.
      *
@@ -129,7 +136,7 @@ public class Fgfc {
         findPureClusters(rank, clustersToRanks);
         findMixedClusters(rank, clustersToRanks);
 
-        System.out.println("clusters rank " + rank + " = "
+        TetradLogger.getInstance().log("clusters rank " + rank + " = "
                            + ClusterSignificance.variablesForIndices(clustersToRanks.keySet(), this.variables));
 
     }
@@ -141,8 +148,6 @@ public class Fgfc {
         List<Integer> variables = allVariables();
 
         int clusterSize = 2 * (rank + 1);
-
-        log(variables.toString());
 
         List<Integer> unclustered = new ArrayList<>(variables);
         unclustered.removeAll(union(clustersToRanks.keySet()));
@@ -215,6 +220,7 @@ public class Fgfc {
         }
 
         // For each candidate o, test all size-(k+1) tads = subset ∪ {o}
+        O:
         for (int o : unclustered) {
             if (Thread.currentThread().isInterrupted()) return;
 
@@ -228,15 +234,16 @@ public class Fgfc {
                 tad.add(o);
 
                 tests++;
-                if (pure(tad) == Purity.PURE) {
-                    pureCount++;
+                if (pure(tad) != Purity.PURE) {
+                    continue O;
+//                    pureCount++;
                 }
             }
 
-            double frac = tests == 0 ? 0.0 : (pureCount / (double) tests);
-            if (frac >= appendPurityFraction) {
-                toAdd.add(o);
-            }
+//            double frac = tests == 0 ? 0.0 : (pureCount / (double) tests);
+//            if (frac >= appendPurityFraction) {
+            toAdd.add(o);
+//            }
         }
 
         // Now (and only now) mutate the cluster
@@ -307,7 +314,7 @@ public class Fgfc {
 
     private Purity pure(List<Integer> tad) {
         Set<Integer> key = new HashSet<>(tad);
-        if (pureTets.contains(key))  return Purity.PURE;
+        if (pureTets.contains(key)) return Purity.PURE;
         if (impureTets.contains(key)) return Purity.IMPURE;
 
         // Base vanishing check for the candidate tad
@@ -411,13 +418,6 @@ public class Fgfc {
         if (this.verbose) {
             TetradLogger.getInstance().log(s);
         }
-    }
-
-    // Canonical, immutable key for clusters to avoid order/mutation hazards
-    private static List<Integer> canonKey(Collection<Integer> xs) {
-        List<Integer> s = new ArrayList<>(xs);
-        Collections.sort(s);
-        return Collections.unmodifiableList(s);
     }
 
     public void setAppendPurityFraction(double appendPurityFraction) {

@@ -37,7 +37,7 @@ public class Tsc {
     private boolean verbose = false;
     private Map<Set<Integer>, Integer> clusters = new HashMap<>();
     private Map<Set<Integer>, Integer> clusterToRank;
-    private Map<Set<Integer>, Integer> reducedRank;
+//    private Map<Set<Integer>, Integer> reducedRank;
 
     /**
      * RCCA ridge regularizer used in RankTests.getRccaEntry.
@@ -518,7 +518,7 @@ public class Tsc {
     private @NotNull Map<Set<Integer>, Integer> clusterSearchMetaLoop() {
         List<Integer> remainingVars = new ArrayList<>(allVariables());
         clusterToRank = new HashMap<>();
-        reducedRank = new HashMap<>();
+//        reducedRank = new HashMap<>();
 
         for (int rank = 0; rank <= 3; rank++) {
             int size = rank + 1;
@@ -623,7 +623,7 @@ public class Tsc {
 
                             newClusters.remove(C1);
                             newClusters.add(C2);
-                            reducedRank.put(C2, newRank);
+//                            reducedRank.put(C2, newRank);
                             used.addAll(C2);
                             log("Augmenting cluster " + toNamesCluster(C1) + " to cluster " + toNamesCluster(C2) + " (rank " + _reducedRank + ").");
                             didAugment = true;
@@ -645,7 +645,7 @@ public class Tsc {
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             if (cluster.size() == 1) {
                 clusterToRank.remove(cluster);
-                reducedRank.remove(cluster);
+//                reducedRank.remove(cluster);
                 log("Removing cluster " + toNamesCluster(cluster));
             }
         }
@@ -659,7 +659,7 @@ public class Tsc {
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             if (failsSubsetTest(S, cluster, expectedSampleSize, alpha)) {
                 clusterToRank.remove(cluster);
-                reducedRank.remove(cluster);
+//                reducedRank.remove(cluster);
                 penultimateRemoved = true;
             }
         }
@@ -802,7 +802,8 @@ public class Tsc {
                 int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
 
                 int minpq = Math.min(_cArray.length, dArray.length);
-                Integer l = Optional.ofNullable(reducedRank.get(cluster)).orElse(clusterToRank.getOrDefault(cluster, 0));
+                Integer l = clusterToRank.get(cluster);
+//                Integer l = Optional.ofNullable(reducedRank.get(cluster)).orElse(clusterToRank.getOrDefault(cluster, 0));
                 l = Math.min(minpq, Math.max(0, l));
 
                 int r = RankTests.estimateWilksRank(S, _cArray, dArray, expectedSampleSize, alpha);

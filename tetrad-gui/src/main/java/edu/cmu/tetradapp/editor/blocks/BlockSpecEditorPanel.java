@@ -43,9 +43,9 @@ public final class BlockSpecEditorPanel extends JPanel {
     private final JLabel status = new JLabel("Ready");
     private final JButton btnImport = new JButton("Import…");
     private final JButton btnExport = new JButton("Export…");
-    private final JButton btnVars = new JButton("Insert Vars");
-    private final JButton btnCanonicalize = new JButton("Canonicalize");
-    private final JButton btnApply = new JButton("Apply");
+    private final JButton btnVars = new JButton("List Variables");
+    private final JButton btnAlphatize = new JButton("Alphabetize");
+    private final JButton btnApply = new JButton("Keep Changes");
     private final JPopupMenu completionPopup = new JPopupMenu();
     private final JList<String> completionList = new JList<>();
     private final DefaultListModel<String> completionModel = new DefaultListModel<>();
@@ -152,20 +152,20 @@ public final class BlockSpecEditorPanel extends JPanel {
 //        buttonsRight.add(btnImport);
 //        buttonsRight.add(btnExport);
         buttonsRight.add(btnVars);        // <= add here
-        buttonsRight.add(btnCanonicalize);
+        buttonsRight.add(btnAlphatize);
         buttonsRight.add(btnApply);
         bottom.add(status, BorderLayout.CENTER);
 //        bottom.add(buttonsLeft, BorderLayout.WEST);
         bottom.add(buttonsRight, BorderLayout.EAST);
 
         btnApply.addActionListener(e -> applyIfClean());
-        btnCanonicalize.addActionListener(e -> canonicalizePreservingComments());
+        btnAlphatize.addActionListener(e -> canonicalizePreservingComments());
         btnImport.addActionListener(e -> doImport());
         btnExport.addActionListener(e -> doExport());
         btnVars.addActionListener(e -> insertVariableListComment());
 
         btnApply.addActionListener(e -> applyIfClean());
-        btnCanonicalize.addActionListener(e -> canonicalizePreservingComments());
+        btnAlphatize.addActionListener(e -> canonicalizePreservingComments());
         btnImport.addActionListener(e -> doImport());
         btnExport.addActionListener(e -> doExport());
 
