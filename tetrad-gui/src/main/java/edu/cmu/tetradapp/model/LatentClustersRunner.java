@@ -73,11 +73,10 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      */
     private Parameters parameters;
     private BlockSpec blockSpec = null;
-    private String alg = "FOFC";
-    private String test = "CCA";
+//    private String alg = "FOFC";
+//    private String test = "CCA";
     private String blockText = "";
-    private int sampleSize;
-    private int ess;
+    private final int ess;
 
     //===========================CONSTRUCTORS===========================//
 
@@ -91,9 +90,11 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         this.dataWrapper = dataWrapper;
         this.parameters = parameters;
         this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
-        this.sampleSize = dataSet.getNumRows();
+        int sampleSize = dataSet.getNumRows();
         int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
-        this.ess = ess == -1 ? this.sampleSize : ess;
+        this.ess = ess == -1 ? sampleSize : ess;
+
+        String alg = parameters.getString("latentClusterRunnerAlgorithm", "FOFC");
 
         // If we're in simulation mode, grab the true clusters and their latent names so we can use these to
         // give good names to the estimated clusters. This helps avoid people having so much trouble figuring
@@ -269,7 +270,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      * @return a string representing the name of the algorithm.
      */
     public String getAlg() {
-        return alg;
+        return parameters.getString("latentClusterRunnerAlgorithm", "FOFC");
     }
 
     /**
@@ -280,7 +281,8 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      */
     public void setAlg(String alg) {
         Objects.requireNonNull(alg, "alg");
-        this.alg = alg;
+//        this.alg = alg;
+        parameters.set("latentClusterRunnerAlgorithm", alg);
     }
 
     /**
@@ -289,7 +291,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      * @return a string representing the test value.
      */
     public String getTest() {
-        return test;
+        return parameters.getString("latentClusterRunnerTest", "CCA");
     }
 
     /**
@@ -299,7 +301,8 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      * @throws NullPointerException if the provided test is null.
      */
     public void setTest(String test) {
-        this.test = test;
+//        this.test = test;
+        parameters.set("latentClusterRunnerTest", test);
     }
 
     /**
@@ -385,6 +388,9 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
 
         // This can't be put into a watch thread because downstream session nodes are counting on
         // a block spec being set when propagating downstream. jdramsey 2025-8-23
+        String alg = parameters.getString("latentClusterRunnerAlgorithm", "FOFC");
+        String test = parameters.getString("latentClusterRunnerTest", "CCA");
+
         BlockDiscoverer discoverer = buildDiscoverer(alg, test);
         BlockSpec spec = discoverer.discover();
         spec = BlocksUtil.giveGoodLatentNames(spec, trueNamedClusters,  BlocksUtil.NamingMode.LEARNED_SINGLE);

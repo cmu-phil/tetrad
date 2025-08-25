@@ -11,6 +11,9 @@ import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static edu.cmu.tetrad.util.StatUtils.erf;
 
 /**
  * The RankTests class provides a suite of methods and utilities for performing rank estimation and hypothesis testing
@@ -64,6 +67,8 @@ public class RankTests {
      * threshold, which could lead to numerical instability or inaccuracies.
      */
     private static final double MIN_EIG = 1e-12;
+    // --- Fast Chi-square critical via Wilson–Hilferty with cached normal z ---
+    private static final Map<Long, Double> CHI2_CRIT_CACHE = new ConcurrentHashMap<>();
 
     /**
      * The RankTests class provides utility methods for ranking-related evaluations. This class is not meant to be
@@ -262,6 +267,59 @@ public class RankTests {
         }
     }
 
+//    public static int estimateWilksRankFast(SimpleMatrix S, int[] xIdx, int[] yIdx, int n, double alpha) {
+//        final int p = xIdx.length, q = yIdx.length;
+//        if (p == 0 || q == 0) return 0;
+//        final int m = Math.min(p, q);
+//
+//        // submatrices
+//        SimpleMatrix Sxx = submatrix(S, xIdx, xIdx);
+//        SimpleMatrix Syy = submatrix(S, yIdx, yIdx);
+//        SimpleMatrix Sxy = submatrix(S, xIdx, yIdx);
+//        SimpleMatrix Syx = Sxy.transpose();
+//
+//        // tiny ridge for numerical stability
+//        final double eps = 1e-10;
+//        for (int i = 0; i < p; i++) Sxx.set(i, i, Sxx.get(i, i) + eps);
+//        for (int i = 0; i < q; i++) Syy.set(i, i, Syy.get(i, i) + eps);
+//
+//        // inverses
+//        SimpleMatrix SxxInv = Sxx.invert();
+//        SimpleMatrix SyyInv = Syy.invert();
+//
+//        // M should be symmetric PSD up to round-off; enforce symmetry to stabilize eigvals
+//        SimpleMatrix M = SxxInv.mult(Sxy).mult(SyyInv).mult(Syx);
+//        M = M.plus(M.transpose()).scale(0.5);
+//
+//        // eigenvalues ~ rho^2; clamp to [0,1)
+//        double[] evals = eigSymmetricClamped(M);
+//        Arrays.sort(evals);                 // ascending
+//        // take descending into rho2[0..L-1]
+//        int L = Math.min(evals.length, m);
+//        double[] rho2 = new double[L];
+//        for (int i = 0; i < L; i++) rho2[i] = evals[evals.length - 1 - i];
+//
+//        // Bartlett factor; if invalid, bail out conservatively
+//        double c = (n - 1 - (p + q + 1) / 2.0);
+//        if (c <= 0) return m;
+//
+//        // Find the SMALLEST r with non-rejection; if none, return m (full rank)
+//        for (int r = 0; r < m; r++) {
+//            double sum = 0.0;
+//            for (int i = r; i < L; i++) {
+//                double oneMinus = Math.max(1e-15, 1.0 - rho2[i]);
+//                sum += Math.log(oneMinus);
+//            }
+//            double stat = -c * sum;
+//            int nu = (p - r) * (q - r);
+//            if (nu <= 0) return r; // at this point, tail has zero dof → accept
+//
+//            double crit = chi2CriticalWH(nu, alpha);
+//            if (stat <= crit) return r; // first non-rejection
+//        }
+//        return m; // rejected for all r
+//    }
+
     /**
      * Estimates the regularized canonical correlation analysis (rCCA) rank by sequentially testing the rank using
      * Wilks' Lambda statistic.
@@ -290,6 +348,174 @@ public class RankTests {
         }
 
         return minpq;
+    }
+
+    public static int estimateWilksRankFast(SimpleMatrix S, int[] xIdx, int[] yIdx, int n, double alpha) {
+        final int p = xIdx.length, q = yIdx.length;
+        if (p == 0 || q == 0) return 0;
+        final int m = Math.min(p, q);
+
+        // submatrices
+        SimpleMatrix Sxx = submatrix(S, xIdx, xIdx);
+        SimpleMatrix Syy = submatrix(S, yIdx, yIdx);
+        SimpleMatrix Sxy = submatrix(S, xIdx, yIdx);
+        SimpleMatrix Syx = Sxy.transpose();
+
+        // tiny ridge for numerical stability
+        double eps = 1e-10;
+        for (int i = 0; i < p; i++) Sxx.set(i, i, Sxx.get(i, i) + eps);
+        for (int i = 0; i < q; i++) Syy.set(i, i, Syy.get(i, i) + eps);
+
+        SimpleMatrix SxxInv = Sxx.invert();
+        SimpleMatrix SyyInv = Syy.invert();
+
+        // M has eigenvalues = rho^2 (on the smaller side)
+        // Use the smaller dimension side for eigen-decomp
+        SimpleMatrix M;
+        boolean xSmall = (p <= q);
+        if (xSmall) {
+            M = SxxInv.mult(Sxy).mult(SyyInv).mult(Syx); // p x p
+        } else {
+            M = SyyInv.mult(Syx).mult(SxxInv).mult(Sxy); // q x q
+        }
+
+        // eigenvalues (non-negative), sort descending, clamp to [0,1)
+        double[] evals = eigSymmetricClamped(M);
+        Arrays.sort(evals);
+        // reverse to descending
+        for (int i = 0; i < evals.length / 2; i++) {
+            double tmp = evals[i];
+            evals[i] = evals[evals.length - 1 - i];
+            evals[evals.length - 1 - i] = tmp;
+        }
+        int L = Math.min(evals.length, m);
+        double[] rho2 = Arrays.copyOf(evals, L);
+
+        // For r = 0..m-1, test H0: rank ≤ r using Bartlett χ² approx
+        // stat_r = - (n - 1 - (p+q+1)/2) * sum_{i=r+1..m} ln(1 - rho_i^2)
+        // ν_r = (p - r)(q - r)
+        double c = (n - 1 - (p + q + 1) / 2.0);
+        int hat = 0;
+
+        // Find the SMALLEST r with non-rejection; if none, return m (full rank)
+        for (int r = 0; r < m; r++) {
+            double sum = 0.0;
+            for (int i = r; i < L; i++) {
+                double oneMinus = Math.max(1e-15, 1.0 - rho2[i]);
+                sum += Math.log(oneMinus);
+            }
+            double stat = -c * sum;
+            int nu = (p - r) * (q - r);
+            if (nu <= 0) return r; // at this point, tail has zero dof → accept
+
+            double crit = chi2CriticalWH(nu, alpha);
+            if (stat <= crit) return r; // first non-rejection
+        }
+//        for (int r = 0; r < m; r++) {
+//
+//            double sum = 0.0;
+//            for (int i = r; i < L; i++) {
+//                double oneMinus = Math.max(1e-15, 1.0 - rho2[i]);
+//                sum += Math.log(oneMinus);
+//            }
+//            double stat = -c * sum;
+//            int nu = (p - r) * (q - r);
+//            if (nu <= 0) {
+//                hat = Math.max(hat, r);
+//                continue;
+//            }
+//
+//            double crit = chi2CriticalWH(nu, alpha);
+//            if (stat <= crit) {
+//                hat = Math.max(hat, r); // fail to reject ⇒ rank ≤ r plausible
+//            } else {
+//                // reject H0(rank ≤ r); continue increasing r won’t help acceptance
+//                // (stat decreases with larger r), but we still compute loop to keep it simple
+//            }
+//        }
+        return hat;
+    }
+
+    // helpers: symmetric eigvals with clamping
+    private static double[] eigSymmetricClamped(SimpleMatrix A) {
+        org.ejml.simple.SimpleEVD<SimpleMatrix> evd = A.eig();
+        int n = A.numCols();
+        double[] vals = new double[n];
+        for (int i = 0; i < n; i++) {
+            double v = evd.getEigenvalue(i).getReal();
+            if (Double.isNaN(v) || v < 0) v = 0;
+            if (v > 1) v = 1;
+            vals[i] = v;
+        }
+        return vals;
+    }
+
+    private static double chi2CriticalWH(int nu, double alpha) {
+        // key (nu, alpha*1e9) packed into a long for small cache
+        long key = (((long) nu) << 32) ^ Double.valueOf(alpha).hashCode();
+        Double cv = CHI2_CRIT_CACHE.get(key);
+        if (cv != null) return cv;
+
+        // z_{1-alpha} using a very good rational approximation (AS241 style)
+        double z = invNormal1mAlpha(alpha);
+
+        // Wilson–Hilferty: Q_{1-a,ν} ≈ ν * [1 - 2/(9ν) + z * sqrt(2/(9ν))]^3
+        double n = nu;
+        double a = 2.0 / (9.0 * n);
+        double q = n * Math.pow(1.0 - a + z * Math.sqrt(a), 3.0);
+
+        CHI2_CRIT_CACHE.put(key, q);
+        return q;
+    }
+
+    /**
+     * Inverse normal for tail 1-alpha: returns z_{1-alpha}.
+     */
+    private static double invNormal1mAlpha(double alpha) {
+        // Moro/AS241 hybrid; good to ~1e-8 and branchless enough.
+        // Convert to p in (0,1), then use probit(p).
+        double p = 1.0 - alpha;
+
+        // Coefficients for central region
+        final double[] a = {-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02,
+                1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00};
+        final double[] b = {-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02,
+                6.680131188771972e+01, -1.328068155288572e+01};
+        final double[] c = {-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00,
+                -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00};
+        final double[] d = {7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00,
+                3.754408661907416e+00};
+
+        // Break-points
+        final double plow = 0.02425;
+        final double phigh = 1.0 - plow;
+        double q, r, x;
+
+        if (p < plow) {
+            // lower tail
+            q = Math.sqrt(-2.0 * Math.log(p));
+            x = (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+                ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0);
+        } else if (p > phigh) {
+            // upper tail
+            q = Math.sqrt(-2.0 * Math.log(1.0 - p));
+            x = -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+                ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0);
+        } else {
+            // central
+            q = p - 0.5;
+            r = q * q;
+            x = (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q /
+                (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1.0);
+        }
+
+        // One Newton step for polish
+        // Φ(x) via erf
+        double err = 0.5 * (1.0 + erf(x / Math.sqrt(2.0))) - p;
+        double pdf = Math.exp(-0.5 * x * x) / Math.sqrt(2.0 * Math.PI);
+        x -= err / pdf;
+
+        return x;
     }
 
     /**
@@ -389,15 +615,15 @@ public class RankTests {
     }
 
     /**
-     * Estimates the Wilks rank for variables X and Y conditioned on variables Z
-     * using the given covariance matrix and parameters.
+     * Estimates the Wilks rank for variables X and Y conditioned on variables Z using the given covariance matrix and
+     * parameters.
      *
-     * @param S the covariance matrix representing the relationships between all variables
-     * @param C an array of indices representing the variables in set C
+     * @param S       the covariance matrix representing the relationships between all variables
+     * @param C       an array of indices representing the variables in set C
      * @param VminusC an array of indices representing the variables outside of set C
-     * @param Z an array of indices representing the variables in set Z on which to condition
-     * @param n the sample size used to calculate the covariance matrix S
-     * @param alpha the significance level for testing
+     * @param Z       an array of indices representing the variables in set Z on which to condition
+     * @param n       the sample size used to calculate the covariance matrix S
+     * @param alpha   the significance level for testing
      * @return the estimated Wilks rank for the variables in X and Y conditioned on Z
      */
     public static int estimateWilksRankConditioned(

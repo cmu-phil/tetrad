@@ -49,7 +49,6 @@ public class FgfcBlockDiscoverer implements BlockDiscoverer {
     @Override
     public BlockSpec discover() {
         Fgfc fgfc = new Fgfc(dataSet, alpha);
-        fgfc.setParallelism(Runtime.getRuntime().availableProcessors());
 
         Map<List<Integer>, Integer> clusters = fgfc.findClusters();
         List<List<Integer>> blocks = new ArrayList<>(clusters.keySet());
