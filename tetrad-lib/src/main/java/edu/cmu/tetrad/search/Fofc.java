@@ -317,7 +317,6 @@ public class Fofc {
         ChoiceGenerator gen = new ChoiceGenerator(unclustered.size(), 3);
         int[] choice;
 
-
         CHOICE:
         while ((choice = gen.next()) != null) {
             if (Thread.currentThread().isInterrupted()) {
