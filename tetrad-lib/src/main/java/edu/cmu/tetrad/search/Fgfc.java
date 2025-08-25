@@ -11,8 +11,6 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
-import static java.util.Collections.sort;
-
 
 /**
  * Find General Factor Clusters (FGFC). This generalized FOFC and FTFC to first find clusters using pure 2-tads (pure
@@ -249,6 +247,7 @@ public class Fgfc {
         // Now (and only now) mutate the cluster
         cluster.addAll(toAdd);
     }
+
     /**
      * Finds clusters of size 3 for the SAG algorithm.
      */
