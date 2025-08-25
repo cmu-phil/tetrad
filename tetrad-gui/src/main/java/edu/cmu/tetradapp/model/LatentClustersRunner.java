@@ -384,7 +384,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         // a block spec being set when propagating downstream. jdramsey 2025-8-23
         BlockDiscoverer discoverer = buildDiscoverer(alg, test);
         BlockSpec spec = discoverer.discover();
-        spec = BlocksUtil.giveGoodLatentNames(spec, trueNamedClusters);
+        spec = BlocksUtil.giveGoodLatentNames(spec, trueNamedClusters,  BlocksUtil.NamingMode.LEARNED_SINGLE);
 
         int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
         SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
