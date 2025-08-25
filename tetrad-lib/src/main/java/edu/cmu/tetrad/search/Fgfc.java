@@ -223,7 +223,6 @@ public class Fgfc {
                 tad.addAll(sub);
                 tad.add(o);
 
-                tests++;
                 if (pure(tad) != Purity.PURE) {
                     continue O;
                 }
