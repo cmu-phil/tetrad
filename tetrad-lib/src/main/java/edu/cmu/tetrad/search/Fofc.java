@@ -354,13 +354,13 @@ public class Fofc {
                 if (!vanishes(_cluster)) {
                     continue CHOICE;
                 }
+            }
 
-                mixedClusters.add(cluster);
-                variables.removeAll(cluster);
+            mixedClusters.add(cluster);
+            variables.removeAll(cluster);
 
-                if (this.verbose) {
-                    log("3-cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
-                }
+            if (this.verbose) {
+                log("3-cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
             }
         }
 

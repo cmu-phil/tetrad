@@ -30,7 +30,6 @@ import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.Sextad;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
@@ -385,20 +384,20 @@ public class Ftfc {
                 List<Integer> _cluster = new ArrayList<>(cluster);
                 _cluster.add(o);
 
-                if (!clusterDependent(cluster)) {
-                    continue CHOICE;
-                }
+//                if (!clusterDependent(cluster)) {
+//                    continue CHOICE;
+//                }
 
                 if (!vanishes(_cluster)) {
                     continue CHOICE;
                 }
+            }
 
-                mixedClusters.add(cluster);
-                variables.removeAll(cluster);
+            mixedClusters.add(cluster);
+            variables.removeAll(cluster);
 
-                if (this.verbose) {
-                    log("5-cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
-                }
+            if (this.verbose) {
+                log("5-cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
             }
         }
 
@@ -760,7 +759,7 @@ public class Ftfc {
                 }
 
                 if (p < this.alpha) return false;
-            } else if (this.test instanceof Cca) {
+            } else if (test instanceof Cca) {
                 for (int[][] independent : _independents) {
                     int r = Math.min(independent[0].length, independent[1].length) - 1;
                     int rank = ((Cca) this.test).rank(independent, alpha);

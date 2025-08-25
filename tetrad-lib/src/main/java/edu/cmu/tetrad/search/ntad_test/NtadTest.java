@@ -252,5 +252,24 @@ public abstract class NtadTest {
     public boolean allGreaterThanAlpha(List<int[][]> ntads, double alpha) {
         return ntads.stream().allMatch(ntad -> ntad(ntad) > alpha);
     }
+
+//    public int rank(int[][] ntad, boolean resample, double frac, double alpha) {
+//        int[] a = ntad[0];
+//        int[] b = ntad[1];
+//
+//        int minpq = Math.min(a.length, b.length);
+//
+//        for (int r = 0; r < a.length; r++) {
+//            if (r >= minpq) {
+//                continue;
+//            }
+//
+//            if (ntad(ntad, resample, frac) > alpha) {
+//                return r;
+//            }
+//        }
+//
+//        return minpq;
+//    }
 }
 
