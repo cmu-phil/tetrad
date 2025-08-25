@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -248,10 +249,10 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         if (verbose) {
             List<Node> leftVars = indicesToNodes(b.Lcols, dataVars);
             List<Node> rightVars = indicesToNodes(b.Rcols, dataVars);
-            System.out.println("TS split: left=" + leftVars + " right=" + rightVars);
-
-            System.out.printf("TS: %s _||_ %s | %s ? estRank(min over trials)=%d, target(sum ranks)=%d -> %s%n",
-                    b.xName, b.yName, b.zNames, bestRank, target, indep ? "INDEP" : "DEP");
+            TetradLogger.getInstance().log("TS split: left=" + leftVars + " right=" + rightVars);
+            TetradLogger.getInstance().log("TS: " + b.xName + " _||_ " + b.yName + " | " + b.zNames
+                                           + " ? estRank(min over trials)=" + bestRank
+                                           + ", target(sum ranks)=" + target + " -> " + (indep ? "INDEP" : "DEP"));
         }
 
         return new IndependenceResult(

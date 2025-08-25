@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static edu.cmu.tetrad.util.RankTests.rankLeByWilks;
+
 /**
  * The Cca class extends the NtadTest class and provides a mechanism to perform Canonical Correlation Analysis (CCA) as
  * a rank-based way of getting a p-value for a tetrad.
@@ -59,6 +61,27 @@ public class Cca extends NtadTest {
         // Use the getCcaPValueRankD method for rank r = 1 (or make r configurable if needed)
         int r = Math.min(a.length, b.length) - 1;
         return RankTests.rankLeByWilks(S, a, b, n, r);
+    }
+
+    public int rank(int[][] ntad, double alpha) {
+        SimpleMatrix S = this.S;
+        int[] a = ntad[0];
+        int[] b = ntad[1];
+
+        int minpq = Math.min(a.length, b.length);
+        int n = this.ess;
+
+        for (int r = 0; r < a.length; r++) {
+            if (r >= minpq) {
+                continue;
+            }
+
+            if (rankLeByWilks(S, a, b, n, r) > alpha) {
+                return r;
+            }
+        }
+
+        return minpq;
     }
 
     /**

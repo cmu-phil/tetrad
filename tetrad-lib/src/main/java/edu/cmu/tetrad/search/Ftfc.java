@@ -25,10 +25,12 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ntad_test.BollenTing;
+import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.Sextad;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
@@ -471,12 +473,6 @@ public class Ftfc {
                     List<Integer> _sextet = new ArrayList<>(sextet);
                     _sextet.set(j, o);
 
-//                    // If a substituted sextet vanishes, our original isn't uniquely “pure”
-//                    if (vanishes(_sextet)) {
-//                        impureSextets.add(key);   // cache the ORIGINAL as impure
-//                        return Purity.IMPURE;
-//                    }
-
                     if (!vanishes(_sextet)) {
                         impureSextets.add(new HashSet<>(_sextet));
                         return Purity.IMPURE;
@@ -690,6 +686,8 @@ public class Ftfc {
 //        return numDependencies > all * 0.90;
 //    }
     private boolean clusterDependent(List<Integer> cluster) {
+        if (true) return true;
+
         int numDependencies = 0;
         int all = 0;
 
@@ -762,6 +760,12 @@ public class Ftfc {
                 }
 
                 if (p < this.alpha) return false;
+            } else if (this.test instanceof Cca) {
+                for (int[][] independent : _independents) {
+                    int r = Math.min(independent[0].length, independent[1].length) - 1;
+                    int rank = ((Cca) this.test).rank(independent, alpha);
+                    if (rank != r) return false;
+                }
             } else {
                 if (!this.test.allGreaterThanAlpha(_independents, alpha)) {
                     return false;
