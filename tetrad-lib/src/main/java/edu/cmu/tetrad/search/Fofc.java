@@ -150,22 +150,22 @@ public class Fofc {
         Set<List<Integer>> allClusters = new HashSet<>(pureClusters);
         allClusters.addAll(mixedClusters);
 
-        Set<List<Integer>> finalClusters = new HashSet<>();
+//        Set<List<Integer>> finalClusters = new HashSet<>();
+//
+//        for (List<Integer> cluster : new HashSet<>(allClusters)) {
+//            if (cluster.size() >= 4) {
+//                finalClusters.add(cluster);
+//            }
+//        }
 
-        for (List<Integer> cluster : new HashSet<>(allClusters)) {
-            if (cluster.size() >= 4) {
-                finalClusters.add(cluster);
-            }
-        }
+//        Set<Integer> unionClustered2 = union(finalClusters);
+//        Set<List<Integer>> mixedClusters2 = findMixedClusters(unionClustered2);
 
-        Set<Integer> unionClustered2 = union(finalClusters);
-        Set<List<Integer>> mixedClusters2 = findMixedClusters(unionClustered2);
+//        all.addAll(mixedClusters);
 
-        finalClusters.addAll(mixedClusters2);
+        System.out.println("clusters = " + ClusterSignificance.variablesForIndices(allClusters, this.variables));
 
-        System.out.println("final clusters = " + ClusterSignificance.variablesForIndices(finalClusters, this.variables));
-
-        return finalClusters;
+        return allClusters;
     }
 
     /**
@@ -271,7 +271,7 @@ public class Fofc {
 
         List<Integer> variables = new ArrayList<>(unclustered);
 
-        ChoiceGenerator gen = new ChoiceGenerator(unclustered.size(), 2);
+        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), 3);
         int[] choice;
 
         CHOICE:
@@ -280,11 +280,11 @@ public class Fofc {
                 break;
             }
 
-            int n1 = unclustered.get(choice[0]);
-            int n2 = unclustered.get(choice[1]);
-            int n3 = unclustered.get(choice[2]);
+            int n1 = variables.get(choice[0]);
+            int n2 = variables.get(choice[1]);
+            int n3 = variables.get(choice[2]);
 
-            if (!(variables.contains(n1) && variables.contains(n2) && variables.contains(n3))) {
+            if (!(unclustered.contains(n1) && unclustered.contains(n2) && unclustered.contains(n3))) {
                 continue;
             }
 

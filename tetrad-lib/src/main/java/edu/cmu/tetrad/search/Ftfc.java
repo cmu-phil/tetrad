@@ -288,14 +288,14 @@ public class Ftfc {
                 break;
             }
 
-            int n1 = unclustered.get(choice[0]);
-            int n2 = unclustered.get(choice[1]);
-            int n3 = unclustered.get(choice[2]);
-            int n4 = unclustered.get(choice[3]);
-            int n5 = unclustered.get(choice[4]);
+            int n1 = variables.get(choice[0]);
+            int n2 = variables.get(choice[1]);
+            int n3 = variables.get(choice[2]);
+            int n4 = variables.get(choice[3]);
+            int n5 = variables.get(choice[4]);
 
-            if (!(variables.contains(n1) && variables.contains(n2) && variables.contains(n3)
-                  && variables.contains(n4) && variables.contains(n5))) {
+            if (!(unclustered.contains(n1) && unclustered.contains(n2) && unclustered.contains(n3)
+                  && unclustered.contains(n4) && unclustered.contains(n5))) {
                 continue;
             }
 

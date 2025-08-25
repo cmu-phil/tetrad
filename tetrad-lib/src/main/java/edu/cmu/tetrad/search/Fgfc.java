@@ -11,6 +11,8 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
+import static java.util.Collections.sort;
+
 
 /**
  * Find General Factor Clusters (FGFC). This generalized FOFC and FTFC to first find clusters using pure 2-tads (pure
@@ -49,7 +51,7 @@ public class Fgfc {
     /**
      * Whether verbose output is desired.
      */
-    private boolean verbose;
+    private boolean verbose = true;
     /**
      * A cache of pure tetrads.
      */
@@ -87,13 +89,10 @@ public class Fgfc {
         this.pureTets = new HashSet<>();
         this.impureTets = new HashSet<>();
 
-        Map<List<Integer>, Integer> clustersToRanks  = new HashMap<>();
+        Map<List<Integer>, Integer> clustersToRanks = new HashMap<>();
 
         for (int rank = 1; rank <= 2; rank++) {
-            Set<List<Integer>> clusters = estimateClustersSag(rank);
-            for (List<Integer> cluster : clusters) {
-                clustersToRanks.put(cluster, rank);
-            }
+            estimateClustersSag(rank, clustersToRanks);
         }
 
         return clustersToRanks;
@@ -121,146 +120,151 @@ public class Fgfc {
 
     /**
      * Estimates clusters using the tetrads-first algorithm.
-     *
-     * @return A set of lists of integers representing the clusters.
      */
-    private Set<List<Integer>> estimateClustersSag(int rank) {
+    private void estimateClustersSag(int rank, Map<List<Integer>, Integer> clustersToRanks) {
         List<Integer> variables = allVariables();
         if (new HashSet<>(variables).size() != variables.size()) {
             throw new IllegalArgumentException("Variables must be unique.");
         }
 
-        int clusterSize = 2 * (rank + 1);
 
-        Set<List<Integer>> pureClusters = findPureClusters(clusterSize);
-        Set<List<Integer>> mixedClusters = findMixedClusters(clusterSize);
-        Set<List<Integer>> allClusters = new HashSet<>(pureClusters);
-        allClusters.addAll(mixedClusters);
+        findPureClusters(rank, clustersToRanks);
+        findMixedClusters(rank, clustersToRanks);
 
-        Set<List<Integer>> finalClusters = new HashSet<>();
+        System.out.println("clusters rank " + rank + " = "
+                           + ClusterSignificance.variablesForIndices(clustersToRanks.keySet(), this.variables));
 
-        for (List<Integer> cluster : new HashSet<>(allClusters)) {
-            if (cluster.size() >= clusterSize) {
-                finalClusters.add(cluster);
-            }
-        }
-
-        Set<Integer> unionClustered2 = union(finalClusters);
-        Set<List<Integer>> mixedClusters2 = findMixedClusters(clusterSize);
-
-        finalClusters.addAll(mixedClusters2);
-
-        System.out.println("final clusters rank " + rank + " = " + ClusterSignificance.variablesForIndices(finalClusters, this.variables));
-
-        for (List<Integer> cluster : finalClusters) {
-            new HashMap<List<Integer>, Integer>().put(cluster, rank);
-        }
-
-        return finalClusters;
     }
 
     /**
      * Finds clusters of size clusterSize or higher for the tetrad-first algorithm.
      */
-    private Set<List<Integer>> findPureClusters(int clusterSize) {
+    private void findPureClusters(int rank, Map<List<Integer>, Integer> clustersToRanks) {
         List<Integer> variables = allVariables();
+
+        int clusterSize = 2 * (rank + 1);
 
         log(variables.toString());
 
         List<Integer> unclustered = new ArrayList<>(variables);
-        unclustered.removeAll(union(new HashSet<List<Integer>>()));
+        unclustered.removeAll(union(clustersToRanks.keySet()));
 
-        if (variables.size() < clusterSize) return new HashSet<>();
+        List<Integer> _variables = new ArrayList<>(unclustered);
 
-        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), clusterSize);
+        if (unclustered.size() < clusterSize) return;
+
+        ChoiceGenerator gen = new ChoiceGenerator(_variables.size(), clusterSize);
         int[] choice;
 
-        CHOICE:
         while ((choice = gen.next()) != null) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
+            List<Integer> cluster = new ArrayList<>();
+
             for (int c : choice) {
-                if (!unclustered.contains(variables.get(c))) {
-                    continue CHOICE;
-                }
+                cluster.add(_variables.get(c));
             }
 
-            List<Integer> cluster = new  ArrayList<>();
-
-            for (int c : choice) {
-                cluster.add(variables.get(c));
+            if (!new HashSet<>(unclustered).containsAll(cluster)) {
+                continue;
             }
 
             // Note that purity needs to be assessed with respect to all the variables to
             // remove all latent-measure impurities between pairs of latents.
             if (pure(cluster) == Purity.PURE) {
-                growCluster(unclustered, cluster);
+                growCluster(cluster, rank, clustersToRanks);
 
                 if (this.verbose) {
                     log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
                 }
 
-                new HashSet<List<Integer>>().add(cluster);
+                clustersToRanks.put(sort(cluster), rank);
                 unclustered.removeAll(cluster);
             }
         }
-
-        return new HashSet<>();
     }
 
-    private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
-        // iterate with an Iterator so we can remove from unclustered safely
-        Iterator<Integer> iterator = unclustered.iterator();
+    private List<Integer> sort(List<Integer> _variables) {
+        Collections.sort(_variables);
+        return _variables;
+    }
 
-        while (iterator.hasNext()) {
-            int o = iterator.next();
-            if (cluster.contains(o)) continue;
+    private void growCluster(List<Integer> cluster, int rank, Map<List<Integer>, Integer> clustersToRanks) {
+        final int tadSize = 2 * (rank + 1);
 
-            int size = cluster.size();
-            int tests = 0, pureCount = 0;
+        // Unclustered = all variables minus anything already in any cluster, minus the working cluster
+        List<Integer> unclustered = allVariables();
+        unclustered.removeAll(union(clustersToRanks.keySet()));
+        unclustered.removeAll(cluster);
 
-            // Check all 5-combinations from the current cluster with the candidate o
-            for (int i = 0; i < size; i++) {
-                for (int j = i + 1; j < size; j++) {
-                    for (int k = j + 1; k < size; k++) {
-                        tests++;
-                        List<Integer> tetrad = List.of(
-                                cluster.get(i), cluster.get(j), cluster.get(k), o
-                        );
-                        if (pure(tetrad) == Purity.PURE) pureCount++;
-                    }
+        // Don't mutate 'cluster' while we're generating subsets from it
+        List<Integer> toAdd = new ArrayList<>();
+
+        // Choose subset size: if cluster is small, use the whole cluster; otherwise tadSize-1
+        final int k = Math.min(cluster.size(), tadSize - 1);
+
+        // Pre-enumerate all k-subsets of the current cluster once
+        List<List<Integer>> subsets = new ArrayList<>();
+        if (k > 0) {
+            ChoiceGenerator gen = new ChoiceGenerator(cluster.size(), k);
+            int[] choice;
+            while ((choice = gen.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) return;
+                List<Integer> sub = new ArrayList<>(k);
+                for (int j : choice) sub.add(cluster.get(j));
+                subsets.add(sub);
+            }
+        } else {
+            // If k == 0, the only subset is empty; we’ll just test {o} with nothing else (still handled below)
+            subsets.add(Collections.emptyList());
+        }
+
+        // For each candidate o, test all size-(k+1) tads = subset ∪ {o}
+        for (int o : unclustered) {
+            if (Thread.currentThread().isInterrupted()) return;
+
+            int tests = 0;
+            int pureCount = 0;
+
+            for (List<Integer> sub : subsets) {
+                // Make tad = sub ∪ {o}
+                List<Integer> tad = new ArrayList<>(sub.size() + 1);
+                tad.addAll(sub);
+                tad.add(o);
+
+                tests++;
+                if (pure(tad) == Purity.PURE) {
+                    pureCount++;
                 }
             }
 
             double frac = tests == 0 ? 0.0 : (pureCount / (double) tests);
-
             if (frac >= appendPurityFraction) {
-                cluster.add(o);     // NOTE: use add(), not addLast()
-                iterator.remove();
+                toAdd.add(o);
             }
         }
-    }
 
+        // Now (and only now) mutate the cluster
+        cluster.addAll(toAdd);
+    }
     /**
      * Finds clusters of size 3 for the SAG algorithm.
-     *
-     * @return A set of lists of integers representing the mixed clusters.
      */
-    private Set<List<Integer>> findMixedClusters(int clusterSize) {
-        Set<List<Integer>> mixedClusters = new HashSet<>();
+    private void findMixedClusters(int rank, Map<List<Integer>, Integer> clustersToRanks) {
+        int tadSize = 2 * (rank + 1);
 
-        if (union(new HashSet<List<Integer>>()).isEmpty()) {
-            return new HashSet<>();
+        if (union(clustersToRanks.keySet()).isEmpty()) {
+            return;
         }
 
         List<Integer> unclustered = new ArrayList<>(allVariables());
-        unclustered.removeAll(new HashSet<>(union(new HashSet<List<Integer>>())));
+        unclustered.removeAll(new HashSet<>(union(clustersToRanks.keySet())));
 
         List<Integer> variables = new ArrayList<>(unclustered);
 
-        ChoiceGenerator gen = new ChoiceGenerator(unclustered.size(), clusterSize - 1);
+        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), tadSize - 1);
         int[] choice;
 
         CHOICE:
@@ -275,7 +279,7 @@ public class Fgfc {
                 }
             }
 
-            List<Integer> cluster = new  ArrayList<>();
+            List<Integer> cluster = new ArrayList<>();
 
             for (int c : choice) {
                 cluster.add(variables.get(c));
@@ -296,7 +300,7 @@ public class Fgfc {
                 }
             }
 
-            mixedClusters.add(cluster);
+            clustersToRanks.put(sort(cluster), rank);
             unclustered.removeAll(cluster);
 
             if (this.verbose) {
@@ -304,26 +308,25 @@ public class Fgfc {
             }
         }
 
-        return mixedClusters;
     }
 
-    private Purity pure(List<Integer> tetrad) {
-        Set<Integer> key = new HashSet<>(tetrad);
+    private Purity pure(List<Integer> tad) {
+        Set<Integer> key = new HashSet<>(tad);
         if (pureTets.contains(key)) return Purity.PURE;
         if (impureTets.contains(key)) return Purity.IMPURE;
 
-        // Base vanishing check for the candidate tetrad
-        if (vanishes(tetrad)) {
+        // Base vanishing check for the candidate tad
+        if (vanishes(tad)) {
             List<Integer> vars = allVariables();
             for (int o : vars) {
-                if (tetrad.contains(o)) continue;
+                if (tad.contains(o)) continue;
 
-                for (int j = 0; j < tetrad.size(); j++) {
-                    List<Integer> _tetrad = new ArrayList<>(tetrad);
-                    _tetrad.set(j, o);
+                for (int j = 0; j < tad.size(); j++) {
+                    List<Integer> _tad = new ArrayList<>(tad);
+                    _tad.set(j, o);
 
-                    if (!vanishes(_tetrad)) {
-                        impureTets.add(new HashSet<>(_tetrad));
+                    if (!vanishes(_tad)) {
+                        impureTets.add(new HashSet<>(_tad));
                         return Purity.IMPURE;
                     }
                 }
