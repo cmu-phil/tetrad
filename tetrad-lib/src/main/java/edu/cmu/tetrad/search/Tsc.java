@@ -5,7 +5,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.Pair;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,7 +35,7 @@ public class Tsc {
     private int expectedSampleSize = -1;
     private double alpha = 0.01;
     private boolean verbose = false;
-    private List<List<Integer>> clusters = new ArrayList<>();
+    private Map<Set<Integer>, Integer> clusters = new HashMap<>();
     private Map<Set<Integer>, Integer> clusterToRank;
     private Map<Set<Integer>, Integer> reducedRank;
 
@@ -412,34 +411,25 @@ public class Tsc {
      * @return a list of clusters, with each cluster represented as a list of integers. The clusters are sorted first by
      * size in descending order and then lexicographically by their variable names or identifiers.
      */
-    public List<List<Integer>> findClusters() {
-        Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> ret = estimateClusters();
-        clusterToRank = ret.getFirst();
-        reducedRank = ret.getSecond();
-        return convertToLists(clusterToRank.keySet());
+    public Map<Set<Integer>, Integer> findClusters() {
+        return estimateClusters();
     }
 
-    private List<List<Integer>> convertToLists(Set<Set<Integer>> clusters) {
-        return clusters.stream()
-                .sorted(Comparator.<Set<Integer>>comparingInt(Set::size).reversed()
-                        .thenComparing(this::toNamesCluster))
-                .map(cluster -> new ArrayList<>(cluster))
-                .collect(Collectors.toList());
+    private List<List<Integer>> convertToLists(Map<Set<Integer>, Integer> clusters) {
+        List<List<Integer>> ret = new ArrayList<>(clusters.size());
+        for (Map.Entry<Set<Integer>, Integer> entry : clusters.entrySet()) {
+            ret.add(new ArrayList<>(entry.getValue()));
+        }
+        return ret;
     }
 
-    private Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> estimateClusters() {
+    private Map<Set<Integer>, Integer> estimateClusters() {
         List<Integer> variables = allVariables();
         if (new HashSet<>(variables).size() != variables.size()) {
             throw new IllegalArgumentException("Variables must be unique.");
         }
 
-        Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> ret = clusterSearchMetaLoop();
-        Map<Set<Integer>, Integer> clusterToRanks = ret.getFirst();
-        Map<Set<Integer>, Integer> reducedRanks = ret.getSecond();
-
-        this.clusters = new ArrayList<>();
-        for (Set<Integer> cluster : clusterToRanks.keySet()) this.clusters.add(new ArrayList<>(cluster));
-        return new Pair<>(clusterToRanks, reducedRanks);
+        return clusterSearchMetaLoop();
     }
 
     private List<Integer> allVariables() {
@@ -525,7 +515,7 @@ public class Tsc {
         this.scoreMargin = Math.max(0.0, margin);
     }
 
-    private @NotNull Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> clusterSearchMetaLoop() {
+    private @NotNull Map<Set<Integer>, Integer> clusterSearchMetaLoop() {
         List<Integer> remainingVars = new ArrayList<>(allVariables());
         clusterToRank = new HashMap<>();
         reducedRank = new HashMap<>();
@@ -713,7 +703,7 @@ public class Tsc {
         }
 
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet()));
-        return new Pair<>(clusterToRank, reducedRank);
+        return clusterToRank;
     }
 
     /**
@@ -948,8 +938,8 @@ public class Tsc {
      *
      * @return a list of clusters, where each cluster is represented as a list of integers
      */
-    public List<List<Integer>> getClusters() {
-        return new ArrayList<>(this.clusters);
+    public Map<Set<Integer>, Integer> getClusters() {
+        return new HashMap<>(this.clusters);
     }
 
     /**

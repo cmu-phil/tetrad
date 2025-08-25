@@ -4,7 +4,7 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.Tsc;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * The {@code TscTestBlockDiscoverer} class is an implementation of the {@code BlockDiscoverer} interface that utilizes
@@ -59,13 +59,23 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
         tsc.setExpectedSampleSize(ess);
         tsc.setMode(Tsc.Mode.Testing);
 
-        List<List<Integer>> blocks = tsc.findClusters();
+        Map<Set<Integer>, Integer> clusters = tsc.findClusters();
+
+        List<List<Integer>> blocks = new ArrayList<>();
+        List<Integer> ranks = new ArrayList<>();
+
+        for (Set<Integer> block : clusters.keySet()) {
+            List<Integer> blockList = new ArrayList<>(block);
+            Collections.sort(blockList);
+            blocks.add(blockList);
+            ranks.add(clusters.get(block));
+        }
 
         // OK for blocks to be empty; just ensure indices are sane and canonicalize.
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
         blocks = BlocksUtil.applySingleClusterPolicy(policy, blocks, dataSet);
 
-        return BlocksUtil.toSpec(blocks, dataSet);
+        return BlocksUtil.toSpec(blocks, ranks, dataSet);
     }
 }
