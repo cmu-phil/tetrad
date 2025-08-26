@@ -473,14 +473,14 @@ public class Tsc {
 
         int[][] dependency = dependencyMatrix(S, expectedSampleSize, alpha);
 
-        System.out.println("dependency = ");
-
-        for (int i = 0; i < dependency.length; i++) {
-            for (int j = 0; j < dependency[i].length; j++) {
-                System.out.print(dependency[i][j] + " ");
-            }
-            System.out.println();
-        }
+//        System.out.println("dependency = ");
+//
+//        for (int i = 0; i < dependency.length; i++) {
+//            for (int j = 0; j < dependency[i].length; j++) {
+//                System.out.print(dependency[i][j] + " ");
+//            }
+//            System.out.println();
+//        }
 
         for (Set<Integer> set : sets) {
             List<Integer> list = new ArrayList<>(set);
