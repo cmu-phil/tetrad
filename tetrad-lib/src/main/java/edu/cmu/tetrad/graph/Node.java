@@ -23,6 +23,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -51,6 +52,7 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     /**
      * Constant <code>serialVersionUID=23L</code>
      */
+    @Serial
     long serialVersionUID = 23L;
 
     /**
