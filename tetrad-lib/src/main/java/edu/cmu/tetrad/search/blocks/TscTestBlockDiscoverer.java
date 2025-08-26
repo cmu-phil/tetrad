@@ -71,11 +71,10 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
             ranks.add(clusters.get(block));
         }
 
-        // OK for blocks to be empty; just ensure indices are sane and canonicalize.
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
-        blocks = BlocksUtil.applySingleClusterPolicy(policy, blocks, dataSet);
-
-        return BlocksUtil.toSpec(blocks, ranks, dataSet);
+        BlockSpec spec = BlocksUtil.toSpec(blocks, ranks, dataSet);
+        spec = BlocksUtil.applySingleClusterPolicy(spec, policy, alpha);
+        return spec;
     }
 }

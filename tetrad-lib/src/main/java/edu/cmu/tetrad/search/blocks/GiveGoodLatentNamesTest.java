@@ -23,7 +23,7 @@ public class GiveGoodLatentNamesTest {
     // e.g., import static edu.cmu.tetrad.search.blocks.BlockSpecUtil.giveGoodLatentNames;
     private static BlockSpec giveGoodLatentNames(BlockSpec spec,
                                                  Map<String, List<String>> trueClusters,
-                                                 LatentNameAssigner.NamingMode mode) {
+                                                 BlocksUtil.NamingMode mode) {
         return BlocksUtil.giveGoodLatentNames(spec, trueClusters, mode);
     }
 
@@ -64,7 +64,7 @@ public class GiveGoodLatentNamesTest {
         trueClusters.put("L3", Arrays.asList("X21","X20","X23","X19","X24","X18"));
         trueClusters.put("L1", Arrays.asList("X4","X8","X7","X2","X5","X3","X6"));
 
-        BlockSpec learned = giveGoodLatentNames(spec, trueClusters, LatentNameAssigner.NamingMode.LEARNED_SINGLE);
+        BlockSpec learned = giveGoodLatentNames(spec, trueClusters, BlocksUtil.NamingMode.LEARNED_SINGLE);
 
         // Assert: still 4 blocks, ranks preserved
         assertEquals(4, learned.blocks().size());
@@ -105,7 +105,7 @@ public class GiveGoodLatentNamesTest {
         Map<String, List<String>> trueClusters = new LinkedHashMap<>();
         trueClusters.put("L1", Arrays.asList("X1","X2","X3","X4","X5","X6"));
 
-        BlockSpec expanded = giveGoodLatentNames(spec, trueClusters, LatentNameAssigner.NamingMode.SIMULATION_EXPANDED);
+        BlockSpec expanded = giveGoodLatentNames(spec, trueClusters, BlocksUtil.NamingMode.SIMULATION_EXPANDED);
 
         // Expect 2 blocks, both with the same observed indices, ranks all 1
         assertEquals(2, expanded.blocks().size());

@@ -117,7 +117,7 @@ public final class BlockSpec implements TetradSerializable {
             throw new IllegalArgumentException("blocks, blockVariables, and ranks must be non-null");
         if (blocks.size() != blockVariables.size() || blocks.size() != ranks.size())
             throw new IllegalArgumentException("blocks, blockVariables, and ranks must have same size");
-        for (int r : ranks) if (r < 1) throw new IllegalArgumentException("Rank must be >= 1");
+        for (int r : ranks) if (r < 0) throw new IllegalArgumentException("Rank must be >= 1");
 
         this.dataSet = dataSet;
         this.blocks = unmodifiableNestedCopy(blocks);

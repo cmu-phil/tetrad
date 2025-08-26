@@ -86,13 +86,15 @@ public final class BlockSpecTextCodec {
                 if (rankStr != null) {
                     try {
                         blockRank = Integer.parseInt(rankStr);
-                        if (blockRank < 1) {
-                            issues.add(new Issue(ln + 1, 1, Severity.ERROR, "Rank must be >= 1", rankStr));
-                            blockRank = 1;
+                        if (blockRank < 0) {
+
+                            // Want to allow rank = 0.
+                            issues.add(new Issue(ln + 1, 1, Severity.ERROR, "Rank must be >= 0", rankStr));
+//                            blockRank = 0;
                         }
                     } catch (NumberFormatException nfe) {
                         issues.add(new Issue(ln + 1, 1, Severity.ERROR, "Bad rank", rankStr));
-                        blockRank = 1;
+                        blockRank = 0;
                     }
                 }
                 // Duplicate block name check

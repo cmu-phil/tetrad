@@ -324,14 +324,7 @@ public class BlockClusteringWizard extends JPanel {
 
                 BlockDiscoverer discoverer = buildDiscoverer(alg, testName, ess);
                 BlockSpec spec = discoverer.discover();
-                spec = BlocksUtil.giveGoodLatentNames(spec, trueClusters, LatentNameAssigner.NamingMode.LEARNED_SINGLE);
-
-                int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
-                SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
-
-                if (policy == SingleClusterPolicy.NOISE_VAR) {
-                    spec = BlocksUtil.renameLastVarAsNoise(spec);
-                }
+                spec = BlocksUtil.giveGoodLatentNames(spec, trueClusters, BlocksUtil.NamingMode.LEARNED_SINGLE);
 
                 try {
                     editorPanel.setDataSet(spec.dataSet());

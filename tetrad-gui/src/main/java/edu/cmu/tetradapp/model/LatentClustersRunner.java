@@ -393,14 +393,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
 
         BlockDiscoverer discoverer = buildDiscoverer(alg, test);
         BlockSpec spec = discoverer.discover();
-        spec = BlocksUtil.giveGoodLatentNames(spec, trueNamedClusters,  LatentNameAssigner.NamingMode.LEARNED_SINGLE);
-
-        int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
-        SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
-
-        if (policy == SingleClusterPolicy.NOISE_VAR) {
-            spec = BlocksUtil.renameLastVarAsNoise(spec);
-        }
+        spec = BlocksUtil.giveGoodLatentNames(spec, trueNamedClusters,  BlocksUtil.NamingMode.LEARNED_SINGLE);
 
         setBlockText(BlockSpecTextCodec.format(spec));
 

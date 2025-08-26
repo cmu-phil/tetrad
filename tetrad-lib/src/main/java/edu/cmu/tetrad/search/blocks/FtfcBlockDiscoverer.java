@@ -59,13 +59,13 @@ public class FtfcBlockDiscoverer implements BlockDiscoverer {
         Ftfc ftfc = new Ftfc(dataSet, ntadTest, alpha);
         List<List<Integer>> blocks = ftfc.findClusters();
 
+        List<Integer> ranks = new ArrayList<>();
+        for (int i = 0; i < blocks.size(); i++) ranks.add(2);
+
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
-        blocks = BlocksUtil.applySingleClusterPolicy(policy, blocks, dataSet);
-        List<Integer> ranks = new ArrayList<>();
-        for (int i = 0; i < blocks.size(); i++) {
-            ranks.add(2);
-        }
-        return BlocksUtil.toSpec(blocks, ranks, dataSet);
+        BlockSpec spec = BlocksUtil.toSpec(blocks, ranks, dataSet);
+        spec = BlocksUtil.applySingleClusterPolicy(spec, policy, alpha);
+        return spec;
     }
 }

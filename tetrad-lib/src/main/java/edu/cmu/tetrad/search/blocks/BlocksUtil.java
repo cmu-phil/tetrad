@@ -1,9 +1,12 @@
 package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.util.RankTests;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
@@ -184,83 +187,179 @@ public final class BlocksUtil {
     }
 
     /**
-     * Applies the specified single cluster policy to the given set of blocks. Depending on the policy, this method may
-     * modify or extend the blocks to include singleton clusters, exclude them, or group them as noise variables.
+     * Applies a single-cluster policy to the provided BlockSpec. Depending on the specified policy, the method modifies
+     * the blocks, ranks, and variables in the BlockSpec and returns a new BlockSpec object.
      *
-     * @param policy  the single cluster policy to apply, determining how singleton clusters are handled
-     * @param blocks  a list of lists where each inner list represents a cluster of indices
-     * @param dataSet the dataset associated with the blocks, providing information about column indices
-     * @return an unmodifiable list of lists representing the updated or unchanged clusters based on the specified
-     * policy
-     * @throws IllegalArgumentException if an unknown policy is provided
+     * @param blockSpec the BlockSpec object containing the current block configuration, ranks, and dataset
+     * @param policy    the SingleClusterPolicy to apply, which determines how unused columns or variables are handled
+     *                  (e.g., INCLUDE, EXCLUDE, NOISE_VAR)
+     * @param alpha     a double value representing a parameter used in the computation of ranks
+     * @return a new BlockSpec object that reflects the changes made according to the specified policy
      */
-    public static List<List<Integer>> applySingleClusterPolicy(SingleClusterPolicy policy, List<List<Integer>> blocks, DataSet dataSet) {
+    public static BlockSpec applySingleClusterPolicy(
+            BlockSpec blockSpec, SingleClusterPolicy policy, double alpha
+    ) {
+        final DataSet dataSet = blockSpec.dataSet();
+        final List<List<Integer>> blocks = blockSpec.blocks();
+
+        // --- normalize ranks (may be null) ---
+        final List<Integer> ranksIn = blockSpec.ranks();
+        final List<Integer> ranksNorm = new ArrayList<>(blocks.size());
+        if (ranksIn != null && !ranksIn.isEmpty()) {
+            for (int i = 0; i < blocks.size(); i++) {
+                Integer r = i < ranksIn.size() ? ranksIn.get(i) : 1;
+                ranksNorm.add((r == null || r < 1) ? 1 : r);
+            }
+        } else {
+            for (int i = 0; i < blocks.size(); i++) ranksNorm.add(1);
+        }
+
+        // --- start output with current blocks/latents/ranks ---
+        final List<List<Integer>> outBlocks = new ArrayList<>(blocks.size() + 8);
+        for (List<Integer> b : blocks) outBlocks.add(new ArrayList<>(b));
+
+        final List<Node> inLatents = blockSpec.blockVariables();
+        final List<Node> outLatents = new ArrayList<>(blocks.size() + 8);
+        final Set<String> takenNames = new HashSet<>();
+        final Set<String> observedNames = new HashSet<>();
+        for (Node v : dataSet.getVariables()) observedNames.add(v.getName());
+
+        if (inLatents != null && !inLatents.isEmpty()) {
+            for (Node n : inLatents) {
+                outLatents.add(n);
+                takenNames.add(n.getName());
+            }
+        } else {
+            // synthesize L1, L2, ... for existing blocks if none present
+            for (int i = 0; i < blocks.size(); i++) {
+                String nm = ensureUnique("L" + (i + 1), takenNames, observedNames);
+                Node latent = new edu.cmu.tetrad.data.ContinuousVariable(nm);
+                latent.setNodeType(edu.cmu.tetrad.graph.NodeType.LATENT);
+                outLatents.add(latent);
+                takenNames.add(nm);
+            }
+        }
+
+        final List<Integer> outRanks = new ArrayList<>(ranksNorm);
+
+        // --- precompute correlation once ---
+        final edu.cmu.tetrad.data.CorrelationMatrix corr = new edu.cmu.tetrad.data.CorrelationMatrix(dataSet);
+        final org.ejml.simple.SimpleMatrix S = corr.getMatrix().getSimpleMatrix();
+        final int n = dataSet.getNumRows();
+        final int p = dataSet.getNumColumns();
+
+        // compute used / unused
+        final Set<Integer> used = new HashSet<>();
+        for (List<Integer> b : blocks) used.addAll(b);
+        final List<Integer> all = new ArrayList<>(p);
+        for (int i = 0; i < p; i++) all.add(i);
+        final LinkedHashSet<Integer> unused = new LinkedHashSet<>(all);
+        unused.removeAll(used);
+
         switch (policy) {
             case INCLUDE -> {
-                Set<Integer> used = new HashSet<>();
-                for (List<Integer> block : blocks) {
-                    used.addAll(block);
+                if (unused.isEmpty()) return blockSpec;
+
+                // others = all minus the singletons as we add them (OK to use full others each time)
+                final int[] others = toIndexArray(allMinus(unused, all)); // others = all \ unused
+                for (int idx : unused) {
+                    List<Integer> newBlock = Collections.singletonList(idx);
+                    outBlocks.add(newBlock);
+
+                    // latent name "S_<Var>" but ensure uniqueness vs existing
+                    String base = "S_" + sanitize(dataSet.getVariable(idx).getName());
+                    String name = ensureUnique(base, takenNames, observedNames);
+
+                    Node latent = new edu.cmu.tetrad.data.ContinuousVariable(name);
+                    latent.setNodeType(edu.cmu.tetrad.graph.NodeType.LATENT);
+                    outLatents.add(latent);
+                    takenNames.add(name);
+
+                    int rk = estimateRankSafe(S, n, newBlock, others, alpha);
+                    outRanks.add(Math.max(1, rk));
                 }
 
-                List<List<Integer>> out = new ArrayList<>(blocks);
-
-                List<Integer> all = new ArrayList<>();
-                for (int i = 0; i < dataSet.getNumColumns(); i++) {
-                    all.add(i);
-                }
-
-                Set<Integer> unused = new HashSet<>(all);
-                unused.removeAll(used);
-
-                for (int i : unused) {
-                    out.add(Collections.singletonList(i));
-                }
-
-                return Collections.unmodifiableList(out);
+                return new BlockSpec(dataSet, outBlocks, outLatents, outRanks);
             }
+
             case EXCLUDE -> {
-                return Collections.unmodifiableList(blocks);
+                return blockSpec;
             }
+
             case NOISE_VAR -> {
-                Set<Integer> used = new HashSet<>();
-                for (List<Integer> block : blocks) {
-                    used.addAll(block);
-                }
+                if (unused.isEmpty()) return blockSpec;
 
-                List<List<Integer>> out = new ArrayList<>(blocks);
+                List<Integer> noise = new ArrayList<>(unused);
+                outBlocks.add(noise);
 
-                List<Integer> all = new ArrayList<>();
-                for (int i = 0; i < dataSet.getNumColumns(); i++) {
-                    all.add(i);
-                }
+                // name "Noise" but unique
+                String noiseName = ensureUnique("Noise", takenNames, observedNames);
+                Node latent = new edu.cmu.tetrad.data.ContinuousVariable(noiseName);
+                latent.setNodeType(edu.cmu.tetrad.graph.NodeType.LATENT);
+                outLatents.add(latent);
+                takenNames.add(noiseName);
 
-                Set<Integer> unused = new HashSet<>(all);
-                unused.removeAll(used);
+                int[] others = toIndexArray(allMinus(unused, all));
+                int rk = estimateRankSafe(S, n, noise, others, alpha);
+                outRanks.add(Math.max(1, rk));
 
-                out.add(new ArrayList<>(unused));
-                return Collections.unmodifiableList(out);
+                return new BlockSpec(dataSet, outBlocks, outLatents, outRanks);
             }
+
             default -> throw new IllegalArgumentException("Unknown policy: " + policy);
         }
     }
 
-    /**
-     * Renames the last variable in the block variables of the given BlockSpec to "Noise". This method modifies the name
-     * of the last variable while preserving other aspects of the BlockSpec.
-     *
-     * @param spec the BlockSpec object containing the block variables to modify
-     * @return a new BlockSpec object with the last variable renamed to "Noise"
-     */
-    public static BlockSpec renameLastVarAsNoise(BlockSpec spec) {
-        List<Node> blockVars = spec.blockVariables();
-        Node noise = blockVars.getLast();
-        noise.setName("Noise");
-        return new BlockSpec(spec.dataSet(), spec.blocks(), blockVars, List.copyOf(spec.ranks()));
+// ---------- helpers ----------
+
+    // Safe rank: if others empty → unconditioned fallback; singleton → 1.
+    private static int estimateRankSafe(
+            org.ejml.simple.SimpleMatrix S, int nRows,
+            List<Integer> block, int[] others, double alpha
+    ) {
+        if (block == null || block.isEmpty()) return 1;
+        if (block.size() == 1) return 1; // max rank is 1 for a single variable
+        int[] blk = toIndexArray(block);
+
+        if (others != null && others.length > 0) {
+            return Math.max(1, edu.cmu.tetrad.util.RankTests
+                    .estimateWilksRank(S, blk, others, nRows, alpha));
+        } else {
+            // unconditioned fallback; if you have a dedicated API, use it; else Wilks vs empty
+            return Math.max(1, edu.cmu.tetrad.util.RankTests
+                    .estimateWilksRank(S, blk, new int[0], nRows, alpha));
+        }
+    }
+
+    private static int[] toIndexArray(Collection<Integer> list) {
+        int[] a = new int[list.size()];
+        int k = 0; for (int v : list) a[k++] = v;
+        return a;
+    }
+
+    private static List<Integer> allMinus(Collection<Integer> minus, List<Integer> all) {
+        List<Integer> out = new ArrayList<>(all.size());
+        for (int x : all) if (!minus.contains(x)) out.add(x);
+        return out;
+    }
+
+    private static String sanitize(String s) {
+        return s == null ? "X" : s.replaceAll("[^A-Za-z0-9_\\-]", "_");
+    }
+
+    private static String ensureUnique(String base, Set<String> taken, Set<String> observed) {
+        String b = (base == null || base.isEmpty()) ? "L" : base;
+        if (!taken.contains(b) && !observed.contains(b)) return b;
+        int k = 2;
+        while (taken.contains(b + "-" + k) || observed.contains(b + "-" + k)) k++;
+        return b + "-" + k;
     }
 
     public static BlockSpec giveGoodLatentNames(BlockSpec spec,
                                                 Map<String, List<String>> trueClusters,
-                                                LatentNameAssigner.NamingMode mode) {
+                                                NamingMode mode) {
         return LatentNameAssigner.giveGoodLatentNames(spec, trueClusters, mode);
     }
+
+    public enum NamingMode {LEARNED_SINGLE, SIMULATION_EXPANDED}
 }

@@ -59,8 +59,8 @@ public class FgfcBlockDiscoverer implements BlockDiscoverer {
 
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
-        blocks = BlocksUtil.applySingleClusterPolicy(policy, blocks, dataSet);
-
-        return BlocksUtil.toSpec(blocks, ranks, dataSet);
+        BlockSpec spec = BlocksUtil.toSpec(blocks, ranks, dataSet);
+        spec = BlocksUtil.applySingleClusterPolicy(spec, policy, alpha);
+        return spec;
     }
 }
