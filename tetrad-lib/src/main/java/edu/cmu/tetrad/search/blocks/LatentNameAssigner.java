@@ -157,10 +157,22 @@ public final class LatentNameAssigner {
 
         // Build output
         if (mode == BlocksUtil.NamingMode.LEARNED_SINGLE) {
+            // We'll build nodes directly (no intermediate outNames), so we can drop-in observed nodes for singletons
             final Set<String> used = new HashSet<>(observedNamesUsed);
-            final List<String> outNames = new ArrayList<>(blocks.size());
+            final List<Node> newLatents = new ArrayList<>(blocks.size());
 
             for (int bi = 0; bi < blocks.size(); bi++) {
+                final List<Integer> block = blocks.get(bi);
+
+                // If block size == 1, use the original observed variable node as-is (do NOT set LATENT)
+                if (block.size() == 1) {
+                    Node obs = dataVars.get(block.get(0));
+                    newLatents.add(obs);
+                    used.add(sanitizeName(obs.getName())); // reserve its name to avoid later collisions
+                    continue;
+                }
+
+                // Non-singleton: proceed with the naming logic
                 final String preferredOrigRaw = origNames.get(bi);
                 final boolean origReserved = isReserved(preferredOrigRaw, config);
 
@@ -189,14 +201,9 @@ public final class LatentNameAssigner {
                 } else {
                     chosen = ensureUnique(baseDisplay, used, config);
                 }
-
                 used.add(chosen);
-                outNames.add(chosen);
-            }
 
-            final List<Node> newLatents = new ArrayList<>(outNames.size());
-            for (String name : outNames) {
-                Node latent = new ContinuousVariable(name);
+                Node latent = new ContinuousVariable(chosen);
                 latent.setNodeType(NodeType.LATENT);
                 newLatents.add(latent);
             }
@@ -205,7 +212,6 @@ public final class LatentNameAssigner {
             return ranksOut != null
                     ? new BlockSpec(dataSet, blocks, newLatents, ranksOut)
                     : new BlockSpec(dataSet, blocks, newLatents);
-
         } else { // SIMULATION_EXPANDED
             final List<List<Integer>> outBlocks = new ArrayList<>();
             final List<Node> outLatents = new ArrayList<>();
@@ -233,25 +239,34 @@ public final class LatentNameAssigner {
 
                 final String base = uniqueOrFallback(baseCandidate, origCandidate, used, config);
 
-                final int r = ranksOut != null && ranksOut.get(bi) != null ? Math.max(1, ranksOut.get(bi)) : 1;
+                final int r = (ranksOut != null && ranksOut.get(bi) != null) ? Math.max(1, ranksOut.get(bi)) : 1;
 
                 for (int j = 0; j < r; j++) {
-                    final String candidate = (j == 0)
-                            ? base                                  // if "Noise", keep literal for first
-                            : nextLetteredBase(base, j, config);    // NoiseB, NoiseC, ...
+                    final String candidate;
+                    final Node node;
 
-                    final String name = isReserved(candidate, config)
-                            ? candidate                              // literal "Noise" unchanged
-                            : ensureUnique(candidate, used, config);
+                    if (j == 0 && block.size() == 1) {
+                        // First component of a singleton block: use the observed node directly
+                        node = dataVars.get(block.get(0));
+                        candidate = sanitizeName(node.getName());
+                        used.add(candidate); // mark its name as taken so later latents don’t collide
+                    } else {
+                        // Latent components (including for singleton blocks when j > 0)
+                        candidate = (j == 0) ? base : nextLetteredBase(base, j, config);
 
-                    used.add(name);
+                        final String name = isReserved(candidate, config)
+                                ? candidate
+                                : ensureUnique(candidate, used, config);
 
-                    Node latent = new ContinuousVariable(name);
-                    latent.setNodeType(NodeType.LATENT);
+                        used.add(name);
+                        Node latent = new ContinuousVariable(name);
+                        latent.setNodeType(NodeType.LATENT);
+                        node = latent;
+                    }
 
                     outBlocks.add(new ArrayList<>(block));
-                    outLatents.add(latent);
-                    outRanks.add(1);
+                    outLatents.add(node);
+                    outRanks.add(1); // expanded representation uses rank-1 per component by design
                 }
             }
 

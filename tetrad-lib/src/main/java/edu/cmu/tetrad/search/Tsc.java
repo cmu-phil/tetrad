@@ -1,10 +1,12 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,6 +17,8 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
+import static java.lang.Math.abs;
+import static org.apache.commons.math3.util.FastMath.atanh;
 
 /**
  * The TscScored class provides methods and mechanisms to perform rank-based cluster search operations under statistical
@@ -76,7 +80,7 @@ public class Tsc {
         this.nodes = new ArrayList<>(variables);
         this.variables = new ArrayList<>(variables.size());
         for (int i = 0; i < variables.size(); i++) this.variables.add(i);
-        this.S = new CovarianceMatrix(cov).getMatrix().getSimpleMatrix();
+        this.S = new CorrelationMatrix(cov).getMatrix().getSimpleMatrix();
         this.sampleSize = cov.getSampleSize();
     }
 
@@ -142,6 +146,36 @@ public class Tsc {
         }
     }
 
+    public static int[][] dependencyMatrix(SimpleMatrix S, double sampleSize, double alpha) {
+        if (S.numRows() != S.numCols()) throw new IllegalArgumentException("S must be square");
+        final int p = S.numRows();
+
+        // Two-sided cutoff: P(|Z| > c) = alpha => c = Phi^{-1}(1 - alpha/2)
+        final double cutoff = new NormalDistribution(0, 1)
+                .inverseCumulativeProbability(1.0 - alpha / 2.0);
+
+        final double scale = sampleSize > 3.0 ? Math.sqrt(sampleSize - 3.0) : 0.0;
+
+        int[][] A = new int[p][p];
+
+        for (int i = 0; i < p; i++) {
+            A[i][i] = 0; // or 1 if you prefer self-dependence
+            for (int j = i + 1; j < p; j++) {
+                double r = S.get(i, j);
+                if (Double.isNaN(r)) r = 0.0;
+
+                // Clamp and stable atanh
+                double rc = Math.max(-0.999999, Math.min(0.999999, r));
+                double q  = 0.5 * Math.log1p(2.0 * rc / (1.0 - rc)); // = atanh(rc)
+                double z  = scale * q;
+
+                int dep = (Math.abs(z) > cutoff) ? 1 : 0;
+                A[i][j] = dep;
+                A[j][i] = dep;
+            }
+        }
+        return A;
+    }
     /**
      * Sets the mode for the TscScored instance. The mode determines the operational behavior of the TscScored class,
      * selecting between Testing or Scoring modes.
@@ -429,7 +463,47 @@ public class Tsc {
             throw new IllegalArgumentException("Variables must be unique.");
         }
 
-        return clusterSearchMetaLoop();
+        Map<Set<Integer>, Integer> setIntegerMap = clusterSearchMetaLoop();
+        printFractionPairwiseDependent(setIntegerMap.keySet());
+
+        return setIntegerMap;
+    }
+
+    private void printFractionPairwiseDependent(Set<Set<Integer>> sets) {
+
+        int[][] dependency = dependencyMatrix(S, expectedSampleSize, alpha);
+
+        System.out.println("dependency = ");
+
+        for (int i = 0; i < dependency.length; i++) {
+            for (int j = 0; j < dependency[i].length; j++) {
+                System.out.print(dependency[i][j] + " ");
+            }
+            System.out.println();
+        }
+
+        for (Set<Integer> set : sets) {
+            List<Integer> list = new ArrayList<>(set);
+            if (list.size() < 2) {
+                System.out.println("Set: " + set + ", Fraction: NaN (size < 2)");
+                continue;
+            }
+
+            int count = 0, total = 0;
+
+            for (int i = 0; i < list.size(); i++) {
+                for (int j = i + 1; j < list.size(); j++) {
+                    double dep = dependency[i][j];
+
+//                    System.out.printf("r = %.3f |Z| = %.3f%n", r, Math.abs(fisherZ));
+                    if (dep == 1.0) count++;
+                    total++;
+                }
+            }
+
+            System.out.println("Set: " + set + ", Fraction unconditionally dependent: "
+                               + (total > 0 ? (double) count / total : Double.NaN));
+        }
     }
 
     private List<Integer> allVariables() {
@@ -666,7 +740,7 @@ public class Tsc {
         if (!penultimateRemoved) log("No penultimate clusters were removed.");
 
         // --- Atomic-core postprocess (keep large clusters, group by atomic cores) ---
-        if (true) { // TODO Keep?
+        if (false) { // TODO Keep?
             Map<Key, Set<Integer>> coreToMax = new LinkedHashMap<>();
 
             for (Set<Integer> C : new ArrayList<>(clusterToRank.keySet())) {

@@ -267,13 +267,14 @@ public final class BlocksUtil {
                     outBlocks.add(newBlock);
 
                     // latent name "S_<Var>" but ensure uniqueness vs existing
-                    String base = "S_" + sanitize(dataSet.getVariable(idx).getName());
-                    String name = ensureUnique(base, takenNames, observedNames);
+//                    String base = "S_" + sanitize(dataSet.getVariable(idx).getName());
+//                    String name = ensureUnique(base, takenNames, observedNames);
 
-                    Node latent = new edu.cmu.tetrad.data.ContinuousVariable(name);
-                    latent.setNodeType(edu.cmu.tetrad.graph.NodeType.LATENT);
-                    outLatents.add(latent);
-                    takenNames.add(name);
+//                    Node latent = new edu.cmu.tetrad.data.ContinuousVariable(name);
+//                    latent.setNodeType(edu.cmu.tetrad.graph.NodeType.LATENT);
+                    Node variable = dataSet.getVariable(idx);
+                    outLatents.add(variable);
+                    takenNames.add(variable.getName());
 
                     int rk = estimateRankSafe(S, n, newBlock, others, alpha);
                     outRanks.add(Math.max(1, rk));
@@ -310,23 +311,20 @@ public final class BlocksUtil {
         }
     }
 
-// ---------- helpers ----------
+    // ---------- helpers ----------
 
     // Safe rank: if others empty → unconditioned fallback; singleton → 1.
     private static int estimateRankSafe(
             org.ejml.simple.SimpleMatrix S, int nRows,
-            List<Integer> block, int[] others, double alpha
-    ) {
-        if (block == null || block.isEmpty()) return 1;
-        if (block.size() == 1) return 1; // max rank is 1 for a single variable
+            List<Integer> block, int[] others, double alpha) {
+        if (block == null || block.isEmpty()) return 0; // empty → 0
         int[] blk = toIndexArray(block);
 
         if (others != null && others.length > 0) {
-            return Math.max(1, edu.cmu.tetrad.util.RankTests
+            return Math.max(0, edu.cmu.tetrad.util.RankTests
                     .estimateWilksRank(S, blk, others, nRows, alpha));
         } else {
-            // unconditioned fallback; if you have a dedicated API, use it; else Wilks vs empty
-            return Math.max(1, edu.cmu.tetrad.util.RankTests
+            return Math.max(0, edu.cmu.tetrad.util.RankTests
                     .estimateWilksRank(S, blk, new int[0], nRows, alpha));
         }
     }
