@@ -225,14 +225,16 @@ public final class BlockSpecTextCodec {
 //            if (b.size() == 1 && r == 1) {
 //                sb.append(spec.dataSet().getVariable(b.get(0)).getName());
 //            } else {
-                // Rep name (latent) with optional "(rank)"
-                sb.append(rep.getName());
-                if (r != -1) sb.append('(').append(r).append(')');
-                sb.append(": ");
-                for (int j = 0; j < b.size(); j++) {
-                    if (j > 0) sb.append(", ");
-                    sb.append(spec.dataSet().getVariable(b.get(j)).getName());
-                }
+            // Rep name (latent) with optional "(rank)"
+            sb.append(rep.getName());
+
+            // Changing this to show ranks whenever they are defined instead of just for r > 1. jdramsey 2025-8-26
+            if (r != -1) sb.append('(').append(r).append(')');
+            sb.append(": ");
+            for (int j = 0; j < b.size(); j++) {
+                if (j > 0) sb.append(", ");
+                sb.append(spec.dataSet().getVariable(b.get(j)).getName());
+            }
 //            }
             sb.append('\n');
         }
