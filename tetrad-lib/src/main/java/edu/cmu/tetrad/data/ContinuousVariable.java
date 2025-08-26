@@ -78,7 +78,7 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     /**
      * The rank, or -1 if none is set. If set, just be >= 9,
      */
-    private int rank;
+    private int rank = -1;
 
     /**
      * Constructs a new continuous variable with the given name.
