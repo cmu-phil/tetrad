@@ -123,6 +123,10 @@ public final class BlockSpec implements TetradSerializable {
         this.blocks = unmodifiableNestedCopy(blocks);
         this.blockVariables = List.copyOf(blockVariables);
         this.ranks = List.copyOf(ranks);
+
+        for (int i = 0; i < blocks.size(); i++) {
+            blockVariables.get(i).setRank(ranks.get(i));
+        }
     }
 
     private static List<List<Integer>> unmodifiableNestedCopy(List<List<Integer>> src) {

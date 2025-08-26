@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -68,6 +68,29 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     void setName(String name);
 
     /**
+     * Returns the rank, or -1 if no rank is set.
+     */
+    default int getRank() {
+        return -1;
+    }
+
+    /**
+     * Returns the display name.
+     */
+    default String getDisplayName() {
+        boolean displayRank = !(getRank() == -1 || getRank() == 1);
+        return getName() + (displayRank ? "(" + getRank() + ")" : "");
+    }
+
+    /**
+     * Sets the rank, or -1 if no rank is set.
+     * @throws UnsupportedOperationException if the node type does not support setting a rank.
+     */
+    default void setRank(int rank) {
+        throw new UnsupportedOperationException("Rank is not supported for this node type.");
+    }
+
+    /**
      * Returns the node type for this node.
      *
      * @return the node type for this node.
@@ -84,16 +107,16 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     /**
      * Returns the selection bias status for this node.
      *
-     * @param selectionBias the selection bias status for this node.
+     * @return the selection bias status for this node.
      */
-    void setSelectionBias(boolean selectionBias);
+    boolean getSelectionBias();
 
     /**
      * Returns the selection bias status for this node.
      *
-     * @return the selection bias status for this node.
+     * @param selectionBias the selection bias status for this node.
      */
-    boolean getSelectionBias();
+    void setSelectionBias(boolean selectionBias);
 
     /**
      * Returns the node shape for this node.

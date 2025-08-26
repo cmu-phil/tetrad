@@ -60,7 +60,7 @@ public class GraphNodeLatent extends DisplayNode {
                                                "a GraphNode of type NodeType.LATENT.");
         }
 
-        setDisplayComp(new LatentDisplayComp(modelNode.getName()));
+        setDisplayComp(new LatentDisplayComp(modelNode.getDisplayName()));
     }
 
     /**

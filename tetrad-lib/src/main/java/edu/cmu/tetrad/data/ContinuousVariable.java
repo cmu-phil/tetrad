@@ -75,6 +75,10 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
+    /**
+     * The rank, or -1 if none is set. If set, just be >= 9,
+     */
+    private int rank;
 
     /**
      * Constructs a new continuous variable with the given name.
@@ -198,6 +202,25 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
         if (!(o instanceof ContinuousVariable)) return false;
         if (!getName().equals(((Node) o).getName()))  return false;
         return getNodeType() == ((ContinuousVariable) o).getNodeType();
+    }
+
+    @Override
+    public int getRank() {
+        return this.rank == -1 ? super.getRank() : this.rank;
+    }
+
+    /**
+     * Sets the rank for this variable. The rank must be either -1 (indicating no rank is set)
+     * or a non-negative integer value.
+     *
+     * @param rank the rank to set; must be -1 or greater than or equal to 0
+     * @throws IllegalArgumentException if the rank is less than -1
+     */
+    public void setRank(int rank) {
+        if (rank < -1) {
+            throw new IllegalArgumentException("Rank must be -1, if no rank is set, or >= 0.");
+        }
+        this.rank = rank;
     }
 
     /**
