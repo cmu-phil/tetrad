@@ -78,7 +78,7 @@ public interface Node extends TetradSerializable, Comparable<Node> {
      * Returns the display name.
      */
     default String getDisplayName() {
-        boolean displayRank = !(getRank() == -1 || getRank() == 1);
+        boolean displayRank = !(getRank() == -1); // || getRank() == 1);
         return getName() + (displayRank ? "(" + getRank() + ")" : "");
     }
 
