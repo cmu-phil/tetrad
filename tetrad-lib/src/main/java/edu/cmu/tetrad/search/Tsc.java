@@ -464,47 +464,47 @@ public class Tsc {
         }
 
         Map<Set<Integer>, Integer> setIntegerMap = clusterSearchMetaLoop();
-        printFractionPairwiseDependent(setIntegerMap.keySet());
+//        printFractionPairwiseDependent(setIntegerMap.keySet());
 
         return setIntegerMap;
     }
 
-    private void printFractionPairwiseDependent(Set<Set<Integer>> sets) {
-
-        int[][] dependency = dependencyMatrix(S, expectedSampleSize, alpha);
-
-//        System.out.println("dependency = ");
+//    private void printFractionPairwiseDependent(Set<Set<Integer>> sets) {
 //
-//        for (int i = 0; i < dependency.length; i++) {
-//            for (int j = 0; j < dependency[i].length; j++) {
-//                System.out.print(dependency[i][j] + " ");
+//        int[][] dependency = dependencyMatrix(S, expectedSampleSize, alpha);
+//
+////        System.out.println("dependency = ");
+////
+////        for (int i = 0; i < dependency.length; i++) {
+////            for (int j = 0; j < dependency[i].length; j++) {
+////                System.out.print(dependency[i][j] + " ");
+////            }
+////            System.out.println();
+////        }
+//
+//        for (Set<Integer> set : sets) {
+//            List<Integer> list = new ArrayList<>(set);
+//            if (list.size() < 2) {
+//                System.out.println("Set: " + set + ", Fraction: NaN (size < 2)");
+//                continue;
 //            }
-//            System.out.println();
+//
+//            int count = 0, total = 0;
+//
+//            for (int i = 0; i < list.size(); i++) {
+//                for (int j = i + 1; j < list.size(); j++) {
+//                    double dep = dependency[i][j];
+//
+////                    System.out.printf("r = %.3f |Z| = %.3f%n", r, Math.abs(fisherZ));
+//                    if (dep == 1.0) count++;
+//                    total++;
+//                }
+//            }
+//
+//            System.out.println("Set: " + set + ", Fraction unconditionally dependent: "
+//                               + (total > 0 ? (double) count / total : Double.NaN));
 //        }
-
-        for (Set<Integer> set : sets) {
-            List<Integer> list = new ArrayList<>(set);
-            if (list.size() < 2) {
-                System.out.println("Set: " + set + ", Fraction: NaN (size < 2)");
-                continue;
-            }
-
-            int count = 0, total = 0;
-
-            for (int i = 0; i < list.size(); i++) {
-                for (int j = i + 1; j < list.size(); j++) {
-                    double dep = dependency[i][j];
-
-//                    System.out.printf("r = %.3f |Z| = %.3f%n", r, Math.abs(fisherZ));
-                    if (dep == 1.0) count++;
-                    total++;
-                }
-            }
-
-            System.out.println("Set: " + set + ", Fraction unconditionally dependent: "
-                               + (total > 0 ? (double) count / total : Double.NaN));
-        }
-    }
+//    }
 
     private List<Integer> allVariables() {
         List<Integer> _variables = new ArrayList<>();
