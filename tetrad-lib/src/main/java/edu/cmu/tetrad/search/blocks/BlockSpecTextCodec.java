@@ -222,18 +222,18 @@ public final class BlockSpecTextCodec {
             Node rep = spec.blockVariables().get(i);
             int r = spec.ranks().get(i);
 
-            if (b.size() == 1 && r == 1) {
-                sb.append(spec.dataSet().getVariable(b.get(0)).getName());
-            } else {
+//            if (b.size() == 1 && r == 1) {
+//                sb.append(spec.dataSet().getVariable(b.get(0)).getName());
+//            } else {
                 // Rep name (latent) with optional "(rank)"
                 sb.append(rep.getName());
-                if (r > 1) sb.append('(').append(r).append(')');
+                if (r != -1) sb.append('(').append(r).append(')');
                 sb.append(": ");
                 for (int j = 0; j < b.size(); j++) {
                     if (j > 0) sb.append(", ");
                     sb.append(spec.dataSet().getVariable(b.get(j)).getName());
                 }
-            }
+//            }
             sb.append('\n');
         }
         return sb.toString();
