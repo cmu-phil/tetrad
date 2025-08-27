@@ -285,7 +285,7 @@ public final class LatentNameAssigner {
         final List<Integer> out = new ArrayList<>(needed);
         for (int i = 0; i < needed; i++) {
             Integer r = (i < ranksIn.size()) ? ranksIn.get(i) : 1;
-            if (r == null || r < 1) r = 1;
+            if (r == null || r < 0) r = 0;
             out.add(r);
         }
         return out;
