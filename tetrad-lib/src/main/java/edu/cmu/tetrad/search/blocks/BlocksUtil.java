@@ -353,6 +353,16 @@ public final class BlocksUtil {
         return b + "-" + k;
     }
 
+    /**
+     * Assigns meaningful names to latent variables in the provided BlockSpec object based on the given true clusters
+     * and the specified naming mode. This helps in creating more interpretable and user-friendly block specifications.
+     *
+     * @param spec         the BlockSpec object containing the initial latent variable definitions
+     * @param trueClusters a map where keys represent cluster names and values are lists of variable names associated
+     *                     with each cluster
+     * @param mode         the NamingMode specifying how the latent variables should be named
+     * @return a BlockSpec object with updated latent variable names based on the true clusters and naming mode
+     */
     public static BlockSpec giveGoodLatentNames(BlockSpec spec,
                                                 Map<String, List<String>> trueClusters,
                                                 NamingMode mode) {
