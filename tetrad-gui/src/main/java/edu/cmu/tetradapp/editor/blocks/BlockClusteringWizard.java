@@ -405,7 +405,8 @@ public class BlockClusteringWizard extends JPanel {
                 yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA), ess, policy);
             }
             case "GFFC" -> {
-                yield BlockDiscoverers.gffc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy);
+                yield BlockDiscoverers.gffc(dataSet, parameters.getDouble(Params.ALPHA), ess,
+                        parameters.getInt(Params.GFFC_R_MAX), policy);
             }
             default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
         };
@@ -425,6 +426,10 @@ public class BlockClusteringWizard extends JPanel {
             }
             case "TSC Test" -> {
                 paramList.add(Params.ALPHA);
+            }
+            case "GFFC" -> {
+                paramList.add(Params.ALPHA);
+                paramList.add(Params.GFFC_R_MAX);
             }
             default -> paramList.add(Params.ALPHA);
         }

@@ -36,7 +36,7 @@ public class Tsc {
     private final boolean prefilterByWilkes = true;
     private int expectedSampleSize = -1;
     private double alpha = 0.01;
-    private boolean verbose = false;
+    private boolean verbose = true;
     private Map<Set<Integer>, Integer> clusters = new HashMap<>();
     private Map<Set<Integer>, Integer> clusterToRank;
 //    private Map<Set<Integer>, Integer> reducedRank;
@@ -215,6 +215,9 @@ public class Tsc {
 
     // ---- test-based enumerator (kept for reference) ----------------------------
     public Set<Set<Integer>> findClustersAtRankTesting(List<Integer> vars, int size, int rank) {
+        log("vars: " + vars);
+        log("findClustersAtRankTesting size = " + size + ", rank = " + rank + ", ess = " + expectedSampleSize);
+
         final int n = vars.size();
         final int k = size;
 
@@ -602,7 +605,7 @@ public class Tsc {
             log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
             Set<Set<Integer>> P = mode == Mode.Scoring ? findClustersAtRankScoring(remainingVars, size, rank)
                     : findClustersAtRankTesting(remainingVars, size, rank);
-            log("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P)));
+            log("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P, nodes)));
             Set<Set<Integer>> P1 = new HashSet<>(P);
 
             Set<Set<Integer>> newClusters = new HashSet<>();
@@ -666,7 +669,7 @@ public class Tsc {
                 }
             }
 
-            log("New clusters for rank " + rank + " size = " + size + ": " + (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
+            log("New clusters for rank " + rank + " size = " + size + ": " + (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters, nodes)));
 
             Set<Set<Integer>> P2 = new HashSet<>(P);
             log("Now we will try to augment each cluster by one new variable by looking at cluster overlaps again.");
@@ -707,7 +710,7 @@ public class Tsc {
             }
 
             if (!didAugment) log("No augmentations were needed.");
-            log("New clusters after the augmentation step = " + (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
+            log("New clusters after the augmentation step = " + (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters, nodes)));
 
             for (Set<Integer> cluster : new ArrayList<>(newClusters)) clusterToRank.put(cluster, rank);
 
@@ -724,7 +727,7 @@ public class Tsc {
             }
         }
 
-        log("Penultimate clusters = " + toNamesClusters(clusterToRank.keySet()));
+        log("Penultimate clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
         log("Now we will consider whether any of the penultimate clusters should be discarded (as from a non-latent DAG, e.g.).");
 
         boolean penultimateRemoved = false;
@@ -776,7 +779,7 @@ public class Tsc {
             clusterToRank.putAll(collapsed);
         }
 
-        log("Final clusters = " + toNamesClusters(clusterToRank.keySet()));
+        log("Final clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
         return clusterToRank;
     }
 
@@ -859,7 +862,7 @@ public class Tsc {
 
                 int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
                 if (r < l) {
-                    log("Deficient! rank(" + toNamesCluster(C1) + ", " + toNamesCluster(C2) + ") = "
+                    log("Deficient! rank(" + toNamesCluster(C1, nodes) + ", " + toNamesCluster(C2, nodes) + ") = "
                         + r + " < " + l + "; removing " + toNamesCluster(cluster));
                     return true;
                 }
@@ -882,7 +885,7 @@ public class Tsc {
 
                 int r = RankTests.estimateWilksRank(S, _cArray, dArray, expectedSampleSize, alpha);
                 if (r < l) {
-                    log("rank(" + toNamesCluster(_C) + ", D) = " + r + " < r = " + l
+                    log("rank(" + toNamesCluster(_C, nodes) + ", D) = " + r + " < r = " + l
                         + "; removing cluster " + toNamesCluster(cluster));
                     return true;
                 }
@@ -909,7 +912,7 @@ public class Tsc {
 
                 int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, expectedSampleSize, alpha);
                 if (rZ == 0) {
-                    log("rank(_C = " + toNamesCluster(_C) + ", D | Z = " + toNamesCluster(Z) + ") = 0; removing cluster " + toNamesCluster(cluster) + ".");
+                    log("rank(_C = " + toNamesCluster(_C, nodes) + ", D | Z = " + toNamesCluster(Z, nodes) + ") = 0; removing cluster " + toNamesCluster(cluster) + ".");
                     return true;
                 }
             }
@@ -927,7 +930,7 @@ public class Tsc {
         return r;
     }
 
-    private @NotNull StringBuilder toNamesCluster(Collection<Integer> cluster) { /* ... unchanged ... */
+    public static @NotNull StringBuilder toNamesCluster(Collection<Integer> cluster, List<Node> nodes) { /* ... unchanged ... */
         StringBuilder _sb = new StringBuilder();
         _sb.append("[");
         int count = 0;
@@ -939,11 +942,11 @@ public class Tsc {
         return _sb;
     }
 
-    private @NotNull String toNamesClusters(Set<Set<Integer>> clusters) { /* ... unchanged ... */
+    public static @NotNull String toNamesClusters(Set<Set<Integer>> clusters, List<Node> nodes) { /* ... unchanged ... */
         StringBuilder sb = new StringBuilder();
         int count0 = 0;
         for (Collection<Integer> cluster : clusters) {
-            StringBuilder _sb = toNamesCluster(cluster);
+            StringBuilder _sb = toNamesCluster(cluster, nodes);
             if (count0++ < clusters.size() - 1) _sb.append("; ");
             sb.append(_sb);
         }

@@ -21,6 +21,7 @@ public class GffcBlockDiscoverer implements BlockDiscoverer {
     private final double alpha;
     private final int ess;
     private final SingleClusterPolicy policy;
+    private int rMax = 2;
 
     /**
      * Constructs a new instance of {@code FofcBlockDiscoverer}, which is used to discover clusters or "blocks" of
@@ -30,13 +31,15 @@ public class GffcBlockDiscoverer implements BlockDiscoverer {
      * @param dataSet the dataset to be analyzed for block discovery.
      * @param alpha   the significance level used in the statistical test to determine independence.
      * @param ess     the equivalent sample size parameter used in Bayesian methods within the FOFC algorithm.
+     * @param rMax
      * @param policy  the policy to handle scenarios involving overlapping or conflicting blocks.
      */
     public GffcBlockDiscoverer(DataSet dataSet, double alpha, int ess,
-                               SingleClusterPolicy policy) {
+                               int rMax, SingleClusterPolicy policy) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ess = ess;
+        this.rMax = rMax;
         this.policy = policy;
     }
 

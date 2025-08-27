@@ -198,7 +198,7 @@ public class Gffc {
 
         // Make sure TSC uses same alpha/n as GFFC
         tsc.setAlpha(this.alpha);
-        tsc.setExpectedSampleSize(this.n);
+        tsc.setExpectedSampleSize(-1);
 
         // Unclustered relative to already accepted clusters (any rank)
         List<Integer> unclustered = allVariables();
@@ -209,7 +209,7 @@ public class Gffc {
         List<Set<Integer>> triples = new ArrayList<>(tscClusters);
 
         // To avoid re-testing the same union from different pairs
-        Set<List<Integer>> testedUnions = new HashSet<>();
+        Set<List<Integer>> testedConcatenations = new HashSet<>();
 
         for (int i = 0; i < triples.size(); i++) {
             final Set<Integer> A = triples.get(i);
@@ -224,28 +224,27 @@ public class Gffc {
                 Uset.addAll(B);
                 if (Uset.size() != clusterSize) continue; // must be exact size (e.g., 6 for rank 2)
 
-                List<Integer> U = new ArrayList<>(Uset);
-                Collections.sort(U); // canonical order for caching
+                List<Integer> C = new ArrayList<>(A);
+                C.addAll(B);
 
                 // 3) skip if we already tried this union
-                List<Integer> key = canonKey(U);
-                if (!testedUnions.add(key)) continue;
+                if (!testedConcatenations.add(C)) continue;
 
                 // 4) ensure all entries are still unclustered
-                if (!new HashSet<>(unclustered).containsAll(U)) continue;
+                if (!new HashSet<>(unclustered).containsAll(C)) continue;
 
                 // 5) purity w.r.t. ALL variables (your pure() already does this + substitution)
-                if (pure(U) == Purity.PURE) {
+                if (pure(C) == Purity.PURE) {
                     // 6) grow from the sextet
-                    growCluster(U, rank, clustersToRanks);
+                    growCluster(C, rank, clustersToRanks);
 
                     if (this.verbose) {
                         log("Cluster found: " + ClusterSignificance
-                                .variablesForIndices(U, this.variables));
+                                .variablesForIndices(C, this.variables));
                     }
 
-                    clustersToRanks.put(key, rank);
-                    unclustered.removeAll(U);
+                    clustersToRanks.put(C, rank);
+                    unclustered.removeAll(C);
                 }
             }
         }

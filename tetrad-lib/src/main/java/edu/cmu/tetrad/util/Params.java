@@ -1083,6 +1083,10 @@ public final class Params {
      * Constant <code>TSC_MIN_RANK_DROP="tscMinRankDrop"</code>
      */
     public static final String TSC_MIN_RANK_DROP = "tscMinRankDrop";
+    /**
+     * Constant <code>GFFC_R_MAX="gffc_r_max"</code>
+     */
+    public static final String GFFC_R_MAX = "gffc_r_max";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
