@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -476,8 +477,11 @@ public final class BlockSpecEditorPanel extends JPanel {
     // ---------------- Autocomplete ----------------
 
     /**
-     * Canonicalize RHS in-place: - Keep comments & blank lines as-is - Keep block order & names/ranks as-is - For lines
-     * with "lhs: rhs", rewrite rhs as sorted, de-duplicated member names - For singleton lines (no ":"), leave as-is
+     * Canonicalize RHS in-place and reorder latent lines:
+     * - Keep comments & blank lines as-is, but attach them to the following latent line
+     * - For "lhs: rhs" lines: rewrite rhs as sorted, de-duplicated member names
+     * - Then sort the latent lines by lhs (alphabetical)
+     * - Singleton lines (no ":") are left in place as orphans
      */
     private void canonicalizePreservingComments() {
         Element root = textPane.getDocument().getDefaultRootElement();
@@ -488,7 +492,6 @@ public final class BlockSpecEditorPanel extends JPanel {
                 Element el = root.getElement(i);
                 String line = textPane.getDocument().getText(el.getStartOffset(),
                         el.getEndOffset() - el.getStartOffset());
-                // strip trailing newline the Document may include
                 if (line.endsWith("\n")) line = line.substring(0, line.length() - 1);
                 lines.add(line);
             }
@@ -497,7 +500,7 @@ public final class BlockSpecEditorPanel extends JPanel {
             return;
         }
 
-        List<String> rewritten = new ArrayList<>(lines.size());
+        // Maps for name lookup
         Map<Integer, String> idxToName = new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
             idxToName.put(i, dataSet.getVariable(i).getName());
@@ -505,34 +508,31 @@ public final class BlockSpecEditorPanel extends JPanel {
         Map<String, Integer> nameToIdx = idxToName.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
 
-        for (String raw : lines) {
+        // Block structure
+        class Block {
+            final List<String> header = new ArrayList<>();
+            String lhs;   // null for orphan (non-latent) lines
+            String line;  // rewritten latent line or raw orphan line
+        }
+
+        List<Block> blocks = new ArrayList<>();
+        List<String> pendingHeader = new ArrayList<>();
+
+        // helper: rewrite a "lhs: rhs" line with RHS sorted/deduped
+        Function<String, String> rewriteLatent = raw -> {
             String s = raw.stripTrailing();
-            if (s.isBlank() || s.stripLeading().startsWith("%")) {
-                rewritten.add(raw); // keep comments/blanks exactly
-                continue;
-            }
             int colon = s.indexOf(':');
-            if (colon < 0) {
-                // singleton line (token) → leave as-is
-                rewritten.add(raw);
-                continue;
-            }
             String lhs = s.substring(0, colon).trim();
             String rhs = s.substring(colon + 1);
 
-            // Parse RHS tokens to names
             List<String> tokens = new ArrayList<>();
             Matcher mt = TOKEN.matcher(rhs);
             while (mt.find()) {
-                String q = mt.group(1);
-                String idx = mt.group(2);
-                String bare = mt.group(3);
+                String q = mt.group(1), idx = mt.group(2), bare = mt.group(3);
                 if (q != null) tokens.add(q);
                 else if (idx != null) tokens.add("#" + idx);
                 else if (bare != null) tokens.add(bare);
             }
-
-            // Map tokens to variable names (drop unknowns; we don’t alter them here)
             List<String> names = new ArrayList<>();
             for (String tok : tokens) {
                 if (tok.startsWith("#")) {
@@ -540,27 +540,162 @@ public final class BlockSpecEditorPanel extends JPanel {
                         int k = Integer.parseInt(tok.substring(1));
                         String nm = idxToName.get(k);
                         if (nm != null) names.add(nm);
-                    } catch (NumberFormatException ignored) {
-                    }
+                    } catch (NumberFormatException ignored) {}
                 } else if (nameToIdx.containsKey(tok)) {
                     names.add(tok);
                 }
             }
-
-            // Sort & dedup names
-            LinkedHashSet<String> uniq = new LinkedHashSet<>(names); // preserve first occurrence
+            LinkedHashSet<String> uniq = new LinkedHashSet<>(names);
             List<String> sorted = new ArrayList<>(uniq);
             Collections.sort(sorted);
+            return lhs + ": " + String.join(", ", sorted);
+        };
 
-            String joined = String.join(", ", sorted);
-            String newLine = lhs + ": " + joined;
-            // Preserve original trailing whitespace difference if desired; simple replace here:
-            rewritten.add(newLine);
+        // Pass 1: collect blocks
+        for (String raw : lines) {
+            String s = raw.stripTrailing();
+            boolean isCommentOrBlank = s.isBlank() || s.stripLeading().startsWith("%");
+            int colon = s.indexOf(':');
+
+            if (isCommentOrBlank) {
+                pendingHeader.add(raw);
+                continue;
+            }
+            if (colon < 0) {
+                // orphan singleton
+                Block b = new Block();
+                b.header.addAll(pendingHeader);
+                pendingHeader.clear();
+                b.lhs = null;
+                b.line = raw;
+                blocks.add(b);
+                continue;
+            }
+            // latent line
+            String lhs = s.substring(0, colon).trim();
+            Block b = new Block();
+            b.header.addAll(pendingHeader);
+            pendingHeader.clear();
+            b.lhs = lhs;
+            b.line = rewriteLatent.apply(raw);
+            blocks.add(b);
+        }
+        if (!pendingHeader.isEmpty()) {
+            Block b = new Block();
+            b.header.addAll(pendingHeader);
+            blocks.add(b);
+            pendingHeader.clear();
         }
 
+        // Separate blocks
+        List<Block> leadingOrphans = new ArrayList<>();
+        List<Block> latentBlocks   = new ArrayList<>();
+        List<Block> trailingOrphans= new ArrayList<>();
+        boolean seenLatent = false;
+        for (Block b : blocks) {
+            if (b.lhs == null) {
+                if (!seenLatent) leadingOrphans.add(b); else trailingOrphans.add(b);
+            } else {
+                seenLatent = true;
+                latentBlocks.add(b);
+            }
+        }
+
+        // Sort latent blocks alphabetically by lhs
+        latentBlocks.sort(Comparator.comparing(b -> b.lhs.toLowerCase(Locale.ROOT)));
+
+        // Rebuild
+        List<String> rewritten = new ArrayList<>(lines.size());
+        for (Block b : leadingOrphans) { rewritten.addAll(b.header); if (b.line != null) rewritten.add(b.line); }
+        for (Block b : latentBlocks)   { rewritten.addAll(b.header); rewritten.add(b.line); }
+        for (Block b : trailingOrphans){ rewritten.addAll(b.header); if (b.line != null) rewritten.add(b.line); }
+
         String newText = String.join("\n", rewritten);
-        setText(newText, false); // don’t replace originalText; keep undo stack cleared
+        setText(newText, false);
     }
+
+//    private void canonicalizePreservingComments() {
+//        Element root = textPane.getDocument().getDefaultRootElement();
+//        int lineCount = root.getElementCount();
+//        List<String> lines = new ArrayList<>(lineCount);
+//        try {
+//            for (int i = 0; i < lineCount; i++) {
+//                Element el = root.getElement(i);
+//                String line = textPane.getDocument().getText(el.getStartOffset(),
+//                        el.getEndOffset() - el.getStartOffset());
+//                // strip trailing newline the Document may include
+//                if (line.endsWith("\n")) line = line.substring(0, line.length() - 1);
+//                lines.add(line);
+//            }
+//        } catch (BadLocationException e) {
+//            Toolkit.getDefaultToolkit().beep();
+//            return;
+//        }
+//
+//        List<String> rewritten = new ArrayList<>(lines.size());
+//        Map<Integer, String> idxToName = new HashMap<>();
+//        for (int i = 0; i < dataSet.getNumColumns(); i++) {
+//            idxToName.put(i, dataSet.getVariable(i).getName());
+//        }
+//        Map<String, Integer> nameToIdx = idxToName.entrySet().stream()
+//                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+//
+//        for (String raw : lines) {
+//            String s = raw.stripTrailing();
+//            if (s.isBlank() || s.stripLeading().startsWith("%")) {
+//                rewritten.add(raw); // keep comments/blanks exactly
+//                continue;
+//            }
+//            int colon = s.indexOf(':');
+//            if (colon < 0) {
+//                // singleton line (token) → leave as-is
+//                rewritten.add(raw);
+//                continue;
+//            }
+//            String lhs = s.substring(0, colon).trim();
+//            String rhs = s.substring(colon + 1);
+//
+//            // Parse RHS tokens to names
+//            List<String> tokens = new ArrayList<>();
+//            Matcher mt = TOKEN.matcher(rhs);
+//            while (mt.find()) {
+//                String q = mt.group(1);
+//                String idx = mt.group(2);
+//                String bare = mt.group(3);
+//                if (q != null) tokens.add(q);
+//                else if (idx != null) tokens.add("#" + idx);
+//                else if (bare != null) tokens.add(bare);
+//            }
+//
+//            // Map tokens to variable names (drop unknowns; we don’t alter them here)
+//            List<String> names = new ArrayList<>();
+//            for (String tok : tokens) {
+//                if (tok.startsWith("#")) {
+//                    try {
+//                        int k = Integer.parseInt(tok.substring(1));
+//                        String nm = idxToName.get(k);
+//                        if (nm != null) names.add(nm);
+//                    } catch (NumberFormatException ignored) {
+//                    }
+//                } else if (nameToIdx.containsKey(tok)) {
+//                    names.add(tok);
+//                }
+//            }
+//
+//            // Sort & dedup names
+//            LinkedHashSet<String> uniq = new LinkedHashSet<>(names); // preserve first occurrence
+//            List<String> sorted = new ArrayList<>(uniq);
+//            Collections.sort(sorted);
+//
+//            String joined = String.join(", ", sorted);
+//            String newLine = lhs + ": " + joined;
+//            // Preserve original trailing whitespace difference if desired; simple replace here:
+//            rewritten.add(newLine);
+//        }
+//
+//        String newText = String.join("\n", rewritten);
+//        setText(newText, false); // don’t replace originalText; keep undo stack cleared
+//    }
 
     private void showCompletion() {
         completionModel.clear();
