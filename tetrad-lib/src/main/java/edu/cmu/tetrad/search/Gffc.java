@@ -60,6 +60,9 @@ public class Gffc {
      * A cache of impure tetrads.
      */
     private Set<Set<Integer>> impureTets;
+    private int rMax = 2;
+    private int sampleSize;
+    private int ess;
 
     /**
      * Conctructor.
@@ -67,13 +70,28 @@ public class Gffc {
      * @param dataSet The continuous dataset searched over.
      * @param alpha   The alpha significance cutoff.
      */
-    public Gffc(DataSet dataSet, double alpha) {
+    public Gffc(DataSet dataSet, double alpha, int rMax, int ess) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         CorrelationMatrix correlationMatrix = new CorrelationMatrix(dataSet);
         this.S = correlationMatrix.getMatrix().getSimpleMatrix();
         this.n = dataSet.getNumRows();
         this.tsc = new Tsc(dataSet.getVariables(), correlationMatrix);
+        this.sampleSize = dataSet.getNumRows();
+        setRMax(rMax);
+        setEss(ess);
+    }
+
+    private void setEss(int ess) {
+        this.ess = ess == -1 ? this.sampleSize : ess;
+        this.tsc.setExpectedSampleSize(ess);
+    }
+
+    private void setRMax(int rMax) {
+        if (rMax < 1) {
+            throw new IllegalArgumentException("rMax must be at least 1");
+        }
+        this.rMax = rMax;
     }
 
     // Canonical, immutable key for clusters to avoid order/mutation hazards

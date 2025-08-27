@@ -51,7 +51,7 @@ public class GffcBlockDiscoverer implements BlockDiscoverer {
      */
     @Override
     public BlockSpec discover() {
-        Gffc gffc = new Gffc(dataSet, alpha);
+        Gffc gffc = new Gffc(dataSet, alpha, rMax, ess);
 
         Map<List<Integer>, Integer> clusters = gffc.findClusters();
         List<List<Integer>> blocks = new ArrayList<>(clusters.keySet());
