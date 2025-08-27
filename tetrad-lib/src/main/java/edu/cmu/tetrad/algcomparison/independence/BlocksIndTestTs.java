@@ -82,7 +82,7 @@ public class BlocksIndTestTs implements BlockIndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Blocks Test Lemma 10 (Requires blocks)";
+        return "Blocks Test TS (Trek Separation)";
     }
 
     /**
