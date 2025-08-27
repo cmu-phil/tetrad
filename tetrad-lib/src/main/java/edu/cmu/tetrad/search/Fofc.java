@@ -293,7 +293,7 @@ public class Fofc {
             cluster.add(n2);
             cluster.add(n3);
 
-            for (int o : allVariables()) {
+            for (int o : unionClustered) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }

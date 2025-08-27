@@ -306,7 +306,7 @@ public class Ftfc {
             cluster.add(n4);
             cluster.add(n5);
 
-            for (int o : allVariables()) {
+            for (int o : unclustered) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
