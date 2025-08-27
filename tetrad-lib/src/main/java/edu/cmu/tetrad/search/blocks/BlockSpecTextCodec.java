@@ -217,6 +217,11 @@ public final class BlockSpecTextCodec {
      */
     public static String format(BlockSpec spec) {
         StringBuilder sb = new StringBuilder();
+
+        if (spec.blocks().isEmpty()) {
+            sb.append("%\n% No blocks defined.\n%\n");
+        }
+
         for (int i = 0; i < spec.blocks().size(); i++) {
             List<Integer> b = spec.blocks().get(i);
             Node rep = spec.blockVariables().get(i);

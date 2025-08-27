@@ -141,7 +141,7 @@ public final class LatentNameAssigner {
                     sb.append(overlaps.get(i).sanitized);
                 }
                 if (overlaps.size() > config.maxOverlapParts && config.showOverflowCount) {
-                    sb.append(config.overflowPrefix).append(overlaps.size() - config.maxOverlapParts).append("more");
+                    sb.append(config.overflowPrefix).append(overlaps.size() - config.maxOverlapParts).append(".more");
                 }
                 final String joined = sb.length() == 0 ? config.defaultMixedName : sb.toString();
                 baseName = joined;
@@ -303,7 +303,7 @@ public final class LatentNameAssigner {
 
         public static Config defaults() {
             return new Config(
-                    3, true, "-", "+", "Mixed", true, "-",
+                    8, true, "-", "+", "Mixed", true, "-",
                     Set.of("Noise"),  // reserve “Noise” by default
                     true              // keep reserved names literal
             );
