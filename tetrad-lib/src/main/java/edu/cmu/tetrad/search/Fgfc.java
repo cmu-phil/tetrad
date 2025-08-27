@@ -60,6 +60,7 @@ public class Fgfc {
      * A cache of impure tetrads.
      */
     private Set<Set<Integer>> impureTets;
+    private final Map<List<Integer>, Boolean> vanishCache = new HashMap<>();
 
     /**
      * Conctructor.
@@ -154,19 +155,10 @@ public class Fgfc {
         ChoiceGenerator gen = new ChoiceGenerator(_variables.size(), clusterSize);
         int[] choice;
 
-        CHOICE:
         while ((choice = gen.next()) != null) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
-
-//            for (int i = 0; i < choice.length; i++) {
-//                for (int j = i  + 1; j < choice.length; j++) {
-//                    if (abs(S.get(variables.get(i), variables.get(j))) < 0.01) {
-//                        continue CHOICE;
-//                    }
-//                }
-//            }
 
             List<Integer> cluster = new ArrayList<>();
 
@@ -229,11 +221,6 @@ public class Fgfc {
             if (Thread.currentThread().isInterrupted()) return;
 
             for (List<Integer> sub : subsets) {
-//                for (int c : sub) {
-//                    if (abs(S.get(c, o))  <= 0.01) {
-//                        continue O;
-//                    }
-//                }
 
                 // Make tad = sub ∪ {o}
                 List<Integer> tad = new ArrayList<>(sub.size() + 1);
@@ -250,74 +237,6 @@ public class Fgfc {
 
         // Now (and only now) mutate the cluster
         cluster.addAll(toAdd);
-    }
-
-    /**
-     * Finds mixed clusters for the SAG algorithm.
-     */
-    private void findMixedClusters(int rank, Map<List<Integer>, Integer> clustersToRanks) {
-        int tadSize = 2 * (rank + 1);
-
-        if (union(clustersToRanks.keySet()).isEmpty()) {
-            return;
-        }
-
-        List<Integer> unclustered = new ArrayList<>(allVariables());
-        unclustered.removeAll(new HashSet<>(union(clustersToRanks.keySet())));
-
-        List<Integer> variables = new ArrayList<>(unclustered);
-
-        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), tadSize - 1);
-        int[] choice;
-
-        CHOICE:
-        while ((choice = gen.next()) != null) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            for (int c : choice) {
-                if (!unclustered.contains(variables.get(c))) {
-                    continue CHOICE;
-                }
-            }
-
-            List<Integer> cluster = new ArrayList<>();
-
-            for (int c : choice) {
-                cluster.add(variables.get(c));
-            }
-
-            for (int o : allVariables()) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-//                for (int c : cluster) {
-//                    if (abs(S.get(c, o))  <= 0.01) {
-//                        continue CHOICE;
-//                    }
-//                }
-
-                if (cluster.contains(o)) continue;
-
-                List<Integer> _cluster = new ArrayList<>(cluster);
-                _cluster.add(o);
-
-                if (!vanishes(_cluster)) {
-                    continue CHOICE;
-                }
-            }
-
-            clustersToRanks.put(canonKey(cluster), rank);
-            unclustered.removeAll(cluster);
-
-            if (this.verbose) {
-                log((2 * (rank + 1) - 1) + "-cluster found: " +
-                    ClusterSignificance.variablesForIndices(cluster, this.variables));
-            }
-        }
-
     }
 
     private Purity pure(List<Integer> tad) {
@@ -355,50 +274,212 @@ public class Fgfc {
     }
 
     /**
-     * Determines if a given tad of variables "vanishes".
-     *
-     * @param tad The list of indices representing variables in the tad.
-     * @return True if the tad vanishes, false otherwise.
+     * Finds mixed clusters for the SAG algorithm.
      */
-    private boolean vanishes(List<Integer> tad) {
-        int leftSize = tad.size() / 2;
-        ChoiceGenerator gen = new ChoiceGenerator(tad.size(), leftSize);
+    private void findMixedClusters(int rank, Map<List<Integer>, Integer> clustersToRanks) {
+        int tadSize = 2 * (rank + 1);
+
+        Set<Integer> unionClustered = union(clustersToRanks.keySet());
+
+        if (unionClustered.isEmpty()) {
+            return;
+        }
+
+        List<Integer> unclustered = new ArrayList<>(allVariables());
+        unclustered.removeAll(new HashSet<>(unionClustered));
+
+        List<Integer> variables = new ArrayList<>(unclustered);
+
+        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), tadSize - 1);
         int[] choice;
 
+        CHOICE:
         while ((choice = gen.next()) != null) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            int[] x = new int[leftSize];
-
-            for (int i = 0; i < leftSize; i++) {
-                x[i] = tad.get(choice[i]);
+            for (int c : choice) {
+                if (!unclustered.contains(variables.get(c))) {
+                    continue CHOICE;
+                }
             }
+
+            List<Integer> cluster = new ArrayList<>();
+
+            for (int c : choice) {
+                cluster.add(variables.get(c));
+            }
+
+            for (int o : unionClustered) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                if (cluster.contains(o)) continue;
+
+                List<Integer> _cluster = new ArrayList<>(cluster);
+                _cluster.add(o);
+
+                if (!vanishes(_cluster)) {
+                    continue CHOICE;
+                }
+            }
+
+            clustersToRanks.put(canonKey(cluster), rank);
+            unclustered.removeAll(cluster);
+
+            if (this.verbose) {
+                log((2 * (rank + 1) - 1) + "-cluster found: " +
+                    ClusterSignificance.variablesForIndices(cluster, this.variables));
+            }
+        }
+    }
+
+
+
+//    private void findMixedClusters(int rank, Map<List<Integer>, Integer> clustersToRanks) {
+//        final int tadSize = 2 * (rank + 1);
+//
+//        // Build the pool of already-clustered variables of THIS rank only.
+//        Set<Integer> unionClustered = new HashSet<>();
+//        for (Map.Entry<List<Integer>, Integer> e : clustersToRanks.entrySet()) {
+//            if (e.getValue() == rank) {
+//                unionClustered.addAll(e.getKey());
+//            }
+//        }
+//        if (unionClustered.isEmpty()) return;
+//
+//        // Unclustered = all minus anything already in any cluster (any rank)
+//        Set<Integer> allClusteredAnyRank = union(clustersToRanks.keySet());
+//        Set<Integer> unclustered = new HashSet<>(allVariables());
+//        unclustered.removeAll(allClusteredAnyRank);
+//
+//        // Draw (2r+1)-tuples from unclustered
+//        List<Integer> vars = new ArrayList<>(unclustered);
+//        ChoiceGenerator gen = new ChoiceGenerator(vars.size(), tadSize - 1);
+//        int[] choice;
+//
+//        CHOICE:
+//        while ((choice = gen.next()) != null) {
+//            if (Thread.currentThread().isInterrupted()) break;
+//
+//            for (int c : choice) {
+//                if (!unclustered.contains(vars.get(c))) continue CHOICE;
+//            }
+//
+//            // Materialize candidate (2r+1)-cluster
+//            List<Integer> cluster = new ArrayList<>(tadSize - 1);
+//            for (int c : choice) cluster.add(vars.get(c));
+//
+//            // ∃ at least one borrowed o (from same-rank clustered vars) s.t. cluster ∪ {o} vanishes
+//            boolean hasWitness = false;
+//            for (int o : unionClustered) {
+//                if (Thread.currentThread().isInterrupted()) break;
+//                if (cluster.contains(o)) continue;  // defensive, though they’re disjoint
+//
+//                List<Integer> cand = new ArrayList<>(cluster.size() + 1);
+//                cand.addAll(cluster);
+//                cand.add(o);
+//
+//                if (vanishes(cand)) {
+//                    hasWitness = true;
+//                    break;
+//                }
+//            }
+//            if (!hasWitness) continue CHOICE;
+//
+//            // Accept the (2r+1)-cluster; the grow step can enforce purity/expansion later
+//            clustersToRanks.put(canonKey(cluster), rank);
+//            cluster.forEach(unclustered::remove);
+//
+//            if (this.verbose) {
+//                log((tadSize - 1) + "-cluster found: " +
+//                    ClusterSignificance.variablesForIndices(cluster, this.variables));
+//            }
+//        }
+//    }
+
+    /**
+     * Determines if a given tad of variables "vanishes".
+     *
+     * @param tad The list of indices representing variables in the tad.
+     * @return True if the tad vanishes, false otherwise.
+     */
+//    private boolean vanishes(List<Integer> tad) {
+//        int leftSize = tad.size() / 2;
+//        ChoiceGenerator gen = new ChoiceGenerator(tad.size(), leftSize);
+//        int[] choice;
+//
+//        while ((choice = gen.next()) != null) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                break;
+//            }
+//
+//            int[] x = new int[leftSize];
+//
+//            for (int i = 0; i < leftSize; i++) {
+//                x[i] = tad.get(choice[i]);
+//            }
+//
+//            int[] y = new int[tad.size() - leftSize];
+//            int yIndex = 0;
+//            for (int value : tad) {
+//                boolean found = false;
+//
+//                for (int xVal : x) {
+//                    if (xVal == value) {
+//                        found = true;
+//                        break;
+//                    }
+//                }
+//
+//                if (!found) {
+//                    y[yIndex++] = value;
+//                }
+//            }
+//
+//            int r = Math.min(x.length, y.length) - 1;
+////            int rank = RankTests.estimateWilksRank(S, x, y, n, alpha);
+//            int rank = RankTests.estimateWilksRankFast(S, x, y, n, alpha);
+//            if (rank != r) return false;
+//        }
+//
+//        return true;
+//    }
+
+    private boolean vanishes(List<Integer> tad) {
+        // canonical key
+        List<Integer> key = canonKey(tad);
+        Boolean cached = vanishCache.get(key);
+        if (cached != null) return cached;
+
+        int leftSize = tad.size() / 2;
+        ChoiceGenerator gen = new ChoiceGenerator(tad.size(), leftSize);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) break;
+
+            int[] x = new int[leftSize];
+            for (int i = 0; i < leftSize; i++) x[i] = tad.get(choice[i]);
 
             int[] y = new int[tad.size() - leftSize];
             int yIndex = 0;
-            for (int value : tad) {
-                boolean found = false;
-
-                for (int xVal : x) {
-                    if (xVal == value) {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found) {
-                    y[yIndex++] = value;
-                }
+            for (int v : tad) {
+                boolean inX = false;
+                for (int xv : x) if (xv == v) { inX = true; break; }
+                if (!inX) y[yIndex++] = v;
             }
 
             int r = Math.min(x.length, y.length) - 1;
-//            int rank = RankTests.estimateWilksRank(S, x, y, n, alpha);
             int rank = RankTests.estimateWilksRankFast(S, x, y, n, alpha);
-            if (rank != r) return false;
+            if (rank != r) {
+                vanishCache.put(key, false);
+                return false;
+            }
         }
-
+        vanishCache.put(key, true);
         return true;
     }
 
