@@ -67,9 +67,9 @@ public final class BlockDiscoverers {
         return new FtfcBlockDiscoverer(data, ntad, alpha, ess, policy);
     }
 
-    public static BlockDiscoverer fgfc(DataSet data, double alpha,
+    public static BlockDiscoverer gffc(DataSet data, double alpha,
                                        int ess, SingleClusterPolicy policy) {
-        return new FgfcBlockDiscoverer(data, alpha, ess, policy);
+        return new GffcBlockDiscoverer(data, alpha, ess, policy);
     }
 
     /**

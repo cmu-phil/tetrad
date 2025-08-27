@@ -17,8 +17,6 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
-import static java.lang.Math.abs;
-import static org.apache.commons.math3.util.FastMath.atanh;
 
 /**
  * The TscScored class provides methods and mechanisms to perform rank-based cluster search operations under statistical
@@ -82,6 +80,7 @@ public class Tsc {
         for (int i = 0; i < variables.size(); i++) this.variables.add(i);
         this.S = new CorrelationMatrix(cov).getMatrix().getSimpleMatrix();
         this.sampleSize = cov.getSampleSize();
+        setExpectedSampleSize(-1);
     }
 
     /**
@@ -166,8 +165,8 @@ public class Tsc {
 
                 // Clamp and stable atanh
                 double rc = Math.max(-0.999999, Math.min(0.999999, r));
-                double q  = 0.5 * Math.log1p(2.0 * rc / (1.0 - rc)); // = atanh(rc)
-                double z  = scale * q;
+                double q = 0.5 * Math.log1p(2.0 * rc / (1.0 - rc)); // = atanh(rc)
+                double z = scale * q;
 
                 int dep = (Math.abs(z) > cutoff) ? 1 : 0;
                 A[i][j] = dep;
@@ -176,6 +175,7 @@ public class Tsc {
         }
         return A;
     }
+
     /**
      * Sets the mode for the TscScored instance. The mode determines the operational behavior of the TscScored class,
      * selecting between Testing or Scoring modes.
@@ -214,7 +214,7 @@ public class Tsc {
     }
 
     // ---- test-based enumerator (kept for reference) ----------------------------
-    private Set<Set<Integer>> findClustersAtRankTesting(List<Integer> vars, int size, int rank) {
+    public Set<Set<Integer>> findClustersAtRankTesting(List<Integer> vars, int size, int rank) {
         final int n = vars.size();
         final int k = size;
 
@@ -495,7 +495,8 @@ public class Tsc {
 //                for (int j = i + 1; j < list.size(); j++) {
 //                    double dep = dependency[i][j];
 //
-////                    System.out.printf("r = %.3f |Z| = %.3f%n", r, Math.abs(fisherZ));
+
+    /// /                    System.out.printf("r = %.3f |Z| = %.3f%n", r, Math.abs(fisherZ));
 //                    if (dep == 1.0) count++;
 //                    total++;
 //                }
@@ -505,7 +506,6 @@ public class Tsc {
 //                               + (total > 0 ? (double) count / total : Double.NaN));
 //        }
 //    }
-
     private List<Integer> allVariables() {
         List<Integer> _variables = new ArrayList<>();
         for (int i = 0; i < this.variables.size(); i++) _variables.add(i);

@@ -11,11 +11,9 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
-import static java.lang.Math.abs;
-
 
 /**
- * Find General Factor Clusters (FGFC). This generalized FOFC and FTFC to first find clusters using pure 2-tads (pure
+ * Generalized Find Factor Clusters (GFFC). This generalized FOFC and FTFC to first find clusters using pure 2-tads (pure
  * tetrads) and then clusters using pure 3-tads (pure sextads) out of the remaining variables. We do not use an n-tad
  * test here since we need to check rank, so we will check rank directly. (This is equivqalent to using the CCA n-tad
  * test.)
@@ -31,7 +29,7 @@ import static java.lang.Math.abs;
  * @version $Id: $Id
  * @see Ftfc
  */
-public class Fgfc {
+public class Gffc {
     /**
      * The correlation matrix.
      */
@@ -48,6 +46,8 @@ public class Fgfc {
      * Sample size.
      */
     private final int n;
+    private final Map<List<Integer>, Boolean> vanishCache = new HashMap<>();
+    private final Tsc tsc;
     /**
      * Whether verbose output is desired.
      */
@@ -60,7 +60,6 @@ public class Fgfc {
      * A cache of impure tetrads.
      */
     private Set<Set<Integer>> impureTets;
-    private final Map<List<Integer>, Boolean> vanishCache = new HashMap<>();
 
     /**
      * Conctructor.
@@ -68,11 +67,13 @@ public class Fgfc {
      * @param dataSet The continuous dataset searched over.
      * @param alpha   The alpha significance cutoff.
      */
-    public Fgfc(DataSet dataSet, double alpha) {
+    public Gffc(DataSet dataSet, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
-        this.S = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
+        CorrelationMatrix correlationMatrix = new CorrelationMatrix(dataSet);
+        this.S = correlationMatrix.getMatrix().getSimpleMatrix();
         this.n = dataSet.getNumRows();
+        this.tsc = new Tsc(dataSet.getVariables(), correlationMatrix);
     }
 
     // Canonical, immutable key for clusters to avoid order/mutation hazards
@@ -125,11 +126,17 @@ public class Fgfc {
      */
     private void estimateClustersSag(int rank, Map<List<Integer>, Integer> clustersToRanks) {
         List<Integer> variables = allVariables();
+        variables.removeAll(union(clustersToRanks.keySet()));
+        int size = rank + 1;
+
+        Set<Set<Integer>> tscClusters = tsc.findClustersAtRankTesting(variables, size, rank);
+        System.out.println("TSC Clusters: " + tscClusters);
+
         if (new HashSet<>(variables).size() != variables.size()) {
             throw new IllegalArgumentException("Variables must be unique.");
         }
 
-        findPureClusters(rank, clustersToRanks);
+        findPureClustersTsc(rank, tscClusters, clustersToRanks);
         findMixedClusters(rank, clustersToRanks);
 
         TetradLogger.getInstance().log("clusters rank " + rank + " = "
@@ -140,47 +147,106 @@ public class Fgfc {
     /**
      * Finds clusters of size clusterSize or higher for the tetrad-first algorithm.
      */
-    private void findPureClusters(int rank, Map<List<Integer>, Integer> clustersToRanks) {
-        List<Integer> variables = allVariables();
+//    private void findPureClusters(int rank, Map<List<Integer>, Integer> clustersToRanks) {
+//        List<Integer> variables = allVariables();
+//
+//        int clusterSize = 2 * (rank + 1);
+//
+//        List<Integer> unclustered = new ArrayList<>(variables);
+//        unclustered.removeAll(union(clustersToRanks.keySet()));
+//
+//        List<Integer> _variables = new ArrayList<>(unclustered);
+//
+//        if (unclustered.size() < clusterSize) return;
+//
+//        ChoiceGenerator gen = new ChoiceGenerator(_variables.size(), clusterSize);
+//        int[] choice;
+//
+//        while ((choice = gen.next()) != null) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                break;
+//            }
+//
+//            List<Integer> cluster = new ArrayList<>();
+//
+//            for (int c : choice) {
+//                cluster.add(_variables.get(c));
+//            }
+//
+//            if (!new HashSet<>(unclustered).containsAll(cluster)) {
+//                continue;
+//            }
+//
+//            // Note that purity needs to be assessed with respect to all the variables to
+//            // remove all latent-measure impurities between pairs of latents.
+//            if (pure(cluster) == Purity.PURE) {
+//                growCluster(cluster, rank, clustersToRanks);
+//
+//                if (this.verbose) {
+//                    log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
+//                }
+//
+//                clustersToRanks.put(canonKey(cluster), rank);
+//                unclustered.removeAll(cluster);
+//            }
+//        }
+//    }
 
-        int clusterSize = 2 * (rank + 1);
+    private void findPureClustersTsc(int rank, Set<Set<Integer>> tscClusters,
+                                     Map<List<Integer>, Integer> clustersToRanks) {
+        final int clusterSize = 2 * (rank + 1);
 
-        List<Integer> unclustered = new ArrayList<>(variables);
+        // Make sure TSC uses same alpha/n as GFFC
+        tsc.setAlpha(this.alpha);
+        tsc.setExpectedSampleSize(this.n);
+
+        // Unclustered relative to already accepted clusters (any rank)
+        List<Integer> unclustered = allVariables();
         unclustered.removeAll(union(clustersToRanks.keySet()));
-
-        List<Integer> _variables = new ArrayList<>(unclustered);
-
         if (unclustered.size() < clusterSize) return;
 
-        ChoiceGenerator gen = new ChoiceGenerator(_variables.size(), clusterSize);
-        int[] choice;
+        // Prepare: index TSC clusters into a list for i<j pairing
+        List<Set<Integer>> triples = new ArrayList<>(tscClusters);
 
-        while ((choice = gen.next()) != null) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
+        // To avoid re-testing the same union from different pairs
+        Set<List<Integer>> testedUnions = new HashSet<>();
 
-            List<Integer> cluster = new ArrayList<>();
+        for (int i = 0; i < triples.size(); i++) {
+            final Set<Integer> A = triples.get(i);
+            for (int j = i + 1; j < triples.size(); j++) {
+                final Set<Integer> B = triples.get(j);
 
-            for (int c : choice) {
-                cluster.add(_variables.get(c));
-            }
+                // 1) triples must be disjoint
+                if (!Collections.disjoint(A, B)) continue;
 
-            if (!new HashSet<>(unclustered).containsAll(cluster)) {
-                continue;
-            }
+                // 2) union as a SET (uniqueness), then to list
+                Set<Integer> Uset = new HashSet<>(A);
+                Uset.addAll(B);
+                if (Uset.size() != clusterSize) continue; // must be exact size (e.g., 6 for rank 2)
 
-            // Note that purity needs to be assessed with respect to all the variables to
-            // remove all latent-measure impurities between pairs of latents.
-            if (pure(cluster) == Purity.PURE) {
-                growCluster(cluster, rank, clustersToRanks);
+                List<Integer> U = new ArrayList<>(Uset);
+                Collections.sort(U); // canonical order for caching
 
-                if (this.verbose) {
-                    log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
+                // 3) skip if we already tried this union
+                List<Integer> key = canonKey(U);
+                if (!testedUnions.add(key)) continue;
+
+                // 4) ensure all entries are still unclustered
+                if (!new HashSet<>(unclustered).containsAll(U)) continue;
+
+                // 5) purity w.r.t. ALL variables (your pure() already does this + substitution)
+                if (pure(U) == Purity.PURE) {
+                    // 6) grow from the sextet
+                    growCluster(U, rank, clustersToRanks);
+
+                    if (this.verbose) {
+                        log("Cluster found: " + ClusterSignificance
+                                .variablesForIndices(U, this.variables));
+                    }
+
+                    clustersToRanks.put(key, rank);
+                    unclustered.removeAll(U);
                 }
-
-                clustersToRanks.put(canonKey(cluster), rank);
-                unclustered.removeAll(cluster);
             }
         }
     }
@@ -336,118 +402,12 @@ public class Fgfc {
         }
     }
 
-
-
-//    private void findMixedClusters(int rank, Map<List<Integer>, Integer> clustersToRanks) {
-//        final int tadSize = 2 * (rank + 1);
-//
-//        // Build the pool of already-clustered variables of THIS rank only.
-//        Set<Integer> unionClustered = new HashSet<>();
-//        for (Map.Entry<List<Integer>, Integer> e : clustersToRanks.entrySet()) {
-//            if (e.getValue() == rank) {
-//                unionClustered.addAll(e.getKey());
-//            }
-//        }
-//        if (unionClustered.isEmpty()) return;
-//
-//        // Unclustered = all minus anything already in any cluster (any rank)
-//        Set<Integer> allClusteredAnyRank = union(clustersToRanks.keySet());
-//        Set<Integer> unclustered = new HashSet<>(allVariables());
-//        unclustered.removeAll(allClusteredAnyRank);
-//
-//        // Draw (2r+1)-tuples from unclustered
-//        List<Integer> vars = new ArrayList<>(unclustered);
-//        ChoiceGenerator gen = new ChoiceGenerator(vars.size(), tadSize - 1);
-//        int[] choice;
-//
-//        CHOICE:
-//        while ((choice = gen.next()) != null) {
-//            if (Thread.currentThread().isInterrupted()) break;
-//
-//            for (int c : choice) {
-//                if (!unclustered.contains(vars.get(c))) continue CHOICE;
-//            }
-//
-//            // Materialize candidate (2r+1)-cluster
-//            List<Integer> cluster = new ArrayList<>(tadSize - 1);
-//            for (int c : choice) cluster.add(vars.get(c));
-//
-//            // ∃ at least one borrowed o (from same-rank clustered vars) s.t. cluster ∪ {o} vanishes
-//            boolean hasWitness = false;
-//            for (int o : unionClustered) {
-//                if (Thread.currentThread().isInterrupted()) break;
-//                if (cluster.contains(o)) continue;  // defensive, though they’re disjoint
-//
-//                List<Integer> cand = new ArrayList<>(cluster.size() + 1);
-//                cand.addAll(cluster);
-//                cand.add(o);
-//
-//                if (vanishes(cand)) {
-//                    hasWitness = true;
-//                    break;
-//                }
-//            }
-//            if (!hasWitness) continue CHOICE;
-//
-//            // Accept the (2r+1)-cluster; the grow step can enforce purity/expansion later
-//            clustersToRanks.put(canonKey(cluster), rank);
-//            cluster.forEach(unclustered::remove);
-//
-//            if (this.verbose) {
-//                log((tadSize - 1) + "-cluster found: " +
-//                    ClusterSignificance.variablesForIndices(cluster, this.variables));
-//            }
-//        }
-//    }
-
     /**
      * Determines if a given tad of variables "vanishes".
      *
      * @param tad The list of indices representing variables in the tad.
      * @return True if the tad vanishes, false otherwise.
      */
-//    private boolean vanishes(List<Integer> tad) {
-//        int leftSize = tad.size() / 2;
-//        ChoiceGenerator gen = new ChoiceGenerator(tad.size(), leftSize);
-//        int[] choice;
-//
-//        while ((choice = gen.next()) != null) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                break;
-//            }
-//
-//            int[] x = new int[leftSize];
-//
-//            for (int i = 0; i < leftSize; i++) {
-//                x[i] = tad.get(choice[i]);
-//            }
-//
-//            int[] y = new int[tad.size() - leftSize];
-//            int yIndex = 0;
-//            for (int value : tad) {
-//                boolean found = false;
-//
-//                for (int xVal : x) {
-//                    if (xVal == value) {
-//                        found = true;
-//                        break;
-//                    }
-//                }
-//
-//                if (!found) {
-//                    y[yIndex++] = value;
-//                }
-//            }
-//
-//            int r = Math.min(x.length, y.length) - 1;
-////            int rank = RankTests.estimateWilksRank(S, x, y, n, alpha);
-//            int rank = RankTests.estimateWilksRankFast(S, x, y, n, alpha);
-//            if (rank != r) return false;
-//        }
-//
-//        return true;
-//    }
-
     private boolean vanishes(List<Integer> tad) {
         // canonical key
         List<Integer> key = canonKey(tad);
@@ -468,7 +428,11 @@ public class Fgfc {
             int yIndex = 0;
             for (int v : tad) {
                 boolean inX = false;
-                for (int xv : x) if (xv == v) { inX = true; break; }
+                for (int xv : x)
+                    if (xv == v) {
+                        inX = true;
+                        break;
+                    }
                 if (!inX) y[yIndex++] = v;
             }
 

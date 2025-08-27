@@ -371,8 +371,8 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
                 }
                 yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA), ess, policy);
             }
-            case "FGFC" -> {
-                yield BlockDiscoverers.fgfc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy);
+            case "GFFC" -> {
+                yield BlockDiscoverers.gffc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy);
             }
             default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
         };

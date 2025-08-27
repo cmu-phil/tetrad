@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.search.Fgfc;
+import edu.cmu.tetrad.search.Gffc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.Map;
  * statistical test with a specified confidence level and equivalent sample size. The discovered clusters can be further
  * refined based on policy configurations for handling overlapping or conflicting blocks.
  */
-public class FgfcBlockDiscoverer implements BlockDiscoverer {
+public class GffcBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
     private final double alpha;
     private final int ess;
@@ -32,7 +32,7 @@ public class FgfcBlockDiscoverer implements BlockDiscoverer {
      * @param ess     the equivalent sample size parameter used in Bayesian methods within the FOFC algorithm.
      * @param policy  the policy to handle scenarios involving overlapping or conflicting blocks.
      */
-    public FgfcBlockDiscoverer(DataSet dataSet, double alpha, int ess,
+    public GffcBlockDiscoverer(DataSet dataSet, double alpha, int ess,
                                SingleClusterPolicy policy) {
         this.dataSet = dataSet;
         this.alpha = alpha;
@@ -48,9 +48,9 @@ public class FgfcBlockDiscoverer implements BlockDiscoverer {
      */
     @Override
     public BlockSpec discover() {
-        Fgfc fgfc = new Fgfc(dataSet, alpha);
+        Gffc gffc = new Gffc(dataSet, alpha);
 
-        Map<List<Integer>, Integer> clusters = fgfc.findClusters();
+        Map<List<Integer>, Integer> clusters = gffc.findClusters();
         List<List<Integer>> blocks = new ArrayList<>(clusters.keySet());
         List<Integer> ranks = new ArrayList<>();
         for (List<Integer> block : blocks) {
