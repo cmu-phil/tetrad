@@ -350,6 +350,17 @@ public class RankTests {
         return minpq;
     }
 
+    /**
+     * Estimates the rank of a matrix using the Wilks test and a Bartlett χ² approximation.
+     * This method employs an optimization for fast computation.
+     *
+     * @param S Covariance or scatter matrix (SimpleMatrix) of size (p + q) x (p + q).
+     * @param xIdx Indices for the x variables, representing the first group of variables.
+     * @param yIdx Indices for the y variables, representing the second group of variables.
+     * @param n Sample size used for the computation and statistical testing.
+     * @param alpha Significance level for hypothesis testing (e.g., 0.05 for 5%).
+     * @return Estimated rank of the matrix, computed based on the Wilks test criteria.
+     */
     public static int estimateWilksRankFast(SimpleMatrix S, int[] xIdx, int[] yIdx, int n, double alpha) {
         final int p = xIdx.length, q = yIdx.length;
         if (p == 0 || q == 0) return 0;

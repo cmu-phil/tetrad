@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.search.blocks;
 
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 
@@ -9,20 +9,17 @@ import java.util.*;
 
 /**
  * Deterministic, collision-safe latent naming for block-based models.
- *
- * Features:
- * - Content-based names using overlaps with provided true clusters
- * - Stable tie-breaking (count ↓, Jaccard ↓, name ↑)
- * - Optional collapsing of legacy single-capital suffixes (e.g., L12C → L12)
- * - Global uniqueness across latents and observed names
- * - Reserved literals (default: {"Noise"}) are never altered or suffixed
- * - Two modes:
- *   • LEARNED_SINGLE: one latent per block (preserves ranks if present)
- *   • SIMULATION_EXPANDED: expands rank-r block into r rank-1 latents with lettered suffixes
+ * <p>
+ * Features: - Content-based names using overlaps with provided true clusters - Stable tie-breaking (count ↓, Jaccard ↓,
+ * name ↑) - Optional collapsing of legacy single-capital suffixes (e.g., L12C → L12) - Global uniqueness across latents
+ * and observed names - Reserved literals (default: {"Noise"}) are never altered or suffixed - Two modes: •
+ * LEARNED_SINGLE: one latent per block (preserves ranks if present) • SIMULATION_EXPANDED: expands rank-r block into r
+ * rank-1 latents with lettered suffixes
  */
 public final class LatentNameAssigner {
 
-    private LatentNameAssigner() {}
+    private LatentNameAssigner() {
+    }
 
     // ----- Public API -----
 
@@ -101,9 +98,15 @@ public final class LatentNameAssigner {
             final int blockSize = blockCanon.size();
 
             class Olap {
-                final String key, sanitized; final int count; final double jaccard;
+                final String key, sanitized;
+                final int count;
+                final double jaccard;
+
                 Olap(String key, String sanitized, int count, double jaccard) {
-                    this.key = key; this.sanitized = sanitized; this.count = count; this.jaccard = jaccard;
+                    this.key = key;
+                    this.sanitized = sanitized;
+                    this.count = count;
+                    this.jaccard = jaccard;
                 }
             }
 
@@ -112,7 +115,8 @@ public final class LatentNameAssigner {
 
             for (String key : trueKeysSorted) {
                 final Set<String> tset = trueSetsCanon.get(key);
-                int cnt = 0; for (String v : blockCanon) if (tset.contains(v)) cnt++;
+                int cnt = 0;
+                for (String v : blockCanon) if (tset.contains(v)) cnt++;
                 if (cnt > 0) {
                     final int union = blockSize + tset.size() - cnt;
                     final double jac = union > 0 ? (double) cnt / (double) union : 0.0;
@@ -187,7 +191,7 @@ public final class LatentNameAssigner {
                         ? baseDisplayRaw
                         : maybeCollapse(cleanDecorations(baseDisplayRaw), config);
 
-                final boolean meaningful  = hasMeaningfulMatch.get(bi);
+                final boolean meaningful = hasMeaningfulMatch.get(bi);
 
                 String chosen;
                 if (origReserved) {
@@ -276,80 +280,6 @@ public final class LatentNameAssigner {
 
     // ----- Config -----
 
-    public static final class Config {
-        public final int maxOverlapParts;         // how many overlapping true clusters to show
-        public final boolean showOverflowCount;   // add "+Nmore"
-        public final String overlapJoiner;        // e.g., "-"
-        public final String overflowPrefix;       // e.g., "+"
-        public final String defaultMixedName;     // name for blocks with no match
-        public final boolean collapseTrailingCap; // collapse ...<digit><Capital> → ...<digit>
-        public final String numericSep;           // separator for numeric disambiguation, e.g. "-"
-        public final Set<String> reservedLiteralNames; // e.g., {"Noise"}
-        public final boolean keepReservedLiteral;      // never modify these
-
-        private Config(int maxOverlapParts, boolean showOverflowCount, String overlapJoiner,
-                       String overflowPrefix, String defaultMixedName, boolean collapseTrailingCap,
-                       String numericSep, Set<String> reservedLiteralNames, boolean keepReservedLiteral) {
-            this.maxOverlapParts = maxOverlapParts;
-            this.showOverflowCount = showOverflowCount;
-            this.overlapJoiner = overlapJoiner;
-            this.overflowPrefix = overflowPrefix;
-            this.defaultMixedName = defaultMixedName;
-            this.collapseTrailingCap = collapseTrailingCap;
-            this.numericSep = numericSep;
-            this.reservedLiteralNames = reservedLiteralNames == null ? Set.of() : Set.copyOf(reservedLiteralNames);
-            this.keepReservedLiteral = keepReservedLiteral;
-        }
-
-        public static Config defaults() {
-            return new Config(
-                    8, true, "-", "+", "Mixed", true, "-",
-                    Set.of("Noise"),  // reserve “Noise” by default
-                    true              // keep reserved names literal
-            );
-        }
-
-        public static Builder builder() { return new Builder(defaults()); }
-
-        public static final class Builder {
-            private int maxOverlapParts;
-            private boolean showOverflowCount;
-            private String overlapJoiner;
-            private String overflowPrefix;
-            private String defaultMixedName;
-            private boolean collapseTrailingCap;
-            private String numericSep;
-            private Set<String> reservedLiteralNames;
-            private boolean keepReservedLiteral;
-
-            private Builder(Config base) {
-                this.maxOverlapParts = base.maxOverlapParts;
-                this.showOverflowCount = base.showOverflowCount;
-                this.overlapJoiner = base.overlapJoiner;
-                this.overflowPrefix = base.overflowPrefix;
-                this.defaultMixedName = base.defaultMixedName;
-                this.collapseTrailingCap = base.collapseTrailingCap;
-                this.numericSep = base.numericSep;
-                this.reservedLiteralNames = new HashSet<>(base.reservedLiteralNames);
-                this.keepReservedLiteral = base.keepReservedLiteral;
-            }
-            public Builder maxOverlapParts(int v){ this.maxOverlapParts=v; return this; }
-            public Builder showOverflowCount(boolean v){ this.showOverflowCount=v; return this; }
-            public Builder overlapJoiner(String v){ this.overlapJoiner=v; return this; }
-            public Builder overflowPrefix(String v){ this.overflowPrefix=v; return this; }
-            public Builder defaultMixedName(String v){ this.defaultMixedName=v; return this; }
-            public Builder collapseTrailingCap(boolean v){ this.collapseTrailingCap=v; return this; }
-            public Builder numericSep(String v){ this.numericSep=v; return this; }
-            public Builder reservedLiteralNames(Set<String> v){ this.reservedLiteralNames = new HashSet<>(v); return this; }
-            public Builder keepReservedLiteral(boolean v){ this.keepReservedLiteral = v; return this; }
-            public Config build(){ return new Config(maxOverlapParts, showOverflowCount, overlapJoiner,
-                    overflowPrefix, defaultMixedName, collapseTrailingCap, numericSep,
-                    reservedLiteralNames, keepReservedLiteral); }
-        }
-    }
-
-    // ----- Helpers -----
-
     private static List<Integer> normalizeRanks(List<Integer> ranksIn, int needed) {
         if (ranksIn == null) return null;
         final List<Integer> out = new ArrayList<>(needed);
@@ -360,6 +290,8 @@ public final class LatentNameAssigner {
         }
         return out;
     }
+
+    // ----- Helpers -----
 
     private static boolean isReserved(String name, Config cfg) {
         return cfg.keepReservedLiteral && name != null && cfg.reservedLiteralNames.contains(name);
@@ -392,7 +324,7 @@ public final class LatentNameAssigner {
         if (isReserved(preferred, cfg)) return preferred;
         if (preferred != null && !preferred.isEmpty() && !used.contains(preferred)) return preferred;
         if (isReserved(fallback, cfg)) return fallback;
-        if (fallback  != null && !fallback.isEmpty()  && !used.contains(fallback))  return fallback;
+        if (fallback != null && !fallback.isEmpty() && !used.contains(fallback)) return fallback;
         return ensureUnique((preferred == null || preferred.isEmpty()) ? "L" : preferred, used, cfg);
     }
 
@@ -405,8 +337,249 @@ public final class LatentNameAssigner {
         return base + cfg.numericSep + (idx + 1);
     }
 
-    private static String canon(String s) { return s == null ? "" : s.trim().toLowerCase(); }
+    private static String canon(String s) {
+        return s == null ? "" : s.trim().toLowerCase();
+    }
 
-    private static String sanitizeName(String s) { return s == null ? "L" : s.replaceAll("[^A-Za-z0-9_\\-]", "_"); }
+    private static String sanitizeName(String s) {
+        return s == null ? "L" : s.replaceAll("[^A-Za-z0-9_\\-]", "_");
+    }
+
+    public static final class Config {
+        /**
+         * Specifies the maximum number of overlapping true clusters to display.
+         * <p>
+         * This value determines how many concurrent overlaps in data clusters will be visually represented or processed
+         * in certain contexts.
+         */
+        public final int maxOverlapParts;         // how many overlapping true clusters to show
+        /**
+         * Indicates whether to display the count of overflow items in a concatenated string. If set to {@code true}, an
+         * additional count (e.g., "+N more") is appended to denote the number of overflow elements that cannot be
+         * displayed within the specified limit.
+         */
+        public final boolean showOverflowCount;   // add "+Nmore"
+        /**
+         * Specifies the string used to join parts in cases of overlap within a configuration. It defines a delimiter
+         * that is applied when multiple components need to be combined and overlap resolution is required.
+         */
+        public final String overlapJoiner;        // e.g., "-"
+        /**
+         * Represents the prefix string to be applied when the configured overlap or part limit is exceeded. Typically
+         * used to indicate an overflow condition in generated or processed output.
+         * <p>
+         * This value allows customization of how overflows are marked, providing flexibility in format representation.
+         */
+        public final String overflowPrefix;       // e.g., "+"
+        /**
+         * Represents the default name used for blocks when no match is identified. This variable is part of the
+         * configuration settings for managing naming behavior in scenarios where specific identifiers are unavailable
+         * or not applicable.
+         */
+        public final String defaultMixedName;     // name for blocks with no match
+        /**
+         * A configuration flag that determines whether trailing capital letters following a digit in mixed alphanumeric
+         * strings should be collapsed during processing.
+         */
+        public final boolean collapseTrailingCap; // collapse ...<digit><Capital> → ...<digit>
+        /**
+         * Represents the separator used for numeric disambiguation in configurations. It is commonly utilized to denote
+         * a boundary or separation for numeric values, such as the inclusion of a dash ("-") in certain contexts.
+         */
+        public final String numericSep;           // separator for numeric disambiguation, e.g. "-"
+        /**
+         * A set of reserved literal names that must be preserved as-is during processing. This collection typically
+         * includes predefined strings or values that should not be altered or replaced. It can be useful in scenarios
+         * where specific keywords or identifiers need to remain intact, ensuring they retain their intended meaning or
+         * function.
+         */
+        public final Set<String> reservedLiteralNames; // e.g., {"Noise"}
+        /**
+         * Indicates whether reserved literals should be retained in their original form when processing or transforming
+         * text or structures. If set to {@code true}, the reserved literals will not be altered or replaced during
+         * processing. If set to {@code false}, reserved literals may be modified based on the processing logic.
+         */
+        public final boolean keepReservedLiteral;      // never modify these
+
+        private Config(int maxOverlapParts, boolean showOverflowCount, String overlapJoiner,
+                       String overflowPrefix, String defaultMixedName, boolean collapseTrailingCap,
+                       String numericSep, Set<String> reservedLiteralNames, boolean keepReservedLiteral) {
+            this.maxOverlapParts = maxOverlapParts;
+            this.showOverflowCount = showOverflowCount;
+            this.overlapJoiner = overlapJoiner;
+            this.overflowPrefix = overflowPrefix;
+            this.defaultMixedName = defaultMixedName;
+            this.collapseTrailingCap = collapseTrailingCap;
+            this.numericSep = numericSep;
+            this.reservedLiteralNames = reservedLiteralNames == null ? Set.of() : Set.copyOf(reservedLiteralNames);
+            this.keepReservedLiteral = keepReservedLiteral;
+        }
+
+        /**
+         * Creates and returns a new instance of the {@code Config} class initialized with default configuration
+         * values.
+         *
+         * @return a {@code Config} instance preconfigured with default settings, including default values for
+         * maxOverlapParts, showOverflowCount, overlapJoiner, overflowPrefix, defaultMixedName, collapseTrailingCap,
+         * numericSep, reservedLiteralNames, and keepReservedLiteral properties.
+         */
+        public static Config defaults() {
+            return new Config(
+                    8, true, "-", "+", "Mixed", true, "-",
+                    Set.of("Noise"),  // reserve “Noise” by default
+                    true              // keep reserved names literal
+            );
+        }
+
+        /**
+         * Creates and returns a new instance of the Builder class initialized with default configuration values.
+         *
+         * @return a new Builder instance preconfigured with the default configuration properties of the Config class.
+         */
+        public static Builder builder() {
+            return new Builder(defaults());
+        }
+
+        /**
+         * Builder class for constructing instances of the Config class with customizable properties. Provides methods
+         * to set specific properties and a build method to create a Config instance.
+         */
+        public static final class Builder {
+            private int maxOverlapParts;
+            private boolean showOverflowCount;
+            private String overlapJoiner;
+            private String overflowPrefix;
+            private String defaultMixedName;
+            private boolean collapseTrailingCap;
+            private String numericSep;
+            private Set<String> reservedLiteralNames;
+            private boolean keepReservedLiteral;
+
+            private Builder(Config base) {
+                this.maxOverlapParts = base.maxOverlapParts;
+                this.showOverflowCount = base.showOverflowCount;
+                this.overlapJoiner = base.overlapJoiner;
+                this.overflowPrefix = base.overflowPrefix;
+                this.defaultMixedName = base.defaultMixedName;
+                this.collapseTrailingCap = base.collapseTrailingCap;
+                this.numericSep = base.numericSep;
+                this.reservedLiteralNames = new HashSet<>(base.reservedLiteralNames);
+                this.keepReservedLiteral = base.keepReservedLiteral;
+            }
+
+            /**
+             * Sets the maximum number of overlapping parts allowed.
+             *
+             * @param v the maximum number of parts that can overlap
+             * @return the Builder instance with the updated configuration
+             */
+            public Builder maxOverlapParts(int v) {
+                this.maxOverlapParts = v;
+                return this;
+            }
+
+            /**
+             * Sets whether the overflow count should be displayed in the resulting configuration.
+             *
+             * @param v a boolean value indicating whether to show the overflow count (true to enable, false to
+             *          disable)
+             * @return the Builder instance with the updated configuration
+             */
+            public Builder showOverflowCount(boolean v) {
+                this.showOverflowCount = v;
+                return this;
+            }
+
+            /**
+             * Sets the string that will be used as the joiner for overlapping parts.
+             *
+             * @param v the string value to be used for joining overlapping parts
+             * @return the Builder instance with the updated configuration
+             */
+            public Builder overlapJoiner(String v) {
+                this.overlapJoiner = v;
+                return this;
+            }
+
+            /**
+             * Sets the string to be used as the prefix for overflow information in the resulting configuration.
+             *
+             * @param v the string value to be used as the overflow prefix
+             * @return the Builder instance with the updated configuration
+             */
+            public Builder overflowPrefix(String v) {
+                this.overflowPrefix = v;
+                return this;
+            }
+
+            /**
+             * Sets the default mixed name for this configuration.
+             *
+             * @param v the default mixed name to be set
+             * @return the Builder instance with the updated configuration
+             */
+            public Builder defaultMixedName(String v) {
+                this.defaultMixedName = v;
+                return this;
+            }
+
+            /**
+             * Sets whether trailing capital letters should be collapsed in the resulting configuration.
+             *
+             * @param v a boolean value indicating whether to collapse trailing capital letters (true to enable, false
+             *          to disable)
+             * @return the Builder instance with the updated configuration
+             */
+            public Builder collapseTrailingCap(boolean v) {
+                this.collapseTrailingCap = v;
+                return this;
+            }
+
+            /**
+             * Sets the string to be used as the separator for numeric parts in the resulting configuration.
+             *
+             * @param v the string value to be used as the numeric separator
+             * @return the Builder instance with the updated configuration
+             */
+            public Builder numericSep(String v) {
+                this.numericSep = v;
+                return this;
+            }
+
+            /**
+             * Sets the reserved literal names for the configuration.
+             *
+             * @param v a set of literal names to be considered reserved
+             * @return the Builder instance with the updated configuration
+             */
+            public Builder reservedLiteralNames(Set<String> v) {
+                this.reservedLiteralNames = new HashSet<>(v);
+                return this;
+            }
+
+            /**
+             * Sets whether reserved literal names should be kept in the resulting configuration.
+             *
+             * @param v a boolean value indicating whether to keep reserved literal names (true to enable, false to
+             *          disable)
+             * @return the Builder instance with the updated configuration
+             */
+            public Builder keepReservedLiteral(boolean v) {
+                this.keepReservedLiteral = v;
+                return this;
+            }
+
+            /**
+             * Builds the configuration with the specified settings.
+             *
+             * @return the Config instance with the updated configuration
+             */
+            public Config build() {
+                return new Config(maxOverlapParts, showOverflowCount, overlapJoiner,
+                        overflowPrefix, defaultMixedName, collapseTrailingCap, numericSep,
+                        reservedLiteralNames, keepReservedLiteral);
+            }
+        }
+    }
 
 }

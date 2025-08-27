@@ -139,8 +139,25 @@ public class MimbuildBollen {
         return latentsCov;
     }
 
+    /**
+     * Retrieves the minimum value associated with the MimbuildBollen class.
+     *
+     * @return the minimum value as a double.
+     */
     public double getMinimum() { return minimum; }
+
+    /**
+     * Retrieves the p-value associated with the MimbuildBollen class.
+     *
+     * @return the p-value as a double
+     */
     public double getPValue() { return pValue; }
+
+    /**
+     * Sets the penalty discount value associated with the MimbuildBollen class.
+     *
+     * @param penaltyDiscount the penalty discount value to set, represented as a double
+     */
     public void setPenaltyDiscount(double penaltyDiscount) { this.penaltyDiscount = penaltyDiscount; }
 
     // -----------------------------------------------------------------------------------------

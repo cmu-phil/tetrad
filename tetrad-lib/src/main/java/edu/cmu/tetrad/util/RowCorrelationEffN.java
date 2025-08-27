@@ -3,16 +3,14 @@ package edu.cmu.tetrad.util;
 import edu.cmu.tetrad.data.DataTransforms;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.Set;
-
 public final class RowCorrelationEffN {
 
     /**
      * Estimates average pairwise row correlation (by sampling pairs) and returns Neff = N / (1 + (N-1)*rhoHat). Columns
      * are standardized first.
      * <p>
-     * If the sampled average correlation is < 0, we clamp it to 0 so Neff = N. If it’s >= 1, we clamp slightly below 1
-     * to avoid division-by-zero.
+     * If the sampled average correlation is &lt; 0, we clamp it to 0 so Neff = N. If it’s &ge; 1, we clamp slightly
+     * below 1 to avoid division-by-zero.
      *
      * @param X                data matrix N x P (rows = samples, cols = features)
      * @param maxPairsToSample number of random row pairs to sample (cap at C(N,2))
@@ -78,6 +76,12 @@ public final class RowCorrelationEffN {
         return num / ((P - 1.0) * si * sj);
     }
 
+    /**
+     * Represents the result of an average pairwise row correlation estimation, containing the adjusted average row
+     * correlation value, the effective sample size, and the number of row pairs used in the computation.
+     * <p>
+     * This class is immutable and its fields are final to ensure thread safety.
+     */
     public static final class Result {
         public final double avgRowCorrelation; // rho_hat after clamping to [0,1)
         public final double effN;              // N / (1 + (N-1)*rho_hat)
@@ -89,6 +93,13 @@ public final class RowCorrelationEffN {
             this.pairsUsed = pairsUsed;
         }
 
+        /**
+         * Returns a string representation of the result, including the adjusted average row correlation value
+         * (rho_hat), the effective sample size (Neff), and the number of row pairs used in the computation.
+         *
+         * @return a formatted string containing the rho_hat value (up to six decimal places), the Neff value (up to two
+         * decimal places), and the number of pairs used.
+         */
         @Override
         public String toString() {
             return String.format("rho_hat=%.6f, Neff=%.2f, pairs=%d", avgRowCorrelation, effN, pairsUsed);

@@ -3,20 +3,23 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
- * Mimbuild over the first principal components of (pure) clusters, driven by a BlockSpec.
- * Each cluster's latent is PC1 of its standardized indicators; latent scores are re-scaled
- * to unit variance. A latent–latent covariance is built using (n-1) and a tiny ridge,
- * then BOSS (+PermutationSearch) learns a structure over the latents using SEM-BIC.
+ * Mimbuild over the first principal components of (pure) clusters, driven by a BlockSpec. Each cluster's latent is PC1
+ * of its standardized indicators; latent scores are re-scaled to unit variance. A latent–latent covariance is built
+ * using (n-1) and a tiny ridge, then BOSS (+PermutationSearch) learns a structure over the latents using SEM-BIC.
  */
 public class MimbuildPca {
 
@@ -63,7 +66,34 @@ public class MimbuildPca {
         }
     }
 
-    /** Main entry: build PC1 latents per block, learn latent structure with SEM-BIC + BOSS. */
+    private static void standardizeColumnsInPlace(SimpleMatrix X) {
+        int n = X.getNumRows();
+        int p = X.getNumCols();
+        for (int j = 0; j < p; j++) {
+            double mean = 0, m2 = 0;
+            for (int i = 0; i < n; i++) mean += X.get(i, j);
+            mean /= Math.max(1, n);
+            for (int i = 0; i < n; i++) {
+                double d = X.get(i, j) - mean;
+                m2 += d * d;
+            }
+            double sd = Math.sqrt(m2 / Math.max(1, n - 1));
+            if (!Double.isFinite(sd) || sd == 0.0) sd = 1.0;
+            for (int i = 0; i < n; i++) {
+                X.set(i, j, (X.get(i, j) - mean) / sd);
+            }
+        }
+    }
+
+    /**
+     * Executes a search algorithm to identify a structural dependency graph based on block-specific
+     * data and principal components analysis (PCA). This method standardizes the blocks of data, computes
+     * principal components, constructs the covariances over latent variables, and learns the structure
+     * using a Permutation Search combined with Bayesian Information Criterion scoring and BOSS optimization.
+     *
+     * @return A graph representing the structural dependencies learned through the search process.
+     * @throws InterruptedException If the search process is interrupted.
+     */
     public Graph search() throws InterruptedException {
         final DataSet dataSet = blockSpec.dataSet().copy();
         final List<List<Integer>> blocks = blockSpec.blocks();
@@ -145,29 +175,12 @@ public class MimbuildPca {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    /** The estimated covariance over latents (after search). */
-    public ICovarianceMatrix getLatentsCovariance() {
-        return latentsCovariance;
-    }
-
     // ------------------------- helpers -------------------------
 
-    private static void standardizeColumnsInPlace(SimpleMatrix X) {
-        int n = X.getNumRows();
-        int p = X.getNumCols();
-        for (int j = 0; j < p; j++) {
-            double mean = 0, m2 = 0;
-            for (int i = 0; i < n; i++) mean += X.get(i, j);
-            mean /= Math.max(1, n);
-            for (int i = 0; i < n; i++) {
-                double d = X.get(i, j) - mean;
-                m2 += d * d;
-            }
-            double sd = Math.sqrt(m2 / Math.max(1, n - 1));
-            if (!Double.isFinite(sd) || sd == 0.0) sd = 1.0;
-            for (int i = 0; i < n; i++) {
-                X.set(i, j, (X.get(i, j) - mean) / sd);
-            }
-        }
+    /**
+     * The estimated covariance over latents (after search).
+     */
+    public ICovarianceMatrix getLatentsCovariance() {
+        return latentsCovariance;
     }
 }

@@ -930,6 +930,14 @@ public class Tsc {
         return r;
     }
 
+    /**
+     * Constructs a StringBuilder containing a formatted string representation of
+     * the names of nodes corresponding to the provided cluster indices.
+     *
+     * @param cluster a collection of integers representing indices of nodes to include in the cluster
+     * @param nodes a list of Node objects where each integer index in the cluster corresponds to a node
+     * @return a StringBuilder containing the formatted names of the nodes in the specified cluster
+     */
     public static @NotNull StringBuilder toNamesCluster(Collection<Integer> cluster, List<Node> nodes) { /* ... unchanged ... */
         StringBuilder _sb = new StringBuilder();
         _sb.append("[");
@@ -942,6 +950,14 @@ public class Tsc {
         return _sb;
     }
 
+    /**
+     * Converts a set of clusters represented as sets of integers into a string representation
+     * that associates cluster IDs with node names.
+     *
+     * @param clusters a set of clusters, where each cluster is a set of integers representing node IDs
+     * @param nodes a list of Node objects representing the nodes, where the index corresponds to the node ID
+     * @return a string containing the names of the nodes in each cluster, separated by "; " for different clusters
+     */
     public static @NotNull String toNamesClusters(Set<Set<Integer>> clusters, List<Node> nodes) { /* ... unchanged ... */
         StringBuilder sb = new StringBuilder();
         int count0 = 0;
