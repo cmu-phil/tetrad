@@ -342,16 +342,16 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
 
         return switch (alg) {
-            case "TSC Test" -> {
+            case "TSC" -> {
                 yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA), parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy
                 );
             }
-            case "TSC Score" -> {
-                yield BlockDiscoverers.tscScore(dataSet, parameters.getDouble(Params.ALPHA),
-                        parameters.getDouble(Params.EBIC_GAMMA), parameters.getDouble(Params.REGULARIZATION_LAMBDA),
-                        parameters.getDouble(Params.PENALTY_DISCOUNT),
-                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy);
-            }
+//            case "TSC Score" -> {
+//                yield BlockDiscoverers.tscScore(dataSet, parameters.getDouble(Params.ALPHA),
+//                        parameters.getDouble(Params.EBIC_GAMMA), parameters.getDouble(Params.REGULARIZATION_LAMBDA),
+//                        parameters.getDouble(Params.PENALTY_DISCOUNT),
+//                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy);
+//            }
             case "FOFC" -> {
                 if (test == null) {
                     test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess); // sensible default
