@@ -45,7 +45,7 @@ public class BlockClusteringWizard extends JPanel {
     private final JPanel cardPanel = new JPanel(cards);
     private final JPanel pageResult = new JPanel(new BorderLayout());
     // ... UI fields ...
-    private final JComboBox<String> cbAlgorithm = new JComboBox<>(new String[]{"TSC", "GFFC", "FOFC", "FTFC", "BPC"});// Test", "TSC Score"});
+    private final JComboBox<String> cbAlgorithm = new JComboBox<>(new String[]{"TSC", "FOFC", "FTFC", "GFFC", "BPC"});// Test", "TSC Score"});
 
     // Put near your fields
     private final JComboBox<String> cbTetradTest = new JComboBox<>();
