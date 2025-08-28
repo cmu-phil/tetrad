@@ -677,7 +677,7 @@ public class Tsc {
 
             boolean didAugment = false;
 
-            for (int _reducedRank = rank - 1; _reducedRank >= 1; _reducedRank--) {
+            for (int _reducedRank = rank - 1; _reducedRank >= 0; _reducedRank--) {
                 if (Thread.currentThread().isInterrupted()) break;
 
                 for (Set<Integer> C1 : new HashSet<>(newClusters)) {

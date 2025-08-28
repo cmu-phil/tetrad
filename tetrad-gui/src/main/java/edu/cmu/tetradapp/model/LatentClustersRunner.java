@@ -362,7 +362,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
                 if (test == null) {
                     test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 }
-                yield BlockDiscoverers.bpc(dataSet, test, parameters.getDouble(Params.ALPHA), ess, policy);
+                yield BlockDiscoverers.bpc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy);
             }
             case "FTFC" -> {
                 if (test == null || TEST_WIS.equals(testName)) {

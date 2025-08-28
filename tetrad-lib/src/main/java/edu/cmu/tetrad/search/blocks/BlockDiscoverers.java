@@ -29,8 +29,8 @@ public final class BlockDiscoverers {
      * @param policy the single-cluster policy applied to manage how individual clusters or blocks are processed
      * @return a {@code BpcBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer bpc(DataSet data, NtadTest ntad, double alpha, int ess, SingleClusterPolicy policy) {
-        return new BpcBlockDiscoverer(data, ntad, alpha, ess, policy);
+    public static BlockDiscoverer bpc(DataSet data, double alpha, int ess, SingleClusterPolicy policy) {
+        return new BpcBlockDiscoverer(data, alpha, ess, policy);
     }
 
     /**

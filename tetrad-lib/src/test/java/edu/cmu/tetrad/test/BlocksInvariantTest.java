@@ -16,8 +16,8 @@ public class BlocksInvariantTest {
     @Test
     public void testBpcAdapterSpec() {
         DataSet ds = getData();
-        NtadTest ntad = new Cca(ds.getDoubleData().getSimpleMatrix(), false, 01);
-        BlockSpec spec = BlockDiscoverers.bpc(ds, ntad, 0.05, -1, SingleClusterPolicy.EXCLUDE).discover();
+//        NtadTest ntad = new Cca(ds.getDoubleData().getSimpleMatrix(), false, -1);
+        BlockSpec spec = BlockDiscoverers.bpc(ds,0.05, -1, SingleClusterPolicy.EXCLUDE).discover();
         assertSame(ds, spec.dataSet());
         assertEquals(spec.blocks().size(), spec.blockVariables().size());
         BlocksUtil.validateBlocks(spec.blocks(), spec.dataSet());

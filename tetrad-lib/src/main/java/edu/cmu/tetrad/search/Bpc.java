@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.util.RankTests;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
@@ -33,10 +32,6 @@ public class Bpc {
      * Minimum indicators per cluster per the JMLR paper (≥3).
      */
     private static final int MIN_CLUSTER_SIZE = 3;
-    /**
-     * Tetrad test
-     */
-    private final NtadTest ntadTest;
     /**
      * Alpha cutoff for tetrads and dependence
      */
@@ -70,17 +65,16 @@ public class Bpc {
     /**
      * Constructor for the Bpc class.
      *
-     * @param test An instance of NtadTest, which provides variables and methods required for testing tetrad constraints.
      * @param dataSet A DataSet object containing the data to be used for clustering and correlation analysis.
-     * @param alpha The significance level for tetrad tests, used to determine the tolerance for statistical independence.
-     * @param ess The effective sample size (ESS) which can be set to -1 (indicating sample size) or a positive integer.
-     *            The chosen ESS impacts statistical decisions during the analysis.
+     * @param alpha   The significance level for tetrad tests, used to determine the tolerance for statistical
+     *                independence.
+     * @param ess     The effective sample size (ESS) which can be set to -1 (indicating sample size) or a positive
+     *                integer. The chosen ESS impacts statistical decisions during the analysis.
      * @throws IllegalArgumentException if the ess parameter is not -1 or a positive integer.
      */
-    public Bpc(NtadTest test, DataSet dataSet, double alpha, int ess) {
-        this.ntadTest = test;
+    public Bpc(DataSet dataSet, double alpha, int ess) {
         this.alpha = alpha;
-        this.numVars = test.variables().size();
+        this.numVars = dataSet.getVariables().size();
         this.sampleSize = dataSet.getNumRows();
         this.S = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
 
@@ -119,13 +113,13 @@ public class Bpc {
     }
 
     /**
-     * Identifies clusters of variables based on tetrad purity and pairwise dependence.
-     * Constructs initial clusters as locally maximal pure groups and refines them using
-     * global purification, merging, and overlap resolution until convergence.
+     * Identifies clusters of variables based on tetrad purity and pairwise dependence. Constructs initial clusters as
+     * locally maximal pure groups and refines them using global purification, merging, and overlap resolution until
+     * convergence.
      *
-     * @return A list of clusters where each cluster is represented as a list of variable indices.
-     *         Each cluster satisfies purity and pairwise dependence constraints, and all groups
-     *         are disjoint after resolving overlaps. Returns an empty list if no valid clusters exist.
+     * @return A list of clusters where each cluster is represented as a list of variable indices. Each cluster
+     * satisfies purity and pairwise dependence constraints, and all groups are disjoint after resolving overlaps.
+     * Returns an empty list if no valid clusters exist.
      */
     public List<List<Integer>> getClusters() {
         buildPatternLite();
@@ -236,15 +230,8 @@ public class Bpc {
                         if (!(rank1 == 1 && rank2 == 1 && rank3 == 1)) {
                             pureCache.put(key, Boolean.FALSE);
                             return false;
-                        };
-
-
-//                        if (!ntadTest.allGreaterThanAlpha(Collections.singletonList(t1), alpha)
-//                            || !ntadTest.allGreaterThanAlpha(Collections.singletonList(t2), alpha)
-//                            || !ntadTest.allGreaterThanAlpha(Collections.singletonList(t3), alpha)) {
-//                            pureCache.put(key, Boolean.FALSE);
-//                            return false;
-//                        }
+                        }
+                        ;
                     }
                 }
             }
@@ -416,11 +403,11 @@ public class Bpc {
             int v = e.getKey();
             List<Integer> gs = e.getValue();
             if (gs.size() <= 1) {
-                if (!gs.isEmpty()) bestOwner.put(v, gs.get(0));
+                if (!gs.isEmpty()) bestOwner.put(v, gs.getFirst());
                 return;
             }
             double bestScore = Double.NEGATIVE_INFINITY;
-            int bestGi = gs.get(0);
+            int bestGi = gs.getFirst();
             int bestT = -1;
             for (int gi : gs) {
                 double score = avgAbsCorr(v, work.get(gi));
@@ -514,13 +501,8 @@ public class Bpc {
 
                     if ((rank1 == 1 && rank2 == 1 && rank3 == 1)) {
                         count++;
-                    };
-
-//                    if (ntadTest.allGreaterThanAlpha(Collections.singletonList(t1), alpha)
-//                        && ntadTest.allGreaterThanAlpha(Collections.singletonList(t2), alpha)
-//                        && ntadTest.allGreaterThanAlpha(Collections.singletonList(t3), alpha)) {
-//                        count++;
-//                    }
+                    }
+                    ;
                 }
             }
         }

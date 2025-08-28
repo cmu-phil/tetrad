@@ -27,7 +27,6 @@ import java.util.List;
  */
 public class BpcBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
-    private final NtadTest ntadTest;
     private final double alpha;
     private final int ess;
     private final SingleClusterPolicy policy;
@@ -37,14 +36,12 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
      * blocks of indices within a dataset using the BPC (Bayesian Partitioning for Causal Discovery) algorithm.
      *
      * @param dataSet  the dataset on which block discovery is performed
-     * @param ntadTest the statistical test used by the BPC algorithm
      * @param alpha    the significance threshold for the statistical test in BPC
      * @param ess      the equivalent sample size parameter used in the BPC algorithm
      * @param policy   the policy applied to adjust or refine single clusters during block discovery
      */
-    public BpcBlockDiscoverer(DataSet dataSet, NtadTest ntadTest, double alpha, int ess, SingleClusterPolicy policy) {
+    public BpcBlockDiscoverer(DataSet dataSet, double alpha, int ess, SingleClusterPolicy policy) {
         this.dataSet = dataSet;
-        this.ntadTest = ntadTest;
         this.alpha = alpha;
         this.ess = ess;
         this.policy = policy;
@@ -63,7 +60,7 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
      */
     @Override
     public BlockSpec discover() {
-        Bpc bpc = new Bpc(ntadTest, dataSet, alpha, ess);
+        Bpc bpc = new Bpc(dataSet, alpha, ess);
         List<List<Integer>> blocks = bpc.getClusters();
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
 

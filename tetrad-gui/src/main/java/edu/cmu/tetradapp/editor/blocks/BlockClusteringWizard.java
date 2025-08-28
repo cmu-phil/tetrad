@@ -35,9 +35,9 @@ public class BlockClusteringWizard extends JPanel {
     private static final String TEST_CCA = "CCA";
     private static final String TEST_BT = "Bollen-Ting";
     private static final String TEST_WIS = "Wishart";
-    private static final List<String> TESTS_FOFC = List.of(TEST_CCA, TEST_BT, TEST_WIS);
-    private static final List<String> TESTS_BPC = List.of(TEST_CCA, TEST_BT, TEST_WIS);
-    private static final List<String> TESTS_FTFC = List.of(TEST_CCA, TEST_BT);      // no Wishart
+//    private static final List<String> TESTS_FOFC = List.of(TEST_CCA, TEST_BT, TEST_WIS);
+//    private static final List<String> TESTS_BPC = List.of(TEST_CCA, TEST_BT, TEST_WIS);
+//    private static final List<String> TESTS_FTFC = List.of(TEST_CCA, TEST_BT);      // no Wishart
     private static final List<String> TESTS_NONE = List.of();                       // TSC
     // private static final String TEST_ARK = "ARK"; // commented out per instruction
     // ---- UI ----
@@ -92,8 +92,8 @@ public class BlockClusteringWizard extends JPanel {
 
         parameterBox.setBorder(new TitledBorder("Parameters"));
 
-        top.add(new JLabel("Ntad test:"));
-        top.add(cbTetradTest);
+//        top.add(new JLabel("Ntad test:"));
+//        top.add(cbTetradTest);
         top.add(Box.createHorizontalGlue());
 
         Box southSetup = Box.createHorizontalBox();
@@ -270,7 +270,7 @@ public class BlockClusteringWizard extends JPanel {
                 enable = true;
             }
             case "BPC" -> {
-                tests = TESTS_BPC;
+                tests = TESTS_NONE;
                 enable = true;
             }
             case "FTFC" -> {
@@ -391,7 +391,7 @@ public class BlockClusteringWizard extends JPanel {
                 if (test == null) {
                     test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
                 }
-                yield BlockDiscoverers.bpc(dataSet, test, parameters.getDouble(Params.ALPHA),
+                yield BlockDiscoverers.bpc(dataSet, parameters.getDouble(Params.ALPHA),
                         ess, policy);
             }
             case "FTFC" -> {
