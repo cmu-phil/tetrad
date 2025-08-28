@@ -47,7 +47,7 @@ public final class BlockDiscoverers {
      */
     public static BlockDiscoverer fofc(DataSet data, NtadTest test, double alpha,
                                        int ess, SingleClusterPolicy policy) {
-        return new FofcBlockDiscoverer(data, test, alpha, ess, policy);
+        return new FofcBlockDiscoverer(data, alpha, ess, policy);
     }
 
     /**
@@ -64,7 +64,7 @@ public final class BlockDiscoverers {
      */
     public static BlockDiscoverer ftfc(DataSet data, NtadTest ntad, double alpha,
                                        int ess, SingleClusterPolicy policy) {
-        return new FtfcBlockDiscoverer(data, ntad, alpha, ess, policy);
+        return new FtfcBlockDiscoverer(data, alpha, ess, policy);
     }
 
     public static BlockDiscoverer gffc(DataSet data, double alpha,

@@ -93,7 +93,7 @@ public class Gin {
         List<Node> variables = data.getVariables();
 
         // Step 1: Find causal clusters
-        List<List<Integer>> clusters = findCausalClusters(data, cov, rawData);
+        List<List<Integer>> clusters = findCausalClusters(data, cov, alpha, rawData);
 
         // Step 2: Create latent nodes and build cluster graph
         Graph graph = new EdgeListGraph();
@@ -340,13 +340,16 @@ public class Gin {
         return _variables;
     }
 
-    private List<List<Integer>> findCausalClusters(DataSet data, SimpleMatrix cov, SimpleMatrix rawData) {
-        Fofc fofc = new Fofc(data, new Cca(data.getDoubleData().getSimpleMatrix(), false, -1), alpha);
-        List<List<Integer>> blocks = fofc.findClusters();
+    private List<List<Integer>> findCausalClusters(DataSet data, SimpleMatrix cov, double alpha, SimpleMatrix rawData) {
+        Fofc fofc = new Fofc(data, alpha, -1);
+        Map<List<Integer>, Integer> clusters = fofc.findClusters();
         List<Node> vars = data.getVariables();
 
-        List<Node> latents = BlocksUtil.makeBlockVariables(blocks, dataSet);
-        Graph graph = new EdgeListGraph();
+        List<List<Integer>> blocks = new ArrayList<>(clusters.keySet());
+        List<Integer> ranks = new ArrayList<>();
+        for (List<Integer> block : blocks) {
+            ranks.add(clusters.get(block));
+        }
 
         int numVars = data.getNumColumns();
         Set<Integer> candidates = new HashSet<>();

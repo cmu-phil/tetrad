@@ -2,65 +2,61 @@ package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.Ftfc;
-import edu.cmu.tetrad.search.ntad_test.NtadTest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
- * An implementation of the {@code BlockDiscoverer} interface that uses the FTFC (Fast Threshold-Free Clustering)
- * algorithm to identify clusters or "blocks" of variables within a dataset. This class integrates statistical tests and
- * policies to refine and validate the resulting blocks.
+ * A concrete implementation of the {@code BlockDiscoverer} interface that discovers clusters or "blocks" of indices
+ * using the FTFC algorithm. The discovered blocks are represented as a {@code BlockSpec} and include features such as
+ * validation, canonicalization, and policy-based adjustments.
  * <p>
- * The {@code FtfcBlockDiscoverer} applies the FTFC algorithm in conjunction with statistical tests to analyze the
- * dataset and generate clusters. It ensures that the clusters conform to predefined constraints through validation and
- * optional canonicalization, while also respecting single-cluster policies to handle overlapping or conflicting
- * clusters.
- * <p>
- * Key features include: - Utilizing the FTFC algorithm to discover variable clusters based on data and the specified
- * parameters. - Validating the discovered blocks to ensure they meet structural and algorithmic criteria. -
- * Canonicalizing blocks to maintain consistency in representation. - Applying single-cluster policies to account for
- * dataset-specific constraints or complexities.
+ * This class leverages the FOFC algorithm to generate clusters by analyzing the provided dataset and utilizing a
+ * statistical test with a specified confidence level and equivalent sample size. The discovered clusters can be further
+ * refined based on policy configurations for handling overlapping or conflicting blocks.
  */
 public class FtfcBlockDiscoverer implements BlockDiscoverer {
     private final DataSet dataSet;
-    private final NtadTest ntadTest;
     private final double alpha;
     private final int ess;
     private final SingleClusterPolicy policy;
 
     /**
-     * Constructs an instance of the {@code FtfcBlockDiscoverer} class to discover clusters or "blocks" of variables
-     * within a given dataset using the FTFC (Fast Threshold-Free Clustering) algorithm.
+     * Constructs a new instance of {@code FofcBlockDiscoverer}, which is used to discover clusters or "blocks" of
+     * indices in a dataset based on the FOFC algorithm. The discovered blocks are adjusted and refined according to the
+     * specified configuration parameters.
      *
-     * @param dataSet  the dataset to be analyzed for cluster discovery
-     * @param ntadTest the statistical test applied to determine thresholds used in the FTFC algorithm
-     * @param alpha    the significance level for the statistical test, influencing the clustering process
-     * @param ess      the equivalent sample size parameter used in the FTFC algorithm
-     * @param policy   the single-cluster policy applied to refine or resolve conflicts in discovered blocks
+     * @param dataSet the dataset to be analyzed for block discovery.
+     * @param alpha   the significance level used in the statistical test to determine independence.
+     * @param ess     the equivalent sample size parameter used in Bayesian methods within the FOFC algorithm.
+     * @param rMax
+     * @param policy  the policy to handle scenarios involving overlapping or conflicting blocks.
      */
-    public FtfcBlockDiscoverer(DataSet dataSet, NtadTest ntadTest, double alpha, int ess, SingleClusterPolicy policy) {
+    public FtfcBlockDiscoverer(DataSet dataSet, double alpha, int ess,
+                               SingleClusterPolicy policy) {
         this.dataSet = dataSet;
-        this.ntadTest = ntadTest;
         this.alpha = alpha;
         this.ess = ess;
         this.policy = policy;
     }
 
     /**
-     * Discovers clusters or "blocks" of variables within the provided dataset using the FTFC (Fast Threshold-Free
-     * Clustering) algorithm. The method processes the discovered blocks through validation, canonicalization, and
-     * applies a single-cluster policy to refine the results.
+     * Discovers clusters or "blocks" of indices in the dataset using the FOFC algorithm. The method performs block
+     * validation, canonicalization, and policy-based adjustments to refine the discovered clusters.
      *
-     * @return a BlockSpec object representing the discovered and processed blocks within the dataset
+     * @return a {@code BlockSpec} object representing the discovered and refined set of blocks.
      */
     @Override
     public BlockSpec discover() {
-        Ftfc ftfc = new Ftfc(dataSet, ntadTest, alpha);
-        List<List<Integer>> blocks = ftfc.findClusters();
+        Ftfc ftfc = new Ftfc(dataSet, alpha, ess, policy);
 
+        Map<List<Integer>, Integer> clusters = ftfc.findClusters();
+        List<List<Integer>> blocks = new ArrayList<>(clusters.keySet());
         List<Integer> ranks = new ArrayList<>();
-        for (int i = 0; i < blocks.size(); i++) ranks.add(2);
+        for (List<Integer> block : blocks) {
+            ranks.add(clusters.get(block));
+        }
 
         BlocksUtil.validateBlocks(blocks, dataSet);
         blocks = BlocksUtil.canonicalizeBlocks(blocks);

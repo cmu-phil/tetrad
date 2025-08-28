@@ -266,7 +266,7 @@ public class BlockClusteringWizard extends JPanel {
         List<String> tests;
         switch (alg) {
             case "FOFC" -> {
-                tests = TESTS_FOFC;
+                tests = TESTS_NONE;// TESTS_FOFC;
                 enable = true;
             }
             case "BPC" -> {
@@ -274,7 +274,7 @@ public class BlockClusteringWizard extends JPanel {
                 enable = true;
             }
             case "FTFC" -> {
-                tests = TESTS_FTFC;
+                tests = TESTS_NONE;// TESTS_FTFC;
                 enable = true;
             }
             default -> {

@@ -162,54 +162,6 @@ public class Gffc {
 
     }
 
-    /**
-     * Finds clusters of size clusterSize or higher for the tetrad-first algorithm.
-     */
-//    private void findPureClusters(int rank, Map<List<Integer>, Integer> clustersToRanks) {
-//        List<Integer> variables = allVariables();
-//
-//        int clusterSize = 2 * (rank + 1);
-//
-//        List<Integer> unclustered = new ArrayList<>(variables);
-//        unclustered.removeAll(union(clustersToRanks.keySet()));
-//
-//        List<Integer> _variables = new ArrayList<>(unclustered);
-//
-//        if (unclustered.size() < clusterSize) return;
-//
-//        ChoiceGenerator gen = new ChoiceGenerator(_variables.size(), clusterSize);
-//        int[] choice;
-//
-//        while ((choice = gen.next()) != null) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                break;
-//            }
-//
-//            List<Integer> cluster = new ArrayList<>();
-//
-//            for (int c : choice) {
-//                cluster.add(_variables.get(c));
-//            }
-//
-//            if (!new HashSet<>(unclustered).containsAll(cluster)) {
-//                continue;
-//            }
-//
-//            // Note that purity needs to be assessed with respect to all the variables to
-//            // remove all latent-measure impurities between pairs of latents.
-//            if (pure(cluster) == Purity.PURE) {
-//                growCluster(cluster, rank, clustersToRanks);
-//
-//                if (this.verbose) {
-//                    log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
-//                }
-//
-//                clustersToRanks.put(canonKey(cluster), rank);
-//                unclustered.removeAll(cluster);
-//            }
-//        }
-//    }
-
     private void findPureClustersTsc(int rank, Set<Set<Integer>> tscClusters,
                                      Map<List<Integer>, Integer> clustersToRanks) {
         final int clusterSize = 2 * (rank + 1);
