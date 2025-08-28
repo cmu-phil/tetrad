@@ -58,8 +58,7 @@ public class BlockClusteringWizard extends JPanel {
     private final Parameters parameters;
     private final JPanel parameterBox = new JPanel(new BorderLayout());
     private final Set<String> paramList = new HashSet<>();
-    private final int sampleSize;
-    private Map<String, List<String>> trueClusters;
+    private final Map<String, List<String>> trueClusters;
 
     /**
      * Constructs a new BlockClusteringWizard with the given dataset, algorithm, test, block text, and parameters. This
@@ -81,8 +80,6 @@ public class BlockClusteringWizard extends JPanel {
         this.dataSet = Objects.requireNonNull(dataSet);
         this.parameters = parameters;
         this.trueClusters = trueClusters;
-
-        this.sampleSize = this.dataSet.getNumRows();
 
         // Page 1 (setup)
         Box top = Box.createHorizontalBox();
