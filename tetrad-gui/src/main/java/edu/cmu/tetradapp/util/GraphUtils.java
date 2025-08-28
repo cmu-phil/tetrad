@@ -158,17 +158,32 @@ public class GraphUtils {
         Graph graph;
 
         if (numFactors == 1) {
-            graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
-                    maxStructuralEdges, measurementModelDegree,
+//            graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
+//                    maxStructuralEdges, measurementModelDegree,
+//                    numLatentMeasuredImpureParents,
+//                    numMeasuredMeasuredImpureParents,
+//                    numMeasuredMeasuredImpureAssociations);
+
+            DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
+                    numStructuralNodes, 1, measurementModelDegree);
+            graph = DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
                     numLatentMeasuredImpureParents,
                     numMeasuredMeasuredImpureParents,
-                    numMeasuredMeasuredImpureAssociations);
+                    numMeasuredMeasuredImpureAssociations, new Random());
+
         } else if (numFactors == 2) {
-            graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
-                    maxStructuralEdges, measurementModelDegree,
+            DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
+                    numStructuralNodes, 2, measurementModelDegree);
+            graph = DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
                     numLatentMeasuredImpureParents,
                     numMeasuredMeasuredImpureParents,
-                    numMeasuredMeasuredImpureAssociations);
+                    numMeasuredMeasuredImpureAssociations, new Random());
+//
+//            graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
+//                    maxStructuralEdges, measurementModelDegree,
+//                    numLatentMeasuredImpureParents,
+//                    numMeasuredMeasuredImpureParents,
+//                    numMeasuredMeasuredImpureAssociations);
         } else {
             throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
                                                "sorry dude.");

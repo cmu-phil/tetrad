@@ -63,7 +63,7 @@ public final class DataGraphUtilsFlexMim {
         final List<Group> groups = new ArrayList<>();
         for (LatentGroupSpec s : specs) {
             for (int i = 0; i < s.countGroups; i++) {
-                groups.add(new Group(s.rank, s.childrenPerLatent));
+                groups.add(new Group(s.rank, s.childrenPerGroup));
             }
         }
         final int G = groups.size();
@@ -105,13 +105,46 @@ public final class DataGraphUtilsFlexMim {
         List<Node> allMeasured = new ArrayList<>();
 
         // Create groups’ latents + measureds
+//        for (int g = 0; g < G; g++) {
+//            Group grp = groups.get(g);
+//
+//            // Latent names inside a group should look like L1, L1B, L1C, ...
+//            List<Node> latents = new ArrayList<>(grp.rank);
+//            for (int r = 0; r < grp.rank; r++) {
+//                String name = (r == 0) ? "L" + (g + 1) : "L" + (g + 1) + letterSuffix(r); // r=0 -> L1, r=1 -> L1B, r=2 -> L1C ...
+//                GraphNode L = new GraphNode(name);
+//                L.setNodeType(NodeType.LATENT);
+//                graph.addNode(L);
+//                latents.add(L);
+//                allLatents.add(L);
+//            }
+//
+//            // For each latent, add K measured children and L -> X edges
+//            List<Node> measureds = new ArrayList<>();
+//            for (Node L : latents) {
+//                for (int k = 0; k < grp.childrenPerLatent; k++) {
+//                    String xName = nameFactory.unique("X");
+//                    ContinuousVariable X = new ContinuousVariable(xName);
+//                    X.setNodeType(NodeType.MEASURED);
+//                    graph.addNode(X);
+//                    graph.addDirectedEdge(L, X);
+//                    measureds.add(X);
+//                    allMeasured.add(X);
+//                }
+//            }
+//
+//            grp.latents = latents;
+//            grp.measured = measureds;
+//        }
+
+        // Create groups’ latents + measureds
         for (int g = 0; g < G; g++) {
             Group grp = groups.get(g);
 
-            // Latent names inside a group should look like L1, L1B, L1C, ...
+            // Latent names per group: L1, L1B, L1C, ... (prefix by group index + 1)
             List<Node> latents = new ArrayList<>(grp.rank);
             for (int r = 0; r < grp.rank; r++) {
-                String base = (r == 0) ? "L1" : "L1" + letterSuffix(r); // r=0 -> L1, r=1 -> L1B, r=2 -> L1C ...
+                String base = (r == 0) ? ("L" + (g + 1)) : ("L" + (g + 1) + letterSuffix(r));
                 String unique = nameFactory.unique(base);
                 GraphNode L = new GraphNode(unique);
                 L.setNodeType(NodeType.LATENT);
@@ -120,17 +153,21 @@ public final class DataGraphUtilsFlexMim {
                 allLatents.add(L);
             }
 
-            // For each latent, add K measured children and L -> X edges
-            List<Node> measureds = new ArrayList<>();
+            // Create the group's measured children ONCE per group
+            List<Node> measureds = new ArrayList<>(grp.childrenPerGroup);
+            for (int k = 0; k < grp.childrenPerGroup; k++) {
+                String xName = nameFactory.unique("X" + (g + 1)); // keeps group-local flavor, still globally unique
+                ContinuousVariable X = new ContinuousVariable(xName);
+                X.setNodeType(NodeType.MEASURED);
+                graph.addNode(X);
+                measureds.add(X);
+                allMeasured.add(X);
+            }
+
+            // Every latent in the group points to EVERY measured child in the group
             for (Node L : latents) {
-                for (int k = 0; k < grp.childrenPerLatent; k++) {
-                    String xName = nameFactory.unique("X");
-                    ContinuousVariable X = new ContinuousVariable(xName);
-                    X.setNodeType(NodeType.MEASURED);
-                    graph.addNode(X);
+                for (Node X : measureds) {
                     graph.addDirectedEdge(L, X);
-                    measureds.add(X);
-                    allMeasured.add(X);
                 }
             }
 
@@ -229,26 +266,26 @@ public final class DataGraphUtilsFlexMim {
     public static final class LatentGroupSpec {
         public final int countGroups;         // how many groups with this configuration
         public final int rank;               // # of latent factors in each such group
-        public final int childrenPerLatent;  // # measured children per latent factor
+        public final int childrenPerGroup;  // # measured children per latent group
 
         public LatentGroupSpec(int countGroups, int rank, int childrenPerLatent) {
             if (countGroups < 1 || rank < 1 || childrenPerLatent < 1)
                 throw new IllegalArgumentException("All values must be >= 1");
             this.countGroups = countGroups;
             this.rank = rank;
-            this.childrenPerLatent = childrenPerLatent;
+            this.childrenPerGroup = childrenPerLatent;
         }
     }
 
     private static final class Group {
         final int rank;
-        final int childrenPerLatent;
+        final int childrenPerGroup;
         List<Node> latents;
         List<Node> measured;
 
-        Group(int rank, int childrenPerLatent) {
+        Group(int rank, int childrenPerGroup) {
             this.rank = rank;
-            this.childrenPerLatent = childrenPerLatent;
+            this.childrenPerGroup = childrenPerGroup;
         }
     }
 
