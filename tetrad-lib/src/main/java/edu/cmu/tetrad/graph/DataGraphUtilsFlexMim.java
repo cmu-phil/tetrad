@@ -1,0 +1,272 @@
+package edu.cmu.tetrad.graph;
+
+import edu.cmu.tetrad.data.ContinuousVariable;
+
+import java.util.*;
+
+/**
+ * Flexible MIM generator.
+ * <p>
+ * A "group" is a structural node in the meta-DAG. Each group has 'rank' many latent factors, and each latent has
+ * 'childrenPerLatent' many measured indicators.
+ * <p>
+ * For a meta-edge G_i -> G_j, we add directed edges from each latent in G_i to each latent in G_j. (Complete bipartite
+ * between factor sets, as requested.)
+ * <p>
+ * Impurities: - numLatentMeasuredImpureParents: extra latent -> measured cross-loadings -
+ * numMeasuredMeasuredImpureParents: measured -> measured directed edges - numMeasuredMeasuredImpureAssociations:
+ * measured <-> measured bidirected "error correlations"
+ */
+public final class DataGraphUtilsFlexMim {
+
+    private DataGraphUtilsFlexMim() {
+    }
+
+    /**
+     * Convenience overload: pick a random number of meta-edges.
+     */
+    public static Graph randomMimGeneral(
+            List<LatentGroupSpec> specs,
+            int numLatentMeasuredImpureParents,
+            int numMeasuredMeasuredImpureParents,
+            int numMeasuredMeasuredImpureAssociations
+    ) {
+        // default: target ~20% of all possible forward edges (acyclic)
+        return randomMimGeneral(
+                specs,
+                null,
+                numLatentMeasuredImpureParents,
+                numMeasuredMeasuredImpureParents,
+                numMeasuredMeasuredImpureAssociations,
+                new Random()
+        );
+    }
+
+    /**
+     * Main entry point. If metaEdgeCount is null, an ER-like random forward-DAG density is used (~20%). If
+     * metaEdgeCount is provided, we sample exactly that many forward edges across the group order.
+     */
+    public static Graph randomMimGeneral(
+            List<LatentGroupSpec> specs,
+            Integer metaEdgeCount, // number of edges in the meta-DAG over groups; if null, choose randomly
+            int numLatentMeasuredImpureParents,
+            int numMeasuredMeasuredImpureParents,
+            int numMeasuredMeasuredImpureAssociations,
+            Random rng
+    ) {
+        if (specs == null || specs.isEmpty()) {
+            throw new IllegalArgumentException("Specs cannot be empty.");
+        }
+        if (rng == null) rng = new Random(0);
+
+        // ----- 1) Expand specs into concrete groups (structural nodes in the meta-DAG)
+        final List<Group> groups = new ArrayList<>();
+        for (LatentGroupSpec s : specs) {
+            for (int i = 0; i < s.countGroups; i++) {
+                groups.add(new Group(s.rank, s.childrenPerLatent));
+            }
+        }
+        final int G = groups.size();
+        if (G < 1) throw new IllegalArgumentException("No groups formed.");
+
+        // ----- 2) Build a random acyclic meta-DAG over groups (0..G-1 topological order)
+        // forward-only edges i -> j for i < j
+        final List<int[]> possibleForward = new ArrayList<>();
+        for (int i = 0; i < G; i++) {
+            for (int j = i + 1; j < G; j++) possibleForward.add(new int[]{i, j});
+        }
+
+        final List<int[]> metaEdges = new ArrayList<>();
+        if (possibleForward.isEmpty()) {
+            // no edges possible; fine
+        } else if (metaEdgeCount == null) {
+            // choose ~20% of forward pairs
+            double p = 0.20;
+            for (int[] e : possibleForward) {
+                if (rng.nextDouble() < p) metaEdges.add(e);
+            }
+        } else {
+            // choose exactly metaEdgeCount forward edges without replacement
+            if (metaEdgeCount < 0 || metaEdgeCount > possibleForward.size()) {
+                throw new IllegalArgumentException("metaEdgeCount out of range [0, " + possibleForward.size() + "]");
+            }
+            Collections.shuffle(possibleForward, rng);
+            metaEdges.addAll(possibleForward.subList(0, metaEdgeCount));
+        }
+
+        // ----- 3) Materialize the actual Tetrad graph
+        Graph graph = new EdgeListGraph();
+
+        // We'll create all latents and measureds for each group, track them, then wire everything up.
+        NameFactory nameFactory = new NameFactory();
+
+        // Accumulators for impurities
+        List<Node> allLatents = new ArrayList<>();
+        List<Node> allMeasured = new ArrayList<>();
+
+        // Create groups’ latents + measureds
+        for (int g = 0; g < G; g++) {
+            Group grp = groups.get(g);
+
+            // Latent names inside a group should look like L1, L1B, L1C, ...
+            List<Node> latents = new ArrayList<>(grp.rank);
+            for (int r = 0; r < grp.rank; r++) {
+                String base = (r == 0) ? "L1" : "L1" + letterSuffix(r); // r=0 -> L1, r=1 -> L1B, r=2 -> L1C ...
+                String unique = nameFactory.unique(base);
+                GraphNode L = new GraphNode(unique);
+                L.setNodeType(NodeType.LATENT);
+                graph.addNode(L);
+                latents.add(L);
+                allLatents.add(L);
+            }
+
+            // For each latent, add K measured children and L -> X edges
+            List<Node> measureds = new ArrayList<>();
+            for (Node L : latents) {
+                for (int k = 0; k < grp.childrenPerLatent; k++) {
+                    String xName = nameFactory.unique("X");
+                    ContinuousVariable X = new ContinuousVariable(xName);
+                    X.setNodeType(NodeType.MEASURED);
+                    graph.addNode(X);
+                    graph.addDirectedEdge(L, X);
+                    measureds.add(X);
+                    allMeasured.add(X);
+                }
+            }
+
+            grp.latents = latents;
+            grp.measured = measureds;
+        }
+
+        // ----- 4) Wire latent -> latent edges based on meta-DAG using complete bipartite between factor sets
+        for (int[] e : metaEdges) {
+            Group from = groups.get(e[0]);
+            Group to = groups.get(e[1]);
+            for (Node Lfrom : from.latents) {
+                for (Node Lto : to.latents) {
+                    graph.addDirectedEdge(Lfrom, Lto);
+                }
+            }
+        }
+
+        // ----- 5) Add impurities
+
+        // 5a) extra latent -> measured cross-loadings (avoid duplicating existing parent edges)
+        addLatentMeasuredImpurities(graph, allLatents, allMeasured, numLatentMeasuredImpureParents, rng);
+
+        // 5b) measured -> measured directed impurities (avoid cycles as much as possible by preferring “forward” indices)
+        addMeasuredMeasuredParents(graph, allMeasured, numMeasuredMeasuredImpureParents, rng);
+
+        // 5c) measured <-> measured bidirected “error correlations”
+        addMeasuredMeasuredAssociations(graph, allMeasured, numMeasuredMeasuredImpureAssociations, rng);
+
+        // layout (nice to have)
+        try {
+            LayoutUtil.fruchtermanReingoldLayout(graph);
+        } catch (Throwable ignore) {
+        }
+
+        return graph;
+    }
+
+    private static void addLatentMeasuredImpurities(Graph g, List<Node> latents, List<Node> measured,
+                                                    int count, Random rng) {
+        if (count <= 0 || latents.isEmpty() || measured.isEmpty()) return;
+        int tries = 0, added = 0, maxTries = count * 20;
+        while (added < count && tries++ < maxTries) {
+            Node L = latents.get(rng.nextInt(latents.size()));
+            Node X = measured.get(rng.nextInt(measured.size()));
+            if (g.isParentOf(L, X)) continue;              // already a parent
+            if (L == X) continue;
+            // avoid adding if X already has L as ancestor? (optional; we keep it simple)
+            g.addDirectedEdge(L, X);
+            added++;
+        }
+    }
+
+    // ========= helpers =========
+
+    private static void addMeasuredMeasuredParents(Graph g, List<Node> measured, int count, Random rng) {
+        if (count <= 0 || measured.size() < 2) return;
+        // To reduce obvious cycles we’ll bias edges to go from a lower index to a higher index.
+        int tries = 0, added = 0, maxTries = count * 30;
+        while (added < count && tries++ < maxTries) {
+            int i = rng.nextInt(measured.size());
+            int j = rng.nextInt(measured.size());
+            if (i == j) continue;
+            Node A = measured.get(Math.min(i, j));
+            Node B = measured.get(Math.max(i, j));
+            if (g.isAdjacentTo(A, B)) continue;
+            g.addDirectedEdge(A, B);
+            added++;
+        }
+    }
+
+    private static void addMeasuredMeasuredAssociations(Graph g, List<Node> measured, int count, Random rng) {
+        if (count <= 0 || measured.size() < 2) return;
+        int tries = 0, added = 0, maxTries = count * 30;
+        while (added < count && tries++ < maxTries) {
+            Node A = measured.get(rng.nextInt(measured.size()));
+            Node B = measured.get(rng.nextInt(measured.size()));
+            if (A == B) continue;
+            if (g.isAdjacentTo(A, B)) continue;
+            g.addBidirectedEdge(A, B); // error correlation style impurity
+            added++;
+        }
+    }
+
+    private static String letterSuffix(int indexFrom1) {
+        // indexFrom1: 1 -> B, 2 -> C, 3 -> D, ...
+        // Supports up to 26 extras easily; extend if you like.
+        int i = Math.max(1, indexFrom1);
+        char c = (char) ('A' + i); // 1->B, 2->C, ...
+        return String.valueOf(c);
+    }
+
+    /**
+     * Specification for a block of groups that share the same rank and #children per latent.
+     */
+    public static final class LatentGroupSpec {
+        public final int countGroups;         // how many groups with this configuration
+        public final int rank;               // # of latent factors in each such group
+        public final int childrenPerLatent;  // # measured children per latent factor
+
+        public LatentGroupSpec(int countGroups, int rank, int childrenPerLatent) {
+            if (countGroups < 1 || rank < 1 || childrenPerLatent < 1)
+                throw new IllegalArgumentException("All values must be >= 1");
+            this.countGroups = countGroups;
+            this.rank = rank;
+            this.childrenPerLatent = childrenPerLatent;
+        }
+    }
+
+    private static final class Group {
+        final int rank;
+        final int childrenPerLatent;
+        List<Node> latents;
+        List<Node> measured;
+
+        Group(int rank, int childrenPerLatent) {
+            this.rank = rank;
+            this.childrenPerLatent = childrenPerLatent;
+        }
+    }
+
+    /**
+     * Ensures global uniqueness while trying to keep the requested base pattern.
+     */
+    private static final class NameFactory {
+        private final Map<String, Integer> used = new HashMap<>();
+
+        public String unique(String base) {
+            if (!used.containsKey(base)) {
+                used.put(base, 1);
+                return base;
+            }
+            int k = used.get(base);
+            used.put(base, k + 1);
+            // minimal, readable disambiguator: base, base2, base3, ...
+            return base + (k + 0); // base2 on first clash
+        }
+    }
+}

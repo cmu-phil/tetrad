@@ -208,7 +208,7 @@ public final class BlocksUtil {
         if (ranksIn != null && !ranksIn.isEmpty()) {
             for (int i = 0; i < blocks.size(); i++) {
                 Integer r = i < ranksIn.size() ? ranksIn.get(i) : 1;
-                ranksNorm.add((r == null || r < 1) ? 1 : r);
+                ranksNorm.add((r == null || r < 0) ? 1 : 0);
             }
         } else {
             for (int i = 0; i < blocks.size(); i++) ranksNorm.add(1);
@@ -277,7 +277,7 @@ public final class BlocksUtil {
                     takenNames.add(variable.getName());
 
                     int rk = estimateRankSafe(S, n, newBlock, others, alpha);
-                    outRanks.add(Math.max(1, rk));
+                    outRanks.add(Math.max(0, rk));
                 }
 
                 return new BlockSpec(dataSet, outBlocks, outLatents, outRanks);
@@ -302,7 +302,7 @@ public final class BlocksUtil {
 
                 int[] others = toIndexArray(allMinus(unused, all));
                 int rk = estimateRankSafe(S, n, noise, others, alpha);
-                outRanks.add(Math.max(1, rk));
+                outRanks.add(Math.max(0, rk));
 
                 return new BlockSpec(dataSet, outBlocks, outLatents, outRanks);
             }

@@ -92,6 +92,10 @@ public class TestClusterFinder {
                                                "sorry dude.");
         }
 
+        if (numFactors == 1) {
+
+        }
+
         return graph;
     }
 }
