@@ -3,8 +3,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
+import edu.cmu.tetrad.util.RankTests;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,17 +46,13 @@ public class Bpc {
      */
     private final int numVars;
     /**
-     * Variable names
-     */
-    private final List<String> variableNames;
-    /**
      * Standard Normal for Fisher Z
      */
     private final NormalDistribution normal = new NormalDistribution(0, 1);
     /**
-     * Correlation matrix
+     * Correlation matrix as a SimpleMatrix.
      */
-    private final CorrelationMatrix corr;
+    private final SimpleMatrix S;
     // Cache for set-level purity checks (tetrads) to avoid recomputation across threads
     private final ConcurrentHashMap<BitKey, Boolean> pureCache = new ConcurrentHashMap<>();
     // Looser pairwise screen than tetrads (paper-faithful; just a pre-prune)
@@ -66,7 +64,6 @@ public class Bpc {
     /**
      * Resulting clusters (indices)
      */
-    private List<List<Integer>> clusters = new ArrayList<>();
     // Pairwise dependence screen (pattern‑lite adjacency)
     private boolean[][] canLink; // set in buildPatternLite()
 
@@ -84,9 +81,8 @@ public class Bpc {
         this.ntadTest = test;
         this.alpha = alpha;
         this.numVars = test.variables().size();
-        this.variableNames = dataSet.getVariableNames();
-        this.corr = new CorrelationMatrix(dataSet);
-        this.sampleSize = this.corr.getSampleSize();
+        this.sampleSize = dataSet.getNumRows();
+        this.S = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
 
         if (!(ess == -1 || ess > 0)) {
             throw new IllegalArgumentException("esses must be -1 (sample size) or a positive integer");
@@ -145,7 +141,7 @@ public class Bpc {
                         if (!canLink[i][l] || !canLink[j][l] || !canLink[k][l]) continue; // 6-pair screen
                         List<Integer> seed = Arrays.asList(i, j, k, l);
                         if (!isPure(seed)) continue;
-                        if (!clusterDependent(seed)) continue;
+//                        if (!clusterDependent(seed)) continue;
                         List<Integer> grown = growMaximalPure(seed); // keep serial inside for determinism
                         candMap.putIfAbsent(new BitKey(grown), grown);
                     }
@@ -155,7 +151,6 @@ public class Bpc {
 
         List<List<Integer>> candidates = new ArrayList<>(candMap.values());
         if (candidates.isEmpty()) {
-            this.clusters = new ArrayList<>();
             return new ArrayList<>();
         }
 
@@ -205,7 +200,7 @@ public class Bpc {
                 if (group.contains(x)) continue;
                 List<Integer> candidate = new ArrayList<>(group);
                 candidate.add(x);
-                if (isPure(candidate) && clusterDependent(candidate)) {
+                if (isPure(candidate)) {// && clusterDependent(candidate)) {
                     group.add(x);
                     expanded = true;
                 }
@@ -233,18 +228,33 @@ public class Bpc {
                         int[][] t1 = new int[][]{{a, b}, {c, d}};
                         int[][] t2 = new int[][]{{a, c}, {b, d}};
                         int[][] t3 = new int[][]{{a, d}, {b, c}};
-                        if (!ntadTest.allGreaterThanAlpha(Collections.singletonList(t1), alpha)
-                            || !ntadTest.allGreaterThanAlpha(Collections.singletonList(t2), alpha)
-                            || !ntadTest.allGreaterThanAlpha(Collections.singletonList(t3), alpha)) {
+
+                        int rank1 = rank(t1);
+                        int rank2 = rank(t2);
+                        int rank3 = rank(t3);
+
+                        if (!(rank1 == 1 && rank2 == 1 && rank3 == 1)) {
                             pureCache.put(key, Boolean.FALSE);
                             return false;
-                        }
+                        };
+
+
+//                        if (!ntadTest.allGreaterThanAlpha(Collections.singletonList(t1), alpha)
+//                            || !ntadTest.allGreaterThanAlpha(Collections.singletonList(t2), alpha)
+//                            || !ntadTest.allGreaterThanAlpha(Collections.singletonList(t3), alpha)) {
+//                            pureCache.put(key, Boolean.FALSE);
+//                            return false;
+//                        }
                     }
                 }
             }
         }
         pureCache.put(key, Boolean.TRUE);
         return true;
+    }
+
+    private int rank(int[][] t) {
+        return RankTests.estimateWilksRank(S, t[0], t[1], sampleSize, alpha);
     }
 
     /**
@@ -288,7 +298,7 @@ public class Bpc {
         int n = ess;//this.corr.getSampleSize();
         for (int i = 0; i < cluster.size(); i++) {
             for (int j = i + 1; j < cluster.size(); j++) {
-                double r = this.corr.getValue(cluster.get(i), cluster.get(j));
+                double r = S.get(cluster.get(i), cluster.get(j));
                 double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
                 double df = n - 3.0; // no conditioning
                 double fisherZ = sqrt(df) * q;
@@ -308,7 +318,7 @@ public class Bpc {
         for (int i = 0; i < numVars; i++) {
             canLink[i][i] = true;
             for (int j = i + 1; j < numVars; j++) {
-                double r = this.corr.getValue(i, j);
+                double r = S.get(i, j);
                 double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
                 double df = n - 3.0;
                 double fisherZ = sqrt(df) * q;
@@ -337,7 +347,7 @@ public class Bpc {
                     union.addAll(current.get(b));
                     if (union.size() < 4) continue;
                     List<Integer> u = sortedList(union);
-                    if (!isPure(u) || !clusterDependent(u)) continue;
+                    if (!isPure(u) /*|| !clusterDependent(u)*/) continue;
                     // delta gate: union avg|r| must not drop too much from either group
                     double meanU = avgAbsCorrGroup(u);
                     double meanA = avgAbsCorrGroup(current.get(a));
@@ -363,7 +373,7 @@ public class Bpc {
                     Set<Integer> union = new HashSet<>(current.get(a));
                     union.addAll(current.get(b));
                     List<Integer> u = sortedList(union);
-                    if (u.size() >= 4 && isPure(u) && clusterDependent(u)) {
+                    if (u.size() >= 4 && isPure(u)) {// && clusterDependent(u)) {
                         double meanU = avgAbsCorrGroup(u);
                         double meanA = avgAbsCorrGroup(current.get(a));
                         double meanB = avgAbsCorrGroup(current.get(b));
@@ -441,7 +451,7 @@ public class Bpc {
         List<List<Integer>> out = new ArrayList<>();
         for (Set<Integer> gset : work) {
             List<Integer> g = sortedList(gset);
-            if (g.size() >= MIN_CLUSTER_SIZE && (g.size() < 4 || isPure(g)) && clusterDependent(g)) {
+            if (g.size() >= MIN_CLUSTER_SIZE && (g.size() < 4 || isPure(g))) {// && clusterDependent(g)) {
                 out.add(g);
             }
         }
@@ -458,7 +468,7 @@ public class Bpc {
         int c = 0;
         for (int u : group) {
             if (u == v) continue;
-            s += Math.abs(corr.getValue(v, u));
+            s += Math.abs(S.get(v, u));
             c++;
         }
         return c == 0 ? Double.NEGATIVE_INFINITY : s / c;
@@ -473,7 +483,7 @@ public class Bpc {
             int vi = list.get(i);
             for (int j = i + 1; j < list.size(); j++) {
                 int vj = list.get(j);
-                s += Math.abs(corr.getValue(vi, vj));
+                s += Math.abs(S.get(vi, vj));
                 c++;
             }
         }
@@ -493,14 +503,24 @@ public class Bpc {
                 for (int k = j + 1; k < m; k++) {
                     if (k == idxV) continue;
                     int a = list.get(idxV), b = list.get(i), c = list.get(j), d = list.get(k);
+
                     int[][] t1 = new int[][]{{a, b}, {c, d}};
                     int[][] t2 = new int[][]{{a, c}, {b, d}};
                     int[][] t3 = new int[][]{{a, d}, {b, c}};
-                    if (ntadTest.allGreaterThanAlpha(Collections.singletonList(t1), alpha)
-                        && ntadTest.allGreaterThanAlpha(Collections.singletonList(t2), alpha)
-                        && ntadTest.allGreaterThanAlpha(Collections.singletonList(t3), alpha)) {
+
+                    int rank1 = rank(t1);
+                    int rank2 = rank(t2);
+                    int rank3 = rank(t3);
+
+                    if ((rank1 == 1 && rank2 == 1 && rank3 == 1)) {
                         count++;
-                    }
+                    };
+
+//                    if (ntadTest.allGreaterThanAlpha(Collections.singletonList(t1), alpha)
+//                        && ntadTest.allGreaterThanAlpha(Collections.singletonList(t2), alpha)
+//                        && ntadTest.allGreaterThanAlpha(Collections.singletonList(t3), alpha)) {
+//                        count++;
+//                    }
                 }
             }
         }
