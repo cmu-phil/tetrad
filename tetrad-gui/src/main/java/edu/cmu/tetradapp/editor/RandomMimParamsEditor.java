@@ -25,7 +25,6 @@ class RandomMimParamsEditor extends JPanel {
 
     // ---- Defaults (kept close to keys) ------------------------------------
     private static final int D_NUM_STRUCTURAL_EDGES = 3;
-    private static final int D_NUM_STRUCTURAL_NODES = 3;
     private static final String D_LATENT_GROUP_SPECS = "5:5(1)";
     private static final int D_ZERO = 0;
 
