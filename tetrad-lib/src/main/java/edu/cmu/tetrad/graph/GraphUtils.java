@@ -3360,6 +3360,28 @@ public final class GraphUtils {
         return fixedDirections;
     }
 
+    public static @NotNull Graph randomOneFactorMim(int numStructuralNodes, int measurementModelDegree, int maxStructuralEdges,
+                                                    int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
+                                                    int numMeasuredMeasuredImpureAssociations) {
+        DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
+                numStructuralNodes, 1, measurementModelDegree);
+        return DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
+                numLatentMeasuredImpureParents,
+                numMeasuredMeasuredImpureParents,
+                numMeasuredMeasuredImpureAssociations, new Random());
+    }
+
+    public static @NotNull Graph randomTwoFactorMim(int numStructuralNodes, int measurementModelDegree, int maxStructuralEdges,
+                                                    int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
+                                                    int numMeasuredMeasuredImpureAssociations) {
+        DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
+                numStructuralNodes, 2, measurementModelDegree);
+        return DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
+                numLatentMeasuredImpureParents,
+                numMeasuredMeasuredImpureParents,
+                numMeasuredMeasuredImpureAssociations, new Random());
+    }
+
     /**
      * The GraphType enum represents the types of graphs that can be used in the application.
      */

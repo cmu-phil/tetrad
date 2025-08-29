@@ -7,8 +7,8 @@ import java.util.*;
 /**
  * Flexible MIM generator.
  * <p>
- * A "group" is a structural node in the meta-DAG. Each group has 'rank' many latent factors, and each latent has
- * 'childrenPerLatent' many measured indicators.
+ * A "group" is a structural node in the meta-DAG. Each group has 'rank' many latent factors, and each group has
+ * 'childrenPerGroup' many measured indicators.
  * <p>
  * For a meta-edge G_i -> G_j, we add directed edges from each latent in G_i to each latent in G_j. (Complete bipartite
  * between factor sets, as requested.)
@@ -105,39 +105,6 @@ public final class DataGraphUtilsFlexMim {
         List<Node> allMeasured = new ArrayList<>();
 
         // Create groups’ latents + measureds
-//        for (int g = 0; g < G; g++) {
-//            Group grp = groups.get(g);
-//
-//            // Latent names inside a group should look like L1, L1B, L1C, ...
-//            List<Node> latents = new ArrayList<>(grp.rank);
-//            for (int r = 0; r < grp.rank; r++) {
-//                String name = (r == 0) ? "L" + (g + 1) : "L" + (g + 1) + letterSuffix(r); // r=0 -> L1, r=1 -> L1B, r=2 -> L1C ...
-//                GraphNode L = new GraphNode(name);
-//                L.setNodeType(NodeType.LATENT);
-//                graph.addNode(L);
-//                latents.add(L);
-//                allLatents.add(L);
-//            }
-//
-//            // For each latent, add K measured children and L -> X edges
-//            List<Node> measureds = new ArrayList<>();
-//            for (Node L : latents) {
-//                for (int k = 0; k < grp.childrenPerLatent; k++) {
-//                    String xName = nameFactory.unique("X");
-//                    ContinuousVariable X = new ContinuousVariable(xName);
-//                    X.setNodeType(NodeType.MEASURED);
-//                    graph.addNode(X);
-//                    graph.addDirectedEdge(L, X);
-//                    measureds.add(X);
-//                    allMeasured.add(X);
-//                }
-//            }
-//
-//            grp.latents = latents;
-//            grp.measured = measureds;
-//        }
-
-        // Create groups’ latents + measureds
         for (int g = 0; g < G; g++) {
             Group grp = groups.get(g);
 
@@ -180,8 +147,12 @@ public final class DataGraphUtilsFlexMim {
             Group from = groups.get(e[0]);
             Group to = groups.get(e[1]);
             for (Node Lfrom : from.latents) {
-                for (Node Lto : to.latents) {
-                    graph.addDirectedEdge(Lfrom, Lto);
+//                for (Node Lto : to.latents) {
+//                    graph.addDirectedEdge(Lfrom, Lto);
+//                }
+
+                for (int i = 0; i < from.rank; i++) {
+                    graph.addDirectedEdge(from.latents.get(i), to.latents.get(i));
                 }
             }
         }
@@ -268,12 +239,12 @@ public final class DataGraphUtilsFlexMim {
         public final int rank;               // # of latent factors in each such group
         public final int childrenPerGroup;  // # measured children per latent group
 
-        public LatentGroupSpec(int countGroups, int rank, int childrenPerLatent) {
-            if (countGroups < 1 || rank < 1 || childrenPerLatent < 1)
+        public LatentGroupSpec(int countGroups, int rank, int childrenPerGroup) {
+            if (countGroups < 1 || rank < 1 || childrenPerGroup < 1)
                 throw new IllegalArgumentException("All values must be >= 1");
             this.countGroups = countGroups;
             this.rank = rank;
-            this.childrenPerGroup = childrenPerLatent;
+            this.childrenPerGroup = childrenPerGroup;
         }
     }
 

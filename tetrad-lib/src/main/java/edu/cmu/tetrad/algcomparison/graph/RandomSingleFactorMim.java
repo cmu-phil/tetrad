@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
-import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -36,9 +36,8 @@ public class RandomSingleFactorMim implements RandomGraph {
         int numMeasuredMeasuredImpureParents = parameters.getInt("measuredMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureAssociations = parameters.getInt("measuredMeasuredImpureAssociations", 0);
 
-        return DataGraphUtils.randomSingleFactorModel(numStructuralNodes, maxStructuralEdges, measurementModelDegree,
-                numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
-                numMeasuredMeasuredImpureAssociations);
+        return GraphUtils.randomOneFactorMim(numStructuralNodes, measurementModelDegree, maxStructuralEdges, numLatentMeasuredImpureParents,
+                numMeasuredMeasuredImpureParents, numMeasuredMeasuredImpureAssociations);
     }
 
     /**

@@ -1,6 +1,5 @@
 package edu.cmu.tetradapp.util;
 
-import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -101,12 +100,12 @@ public class GraphUtils {
             }
 
 //            if (true) {
-                graph = RandomGraph.randomGraph(nodes, newGraphNumLatents,
-                        newGraphNumEdges, randomGraphMaxDegree, randomGraphMaxIndegree, randomGraphMaxOutdegree,
-                        randomGraphConnected);
-                LayoutUtil.arrangeBySourceGraph(graph, _graph);
-                HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
-                LayoutUtil.arrangeByLayout(graph, layout);
+            graph = RandomGraph.randomGraph(nodes, newGraphNumLatents,
+                    newGraphNumEdges, randomGraphMaxDegree, randomGraphMaxIndegree, randomGraphMaxOutdegree,
+                    randomGraphConnected);
+            LayoutUtil.arrangeBySourceGraph(graph, _graph);
+            HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
+            LayoutUtil.arrangeByLayout(graph, layout);
 //            } else {
 //                if (graphUniformlySelected) {
 //
@@ -158,12 +157,6 @@ public class GraphUtils {
         Graph graph;
 
         if (numFactors == 1) {
-//            graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
-//                    maxStructuralEdges, measurementModelDegree,
-//                    numLatentMeasuredImpureParents,
-//                    numMeasuredMeasuredImpureParents,
-//                    numMeasuredMeasuredImpureAssociations);
-
             DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
                     numStructuralNodes, 1, measurementModelDegree);
             graph = DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
@@ -174,16 +167,10 @@ public class GraphUtils {
         } else if (numFactors == 2) {
             DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
                     numStructuralNodes, 2, measurementModelDegree);
-            graph = DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
+            return DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
                     numLatentMeasuredImpureParents,
                     numMeasuredMeasuredImpureParents,
                     numMeasuredMeasuredImpureAssociations, new Random());
-//
-//            graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
-//                    maxStructuralEdges, measurementModelDegree,
-//                    numLatentMeasuredImpureParents,
-//                    numMeasuredMeasuredImpureParents,
-//                    numMeasuredMeasuredImpureAssociations);
         } else {
             throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
                                                "sorry dude.");
@@ -242,7 +229,8 @@ public class GraphUtils {
         highlightMenu.add(new SelectCliquesAction(workbench));
         highlightMenu.add(new SelectEdgesInCyclicPaths(workbench));
         highlightMenu.add(new SelectEdgesInAlmostCyclicPaths(workbench));
-        highlightMenu.addSeparator();;
+        highlightMenu.addSeparator();
+        ;
 
         highlightMenu.add(new SelectLatentsAction(workbench));
         highlightMenu.add(new SelectMeasuredNodesAction(workbench));

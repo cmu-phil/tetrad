@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.test;
 
-import ai.djl.training.dataset.Dataset;
-import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -18,6 +16,32 @@ import java.util.List;
 
 public class TestClusterFinder {
 
+
+    private static Graph makeRandomMim(int numFactors, int numStructuralNodes, int maxStructuralEdges, int measurementModelDegree,
+                                       int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
+                                       int numMeasuredMeasuredImpureAssociations) {
+
+        Graph graph;
+
+        if (numFactors == 1) {
+            graph = GraphUtils.randomOneFactorMim(numStructuralNodes,
+                    maxStructuralEdges, measurementModelDegree,
+                    numLatentMeasuredImpureParents,
+                    numMeasuredMeasuredImpureParents,
+                    numMeasuredMeasuredImpureAssociations);
+        } else if (numFactors == 2) {
+            graph = GraphUtils.randomTwoFactorMim(numStructuralNodes,
+                    maxStructuralEdges, measurementModelDegree,
+                    numLatentMeasuredImpureParents,
+                    numMeasuredMeasuredImpureParents,
+                    numMeasuredMeasuredImpureAssociations);
+        } else {
+            throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
+                                               "sorry dude.");
+        }
+
+        return graph;
+    }
 
     @Test
     public void testClusterFinder() {
@@ -67,35 +91,5 @@ public class TestClusterFinder {
         }
         _sb.append("]");
         return _sb;
-    }
-
-    private static Graph makeRandomMim(int numFactors, int numStructuralNodes, int maxStructuralEdges, int measurementModelDegree,
-                                       int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
-                                       int numMeasuredMeasuredImpureAssociations) {
-
-        Graph graph;
-
-        if (numFactors == 1) {
-            graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
-                    maxStructuralEdges, measurementModelDegree,
-                    numLatentMeasuredImpureParents,
-                    numMeasuredMeasuredImpureParents,
-                    numMeasuredMeasuredImpureAssociations);
-        } else if (numFactors == 2) {
-            graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
-                    maxStructuralEdges, measurementModelDegree,
-                    numLatentMeasuredImpureParents,
-                    numMeasuredMeasuredImpureParents,
-                    numMeasuredMeasuredImpureAssociations);
-        } else {
-            throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
-                                               "sorry dude.");
-        }
-
-        if (numFactors == 1) {
-
-        }
-
-        return graph;
     }
 }
