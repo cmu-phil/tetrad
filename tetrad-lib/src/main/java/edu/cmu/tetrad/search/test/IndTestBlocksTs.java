@@ -22,6 +22,10 @@ import java.util.concurrent.locks.ReentrantLock;
  * 2k.
  * <p>
  * Drop-in replacement matching the public surface of IndTestBlocksLemma10 (no p-values exposed).
+ * <p>
+ * This class is an elaboration of the IndTestTrekSep class of Adam Brodie and Peter Spirtes.
+ *
+ * @see edu.cmu.tetrad.search.test.IndTestTrekSep
  */
 public class IndTestBlocksTs implements IndependenceTest, BlockTest {
 

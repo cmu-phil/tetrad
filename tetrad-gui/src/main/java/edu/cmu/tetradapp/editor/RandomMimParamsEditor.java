@@ -231,13 +231,13 @@ class RandomMimParamsEditor extends JPanel {
         b12.add(numStructuralEdges);
         b1.add(b12);
 
-        Box b15 = Box.createHorizontalBox();
-        b15.add(new JLabel("Number of measurements per latent:"));
-//        b15.add(Box.createHorizontalStrut(10));
-        b15.add(Box.createHorizontalGlue());
-        b15.add(numMeasurementsPerLatent);
-        b1.add(b15);
-        b1.add(Box.createVerticalStrut(10));
+//        Box b15 = Box.createHorizontalBox();
+//        b15.add(new JLabel("Number of measurements per latent:"));
+////        b15.add(Box.createHorizontalStrut(10));
+//        b15.add(Box.createHorizontalGlue());
+//        b15.add(numMeasurementsPerLatent);
+//        b1.add(b15);
+//        b1.add(Box.createVerticalStrut(10));
 
         Box b16 = Box.createHorizontalBox();
         b16.add(new JLabel("Add impure edges:"));
