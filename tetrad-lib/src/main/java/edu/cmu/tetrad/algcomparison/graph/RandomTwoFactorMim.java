@@ -32,13 +32,13 @@ public class RandomTwoFactorMim implements RandomGraph {
     public Graph createGraph(Parameters parameters) {
         int numStructuralNodes = parameters.getInt("mimNumStructuralNodes", 3);
         int maxStructuralEdges = parameters.getInt("mimNumStructuralEdges", 3);
-        int measurementModelDegree = parameters.getInt("mimNumChildrenPerGroup", 3);
+        int numChildrenPerGroup = parameters.getInt("mimNumChildrenPerGroup", 3);
         int numLatentMeasuredImpureParents = parameters.getInt("mimLatentMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureAssociations = parameters.getInt("mimMeasuredMeasuredImpureAssociations", 0);
 
         DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
-                numStructuralNodes, 3, measurementModelDegree);
+                numStructuralNodes, 3, numChildrenPerGroup);
         return DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
                 numLatentMeasuredImpureParents,
                 numMeasuredMeasuredImpureParents,
