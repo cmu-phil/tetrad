@@ -28,16 +28,16 @@ import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 
 class RandomMimParamsEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = -1478898170626611725L;
 
     // ---- Parameter keys (centralized) -------------------------------------
-    private static final String K_NUM_FACTORS = "randomMimNumFactors";
     private static final String K_NUM_STRUCTURAL_EDGES = "mimNumStructuralEdges";
     private static final String K_NUM_STRUCTURAL_NODES = "mimNumStructuralNodes";
-    private static final String K_NUM_CHILDREN_PER_GROUP = "mimNumChildrenPerGroup";
     private static final String K_LATENT_GROUP_SPECS = "mimLatentGroupSpecs";
     private static final String K_LATENT_MEASURED_IMPURE_PARENTS = "mimLatentMeasuredImpureParents";
     private static final String K_MEASURED_MEASURED_IMPURE_PARENTS = "mimMeasuredMeasuredImpureParents";
