@@ -44,19 +44,13 @@ class RandomMimParamsEditor extends JPanel {
     private static final String K_MEASURED_MEASURED_IMPURE_ASSOC = "mimMeasuredMeasuredImpureAssociations";
 
     // ---- Defaults (kept close to keys) ------------------------------------
-    private static final int D_NUM_FACTORS = 1;
     private static final int D_NUM_STRUCTURAL_EDGES = 3;
     private static final int D_NUM_STRUCTURAL_NODES = 3;
-    private static final int D_NUM_CHILDREN_PER_GROUP = 5;
     private static final String D_LATENT_GROUP_SPECS = "5:5(1)";
     private static final int D_ZERO = 0;
 
     public RandomMimParamsEditor(Parameters parameters) {
         setLayout(new BorderLayout());
-
-        // ---- Controls ------------------------------------------------------
-        // Note: numFactors combo is created but not shown in original UI. We keep
-        // **only** the controls the current UI actually displays.
 
         // Structural edges (clamped to simple DAG max given current node count)
         IntTextField numStructuralEdges = new IntTextField(
