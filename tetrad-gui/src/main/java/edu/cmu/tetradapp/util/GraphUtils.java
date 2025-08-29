@@ -3,7 +3,6 @@ package edu.cmu.tetradapp.util;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.PointXy;
 import edu.cmu.tetradapp.editor.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.jetbrains.annotations.NotNull;
@@ -12,8 +11,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.*;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * Created by jdramsey on 12/8/15.
@@ -65,118 +66,20 @@ public class GraphUtils {
                     randomGraphMaxIndegree,
                     randomGraphMaxOutdegree,
                     false);
-            case "Mim" ->
-                    GraphUtils.makeRandomMim(numFactors, numStructuralNodes, maxStructuralEdges, measurementModelDegree,
-                            numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
-                            numMeasuredMeasuredImpureAssociations);
+            case "Mim" -> {
+                DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
+                        numStructuralNodes, numFactors, measurementModelDegree);
+                yield DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
+                        numLatentMeasuredImpureParents,
+                        numMeasuredMeasuredImpureParents,
+                        numMeasuredMeasuredImpureAssociations,
+                        DataGraphUtilsFlexMim.LatentLinkMode.CARTESIAN_PRODUCT,
+                        new Random());
+            }
             case "ScaleFree" -> GraphUtils.makeRandomScaleFree(newGraphNumMeasuredNodes,
                     newGraphNumLatents, alpha, beta, deltaIn, deltaOut);
             default -> throw new IllegalStateException("Unrecognized graph type: " + type);
         };
-
-    }
-
-    private static Graph makeRandomDag(Graph _graph, int newGraphNumMeasuredNodes,
-                                       int newGraphNumLatents,
-                                       int newGraphNumEdges, int randomGraphMaxDegree,
-                                       int randomGraphMaxIndegree,
-                                       int randomGraphMaxOutdegree,
-//                                       boolean graphRandomFoward,
-//                                       boolean graphUniformlySelected,
-                                       boolean randomGraphConnected,
-//                                       boolean graphChooseFixed,
-                                       boolean addCycles, Parameters parameters) {
-        Graph graph = null;
-
-
-        int numNodes = newGraphNumMeasuredNodes + newGraphNumLatents;
-
-        while (graph == null) {
-
-            List<Node> nodes = new ArrayList<>();
-
-            for (int i = 0; i < numNodes; i++) {
-                nodes.add(new GraphNode("X" + (i + 1)));
-            }
-
-//            if (true) {
-            graph = RandomGraph.randomGraph(nodes, newGraphNumLatents,
-                    newGraphNumEdges, randomGraphMaxDegree, randomGraphMaxIndegree, randomGraphMaxOutdegree,
-                    randomGraphConnected);
-            LayoutUtil.arrangeBySourceGraph(graph, _graph);
-            HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
-            LayoutUtil.arrangeByLayout(graph, layout);
-//            } else {
-//                if (graphUniformlySelected) {
-//
-//                    graph = RandomGraph.randomGraphUniform(nodes,
-//                            newGraphNumLatents,
-//                            newGraphNumEdges,
-//                            randomGraphMaxDegree,
-//                            randomGraphMaxIndegree,
-//                            randomGraphMaxOutdegree,
-//                            randomGraphConnected, 50000);
-//                    LayoutUtil.arrangeBySourceGraph(graph, _graph);
-//                    HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
-//                    LayoutUtil.arrangeByLayout(graph, layout);
-//                } else {
-//                    if (graphChooseFixed) {
-//                        do {
-//                            graph = RandomGraph.randomGraph(nodes,
-//                                    newGraphNumLatents,
-//                                    newGraphNumEdges,
-//                                    randomGraphMaxDegree,
-//                                    randomGraphMaxIndegree,
-//                                    randomGraphMaxOutdegree,
-//                                    randomGraphConnected);
-//                            LayoutUtil.arrangeBySourceGraph(graph, _graph);
-//                            HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
-//                            LayoutUtil.arrangeByLayout(graph, layout);
-//                        } while (graph.getNumEdges() < newGraphNumEdges);
-//                    }
-//                }
-//            }
-
-            if (addCycles) {
-                graph = RandomGraph.randomCyclicGraph2(numNodes, newGraphNumEdges, 8);
-            } else {
-                graph = new EdgeListGraph(graph);
-            }
-
-            int randomGraphMinNumCycles = parameters.getInt("randomGraphMinNumCycles", 0);
-            RandomGraph.addTwoCycles(graph, randomGraphMinNumCycles);
-        }
-
-        return graph;
-    }
-
-    private static Graph makeRandomMim(int numFactors, int numStructuralNodes, int maxStructuralEdges, int measurementModelDegree,
-                                       int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
-                                       int numMeasuredMeasuredImpureAssociations) {
-
-        Graph graph;
-
-        if (numFactors == 1) {
-            DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
-                    numStructuralNodes, 1, measurementModelDegree);
-            graph = DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
-                    numLatentMeasuredImpureParents,
-                    numMeasuredMeasuredImpureParents,
-                    numMeasuredMeasuredImpureAssociations, new Random());
-
-        } else if (numFactors == 2) {
-            DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
-                    numStructuralNodes, 2, measurementModelDegree);
-            return DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
-                    numLatentMeasuredImpureParents,
-                    numMeasuredMeasuredImpureParents,
-                    numMeasuredMeasuredImpureAssociations, new Random());
-        } else {
-            throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
-                                               "sorry dude.");
-        }
-
-        return graph;
     }
 
     private static Graph makeRandomScaleFree(int numNodes, int numLatents, double alpha,

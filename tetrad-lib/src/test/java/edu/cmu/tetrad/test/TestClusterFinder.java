@@ -1,8 +1,8 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.DataGraphUtilsFlexMim;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ScoredClusterFinder;
 import edu.cmu.tetrad.sem.SemIm;
@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 public class TestClusterFinder {
 
@@ -23,22 +24,12 @@ public class TestClusterFinder {
 
         Graph graph;
 
-        if (numFactors == 1) {
-            graph = GraphUtils.randomOneFactorMim(numStructuralNodes,
-                    maxStructuralEdges, measurementModelDegree,
-                    numLatentMeasuredImpureParents,
-                    numMeasuredMeasuredImpureParents,
-                    numMeasuredMeasuredImpureAssociations);
-        } else if (numFactors == 2) {
-            graph = GraphUtils.randomTwoFactorMim(numStructuralNodes,
-                    maxStructuralEdges, measurementModelDegree,
-                    numLatentMeasuredImpureParents,
-                    numMeasuredMeasuredImpureParents,
-                    numMeasuredMeasuredImpureAssociations);
-        } else {
-            throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
-                                               "sorry dude.");
-        }
+        DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
+                numStructuralNodes, numFactors, maxStructuralEdges);
+        graph = DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), measurementModelDegree,
+                numLatentMeasuredImpureParents,
+                numMeasuredMeasuredImpureParents,
+                numMeasuredMeasuredImpureAssociations, new Random());
 
         return graph;
     }

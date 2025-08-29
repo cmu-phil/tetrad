@@ -38,6 +38,7 @@ public final class DataGraphUtilsFlexMim {
                 numLatentMeasuredImpureParents,
                 numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations,
+                LatentLinkMode.CARTESIAN_PRODUCT,
                 new Random()
         );
     }
@@ -52,6 +53,7 @@ public final class DataGraphUtilsFlexMim {
             int numLatentMeasuredImpureParents,
             int numMeasuredMeasuredImpureParents,
             int numMeasuredMeasuredImpureAssociations,
+            LatentLinkMode latentLinkMode,
             Random rng
     ) {
         if (specs == null || specs.isEmpty()) {
@@ -146,14 +148,24 @@ public final class DataGraphUtilsFlexMim {
         for (int[] e : metaEdges) {
             Group from = groups.get(e[0]);
             Group to = groups.get(e[1]);
-            for (Node Lfrom : from.latents) {
-//                for (Node Lto : to.latents) {
-//                    graph.addDirectedEdge(Lfrom, Lto);
-//                }
+
+            if (latentLinkMode == DataGraphUtilsFlexMim.LatentLinkMode.CARTESIAN_PRODUCT) {
+                for (Node Lfrom : from.latents) {
+                    for (Node Lto : to.latents) {
+                        graph.addDirectedEdge(Lfrom, Lto);
+                    }
+                }
+            } else if (latentLinkMode == DataGraphUtilsFlexMim.LatentLinkMode.CORRESPONDING) {
+                if (from.latents.size() != to.latents.size()) {
+                    throw new IllegalArgumentException("Latent groups must have the same number of latents to " +
+                                                       "link correspondig latents.");
+                }
 
                 for (int i = 0; i < from.rank; i++) {
                     graph.addDirectedEdge(from.latents.get(i), to.latents.get(i));
                 }
+            } else {
+                throw new IllegalArgumentException("Unrecognized latent link mode: " + latentLinkMode + ".");
             }
         }
 
@@ -192,8 +204,6 @@ public final class DataGraphUtilsFlexMim {
         }
     }
 
-    // ========= helpers =========
-
     private static void addMeasuredMeasuredParents(Graph g, List<Node> measured, int count, Random rng) {
         if (count <= 0 || measured.size() < 2) return;
         // To reduce obvious cycles we’ll bias edges to go from a lower index to a higher index.
@@ -209,6 +219,8 @@ public final class DataGraphUtilsFlexMim {
             added++;
         }
     }
+
+    // ========= helpers =========
 
     private static void addMeasuredMeasuredAssociations(Graph g, List<Node> measured, int count, Random rng) {
         if (count <= 0 || measured.size() < 2) return;
@@ -231,20 +243,22 @@ public final class DataGraphUtilsFlexMim {
         return String.valueOf(c);
     }
 
+    public enum LatentLinkMode {
+        CARTESIAN_PRODUCT,
+        CORRESPONDING
+    }
+
     /**
      * Specification for a block of groups that share the same rank and #children per latent.
+     *
+     * @param countGroups      how many groups with this configuration
+     * @param rank             # of latent factors in each such group
+     * @param childrenPerGroup # measured children per latent group
      */
-    public static final class LatentGroupSpec {
-        public final int countGroups;         // how many groups with this configuration
-        public final int rank;               // # of latent factors in each such group
-        public final int childrenPerGroup;  // # measured children per latent group
-
-        public LatentGroupSpec(int countGroups, int rank, int childrenPerGroup) {
+    public record LatentGroupSpec(int countGroups, int rank, int childrenPerGroup) {
+        public LatentGroupSpec {
             if (countGroups < 1 || rank < 1 || childrenPerGroup < 1)
                 throw new IllegalArgumentException("All values must be >= 1");
-            this.countGroups = countGroups;
-            this.rank = rank;
-            this.childrenPerGroup = childrenPerGroup;
         }
     }
 
@@ -274,7 +288,7 @@ public final class DataGraphUtilsFlexMim {
             int k = used.get(base);
             used.put(base, k + 1);
             // minimal, readable disambiguator: base, base2, base3, ...
-            return base + (k + 0); // base2 on first clash
+            return base + (k); // base2 on first clash
         }
     }
 }

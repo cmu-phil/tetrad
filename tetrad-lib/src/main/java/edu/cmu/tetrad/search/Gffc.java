@@ -112,7 +112,7 @@ public class Gffc {
 
         Map<List<Integer>, Integer> clustersToRanks = new HashMap<>();
 
-        for (int rank = 1; rank <= 2; rank++) {
+        for (int rank = 1; rank <= this.rMax; rank++) {
             estimateClustersSag(rank, clustersToRanks);
         }
 
