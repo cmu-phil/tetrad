@@ -341,6 +341,10 @@ public final class Params {
      */
     public static final String KERNEL_WIDTH = "kernelWidth";
     /**
+     * Constant <code>LATENT_GROUP_SPECTS="latentGroupSpecs"</code>
+     */
+    public static final String LATENT_GROUP_SPECS = "latentGroupSpecs";
+    /**
      * Constant <code>LATENT_MEASURED_IMPURE_PARENTS="latentMeasuredImpureParents"</code>
      */
     public static final String LATENT_MEASURED_IMPURE_PARENTS = "latentMeasuredImpureParents";

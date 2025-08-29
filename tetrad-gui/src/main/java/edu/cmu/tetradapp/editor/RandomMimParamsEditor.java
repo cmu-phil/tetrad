@@ -20,9 +20,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.graph.DataGraphUtilsFlexMim;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
 import java.awt.*;
@@ -66,7 +68,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.getInt("numStructuralEdges", 3), 4);
         numStructuralEdges.setFilter((value, oldValue) -> {
             try {
-                int n = parameters.getInt("numStructuralNodes", 3);
+                int n = parameters.getInt("numStructuralEdges", 3);
                 int maxNumLatentEdges = n * (n - 1) / 2;
 
                 if (value > maxNumLatentEdges) {
@@ -114,6 +116,23 @@ class RandomMimParamsEditor extends JPanel {
                 }
 
                 parameters.set("measurementModelDegree", value);
+                return value;
+            } catch (Exception exception) {
+                TetradLogger.getInstance().log(exception.toString());
+//                RandomMimParamsEditor.LOGGER.error("", exception);
+
+                return oldValue;
+            }
+        });
+
+        StringTextField latentGroupSpecs = new StringTextField(
+                parameters.getString("latentGroupSpecs", "5:5(1)"), 10);
+        latentGroupSpecs.setFilter((value, oldValue) -> {
+            try {
+                parameters.set("latentGroupSpecs", value);
+
+                DataGraphUtilsFlexMim.parseLatentGroupSpecs(value);
+
                 return value;
             } catch (Exception exception) {
                 TetradLogger.getInstance().log(exception.toString());
@@ -183,18 +202,28 @@ class RandomMimParamsEditor extends JPanel {
 
         Box b1 = Box.createVerticalBox();
 
-        Box b9 = Box.createHorizontalBox();
-        b9.add(new JLabel("Number of Factors:"));
-        b9.add(Box.createHorizontalGlue());
-        b9.add(numFactors);
-        b1.add(b9);
+//        Box b9 = Box.createHorizontalBox();
+//        b9.add(new JLabel("Number of Factors:"));
+//        b9.add(Box.createHorizontalGlue());
+//        b9.add(numFactors);
+//        b1.add(b9);
 
-        Box b10 = Box.createHorizontalBox();
-        b10.add(new JLabel("Number of structural nodes:"));
-//        b10.add(Box.createRigidArea(new Dimension(10, 0)));
-        b10.add(Box.createHorizontalGlue());
-        b10.add(numStructuralNodes);
-        b1.add(b10);
+//        Box b10 = Box.createHorizontalBox();
+//        b10.add(new JLabel("Number of structural nodes:"));
+////        b10.add(Box.createRigidArea(new Dimension(10, 0)));
+//        b10.add(Box.createHorizontalGlue());
+//        b10.add(numStructuralNodes);
+//        b1.add(b10);
+
+
+
+        Box b14 = Box.createHorizontalBox();
+        b14.add(new JLabel("List of count:children:(rank), comma separated; e.g. 5:6(1),2:8(2):"));
+//        b14.add(Box.createHorizontalStrut(10));
+        b14.add(Box.createHorizontalGlue());
+        b14.add(latentGroupSpecs);
+        b1.add(b14);
+        b1.add(Box.createVerticalStrut(10));
 
         Box b12 = Box.createHorizontalBox();
         b12.add(new JLabel("Number of structural edges:"));

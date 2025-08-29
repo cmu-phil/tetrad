@@ -43,6 +43,10 @@ public final class GraphTypes {
      */
     public static final String CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS = "Cyclic (Constructed From Small Loops)";
     /**
+     * Constant <code>RANDOM_MIM="Random MIM"</code>
+     */
+    public static final String RANDOM_MIM = "Random MIM";
+    /**
      * Constant <code>RANDOM_ONE_FACTOR_MIM="Random One Factor MIM"</code>
      */
     public static final String RANDOM_ONE_FACTOR_MIM = "Random One Factor MIM";

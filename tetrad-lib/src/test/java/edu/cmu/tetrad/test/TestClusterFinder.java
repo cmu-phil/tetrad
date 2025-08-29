@@ -18,20 +18,22 @@ import java.util.Random;
 public class TestClusterFinder {
 
 
-    private static Graph makeRandomMim(int numFactors, int numStructuralNodes, int maxStructuralEdges, int measurementModelDegree,
+    private static Graph makeRandomMim(String latentGroupSpecs, int maxStructuralEdges, int measurementModelDegree,
                                        int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
                                        int numMeasuredMeasuredImpureAssociations) {
 
-        Graph graph;
+        List<DataGraphUtilsFlexMim.LatentGroupSpec> specs = DataGraphUtilsFlexMim.parseLatentGroupSpecs(latentGroupSpecs);
 
-        DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
-                numStructuralNodes, numFactors, maxStructuralEdges);
-        graph = DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), measurementModelDegree,
+//        DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
+//                numStructuralNodes, numFactors, maxStructuralEdges);
+        return DataGraphUtilsFlexMim.randomMimGeneral(
+                specs,
+                maxStructuralEdges,
                 numLatentMeasuredImpureParents,
                 numMeasuredMeasuredImpureParents,
-                numMeasuredMeasuredImpureAssociations, new Random());
-
-        return graph;
+                numMeasuredMeasuredImpureAssociations,
+                DataGraphUtilsFlexMim.LatentLinkMode.CARTESIAN_PRODUCT,
+                new Random());
     }
 
     @Test
@@ -44,7 +46,7 @@ public class TestClusterFinder {
         int numMeasuredMeasuredImpureParents = 0;
         int numMeasuredMeasuredImpureAssociations = 0;
 
-        Graph graph = makeRandomMim(numFactors, numStructuralNodes, maxStructuralEdges, measurementModelDegree,
+        Graph graph = makeRandomMim("5:5(1)", maxStructuralEdges, measurementModelDegree,
                 numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations);
 

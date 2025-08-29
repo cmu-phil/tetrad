@@ -46,6 +46,7 @@ public class GraphUtils {
         int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
         int maxStructuralEdges = parameters.getInt("numStructuralEdges", 3);
         int measurementModelDegree = parameters.getInt("measurementModelDegree", 3);
+        String latentGroupSpecs = parameters.getString("latentGroupSpecs");
         int numLatentMeasuredImpureParents = parameters.getInt("latentMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureParents = parameters.getInt("measuredMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureAssociations = parameters.getInt("measuredMeasuredImpureAssociations", 0);
@@ -67,9 +68,11 @@ public class GraphUtils {
                     randomGraphMaxOutdegree,
                     false);
             case "Mim" -> {
-                DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
-                        numStructuralNodes, numFactors, measurementModelDegree);
-                yield DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
+                List<DataGraphUtilsFlexMim.LatentGroupSpec> specs = DataGraphUtilsFlexMim.parseLatentGroupSpecs(
+                        parameters.getString("latentGroupSpecs"));
+//                DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
+//                        numStructuralNodes, numFactors, measurementModelDegree);
+                yield DataGraphUtilsFlexMim.randomMimGeneral(specs, maxStructuralEdges,
                         numLatentMeasuredImpureParents,
                         numMeasuredMeasuredImpureParents,
                         numMeasuredMeasuredImpureAssociations,

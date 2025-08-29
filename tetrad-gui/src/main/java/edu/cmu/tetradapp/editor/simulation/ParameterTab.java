@@ -21,6 +21,7 @@ package edu.cmu.tetradapp.editor.simulation;
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.BooleanGlassSimulation;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -51,8 +52,9 @@ public class ParameterTab extends JPanel {
             GraphTypes.ERDOS_RENYI_DAG,
             GraphTypes.SCALE_FREE_DAG,
             GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS,
-            GraphTypes.RANDOM_ONE_FACTOR_MIM,
-            GraphTypes.RANDOM_TWO_FACTOR_MIM
+            GraphTypes.RANDOM_MIM
+//            GraphTypes.RANDOM_ONE_FACTOR_MIM,
+//            GraphTypes.RANDOM_TWO_FACTOR_MIM
     };
     /**
      * The model type items.
@@ -180,6 +182,7 @@ public class ParameterTab extends JPanel {
                 case GraphTypes.ERDOS_RENYI_DAG -> new ErdosRenyi();
                 case GraphTypes.SCALE_FREE_DAG -> new ScaleFree();
                 case GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS -> new Cyclic();
+                case GraphTypes.RANDOM_MIM -> new RandomMim();
                 case GraphTypes.RANDOM_ONE_FACTOR_MIM -> new RandomSingleFactorMim();
                 case GraphTypes.RANDOM_TWO_FACTOR_MIM -> new RandomTwoFactorMim();
                 default -> throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);

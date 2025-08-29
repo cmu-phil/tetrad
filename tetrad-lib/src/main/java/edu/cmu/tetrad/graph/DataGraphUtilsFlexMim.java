@@ -3,6 +3,8 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.ContinuousVariable;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Flexible MIM generator.
@@ -244,6 +246,59 @@ public final class DataGraphUtilsFlexMim {
         int i = Math.max(1, indexFrom1);
         char c = (char) ('A' + i); // 1->B, 2->C, ...
         return String.valueOf(c);
+    }
+
+    /**
+     * Parses a specification string defining latent group configurations into a list of {@code LatentGroupSpec}
+     * objects. Each configuration in the input string must follow the pattern:
+     * {@code countGroups:childrenPerGroup(rank)}. Multiple configurations should be separated by commas (e.g.,
+     * {@code 5:3(2), 4:6(1)}).
+     *
+     * @param value the specification string containing one or more latent group configurations; must not be null or
+     *              empty, and each configuration must adhere to the specified pattern.
+     * @return a list of parsed {@code LatentGroupSpec} objects representing the configurations.
+     * @throws IllegalArgumentException if the input string is null, empty, or contains invalid configurations, or if
+     *                                  any parsed values are less than 1.
+     */
+    // Put this inside DataGraphUtilsFlexMim (or adjust the LatentGroupSpec reference accordingly)
+    public static List<LatentGroupSpec> parseLatentGroupSpecs(String value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Spec string cannot be null.");
+        }
+        String s = value.trim();
+        if (s.isEmpty()) {
+            throw new IllegalArgumentException("Spec string cannot be empty.");
+        }
+
+        // pattern: countGroups : childrenPerGroup ( rank )
+        final var pat = Pattern.compile("\\s*(\\d+)\\s*:\\s*(\\d+)\\s*\\(\\s*(\\d+)\\s*\\)\\s*");
+        String[] parts = s.split(",");
+        List<LatentGroupSpec> out = new ArrayList<>(parts.length);
+
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            Matcher m = pat.matcher(part);
+            if (!m.matches()) {
+                throw new IllegalArgumentException(
+                        "Invalid spec at item " + (i + 1) + " : '" + part.trim() +
+                        "'. Expected form: count:children(rank), e.g., 5:5(1)"
+                );
+            }
+            int countGroups = Integer.parseInt(m.group(1));
+            int childrenPerGroup = Integer.parseInt(m.group(2));
+            int rank = Integer.parseInt(m.group(3));
+
+            if (countGroups < 1 || childrenPerGroup < 1 || rank < 1) {
+                throw new IllegalArgumentException(
+                        "All values must be >= 1 at item " + (i + 1) +
+                        " : '" + part.trim() + "'"
+                );
+            }
+
+            out.add(new LatentGroupSpec(countGroups, rank, childrenPerGroup));
+        }
+
+        return out;
     }
 
     public enum LatentLinkMode {
