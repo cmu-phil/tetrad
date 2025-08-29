@@ -11,6 +11,22 @@ import java.awt.*;
 import java.io.Serial;
 import java.util.List;
 
+/**
+ * RandomMimParamsEditor is a user interface component that allows for the configuration and editing of parameters used
+ * to construct random MIM (Multiple Indicator Models) graphs. It provides input fields for setting structural edges,
+ * latent group specifications, and impure edge counts, which are validated and saved back into the provided parameters
+ * object.
+ * <p>
+ * The class extends JPanel and organizes the UI using a vertical box layout with labeled input fields for user-friendly
+ * interaction. Filters are applied to ensure valid inputs are accepted and internally updated.
+ * <p>
+ * This class is intended for use within an application where users need to manage and customize graph structures and
+ * their associated properties for analysis or simulation.
+ * <p>
+ * Key features: - Input and validation for structural edge counts. - Input and real-time validation for latent group
+ * specifications. - Input and validation for counts of impure edges of various types. - Organized and labeled layout
+ * for user clarity.
+ */
 class RandomMimParamsEditor extends JPanel {
 
     @Serial
@@ -28,6 +44,15 @@ class RandomMimParamsEditor extends JPanel {
     private static final String D_LATENT_GROUP_SPECS = "5:5(1)";
     private static final int D_ZERO = 0;
 
+    /**
+     * Constructs a {@code RandomMimParamsEditor} instance. This editor provides a graphical user interface for editing
+     * parameters related to random Mixed Independence Model (MIM) generation. Various fields and controls are
+     * initialized to specify and constrain the parameter values.
+     *
+     * @param parameters the parameters object that initializes and stores the settings for the random MIM generation.
+     *                   It provides default values and serves as the backing store for parameter updates made through
+     *                   the editor.
+     */
     public RandomMimParamsEditor(Parameters parameters) {
         setLayout(new BorderLayout());
 
