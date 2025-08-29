@@ -31,18 +31,14 @@ public class RandomMim implements RandomGraph {
      */
     @Override
     public Graph createGraph(Parameters parameters) {
-        String latentGroupSpecs = parameters.getString("latentGroupSpecs", "5:5(1)");
-//        int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
-        int maxStructuralEdges = parameters.getInt("numStructuralEdges", 3);
-//        int measurementModelDegree = parameters.getInt("measurementModelDegree", 3);
-        int numLatentMeasuredImpureParents = parameters.getInt("latentMeasuredImpureParents", 0);
-        int numMeasuredMeasuredImpureParents = parameters.getInt("measuredMeasuredImpureParents", 0);
-        int numMeasuredMeasuredImpureAssociations = parameters.getInt("measuredMeasuredImpureAssociations", 0);
+        String latentGroupSpecs = parameters.getString("mimLatentGroupSpecs", "5:5(1)");
+        int numStructuralEdges = parameters.getInt("mimNumStructuralEdges", 3);
+        int numLatentMeasuredImpureParents = parameters.getInt("mimLatentMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureAssociations = parameters.getInt("mimMeasuredMeasuredImpureAssociations", 0);
 
         List<DataGraphUtilsFlexMim.LatentGroupSpec> specs = DataGraphUtilsFlexMim.parseLatentGroupSpecs(latentGroupSpecs);
-//        DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
-//                numStructuralNodes, 3, measurementModelDegree);
-        return DataGraphUtilsFlexMim.randomMimGeneral(specs, maxStructuralEdges,
+        return DataGraphUtilsFlexMim.randomMimGeneral(specs, numStructuralEdges,
                 numLatentMeasuredImpureParents,
                 numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations,
@@ -64,13 +60,13 @@ public class RandomMim implements RandomGraph {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("latentGroupSpecs");
-//        parameters.add("numStructuralNodes");
-        parameters.add("numStructuralEdges");
-        parameters.add("measurementModelDegree");
-        parameters.add("latentMeasuredImpureParents");
-        parameters.add("measuredMeasuredImpureParents");
-        parameters.add("measuredMeasuredImpureAssociations");
+        parameters.add("mimLatentGroupSpecs");
+//        parameters.add("mimNumStructuralNodes");
+        parameters.add("mimNumStructuralEdges");
+//        parameters.add("mimMeasurementModelDegree");
+        parameters.add("mimLatentMeasuredImpureParents");
+        parameters.add("mimMeasuredMeasuredImpureParents");
+        parameters.add("mimMeasuredMeasuredImpureAssociations");
         return parameters;
     }
 }

@@ -30,12 +30,12 @@ public class RandomTwoFactorMim implements RandomGraph {
      */
     @Override
     public Graph createGraph(Parameters parameters) {
-        int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
-        int maxStructuralEdges = parameters.getInt("numStructuralEdges", 3);
-        int measurementModelDegree = parameters.getInt("measurementModelDegree", 3);
-        int numLatentMeasuredImpureParents = parameters.getInt("latentMeasuredImpureParents", 0);
-        int numMeasuredMeasuredImpureParents = parameters.getInt("measuredMeasuredImpureParents", 0);
-        int numMeasuredMeasuredImpureAssociations = parameters.getInt("measuredMeasuredImpureAssociations", 0);
+        int numStructuralNodes = parameters.getInt("mimNumStructuralNodes", 3);
+        int maxStructuralEdges = parameters.getInt("mimNumStructuralEdges", 3);
+        int measurementModelDegree = parameters.getInt("mimNumChildrenPerGroup", 3);
+        int numLatentMeasuredImpureParents = parameters.getInt("mimLatentMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureAssociations = parameters.getInt("mimMeasuredMeasuredImpureAssociations", 0);
 
         DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
                 numStructuralNodes, 3, measurementModelDegree);
@@ -61,12 +61,12 @@ public class RandomTwoFactorMim implements RandomGraph {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("numStructuralNodes");
-        parameters.add("numStructuralEdges");
-        parameters.add("measurementModelDegree");
-        parameters.add("latentMeasuredImpureParents");
-        parameters.add("measuredMeasuredImpureParents");
-        parameters.add("measuredMeasuredImpureAssociations");
+        parameters.add("mimNumStructuralNodes");
+        parameters.add("mimNumStructuralEdges");
+        parameters.add("mimNumChildrenPerGroup");
+        parameters.add("mimLatentMeasuredImpureParents");
+        parameters.add("mimMeasuredMeasuredImpureParents");
+        parameters.add("mimMeasuredMeasuredImpureAssociations");
         return parameters;
     }
 }

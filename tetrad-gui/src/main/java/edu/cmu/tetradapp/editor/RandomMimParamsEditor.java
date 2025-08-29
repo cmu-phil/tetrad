@@ -28,242 +28,139 @@ import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Objects;
 
-/**
- * Edits the parameters for generating random graphs.
- *
- * @author josephramsey
- */
 class RandomMimParamsEditor extends JPanel {
 
     private static final long serialVersionUID = -1478898170626611725L;
 
-//    private static final Logger LOGGER = LoggerFactory.getLogger(RandomMimParamsEditor.class);
+    // ---- Parameter keys (centralized) -------------------------------------
+    private static final String K_NUM_FACTORS = "randomMimNumFactors";
+    private static final String K_NUM_STRUCTURAL_EDGES = "mimNumStructuralEdges";
+    private static final String K_NUM_STRUCTURAL_NODES = "mimNumStructuralNodes";
+    private static final String K_NUM_CHILDREN_PER_GROUP = "mimNumChildrenPerGroup";
+    private static final String K_LATENT_GROUP_SPECS = "mimLatentGroupSpecs";
+    private static final String K_LATENT_MEASURED_IMPURE_PARENTS = "mimLatentMeasuredImpureParents";
+    private static final String K_MEASURED_MEASURED_IMPURE_PARENTS = "mimMeasuredMeasuredImpureParents";
+    private static final String K_MEASURED_MEASURED_IMPURE_ASSOC = "mimMeasuredMeasuredImpureAssociations";
 
-    /**
-     * Constructs a dialog to edit the given workbench randomization parameters.
-     *
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
-     */
+    // ---- Defaults (kept close to keys) ------------------------------------
+    private static final int D_NUM_FACTORS = 1;
+    private static final int D_NUM_STRUCTURAL_EDGES = 3;
+    private static final int D_NUM_STRUCTURAL_NODES = 3;
+    private static final int D_NUM_CHILDREN_PER_GROUP = 5;
+    private static final String D_LATENT_GROUP_SPECS = "5:5(1)";
+    private static final int D_ZERO = 0;
+
     public RandomMimParamsEditor(Parameters parameters) {
-        JComboBox<String> numFactors = new JComboBox<>();
-
-        numFactors.addItem("1");
-        numFactors.addItem("2");
-
-        numFactors.addActionListener((e) -> {
-            if (Objects.equals(numFactors.getSelectedItem(), "1")) {
-                parameters.set("randomMimNumFactors", 1);
-            } else if (numFactors.getSelectedItem().equals("2")) {
-                parameters.set("randomMimNumFactors", 2);
-            }
-        });
-
-        numFactors.setSelectedItem(Integer.toString(parameters.getInt("randomMimNumFactors", 1)));
-
-        numFactors.setMaximumSize(numFactors.getPreferredSize());
-
-        IntTextField numStructuralEdges = new IntTextField(
-                parameters.getInt("numStructuralEdges", 3), 4);
-        numStructuralEdges.setFilter((value, oldValue) -> {
-            try {
-                int n = parameters.getInt("numStructuralEdges", 3);
-                int maxNumLatentEdges = n * (n - 1) / 2;
-
-                if (value > maxNumLatentEdges) {
-                    value = maxNumLatentEdges;
-                }
-
-                parameters.set("numStructuralEdges", value);
-                return value;
-            } catch (Exception exception) {
-                TetradLogger.getInstance().log(exception.toString());
-//                RandomMimParamsEditor.LOGGER.error("", exception);
-
-                return oldValue;
-            }
-        });
-
-        IntTextField numStructuralNodes = new IntTextField(
-                parameters.getInt("numStructuralNodes", 3), 4);
-        numStructuralNodes.setFilter((value, oldValue) -> {
-            try {
-                if (value < 1) {
-                    throw new IllegalArgumentException(
-                            "Number of structural "
-                            + "nodes Must be greater than 0: " + value);
-                }
-
-                parameters.set("numStructuralNodes", value);
-                numStructuralEdges.setValue(numStructuralEdges.getValue());
-                return value;
-            } catch (Exception exception) {
-                TetradLogger.getInstance().log(exception.toString());
-//                RandomMimParamsEditor.LOGGER.error("", exception);
-
-                numStructuralEdges.setValue(numStructuralEdges.getValue());
-                return oldValue;
-            }
-        });
-
-        IntTextField numMeasurementsPerLatent = new IntTextField(
-                parameters.getInt("measurementModelDegree", 5), 4);
-        numMeasurementsPerLatent.setFilter((value, oldValue) -> {
-            try {
-                if (value < 2) {
-                    throw new IllegalArgumentException();
-                }
-
-                parameters.set("measurementModelDegree", value);
-                return value;
-            } catch (Exception exception) {
-                TetradLogger.getInstance().log(exception.toString());
-//                RandomMimParamsEditor.LOGGER.error("", exception);
-
-                return oldValue;
-            }
-        });
-
-        StringTextField latentGroupSpecs = new StringTextField(
-                parameters.getString("latentGroupSpecs", "5:5(1)"), 10);
-        latentGroupSpecs.setFilter((value, oldValue) -> {
-            try {
-                parameters.set("latentGroupSpecs", value);
-
-                DataGraphUtilsFlexMim.parseLatentGroupSpecs(value);
-
-                return value;
-            } catch (Exception exception) {
-                TetradLogger.getInstance().log(exception.toString());
-//                RandomMimParamsEditor.LOGGER.error("", exception);
-
-                return oldValue;
-            }
-        });
-
-        IntTextField numLatentMeasuredImpureParents = new IntTextField(
-                parameters.getInt("latentMeasuredImpureParents", 0), 4);
-        numLatentMeasuredImpureParents.setFilter((value, oldValue) -> {
-            try {
-                if (value < 0) {
-                    throw new IllegalArgumentException();
-                }
-
-                parameters.set("latentMeasuredImpureParents", value);
-                return value;
-            } catch (Exception exception) {
-                TetradLogger.getInstance().log(exception.toString());
-//                RandomMimParamsEditor.LOGGER.error("", exception);
-
-                return oldValue;
-            }
-        });
-
-        IntTextField numMeasuredMeasuredImpureParents = new IntTextField(
-                parameters.getInt("measuredMeasuredImpureParents", 0), 4);
-        numMeasuredMeasuredImpureParents.setFilter((value, oldValue) -> {
-            try {
-                if (value < 0) {
-                    throw new IllegalArgumentException();
-                }
-
-                parameters.set("measuredMeasuredImpureParents", value);
-                return value;
-            } catch (Exception exception) {
-                TetradLogger.getInstance().log(exception.toString());
-//                RandomMimParamsEditor.LOGGER.error("", exception);
-
-                return oldValue;
-            }
-        });
-
-        IntTextField numMeasuredMeasuredImpureAssociations = new IntTextField(
-                parameters.getInt("measuredMeasuredImpureAssociations", 0), 4);
-        numMeasuredMeasuredImpureAssociations.setFilter((value, oldValue) -> {
-            try {
-                if (value < 0) {
-                    throw new IllegalArgumentException();
-                }
-
-                parameters.set("measuredMeasuredImpureAssociations",
-                        value);
-                return value;
-            } catch (Exception exception) {
-                TetradLogger.getInstance().log(exception.toString());
-//                RandomMimParamsEditor.LOGGER.error("", exception);
-
-                return oldValue;
-            }
-        });
-
-        // construct the workbench.
         setLayout(new BorderLayout());
 
-        Box b1 = Box.createVerticalBox();
+        // ---- Controls ------------------------------------------------------
+        // Note: numFactors combo is created but not shown in original UI. We keep
+        // **only** the controls the current UI actually displays.
 
-//        Box b9 = Box.createHorizontalBox();
-//        b9.add(new JLabel("Number of Factors:"));
-//        b9.add(Box.createHorizontalGlue());
-//        b9.add(numFactors);
-//        b1.add(b9);
+        // Structural edges (clamped to simple DAG max given current node count)
+        IntTextField numStructuralEdges = new IntTextField(
+                parameters.getInt(K_NUM_STRUCTURAL_EDGES, D_NUM_STRUCTURAL_EDGES), 4
+        );
+        numStructuralEdges.setFilter((value, oldValue) -> {
+            try {
+                int n = Math.max(0, parameters.getInt(K_NUM_STRUCTURAL_NODES, D_NUM_STRUCTURAL_NODES));
+                int maxEdges = n <= 1 ? 0 : (n * (n - 1)) / 2;
+                int clamped = Math.min(Math.max(0, value), maxEdges);
+                parameters.set(K_NUM_STRUCTURAL_EDGES, clamped);
+                return clamped;
+            } catch (Exception ex) {
+                TetradLogger.getInstance().log(ex.toString());
+                return oldValue;
+            }
+        });
 
-//        Box b10 = Box.createHorizontalBox();
-//        b10.add(new JLabel("Number of structural nodes:"));
-////        b10.add(Box.createRigidArea(new Dimension(10, 0)));
-//        b10.add(Box.createHorizontalGlue());
-//        b10.add(numStructuralNodes);
-//        b1.add(b10);
+        // Latent group specs (validated by parser)
+        StringTextField latentGroupSpecs = new StringTextField(
+                parameters.getString(K_LATENT_GROUP_SPECS, D_LATENT_GROUP_SPECS), 16
+        );
+        latentGroupSpecs.setFilter((value, oldValue) -> {
+            try {
+                // Validate before saving
+                DataGraphUtilsFlexMim.parseLatentGroupSpecs(value);
+                parameters.set(K_LATENT_GROUP_SPECS, value);
+                return value;
+            } catch (Exception ex) {
+                TetradLogger.getInstance().log(ex.toString());
+                return oldValue;
+            }
+        });
 
+        // Impure edge counts (all must be >= 0)
+        IntTextField numLatentMeasuredImpureParents = new IntTextField(
+                parameters.getInt(K_LATENT_MEASURED_IMPURE_PARENTS, D_ZERO), 4
+        );
+        numLatentMeasuredImpureParents.setFilter((value, oldValue) ->
+                nonNegativeFilter(parameters, K_LATENT_MEASURED_IMPURE_PARENTS, value, oldValue));
 
+        IntTextField numMeasuredMeasuredImpureParents = new IntTextField(
+                parameters.getInt(K_MEASURED_MEASURED_IMPURE_PARENTS, D_ZERO), 4
+        );
+        numMeasuredMeasuredImpureParents.setFilter((value, oldValue) ->
+                nonNegativeFilter(parameters, K_MEASURED_MEASURED_IMPURE_PARENTS, value, oldValue));
 
-        Box b14 = Box.createHorizontalBox();
-        b14.add(new JLabel("List of count:children:(rank), comma separated; e.g. 5:6(1),2:8(2):"));
-//        b14.add(Box.createHorizontalStrut(10));
-        b14.add(Box.createHorizontalGlue());
-        b14.add(latentGroupSpecs);
-        b1.add(b14);
-        b1.add(Box.createVerticalStrut(10));
+        IntTextField numMeasuredMeasuredImpureAssociations = new IntTextField(
+                parameters.getInt(K_MEASURED_MEASURED_IMPURE_ASSOC, D_ZERO), 4
+        );
+        numMeasuredMeasuredImpureAssociations.setFilter((value, oldValue) ->
+                nonNegativeFilter(parameters, K_MEASURED_MEASURED_IMPURE_ASSOC, value, oldValue));
 
-        Box b12 = Box.createHorizontalBox();
-        b12.add(new JLabel("Number of structural edges:"));
-        b12.add(Box.createHorizontalGlue());
-        b12.add(numStructuralEdges);
-        b1.add(b12);
+        // ---- Layout (keeps the currently visible rows only) ----------------
+        Box root = Box.createVerticalBox();
+        root.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
 
-//        Box b15 = Box.createHorizontalBox();
-//        b15.add(new JLabel("Number of measurements per latent:"));
-////        b15.add(Box.createHorizontalStrut(10));
-//        b15.add(Box.createHorizontalGlue());
-//        b15.add(numMeasurementsPerLatent);
-//        b1.add(b15);
-//        b1.add(Box.createVerticalStrut(10));
+        root.add(row("List of count:children:(rank), comma separated; e.g. 5:6(1),2:8(2):", latentGroupSpecs));
+        root.add(Box.createVerticalStrut(10));
+        root.add(row("Number of structural edges:", numStructuralEdges));
 
-        Box b16 = Box.createHorizontalBox();
-        b16.add(new JLabel("Add impure edges:"));
-        b16.add(Box.createHorizontalGlue());
-        b1.add(b16);
-//        b1.add(Box.createVerticalStrut(5));
+        root.add(Box.createVerticalStrut(10));
 
-        Box b17 = Box.createHorizontalBox();
-        b17.add(new JLabel("Latent --> Measured"));
-        b17.add(Box.createHorizontalGlue());
-        b17.add(numLatentMeasuredImpureParents);
-        b1.add(b17);
+        root.add(sectionLabel("Add impure edges:"));
+        root.add(row("Latent \u2192 Measured", numLatentMeasuredImpureParents));
+        root.add(row("Measured \u2192 Measured", numMeasuredMeasuredImpureParents));
+        root.add(row("Measured \u2194 Measured", numMeasuredMeasuredImpureAssociations));
 
-        Box b18 = Box.createHorizontalBox();
-        b18.add(new JLabel("Measured --> Measured"));
-        b18.add(Box.createHorizontalGlue());
-        b18.add(numMeasuredMeasuredImpureParents);
-        b1.add(b18);
+        root.add(Box.createVerticalGlue());
+        add(root, BorderLayout.CENTER);
+    }
 
-        Box b19 = Box.createHorizontalBox();
-        b19.add(new JLabel("Measured <-> Measured"));
-        b19.add(Box.createHorizontalGlue());
-        b19.add(numMeasuredMeasuredImpureAssociations);
-        b1.add(b19);
+    // ---- Helpers -----------------------------------------------------------
 
-        b1.add(Box.createVerticalGlue());
-        add(b1, BorderLayout.CENTER);
+    private static int nonNegativeFilter(Parameters p, String key, int value, int oldValue) {
+        try {
+            if (value < 0) throw new IllegalArgumentException("Value must be \u2265 0.");
+            p.set(key, value);
+            return value;
+        } catch (Exception ex) {
+            TetradLogger.getInstance().log(ex.toString());
+            return oldValue;
+        }
+    }
+
+    private static Box row(String label, JComponent field) {
+        Box row = Box.createHorizontalBox();
+        JLabel l = new JLabel(label);
+        l.setLabelFor(field);
+        row.add(l);
+        row.add(Box.createHorizontalGlue());
+        row.add(field);
+        row.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return row;
+    }
+
+    private static Box sectionLabel(String text) {
+        Box box = Box.createHorizontalBox();
+        JLabel l = new JLabel(text);
+        l.setFont(l.getFont().deriveFont(Font.BOLD));
+        box.add(l);
+        box.add(Box.createHorizontalGlue());
+        box.setAlignmentX(Component.LEFT_ALIGNMENT);
+        box.add(Box.createVerticalStrut(4));
+        return box;
     }
 }

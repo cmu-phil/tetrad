@@ -469,13 +469,13 @@ public final class Params {
      */
     public static final String NUM_RUNS = "numRuns";
     /**
-     * Constant <code>NUM_STRUCTURAL_EDGES="numStructuralEdges"</code>
+     * Constant <code>NUM_STRUCTURAL_EDGES="mimNumStructuralEdges"</code>
      */
-    public static final String NUM_STRUCTURAL_EDGES = "numStructuralEdges";
+    public static final String NUM_STRUCTURAL_EDGES = "mimNumStructuralEdges";
     /**
-     * Constant <code>NUM_STRUCTURAL_NODES="numStructuralNodes"</code>
+     * Constant <code>NUM_STRUCTURAL_NODES="mimNumStructuralNodes"</code>
      */
-    public static final String NUM_STRUCTURAL_NODES = "numStructuralNodes";
+    public static final String NUM_STRUCTURAL_NODES = "mimNumStructuralNodes";
     /**
      * Constant <code>NUMBER_RESAMPLING="numberResampling"</code>
      */

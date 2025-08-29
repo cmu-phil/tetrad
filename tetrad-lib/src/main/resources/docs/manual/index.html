@@ -8008,45 +8008,65 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="latentGroupSpecs">latentGroupSpecs</h3>
+            id="mimLatentGroupSpecs">mimLatentGroupSpecs</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="latentGroupSpecs_short_desc">
-                List of latent group specs [#groups]:[#childrenPerGroup]:(rank), comma separated; e.g. 5:6(1)</li>
+                    id="mimLatentGroupSpecs_short_desc">
+                MIM: List of count:children:(rank), comma separated; e.g. 5:6(1),2:8(2):</span></li>
             <li>Long Description: <span
-                    id="latentGroupSpecs_long_desc">
+                    id="mimLatentGroupSpecs_long_desc">
                 List of count:children:(rank), comma separated; e.g. 5:6(1),2:8(2)</span></li>
             <li>Default Value: <span
-                    id="latentGroupSpecs_default_value">0</span></li>
+                    id="mimLatentGroupSpecs_default_value">5:6(1)</span></li>
             <li>Lower Bound: <span
-                    id="latentGroupSpecs_lower_bound"></span></li>
+                    id="mimLatentGroupSpecs_lower_bound"></span></li>
             <li>Upper Bound: <span
-                    id="latentGroupSpecs_upper_bound"></span></li>
+                    id="mimLatentGroupSpecs_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="latentGroupSpecs_value_type">String</span></li>
+                    id="mimLatentGroupSpecs_value_type">String</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="latentMeasuredImpureParents">latentMeasuredImpureParents</h3>
+            id="mimLatentMeasuredImpureParents">mimLatentMeasuredImpureParents</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="latentMeasuredImpureParents_short_desc">Number of Latent -->
+                    id="mimLatentMeasuredImpureParents_short_desc">MIM: Number of Latent -->
         Measured impure edges</span></li>
             <li>Long Description: <span
-                    id="latentMeasuredImpureParents_long_desc"> It is possible for
+                    id="mimLatentMeasuredImpureParents_long_desc"> It is possible for
         structural nodes to have as children measured variables that are
         children of other structural nodes. These edges in the graph will be
         considered impure.</span></li>
             <li>Default Value: <span
-                    id="latentMeasuredImpureParents_default_value">0</span></li>
+                    id="mimLatentMeasuredImpureParents_default_value">0</span></li>
             <li>Lower Bound: <span
-                    id="latentMeasuredImpureParents_lower_bound">-2147483648</span></li>
+                    id="mimLatentMeasuredImpureParents_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span
-                    id="latentMeasuredImpureParents_upper_bound">2147483647</span></li>
+                    id="mimLatentMeasuredImpureParents_upper_bound">2147483647</span></li>
             <li>Value Type: <span
-                    id="latentMeasuredImpureParents_value_type">Integer</span></li>
+                    id="mimLatentMeasuredImpureParents_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="mimNumChildrenPerGroup">mimNumChildrenPerGroup</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="mimNumChildrenPerGroup_short_desc">MIM: Number of children for
+                    each group  latents</span></li>
+            <li>Long Description: <span
+                    id="mimNumChildrenPerGroup_long_desc">Each group of latents shares
+                    a common set of children of this size.</span></li>
+            <li>Default Value: <span
+                    id="mimNumChildrenPerGroup_default_value">0</span></li>
+            <li>Lower Bound: <span
+                    id="mimNumChildrenPerGroup_lower_bound">-2147483648</span></li>
+            <li>Upper Bound: <span
+                    id="mimNumChildrenPerGroup_upper_bound">2147483647</span></li>
+            <li>Value Type: <span
+                    id="mimNumChildrenPerGroup_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="lowerBound">lowerBound</h3>
@@ -8328,72 +8348,72 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="measuredMeasuredImpureAssociations">
-            measuredMeasuredImpureAssociations</h3>
+            id="mimMeasuredMeasuredImpureAssociations">
+            mimMeasuredMeasuredImpureAssociations</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="measuredMeasuredImpureAssociations_short_desc"> Number of
+                    id="mimMeasuredMeasuredImpureAssociations_short_desc">MIM: Number of
         Measured <-> Measured impure edges</span></li>
             <li>Long Description:
-                <span id="measuredMeasuredImpureAssociations_long_desc"> It is
+                <span id="mimMeasuredMeasuredImpureAssociations_long_desc"> It is
         possible for measures from two different structural nodes to be
         confounded. These confounding (bidirected) edges will be considered
         to be impure.</span></li>
             <li>Default Value: <span
-                    id="measuredMeasuredImpureAssociations_default_value">0</span></li>
+                    id="mimMeasuredMeasuredImpureAssociations_default_value">0</span></li>
             <li>Lower Bound: <span
-                    id="measuredMeasuredImpureAssociations_lower_bound">-2147483648</span
+                    id="mimMeasuredMeasuredImpureAssociations_lower_bound">-2147483648</span
             ></li>
             <li>Upper Bound: <span
-                    id="measuredMeasuredImpureAssociations_upper_bound">2147483647</span>
+                    id="mimMeasuredMeasuredImpureAssociations_upper_bound">2147483647</span>
             </li>
             <li>Value Type: <span
-                    id="measuredMeasuredImpureAssociations_value_type">Integer</span></li
+                    id="mimMeasuredMeasuredImpureAssociations_value_type">Integer</span></li
             >
         </ul>
 
         <h3 class="parameter_description"
-            id="measuredMeasuredImpureParents">measuredMeasuredImpureParents</h3>
+            id="mimMeasuredMeasuredImpureParents">mimMeasuredMeasuredImpureParents</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="measuredMeasuredImpureParents_short_desc"> Number of Measured -->
+                    id="mimMeasuredMeasuredImpureParents_short_desc">MIM: Number of Measured -->
         Measured impure edges</span></li>
             <li>Long Description: <span
-                    id="measuredMeasuredImpureParents_long_desc"> It is possible for
+                    id="mimMeasuredMeasuredImpureParents_long_desc"> It is possible for
         measures from two different structural nodes to have directed edges
         between them. These edges will be considered to be impure.</span>
             </li>
             <li>Default Value: <span
-                    id="measuredMeasuredImpureParents_default_value">0</span></li>
+                    id="mimMeasuredMeasuredImpureParents_default_value">0</span></li>
             <li>Lower Bound: <span
-                    id="measuredMeasuredImpureParents_lower_bound">-2147483648</span></li
+                    id="mimMeasuredMeasuredImpureParents_lower_bound">-2147483648</span></li
             >
             <li>Upper Bound: <span
-                    id="measuredMeasuredImpureParents_upper_bound">2147483647</span></li>
+                    id="mimMeasuredMeasuredImpureParents_upper_bound">2147483647</span></li>
             <li>Value Type: <span
-                    id="measuredMeasuredImpureParents_value_type">Integer</span></li>
+                    id="mimMeasuredMeasuredImpureParents_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="measurementModelDegree">measurementModelDegree</h3>
+            id="mimMimNumStructuralNodes">mimMimNumStructuralNodes</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="measurementModelDegree_short_desc">Number of measurements per
+                    id="mimMimNumStructuralNodes_short_desc">Number of measurements per
         Latent</span></li>
             <li>Long Description: <span
-                    id="measurementModelDegree_long_desc"> Each structural node in the
+                    id="mimMimNumStructuralNodes_long_desc"> Each structural node in the
         MIM will be created to have this many measured children.</span></li>
             <li>Default Value: <span
-                    id="measurementModelDegree_default_value">5</span></li>
+                    id="mimMimNumStructuralNodes_default_value">5</span></li>
             <li>Lower
                 Bound: <span
-                        id="measurementModelDegree_lower_bound">-2147483648</span></li>
+                        id="mimMimNumStructuralNodes_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span
-                    id="measurementModelDegree_upper_bound">2147483647</span></li>
+                    id="mimMimNumStructuralNodes_upper_bound">2147483647</span></li>
             <li>Value Type: <span
-                    id="measurementModelDegree_value_type">Integer</span></li>
+                    id="mimMimNumStructuralNodes_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -8718,48 +8738,48 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="numStructuralEdges">numStructuralEdges</h3>
+            id="mimNumStructuralEdges">mimNumStructuralEdges</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="numStructuralEdges_short_desc">Number of structural
+                    id="mimNumStructuralEdges_short_desc">MIM: Number of structural
         edges</span></li>
             <li>Long Description: <span
-                    id="numStructuralEdges_long_desc"> This is a parameter for generating
+                    id="mimNumStructuralEdges_long_desc"> This is a parameter for generating
         random multiple indicator models (MIMs). A structural edge is an edge
         connecting two structural nodes.</span></li>
             <li>Default Value:
-                <span id="numStructuralEdges_default_value">3</span></li>
+                <span id="mimNumStructuralEdges_default_value">3</span></li>
             <li>Lower
                 Bound: <span
-                        id="numStructuralEdges_lower_bound">-2147483648</span></li>
+                        id="mimNumStructuralEdges_lower_bound">-2147483648</span></li>
             <li>Upper
                 Bound: <span
-                        id="numStructuralEdges_upper_bound">2147483647</span></li>
+                        id="mimNumStructuralEdges_upper_bound">2147483647</span></li>
             <li>Value
-                Type: <span id="numStructuralEdges_value_type">Integer</span></li>
+                Type: <span id="mimNumStructuralEdges_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="numStructuralNodes">numStructuralNodes</h3>
+            id="mimNumStructuralNodes">mimNumStructuralNodes</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="numStructuralNodes_short_desc">Number of structural
+                    id="mimNumStructuralNodes_short_desc">Number of structural
         nodes</span></li>
             <li>Long Description: <span
-                    id="numStructuralNodes_long_desc"> This is a parameter for generating
+                    id="mimNumStructuralNodes_long_desc"> This is a parameter for generating
         random multiple indicator models (MIMs). A structural node is one of
         the latent variables in the model; each structural node has a number
         of child measured variables.</span></li>
             <li>Default Value: <span
-                    id="numStructuralNodes_default_value">3</span></li>
+                    id="mimNumStructuralNodes_default_value">3</span></li>
             <li>Lower Bound:
-                <span id="numStructuralNodes_lower_bound">-2147483648</span></li>
+                <span id="mimNumStructuralNodes_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span
-                    id="numStructuralNodes_upper_bound">2147483647</span></li>
+                    id="mimNumStructuralNodes_upper_bound">2147483647</span></li>
             <li>Value
-                Type: <span id="numStructuralNodes_value_type">Integer</span></li>
+                Type: <span id="mimNumStructuralNodes_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
