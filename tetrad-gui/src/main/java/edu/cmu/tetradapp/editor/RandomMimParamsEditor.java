@@ -18,7 +18,6 @@ class RandomMimParamsEditor extends JPanel {
 
     // ---- Parameter keys (centralized) -------------------------------------
     private static final String K_NUM_STRUCTURAL_EDGES = "mimNumStructuralEdges";
-    private static final String K_NUM_STRUCTURAL_NODES = "mimNumStructuralNodes";
     private static final String K_LATENT_GROUP_SPECS = "mimLatentGroupSpecs";
     private static final String K_LATENT_MEASURED_IMPURE_PARENTS = "mimLatentMeasuredImpureParents";
     private static final String K_MEASURED_MEASURED_IMPURE_PARENTS = "mimMeasuredMeasuredImpureParents";
