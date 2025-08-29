@@ -51,7 +51,7 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class LatentClustersRunner implements ParamsResettable, SessionModel, Executable,
-        Unmarshallable {
+        KnowledgeBoxInput, Unmarshallable {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -232,7 +232,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      * @return a list of {@link Node} objects representing the variables.
      */
     public List<Node> getVariables() {
-        return this.dataWrapper.getVariables();
+        return this.blockSpec.blockVariables();
     }
 
     /**
@@ -241,7 +241,13 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      * @return a list of variable names as {@link String} objects.
      */
     public List<String> getVariableNames() {
-        return this.dataWrapper.getVariableNames();
+        List<String> names = new ArrayList<>();
+
+        for (Node node : this.blockSpec.blockVariables()) {
+            names.add(node.getName());
+        }
+
+        return names;
     }
 
     /**
@@ -416,5 +422,15 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
             map.put(s, new ArrayList<>(trueNamedClusters.get(s)));
         }
         return map;
+    }
+
+    @Override
+    public Graph getSourceGraph() {
+        return null;
+    }
+
+    @Override
+    public Graph getResultGraph() {
+        return null;
     }
 }

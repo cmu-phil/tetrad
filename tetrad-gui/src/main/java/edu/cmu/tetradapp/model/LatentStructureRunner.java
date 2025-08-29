@@ -35,6 +35,12 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
         super.blockSpec = latentClustersRunner.getBlockSpec();
     }
 
+    public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner, KnowledgeBoxModel knowledge, Parameters parameters) {
+        super(data, parameters, knowledge);
+        this.runner = Objects.requireNonNull(latentClustersRunner, "ClusterRunner required");
+        super.blockSpec = latentClustersRunner.getBlockSpec();
+    }
+
     private static void ensureSpecMatchesRunnerData(BlockSpec spec, DataModel runnerData) {
         if (spec.dataSet() == runnerData) return; // exact same object
 
