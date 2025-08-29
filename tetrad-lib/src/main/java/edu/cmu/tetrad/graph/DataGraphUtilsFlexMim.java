@@ -136,6 +136,7 @@ public final class DataGraphUtilsFlexMim {
             // Every latent in the group points to EVERY measured child in the group
             for (Node L : latents) {
                 for (Node X : measureds) {
+                    if (graph.isAdjacentTo(X, L)) continue;
                     graph.addDirectedEdge(L, X);
                 }
             }
@@ -152,16 +153,18 @@ public final class DataGraphUtilsFlexMim {
             if (latentLinkMode == DataGraphUtilsFlexMim.LatentLinkMode.CARTESIAN_PRODUCT) {
                 for (Node Lfrom : from.latents) {
                     for (Node Lto : to.latents) {
+                        if (graph.isAdjacentTo(Lfrom, Lto)) continue;
                         graph.addDirectedEdge(Lfrom, Lto);
                     }
                 }
             } else if (latentLinkMode == DataGraphUtilsFlexMim.LatentLinkMode.CORRESPONDING) {
                 if (from.latents.size() != to.latents.size()) {
                     throw new IllegalArgumentException("Latent groups must have the same number of latents to " +
-                                                       "link correspondig latents.");
+                                                       "link corresponding latents.");
                 }
 
-                for (int i = 0; i < from.rank; i++) {
+                for (int i = 0; i < from.latents.size(); i++) {
+                    if (graph.isAdjacentTo(from.latents.get(i), to.latents.get(i))) continue;
                     graph.addDirectedEdge(from.latents.get(i), to.latents.get(i));
                 }
             } else {
@@ -198,7 +201,7 @@ public final class DataGraphUtilsFlexMim {
             Node X = measured.get(rng.nextInt(measured.size()));
             if (g.isParentOf(L, X)) continue;              // already a parent
             if (L == X) continue;
-            // avoid adding if X already has L as ancestor? (optional; we keep it simple)
+            if (g.isAdjacentTo(X, L)) continue;
             g.addDirectedEdge(L, X);
             added++;
         }
