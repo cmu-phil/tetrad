@@ -9,6 +9,7 @@ import edu.cmu.tetradapp.util.StringTextField;
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serial;
+import java.util.List;
 
 class RandomMimParamsEditor extends JPanel {
 
@@ -38,7 +39,15 @@ class RandomMimParamsEditor extends JPanel {
         );
         numStructuralEdges.setFilter((value, oldValue) -> {
             try {
-                int n = Math.max(0, parameters.getInt(K_NUM_STRUCTURAL_NODES, D_NUM_STRUCTURAL_NODES));
+                List<DataGraphUtilsFlexMim.LatentGroupSpec> specs = DataGraphUtilsFlexMim.parseLatentGroupSpecs(parameters.getString(K_LATENT_GROUP_SPECS, D_LATENT_GROUP_SPECS));
+
+                int sumGroups = 0;
+
+                for (DataGraphUtilsFlexMim.LatentGroupSpec spec : specs) {
+                    sumGroups += spec.countGroups();
+                }
+
+                int n = Math.max(0, sumGroups);
                 int maxEdges = n <= 1 ? 0 : (n * (n - 1)) / 2;
                 int clamped = Math.min(Math.max(0, value), maxEdges);
                 parameters.set(K_NUM_STRUCTURAL_EDGES, clamped);
