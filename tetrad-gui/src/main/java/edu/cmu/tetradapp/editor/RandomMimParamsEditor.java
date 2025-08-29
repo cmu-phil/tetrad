@@ -16,63 +16,44 @@ import java.util.List;
  * to construct random MIM (Multiple Indicator Models) graphs. It provides input fields for setting structural edges,
  * latent group specifications, and impure edge counts, which are validated and saved back into the provided parameters
  * object.
- * <p>
- * The class extends JPanel and organizes the UI using a vertical box layout with labeled input fields for user-friendly
- * interaction. Filters are applied to ensure valid inputs are accepted and internally updated.
- * <p>
- * This class is intended for use within an application where users need to manage and customize graph structures and
- * their associated properties for analysis or simulation.
- * <p>
- * Key features: - Input and validation for structural edge counts. - Input and real-time validation for latent group
- * specifications. - Input and validation for counts of impure edges of various types. - Organized and labeled layout
- * for user clarity.
  */
 class RandomMimParamsEditor extends JPanel {
 
     @Serial
     private static final long serialVersionUID = -1478898170626611725L;
 
-    // ---- Parameter keys (centralized) -------------------------------------
+    // ---- Parameter keys ----------------------------------------------------
     private static final String K_NUM_STRUCTURAL_EDGES = "mimNumStructuralEdges";
     private static final String K_LATENT_GROUP_SPECS = "mimLatentGroupSpecs";
     private static final String K_LATENT_MEASURED_IMPURE_PARENTS = "mimLatentMeasuredImpureParents";
     private static final String K_MEASURED_MEASURED_IMPURE_PARENTS = "mimMeasuredMeasuredImpureParents";
     private static final String K_MEASURED_MEASURED_IMPURE_ASSOC = "mimMeasuredMeasuredImpureAssociations";
 
-    // ---- Defaults (kept close to keys) ------------------------------------
+    // ---- Defaults ----------------------------------------------------------
     private static final int D_NUM_STRUCTURAL_EDGES = 3;
     private static final String D_LATENT_GROUP_SPECS = "5:5(1)";
     private static final int D_ZERO = 0;
 
     /**
-     * Constructs a {@code RandomMimParamsEditor} instance. This editor provides a graphical user interface for editing
-     * parameters related to random Mixed Independence Model (MIM) generation. Various fields and controls are
-     * initialized to specify and constrain the parameter values.
+     * Constructs a new RandomMimParamsEditor with the provided parameter configuration. This editor sets up the user
+     * interface for configuring random graph parameters, such as the number of structural edges, latent group
+     * specifications, and various types of impure edges.
      *
-     * @param parameters the parameters object that initializes and stores the settings for the random MIM generation.
-     *                   It provides default values and serves as the backing store for parameter updates made through
-     *                   the editor.
+     * @param parameters the Parameters object containing the configuration values for initializing and updating the
+     *                   editor. It provides access to default and stored values for various settings and is used to
+     *                   reflect and validate changes made in the user interface.
      */
     public RandomMimParamsEditor(Parameters parameters) {
         setLayout(new BorderLayout());
 
-        // Structural edges (clamped to simple DAG max given current node count)
-        IntTextField numStructuralEdges = new IntTextField(
+        // Structural edges (clamped to simple DAG max given current #latent groups from specs)
+        final IntTextField numStructuralEdges = new IntTextField(
                 parameters.getInt(K_NUM_STRUCTURAL_EDGES, D_NUM_STRUCTURAL_EDGES), 4
         );
         numStructuralEdges.setFilter((value, oldValue) -> {
             try {
-                List<DataGraphUtilsFlexMim.LatentGroupSpec> specs = DataGraphUtilsFlexMim.parseLatentGroupSpecs(parameters.getString(K_LATENT_GROUP_SPECS, D_LATENT_GROUP_SPECS));
-
-                int sumGroups = 0;
-
-                for (DataGraphUtilsFlexMim.LatentGroupSpec spec : specs) {
-                    sumGroups += spec.countGroups();
-                }
-
-                int n = Math.max(0, sumGroups);
-                int maxEdges = n <= 1 ? 0 : (n * (n - 1)) / 2;
-                int clamped = Math.min(Math.max(0, value), maxEdges);
+                int maxEdges = computeMaxEdgesFromSpecs(parameters);
+                int clamped = clampToRange(value, 0, maxEdges);
                 parameters.set(K_NUM_STRUCTURAL_EDGES, clamped);
                 return clamped;
             } catch (Exception ex) {
@@ -81,16 +62,26 @@ class RandomMimParamsEditor extends JPanel {
             }
         });
 
-        // Latent group specs (validated by parser)
-        StringTextField latentGroupSpecs = new StringTextField(
-                parameters.getString(K_LATENT_GROUP_SPECS, D_LATENT_GROUP_SPECS), 16
+        // Latent group specs (validated by parser, and re-clamps structural edges if needed)
+        final StringTextField latentGroupSpecs = new StringTextField(
+                parameters.getString(K_LATENT_GROUP_SPECS, D_LATENT_GROUP_SPECS), 20
         );
         latentGroupSpecs.setFilter((value, oldValue) -> {
             try {
-                // Validate before saving
-                DataGraphUtilsFlexMim.parseLatentGroupSpecs(value);
-                parameters.set(K_LATENT_GROUP_SPECS, value);
-                return value;
+                String cleaned = normalizeSpecs(value);
+                DataGraphUtilsFlexMim.parseLatentGroupSpecs(cleaned); // validate
+                parameters.set(K_LATENT_GROUP_SPECS, cleaned);
+
+                // After specs change, recompute max edges and clamp the current structural edge count.
+                int maxEdges = computeMaxEdgesFromSpecs(parameters);
+                int current = parameters.getInt(K_NUM_STRUCTURAL_EDGES, D_NUM_STRUCTURAL_EDGES);
+                int clamped = clampToRange(current, 0, maxEdges);
+                if (clamped != current) {
+                    parameters.set(K_NUM_STRUCTURAL_EDGES, clamped);
+                    // reflect visually
+                    numStructuralEdges.setValue(clamped);
+                }
+                return cleaned;
             } catch (Exception ex) {
                 TetradLogger.getInstance().log(ex.toString());
                 return oldValue;
@@ -98,34 +89,46 @@ class RandomMimParamsEditor extends JPanel {
         });
 
         // Impure edge counts (all must be >= 0)
-        IntTextField numLatentMeasuredImpureParents = new IntTextField(
+        final IntTextField numLatentMeasuredImpureParents = new IntTextField(
                 parameters.getInt(K_LATENT_MEASURED_IMPURE_PARENTS, D_ZERO), 4
         );
         numLatentMeasuredImpureParents.setFilter((value, oldValue) ->
                 nonNegativeFilter(parameters, K_LATENT_MEASURED_IMPURE_PARENTS, value, oldValue));
 
-        IntTextField numMeasuredMeasuredImpureParents = new IntTextField(
+        final IntTextField numMeasuredMeasuredImpureParents = new IntTextField(
                 parameters.getInt(K_MEASURED_MEASURED_IMPURE_PARENTS, D_ZERO), 4
         );
         numMeasuredMeasuredImpureParents.setFilter((value, oldValue) ->
                 nonNegativeFilter(parameters, K_MEASURED_MEASURED_IMPURE_PARENTS, value, oldValue));
 
-        IntTextField numMeasuredMeasuredImpureAssociations = new IntTextField(
+        final IntTextField numMeasuredMeasuredImpureAssociations = new IntTextField(
                 parameters.getInt(K_MEASURED_MEASURED_IMPURE_ASSOC, D_ZERO), 4
         );
         numMeasuredMeasuredImpureAssociations.setFilter((value, oldValue) ->
                 nonNegativeFilter(parameters, K_MEASURED_MEASURED_IMPURE_ASSOC, value, oldValue));
 
-        // ---- Layout (keeps the currently visible rows only) ----------------
+        // Ensure initial clamp using current specs
+        try {
+            int maxEdges = computeMaxEdgesFromSpecs(parameters);
+            int current = parameters.getInt(K_NUM_STRUCTURAL_EDGES, D_NUM_STRUCTURAL_EDGES);
+            int clamped = clampToRange(current, 0, maxEdges);
+            if (clamped != current) {
+                parameters.set(K_NUM_STRUCTURAL_EDGES, clamped);
+                numStructuralEdges.setValue(clamped);
+            }
+        } catch (Exception ex) {
+            // If specs are invalid at init, leave as-is but log; user can fix the field.
+            TetradLogger.getInstance().log(ex.toString());
+        }
+
+        // ---- Layout ---------------------------------------------------------
         Box root = Box.createVerticalBox();
         root.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
 
         root.add(row("List of count:children:(rank), comma separated; e.g. 5:6(1),2:8(2):", latentGroupSpecs));
         root.add(Box.createVerticalStrut(10));
         root.add(row("Number of structural edges:", numStructuralEdges));
-
         root.add(Box.createVerticalStrut(10));
-
         root.add(sectionLabel("Add impure edges:"));
         root.add(row("Latent \u2192 Measured", numLatentMeasuredImpureParents));
         root.add(row("Measured \u2192 Measured", numMeasuredMeasuredImpureParents));
@@ -136,6 +139,33 @@ class RandomMimParamsEditor extends JPanel {
     }
 
     // ---- Helpers -----------------------------------------------------------
+
+    private static int computeMaxEdgesFromSpecs(Parameters p) {
+        String raw = p.getString(K_LATENT_GROUP_SPECS, D_LATENT_GROUP_SPECS);
+        String cleaned = normalizeSpecs(raw);
+        List<DataGraphUtilsFlexMim.LatentGroupSpec> specs =
+                DataGraphUtilsFlexMim.parseLatentGroupSpecs(cleaned);
+
+        int groups = 0;
+        for (DataGraphUtilsFlexMim.LatentGroupSpec s : specs) {
+            groups += s.countGroups();
+        }
+        if (groups <= 1) return 0;
+        return (groups * (groups - 1)) / 2;
+    }
+
+    private static String normalizeSpecs(String s) {
+        // Trim and collapse internal runs of whitespace; tolerate stray spaces around commas/colons/parens.
+        String trimmed = (s == null) ? "" : s.trim();
+        // Optionally remove spaces entirely (robust to "5 : 6 (1), 2 : 8 (2)")
+        return trimmed.replaceAll("\\s+", "");
+    }
+
+    private static int clampToRange(int val, int lo, int hi) {
+        if (val < lo) return lo;
+        if (val > hi) return hi;
+        return val;
+    }
 
     private static int nonNegativeFilter(Parameters p, String key, int value, int oldValue) {
         try {
