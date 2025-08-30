@@ -45,7 +45,7 @@ public class BlockClusteringWizard extends JPanel {
     private final JPanel cardPanel = new JPanel(cards);
     private final JPanel pageResult = new JPanel(new BorderLayout());
     // ... UI fields ...
-    private final JComboBox<String> cbAlgorithm = new JComboBox<>(new String[]{"TSC", "FOFC", "FTFC", "GFFC", "BPC"});// Test", "TSC Score"});
+    private final JComboBox<String> cbAlgorithm = new JComboBox<>(new String[]{"TSC", "FOFC", "FTFC", "GFFC", "BPC"});
 
     // Put near your fields
     private final JComboBox<String> cbTetradTest = new JComboBox<>();
@@ -374,12 +374,6 @@ public class BlockClusteringWizard extends JPanel {
                         parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy
                 );
             }
-//            case "TSC Score" -> {
-//                yield BlockDiscoverers.tscScore(dataSet, parameters.getDouble(Params.ALPHA),
-//                        parameters.getDouble(Params.EBIC_GAMMA), parameters.getDouble(Params.REGULARIZATION_LAMBDA),
-//                        parameters.getDouble(Params.PENALTY_DISCOUNT),
-//                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy);
-//            }
             case "FOFC" -> {
                 if (test == null) {
                     test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess); // sensible default
@@ -415,12 +409,6 @@ public class BlockClusteringWizard extends JPanel {
         assert alg != null;
 
         switch (alg) {
-//            case "TSC Score" -> {
-//                paramList.add(Params.ALPHA);
-//                paramList.add(Params.EBIC_GAMMA);
-//                paramList.add(Params.REGULARIZATION_LAMBDA);
-//                paramList.add(Params.PENALTY_DISCOUNT);
-//            }
             case "TSC" -> {
                 paramList.add(Params.ALPHA);
             }

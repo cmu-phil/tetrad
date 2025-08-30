@@ -76,7 +76,6 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
         Tsc tsc = new Tsc(dataSet.getVariables(), new CorrelationMatrix(dataSet));
         tsc.setAlpha(alpha);
         tsc.setExpectedSampleSize(ess);
-        tsc.setMode(Tsc.Mode.Testing);
 
         Map<Set<Integer>, Integer> clusters = tsc.findClusters();
 

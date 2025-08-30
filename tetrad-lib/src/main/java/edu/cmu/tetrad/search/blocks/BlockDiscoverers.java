@@ -85,23 +85,4 @@ public final class BlockDiscoverers {
     public static BlockDiscoverer tscTest(DataSet data, double alpha, int ess, SingleClusterPolicy policy) {
         return new TscTestBlockDiscoverer(data, alpha, ess, policy);
     }
-
-    /**
-     * Constructs an instance of {@code TscScoreBlockDiscoverer}, which is an implementation of the
-     * {@code BlockDiscoverer} interface. This method leverages the TSC algorithm with configurable scoring and
-     * optimization parameters to discover clusters or "blocks" of indices in a dataset.
-     *
-     * @param data            the dataset on which the block discovery algorithm will operate
-     * @param alpha           the significance level used in statistical tests, typically a value between 0 and 1
-     * @param ebicGamma       the penalty parameter for the extended Bayesian information criterion (eBIC)
-     * @param ridge           the ridge regularization parameter used for numerical stability during scoring
-     * @param penaltyDiscount the discount factor applied to penalize model complexity during scoring
-     * @param ess             the equivalent sample size, controlling the strength of prior information in scoring
-     * @param policy          the single-cluster policy applied to manage how individual clusters are processed
-     * @return a {@code TscScoreBlockDiscoverer} instance configured with the specified parameters
-     */
-    public static BlockDiscoverer tscScore(DataSet data, double alpha,
-                                           double ebicGamma, double ridge, double penaltyDiscount, int ess, SingleClusterPolicy policy) {
-        return new TscScoreBlockDiscoverer(data, alpha, ebicGamma, ridge, penaltyDiscount, ess, policy);
-    }
 }

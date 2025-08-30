@@ -6,7 +6,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,9 +19,9 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
 
 /**
  * The TscScored class provides methods and mechanisms to perform rank-based cluster search operations under statistical
- * constraints. This class supports scoring and enumeration of clusters using RCCA methods and provides a combination of
- * cached computation and configurable scoring parameters to optimize search efficiency. It is designed for use in
- * latent variable modeling and cluster discovery in high-dimensional datasets.
+ * constraints. This class supports enumeration of clusters using RCCA methods and provides cached computation to
+ * optimize search efficiency. It is designed for use in latent variable modeling and cluster discovery in
+ * high-dimensional datasets.
  */
 public class Tsc {
     private static final java.util.concurrent.ConcurrentHashMap<Long, long[][]> BINOM_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
@@ -31,47 +30,17 @@ public class Tsc {
     private final int sampleSize;
     private final SimpleMatrix S;
     private final Map<Key, Integer> rankCache = new ConcurrentHashMap<>();
-    private final Map<Key, Integer> scoredRankCache = new ConcurrentHashMap<>();
-    private final Map<Long, ScoreSweep> sweepCache = new java.util.concurrent.ConcurrentHashMap<>();
     private final boolean prefilterByWilkes = true;
     private int expectedSampleSize = -1;
     private double alpha = 0.01;
     private boolean verbose = true;
-    private Map<Set<Integer>, Integer> clusters = new HashMap<>();
     private Map<Set<Integer>, Integer> clusterToRank;
 //    private Map<Set<Integer>, Integer> reducedRank;
 
     /**
-     * RCCA ridge regularizer used in RankTests.getRccaEntry.
-     */
-    private double ridge = 1e-8;
-    /**
-     * BIC penalty discount c (1.0 = standard BIC).
-     */
-    private double penaltyDiscount = 1.0;
-    /**
-     * EBIC gamma (0 disables EBIC term).
-     */
-    private double ebicGamma = 0.0;
-    /**
-     * Optional margin: require sc(k*) >= sc(k*±1) + margin.
-     */
-    private double scoreMargin = 0.0;
-    /**
-     * Represents the operational mode of the TscScored class.
-     * <p>
-     * The `mode` variable determines whether the algorithm functions in a testing mode or a scoring mode. In
-     * `Mode.Testing`, the operations focus on hypothesis tests, while in `Mode.Scoring`, the focus is on scoring
-     * clusters based on their statistical properties.
-     * <p>
-     * Default value: `Mode.Testing`.
-     */
-    private Mode mode = Mode.Testing;
-
-    /**
      * Constructs an instance of the TscScored class using the provided variables and covariance matrix.
      *
-     * @param variables a list of Node elements representing variables to be included in the scoring process
+     * @param variables a list of Node elements representing variables to be included
      * @param cov       a CovarianceMatrix object representing the covariance matrix associated with the variables
      */
     public Tsc(List<Node> variables, CovarianceMatrix cov) {
@@ -146,14 +115,42 @@ public class Tsc {
     }
 
     /**
-     * Sets the mode for the TscScored instance. The mode determines the operational behavior of the TscScored class,
-     * selecting between Testing or Scoring modes.
+     * Constructs a StringBuilder containing a formatted string representation of the names of nodes corresponding to
+     * the provided cluster indices.
      *
-     * @param mode the operational mode to be set, where mode must be an instance of the {@code Mode} enum (either
-     *             {@code Mode.Testing} or {@code Mode.Scoring})
+     * @param cluster a collection of integers representing indices of nodes to include in the cluster
+     * @param nodes   a list of Node objects where each integer index in the cluster corresponds to a node
+     * @return a StringBuilder containing the formatted names of the nodes in the specified cluster
      */
-    public void setMode(Mode mode) {
-        this.mode = mode;
+    public static @NotNull StringBuilder toNamesCluster(Collection<Integer> cluster, List<Node> nodes) { /* ... unchanged ... */
+        StringBuilder _sb = new StringBuilder();
+        _sb.append("[");
+        int count = 0;
+        for (Integer var : cluster) {
+            _sb.append(nodes.get(var));
+            if (count++ < cluster.size() - 1) _sb.append(", ");
+        }
+        _sb.append("]");
+        return _sb;
+    }
+
+    /**
+     * Converts a set of clusters represented as sets of integers into a string representation that associates cluster
+     * IDs with node names.
+     *
+     * @param clusters a set of clusters, where each cluster is a set of integers representing node IDs
+     * @param nodes    a list of Node objects representing the nodes, where the index corresponds to the node ID
+     * @return a string containing the names of the nodes in each cluster, separated by "; " for different clusters
+     */
+    public static @NotNull String toNamesClusters(Set<Set<Integer>> clusters, List<Node> nodes) { /* ... unchanged ... */
+        StringBuilder sb = new StringBuilder();
+        int count0 = 0;
+        for (Collection<Integer> cluster : clusters) {
+            StringBuilder _sb = toNamesCluster(cluster, nodes);
+            if (count0++ < clusters.size() - 1) _sb.append("; ");
+            sb.append(_sb);
+        }
+        return sb.toString();
     }
 
     /**
@@ -171,28 +168,15 @@ public class Tsc {
     }
 
     /**
-     * Cached version of the RCCA-BIC sweep.
-     */
-    private ScoreSweep rccaScoreSweepCached(int[] C, int[] D) {
-        long k = pairKey(C, D);
-        ScoreSweep s = sweepCache.get(k);
-        if (s != null) return s;
-        s = rccaScoreSweep(S, C, D, expectedSampleSize, ridge, penaltyDiscount, ebicGamma);
-        sweepCache.put(k, s);
-        return s;
-    }
-
-    /**
-     * Finds clusters of variables at a specified rank given a list of variables,
-     * the size of the clusters, and the target rank. This method uses
-     * combinatorial logic to compute possible clusters and filters them
-     * based on the rank criteria.
+     * Finds clusters of variables at a specified rank given a list of variables, the size of the clusters, and the
+     * target rank. This method uses combinatorial logic to compute possible clusters and filters them based on the rank
+     * criteria.
      *
      * @param vars the list of variable identifiers to consider for clustering
      * @param size the size of each cluster to generate
      * @param rank the target rank for selecting clusters
-     * @return a set of clusters at the specified rank, where each cluster is a set
-     *         of integers representing variable identifiers
+     * @return a set of clusters at the specified rank, where each cluster is a set of integers representing variable
+     * identifiers
      */
     public Set<Set<Integer>> findClustersAtRankTesting(List<Integer> vars, int size, int rank) {
         log("vars: " + vars);
@@ -236,70 +220,6 @@ public class Tsc {
         }).filter(Objects::nonNull).collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
     }
 
-    // ---- scored enumerator (this is what the meta-loop calls) ------------------
-    private Set<Set<Integer>> findClustersAtRankScoring(List<Integer> vars, int size, int targetRank) {
-        final int n = vars.size();
-        final int k = size;
-
-        if (targetRank < 0) throw new IllegalArgumentException("targetRank must be >= 0");
-        if (k <= 0 || k > n) return Collections.emptySet();
-
-        final int[] varIds = new int[n];
-        for (int i = 0; i < n; i++) varIds[i] = vars.get(i);
-
-        final long[][] Cbin = binom(n, k);
-        final long total = Cbin[n][k];
-
-        final ThreadLocal<int[]> tlIdxs = ThreadLocal.withInitial(() -> new int[k]);
-        final ThreadLocal<int[]> tlIds = ThreadLocal.withInitial(() -> new int[k]);
-
-        final Set<Set<Integer>> accepted = java.util.concurrent.ConcurrentHashMap.newKeySet();
-        final java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
-
-        LongStream.range(0, total).parallel().forEach(m -> {
-            if (Thread.currentThread().isInterrupted()) return;
-
-            int _c = counter.incrementAndGet();
-            if (verbose && (_c % Math.max(20000, total / 50 + 1) == 0))
-                log("Scored find: examined " + _c + " / " + total);
-
-            // decode k-combination
-            int[] idxs = tlIdxs.get();
-            combinadicDecodeColex(m, n, k, Cbin, idxs);
-
-            // map to global ids (sorted)
-            int[] Carr = tlIds.get();
-            for (int i = 0; i < k; i++) Carr[i] = varIds[idxs[i]];
-            Arrays.sort(Carr);
-
-            // D = V \ C
-            Set<Integer> Cset = new HashSet<>(k * 2);
-            for (int v : Carr) Cset.add(v);
-            int[] Darr = complementOf(Cset);
-            if (Darr.length == 0) return;
-
-            if (prefilterByWilkes) {
-                // --- NEW: fast Wilks pre-filter to avoid expensive RCCA when impossible
-                int rWilks = RankTests.estimateWilksRank(S, Carr, Darr, expectedSampleSize, Math.min(0.05, alpha));
-                if (rWilks != targetRank) return;
-            }
-
-            // RCCA-BIC sweep (cached)
-            ScoreSweep sw = rccaScoreSweepCached(Carr, Darr);
-            if (sw.mMax < 0) return;
-
-            boolean okMargins =
-                    (Double.isNaN(sw.scKm1) || sw.scBest >= sw.scKm1 + scoreMargin) &&
-                    (Double.isNaN(sw.scKp1) || sw.scBest >= sw.scKp1 + scoreMargin);
-
-            if (sw.rStar == targetRank && okMargins) {
-                accepted.add(Cset);
-            }
-        });
-
-        return accepted;
-    }
-
     private boolean isAtomic(Set<Integer> C, int k) {
         // Reject if ANY (|C|-1)-subset has the same rank k
         if (C.size() <= k + 1) return true; // smallest possible witness size is k+1
@@ -317,55 +237,8 @@ public class Tsc {
         return true;
     }
 
-    private ScoreSweep rccaScoreSweep(SimpleMatrix S,
-                                      int[] C, int[] D,
-                                      int n, double ridge,
-                                      double c, double gamma) {
-        RankTests.RccaEntry ent = RankTests.getRccaEntry(S, C, D, ridge);
-        if (ent == null || ent.suffixLogs == null)
-            return new ScoreSweep(-1, -1, Double.NEGATIVE_INFINITY, Double.NaN, Double.NaN);
-
-        int p = C.length, q = D.length;
-        int m = Math.min(Math.min(p, q), n - 1);
-        m = Math.min(m, ent.suffixLogs.length - 1);
-        if (m < 0) return new ScoreSweep(-1, -1, Double.NEGATIVE_INFINITY, Double.NaN, Double.NaN);
-        if (m == 0) return new ScoreSweep(0, 0, 0.0, Double.NaN, Double.NaN);
-
-        // Bartlett-ish effective n (same spirit as BlocksBicScore)
-        double nEff = n - 1.0 - 0.5 * (p + q + 1.0);
-        if (nEff < 1.0) nEff = 1.0;
-
-        // EBIC pool: treat |D| as proxy for available predictors
-        int Ppool = Math.max(q, 2);
-
-        double[] suf = ent.suffixLogs;  // suf[0] == 0 by contract
-        double base = suf[0];
-
-        int rStar = 0;
-        double scStar = -1e300;
-        double[] sc = new double[m + 1];
-
-        for (int r = 0; r <= m; r++) {
-            double sumLogsTopR = base - suf[r];      // sum_{i=1..r} log(1 - rho_i^2)
-            double fit = -nEff * sumLogsTopR;
-            int kParams = r * (p + q - r);
-            double pen = c * kParams * Math.log(n);
-            if (gamma > 0.0) pen += 2.0 * gamma * kParams * Math.log(Ppool);
-            double scR = fit - pen;
-            sc[r] = scR;
-            if (scR > scStar) {
-                scStar = scR;
-                rStar = r;
-            }
-        }
-
-        double scKm1 = (rStar - 1 >= 0) ? sc[rStar - 1] : Double.NaN;
-        double scKp1 = (rStar + 1 <= m) ? sc[rStar + 1] : Double.NaN;
-        return new ScoreSweep(m, rStar, scStar, scKm1, scKp1);
-    }
-
     private int rankOf(Set<Integer> C) {
-        return (mode == Mode.Scoring) ? rankByScore(C) : ranksByTest(C);
+        return ranksByTest(C);
     }
 
     private Set<Integer> shrinkToAtomicCore(Set<Integer> C, int k) {
@@ -387,25 +260,6 @@ public class Tsc {
             }
         } while (changed);
         return cur;
-    }
-
-    // ---- scored-rank helper (C vs D = V\C) + cache -----------------------------
-    private int rankByScore(Set<Integer> C) {
-        Key key = new Key(C);
-        Integer cached = scoredRankCache.get(key);
-        if (cached != null) return cached;
-
-        int[] Carr = C.stream().mapToInt(Integer::intValue).sorted().toArray();
-        int[] Darr = complementOf(C);
-        if (Carr.length == 0 || Darr.length == 0) {
-            scoredRankCache.put(key, 0);
-            return 0;
-        }
-
-        ScoreSweep sw = rccaScoreSweepCached(Carr, Darr);
-        int r = Math.max(0, sw.rStar);
-        scoredRankCache.put(key, r);
-        return r;
     }
 
     // Fast overload: takes primitive IDs and uses canonical Key (Wilks path)
@@ -480,61 +334,6 @@ public class Tsc {
         this.verbose = verbose;
     }
 
-    /**
-     * Sets the ridge parameter used in computations. The ridge parameter is typically employed for regularization
-     * purposes to ensure numerical stability or to prevent overfitting. Updating this parameter clears the scored rank
-     * cache and the sweep cache to maintain consistency with the new ridge value.
-     *
-     * @param ridge the ridge value to be set, a non-negative double that influences the regularization strength in the
-     *              computations.
-     */
-    public void setRidge(double ridge) {
-        this.ridge = ridge;
-        scoredRankCache.clear();
-        sweepCache.clear();
-    }
-
-    /**
-     * Sets the penalty discount used in scoring computations. The penalty discount adjusts the penalization term in the
-     * scoring process, influencing the trade-off between model complexity and fit. Updating this parameter clears the
-     * scored rank cache and the sweep cache to ensure consistency with the new setting.
-     *
-     * @param c the penalty discount value to be set, a double representing the adjustment factor for the penalization
-     *          term. It can take any valid numeric value, depending on the specific requirements of the scoring
-     *          method.
-     */
-    public void setPenaltyDiscount(double c) {
-        this.penaltyDiscount = c;
-        scoredRankCache.clear();
-        sweepCache.clear();
-    }
-
-    /**
-     * Sets the EBIC gamma parameter used in scoring computations. The gamma parameter affects the penalization term in
-     * the Extended Bayesian Information Criterion (EBIC), where higher values of gamma impose a stronger penalty on
-     * model complexity. Updating this parameter clears the scored rank cache and the sweep cache to ensure consistency
-     * with the new gamma setting.
-     *
-     * @param gamma the EBIC gamma value to be set, a non-negative double typically in the range [0, 1], where 0
-     *              corresponds to the standard BIC and higher values prioritize simpler models.
-     */
-    public void setEbicGamma(double gamma) {
-        this.ebicGamma = gamma;
-        scoredRankCache.clear();
-        sweepCache.clear();
-    }
-
-    /**
-     * Sets the score margin to the specified value. The margin represents a non-negative threshold used in scoring
-     * computations. If the provided margin is negative, it defaults to 0.0.
-     *
-     * @param margin the margin value to be set. A non-negative double value is expected. If a negative value is
-     *               provided, it will be adjusted to 0.0.
-     */
-    public void setScoreMargin(double margin) {
-        this.scoreMargin = Math.max(0.0, margin);
-    }
-
     private @NotNull Map<Set<Integer>, Integer> clusterSearchMetaLoop() {
         List<Integer> remainingVars = new ArrayList<>(allVariables());
         clusterToRank = new HashMap<>();
@@ -546,8 +345,7 @@ public class Tsc {
             if (size >= remainingVars.size() - size) continue;
 
             log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
-            Set<Set<Integer>> P = mode == Mode.Scoring ? findClustersAtRankScoring(remainingVars, size, rank)
-                    : findClustersAtRankTesting(remainingVars, size, rank);
+            Set<Set<Integer>> P = findClustersAtRankTesting(remainingVars, size, rank);
             log("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P, nodes)));
             Set<Set<Integer>> P1 = new HashSet<>(P);
 
@@ -567,7 +365,7 @@ public class Tsc {
 
                 if (seed.size() >= this.variables.size() - seed.size()) continue;
 
-                int seedRankShown = mode == Mode.Scoring ? rankByScore(seed) : ranksByTest(seed);
+                int seedRankShown = ranksByTest(seed);
                 log("Picking seed from the list: " + toNamesCluster(seed) + " rank = " + seedRankShown);
 
                 boolean extended;
@@ -587,7 +385,7 @@ public class Tsc {
                         if (union.size() == cluster.size()) continue;
 
                         // --- IMPORTANT: rank of the union by SCORE to match the seeding criterion ---
-                        int rankOfUnion = rankByScore(union);
+                        int rankOfUnion = ranksByTest(union);
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
                         if (rankOfUnion == rank) {
@@ -601,7 +399,7 @@ public class Tsc {
                     }
                 } while (extended);
 
-                int clusterRank = mode == Mode.Scoring ? rankByScore(cluster) : ranksByTest(cluster);
+                int clusterRank = ranksByTest(cluster);
 
                 if (clusterRank == rank) {
                     newClusters.removeIf(cluster::containsAll);  // Avoid nesting
@@ -636,7 +434,7 @@ public class Tsc {
 
                         if (C2.size() >= this.variables.size() - C2.size()) continue;
 
-                        int newRank = mode == Mode.Scoring ? rankByScore(C2) : ranksByTest(C2);
+                        int newRank = ranksByTest(C2);
 
                         if (C2.size() == _size + 1 && newRank < rank && newRank >= 1) {
                             if (newClusters.contains(C2)) continue;
@@ -864,52 +662,12 @@ public class Tsc {
     }
 
     private int ranksByTest(Set<Integer> cluster) {
-        if (mode == Mode.Scoring) return rankByScore(cluster);
         Key k = new Key(cluster);
         Integer cached = rankCache.get(k);
         if (cached != null) return cached;
         int r = rank(cluster);
         rankCache.put(k, r);
         return r;
-    }
-
-    /**
-     * Constructs a StringBuilder containing a formatted string representation of
-     * the names of nodes corresponding to the provided cluster indices.
-     *
-     * @param cluster a collection of integers representing indices of nodes to include in the cluster
-     * @param nodes a list of Node objects where each integer index in the cluster corresponds to a node
-     * @return a StringBuilder containing the formatted names of the nodes in the specified cluster
-     */
-    public static @NotNull StringBuilder toNamesCluster(Collection<Integer> cluster, List<Node> nodes) { /* ... unchanged ... */
-        StringBuilder _sb = new StringBuilder();
-        _sb.append("[");
-        int count = 0;
-        for (Integer var : cluster) {
-            _sb.append(nodes.get(var));
-            if (count++ < cluster.size() - 1) _sb.append(", ");
-        }
-        _sb.append("]");
-        return _sb;
-    }
-
-    /**
-     * Converts a set of clusters represented as sets of integers into a string representation
-     * that associates cluster IDs with node names.
-     *
-     * @param clusters a set of clusters, where each cluster is a set of integers representing node IDs
-     * @param nodes a list of Node objects representing the nodes, where the index corresponds to the node ID
-     * @return a string containing the names of the nodes in each cluster, separated by "; " for different clusters
-     */
-    public static @NotNull String toNamesClusters(Set<Set<Integer>> clusters, List<Node> nodes) { /* ... unchanged ... */
-        StringBuilder sb = new StringBuilder();
-        int count0 = 0;
-        for (Collection<Integer> cluster : clusters) {
-            StringBuilder _sb = toNamesCluster(cluster, nodes);
-            if (count0++ < clusters.size() - 1) _sb.append("; ");
-            sb.append(_sb);
-        }
-        return sb.toString();
     }
 
     private int rank(Set<Integer> cluster) {
@@ -970,16 +728,6 @@ public class Tsc {
     }
 
     /**
-     * Retrieves the list of clusters. Each cluster is represented as a list of integers, where each integer corresponds
-     * to a variable identifier.
-     *
-     * @return a list of clusters, where each cluster is represented as a list of integers
-     */
-    public Map<Set<Integer>, Integer> getClusters() {
-        return new HashMap<>(this.clusters);
-    }
-
-    /**
      * Sets the expected sample size used in calculations. The expected sample size must be either -1, indicating it
      * should default to the current sample size, or a positive integer greater than 0.
      *
@@ -990,35 +738,6 @@ public class Tsc {
         if (!(expectedSampleSize == -1 || expectedSampleSize > 0))
             throw new IllegalArgumentException("Expected sample size = -1 or > 0");
         this.expectedSampleSize = expectedSampleSize == -1 ? sampleSize : expectedSampleSize;
-    }
-
-    /**
-     * Represents the operational modes available for the Tsc class. The mode determines the behavior of corresponding
-     * processing methods, which can perform either testing or scoring operations.
-     */
-    public enum Mode {
-
-        /**
-         * Represents the testing mode for the Tsc class. This mode configures the object's behavior to perform
-         * operations related to testing logic.
-         */
-        Testing,
-
-        /**
-         * Represents the scoring mode for the Tsc class. This mode configures the object's behavior to perform
-         * operations related to scoring logic.
-         */
-        Scoring
-    }
-
-    /**
-     * @param mMax   max admissible rank
-     * @param rStar  argmax rank
-     * @param scBest score at rStar
-     * @param scKm1  score at rStar-1 (NaN if not defined)
-     * @param scKp1  score at rStar+1 (NaN if not defined)
-     */ // ---- helper: RCCA-BIC sweep ------------------------------------------------
-    private record ScoreSweep(int mMax, int rStar, double scBest, double scKm1, double scKp1) {
     }
 
     // ---- Canonical key for caching ranks (immutable, sorted) -------------------
