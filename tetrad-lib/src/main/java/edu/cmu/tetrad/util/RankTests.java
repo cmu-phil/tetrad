@@ -60,7 +60,7 @@ public class RankTests {
      * A small constant value added as a ridge term during regularization to improve numerical stability. This helps
      * prevent issues such as singular matrices or poor conditioning in mathematical computations.
      */
-    private static final double RIDGE = 1e-10;
+    public static double RIDGE = 1e-6;
     /**
      * A constant representing the minimum allowable eigenvalue threshold for numerical computations. It is used to
      * prevent operations like matrix inversion or decomposition on matrices with eigenvalues smaller than this

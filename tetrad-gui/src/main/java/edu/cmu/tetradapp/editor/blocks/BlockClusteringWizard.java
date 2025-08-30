@@ -371,7 +371,9 @@ public class BlockClusteringWizard extends JPanel {
         return switch (alg) {
             case "TSC" -> {
                 yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA),
-                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy
+                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE),
+                        parameters.getDouble(Params.REGULARIZATION_LAMBDA),
+                        policy
                 );
             }
             case "FOFC" -> {
@@ -411,6 +413,7 @@ public class BlockClusteringWizard extends JPanel {
         switch (alg) {
             case "TSC" -> {
                 paramList.add(Params.ALPHA);
+                paramList.add(Params.REGULARIZATION_LAMBDA);
             }
             case "GFFC" -> {
                 paramList.add(Params.ALPHA);

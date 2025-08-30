@@ -349,7 +349,10 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
 
         return switch (alg) {
             case "TSC" -> {
-                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA), parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy
+                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA),
+                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE),
+                        parameters.getDouble(Params.REGULARIZATION_LAMBDA),
+                        policy
                 );
             }
             case "FOFC" -> {

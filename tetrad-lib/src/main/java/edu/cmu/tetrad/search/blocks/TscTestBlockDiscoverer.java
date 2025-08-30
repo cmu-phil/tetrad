@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search.blocks;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.Tsc;
+import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -31,11 +32,17 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
      * @param ess     The expected sample size used for clustering and scoring computations.
      * @param policy  The policy determining how to handle cases where multiple clusters overlap or conflict.
      */
-    public TscTestBlockDiscoverer(DataSet dataSet, double alpha, int ess, SingleClusterPolicy policy) {
+    public TscTestBlockDiscoverer(DataSet dataSet, double alpha, int ess, double ridge, SingleClusterPolicy policy) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ess = ess;
         this.policy = policy;
+
+        if (ridge < 0) {
+            throw new IllegalArgumentException("Ridge must be >= 0");
+        }
+
+        RankTests.RIDGE = ridge;
     }
 
     /**

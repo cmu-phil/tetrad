@@ -82,7 +82,7 @@ public final class BlockDiscoverers {
      * @param policy the single-cluster policy applied to handle constraints for managing individual clusters
      * @return a {@code TscTestBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer tscTest(DataSet data, double alpha, int ess, SingleClusterPolicy policy) {
-        return new TscTestBlockDiscoverer(data, alpha, ess, policy);
+    public static BlockDiscoverer tscTest(DataSet data, double alpha, int ess, double ridge, SingleClusterPolicy policy) {
+        return new TscTestBlockDiscoverer(data, alpha, ess, ridge, policy);
     }
 }
