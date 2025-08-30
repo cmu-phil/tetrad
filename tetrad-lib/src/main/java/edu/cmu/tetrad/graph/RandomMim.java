@@ -351,7 +351,7 @@ public final class RandomMim {
     // ---- helper method ----
     private static String latentName(int groupIndexZeroBased, int r, int rank) {
         int g1 = groupIndexZeroBased + 1;
-        if (rank == 1) {
+        if (rank == 1 || r == 0) {
             // single latent group: plain L1, L2, ...
             return "L" + g1;
         } else {
