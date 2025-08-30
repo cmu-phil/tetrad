@@ -18,10 +18,9 @@ import java.util.stream.LongStream;
 import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
 
 /**
- * The Tsc class provides methods and mechanisms to perform rank-based cluster search operations under statistical
- * constraints. This class supports scoring and enumeration of clusters using RCCA methods and provides a combination of
- * cached computation and configurable scoring parameters to optimize search efficiency. It is designed for use in
- * latent variable modeling and cluster discovery in high-dimensional datasets.
+ * The Tsc class provides methods and utilities for statistical computations, clustering, and rank-based analysis of
+ * variables. This class manages significance levels, caching mechanisms, and structures to efficiently handle clusters
+ * and their associated ranks.
  */
 public class Tsc {
     private static final java.util.concurrent.ConcurrentHashMap<Long, long[][]> BINOM_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
@@ -152,7 +151,16 @@ public class Tsc {
         return sb.toString();
     }
 
-    // ---- test-based enumerator (kept for reference) ----------------------------
+    /**
+     * Identifies clusters of variables at a specified rank. This method generates all possible clusters
+     * based on the given variable list and size, computes their ranks, and filters those that match the
+     * specified target rank.
+     *
+     * @param vars a list of integers representing the variables to consider
+     * @param size the size of the clusters to generate
+     * @param rank the target rank to filter clusters
+     * @return a set of clusters that match the specified rank, where each cluster is represented as a set of integers
+     */
     public Set<Set<Integer>> findClustersAtRankTesting(List<Integer> vars, int size, int rank) {
         log("vars: " + vars);
         log("findClustersAtRankTesting size = " + size + ", rank = " + rank + ", ess = " + expectedSampleSize);
@@ -408,57 +416,6 @@ public class Tsc {
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
         return clusterToRank;
     }
-
-//    /**
-//     * Try to split a cluster C into two smaller clusters C1, C2 if Rule 1 fails.
-//     */
-//    private Optional<List<Set<Integer>>> trySplitByRule1(Set<Integer> cluster) {
-//        final List<Integer> C = new ArrayList<>(cluster);
-//        final int rC = clusterToRank.getOrDefault(cluster, 0);
-//
-//        // non-empty proper subsets
-//        SublistGenerator gen = new SublistGenerator(C.size(), C.size() - 1);
-//        int[] choice;
-//
-//        int bestGain = Integer.MIN_VALUE;
-//        Set<Integer> bestC1 = null, bestC2 = null;
-//
-//        while ((choice = gen.next()) != null) {
-//            if (choice.length == 0 || choice.length == C.size()) continue;
-//
-//            Set<Integer> C1 = new HashSet<>(choice.length * 2);
-//            for (int i : choice) C1.add(C.get(i));
-//            Set<Integer> C2 = new HashSet<>(cluster);
-//            C2.removeAll(C1);
-//            if (C2.isEmpty()) continue;
-//
-//            if (C1.size() >= variables.size() - C1.size()) continue;
-//            if (C2.size() >= variables.size() - C2.size()) continue;
-//
-//            int[] c1 = C1.stream().mapToInt(Integer::intValue).toArray();
-//            int[] c2 = C2.stream().mapToInt(Integer::intValue).toArray();
-//
-//            int minpq = Math.min(c1.length, c2.length);
-//            int l = Math.min(minpq, Math.max(0, rC));
-//
-//            int r = RankTests.estimateWilksRank(S, c1, c2, expectedSampleSize, alpha);
-//
-//            if (r < l) {
-//                int gain = l - r;
-//                if (gain > bestGain) {
-//                    bestGain = gain;
-//                    bestC1 = C1;
-//                    bestC2 = C2;
-//                }
-//            }
-//        }
-//
-//        if (bestC1 != null) {
-//            return Optional.of(Arrays.asList(bestC1, bestC2));
-//        } else {
-//            return Optional.empty();
-//        }
-//    }
 
     // ---- subset tests (unchanged: still Wilks-based by design) -----------------
     private boolean failsSubsetTest(SimpleMatrix S, Set<Integer> cluster, int expectedSampleSize, double alpha) { /* ... unchanged ... */
