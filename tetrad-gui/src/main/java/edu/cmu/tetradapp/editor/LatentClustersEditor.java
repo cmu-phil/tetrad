@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.search.BlockSpecSemFit;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.blocks.BlockClusteringWizard;
@@ -95,6 +96,8 @@ public class LatentClustersEditor extends JPanel implements PropertyChangeListen
             runner.setAlg(wizard.getAlg());
             runner.setTest(wizard.getTest());
             runner.setBlockText(wizard.getBlockTest());
+
+//            System.out.println("Blockspec p = " + new BlockSpecSemFit(runner.getBlockSpec()).fit());
 
             firePropertyChange("modelChanged", null, null);
 

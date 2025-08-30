@@ -2,6 +2,7 @@ package edu.cmu.tetradapp.editor.blocks;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.BlockSpecSemFit;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlockSpecTextCodec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
@@ -21,6 +22,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
@@ -331,7 +334,11 @@ public final class BlockSpecEditorPanel extends JPanel {
                 btnApply.setEnabled(false);
                 return;
             }
-            status.setText("OK: " + currentSpec.blocks().size() + " blocks"
+
+//            double p = new BlockSpecSemFit(currentSpec).fit();
+//            NumberFormat formatter = new DecimalFormat("0.00");
+
+            status.setText("OK: " + currentSpec.blocks().size() + " blocks"// + " p = " +  formatter.format(p)
                            + (nWarn > 0 ? (" • " + nWarn + " warning(s)") : ""));
             status.setForeground(new Color(38, 139, 210)); // blue
         } else {
