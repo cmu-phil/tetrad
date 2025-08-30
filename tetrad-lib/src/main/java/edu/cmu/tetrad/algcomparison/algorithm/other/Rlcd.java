@@ -24,12 +24,12 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "RLCD",
-        command = "rlcd",
-        algoType = AlgType.search_for_structure_over_latents,
-        dataType = DataType.Continuous
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "RLCD",
+//        command = "rlcd",
+//        algoType = AlgType.search_for_structure_over_latents,
+//        dataType = DataType.Continuous
+//)
 @Bootstrapping
 @Experimental
 public class Rlcd extends AbstractBootstrapAlgorithm implements Algorithm {
