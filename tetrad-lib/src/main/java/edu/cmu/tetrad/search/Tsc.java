@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
@@ -74,45 +75,6 @@ public class Tsc {
     }
 
     /**
-     * Computes a binomial coefficient using a precomputed table.
-     *
-     * @param C a precomputed 2D array representing binomial coefficients, where C[i][j] = "i choose j"
-     * @param x the first parameter of the binomial coefficient
-     * @param j the second parameter of the binomial coefficient
-     * @return the binomial coefficient "x choose j" if 0 <= j <= x; otherwise, returns 0
-     */
-    private static long choose(long[][] C, int x, int j) {
-        if (x < j || j < 0) return 0L;
-        return C[x][j];
-    }
-
-    private static long[][] binom(int n, int k) {
-        long key = (((long) n) << 32) ^ k;
-        return BINOM_CACHE.computeIfAbsent(key, binom -> precomputeBinom(n, k));
-    }
-
-    private static void combinadicDecodeColex(long m, int n, int k, long[][] C, int[] out) { /* ... unchanged ... */
-        long r = m;
-        int bound = n;
-        for (int i = k; i >= 1; i--) {
-            int lo = 0, hi = bound - 1, v = 0;
-            while (lo <= hi) {
-                int mid = (lo + hi) >>> 1;
-                long c = choose(C, mid, i);
-                if (c <= r) {
-                    v = mid;
-                    lo = mid + 1;
-                } else {
-                    hi = mid - 1;
-                }
-            }
-            out[i - 1] = v;
-            r -= choose(C, v, i);
-            bound = v;
-        }
-    }
-
-    /**
      * Constructs a StringBuilder containing a formatted string representation of the names of nodes corresponding to
      * the provided cluster indices.
      *
@@ -167,52 +129,48 @@ public class Tsc {
 
         final int n = vars.size();
         final int k = size;
+        if (k <= 0 || k > n) return Collections.emptySet();
 
-        final int[] varIds = new int[n];
-        for (int i = 0; i < n; i++) varIds[i] = vars.get(i);
+        // shard by first position for parallelism; avoids nCk overflow
+        return IntStream.range(0, n - k + 1).parallel().mapToObj(start -> {
+            Set<Set<Integer>> out = ConcurrentHashMap.newKeySet();
+            int[] comb = new int[k];
+            // initialize comb = [start, start+1, ..., start+k-1]
+            for (int i = 0; i < k; i++) comb[i] = start + i;
 
-        final long[][] C = binom(n, k);
-        final long total = C[n][k];
+            // standard lexicographic k-combination advance
+            while (true) {
+                // enforce shard: first element fixed to 'start'
+                if (comb[0] != start) break;
 
-        final ThreadLocal<int[]> tlIdxs = ThreadLocal.withInitial(() -> new int[k]);
-        final ThreadLocal<int[]> tlIds = ThreadLocal.withInitial(() -> new int[k]);
+                int[] ids = new int[k];
+                for (int i = 0; i < k; i++) ids[i] = vars.get(comb[i]);
 
-        AtomicInteger count = new AtomicInteger();
+                if (lookupRankFast(ids) == rank) {
+                    Set<Integer> cluster = new HashSet<>(k * 2);
+                    for (int id : ids) cluster.add(id);
+                    out.add(cluster);
+                }
 
-        return LongStream.range(0, total).parallel().mapToObj(m -> {
-            if (Thread.currentThread().isInterrupted()) return null;
-
-            int _count = count.getAndIncrement();
-            if (_count % 1000 == 0) {
-                log("Count = " + count.get() + " of total = " + total);
+                int idx = k - 1;
+                while (idx >= 0 && comb[idx] == n - k + idx) idx--;
+                if (idx < 0) break;
+                comb[idx]++;
+                for (int j = idx + 1; j < k; j++) comb[j] = comb[j - 1] + 1;
             }
-
-            int[] idxs = tlIdxs.get();
-            combinadicDecodeColex(m, n, k, C, idxs);
-
-            int[] ids = tlIds.get();
-            for (int i = 0; i < k; i++) ids[i] = varIds[idxs[i]];
-
-            int r = lookupRankFast(ids);
-            if (r != rank) return null;
-
-            Set<Integer> cluster = new HashSet<>(k * 2);
-            for (int i = 0; i < k; i++) cluster.add(ids[i]);
-
-            return cluster;
-        }).filter(Objects::nonNull).collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
+            return out;
+        }).flatMap(Set::stream).collect(ConcurrentHashMap::newKeySet, Set::add, Set::addAll);
     }
 
     // Fast overload: takes primitive IDs and uses canonical Key (Wilks path)
     private int lookupRankFast(int[] ids) {
-        Key k = new Key(ids);
-        Integer cached = rankCache.get(k);
-        if (cached != null) return cached;
-        Set<Integer> s = new HashSet<>(ids.length * 2);
-        for (int x : ids) s.add(x);
-        int r = rank(s);
-        rankCache.put(k, r);
-        return r;
+        // ids not guaranteed sorted; Key will sort once
+        return rankCache.computeIfAbsent(new Key(ids), k -> {
+            // build Y set directly without boxing if you prefer; here keep existing
+            Set<Integer> s = new HashSet<>(ids.length * 2);
+            for (int x : ids) s.add(x);
+            return rank(s);
+        });
     }
 
     /**
@@ -291,7 +249,7 @@ public class Tsc {
 
                 Set<Integer> cluster = new HashSet<>(seed);
 
-                if (seed.size() >= this.variables.size() - seed.size()) continue;
+                if (seed.size() >= remainingVars.size() - seed.size()) continue;
 
                 int seedRankShown;
                 seedRankShown = ranksByTest(seed);
