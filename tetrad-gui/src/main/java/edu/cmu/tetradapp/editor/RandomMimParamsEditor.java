@@ -1,6 +1,6 @@
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.DataGraphUtilsFlexMim;
+import edu.cmu.tetrad.graph.RandomMim;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.IntTextField;
@@ -69,7 +69,7 @@ class RandomMimParamsEditor extends JPanel {
         latentGroupSpecs.setFilter((value, oldValue) -> {
             try {
                 String cleaned = normalizeSpecs(value);
-                DataGraphUtilsFlexMim.parseLatentGroupSpecs(cleaned); // validate
+                RandomMim.parseLatentGroupSpecs(cleaned); // validate
                 parameters.set(K_LATENT_GROUP_SPECS, cleaned);
 
                 // After specs change, recompute max edges and clamp the current structural edge count.
@@ -143,11 +143,11 @@ class RandomMimParamsEditor extends JPanel {
     private static int computeMaxEdgesFromSpecs(Parameters p) {
         String raw = p.getString(K_LATENT_GROUP_SPECS, D_LATENT_GROUP_SPECS);
         String cleaned = normalizeSpecs(raw);
-        List<DataGraphUtilsFlexMim.LatentGroupSpec> specs =
-                DataGraphUtilsFlexMim.parseLatentGroupSpecs(cleaned);
+        List<RandomMim.LatentGroupSpec> specs =
+                RandomMim.parseLatentGroupSpecs(cleaned);
 
         int groups = 0;
-        for (DataGraphUtilsFlexMim.LatentGroupSpec s : specs) {
+        for (RandomMim.LatentGroupSpec s : specs) {
             groups += s.countGroups();
         }
         if (groups <= 1) return 0;

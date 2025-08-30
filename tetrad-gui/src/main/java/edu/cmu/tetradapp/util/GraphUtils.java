@@ -68,13 +68,13 @@ public class GraphUtils {
                     randomGraphMaxOutdegree,
                     false);
             case "Mim" -> {
-                List<DataGraphUtilsFlexMim.LatentGroupSpec> specs = DataGraphUtilsFlexMim.parseLatentGroupSpecs(
+                List<RandomMim.LatentGroupSpec> specs = RandomMim.parseLatentGroupSpecs(
                         parameters.getString("mimLatentGroupSpecs"));
-                yield DataGraphUtilsFlexMim.randomMimGeneral(specs, numStructuralEdges,
+                yield RandomMim.constructRandomMim(specs, numStructuralEdges,
                         numLatentMeasuredImpureParents,
                         numMeasuredMeasuredImpureParents,
                         numMeasuredMeasuredImpureAssociations,
-                        DataGraphUtilsFlexMim.LatentLinkMode.CARTESIAN_PRODUCT,
+                        RandomMim.LatentLinkMode.CARTESIAN_PRODUCT,
                         new Random());
             }
             case "ScaleFree" -> GraphUtils.makeRandomScaleFree(newGraphNumMeasuredNodes,

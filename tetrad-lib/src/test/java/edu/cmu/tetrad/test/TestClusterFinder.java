@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.DataGraphUtilsFlexMim;
+import edu.cmu.tetrad.graph.RandomMim;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ScoredClusterFinder;
@@ -22,17 +22,17 @@ public class TestClusterFinder {
                                        int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
                                        int numMeasuredMeasuredImpureAssociations) {
 
-        List<DataGraphUtilsFlexMim.LatentGroupSpec> specs = DataGraphUtilsFlexMim.parseLatentGroupSpecs(latentGroupSpecs);
+        List<RandomMim.LatentGroupSpec> specs = RandomMim.parseLatentGroupSpecs(latentGroupSpecs);
 
 //        DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
 //                numStructuralNodes, numFactors, maxStructuralEdges);
-        return DataGraphUtilsFlexMim.randomMimGeneral(
+        return RandomMim.constructRandomMim(
                 specs,
                 maxStructuralEdges,
                 numLatentMeasuredImpureParents,
                 numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations,
-                DataGraphUtilsFlexMim.LatentLinkMode.CARTESIAN_PRODUCT,
+                RandomMim.LatentLinkMode.CARTESIAN_PRODUCT,
                 new Random());
     }
 

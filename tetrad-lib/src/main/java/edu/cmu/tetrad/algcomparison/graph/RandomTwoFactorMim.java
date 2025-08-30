@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
-import edu.cmu.tetrad.graph.DataGraphUtilsFlexMim;
+import edu.cmu.tetrad.graph.RandomMim;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -37,13 +37,13 @@ public class RandomTwoFactorMim implements RandomGraph {
         int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureAssociations = parameters.getInt("mimMeasuredMeasuredImpureAssociations", 0);
 
-        DataGraphUtilsFlexMim.LatentGroupSpec spec = new DataGraphUtilsFlexMim.LatentGroupSpec(
+        RandomMim.LatentGroupSpec spec = new RandomMim.LatentGroupSpec(
                 numStructuralNodes, 3, numChildrenPerGroup);
-        return DataGraphUtilsFlexMim.randomMimGeneral(List.of(spec), maxStructuralEdges,
+        return RandomMim.constructRandomMim(List.of(spec), maxStructuralEdges,
                 numLatentMeasuredImpureParents,
                 numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations,
-                DataGraphUtilsFlexMim.LatentLinkMode.CARTESIAN_PRODUCT,
+                RandomMim.LatentLinkMode.CARTESIAN_PRODUCT,
                 new Random());
     }
 

@@ -1,9 +1,7 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
-import edu.cmu.tetrad.graph.DataGraphUtilsFlexMim;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -37,12 +35,12 @@ public class RandomMim implements RandomGraph {
         int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureAssociations = parameters.getInt("mimMeasuredMeasuredImpureAssociations", 0);
 
-        List<DataGraphUtilsFlexMim.LatentGroupSpec> specs = DataGraphUtilsFlexMim.parseLatentGroupSpecs(latentGroupSpecs);
-        return DataGraphUtilsFlexMim.randomMimGeneral(specs, numStructuralEdges,
+        List<edu.cmu.tetrad.graph.RandomMim.LatentGroupSpec> specs = edu.cmu.tetrad.graph.RandomMim.parseLatentGroupSpecs(latentGroupSpecs);
+        return edu.cmu.tetrad.graph.RandomMim.constructRandomMim(specs, numStructuralEdges,
                 numLatentMeasuredImpureParents,
                 numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations,
-                DataGraphUtilsFlexMim.LatentLinkMode.CARTESIAN_PRODUCT,
+                edu.cmu.tetrad.graph.RandomMim.LatentLinkMode.CARTESIAN_PRODUCT,
                 new Random());
     }
 

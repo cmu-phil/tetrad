@@ -19,22 +19,22 @@ import java.util.regex.Pattern;
  * numMeasuredMeasuredImpureParents: measured -> measured directed edges - numMeasuredMeasuredImpureAssociations:
  * measured <-> measured bidirected "error correlations"
  */
-public final class DataGraphUtilsFlexMim {
+public final class RandomMim {
 
-    private DataGraphUtilsFlexMim() {
+    private RandomMim() {
     }
 
     /**
      * Convenience overload: pick a random number of meta-edges.
      */
-    public static Graph randomMimGeneral(
+    public static Graph constructRandomMim(
             List<LatentGroupSpec> specs,
             int numLatentMeasuredImpureParents,
             int numMeasuredMeasuredImpureParents,
             int numMeasuredMeasuredImpureAssociations
     ) {
         // default: target ~20% of all possible forward edges (acyclic)
-        return randomMimGeneral(
+        return constructRandomMim(
                 specs,
                 null,
                 numLatentMeasuredImpureParents,
@@ -49,7 +49,7 @@ public final class DataGraphUtilsFlexMim {
      * Main entry point. If metaEdgeCount is null, an ER-like random forward-DAG density is used (~20%). If
      * metaEdgeCount is provided, we sample exactly that many forward edges across the group order.
      */
-    public static Graph randomMimGeneral(
+    public static Graph constructRandomMim(
             List<LatentGroupSpec> specs,
             Integer metaEdgeCount, // number of edges in the meta-DAG over groups; if null, choose randomly
             int numLatentMeasuredImpureParents,
@@ -115,7 +115,7 @@ public final class DataGraphUtilsFlexMim {
             // Latent names per group: L1, L1B, L1C, ... (prefix by group index + 1)
             List<Node> latents = new ArrayList<>(grp.rank);
             for (int r = 0; r < grp.rank; r++) {
-                String base = (r == 0) ? ("L" + (g + 1)) : ("L" + (g + 1) + letterSuffix(r));
+                String base = (grp.rank == 1) ? ("L" + (g + 1)) : ("L" + (g + 1) + letterSuffix(r));
                 String unique = nameFactory.unique(base);
                 GraphNode L = new GraphNode(unique);
                 L.setNodeType(NodeType.LATENT);
@@ -127,7 +127,7 @@ public final class DataGraphUtilsFlexMim {
             // Create the group's measured children ONCE per group
             List<Node> measureds = new ArrayList<>(grp.childrenPerGroup);
             for (int k = 0; k < grp.childrenPerGroup; k++) {
-                String xName = nameFactory.unique("X" + (g + 1)); // keeps group-local flavor, still globally unique
+                String xName = "X" + (g + 1) + "." + (k + 1); // keeps group-local flavor, still globally unique
                 ContinuousVariable X = new ContinuousVariable(xName);
                 X.setNodeType(NodeType.MEASURED);
                 graph.addNode(X);
@@ -152,14 +152,14 @@ public final class DataGraphUtilsFlexMim {
             Group from = groups.get(e[0]);
             Group to = groups.get(e[1]);
 
-            if (latentLinkMode == DataGraphUtilsFlexMim.LatentLinkMode.CARTESIAN_PRODUCT) {
+            if (latentLinkMode == RandomMim.LatentLinkMode.CARTESIAN_PRODUCT) {
                 for (Node Lfrom : from.latents) {
                     for (Node Lto : to.latents) {
                         if (graph.isAdjacentTo(Lfrom, Lto)) continue;
                         graph.addDirectedEdge(Lfrom, Lto);
                     }
                 }
-            } else if (latentLinkMode == DataGraphUtilsFlexMim.LatentLinkMode.CORRESPONDING) {
+            } else if (latentLinkMode == RandomMim.LatentLinkMode.CORRESPONDING) {
                 if (from.latents.size() != to.latents.size()) {
                     throw new IllegalArgumentException("Latent groups must have the same number of latents to " +
                                                        "link corresponding latents.");
@@ -243,7 +243,7 @@ public final class DataGraphUtilsFlexMim {
     private static String letterSuffix(int indexFrom1) {
         // indexFrom1: 1 -> B, 2 -> C, 3 -> D, ...
         // Supports up to 26 extras easily; extend if you like.
-        int i = Math.max(1, indexFrom1);
+        int i = Math.max(0, indexFrom1);
         char c = (char) ('A' + i); // 1->B, 2->C, ...
         return String.valueOf(c);
     }
