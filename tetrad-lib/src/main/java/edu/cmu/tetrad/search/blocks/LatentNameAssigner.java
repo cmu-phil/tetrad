@@ -132,23 +132,9 @@ public final class LatentNameAssigner {
                 baseName = sanitizedTrueName.get(pureTrueKey);
                 meaningful = true;
             } else if (!overlaps.isEmpty()) {
-                overlaps.sort((a, b) -> {
-                    if (b.count != a.count) return Integer.compare(b.count, a.count);
-                    int jc = Double.compare(b.jaccard, a.jaccard);
-                    if (jc != 0) return jc;
-                    return a.sanitized.compareTo(b.sanitized);
-                });
-                final int k = Math.min(config.maxOverlapParts, overlaps.size());
-                final StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < k; i++) {
-                    if (i > 0) sb.append(config.overlapJoiner);
-                    sb.append(overlaps.get(i).sanitized);
-                }
-                if (overlaps.size() > config.maxOverlapParts && config.showOverflowCount) {
-                    sb.append(config.overflowPrefix).append(overlaps.size() - config.maxOverlapParts).append(".more");
-                }
-                final String joined = sb.length() == 0 ? config.defaultMixedName : sb.toString();
-                baseName = joined;
+                // Previously: hyphen-joined overlaps like "A-B(+N.more)".
+                // Now: just use the Mixed base; numbering handled by ensureUnique().
+                baseName = config.defaultMixedName;  // e.g., "Mixed"
                 meaningful = true;
             } else {
                 baseName = config.defaultMixedName;
@@ -311,9 +297,26 @@ public final class LatentNameAssigner {
         return s.replaceAll("_+$", "");        // drop trailing underscores
     }
 
+    //    private static String ensureUnique(String base, Set<String> used, Config cfg) {
+//        if (isReserved(base, cfg)) return base; // literal stays as-is, even if "used"
+//        String b = (base == null || base.isEmpty()) ? "L" : base;
+//        if (!used.contains(b)) return b;
+//        int k = 2;
+//        while (used.contains(b + cfg.numericSep + k)) k++;
+//        return b + cfg.numericSep + k;
+//    }
     private static String ensureUnique(String base, Set<String> used, Config cfg) {
-        if (isReserved(base, cfg)) return base; // literal stays as-is, even if "used"
+        if (isReserved(base, cfg)) return base; // keep literal, even if "used"
         String b = (base == null || base.isEmpty()) ? "L" : base;
+
+        // Special-case: for mixed clusters, force numbering as Mixed1, Mixed2, ...
+        if (b.equals(cfg.defaultMixedName)) {
+            int k = 1;
+            while (used.contains(b + k)) k++;
+            return b + k;
+        }
+
+        // Default behavior for everything else
         if (!used.contains(b)) return b;
         int k = 2;
         while (used.contains(b + cfg.numericSep + k)) k++;

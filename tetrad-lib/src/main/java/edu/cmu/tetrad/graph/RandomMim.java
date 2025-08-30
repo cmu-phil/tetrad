@@ -101,9 +101,6 @@ public final class RandomMim {
         // ----- 3) Materialize the actual Tetrad graph
         Graph graph = new EdgeListGraph();
 
-        // We'll create all latents and measureds for each group, track them, then wire everything up.
-        NameFactory nameFactory = new NameFactory();
-
         // Accumulators for impurities
         List<Node> allLatents = new ArrayList<>();
         List<Node> allMeasured = new ArrayList<>();
@@ -112,17 +109,17 @@ public final class RandomMim {
         for (int g = 0; g < G; g++) {
             Group grp = groups.get(g);
 
-            // Latent names per group: L1, L1B, L1C, ... (prefix by group index + 1)
+            // ---- inside the group loop ----
             List<Node> latents = new ArrayList<>(grp.rank);
             for (int r = 0; r < grp.rank; r++) {
-                String base = (grp.rank == 1) ? ("L" + (g + 1)) : ("L" + (g + 1) + letterSuffix(r));
-                String unique = nameFactory.unique(base);
-                GraphNode L = new GraphNode(unique);
+                String name = latentName(g, r, grp.rank);
+                GraphNode L = new GraphNode(name);
                 L.setNodeType(NodeType.LATENT);
                 graph.addNode(L);
                 latents.add(L);
                 allLatents.add(L);
             }
+            grp.latents = latents;
 
             // Create the group's measured children ONCE per group
             List<Node> measureds = new ArrayList<>(grp.childrenPerGroup);
@@ -211,18 +208,38 @@ public final class RandomMim {
 
     private static void addMeasuredMeasuredParents(Graph g, List<Node> measured, int count, Random rng) {
         if (count <= 0 || measured.size() < 2) return;
-        // To reduce obvious cycles we’ll bias edges to go from a lower index to a higher index.
-        int tries = 0, added = 0, maxTries = count * 30;
+        int tries = 0, added = 0, maxTries = count * 50;
         while (added < count && tries++ < maxTries) {
             int i = rng.nextInt(measured.size());
             int j = rng.nextInt(measured.size());
             if (i == j) continue;
-            Node A = measured.get(Math.min(i, j));
+
+            Node A = measured.get(Math.min(i, j)); // bias lower -> higher
             Node B = measured.get(Math.max(i, j));
-            if (g.isAdjacentTo(A, B)) continue;
+
+            if (g.isAdjacentTo(A, B)) continue;           // any edge already between them? skip
+            if (hasDirectedPath(g, B, A)) continue;       // adding A->B would create a cycle
             g.addDirectedEdge(A, B);
             added++;
         }
+    }
+
+    // Simple DFS over directed edges only
+    private static boolean hasDirectedPath(Graph g, Node from, Node to) {
+        if (from == to) return true;
+        Deque<Node> stack = new ArrayDeque<>();
+        Set<Node> seen = new HashSet<>();
+        stack.push(from);
+        seen.add(from);
+
+        while (!stack.isEmpty()) {
+            Node cur = stack.pop();
+            if (cur == to) return true;
+            for (Node child : g.getChildren(cur)) { // directed out-neighbors
+                if (seen.add(child)) stack.push(child);
+            }
+        }
+        return false;
     }
 
     // ========= helpers =========
@@ -331,21 +348,16 @@ public final class RandomMim {
         }
     }
 
-    /**
-     * Ensures global uniqueness while trying to keep the requested base pattern.
-     */
-    private static final class NameFactory {
-        private final Map<String, Integer> used = new HashMap<>();
-
-        public String unique(String base) {
-            if (!used.containsKey(base)) {
-                used.put(base, 1);
-                return base;
-            }
-            int k = used.get(base);
-            used.put(base, k + 1);
-            // minimal, readable disambiguator: base, base2, base3, ...
-            return base + (k); // base2 on first clash
+    // ---- helper method ----
+    private static String latentName(int groupIndexZeroBased, int r, int rank) {
+        int g1 = groupIndexZeroBased + 1;
+        if (rank == 1) {
+            // single latent group: plain L1, L2, ...
+            return "L" + g1;
+        } else {
+            // multi-latent group: start with A, B, C...
+            char suffix = (char) ('A' + r);
+            return "L" + g1 + suffix;
         }
     }
 }
