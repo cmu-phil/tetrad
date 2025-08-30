@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  * <p>
  * Impurities: - numLatentMeasuredImpureParents: extra latent -> measured cross-loadings -
  * numMeasuredMeasuredImpureParents: measured -> measured directed edges - numMeasuredMeasuredImpureAssociations:
- * measured <-> measured bidirected "error correlations"
+ * measured &lt;-&gt; measured bidirected "error correlations"
  */
 public final class RandomMim {
 
@@ -46,8 +46,25 @@ public final class RandomMim {
     }
 
     /**
-     * Main entry point. If metaEdgeCount is null, an ER-like random forward-DAG density is used (~20%). If
-     * metaEdgeCount is provided, we sample exactly that many forward edges across the group order.
+     * Constructs a random meta-graph as a Multiple Indicator Model (MIM) with specified structural constraints.
+     * This method generates latent groups based on the provided specifications, builds a meta-DAG among the
+     * groups, and materializes the graph with impurities such as cross-loadings, directed impurities, and
+     * bidirectional associations over measured nodes.
+     *
+     * @param specs the list of specifications describing latent groups, including group ranks and children per group;
+     *              must not be null or empty.
+     * @param metaEdgeCount the number of edges in the meta-DAG over latent groups; if null, a random proportion of
+     *                      possible forward edges is chosen instead.
+     * @param numLatentMeasuredImpureParents the number of additional latent-to-measured cross-loadings to introduce.
+     * @param numMeasuredMeasuredImpureParents the number of directed edges to introduce among measured nodes as impurities.
+     * @param numMeasuredMeasuredImpureAssociations the number of bidirectional associations to introduce among measured nodes.
+     * @param latentLinkMode the mode of linking latents between groups in the meta-DAG, either via Cartesian product
+     *                       or corresponding positions.
+     * @param rng the random generator used to make stochastic decisions during graph construction; can be null to
+     *            use a default Random instance with a seed of 0.
+     * @return the constructed graph representing the random MIM with all specified constraints and impurities.
+     * @throws IllegalArgumentException if the specifications are null, empty, or malformed, if the number of meta-edges
+     *                                  is out of valid range, or if the latentLinkMode is unrecognized.
      */
     public static Graph constructRandomMim(
             List<LatentGroupSpec> specs,
@@ -317,8 +334,40 @@ public final class RandomMim {
         return out;
     }
 
+    // ---- helper method ----
+    private static String latentName(int groupIndexZeroBased, int r, int rank) {
+        int g1 = groupIndexZeroBased + 1;
+        if (rank == 1 || r == 0) {
+            // single latent group: plain L1, L2, ...
+            return "L" + g1;
+        } else {
+            // multi-latent group: start with A, B, C...
+            char suffix = (char) ('A' + r);
+            return "L" + g1 + suffix;
+        }
+    }
+
+    /**
+     * Enum representing the mode of linking between latent nodes in the construction of a random model-in-mapping (MIM)
+     * graph. Determines how connections are formed between latent groups during the graph generation process.
+     * <p>
+     * The available modes are: - CARTESIAN_PRODUCT: All possible links between elements of two groups are formed. -
+     * CORRESPONDING: Links are formed only between corresponding indices of two groups.
+     */
     public enum LatentLinkMode {
+
+        /**
+         * Represents the Cartesian product mode for linking latent nodes in the construction of a random MIM
+         * (model-in-mapping) graph. In this mode, all possible connections between elements of two latent groups are
+         * established, forming a complete set of links between the groups.
+         */
         CARTESIAN_PRODUCT,
+
+        /**
+         * Represents the corresponding mode for linking latent nodes in the construction of a random MIM
+         * (model-in-mapping) graph. In this mode, connections are established only between elements at the same index
+         * in two latent groups.
+         */
         CORRESPONDING
     }
 
@@ -345,19 +394,6 @@ public final class RandomMim {
         Group(int rank, int childrenPerGroup) {
             this.rank = rank;
             this.childrenPerGroup = childrenPerGroup;
-        }
-    }
-
-    // ---- helper method ----
-    private static String latentName(int groupIndexZeroBased, int r, int rank) {
-        int g1 = groupIndexZeroBased + 1;
-        if (rank == 1 || r == 0) {
-            // single latent group: plain L1, L2, ...
-            return "L" + g1;
-        } else {
-            // multi-latent group: start with A, B, C...
-            char suffix = (char) ('A' + r);
-            return "L" + g1 + suffix;
         }
     }
 }

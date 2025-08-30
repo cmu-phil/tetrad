@@ -3,6 +3,18 @@ package edu.cmu.tetrad.util;
 import edu.cmu.tetrad.data.DataTransforms;
 import org.ejml.simple.SimpleMatrix;
 
+/**
+ * Utility class for estimating the average pairwise row correlation of a data matrix and computing the effective
+ * sample size (Neff) based on the correlations.
+ *
+ * The core functionality involves estimating the Neff value as N / (1 + (N-1)*rhoHat), where rhoHat is the average
+ * correlation between rows. The estimation process standardizes the input data matrix, samples a defined number of
+ * random row pairs, calculates pairwise correlations, and adjusts the results to avoid negative or singular
+ * computations.
+ *
+ * This class is designed to handle computation over larger datasets by allowing a maximum number of row pairs to
+ * sample, ensuring computational efficiency, and avoiding issues caused by excessively large row combinations.
+ */
 public final class RowCorrelationEffN {
 
     /**
@@ -87,6 +99,14 @@ public final class RowCorrelationEffN {
         public final double effN;              // N / (1 + (N-1)*rho_hat)
         public final int pairsUsed;
 
+        /**
+         * Constructs a Result instance with the specified adjusted average row correlation value,
+         * effective sample size, and the number of row pairs used.
+         *
+         * @param avgRowCorrelation the adjusted average row correlation value (rho_hat), clamped to the range [0, 1)
+         * @param effN the effective sample size, calculated as N / (1 + (N-1) * rho_hat)
+         * @param pairsUsed the number of row pairs used in the calculation
+         */
         private Result(double avgRowCorrelation, double effN, int pairsUsed) {
             this.avgRowCorrelation = avgRowCorrelation;
             this.effN = effN;

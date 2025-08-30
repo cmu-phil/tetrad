@@ -23,7 +23,6 @@ public final class BlockDiscoverers {
      * significance level and equivalent sample size, along with a policy for handling single-cluster constraints.
      *
      * @param data   the dataset on which the block discovery algorithm will operate
-     * @param ntad   a statistical test used to evaluate dependencies and relationships between variables
      * @param alpha  the significance level used in statistical tests, typically between 0 and 1
      * @param ess    the equivalent sample size, controlling the strength of prior information in scoring
      * @param policy the single-cluster policy applied to manage how individual clusters or blocks are processed
