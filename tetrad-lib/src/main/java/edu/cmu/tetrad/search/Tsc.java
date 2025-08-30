@@ -2,11 +2,10 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
@@ -114,37 +113,6 @@ public class Tsc {
         }
     }
 
-    public static int[][] dependencyMatrix(SimpleMatrix S, double sampleSize, double alpha) {
-        if (S.getNumRows() != S.getNumCols()) throw new IllegalArgumentException("S must be square");
-        final int p = S.getNumRows();
-
-        // Two-sided cutoff: P(|Z| > c) = alpha => c = Phi^{-1}(1 - alpha/2)
-        final double cutoff = new NormalDistribution(0, 1)
-                .inverseCumulativeProbability(1.0 - alpha / 2.0);
-
-        final double scale = sampleSize > 3.0 ? Math.sqrt(sampleSize - 3.0) : 0.0;
-
-        int[][] A = new int[p][p];
-
-        for (int i = 0; i < p; i++) {
-            A[i][i] = 0; // or 1 if you prefer self-dependence
-            for (int j = i + 1; j < p; j++) {
-                double r = S.get(i, j);
-                if (Double.isNaN(r)) r = 0.0;
-
-                // Clamp and stable atanh
-                double rc = Math.max(-0.999999, Math.min(0.999999, r));
-                double q = 0.5 * Math.log1p(2.0 * rc / (1.0 - rc)); // = atanh(rc)
-                double z = scale * q;
-
-                int dep = (Math.abs(z) > cutoff) ? 1 : 0;
-                A[i][j] = dep;
-                A[j][i] = dep;
-            }
-        }
-        return A;
-    }
-
     /**
      * Constructs a StringBuilder containing a formatted string representation of the names of nodes corresponding to
      * the provided cluster indices.
@@ -182,22 +150,6 @@ public class Tsc {
             sb.append(_sb);
         }
         return sb.toString();
-    }
-
-    // ---- scored-rank helper (C vs D = V\C) + cache -----------------------------
-
-    /**
-     * Simple 64-bit key from the two arrays; stable across calls for same content.
-     */
-    private long pairKey(int[] C, int[] D) {
-        int h1 = Arrays.hashCode(C);
-        int h2 = Arrays.hashCode(D);
-        long k = 1469598103934665603L;       // FNV offset basis
-        k ^= h1;
-        k *= 1099511628211L;                 // FNV prime
-        k ^= h2;
-        k *= 1099511628211L;
-        return k;
     }
 
     // ---- test-based enumerator (kept for reference) ----------------------------
@@ -256,35 +208,22 @@ public class Tsc {
     }
 
     /**
-     * Identifies and returns clusters of variables based on a predefined scoring or testing mechanism. This method
-     * processes the output of the clustering procedure and formats it as a list of lists of integers, where each inner
-     * list represents a single cluster of variables.
+     * Identifies clusters of variables and associates each cluster with a rank.
+     * <p>
+     * This method computes clusters by calling an internal implementation and returns the results in the form of a map.
+     * Each entry in the map represents a cluster (denoted as a set of integers, where each integer is an identifier for
+     * a variable) associated with its respective rank.
      *
-     * @return a list of clusters, with each cluster represented as a list of integers. The clusters are sorted first by
-     * size in descending order and then lexicographically by their variable names or identifiers.
+     * @return a map where the keys are sets of integers representing clusters of variables, and the values are integers
+     * representing the rank associated with each cluster
      */
     public Map<Set<Integer>, Integer> findClusters() {
-        return estimateClusters();
-    }
-
-    private List<List<Integer>> convertToLists(Map<Set<Integer>, Integer> clusters) {
-        List<List<Integer>> ret = new ArrayList<>(clusters.size());
-        for (Map.Entry<Set<Integer>, Integer> entry : clusters.entrySet()) {
-            ret.add(new ArrayList<>(entry.getValue()));
-        }
-        return ret;
-    }
-
-    private Map<Set<Integer>, Integer> estimateClusters() {
         List<Integer> variables = allVariables();
         if (new HashSet<>(variables).size() != variables.size()) {
             throw new IllegalArgumentException("Variables must be unique.");
         }
 
-        Map<Set<Integer>, Integer> setIntegerMap = clusterSearchMetaLoop();
-//        printFractionPairwiseDependent(setIntegerMap.keySet());
-
-        return setIntegerMap;
+        return clusterSearchMetaLoop();
     }
 
     private List<Integer> allVariables() {
@@ -626,31 +565,6 @@ public class Tsc {
         for (int i = 0; i < ySet.size(); i++) yIndices[i] = ySet.get(i);
 
         return estimateWilksRank(S, xIndices, yIndices, expectedSampleSize, alpha);
-    }
-
-    private Graph convertSearchGraphClusters(List<Set<Integer>> clusters, List<Node> latents, boolean includeAllNodes) {
-        Graph graph = includeAllNodes ? new EdgeListGraph(this.nodes) : new EdgeListGraph();
-        for (int i = 0; i < clusters.size(); i++) {
-            graph.addNode(latents.get(i));
-            for (int j : clusters.get(i)) {
-                if (!graph.containsNode(nodes.get(j))) graph.addNode(nodes.get(j));
-                graph.addDirectedEdge(latents.get(i), nodes.get(j));
-            }
-        }
-        return graph;
-    }
-
-    private List<Node> defineLatents(List<Set<Integer>> clusters, Map<Set<Integer>, Integer> ranks, Map<Set<Integer>, Integer> reducedRank) {
-        List<Node> latents = new ArrayList<>();
-        for (int i = 0; i < clusters.size(); i++) {
-            int rank = ranks.get(clusters.get(i));
-            Integer reduced = reducedRank.get(clusters.get(i));
-            String rankSpec = rank + (reduced == null ? "" : ";" + reduced);
-            Node latent = new GraphNode("L" + (i + 1) + "(" + rankSpec + ")");
-            latent.setNodeType(NodeType.LATENT);
-            latents.add(latent);
-        }
-        return latents;
     }
 
     private void log(String s) {
