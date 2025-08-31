@@ -95,7 +95,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
         this.ess = ess == -1 ? sampleSize : ess;
 
-        String alg = parameters.getString("latentClusterRunnerAlgorithm", "FOFC");
+        String alg = parameters.getString("latentClusterRunnerAlgorithm", "TSC");
 
         // If we're in simulation mode, grab the true clusters and their latent names so we can use these to
         // give good names to the estimated clusters. This helps avoid people having so much trouble figuring
@@ -277,7 +277,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      * @return a string representing the name of the algorithm.
      */
     public String getAlg() {
-        return parameters.getString("latentClusterRunnerAlgorithm", "FOFC");
+        return parameters.getString("latentClusterRunnerAlgorithm", "TSC");
     }
 
     /**
@@ -393,7 +393,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
 
         // This can't be put into a watch thread because downstream session nodes are counting on
         // a block spec being set when propagating downstream. jdramsey 2025-8-23
-        String alg = parameters.getString("latentClusterRunnerAlgorithm", "FOFC");
+        String alg = parameters.getString("latentClusterRunnerAlgorithm", "TSC");
         String test = parameters.getString("latentClusterRunnerTest", "CCA");
 
         BlockDiscoverer discoverer = buildDiscoverer(alg, test);

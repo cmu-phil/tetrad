@@ -169,7 +169,7 @@ public class BlockClusteringWizard extends JPanel {
             DataSet ds = simulateMIM_Chain(5000, 5, 0.8, 0.8, 0.7, 0.6);
             JFrame f = new JFrame("Block Clustering Wizard (Demo)");
             f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            f.setContentPane(new BlockClusteringWizard(ds, "FOFC", "CCA", "", new HashMap<>(), new Parameters()));
+            f.setContentPane(new BlockClusteringWizard(ds, "TSC", "CCA", "", new HashMap<>(), new Parameters()));
             f.setSize(980, 700);
             f.setLocationRelativeTo(null);
             f.setVisible(true);
