@@ -52,29 +52,6 @@ public class Tsc {
     }
 
     /**
-     * Precomputes the binomial coefficients using dynamic programming. The method generates a table of binomial
-     * coefficients C[n][k] for 0 <= n <= input n and 0 <= k <= input k. It ensures values are capped at Long.MAX_VALUE
-     * to handle potential overflow scenarios.
-     *
-     * @param n the maximum row index for which binomial coefficients are to be computed
-     * @param k the maximum column index for which binomial coefficients are to be computed
-     * @return a 2D array where the value at C[i][j] represents the binomial coefficient "i choose j"
-     */
-    private static long[][] precomputeBinom(int n, int k) { /* ... unchanged ... */
-        long[][] C = new long[n + 1][k + 1];
-        for (int i = 0; i <= n; i++) {
-            C[i][0] = 1;
-            int maxj = Math.min(i, k);
-            for (int j = 1; j <= maxj; j++) {
-                long v = C[i - 1][j - 1] + C[i - 1][j];
-                if (v < 0 || v < C[i - 1][j - 1]) v = Long.MAX_VALUE;
-                C[i][j] = v;
-            }
-        }
-        return C;
-    }
-
-    /**
      * Constructs a StringBuilder containing a formatted string representation of the names of nodes corresponding to
      * the provided cluster indices.
      *
@@ -381,34 +358,34 @@ public class Tsc {
         List<Integer> D = allVariables();
         D.removeAll(cluster);
 
-        { // Rule 1
-            SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
-            int[] choice0;
-            while ((choice0 = gen0.next()) != null) {
-                List<Integer> C1 = new ArrayList<>();
-                for (int i : choice0) C1.add(C.get(i));
-                if (C1.isEmpty() || C1.size() == C.size()) continue;
-
-                List<Integer> C2 = new ArrayList<>(C);
-                C2.removeAll(C1);
-                if (C2.isEmpty()) continue;
-
-                int[] c1Array = C1.stream().mapToInt(Integer::intValue).toArray();
-                int[] c2Array = C2.stream().mapToInt(Integer::intValue).toArray();
-
-                int minpq = Math.min(c1Array.length, c2Array.length);
-                Integer l = clusterToRank.get(cluster);
-                if (l == null) continue;
-                l = Math.min(minpq, Math.max(0, l));
-
-                int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
-                if (r < l) {
-                    log("Deficient! rank(" + toNamesCluster(C1, nodes) + ", " + toNamesCluster(C2, nodes) + ") = "
-                        + r + " < " + l + "; removing " + toNamesCluster(cluster));
-                    return true;
-                }
-            }
-        }
+//        { // Rule 1
+//            SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
+//            int[] choice0;
+//            while ((choice0 = gen0.next()) != null) {
+//                List<Integer> C1 = new ArrayList<>();
+//                for (int i : choice0) C1.add(C.get(i));
+//                if (C1.isEmpty() || C1.size() == C.size()) continue;
+//
+//                List<Integer> C2 = new ArrayList<>(C);
+//                C2.removeAll(C1);
+//                if (C2.isEmpty()) continue;
+//
+//                int[] c1Array = C1.stream().mapToInt(Integer::intValue).toArray();
+//                int[] c2Array = C2.stream().mapToInt(Integer::intValue).toArray();
+//
+//                int minpq = Math.min(c1Array.length, c2Array.length);
+//                Integer l = clusterToRank.get(cluster);
+//                if (l == null) continue;
+//                l = Math.min(minpq, Math.max(0, l));
+//
+//                int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
+//                if (r < l) {
+//                    log("Deficient! rank(" + toNamesCluster(C1, nodes) + ", " + toNamesCluster(C2, nodes) + ") = "
+//                        + r + " < " + l + "; removing " + toNamesCluster(cluster));
+//                    return true;
+//                }
+//            }
+//        }
         { // Rule 2
             SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
             int[] choice;
