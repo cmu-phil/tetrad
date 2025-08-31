@@ -300,19 +300,57 @@ public class Tsc {
         }
 
         log("Penultimate clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
+//        log("Now we will consider whether any of the penultimate clusters should be discarded (as from a non-latent DAG, e.g.).");
+//
+//        boolean penultimateRemoved = false;
+//
+//        // Try to split instead of outright reject (Dong-style refinement)
+//        for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
+//            if (failsSubsetTest(S, cluster, expectedSampleSize, alpha)) {
+//                clusterToRank.remove(cluster);
+////                reducedRank.remove(cluster);
+//                penultimateRemoved = true;
+//            }
+//        }
+
         log("Now we will consider whether any of the penultimate clusters should be discarded (as from a non-latent DAG, e.g.).");
 
-        boolean penultimateRemoved = false;
+        log("Now we will refine penultimate clusters by removing only offending subsets (Rules 2 & 3).");
 
-        // Try to split instead of outright reject (Dong-style refinement)
+        boolean changedAny = false;
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
-            if (failsSubsetTest(S, cluster, expectedSampleSize, alpha)) {
+            int rC = Math.max(0, clusterToRank.getOrDefault(cluster, 0));
+
+            // produce a refined copy (possibly smaller), do not mutate the key in-place
+            Set<Integer> refined = refineClusterByRules2And3(cluster, rC);
+
+            if (refined.size() < 2) {
                 clusterToRank.remove(cluster);
-//                reducedRank.remove(cluster);
-                penultimateRemoved = true;
+                changedAny = true;
+                log("Cluster " + toNamesCluster(cluster) + " eliminated after refinement.");
+                continue;
+            }
+
+            if (!refined.equals(cluster)) {
+                clusterToRank.remove(cluster);
+
+                // you can keep rC, or recompute a safer displayed rank
+                // Option A (strict): recompute rank against complement
+//                int newRank = ranksByTest(refined);
+
+                // Option B (conservative): keep min(rC, |refined|-1)
+                 int newRank = Math.min(rC, Math.max(0, refined.size() - 1));
+
+                clusterToRank.put(refined, newRank);
+                changedAny = true;
+                log("Refined cluster " + toNamesCluster(cluster) + " → " + toNamesCluster(refined)
+                    + " (rank now " + newRank + ").");
             }
         }
-        if (!penultimateRemoved) log("No penultimate clusters were removed.");
+        if (!changedAny) log("No cluster refinement was needed.");
+//        if (!penultimateRemoved) log("No penultimate clusters were removed.");
+
+//        if (!penultimateRemoved) log("No penultimate clusters were removed.");
 
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
         return clusterToRank;
@@ -347,88 +385,188 @@ public class Tsc {
     }
 
     // ---- subset tests (unchanged: still Wilks-based by design) -----------------
-    private boolean failsSubsetTest(SimpleMatrix S, Set<Integer> cluster, int expectedSampleSize, double alpha) { /* ... unchanged ... */
-        List<Integer> C = new ArrayList<>(cluster);
-        List<Integer> D = allVariables();
-        D.removeAll(cluster);
+    //    private boolean failsSubsetTest(SimpleMatrix S, Set<Integer> cluster, int expectedSampleSize, double alpha) { /* ... unchanged ... */
+    //        List<Integer> C = new ArrayList<>(cluster);
+    //        List<Integer> D = allVariables();
+    //        D.removeAll(cluster);
+    //
+    ////        { // Rule 1
+    ////            SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
+    ////            int[] choice0;
+    ////            while ((choice0 = gen0.next()) != null) {
+    ////                List<Integer> C1 = new ArrayList<>();
+    ////                for (int i : choice0) C1.add(C.get(i));
+    ////                if (C1.isEmpty() || C1.size() == C.size()) continue;
+    ////
+    ////                List<Integer> C2 = new ArrayList<>(C);
+    ////                C2.removeAll(C1);
+    ////                if (C2.isEmpty()) continue;
+    ////
+    ////                int[] c1Array = C1.stream().mapToInt(Integer::intValue).toArray();
+    ////                int[] c2Array = C2.stream().mapToInt(Integer::intValue).toArray();
+    ////
+    ////                int minpq = Math.min(c1Array.length, c2Array.length);
+    ////                Integer l = clusterToRank.get(cluster);
+    ////                if (l == null) continue;
+    ////                l = Math.min(minpq, Math.max(0, l));
+    ////
+    ////                int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
+    ////                if (r < l) {
+    ////                    log("Deficient! rank(" + toNamesCluster(C1, nodes) + ", " + toNamesCluster(C2, nodes) + ") = "
+    ////                        + r + " < " + l + "; removing " + toNamesCluster(cluster));
+    ////                    return true;
+    ////                }
+    ////            }
+    ////        }
+    //        { // Rule 2
+    //            SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
+    //            int[] choice;
+    //            while ((choice = gen0.next()) != null) {
+    //                if (choice.length < 1) continue;
+    //                List<Integer> _C = new ArrayList<>();
+    //                for (int i : choice) _C.add(C.get(i));
+    //                int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
+    //                int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
+    //
+    //                int minpq = Math.min(_cArray.length, dArray.length);
+    //                Integer l = clusterToRank.get(cluster);
+    //                l = Math.min(minpq, Math.max(0, l));
+    //
+    //                int r = RankTests.estimateWilksRank(S, _cArray, dArray, expectedSampleSize, alpha);
+    //                if (r < l) {
+    //                    log("rank(" + toNamesCluster(_C, nodes) + ", D) = " + r + " < r = " + l
+    //                        + "; removing cluster " + toNamesCluster(cluster));
+    //                    return true;
+    //                }
+    //            }
+    //        }
+    //        { // Rule 3
+    //            Integer rC = clusterToRank.get(cluster);
+    //            if (rC == null) rC = 0;
+    //
+    //            SublistGenerator gen2 = new SublistGenerator(C.size(), Math.min(C.size() - 1, rC));
+    //            int[] choice2;
+    //            while ((choice2 = gen2.next()) != null) {
+    //                if (choice2.length < rC) continue;
+    //
+    //                List<Integer> Z = new ArrayList<>();
+    //                for (int i : choice2) Z.add(C.get(i));
+    //
+    //                List<Integer> _C = new ArrayList<>(C);
+    //                _C.removeAll(Z);
+    //
+    //                int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
+    //                int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
+    //                int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
+    //
+    //                int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, expectedSampleSize, alpha);
+    //                if (rZ == 0) {
+    //                    log("rank(_C = " + toNamesCluster(_C, nodes) + ", D | Z = " + toNamesCluster(Z, nodes) + ") = 0; removing cluster " + toNamesCluster(cluster) + ".");
+    //                    return true;
+    //                }
+    //            }
+    //        }
+    //        return false;
+    //    }
 
-//        { // Rule 1
-//            SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
-//            int[] choice0;
-//            while ((choice0 = gen0.next()) != null) {
-//                List<Integer> C1 = new ArrayList<>();
-//                for (int i : choice0) C1.add(C.get(i));
-//                if (C1.isEmpty() || C1.size() == C.size()) continue;
-//
-//                List<Integer> C2 = new ArrayList<>(C);
-//                C2.removeAll(C1);
-//                if (C2.isEmpty()) continue;
-//
-//                int[] c1Array = C1.stream().mapToInt(Integer::intValue).toArray();
-//                int[] c2Array = C2.stream().mapToInt(Integer::intValue).toArray();
-//
-//                int minpq = Math.min(c1Array.length, c2Array.length);
-//                Integer l = clusterToRank.get(cluster);
-//                if (l == null) continue;
-//                l = Math.min(minpq, Math.max(0, l));
-//
-//                int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
-//                if (r < l) {
-//                    log("Deficient! rank(" + toNamesCluster(C1, nodes) + ", " + toNamesCluster(C2, nodes) + ") = "
-//                        + r + " < " + l + "; removing " + toNamesCluster(cluster));
-//                    return true;
-//                }
-//            }
-//        }
-        { // Rule 2
-            SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
-            int[] choice;
-            while ((choice = gen0.next()) != null) {
-                if (choice.length < 1) continue;
-                List<Integer> _C = new ArrayList<>();
-                for (int i : choice) _C.add(C.get(i));
-                int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
-                int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
+    /**
+     * Refine a cluster by applying subset-based Rules 2 and 3:
+     * - Rule 2: if rank(_C, D) < r_C, REMOVE the offending subset _C from the cluster
+     * - Rule 3: if rank(_C, D | Z) = 0 (with _C = C \ Z), REMOVE the offending subset Z from the cluster
+     *
+     * This method iterates until no rule fires. Returns the refined cluster (may be the same object),
+     * or an empty set if the cluster collapses. Does not mutate the input set; always works on a copy.
+     *
+     * @param original     the cluster to refine (will not be mutated)
+     * @param rC           the cluster's intended rank
+     * @return refined cluster (possibly smaller); empty set if eliminated
+     */
+    private Set<Integer> refineClusterByRules2And3(Set<Integer> original, int rC) {
+        if (original == null || original.isEmpty()) return Collections.emptySet();
+        if (rC < 0) rC = 0;
 
-                int minpq = Math.min(_cArray.length, dArray.length);
-                Integer l = clusterToRank.get(cluster);
-                l = Math.min(minpq, Math.max(0, l));
+        // Work on a copy to avoid mutating keys already in maps
+        Set<Integer> Cset = new HashSet<>(original);
+        boolean changed;
 
-                int r = RankTests.estimateWilksRank(S, _cArray, dArray, expectedSampleSize, alpha);
-                if (r < l) {
-                    log("rank(" + toNamesCluster(_C, nodes) + ", D) = " + r + " < r = " + l
-                        + "; removing cluster " + toNamesCluster(cluster));
-                    return true;
+        do {
+            changed = false;
+
+            // Recompute lists each pass
+            List<Integer> C = new ArrayList<>(Cset);
+            List<Integer> D = allVariables();
+            D.removeAll(Cset);
+
+            // --- Rule 2: find an offending _C with rank(_C, D) < rC, remove that _C
+            if (C.size() >= 2 && rC > 0) {
+                SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
+                int[] choice;
+                while ((choice = gen0.next()) != null) {
+                    if (choice.length < 1 || choice.length >= C.size()) continue;
+
+                    List<Integer> _C = new ArrayList<>();
+                    for (int i : choice) _C.add(C.get(i));
+                    int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
+                    int[] dArray  = D.stream().mapToInt(Integer::intValue).toArray();
+
+                    int minpq = Math.min(_cArray.length, dArray.length);
+                    int l = Math.min(minpq, Math.max(0, rC));
+                    int r = RankTests.estimateWilksRank(S, _cArray, dArray, expectedSampleSize, alpha);
+
+                    if (r < l) {
+                        // offending subset is _C → remove _C from the cluster
+                        Cset.removeAll(_C);
+                        log("Rule 2 fired: removing offending subset "
+                            + toNamesCluster(new HashSet<>(_C))
+                            + " from cluster " + toNamesCluster(new HashSet<>(C))
+                            + " (rank(_C,D)=" + r + " < " + l + ")");
+                        changed = true;
+                        break; // restart passes after modification
+                    }
+                }
+                if (changed) continue; // restart loop after Rule 2 removal
+            }
+
+            // --- Rule 3: find Z with |Z| ≥ rC and rank(C\Z, D | Z) = 0, remove Z
+            if (!Cset.isEmpty() && rC > 0) {
+                List<Integer> Cnow = new ArrayList<>(Cset);
+                List<Integer> Dnow = allVariables();
+                Dnow.removeAll(Cset);
+
+                SublistGenerator gen2 = new SublistGenerator(Cnow.size(), Math.min(Cnow.size() - 1, rC));
+                int[] choice2;
+                while ((choice2 = gen2.next()) != null) {
+                    if (choice2.length < rC) continue;
+
+                    List<Integer> Z = new ArrayList<>();
+                    for (int i : choice2) Z.add(Cnow.get(i));
+
+                    List<Integer> _C = new ArrayList<>(Cnow);
+                    _C.removeAll(Z);
+
+                    if (_C.isEmpty()) continue;
+
+                    int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
+                    int[] dArray  = Dnow.stream().mapToInt(Integer::intValue).toArray();
+                    int[] zArray  = Z.stream().mapToInt(Integer::intValue).toArray();
+
+                    int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, expectedSampleSize, alpha);
+                    if (rZ == 0) {
+                        // offending subset is Z → remove Z from the cluster
+                        Cset.removeAll(Z);
+                        log("Rule 3 fired: removing offending subset Z="
+                            + toNamesCluster(new HashSet<>(Z))
+                            + " from cluster " + toNamesCluster(new HashSet<>(Cnow))
+                            + " (rank(C\\Z, D | Z)=0)");
+                        changed = true;
+                        break; // restart passes after modification
+                    }
                 }
             }
-        }
-        { // Rule 3
-            Integer rC = clusterToRank.get(cluster);
-            if (rC == null) rC = 0;
 
-            SublistGenerator gen2 = new SublistGenerator(C.size(), Math.min(C.size() - 1, rC));
-            int[] choice2;
-            while ((choice2 = gen2.next()) != null) {
-                if (choice2.length < rC) continue;
+        } while (changed && Cset.size() >= 2);
 
-                List<Integer> Z = new ArrayList<>();
-                for (int i : choice2) Z.add(C.get(i));
-
-                List<Integer> _C = new ArrayList<>(C);
-                _C.removeAll(Z);
-
-                int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
-                int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
-                int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
-
-                int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, expectedSampleSize, alpha);
-                if (rZ == 0) {
-                    log("rank(_C = " + toNamesCluster(_C, nodes) + ", D | Z = " + toNamesCluster(Z, nodes) + ") = 0; removing cluster " + toNamesCluster(cluster) + ".");
-                    return true;
-                }
-            }
-        }
-        return false;
+        return Cset;
     }
 
     private int ranksByTest(Set<Integer> cluster) {
