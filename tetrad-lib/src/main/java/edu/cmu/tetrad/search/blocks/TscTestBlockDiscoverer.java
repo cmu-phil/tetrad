@@ -62,24 +62,6 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
             throw new IllegalArgumentException("alpha must be in (0,1)");
         }
 
-        SimpleMatrix X = dataSet.getDoubleData().getSimpleMatrix();
-
-//        RowCorrelationEffN.Result r1 = RowCorrelationEffN.estimate(X, 2_000_000, dataSet.getNumRows());
-//        // cosine-based row correlation
-//        System.out.println("Cosine: " + r1);
-
-//        RowCorrelationEffN.Result r2 = RowCorrelationEffN.estimate(X, 2_000_000, dataSet.getNumRows());
-//        // Pearson-across-features
-//        System.out.println("Pearson: " + r2);
-
-//        int N = X.getNumRows();
-//        int m = (int)Math.sqrt(2.0 * N); // like your Python
-//        EssLikePython.Result r3 = EssLikePython.estimateLikePython(X, m, /*clampNonnegative=*/true, new java.util.Random(0));
-//        System.out.println("Like Python clamp non-negative: " + r3);
-//
-//        EssLikePython.Result r4 = EssLikePython.estimateLikePython(X, m, /*clampNonnegative=*/false, new java.util.Random(0));
-//        System.out.println("Like Python no clamp: " + r4);
-
         Tsc tsc = new Tsc(dataSet.getVariables(), new CorrelationMatrix(dataSet));
         tsc.setAlpha(alpha);
         tsc.setExpectedSampleSize(ess);

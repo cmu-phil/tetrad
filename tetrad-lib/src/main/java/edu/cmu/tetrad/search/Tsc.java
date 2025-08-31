@@ -89,9 +89,8 @@ public class Tsc {
     }
 
     /**
-     * Identifies clusters of variables at a specified rank. This method generates all possible clusters
-     * based on the given variable list and size, computes their ranks, and filters those that match the
-     * specified target rank.
+     * Identifies clusters of variables at a specified rank. This method generates all possible clusters based on the
+     * given variable list and size, computes their ranks, and filters those that match the specified target rank.
      *
      * @param vars a list of integers representing the variables to consider
      * @param size the size of the clusters to generate
@@ -339,7 +338,7 @@ public class Tsc {
 //                int newRank = ranksByTest(refined);
 
                 // Option B (conservative): keep min(rC, |refined|-1)
-                 int newRank = Math.min(rC, Math.max(0, refined.size() - 1));
+                int newRank = Math.min(rC, Math.max(0, refined.size() - 1));
 
                 clusterToRank.put(refined, newRank);
                 changedAny = true;
@@ -470,15 +469,15 @@ public class Tsc {
     //    }
 
     /**
-     * Refine a cluster by applying subset-based Rules 2 and 3:
-     * - Rule 2: if rank(_C, D) < r_C, REMOVE the offending subset _C from the cluster
-     * - Rule 3: if rank(_C, D | Z) = 0 (with _C = C \ Z), REMOVE the offending subset Z from the cluster
+     * Refine a cluster by applying subset-based Rules 2 and 3: - Rule 2: if rank(_C, D) < r_C, REMOVE the offending
+     * subset _C from the cluster - Rule 3: if rank(_C, D | Z) = 0 (with _C = C \ Z), REMOVE the offending subset Z from
+     * the cluster
+     * <p>
+     * This method iterates until no rule fires. Returns the refined cluster (may be the same object), or an empty set
+     * if the cluster collapses. Does not mutate the input set; always works on a copy.
      *
-     * This method iterates until no rule fires. Returns the refined cluster (may be the same object),
-     * or an empty set if the cluster collapses. Does not mutate the input set; always works on a copy.
-     *
-     * @param original     the cluster to refine (will not be mutated)
-     * @param rC           the cluster's intended rank
+     * @param original the cluster to refine (will not be mutated)
+     * @param rC       the cluster's intended rank
      * @return refined cluster (possibly smaller); empty set if eliminated
      */
     private Set<Integer> refineClusterByRules2And3(Set<Integer> original, int rC) {
@@ -507,15 +506,15 @@ public class Tsc {
                     List<Integer> _C = new ArrayList<>();
                     for (int i : choice) _C.add(C.get(i));
                     int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
-                    int[] dArray  = D.stream().mapToInt(Integer::intValue).toArray();
+                    int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
 
                     int minpq = Math.min(_cArray.length, dArray.length);
-                    int l = Math.min(minpq, Math.max(0, rC));
+                    int l = Math.min(minpq, rC);
                     int r = RankTests.estimateWilksRank(S, _cArray, dArray, expectedSampleSize, alpha);
 
                     if (r < l) {
                         // offending subset is _C → remove _C from the cluster
-                        Cset.removeAll(_C);
+                        _C.forEach(Cset::remove);
                         log("Rule 2 fired: removing offending subset "
                             + toNamesCluster(new HashSet<>(_C))
                             + " from cluster " + toNamesCluster(new HashSet<>(C))
@@ -547,13 +546,13 @@ public class Tsc {
                     if (_C.isEmpty()) continue;
 
                     int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
-                    int[] dArray  = Dnow.stream().mapToInt(Integer::intValue).toArray();
-                    int[] zArray  = Z.stream().mapToInt(Integer::intValue).toArray();
+                    int[] dArray = Dnow.stream().mapToInt(Integer::intValue).toArray();
+                    int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
 
                     int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, expectedSampleSize, alpha);
                     if (rZ == 0) {
                         // offending subset is Z → remove Z from the cluster
-                        Cset.removeAll(Z);
+                        Z.forEach(Cset::remove);
                         log("Rule 3 fired: removing offending subset Z="
                             + toNamesCluster(new HashSet<>(Z))
                             + " from cluster " + toNamesCluster(new HashSet<>(Cnow))
