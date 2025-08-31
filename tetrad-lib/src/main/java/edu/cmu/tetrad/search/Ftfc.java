@@ -141,7 +141,7 @@ public class Ftfc {
         variables.removeAll(union(clustersToRanks.keySet()));
         int size = rank + 1;
 
-        Set<Set<Integer>> tscClusters = tsc.findClustersAtRankTesting(variables, size, rank);
+        Set<Set<Integer>> tscClusters = tsc.findClustersAtRank(variables, size, rank);
         System.out.println("TSC Clusters: " + Tsc.toNamesClusters(tscClusters, this.variables));
 
         if (new HashSet<>(variables).size() != variables.size()) {

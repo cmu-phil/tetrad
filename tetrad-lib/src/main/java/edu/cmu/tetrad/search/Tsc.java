@@ -11,10 +11,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.LongStream;
 
 import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
 
@@ -100,7 +98,7 @@ public class Tsc {
      * @param rank the target rank to filter clusters
      * @return a set of clusters that match the specified rank, where each cluster is represented as a set of integers
      */
-    public Set<Set<Integer>> findClustersAtRankTesting(List<Integer> vars, int size, int rank) {
+    public Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
         log("vars: " + vars);
         log("findClustersAtRankTesting size = " + size + ", rank = " + rank + ", ess = " + expectedSampleSize);
 
@@ -208,7 +206,7 @@ public class Tsc {
             if (size >= remainingVars.size() - size) continue;
 
             log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
-            Set<Set<Integer>> P = findClustersAtRankTesting(remainingVars, size, rank);
+            Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
             log("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P, nodes)));
             Set<Set<Integer>> P1 = new HashSet<>(P);
 
