@@ -24,7 +24,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 //@TestOfIndependence(
-//        name = "Blocks-Test-Lemma10 (Requires blocks)",
+//        name = "Blocks-Test-Lemma10",
 //        command = "blocks-test-lemma10",
 //        dataType = DataType.Mixed
 //)
@@ -74,13 +74,13 @@ public class BlocksIndTestLemma10 implements BlockIndependenceWrapper {
     }
 
     /**
-     * Returns a description of the "Blocks Test Lemma 10 (Requires blocks)" independence test.
+     * Returns a description of the "Blocks Test Lemma 10" independence test.
      *
      * @return A string containing the description of the test.
      */
     @Override
     public String getDescription() {
-        return "Blocks Test Lemma 10 (Requires blocks)";
+        return "Blocks Test Lemma 10";
     }
 
     /**

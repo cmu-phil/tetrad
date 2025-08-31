@@ -22,7 +22,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 //@TestOfIndependence(
-//        name = "Blocks-Test (Requires blocks)",
+//        name = "Blocks-Test",
 //        command = "blocks-test",
 //        dataType = DataType.Mixed
 //)
@@ -80,7 +80,7 @@ public class BlocksIndTest implements BlockIndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Blocks Test (Requires blocks)";
+        return "Blocks Test";
     }
 
     /**

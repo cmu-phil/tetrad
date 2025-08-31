@@ -26,7 +26,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "Blocks-Test-TS (Trek separation) Requires blocks)",
+        name = "Blocks-Test-TS (Trek separation)",
         command = "blocks-test-ts",
         dataType = DataType.Mixed
 )
@@ -76,7 +76,7 @@ public class BlocksIndTestTs implements BlockIndependenceWrapper {
     }
 
     /**
-     * Returns a description of the "Blocks Test Lemma 10 (Requires blocks)" independence test.
+     * Returns a description of the "Blocks Test Lemma 10" independence test.
      *
      * @return A string containing the description of the test.
      */
