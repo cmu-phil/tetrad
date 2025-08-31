@@ -230,7 +230,7 @@ public class Tsc {
                 int clusterRank;
                 clusterRank = ranksByTest(cluster);
 
-                if (clusterRank == rank) {
+                if (clusterRank == rank && cluster.size() > size) {
                     newClusters.removeIf(cluster::containsAll);  // Avoid nesting
                     log("Adding cluster to new clusters: " + toNamesCluster(cluster) + " rank = " + clusterRank);
                     newClusters.add(cluster);
@@ -317,6 +317,8 @@ public class Tsc {
         log("Now we will refine penultimate clusters by removing only offending subsets (Rules 2 & 3).");
 
         boolean changedAny = false;
+
+        C:
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             int rC = Math.max(0, clusterToRank.getOrDefault(cluster, 0));
 
@@ -333,12 +335,16 @@ public class Tsc {
             if (!refined.equals(cluster)) {
                 clusterToRank.remove(cluster);
 
+                for (Set<Integer> candidate : clusterToRank.keySet()) {
+                    if (!Collections.disjoint(refined, candidate)) continue C;
+                }
+
                 // you can keep rC, or recompute a safer displayed rank
                 // Option A (strict): recompute rank against complement
-//                int newRank = ranksByTest(refined);
+                int newRank = ranksByTest(refined);
 
                 // Option B (conservative): keep min(rC, |refined|-1)
-                int newRank = Math.min(rC, Math.max(0, refined.size() - 1));
+//                int newRank = Math.min(rC, Math.max(0, refined.size() - 1));
 
                 clusterToRank.put(refined, newRank);
                 changedAny = true;
