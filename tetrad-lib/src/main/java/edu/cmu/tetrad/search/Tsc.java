@@ -164,38 +164,6 @@ public class Tsc {
             throw new IllegalArgumentException("Variables must be unique.");
         }
 
-        return clusterSearchMetaLoop();
-    }
-
-    private List<Integer> allVariables() {
-        List<Integer> _variables = new ArrayList<>();
-        for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
-        return _variables;
-    }
-
-    /**
-     * Sets the significance level alpha used in statistical computations. The significance level determines the
-     * threshold for hypothesis testing and affects the resulting ranks or scores. Updating this parameter clears the
-     * cached ranks as they depend on the current alpha value.
-     *
-     * @param alpha the significance level to be set, typically a value between 0 and 1, where lower values indicate
-     *              stricter thresholds.
-     */
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-        rankCache.clear(); // Wilks rank depends on alpha
-    }
-
-    /**
-     * Sets the verbose mode for the application or process.
-     *
-     * @param verbose a boolean value where {@code true} enables verbose mode and {@code false} disables it.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    private @NotNull Map<Set<Integer>, Integer> clusterSearchMetaLoop() {
         List<Integer> remainingVars = new ArrayList<>(allVariables());
         clusterToRank = new HashMap<>();
 //        reducedRank = new HashMap<>();
@@ -348,6 +316,34 @@ public class Tsc {
 
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet(), nodes));
         return clusterToRank;
+    }
+
+    private List<Integer> allVariables() {
+        List<Integer> _variables = new ArrayList<>();
+        for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
+        return _variables;
+    }
+
+    /**
+     * Sets the significance level alpha used in statistical computations. The significance level determines the
+     * threshold for hypothesis testing and affects the resulting ranks or scores. Updating this parameter clears the
+     * cached ranks as they depend on the current alpha value.
+     *
+     * @param alpha the significance level to be set, typically a value between 0 and 1, where lower values indicate
+     *              stricter thresholds.
+     */
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+        rankCache.clear(); // Wilks rank depends on alpha
+    }
+
+    /**
+     * Sets the verbose mode for the application or process.
+     *
+     * @param verbose a boolean value where {@code true} enables verbose mode and {@code false} disables it.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     // ---- subset tests (unchanged: still Wilks-based by design) -----------------
