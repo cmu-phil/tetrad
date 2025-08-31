@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Basis Function BIC Score (Basis-BIC) version.
+ * Wrapper for Blocks BIC Score (Blocks-BIC) version.
  *
  * @author josephramsey
  * @author bryanandrews
