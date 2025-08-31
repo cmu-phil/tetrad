@@ -20,6 +20,28 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
  * The Tsc class provides methods and utilities for statistical computations, clustering, and rank-based analysis of
  * variables. This class manages significance levels, caching mechanisms, and structures to efficiently handle clusters
  * and their associated ranks.
+ *
+ * <p><b>Theory (NOLAC) — soundness sketch.</b>
+ * We assume a linear-Gaussian SEM with a latent DAG and pure measurement (each observed loads on exactly one latent),
+ * independent unique errors across distinct clusters, and generic parameters (no exact cancellations). Under the
+ * NOLAC (no overlapping clusters) assumption the indicator sets for distinct latents are disjoint. With a consistent
+ * rank test (e.g., Wilks LRT with a diminishing α), the following properties hold generically:
+ *
+ * <ul>
+ *   <li><b>Seed soundness.</b> If G is a true cluster with latent-boundary dimension r (typically r=1), then every
+ *       (r+1)-subset S⊂G satisfies rank(S, V\S)=r. If S contains any nonmember, generically rank(S, V\S)&gt;r.</li>
+ *   <li><b>Union/extension correctness.</b> Growing a seed by unions that preserve rank r expands exactly to the
+ *       maximal G; adding a nonmember raises the rank and is rejected.</li>
+ *   <li><b>Non-overlap.</b> Because each observed belongs to at most one true G, any attempt to reuse a committed
+ *       variable either raises the rank earlier or is blocked by bookkeeping; accepted clusters are pairwise disjoint.</li>
+ *   <li><b>Conditional-rank refinement (Rule 3).</b> For any Z⊂C with |Z|≥r, if rank(C\Z, V\(C) | Z)=0 then Z acts
+ *       as an observed bottleneck in a pure DAG-without-latents scenario; removing Z collapses spurious clusters.
+ *       In a true latent cluster with noisy indicators, conditioning on any small Z cannot annihilate the latent
+ *       contribution, so the refinement leaves true clusters intact generically.</li>
+ * </ul>
+ *
+ * <p><b>Practical guidance.</b> Use α that decreases slowly with n (e.g., α=1/log n) or an information-criterion cutoff
+ * to reduce Type-I rank errors with sample size. Ensure {@code expectedSampleSize} reflects the covariance sample size.
  */
 public class Tsc {
     private static final java.util.concurrent.ConcurrentHashMap<Long, long[][]> BINOM_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
@@ -232,8 +254,11 @@ public class Tsc {
 
                 if (clusterRank == rank && cluster.size() > size) {
 
-                    // --- Rule 3-lite: guard against observed-mediator false positives in pure DAGs.
-                    // Check if conditioning on any single variable in the cluster collapses cross-block dependence.
+                    // --- Rule 3-lite (observed-mediator guard).
+                    // If ∃ z ∈ C such that rank(C\{z}, D | z) = 0, the cross-block dependence collapses when conditioning
+                    // on z. This is typical for pure DAGs without latents where z is a mediator/bottleneck. In true latent
+                    // clusters with noisy indicators, conditioning on a single indicator cannot remove the latent effect
+                    // generically, so this check is asymptotically safe under NOLAC.
                     boolean collapses = false;
                     if (rank > 0) {
                         List<Integer> D = allVariables();
@@ -368,7 +393,13 @@ public class Tsc {
                 clusterToRank.remove(cluster);
 
                 for (Set<Integer> candidate : clusterToRank.keySet()) {
-                    if (!Collections.disjoint(refined, candidate)) continue C;
+                    if (!Collections.disjoint(refined, candidate)) {
+                        // Enforce NOLAC: do not insert a refined cluster that overlaps an existing one.
+                        // This also prevents residual overlaps caused by statistical noise.
+                        log("Skipping refined cluster " + toNamesCluster(refined)
+                            + " because it overlaps existing cluster " + toNamesCluster(candidate) + ".");
+                        continue C;
+                    }
                 }
 
                 // you can keep rC, or recompute a safer displayed rank
@@ -433,15 +464,18 @@ public class Tsc {
     }
 
     /**
-     * Refine a cluster by applying subset-based Rules 2 and 3: - Rule 2: if rank(_C, D) < r_C, REMOVE the offending
-     * subset _C from the cluster - Rule 3: if rank(_C, D | Z) = 0 (with _C = C \ Z), REMOVE the offending subset Z from
-     * the cluster
-     * <p>
-     * This method iterates until no rule fires. Returns the refined cluster (may be the same object), or an empty set
-     * if the cluster collapses. Does not mutate the input set; always works on a copy.
+     * Refine a cluster via conditional-rank trimming.
      *
-     * @param original the cluster to refine (will not be mutated)
-     * @param rC       the cluster's intended rank
+     * <p><b>Rule 3 (implemented).</b> Remove a subset Z ⊆ C with |Z| ≥ r_C if rank(C\Z, D | Z) = 0. Interpretation:
+     * Z acts as an observed bottleneck that d-separates C\Z from D in a pure DAG without latents. In true latent
+     * clusters (with noisy indicators), conditioning on small Z cannot annihilate the latent contribution generically,
+     * so genuine clusters survive this trimming asymptotically.
+     *
+     * <p><b>Notes.</b> (i) We iterate until no removal fires; (ii) We do not mutate the input set; (iii) We cap |Z| by r_C
+     * which matches the latent boundary dimension and is both theoretically natural and computationally efficient.
+     *
+     * @param original the candidate cluster (not mutated)
+     * @param rC       intended rank of the cluster (≥0)
      * @return refined cluster (possibly smaller); empty set if eliminated
      */
     private Set<Integer> refineClustersByConditionalRanks(Set<Integer> original, int rC) {
