@@ -149,8 +149,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
-    public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel,
+                                  Parameters parameters) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, null);
     }
 
@@ -370,7 +370,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     public void execute() {
         long start = System.currentTimeMillis();
 
-        List<Graph> graphList = new ArrayList<>();
+        this.graphList = new ArrayList<>();
 
         if (this.independenceTests != null) {
             this.independenceTests.clear();

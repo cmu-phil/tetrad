@@ -20,6 +20,7 @@
 /// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -81,7 +82,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
     //===========================CONSTRUCTORS===========================//
 
     /**
-     * <p>Constructor for GeneralAlgorithmRunner.</p>
+     * <p>Constructor for LatentClustersRunner.</p>
      *
      * @param dataWrapper a {@link DataWrapper} object
      * @param parameters  a {@link Parameters} object
