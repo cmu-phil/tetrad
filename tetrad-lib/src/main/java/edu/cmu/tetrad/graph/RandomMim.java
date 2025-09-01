@@ -167,20 +167,25 @@ public final class RandomMim {
                     graph.addDirectedEdge(from.latents.get(i), to.latents.get(i));
                 }
             } else if (latentLinkMode == RandomMim.LatentLinkMode.PATCHY_CONNECTIONS) {
-                List<Edge> edges = new ArrayList<>(from.latents.size());
-
-                for (int i = 0; i < from.latents.size(); i++) {
-                    if (graph.isAdjacentTo(from.latents.get(i), to.latents.get(i))) continue;
-                    edges.add(Edges.directedEdge(from.latents.get(i), to.latents.get(i)));
+                // Build candidates from the full Cartesian product (respecting existing adjacencies)
+                final List<Node[]> candidates = new ArrayList<>(from.latents.size() * to.latents.size());
+                for (Node Lfrom : from.latents) {
+                    for (Node Lto : to.latents) {
+                        if (!graph.isAdjacentTo(Lfrom, Lto)) {
+                            candidates.add(new Node[] { Lfrom, Lto });
+                        }
+                    }
                 }
 
-                if (edges.size() == 1) {
-                    graph.addEdge(edges.getFirst());
-                } else {
-                    Collections.shuffle(edges, rng);
-                    int numEdges = edges.size() / 2;
-                    for (int i = 0; i < numEdges; i++) {
-                        graph.addEdge(edges.get(i));
+                if (!candidates.isEmpty()) {
+                    Collections.shuffle(candidates, rng);
+                    // “Patchy” = pick about half of the possible connections, but at least one.
+                    final int k = Math.max(1, candidates.size() / 2);
+                    for (int i = 0; i < k; i++) {
+                        Node Lfrom = candidates.get(i)[0];
+                        Node Lto   = candidates.get(i)[1];
+                        // Acyclicity is guaranteed by the meta-DAG (i<j), so just add the edge.
+                        graph.addDirectedEdge(Lfrom, Lto);
                     }
                 }
             } else {
@@ -327,16 +332,33 @@ public final class RandomMim {
     }
 
     // ---- helper method ----
+//    private static String latentName(int groupIndexZeroBased, int r, int rank) {
+//        int g1 = groupIndexZeroBased + 1;
+//        if (rank == 1 || r == 0) {
+//            // single latent group: plain L1, L2, ...
+//            return "L" + g1;
+//        } else {
+//            // multi-latent group: start with A, B, C...
+//            char suffix = (char) ('A' + r);
+//            return "L" + g1 + suffix;
+//        }
+//    }
+
     private static String latentName(int groupIndexZeroBased, int r, int rank) {
         int g1 = groupIndexZeroBased + 1;
-        if (rank == 1 || r == 0) {
-            // single latent group: plain L1, L2, ...
-            return "L" + g1;
-        } else {
-            // multi-latent group: start with A, B, C...
-            char suffix = (char) ('A' + r);
-            return "L" + g1 + suffix;
-        }
+        if (rank == 1 || r == 0) return "L" + g1;
+        return "L" + g1 + alphaCode(r); // r = 1 -> B, but alphaCode(1) = "B", etc.
+    }
+
+    private static String alphaCode(int idx) { // 0->A, 25->Z, 26->AA
+        idx = Math.max(0, idx);
+        StringBuilder sb = new StringBuilder();
+        do {
+            int rem = idx % 26;
+            sb.insert(0, (char) ('A' + rem));
+            idx = idx / 26 - 1;
+        } while (idx >= 0);
+        return sb.toString();
     }
 
     /**

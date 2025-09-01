@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.graph;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class RandomMim implements RandomGraph {
     public Graph createGraph(Parameters parameters) {
         String latentGroupSpecs = parameters.getString("mimLatentGroupSpecs", "5:5(1)");
         int numStructuralEdges = parameters.getInt("mimNumStructuralEdges", 3);
+        int metaEdgeConnectionType = parameters.getInt(Params.META_EDGE_CONNECTION_TYPE);
         int numLatentMeasuredImpureParents = parameters.getInt("mimLatentMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureAssociations = parameters.getInt("mimMeasuredMeasuredImpureAssociations", 0);
@@ -40,7 +42,7 @@ public class RandomMim implements RandomGraph {
                 numLatentMeasuredImpureParents,
                 numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations,
-                edu.cmu.tetrad.graph.RandomMim.LatentLinkMode.CARTESIAN_PRODUCT,
+                edu.cmu.tetrad.graph.RandomMim.LatentLinkMode.values()[metaEdgeConnectionType - 1],
                 new Random());
     }
 
@@ -61,6 +63,7 @@ public class RandomMim implements RandomGraph {
         parameters.add("mimLatentGroupSpecs");
 //        parameters.add("mimNumStructuralNodes");
         parameters.add("mimNumStructuralEdges");
+        parameters.add(Params.META_EDGE_CONNECTION_TYPE);
 //        parameters.add("mimMeasurementModelDegree");
         parameters.add("mimLatentMeasuredImpureParents");
         parameters.add("mimMeasuredMeasuredImpureParents");

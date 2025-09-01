@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.util;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.editor.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.jetbrains.annotations.NotNull;
@@ -45,6 +46,7 @@ public class GraphUtils {
         boolean graphChooseFixed = parameters.getBoolean("graphChooseFixed", false);
         int numStructuralNodes = parameters.getInt("mimNumStructuralNodes", 3);
         int numStructuralEdges = parameters.getInt("mimNumStructuralEdges", 3);
+        int metaEdgeConnectionType = parameters.getInt(Params.META_EDGE_CONNECTION_TYPE);
         int measurementModelDegree = parameters.getInt("mimNumChildrenPerLatents", 3);
         String latentGroupSpecs = parameters.getString("mimLatentGroupSpecs");
         int numLatentMeasuredImpureParents = parameters.getInt("mimLatentMeasuredImpureParents", 0);
@@ -74,7 +76,7 @@ public class GraphUtils {
                         numLatentMeasuredImpureParents,
                         numMeasuredMeasuredImpureParents,
                         numMeasuredMeasuredImpureAssociations,
-                        RandomMim.LatentLinkMode.CARTESIAN_PRODUCT,
+                        RandomMim.LatentLinkMode.values()[metaEdgeConnectionType - 1],
                         new Random());
             }
             case "ScaleFree" -> GraphUtils.makeRandomScaleFree(newGraphNumMeasuredNodes,

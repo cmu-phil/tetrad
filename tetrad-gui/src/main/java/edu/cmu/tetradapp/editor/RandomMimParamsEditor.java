@@ -2,6 +2,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.RandomMim;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
@@ -128,6 +129,45 @@ class RandomMimParamsEditor extends JPanel {
         root.add(row("List of count:children:(rank), comma separated; e.g. 5:6(1),2:8(2):", latentGroupSpecs));
         root.add(Box.createVerticalStrut(10));
         root.add(row("Number of structural edges:", numStructuralEdges));
+
+        // --- Latent meta-edge connection type (combo) ---
+        {
+            // Display labels for the three implemented modes:
+            final String[] META_EDGE_CONNECTION_CHOICES = new String[] {
+                    "Latents: Cartesian product",
+                    "Latents: Corresponding",
+                    "Latents: Patchy connections"
+            };
+
+            // Read current value (1-based in Params), convert to 0-based index for JComboBox
+            int stored = 1;
+            try {
+                stored = parameters.getInt(Params.META_EDGE_CONNECTION_TYPE);
+            } catch (Exception ignore) {}
+            final int initialIndex = Math.max(0, Math.min(META_EDGE_CONNECTION_CHOICES.length - 1, stored - 1));
+
+            final JLabel label = new JLabel("Latent connection pattern");
+            final JComboBox<String> combo = new JComboBox<>(META_EDGE_CONNECTION_CHOICES);
+            combo.setSelectedIndex(initialIndex);
+            combo.setMaximumSize(combo.getPreferredSize());
+
+            // When user picks an option, write back as 1-based integer
+            combo.addActionListener(e -> {
+                int idx = combo.getSelectedIndex();
+                // store 1-based
+                parameters.set(Params.META_EDGE_CONNECTION_TYPE, idx + 1);
+            });
+
+            Box row = Box.createHorizontalBox();
+            row.add(label);
+            row.add(Box.createHorizontalGlue());
+            row.add(combo);
+            row.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+            root.add(Box.createVerticalStrut(6)); // small spacer below "Number of structural edges"
+            root.add(row);
+        }
+
         root.add(Box.createVerticalStrut(10));
         root.add(sectionLabel("Add impure edges:"));
         root.add(row("Latent \u2192 Measured", numLatentMeasuredImpureParents));

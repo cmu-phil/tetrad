@@ -477,6 +477,10 @@ public final class Params {
      */
     public static final String NUM_STRUCTURAL_NODES = "mimNumStructuralNodes";
     /**
+     * Constant <code>META_EDGE_CONNECTION_TYPE="mimMetaEdgeConnectionType"</code>
+     */
+    public static final String META_EDGE_CONNECTION_TYPE = "mimMetaEdgeConnectionType";
+    /**
      * Constant <code>NUMBER_RESAMPLING="numberResampling"</code>
      */
     public static final String NUMBER_RESAMPLING = "numberResampling";
