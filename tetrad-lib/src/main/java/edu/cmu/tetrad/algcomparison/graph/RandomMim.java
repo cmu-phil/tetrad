@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Creates a random graph by adding forward edges.
+ * Creates a random MIM.
  *
  * @author josephramsey
  * @version $Id: $Id
