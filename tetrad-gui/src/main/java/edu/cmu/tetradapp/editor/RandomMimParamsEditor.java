@@ -31,7 +31,7 @@ class RandomMimParamsEditor extends JPanel {
     private static final String K_MEASURED_MEASURED_IMPURE_ASSOC = "mimMeasuredMeasuredImpureAssociations";
 
     // ---- Defaults ----------------------------------------------------------
-    private static final int D_NUM_STRUCTURAL_EDGES = 3;
+    private static final int D_NUM_STRUCTURAL_EDGES = 5;
     private static final String D_LATENT_GROUP_SPECS = "5:5(1)";
     private static final int D_ZERO = 0;
 
