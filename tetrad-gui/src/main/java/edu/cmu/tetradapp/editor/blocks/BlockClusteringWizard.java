@@ -6,10 +6,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.*;
-import edu.cmu.tetrad.search.ntad_test.BollenTing;
-import edu.cmu.tetrad.search.ntad_test.Cca;
-import edu.cmu.tetrad.search.ntad_test.NtadTest;
-import edu.cmu.tetrad.search.ntad_test.Wishart;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -359,11 +355,12 @@ public class BlockClusteringWizard extends JPanel {
 
         return switch (alg) {
             case "TSC" -> {
-                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA),
+                yield BlockDiscoverers.tsc(dataSet, parameters.getDouble(Params.ALPHA),
                         parameters.getInt(Params.EXPECTED_SAMPLE_SIZE),
                         parameters.getDouble(Params.REGULARIZATION_LAMBDA),
                         parameters.getInt(Params.MAX_RANK),
                         policy,
+                        parameters.getBoolean(Params.TSC_ALLOW_TRIVIALLY_SIZED_CLUSTERS),
                         parameters.getBoolean(Params.VERBOSE)
                 );
             }
@@ -400,6 +397,7 @@ public class BlockClusteringWizard extends JPanel {
                 paramList.add(Params.ALPHA);
                 paramList.add(Params.REGULARIZATION_LAMBDA);
                 paramList.add(Params.MAX_RANK);
+                paramList.add(Params.TSC_ALLOW_TRIVIALLY_SIZED_CLUSTERS);
             }
             case "GFFC" -> {
                 paramList.add(Params.ALPHA);

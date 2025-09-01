@@ -1091,6 +1091,8 @@ public final class Params {
      * Constant <code>TSC_MIN_RANK_DROP="tscMinRankDrop"</code>
      */
     public static final String TSC_MIN_RANK_DROP = "tscMinRankDrop";
+
+    public static final String TSC_ALLOW_TRIVIALLY_SIZED_CLUSTERS = "tscAllowTrivialSizedClusters";
     /**
      * Constant <code>GFFC_R_MAX="gffc_r_max"</code>
      */

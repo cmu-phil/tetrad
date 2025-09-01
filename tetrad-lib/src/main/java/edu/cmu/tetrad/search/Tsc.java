@@ -55,6 +55,7 @@ public class Tsc {
     private boolean verbose = false;
     private Map<Set<Integer>, Integer> clusterToRank;
     private int rMax = 3;
+    private boolean allowTriviallySizedClusters = true;
 //    private Map<Set<Integer>, Integer> reducedRank;
 
     /**
@@ -256,7 +257,7 @@ public class Tsc {
                 int clusterRank;
                 clusterRank = ranksByTest(cluster);
 
-                if (clusterRank == rank) {// && cluster.size() > size) {
+                if (clusterRank == rank && (allowTriviallySizedClusters || cluster.size() > size)) {
 
                     // --- Rule 3-lite (observed-mediator guard).
                     // If ∃ z ∈ C such that rank(C\{z}, D | z) = 0, the cross-block dependence collapses when conditioning
@@ -623,6 +624,10 @@ public class Tsc {
 
     public void setRmax(int rMax) {
         this.rMax = rMax;
+    }
+
+    public void setAllowTriviallySizedClusters(boolean allowTriviallySizedClusters) {
+        this.allowTriviallySizedClusters = allowTriviallySizedClusters;
     }
 
     // ---- Canonical key for caching ranks (immutable, sorted) -------------------

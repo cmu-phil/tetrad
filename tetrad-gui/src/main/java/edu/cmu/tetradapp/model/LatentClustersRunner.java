@@ -323,11 +323,12 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
 
         return switch (alg) {
-            case "TSC" -> BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA),
+            case "TSC" -> BlockDiscoverers.tsc(dataSet, parameters.getDouble(Params.ALPHA),
                     parameters.getInt(Params.EXPECTED_SAMPLE_SIZE),
                     parameters.getDouble(Params.REGULARIZATION_LAMBDA),
                     parameters.getInt(Params.MAX_RANK),
                     policy,
+                    parameters.getBoolean(Params.TSC_ALLOW_TRIVIALLY_SIZED_CLUSTERS),
                     parameters.getBoolean(Params.VERBOSE)
             );
             case "FOFC" -> BlockDiscoverers.fofc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy,

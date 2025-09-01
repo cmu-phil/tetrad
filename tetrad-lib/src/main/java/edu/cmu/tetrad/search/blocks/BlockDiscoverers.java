@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.search.ntad_test.NtadTest;
 
 /**
  * A utility class providing static factory methods for creating instances of various {@code BlockDiscoverer}
@@ -81,8 +80,8 @@ public final class BlockDiscoverers {
      * @param policy the single-cluster policy applied to handle constraints for managing individual clusters
      * @return a {@code TscTestBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer tscTest(DataSet data, double alpha, int ess, double ridge,
-                                          int rMax, SingleClusterPolicy policy, boolean verbose) {
-        return new TscTestBlockDiscoverer(data, alpha, ess, ridge, rMax, policy, verbose);
+    public static BlockDiscoverer tsc(DataSet data, double alpha, int ess, double ridge,
+                                      int rMax, SingleClusterPolicy policy, boolean allowTriviallySizedClusters, boolean verbose) {
+        return new TscTestBlockDiscoverer(data, alpha, ess, ridge, rMax, policy, allowTriviallySizedClusters, verbose);
     }
 }
