@@ -23,9 +23,9 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
  *
  * <p><b>Theory (NOLAC) — soundness sketch.</b>
  * We assume a linear-Gaussian SEM with a latent DAG and pure measurement (each observed loads on exactly one latent),
- * independent unique errors across distinct clusters, and generic parameters (no exact cancellations). Under the
- * NOLAC (no overlapping clusters) assumption the indicator sets for distinct latents are disjoint. With a consistent
- * rank test (e.g., Wilks LRT with a diminishing α), the following properties hold generically:
+ * independent unique errors across distinct clusters, and generic parameters (no exact cancellations). Under the NOLAC
+ * (no overlapping clusters) assumption the indicator sets for distinct latents are disjoint. With a consistent rank
+ * test (e.g., Wilks LRT with a diminishing α), the following properties hold generically:
  *
  * <ul>
  *   <li><b>Seed soundness.</b> If G is a true cluster with latent-boundary dimension r (typically r=1), then every
@@ -196,7 +196,11 @@ public class Tsc {
 
             log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
             Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
-            System.out.println("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P, nodes)));
+
+            if (verbose) {
+                System.out.println("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P, nodes)));
+            }
+
             Set<Set<Integer>> P1 = new HashSet<>(P);
 
             Set<Set<Integer>> newClusters = new HashSet<>();
@@ -252,7 +256,7 @@ public class Tsc {
                 int clusterRank;
                 clusterRank = ranksByTest(cluster);
 
-                if (clusterRank == rank && cluster.size() > size) {
+                if (clusterRank == rank) {// && cluster.size() > size) {
 
                     // --- Rule 3-lite (observed-mediator guard).
                     // If ∃ z ∈ C such that rank(C\{z}, D | z) = 0, the cross-block dependence collapses when conditioning
@@ -275,7 +279,10 @@ public class Tsc {
                             int[] zArr = new int[]{z};
 
                             int rZ = RankTests.estimateWilksRankConditioned(S, cmz, dArray, zArr, expectedSampleSize, alpha);
-                            if (rZ == 0) { collapses = true; break; }
+                            if (rZ == 0) {
+                                collapses = true;
+                                break;
+                            }
                         }
                     }
                     if (collapses) {
@@ -286,7 +293,6 @@ public class Tsc {
                         newClusters.add(cluster);
                         used.addAll(cluster);
                     }
-//                    remainingVars.removeAll(cluster);
                 }
             }
 
@@ -471,7 +477,8 @@ public class Tsc {
      * clusters (with noisy indicators), conditioning on small Z cannot annihilate the latent contribution generically,
      * so genuine clusters survive this trimming asymptotically.
      *
-     * <p><b>Notes.</b> (i) We iterate until no removal fires; (ii) We do not mutate the input set; (iii) We cap |Z| by r_C
+     * <p><b>Notes.</b> (i) We iterate until no removal fires; (ii) We do not mutate the input set; (iii) We cap |Z| by
+     * r_C
      * which matches the latent boundary dimension and is both theoretically natural and computationally efficient.
      *
      * @param original the candidate cluster (not mutated)
