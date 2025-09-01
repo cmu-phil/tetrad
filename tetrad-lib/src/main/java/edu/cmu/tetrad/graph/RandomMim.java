@@ -25,43 +25,26 @@ public final class RandomMim {
     }
 
     /**
-     * Convenience overload: pick a random number of meta-edges.
-     */
-    public static Graph constructRandomMim(
-            List<LatentGroupSpec> specs,
-            int numLatentMeasuredImpureParents,
-            int numMeasuredMeasuredImpureParents,
-            int numMeasuredMeasuredImpureAssociations
-    ) {
-        // default: target ~20% of all possible forward edges (acyclic)
-        return constructRandomMim(
-                specs,
-                null,
-                numLatentMeasuredImpureParents,
-                numMeasuredMeasuredImpureParents,
-                numMeasuredMeasuredImpureAssociations,
-                LatentLinkMode.CARTESIAN_PRODUCT,
-                new Random()
-        );
-    }
-
-    /**
-     * Constructs a random meta-graph as a Multiple Indicator Model (MIM) with specified structural constraints.
-     * This method generates latent groups based on the provided specifications, builds a meta-DAG among the
-     * groups, and materializes the graph with impurities such as cross-loadings, directed impurities, and
-     * bidirectional associations over measured nodes.
+     * Constructs a random meta-graph as a Multiple Indicator Model (MIM) with specified structural constraints. This
+     * method generates latent groups based on the provided specifications, builds a meta-DAG among the groups, and
+     * materializes the graph with impurities such as cross-loadings, directed impurities, and bidirectional
+     * associations over measured nodes.
      *
-     * @param specs the list of specifications describing latent groups, including group ranks and children per group;
-     *              must not be null or empty.
-     * @param metaEdgeCount the number of edges in the meta-DAG over latent groups; if null, a random proportion of
-     *                      possible forward edges is chosen instead.
-     * @param numLatentMeasuredImpureParents the number of additional latent-to-measured cross-loadings to introduce.
-     * @param numMeasuredMeasuredImpureParents the number of directed edges to introduce among measured nodes as impurities.
-     * @param numMeasuredMeasuredImpureAssociations the number of bidirectional associations to introduce among measured nodes.
-     * @param latentLinkMode the mode of linking latents between groups in the meta-DAG, either via Cartesian product
-     *                       or corresponding positions.
-     * @param rng the random generator used to make stochastic decisions during graph construction; can be null to
-     *            use a default Random instance with a seed of 0.
+     * @param specs                                 the list of specifications describing latent groups, including group
+     *                                              ranks and children per group; must not be null or empty.
+     * @param metaEdgeCount                         the number of edges in the meta-DAG over latent groups; if null, a
+     *                                              random proportion of possible forward edges is chosen instead.
+     * @param numLatentMeasuredImpureParents        the number of additional latent-to-measured cross-loadings to
+     *                                              introduce.
+     * @param numMeasuredMeasuredImpureParents      the number of directed edges to introduce among measured nodes as
+     *                                              impurities.
+     * @param numMeasuredMeasuredImpureAssociations the number of bidirectional associations to introduce among measured
+     *                                              nodes.
+     * @param latentLinkMode                        the mode of linking latents between groups in the meta-DAG, either
+     *                                              via Cartesian product or corresponding positions.
+     * @param rng                                   the random generator used to make stochastic decisions during graph
+     *                                              construction; can be null to use a default Random instance with a
+     *                                              seed of 0.
      * @return the constructed graph representing the random MIM with all specified constraints and impurities.
      * @throws IllegalArgumentException if the specifications are null, empty, or malformed, if the number of meta-edges
      *                                  is out of valid range, or if the latentLinkMode is unrecognized.
@@ -99,7 +82,7 @@ public final class RandomMim {
 
         final List<int[]> metaEdges = new ArrayList<>();
         if (possibleForward.isEmpty()) {
-            // no edges possible; fine
+            // no edges possible; falls through
         } else if (metaEdgeCount == null) {
             // choose ~20% of forward pairs
             double p = 0.20;
@@ -182,6 +165,23 @@ public final class RandomMim {
                 for (int i = 0; i < from.latents.size(); i++) {
                     if (graph.isAdjacentTo(from.latents.get(i), to.latents.get(i))) continue;
                     graph.addDirectedEdge(from.latents.get(i), to.latents.get(i));
+                }
+            } else if (latentLinkMode == RandomMim.LatentLinkMode.PATCHY_CONNECTIONS) {
+                List<Edge> edges = new ArrayList<>(from.latents.size());
+
+                for (int i = 0; i < from.latents.size(); i++) {
+                    if (graph.isAdjacentTo(from.latents.get(i), to.latents.get(i))) continue;
+                    edges.add(Edges.directedEdge(from.latents.get(i), to.latents.get(i)));
+                }
+
+                if (edges.size() == 1) {
+                    graph.addEdge(edges.getFirst());
+                } else {
+                    Collections.shuffle(edges, rng);
+                    int numEdges = edges.size() / 2;
+                    for (int i = 0; i < numEdges; i++) {
+                        graph.addEdge(edges.get(i));
+                    }
                 }
             } else {
                 throw new IllegalArgumentException("Unrecognized latent link mode: " + latentLinkMode + ".");
@@ -274,14 +274,6 @@ public final class RandomMim {
         }
     }
 
-    private static String letterSuffix(int indexFrom1) {
-        // indexFrom1: 1 -> B, 2 -> C, 3 -> D, ...
-        // Supports up to 26 extras easily; extend if you like.
-        int i = Math.max(0, indexFrom1);
-        char c = (char) ('A' + i); // 1->B, 2->C, ...
-        return String.valueOf(c);
-    }
-
     /**
      * Parses a specification string defining latent group configurations into a list of {@code LatentGroupSpec}
      * objects. Each configuration in the input string must follow the pattern:
@@ -368,7 +360,15 @@ public final class RandomMim {
          * (model-in-mapping) graph. In this mode, connections are established only between elements at the same index
          * in two latent groups.
          */
-        CORRESPONDING
+        CORRESPONDING,
+
+        /**
+         * Represents the patchy connections mode for linking latent nodes in the construction of a random MIM
+         * (model-in-mapping) graph. In this mode, connections are established between elements of two latent groups in
+         * a patchy manner, where at least one connection is drawn from one group to another, but if more than one is
+         * possible in the Cartesian product, # possible connections / 2 connections are drawn.
+         */
+        PATCHY_CONNECTIONS
     }
 
     /**

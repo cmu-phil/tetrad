@@ -236,19 +236,6 @@ public class TscHarnessTest {
         return canon;
     }
 
-    // ========== TEST 2: No-latent DAGs should not spawn many clusters ==========
-//    @Test
-//    public void tsc_onNoLatentDAG_producesAtMostTinyArtifacts() {
-//        RandomUtil.getInstance().setSeed(SEED);
-//
-//        Graph g = RandomGraph.randomGraph(20, 0, 40, 100,
-//                100, 100, false);
-//        SemPm pm = new SemPm(g);
-//        SemIm im = new SemIm(pm);
-//        DataSet dataset = im.simulateData(N, false);
-//
-//        Tsc tsc = new Tsc(dataset.getVariables(), new CorrelationMatrix(dataset));
-
     // ---- helper: dual-alpha intersection filter ----
     private static Set<Set<Integer>> stableByDualAlpha(List<Node> vars, CovarianceMatrix cov, double alphaBase, int ess) {
         Set<Set<Integer>> A = runTscOnce(vars, cov, alphaBase, ess);
@@ -258,7 +245,7 @@ public class TscHarnessTest {
     }
 
     // ---- helper: bootstrap stability (resample rows, rebuild CovarianceMatrix) ----
-// NOTE: we assume cov was constructed from a DataSet 'data'. If you only have cov,
+    // NOTE: we assume cov was constructed from a DataSet 'data'. If you only have cov,
 // you can re-simulate via SemIm like you already do. Here we accept a builder function.
     private static Set<Set<Integer>> stableByBootstrap(
             int B, double keepFrac, Function<Integer, CovarianceMatrix> resampleBuilder,
