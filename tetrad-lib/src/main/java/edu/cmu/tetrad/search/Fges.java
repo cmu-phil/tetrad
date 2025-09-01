@@ -267,6 +267,8 @@ public final class Fges implements IGraphSearch, DagScorer {
             bes();
         }
 
+
+
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
 
