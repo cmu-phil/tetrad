@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.blocks;
 
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.Bpc;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
@@ -30,6 +31,7 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
     private final double alpha;
     private final int ess;
     private final SingleClusterPolicy policy;
+    private final boolean verbose;
 
     /**
      * Constructor for the {@code BpcBlockDiscoverer} class, responsible for initiating the discovery of clusters or
@@ -40,11 +42,12 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
      * @param ess      the equivalent sample size parameter used in the BPC algorithm
      * @param policy   the policy applied to adjust or refine single clusters during block discovery
      */
-    public BpcBlockDiscoverer(DataSet dataSet, double alpha, int ess, SingleClusterPolicy policy) {
+    public BpcBlockDiscoverer(DataSet dataSet, double alpha, int ess, SingleClusterPolicy policy, boolean verbose) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ess = ess;
         this.policy = policy;
+        this.verbose = verbose;
     }
 
     /**
@@ -60,7 +63,8 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
      */
     @Override
     public BlockSpec discover() {
-        Bpc bpc = new Bpc(dataSet, alpha, ess);
+        Bpc bpc = new Bpc(new CovarianceMatrix(dataSet) , alpha, ess);
+        bpc.setVerbose(verbose);
         List<List<Integer>> blocks = bpc.getClusters();
         blocks = BlocksUtil.canonicalizeBlocks(blocks);
 

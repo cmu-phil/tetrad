@@ -1,16 +1,21 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.IntStream;
 
+import static edu.cmu.tetrad.search.Tsc.toNamesClusters;
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
@@ -28,25 +33,15 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * deterministic variant.
  */
 public class Bpc {
-    /**
-     * Minimum indicators per cluster per the JMLR paper (≥3).
-     */
+    // Minimum indicators per cluster per the JMLR paper (≥3).
     private static final int MIN_CLUSTER_SIZE = 3;
-    /**
-     * Alpha cutoff for tetrads and dependence
-     */
+    // Alpha cutoff for tetrads and dependence
     private final double alpha;
-    /**
-     * Number of variables
-     */
+    // Number of variables
     private final int numVars;
-    /**
-     * Standard Normal for Fisher Z
-     */
+    // Standard Normal for Fisher Z
     private final NormalDistribution normal = new NormalDistribution(0, 1);
-    /**
-     * Correlation matrix as a SimpleMatrix.
-     */
+    // Correlation matrix as a SimpleMatrix.
     private final SimpleMatrix S;
     // Cache for set-level purity checks (tetrads) to avoid recomputation across threads
     private final ConcurrentHashMap<BitKey, Boolean> pureCache = new ConcurrentHashMap<>();
@@ -54,29 +49,51 @@ public class Bpc {
     private final double alphaPairs;
     // Merge gate: allow union only if avg|r| doesn’t drop more than delta from either group
     private final double deltaMerge;
+    // The effective sample size (ESS) which can be set to -1 (indicating sample size) or a positive
     private final int ess;
+    // The sample size
     private final int sampleSize;
-    /**
-     * Resulting clusters (indices)
-     */
-    // Pairwise dependence screen (pattern‑lite adjacency)
-    private boolean[][] canLink; // set in buildPatternLite()
+    // The nodes of the dataset.
+    private final List<Node> nodes;
+    // set in buildPatternLite()
+    private boolean[][] canLink;
+    // True if verbose logging is enabled
+    private boolean verbose;
+
+    // ----------------------------- instrumentation -----------------------------
+
+    // Timings (ns)
+    private long tPatternNs = 0L, tSeedsNs = 0L, tMergeNs = 0L, tResolveNs = 0L;
+
+    // Thread-safe counters (parallel sections)
+    private final LongAdder tetradTests = new LongAdder();
+    private final LongAdder purityCacheHits = new LongAdder();
+    private final LongAdder purityCacheMisses = new LongAdder();
+    private final LongAdder seedsEnumerated = new LongAdder();
+    private final LongAdder seedsPure = new LongAdder();
+    private final LongAdder mergesConsidered = new LongAdder();
+    private final LongAdder mergesAccepted = new LongAdder();
+    private final LongAdder reassignments = new LongAdder();
+
+    // Non-parallel summary (computed serially)
+    private int grownDistinct = 0;
 
     /**
      * Constructor for the Bpc class.
      *
-     * @param dataSet A DataSet object containing the data to be used for clustering and correlation analysis.
-     * @param alpha   The significance level for tetrad tests, used to determine the tolerance for statistical
-     *                independence.
-     * @param ess     The effective sample size (ESS) which can be set to -1 (indicating sample size) or a positive
-     *                integer. The chosen ESS impacts statistical decisions during the analysis.
+     * @param cov   A CovarianceMatrix containing the data to be used for clustering and correlation analysis.
+     * @param alpha The significance level for tetrad tests, used to determine the tolerance for statistical
+     *              independence.
+     * @param ess   The effective sample size (ESS) which can be set to -1 (indicating sample size) or a positive
+     *              integer. The chosen ESS impacts statistical decisions during the analysis.
      * @throws IllegalArgumentException if the ess parameter is not -1 or a positive integer.
      */
-    public Bpc(DataSet dataSet, double alpha, int ess) {
+    public Bpc(CovarianceMatrix cov, double alpha, int ess) {
         this.alpha = alpha;
-        this.numVars = dataSet.getVariables().size();
-        this.sampleSize = dataSet.getNumRows();
-        this.S = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
+        this.numVars = cov.getVariables().size();
+        this.sampleSize = cov.getSampleSize();
+        this.S = new CorrelationMatrix(cov).getMatrix().getSimpleMatrix();
+        this.nodes = cov.getVariables();
 
         if (!(ess == -1 || ess > 0)) {
             throw new IllegalArgumentException("esses must be -1 (sample size) or a positive integer");
@@ -104,13 +121,60 @@ public class Bpc {
         return as.containsAll(bs) && bs.containsAll(as);
     }
 
-    // ----------------------------- helpers -----------------------------
-
     private static List<Integer> sortedList(Collection<Integer> c) {
         List<Integer> list = new ArrayList<>(c);
         Collections.sort(list);
         return list;
     }
+
+    // ----------------------------- logging helpers -----------------------------
+
+    private void log(String s) {
+        if (verbose) TetradLogger.getInstance().log(s);
+    }
+
+    private void logParams() {
+        log(String.format(Locale.US,
+                "BPC params: alpha=%.4g alphaPairs=%.4g deltaMerge=%.3f ess=%d N=%d p=%d",
+                alpha, alphaPairs, deltaMerge, ess, sampleSize, numVars));
+    }
+
+    private void logPatternStats() {
+        int depPairs = 0, totalPairs = numVars * (numVars - 1) / 2;
+        for (int i = 0; i < numVars; i++)
+            for (int j = i + 1; j < numVars; j++)
+                if (canLink[i][j]) depPairs++;
+        double pct = totalPairs == 0 ? 0 : 100.0 * depPairs / totalPairs;
+        log(String.format(Locale.US,
+                "Pattern: dependent pairs = %d/%d (%.1f%%)", depPairs, totalPairs, pct));
+    }
+
+    private void logIteration(int iter, List<List<Integer>> current,
+                              int mergesThisIter, int reassignThisIter, int dropsThisIter) {
+        log(String.format(Locale.US,
+                "Iter %d: groups=%d merges=%d reassign=%d drops=%d",
+                iter, current.size(), mergesThisIter, reassignThisIter, dropsThisIter));
+    }
+
+    private void logSummary(List<List<Integer>> finalGroups) {
+        log(String.format(Locale.US,
+                "Summary: groups=%d seedsEnumerated=%d seedsPure=%d grownDistinct=%d mergesConsidered=%d mergesAccepted=%d reassignments=%d",
+                finalGroups.size(),
+                seedsEnumerated.sum(), seedsPure.sum(), grownDistinct,
+                mergesConsidered.sum(), mergesAccepted.sum(), reassignments.sum()));
+
+        log(String.format(Locale.US,
+                "Purity cache: size=%d hits=%d misses=%d tetradTests~=%d",
+                pureCache.size(),
+                purityCacheHits.sum(), purityCacheMisses.sum(), tetradTests.sum()));
+
+        log(String.format(Locale.US,
+                "Timing(ms): pattern=%.1f seeds=%.1f merge=%.1f resolve=%.1f total=%.1f",
+                tPatternNs / 1e6, tSeedsNs / 1e6, tMergeNs / 1e6, tResolveNs / 1e6,
+                (tPatternNs + tSeedsNs + tMergeNs + tResolveNs) / 1e6));
+    }
+
+    // ----------------------------- main entry -----------------------------
 
     /**
      * Identifies clusters of variables based on tetrad purity and pairwise dependence. Constructs initial clusters as
@@ -122,8 +186,14 @@ public class Bpc {
      * Returns an empty list if no valid clusters exist.
      */
     public List<List<Integer>> getClusters() {
+        logParams();
+
         buildPatternLite();
+        logPatternStats();
+
         // ---- Stage A: enumerate tetrad seeds in parallel, grow locally WITHOUT marking variables as used
+        long t0Seeds = System.nanoTime();
+
         ConcurrentHashMap<BitKey, List<Integer>> candMap = new ConcurrentHashMap<>();
 
         IntStream.range(0, numVars).parallel().forEach(i -> {
@@ -134,8 +204,11 @@ public class Bpc {
                     for (int l = k + 1; l < numVars; l++) {
                         if (!canLink[i][l] || !canLink[j][l] || !canLink[k][l]) continue; // 6-pair screen
                         List<Integer> seed = Arrays.asList(i, j, k, l);
+                        seedsEnumerated.increment();
+
                         if (!isPure(seed)) continue;
-//                        if (!clusterDependent(seed)) continue;
+                        seedsPure.increment();
+
                         List<Integer> grown = growMaximalPure(seed); // keep serial inside for determinism
                         candMap.putIfAbsent(new BitKey(grown), grown);
                     }
@@ -144,42 +217,64 @@ public class Bpc {
         });
 
         List<List<Integer>> candidates = new ArrayList<>(candMap.values());
+        grownDistinct = candidates.size();
+        tSeedsNs += System.nanoTime() - t0Seeds;
+
         if (candidates.isEmpty()) {
+            log("No pure seeds found; returning empty cluster set.");
             return new ArrayList<>();
         }
 
         // ---- Stage B: global purification & merging until convergence
         List<List<Integer>> current = deepCopy(candidates);
         boolean changed;
+        int iter = 0;
+
         do {
-            changed = false;
+            iter++;
+            long mergesBefore = mergesAccepted.sum();
+            long reassignBefore = reassignments.sum();
+            int dropsThisIter = 0;
 
             // 1) Merge any pair whose UNION is still pure and dependent
             List<List<Integer>> merged = mergePurePairs(current);
-            if (!sameFamily(current, merged)) {
-                current = merged;
-                changed = true;
-            }
+            boolean changed1 = !sameFamily(current, merged);
+            if (changed1) current = merged;
 
             // 2) Resolve overlaps by assigning shared variables to their best-fitting group
             List<List<Integer>> resolved = resolveOverlaps(current);
-            if (!sameFamily(current, resolved)) {
-                current = resolved;
-                changed = true;
-            }
+            boolean changed2 = !sameFamily(current, resolved);
+            if (changed2) current = resolved;
 
             // 3) Drop groups below minimum size
+            int before = current.size();
             List<List<Integer>> filtered = new ArrayList<>();
             for (List<Integer> g : current) if (g.size() >= MIN_CLUSTER_SIZE) filtered.add(g);
-            if (!sameFamily(current, filtered)) {
+            boolean changed3 = !sameFamily(current, filtered);
+            if (changed3) {
+                dropsThisIter = before - filtered.size();
                 current = filtered;
-                changed = true;
             }
 
+            int mergesThisIter = (int) (mergesAccepted.sum() - mergesBefore);
+            int reassignThisIter = (int) (reassignments.sum() - reassignBefore);
+            logIteration(iter, current, mergesThisIter, reassignThisIter, dropsThisIter);
+
+            changed = changed1 || changed2 || changed3;
         } while (changed);
+
+        Set<Set<Integer>> _current = new HashSet<>();
+        for (List<Integer> g : current) {
+            _current.add(new HashSet<>(g));
+        }
+
+        log("Final clusters: " + toNamesClusters(_current, nodes));
+        logSummary(current);
 
         return current;
     }
+
+    // ----------------------------- core helpers -----------------------------
 
     /**
      * Grow a seed to a locally maximal pure group: greedily add variables whose inclusion preserves purity (all tetrads
@@ -194,9 +289,11 @@ public class Bpc {
                 if (group.contains(x)) continue;
                 List<Integer> candidate = new ArrayList<>(group);
                 candidate.add(x);
-                if (isPure(candidate)) {// && clusterDependent(candidate)) {
+                if (isPure(candidate)) { // && clusterDependent(candidate)) {
                     group.add(x);
                     expanded = true;
+                    // Optional trace:
+                    // log("Grow: added " + nodes.get(x).getName() + " -> " + toNamesClusters(Set.of(new HashSet<>(group)), nodes));
                 }
             }
         } while (expanded);
@@ -210,7 +307,11 @@ public class Bpc {
         if (vars.size() < 4) return false;
         BitKey key = new BitKey(vars);
         Boolean cached = pureCache.get(key);
-        if (cached != null) return cached;
+        if (cached != null) {
+            purityCacheHits.increment();
+            return cached;
+        }
+        purityCacheMisses.increment();
 
         // Early abort: iterate tetrads and stop at first failure
         int m = vars.size();
@@ -218,6 +319,9 @@ public class Bpc {
             for (int j = i + 1; j < m; j++) {
                 for (int k = j + 1; k < m; k++) {
                     for (int l = k + 1; l < m; l++) {
+                        // 3 tetrads per 4-tuple
+                        tetradTests.add(3);
+
                         int a = vars.get(i), b = vars.get(j), c = vars.get(k), d = vars.get(l);
                         int[][] t1 = new int[][]{{a, b}, {c, d}};
                         int[][] t2 = new int[][]{{a, c}, {b, d}};
@@ -231,7 +335,6 @@ public class Bpc {
                             pureCache.put(key, Boolean.FALSE);
                             return false;
                         }
-                        ;
                     }
                 }
             }
@@ -245,30 +348,9 @@ public class Bpc {
     }
 
     /**
-     * Generate all tetrads for a set of variable indices.
-     */
-    private List<int[][]> generateTetrads(List<Integer> vars) {
-        List<int[][]> tetrads = new ArrayList<>();
-        if (vars.size() < 4) return tetrads;
-
-        for (int i = 0; i < vars.size(); i++) {
-            for (int j = i + 1; j < vars.size(); j++) {
-                for (int k = j + 1; k < vars.size(); k++) {
-                    for (int l = k + 1; l < vars.size(); l++) {
-                        int a = vars.get(i), b = vars.get(j), c = vars.get(k), d = vars.get(l);
-                        tetrads.add(new int[][]{{a, b}, {c, d}});
-                        tetrads.add(new int[][]{{a, c}, {b, d}});
-                        tetrads.add(new int[][]{{a, d}, {b, c}});
-                    }
-                }
-            }
-        }
-        return tetrads;
-    }
-
-    /**
      * Pairwise dependence inside a cluster via Fisher Z on correlations. Returns true if ALL pairs are dependent.
      */
+    @SuppressWarnings("unused")
     private boolean clusterDependent(List<Integer> cluster) {
         if (cluster.size() <= 1) return true;
         if (canLink != null) {
@@ -282,7 +364,7 @@ public class Bpc {
             return true;
         }
         // Fallback: direct Fisher-Z checks
-        int n = ess;//this.corr.getSampleSize();
+        int n = ess;
         for (int i = 0; i < cluster.size(); i++) {
             for (int j = i + 1; j < cluster.size(); j++) {
                 double r = S.get(cluster.get(i), cluster.get(j));
@@ -300,8 +382,10 @@ public class Bpc {
      * Build a lightweight measurement pattern: canLink[i][j] = true iff pair (i,j) is significantly dependent.
      */
     private void buildPatternLite() {
+        long t0 = System.nanoTime();
+
         canLink = new boolean[numVars][numVars];
-        int n = ess; //this.corr.getSampleSize();
+        int n = ess;
         for (int i = 0; i < numVars; i++) {
             canLink[i][i] = true;
             for (int j = i + 1; j < numVars; j++) {
@@ -314,12 +398,16 @@ public class Bpc {
                 canLink[i][j] = canLink[j][i] = dep;
             }
         }
+
+        tPatternNs += System.nanoTime() - t0;
     }
 
     /**
      * Merge any pair of groups whose union remains pure and dependent; iterate until no merges apply.
      */
     private List<List<Integer>> mergePurePairs(List<List<Integer>> groups) {
+        long t0 = System.nanoTime();
+
         List<List<Integer>> current = deepCopy(groups);
         boolean mergedSomething;
         do {
@@ -341,13 +429,13 @@ public class Bpc {
                     double meanB = avgAbsCorrGroup(current.get(b));
                     if (meanU + deltaMerge >= Math.min(meanA, meanB)) {
                         candidates.add(new int[]{a, b});
+                        mergesConsidered.increment();
                     }
                 }
             });
 
             if (!candidates.isEmpty()) {
                 // Greedy selection of non-overlapping merges by larger union first
-                // Sort candidates by union size desc to encourage bigger merges
                 candidates.sort((x, y) -> Integer.compare(
                         sizeOfUnion(y[0], y[1], current),
                         sizeOfUnion(x[0], x[1], current)));
@@ -360,7 +448,7 @@ public class Bpc {
                     Set<Integer> union = new HashSet<>(current.get(a));
                     union.addAll(current.get(b));
                     List<Integer> u = sortedList(union);
-                    if (u.size() >= 4 && isPure(u)) {// && clusterDependent(u)) {
+                    if (u.size() >= 4 && isPure(u)) { // && clusterDependent(u)) {
                         double meanU = avgAbsCorrGroup(u);
                         double meanA = avgAbsCorrGroup(current.get(a));
                         double meanB = avgAbsCorrGroup(current.get(b));
@@ -368,6 +456,7 @@ public class Bpc {
                             current.set(a, u);
                             current.remove(b);
                             used[a] = true; // mark the merged slot; indexes shift for >b, but we prevent reuse
+                            mergesAccepted.increment();
                             mergedSomething = true;
                             break; // restart outer do-while to recompute candidates
                         }
@@ -375,6 +464,8 @@ public class Bpc {
                 }
             }
         } while (mergedSomething);
+
+        tMergeNs += System.nanoTime() - t0;
         return current;
     }
 
@@ -390,6 +481,8 @@ public class Bpc {
      * average absolute correlation with the rest of that group (compatibility), then remove from others.
      */
     private List<List<Integer>> resolveOverlaps(List<List<Integer>> groups) {
+        long t0 = System.nanoTime();
+
         Map<Integer, List<Integer>> owners = new HashMap<>();
         for (int gi = 0; gi < groups.size(); gi++) {
             for (int v : groups.get(gi)) owners.computeIfAbsent(v, k -> new ArrayList<>()).add(gi);
@@ -425,23 +518,32 @@ public class Bpc {
             bestOwner.put(v, bestGi);
         });
 
+        long overlapVars = owners.entrySet().stream().filter(e -> e.getValue().size() > 1).count();
+
         // Apply removals serially for determinism
         for (Map.Entry<Integer, List<Integer>> e : owners.entrySet()) {
             int v = e.getKey();
             List<Integer> gs = e.getValue();
             if (gs.size() <= 1) continue;
             int keep = bestOwner.get(v);
-            for (int gi : gs) if (gi != keep) work.get(gi).remove(v);
+            for (int gi : gs) if (gi != keep) {
+                boolean removed = work.get(gi).remove(v);
+                if (removed) reassignments.increment();
+            }
         }
 
         // Rebuild list and drop groups that became too small or impure after removals
         List<List<Integer>> out = new ArrayList<>();
         for (Set<Integer> gset : work) {
             List<Integer> g = sortedList(gset);
-            if (g.size() >= MIN_CLUSTER_SIZE && (g.size() < 4 || isPure(g))) {// && clusterDependent(g)) {
+            if (g.size() >= MIN_CLUSTER_SIZE && (g.size() < 4 || isPure(g))) { // && clusterDependent(g)) {
                 out.add(g);
             }
         }
+
+        tResolveNs += System.nanoTime() - t0;
+        log(String.format(Locale.US, "Overlap vars=%d reassignments(total)=%d",
+                overlapVars, reassignments.sum()));
         return out;
     }
 
@@ -502,18 +604,14 @@ public class Bpc {
                     if ((rank1 == 1 && rank2 == 1 && rank3 == 1)) {
                         count++;
                     }
-                    ;
                 }
             }
         }
         return count;
     }
 
-    // Utility: add list if it's a new set (ignoring order)
-    private void addIfNew(List<List<Integer>> family, List<Integer> g) {
-        Set<Integer> gs = new HashSet<>(g);
-        for (List<Integer> h : family) if (new HashSet<>(h).equals(gs)) return;
-        family.add(g);
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     /**

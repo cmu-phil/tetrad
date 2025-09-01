@@ -352,17 +352,6 @@ public class BlockClusteringWizard extends JPanel {
     }
 
     private BlockDiscoverer buildDiscoverer(String alg, String testName, int ess) {
-        NtadTest test = null;
-        if (testName != null) {
-            switch (testName) {
-                case TEST_BT -> test = new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
-                case TEST_WIS -> test = new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
-                // case TEST_ARK -> test = new Ark(...); // still commented out
-                case TEST_CCA -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
-                default -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
-            }
-        }
-
         setParamList();
 
         int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
@@ -373,33 +362,29 @@ public class BlockClusteringWizard extends JPanel {
                 yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA),
                         parameters.getInt(Params.EXPECTED_SAMPLE_SIZE),
                         parameters.getDouble(Params.REGULARIZATION_LAMBDA),
-                        policy
+                        parameters.getInt(Params.MAX_RANK),
+                        policy,
+                        parameters.getBoolean(Params.VERBOSE)
                 );
             }
             case "FOFC" -> {
-                if (test == null) {
-                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess); // sensible default
-                }
-                yield BlockDiscoverers.fofc(dataSet, test, parameters.getDouble(Params.ALPHA),
-                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy);
+                yield BlockDiscoverers.fofc(dataSet, parameters.getDouble(Params.ALPHA),
+                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy,
+                        parameters.getBoolean(Params.VERBOSE)
+                );
             }
             case "BPC" -> {
-                if (test == null) {
-                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
-                }
                 yield BlockDiscoverers.bpc(dataSet, parameters.getDouble(Params.ALPHA),
-                        ess, policy);
+                        ess, policy, parameters.getBoolean(Params.VERBOSE));
             }
             case "FTFC" -> {
-                if (test == null || TEST_WIS.equals(testName)) {
-                    // enforce: FTFC cannot use Wishart
-                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
-                }
-                yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA), ess, policy);
+                yield BlockDiscoverers.ftfc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy,
+                        parameters.getBoolean(Params.VERBOSE));
             }
             case "GFFC" -> {
                 yield BlockDiscoverers.gffc(dataSet, parameters.getDouble(Params.ALPHA), ess,
-                        parameters.getInt(Params.GFFC_R_MAX), policy);
+                        parameters.getInt(Params.MAX_RANK), policy,
+                        parameters.getBoolean(Params.VERBOSE));
             }
             default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
         };
@@ -414,16 +399,18 @@ public class BlockClusteringWizard extends JPanel {
             case "TSC" -> {
                 paramList.add(Params.ALPHA);
                 paramList.add(Params.REGULARIZATION_LAMBDA);
+                paramList.add(Params.MAX_RANK);
             }
             case "GFFC" -> {
                 paramList.add(Params.ALPHA);
-                paramList.add(Params.GFFC_R_MAX);
+                paramList.add(Params.MAX_RANK);
             }
             default -> paramList.add(Params.ALPHA);
         }
 
         paramList.add(Params.EXPECTED_SAMPLE_SIZE);
         paramList.add(Params.TSC_SINGLETON_POLICY);
+        paramList.add(Params.VERBOSE);
     }
 
     private void showParameters() {

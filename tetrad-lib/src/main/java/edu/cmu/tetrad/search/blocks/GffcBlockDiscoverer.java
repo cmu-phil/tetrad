@@ -21,6 +21,7 @@ public class GffcBlockDiscoverer implements BlockDiscoverer {
     private final double alpha;
     private final int ess;
     private final SingleClusterPolicy policy;
+    private final boolean verbose;
     private int rMax = 2;
 
     /**
@@ -31,16 +32,17 @@ public class GffcBlockDiscoverer implements BlockDiscoverer {
      * @param dataSet the dataset to be analyzed for block discovery.
      * @param alpha   the significance level used in the statistical test to determine independence.
      * @param ess     the equivalent sample size parameter used in Bayesian methods within the FOFC algorithm.
-     * @param rMax
+     * @param rMax    the maximum rank of clusters to be considered.
      * @param policy  the policy to handle scenarios involving overlapping or conflicting blocks.
      */
     public GffcBlockDiscoverer(DataSet dataSet, double alpha, int ess,
-                               int rMax, SingleClusterPolicy policy) {
+                               int rMax, SingleClusterPolicy policy, boolean verbose) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ess = ess;
         this.rMax = rMax;
         this.policy = policy;
+        this.verbose = verbose;
     }
 
     /**
@@ -52,6 +54,7 @@ public class GffcBlockDiscoverer implements BlockDiscoverer {
     @Override
     public BlockSpec discover() {
         Gffc gffc = new Gffc(dataSet, alpha, rMax, ess);
+        gffc.setVerbose(verbose);
 
         Map<List<Integer>, Integer> clusters = gffc.findClusters();
         List<List<Integer>> blocks = new ArrayList<>(clusters.keySet());

@@ -28,8 +28,9 @@ public final class BlockDiscoverers {
      * @param policy the single-cluster policy applied to manage how individual clusters or blocks are processed
      * @return a {@code BpcBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer bpc(DataSet data, double alpha, int ess, SingleClusterPolicy policy) {
-        return new BpcBlockDiscoverer(data, alpha, ess, policy);
+    public static BlockDiscoverer bpc(DataSet data, double alpha, int ess, SingleClusterPolicy policy,
+                                      boolean verbose) {
+        return new BpcBlockDiscoverer(data, alpha, ess, policy, verbose);
     }
 
     /**
@@ -38,15 +39,14 @@ public final class BlockDiscoverers {
      * identify meaningful groupings of variables within the data.
      *
      * @param data   the dataset on which the block discovery algorithm will operate
-     * @param test   the statistical test applied to evaluate dependencies between variables in the dataset
      * @param alpha  the significance level for the statistical tests, typically a value between 0 and 1
      * @param ess    the equivalent sample size, which determines the strength of prior information used in scoring
      * @param policy the policy for handling single-cluster constraints during block discovery
      * @return a {@code FofcBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer fofc(DataSet data, NtadTest test, double alpha,
-                                       int ess, SingleClusterPolicy policy) {
-        return new FofcBlockDiscoverer(data, alpha, ess, policy);
+    public static BlockDiscoverer fofc(DataSet data, double alpha,
+                                       int ess, SingleClusterPolicy policy, boolean verbose) {
+        return new FofcBlockDiscoverer(data, alpha, ess, policy, verbose);
     }
 
     /**
@@ -55,20 +55,19 @@ public final class BlockDiscoverers {
      * configurable parameters to identify meaningful groupings of variables.
      *
      * @param data   the dataset on which the block discovery algorithm will operate
-     * @param ntad   a statistical test used to evaluate dependencies and relationships between variables
      * @param alpha  the significance level used in statistical tests, typically a value between 0 and 1
      * @param ess    the equivalent sample size, controlling the strength of prior information in scoring
      * @param policy the single-cluster policy applied to manage how individual clusters or blocks are processed
      * @return a {@code FtfcBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer ftfc(DataSet data, NtadTest ntad, double alpha,
-                                       int ess, SingleClusterPolicy policy) {
-        return new FtfcBlockDiscoverer(data, alpha, ess, policy);
+    public static BlockDiscoverer ftfc(DataSet data, double alpha,
+                                       int ess, SingleClusterPolicy policy, boolean verbose) {
+        return new FtfcBlockDiscoverer(data, alpha, ess, policy, verbose);
     }
 
     public static BlockDiscoverer gffc(DataSet data, double alpha,
-                                       int ess, int rMax, SingleClusterPolicy policy) {
-        return new GffcBlockDiscoverer(data, alpha, ess, rMax, policy);
+                                       int ess, int rMax, SingleClusterPolicy policy, boolean verbose) {
+        return new GffcBlockDiscoverer(data, alpha, ess, rMax, policy, verbose);
     }
 
     /**
@@ -82,7 +81,8 @@ public final class BlockDiscoverers {
      * @param policy the single-cluster policy applied to handle constraints for managing individual clusters
      * @return a {@code TscTestBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer tscTest(DataSet data, double alpha, int ess, double ridge, SingleClusterPolicy policy) {
-        return new TscTestBlockDiscoverer(data, alpha, ess, ridge, policy);
+    public static BlockDiscoverer tscTest(DataSet data, double alpha, int ess, double ridge,
+                                          int rMax, SingleClusterPolicy policy, boolean verbose) {
+        return new TscTestBlockDiscoverer(data, alpha, ess, ridge, rMax, policy, verbose);
     }
 }

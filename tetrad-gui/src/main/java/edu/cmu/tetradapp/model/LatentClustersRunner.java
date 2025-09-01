@@ -20,17 +20,12 @@
 /// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.blocks.*;
-import edu.cmu.tetrad.search.ntad_test.BollenTing;
-import edu.cmu.tetrad.search.ntad_test.Cca;
-import edu.cmu.tetrad.search.ntad_test.NtadTest;
-import edu.cmu.tetrad.search.ntad_test.Wishart;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -56,15 +51,14 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
 
     @Serial
     private static final long serialVersionUID = 23L;
-    private static final String TEST_CCA = "CCA";
-    private static final String TEST_BT = "Bollen-Ting";
-    private static final String TEST_WIS = "Wishart";
+
     /**
      * The data model.
      */
     private final DataWrapper dataWrapper;
     private final DataSet dataSet;
     private final Map<String, List<String>> trueNamedClusters;
+    private final int ess;
     /**
      * The name of the model.
      */
@@ -74,10 +68,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      */
     private Parameters parameters;
     private BlockSpec blockSpec = null;
-//    private String alg = "FOFC";
-//    private String test = "CCA";
     private String blockText = "";
-    private final int ess;
 
     //===========================CONSTRUCTORS===========================//
 
@@ -94,8 +85,6 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         int sampleSize = dataSet.getNumRows();
         int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
         this.ess = ess == -1 ? sampleSize : ess;
-
-        String alg = parameters.getString("latentClusterRunnerAlgorithm", "TSC");
 
         // If we're in simulation mode, grab the true clusters and their latent names so we can use these to
         // give good names to the estimated clusters. This helps avoid people having so much trouble figuring
@@ -164,9 +153,6 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
     }
 
     //===========================PRIVATE METHODS==========================//
-    private void transferVarNamesToParams(List<String> names) {
-        getParameters().set("varNames", names);
-    }
 
     /**
      * Writes the object to the specified ObjectOutputStream.
@@ -332,53 +318,27 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         this.blockText = blockText;
     }
 
-    private BlockDiscoverer buildDiscoverer(String alg, String testName) {
-        NtadTest test = null;
-
-        if (testName != null) {
-            switch (testName) {
-                case TEST_BT -> test = new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
-                case TEST_WIS -> test = new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
-                // case TEST_ARK -> test = new Ark(...); // still commented out
-                case TEST_CCA -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
-                default -> test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
-            }
-        }
-
+    private BlockDiscoverer buildDiscoverer(String alg) {
         int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
         SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
 
         return switch (alg) {
-            case "TSC" -> {
-                yield BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA),
-                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE),
-                        parameters.getDouble(Params.REGULARIZATION_LAMBDA),
-                        policy
-                );
-            }
-            case "FOFC" -> {
-                if (test == null) {
-                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess); // sensible default
-                }
-                yield BlockDiscoverers.fofc(dataSet, test, parameters.getDouble(Params.ALPHA), ess, policy);
-            }
-            case "BPC" -> {
-                if (test == null) {
-                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
-                }
-                yield BlockDiscoverers.bpc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy);
-            }
-            case "FTFC" -> {
-                if (test == null || TEST_WIS.equals(testName)) {
-                    // enforce: FTFC cannot use Wishart
-                    test = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, ess);
-                }
-                yield BlockDiscoverers.ftfc(dataSet, test, parameters.getDouble(Params.ALPHA), ess, policy);
-            }
-            case "GFFC" -> {
-                yield BlockDiscoverers.gffc(dataSet, parameters.getDouble(Params.ALPHA), ess,
-                        parameters.getInt(Params.GFFC_R_MAX), policy);
-            }
+            case "TSC" -> BlockDiscoverers.tscTest(dataSet, parameters.getDouble(Params.ALPHA),
+                    parameters.getInt(Params.EXPECTED_SAMPLE_SIZE),
+                    parameters.getDouble(Params.REGULARIZATION_LAMBDA),
+                    parameters.getInt(Params.MAX_RANK),
+                    policy,
+                    parameters.getBoolean(Params.VERBOSE)
+            );
+            case "FOFC" -> BlockDiscoverers.fofc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy,
+                    parameters.getBoolean(Params.VERBOSE));
+            case "BPC" -> BlockDiscoverers.bpc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy,
+                    parameters.getBoolean(Params.VERBOSE));
+            case "FTFC" -> BlockDiscoverers.ftfc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy,
+                    parameters.getBoolean(Params.VERBOSE));
+            case "GFFC" -> BlockDiscoverers.gffc(dataSet, parameters.getDouble(Params.ALPHA), ess,
+                    parameters.getInt(Params.MAX_RANK), policy,
+                    parameters.getBoolean(Params.VERBOSE));
             default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
         };
     }
@@ -394,11 +354,10 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         // This can't be put into a watch thread because downstream session nodes are counting on
         // a block spec being set when propagating downstream. jdramsey 2025-8-23
         String alg = parameters.getString("latentClusterRunnerAlgorithm", "TSC");
-        String test = parameters.getString("latentClusterRunnerTest", "CCA");
 
-        BlockDiscoverer discoverer = buildDiscoverer(alg, test);
+        BlockDiscoverer discoverer = buildDiscoverer(alg);
         BlockSpec spec = discoverer.discover();
-        spec = BlocksUtil.giveGoodLatentNames(spec, trueNamedClusters,  BlocksUtil.NamingMode.LEARNED_SINGLE);
+        spec = BlocksUtil.giveGoodLatentNames(spec, trueNamedClusters, BlocksUtil.NamingMode.LEARNED_SINGLE);
 
         setBlockText(BlockSpecTextCodec.format(spec));
 
@@ -408,7 +367,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
     /**
      * Retrieves a map of true named clusters, if available, where each key represents the name of a cluster, and the
      * corresponding value is a list of {@link Node} objects that belong to that cluster. The method returns a deep copy
-     * of the clusters to ensure the original data remains unaffected. The purpose of this is to all clusters to be
+     * of the clusters to ensure the original data remains unaffected. The purpose of this is for all clusters to be
      * given names that correspond to the names of the true latents in simulation mode. If the true clusters are not
      * available, an empty map is returned.
      *

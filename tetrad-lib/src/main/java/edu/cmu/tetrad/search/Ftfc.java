@@ -151,8 +151,10 @@ public class Ftfc {
         findPureClustersTsc(rank, tscClusters, clustersToRanks);
         findMixedClusters(rank, clustersToRanks);
 
-        TetradLogger.getInstance().log("clusters rank " + rank + " = "
-                                       + ClusterSignificance.variablesForIndices(clustersToRanks.keySet(), this.variables));
+        if (verbose) {
+            TetradLogger.getInstance().log("clusters rank " + rank + " = "
+                                           + ClusterSignificance.variablesForIndices(clustersToRanks.keySet(), this.variables));
+        }
 
     }
 

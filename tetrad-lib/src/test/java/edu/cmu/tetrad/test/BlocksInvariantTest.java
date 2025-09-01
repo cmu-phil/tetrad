@@ -17,7 +17,8 @@ public class BlocksInvariantTest {
     public void testBpcAdapterSpec() {
         DataSet ds = getData();
 //        NtadTest ntad = new Cca(ds.getDoubleData().getSimpleMatrix(), false, -1);
-        BlockSpec spec = BlockDiscoverers.bpc(ds,0.05, -1, SingleClusterPolicy.EXCLUDE).discover();
+        BlockSpec spec = BlockDiscoverers.bpc(ds,0.05, -1, SingleClusterPolicy.EXCLUDE,
+                false).discover();
         assertSame(ds, spec.dataSet());
         assertEquals(spec.blocks().size(), spec.blockVariables().size());
         BlocksUtil.validateBlocks(spec.blocks(), spec.dataSet());
@@ -42,7 +43,8 @@ public class BlocksInvariantTest {
     public void testFofcAdapterSpec() {
         DataSet ds = getData();
         NtadTest ntad = new Cca(ds.getDoubleData().getSimpleMatrix(), false, -1);
-        BlockSpec spec = BlockDiscoverers.fofc(ds, ntad, 0.05, -1, SingleClusterPolicy.EXCLUDE).discover();
+        BlockSpec spec = BlockDiscoverers.fofc(ds, 0.05, -1, SingleClusterPolicy.EXCLUDE,
+                false).discover();
         assertSame(ds, spec.dataSet());
         assertEquals(spec.blocks().size(), spec.blockVariables().size());
         BlocksUtil.validateBlocks(spec.blocks(), spec.dataSet());
@@ -52,7 +54,8 @@ public class BlocksInvariantTest {
     public void testFtfcAdapterSpec() {
         DataSet ds = getData();
         NtadTest ntad = new Cca(ds.getDoubleData().getSimpleMatrix(), false, -1);
-        BlockSpec spec = BlockDiscoverers.ftfc(ds, ntad, 0.05, 01, SingleClusterPolicy.EXCLUDE).discover();
+        BlockSpec spec = BlockDiscoverers.ftfc(ds, 0.05, -1, SingleClusterPolicy.EXCLUDE,
+                false).discover();
         assertSame(ds, spec.dataSet());
         assertEquals(spec.blocks().size(), spec.blockVariables().size());
         BlocksUtil.validateBlocks(spec.blocks(), spec.dataSet());
@@ -61,7 +64,8 @@ public class BlocksInvariantTest {
     @Test
     public void testTscAdapterSpec() {
         DataSet ds = getData();
-        BlockSpec spec = BlockDiscoverers.tscTest(ds, 0.05, -1, 1e-8, SingleClusterPolicy.EXCLUDE).discover();
+        BlockSpec spec = BlockDiscoverers.tscTest(ds, 0.05, -1, 1e-8, 2, SingleClusterPolicy.EXCLUDE,
+                false).discover();
         assertSame(ds, spec.dataSet());
         assertEquals(spec.blocks().size(), spec.blockVariables().size());
         BlocksUtil.validateBlocks(spec.blocks(), spec.dataSet());

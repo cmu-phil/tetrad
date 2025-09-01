@@ -21,6 +21,7 @@ public class FofcBlockDiscoverer implements BlockDiscoverer {
     private final double alpha;
     private final int ess;
     private final SingleClusterPolicy policy;
+    private final boolean verbose;
 
     /**
      * Constructs a new instance of {@code FofcBlockDiscoverer}, which is used to discover clusters or "blocks" of
@@ -33,11 +34,12 @@ public class FofcBlockDiscoverer implements BlockDiscoverer {
      * @param policy  the policy to handle scenarios involving overlapping or conflicting blocks.
      */
     public FofcBlockDiscoverer(DataSet dataSet, double alpha, int ess,
-                               SingleClusterPolicy policy) {
+                               SingleClusterPolicy policy, boolean verbose) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ess = ess;
         this.policy = policy;
+        this.verbose = verbose;
     }
 
     /**
@@ -48,9 +50,10 @@ public class FofcBlockDiscoverer implements BlockDiscoverer {
      */
     @Override
     public BlockSpec discover() {
-        Fofc Fofc = new Fofc(dataSet, alpha, ess);
+        Fofc fofc = new Fofc(dataSet, alpha, ess);
+        fofc.setVerbose(verbose);
 
-        Map<List<Integer>, Integer> clusters = Fofc.findClusters();
+        Map<List<Integer>, Integer> clusters = fofc.findClusters();
         List<List<Integer>> blocks = new ArrayList<>(clusters.keySet());
         List<Integer> ranks = new ArrayList<>();
         for (List<Integer> block : blocks) {

@@ -52,8 +52,9 @@ public class Tsc {
     private final Map<Key, Integer> rankCache = new ConcurrentHashMap<>();
     private int expectedSampleSize = -1;
     private double alpha = 0.01;
-    private boolean verbose = true;
+    private boolean verbose = false;
     private Map<Set<Integer>, Integer> clusterToRank;
+    private int rMax = 3;
 //    private Map<Set<Integer>, Integer> reducedRank;
 
     /**
@@ -120,7 +121,6 @@ public class Tsc {
      * @return a set of clusters that match the specified rank, where each cluster is represented as a set of integers
      */
     public Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
-        log("vars: " + vars);
         log("findClustersAtRankTesting size = " + size + ", rank = " + rank + ", ess = " + expectedSampleSize);
 
         final int n = vars.size();
@@ -189,14 +189,14 @@ public class Tsc {
         clusterToRank = new HashMap<>();
 //        reducedRank = new HashMap<>();
 
-        for (int rank = 0; rank <= 3; rank++) {
+        for (int rank = 0; rank <= rMax; rank++) {
             int size = rank + 1;
             if (Thread.currentThread().isInterrupted()) break;
             if (size >= remainingVars.size() - size) continue;
 
             log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
             Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
-            log("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P, nodes)));
+            System.out.println("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P, nodes)));
             Set<Set<Integer>> P1 = new HashSet<>(P);
 
             Set<Set<Integer>> newClusters = new HashSet<>();
@@ -612,6 +612,10 @@ public class Tsc {
         if (!(expectedSampleSize == -1 || expectedSampleSize > 0))
             throw new IllegalArgumentException("Expected sample size = -1 or > 0");
         this.expectedSampleSize = expectedSampleSize == -1 ? sampleSize : expectedSampleSize;
+    }
+
+    public void setRmax(int rMax) {
+        this.rMax = rMax;
     }
 
     // ---- Canonical key for caching ranks (immutable, sorted) -------------------

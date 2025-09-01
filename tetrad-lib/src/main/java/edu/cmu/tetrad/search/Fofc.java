@@ -51,7 +51,7 @@ public class Fofc {
     /**
      * Whether verbose output is desired.
      */
-    private boolean verbose = true;
+    private boolean verbose = false;
     /**
      * A cache of pure tetrads.
      */
@@ -126,6 +126,7 @@ public class Fofc {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+        tsc.setVerbose(verbose);
     }
 
     /**
@@ -157,8 +158,10 @@ public class Fofc {
         findPureClustersTsc(rank, tscClusters, clustersToRanks);
         findMixedClusters(rank, clustersToRanks);
 
-        TetradLogger.getInstance().log("clusters rank " + rank + " = "
-                                       + ClusterSignificance.variablesForIndices(clustersToRanks.keySet(), this.variables));
+        if (verbose) {
+            TetradLogger.getInstance().log("clusters rank " + rank + " = "
+                                           + ClusterSignificance.variablesForIndices(clustersToRanks.keySet(), this.variables));
+        }
 
     }
 

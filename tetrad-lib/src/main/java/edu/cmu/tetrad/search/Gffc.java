@@ -13,10 +13,10 @@ import java.util.*;
 
 
 /**
- * Generalized Find Factor Clusters (GFFC). This generalized FOFC and FTFC to first find clusters using pure 2-tads (pure
- * tetrads) and then clusters using pure 3-tads (pure sextads) out of the remaining variables. We do not use an n-tad
- * test here since we need to check rank, so we will check rank directly. (This is equivqalent to using the CCA n-tad
- * test.)
+ * Generalized Find Factor Clusters (GFFC). This generalized FOFC and FTFC to first find clusters using pure 2-tads
+ * (pure tetrads) and then clusters using pure 3-tads (pure sextads) out of the remaining variables. We do not use an
+ * n-tad test here since we need to check rank, so we will check rank directly. (This is equivqalent to using the CCA
+ * n-tad test.)
  * <p>
  * Kummerfeld, E., &amp; Ramsey, J. (2016, August). Causal clustering for 1-factor measurement models. In Proceedings of
  * the 22nd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 1655-1664).
@@ -51,7 +51,7 @@ public class Gffc {
     /**
      * Whether verbose output is desired.
      */
-    private boolean verbose = true;
+    private boolean verbose = false;
     /**
      * A cache of pure tetrads.
      */
@@ -82,6 +82,13 @@ public class Gffc {
         setEss(ess);
     }
 
+    // Canonical, immutable key for clusters to avoid order/mutation hazards
+    private static List<Integer> canonKey(Collection<Integer> xs) {
+        List<Integer> s = new ArrayList<>(xs);
+        Collections.sort(s);
+        return Collections.unmodifiableList(s);
+    }
+
     private void setEss(int ess) {
         this.ess = ess == -1 ? this.sampleSize : ess;
         this.tsc.setExpectedSampleSize(ess);
@@ -92,13 +99,6 @@ public class Gffc {
             throw new IllegalArgumentException("rMax must be at least 1");
         }
         this.rMax = rMax;
-    }
-
-    // Canonical, immutable key for clusters to avoid order/mutation hazards
-    private static List<Integer> canonKey(Collection<Integer> xs) {
-        List<Integer> s = new ArrayList<>(xs);
-        Collections.sort(s);
-        return Collections.unmodifiableList(s);
     }
 
     /**
@@ -126,6 +126,7 @@ public class Gffc {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+        tsc.setVerbose(verbose);
     }
 
     /**
@@ -157,9 +158,8 @@ public class Gffc {
         findPureClustersTsc(rank, tscClusters, clustersToRanks);
         findMixedClusters(rank, clustersToRanks);
 
-        TetradLogger.getInstance().log("clusters rank " + rank + " = "
-                                       + ClusterSignificance.variablesForIndices(clustersToRanks.keySet(), this.variables));
-
+        log("clusters rank " + rank + " = "
+                                           + ClusterSignificance.variablesForIndices(clustersToRanks.keySet(), this.variables));
     }
 
     private void findPureClustersTsc(int rank, Set<Set<Integer>> tscClusters,
@@ -208,10 +208,8 @@ public class Gffc {
                     // 6) grow from the sextet
                     growCluster(C, rank, clustersToRanks);
 
-                    if (this.verbose) {
-                        log("Cluster found: " + ClusterSignificance
-                                .variablesForIndices(C, this.variables));
-                    }
+                    log("Cluster found: " + ClusterSignificance
+                            .variablesForIndices(C, this.variables));
 
                     clustersToRanks.put(C, rank);
                     unclustered.removeAll(C);
