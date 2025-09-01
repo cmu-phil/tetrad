@@ -37,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static org.apache.commons.math3.util.FastMath.max;
@@ -164,7 +165,8 @@ public final class Fges implements IGraphSearch, DagScorer {
      * Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows. The ordering
      * doesn't matter; it just has to be transitive.
      */
-    private int arrowIndex = 0;
+    // private int arrowIndex = 0;
+    private final AtomicInteger arrowIndex = new AtomicInteger(0);
     /**
      * The score of the model.
      */
@@ -791,8 +793,14 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @param parents    the set of parent nodes
      * @param bump       the bump value of the arrow
      */
-    private void addArrowForward(Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors, Set<Node> naYX, Set<Node> parents, double bump) {
-        Arrow arrow = new Arrow(bump, a, b, hOrT, TNeighbors, naYX, parents, arrowIndex++);
+//    private void addArrowForward(Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors, Set<Node> naYX, Set<Node> parents, double bump) {
+//        Arrow arrow = new Arrow(bump, a, b, hOrT, TNeighbors, naYX, parents, arrowIndex++);
+//        sortedArrows.add(arrow);
+//    }
+    private void addArrowForward(Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors,
+                                 Set<Node> naYX, Set<Node> parents, double bump) {
+        Arrow arrow = new Arrow(bump, a, b, hOrT, TNeighbors, naYX, parents,
+                arrowIndex.getAndIncrement());
         sortedArrows.add(arrow);
     }
 
@@ -1163,20 +1171,54 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @param recordScores Indicates whether or not to record the scores for each node in the graph.
      * @return The total score of the DAG.
      */
+//    private double scoreDag(Graph dag, boolean recordScores) {
+//        if (score instanceof GraphScore) return 0.0;
+//        dag = GraphUtils.replaceNodes(dag, getVariables());
+//
+//        double _score = 0;
+//
+//        for (Node node : getVariables()) {
+//            List<Node> x = dag.getParents(node);
+//
+//            int[] parentIndices = new int[x.size()];
+//
+//            int count = 0;
+//            for (Node parent : x) {
+//                parentIndices[count++] = hashIndices.get(parent);
+//            }
+//
+//            final double nodeScore = score.localScore(hashIndices.get(node), parentIndices);
+//
+//            if (recordScores) {
+//                node.addAttribute("Score", nodeScore);
+//            }
+//
+//            _score += nodeScore;
+//        }
+//
+//        if (recordScores) {
+//            graph.addAttribute("Score", _score);
+//        }
+//
+//        return _score;
+//    }
     private double scoreDag(Graph dag, boolean recordScores) {
-        if (score instanceof GraphScore) return 0.0;
         dag = GraphUtils.replaceNodes(dag, getVariables());
 
-        double _score = 0;
+        // If the Score supports whole-graph scoring, use it.
+        if (score instanceof GraphScore) {
+            throw new UnsupportedOperationException("Cannot score using GraphScore.");
+        }
+
+        // Otherwise, sum local (node) scores as before.
+        double _score = 0.0;
 
         for (Node node : getVariables()) {
-            List<Node> x = dag.getParents(node);
-
-            int[] parentIndices = new int[x.size()];
-
-            int count = 0;
-            for (Node parent : x) {
-                parentIndices[count++] = hashIndices.get(parent);
+            List<Node> parentsList = dag.getParents(node);
+            int[] parentIndices = new int[parentsList.size()];
+            int c = 0;
+            for (Node p : parentsList) {
+                parentIndices[c++] = hashIndices.get(p);
             }
 
             final double nodeScore = score.localScore(hashIndices.get(node), parentIndices);
