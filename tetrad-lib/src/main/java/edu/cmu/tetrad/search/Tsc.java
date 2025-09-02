@@ -42,6 +42,8 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
  *
  * <p><b>Practical guidance.</b> Use α that decreases slowly with n (e.g., α=1/log n) or an information-criterion cutoff
  * to reduce Type-I rank errors with sample size. Ensure {@code expectedSampleSize} reflects the covariance sample size.
+ *
+ * @author josephramsey
  */
 public class Tsc {
     private final List<Node> nodes;
@@ -56,7 +58,6 @@ public class Tsc {
     private int rMax = 3;
     // require |C| >= (rank + 1 + minRedundancy)
     private int minRedundancy = 1;
-
 
     /**
      * Constructs an instance of the TscScored class using the provided variables and covariance matrix.
