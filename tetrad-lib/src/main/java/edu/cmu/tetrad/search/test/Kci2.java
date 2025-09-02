@@ -34,6 +34,10 @@
      private List<Node> variables;
      private boolean verbose = false;
      private double alpha = 0.01;
+     /** Polynomial kernel params: k(u,v) = (polyGamma * u·v + polyCoef0)^polyDegree */
+     public int    polyDegree = 2;
+     public double polyCoef0  = 1.0;
+     public double polyGamma  = 1.0;   // set yourself (e.g., 1.0/d) if you want automatic scaling
 
      @Override
      public double getAlpha() {
@@ -47,7 +51,7 @@
 
  // ---------------------- configuration hooks ----------------------
 
-     public enum KernelType { GAUSSIAN, LINEAR }
+     public enum KernelType { GAUSSIAN, LINEAR, POLYNOMIAL }
 
      /** Kernel type (default Gaussian). */
      public KernelType kernelType = KernelType.GAUSSIAN;
@@ -272,6 +276,9 @@
              case LINEAR -> {
                  return linearKernelMatrix(cols);
              }
+             case POLYNOMIAL -> {
+                 return polynomialKernelMatrix(cols, polyGamma, polyCoef0, polyDegree);
+             }
              default -> throw new IllegalStateException("Unknown kernel: " + kernelType);
          }
      }
@@ -280,12 +287,14 @@
      private SimpleMatrix kernelMatrixSingle(int rowIdx) {
          switch (kernelType) {
              case GAUSSIAN -> {
-                 // sigma from per-dim variance heuristic
                  double sigma = bandwidthGaussian(Collections.singletonList(rowIdx));
                  return gaussianKernelMatrix(Collections.singletonList(rowIdx), sigma);
              }
              case LINEAR -> {
                  return linearKernelMatrix(Collections.singletonList(rowIdx));
+             }
+             case POLYNOMIAL -> {
+                 return polynomialKernelMatrix(Collections.singletonList(rowIdx), polyGamma, polyCoef0, polyDegree);
              }
              default -> throw new IllegalStateException("Unknown kernel: " + kernelType);
          }
@@ -375,6 +384,12 @@
          final int n = rows.size();
          final int d = varRows.size();
 
+         // Edge case: no variables → linear kernel is identically 0
+         if (d == 0) {
+             return SimpleMatrix.wrap(new DMatrixRMaj(n, n)); // all zeros
+         }
+
+         // Build X (n × d)
          DMatrixRMaj X = new DMatrixRMaj(n, d);
          for (int c = 0; c < d; c++) {
              int vr = varRows.get(c);
@@ -382,8 +397,58 @@
                  X.set(r, c, dataVxN.get(vr, rows.get(r)));
              }
          }
+
+         // K = X Xᵀ  (n × n)
          DMatrixRMaj K = new DMatrixRMaj(n, n);
-         CommonOps_DDRM.multInner(X, K);
+         CommonOps_DDRM.multTransB(X, X, K);  // <-- correct call for X * X^T
+
+         return SimpleMatrix.wrap(K);
+     }
+
+     /** Polynomial kernel: K = (gamma * (X Xᵀ) + coef0) ^ degree, with X built as (n × d). */
+     private SimpleMatrix polynomialKernelMatrix(List<Integer> varRows,
+                                                 double gamma, double coef0, int degree) {
+         final int n = rows.size();
+         final int d = varRows.size();
+
+         // Edge case: no variables → constant kernel (coef0^degree) * 1
+         if (d == 0) {
+             DMatrixRMaj K = new DMatrixRMaj(n, n);
+             Arrays.fill(K.data, Math.pow(coef0, degree));
+             return SimpleMatrix.wrap(K);
+         }
+
+         // Build X (n × d)
+         DMatrixRMaj X = new DMatrixRMaj(n, d);
+         for (int c = 0; c < d; c++) {
+             int vr = varRows.get(c);
+             for (int r = 0; r < n; r++) {
+                 X.set(r, c, dataVxN.get(vr, rows.get(r)));
+             }
+         }
+
+         // G = X Xᵀ (n × n)
+         DMatrixRMaj G = new DMatrixRMaj(n, n);
+         CommonOps_DDRM.multTransB(X, X, G);
+
+         // K = (gamma * G + coef0)^degree  (elementwise power)
+         DMatrixRMaj K = new DMatrixRMaj(n, n);
+         double[] gd = G.data, kd = K.data;
+         final double a = gamma;
+         final double b = coef0;
+         if (degree == 1) {
+             // Fast path: linear + bias
+             for (int i = 0; i < kd.length; i++) kd[i] = a * gd[i] + b;
+         } else if (degree == 2) {
+             for (int i = 0; i < kd.length; i++) {
+                 double v = a * gd[i] + b;
+                 kd[i] = v * v;
+             }
+         } else {
+             for (int i = 0; i < kd.length; i++) {
+                 kd[i] = Math.pow(a * gd[i] + b, degree);
+             }
+         }
          return SimpleMatrix.wrap(K);
      }
 

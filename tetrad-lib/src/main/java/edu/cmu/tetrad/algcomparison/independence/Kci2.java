@@ -56,13 +56,18 @@ public class Kci2 implements IndependenceWrapper {
                 kci.kernelType = edu.cmu.tetrad.search.test.Kci2.KernelType.GAUSSIAN;
                 break;
             case 2:
-                kci.kernelType = edu.cmu.tetrad.search.test.Kci2.KernelType.GAUSSIAN;
+                kci.kernelType = edu.cmu.tetrad.search.test.Kci2.KernelType.LINEAR;
                 break;
             case 3:
-                throw new IllegalArgumentException("Polynomial kernal type not supported");
+                kci.kernelType = edu.cmu.tetrad.search.test.Kci2.KernelType.POLYNOMIAL;
+                break;
             default:
                 throw new IllegalArgumentException("Unknown kernel type: " + parameters.getInt(Params.KERNEL_TYPE));
         }
+
+        kci.polyDegree = parameters.getInt(Params.POLYNOMIAL_DEGREE);
+        kci.polyCoef0 = parameters.getDouble(Params.POLYNOMIAL_CONSTANT);
+        kci.polyGamma = 1.0 / ((DataSet) dataSet).getNumColumns();
 
         return kci;
     }
@@ -103,6 +108,8 @@ public class Kci2 implements IndependenceWrapper {
         params.add(Params.KCI_NUM_BOOTSTRAPS);
         params.add(Params.KCI_EPSILON);
         params.add(Params.KERNEL_TYPE);
+        params.add(Params.POLYNOMIAL_DEGREE);
+        params.add(Params.POLYNOMIAL_CONSTANT);
         return params;
     }
 }
