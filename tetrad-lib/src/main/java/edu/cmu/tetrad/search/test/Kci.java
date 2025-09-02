@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search.test;
 
-import ai.djl.modality.nlp.preprocess.TextTerminator;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
@@ -57,40 +56,16 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                     return size() > 64;
                 }
             };
-    /**
-     * Polynomial kernel params: k(u,v) = (polyGamma * u·v + polyCoef0)^polyDegree
-     */
-    public int polyDegree = 2;
-    /**
-     * Polynomial kernel params: k(u,v) = (polyGamma * u·v + polyCoef0)^polyDegree
-     */
-    public double polyCoef0 = 1.0;
-    /**
-     * Polynomial kernel params: k(u,v) = (polyGamma * u·v + polyCoef0)^polyDegree
-     */
-    public double polyGamma = 1.0;   // set yourself (e.g., 1.0/d) if you want automatic scaling
-    /**
-     * Kernel type (default Gaussian).
-     */
-    public KernelType kernelType = KernelType.GAUSSIAN;
-    /**
-     * Additive diagonal jitter before inversion of KZ (must be > 0).
-     */
-    public double epsilon = 1e-3;
+    private int polyDegree = 2;
+    private double polyCoef0 = 1.0;
+    private double polyGamma = 1.0;   // set yourself (e.g., 1.0/d) if you want automatic scaling
+    private KernelType kernelType = KernelType.GAUSSIAN;
+    private double epsilon = 1e-3;
 
     // ---------------------- configuration hooks ----------------------
-    /**
-     * Scaling for Gaussian bandwidth heuristic (sigma *= scalingFactor).
-     */
-    public double scalingFactor = 1.0;
-    /**
-     * If true, use Gamma approximation; else run permutation test.
-     */
-    public boolean approximate = true;
-    /**
-     * Permutation count if approximate=false.
-     */
-    public int numPermutations = 1000;
+    private double scalingFactor = 1.0;
+    private boolean approximate = true;
+    private int numPermutations = 1000;
     /**
      * RNG for permutations; can be null (seeded later).
      */
@@ -436,11 +411,11 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 kernelMatrix(/*x*/ null, /*z*/ z));
 
         // 2) RZ = eps * (KZ + eps I)^-1  (cache by Z+rows+eps)
-        final String zKey = keyForZ(z, rows, varToRow, epsilon);
+        final String zKey = keyForZ(z, rows, varToRow, getEpsilon());
         DMatrixRMaj RZ_d = rzCache.get(zKey);
         if (RZ_d == null) {
             // KZ + eps I
-            DMatrixRMaj KzEps = KZ.copy().plus(SimpleMatrix.identity(n).scale(epsilon)).getDDRM();
+            DMatrixRMaj KzEps = KZ.copy().plus(SimpleMatrix.identity(n).scale(getEpsilon())).getDDRM();
             // Invert via Cholesky
             LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.chol(n);
             if (!solver.setA(KzEps)) {
@@ -451,7 +426,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 solver.invert(Inv);
                 KzEps = Inv;
             }
-            CommonOps_DDRM.scale(epsilon, KzEps);
+            CommonOps_DDRM.scale(getEpsilon(), KzEps);
             RZ_d = KzEps;
             rzCache.put(zKey, RZ_d);
         }
@@ -472,10 +447,10 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         final double stat = RX.elementMult(RY).elementSum() / n;
 
         double p;
-        if (approximate) {
+        if (isApproximate()) {
             p = pValueGammaConditional(RX, RY, stat, n);
         } else {
-            p = permutationPValueConditional(RX, RY, stat, n, numPermutations, rng);
+            p = permutationPValueConditional(RX, RY, stat, n, getNumPermutations(), rng);
         }
 
         if (verbose) {
@@ -506,7 +481,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         if (x != null) cols.add(varToRow.get(x));
         for (Node nz : z) cols.add(varToRow.get(nz));
 
-        switch (kernelType) {
+        switch (getKernelType()) {
             case GAUSSIAN -> {
                 double sigma = bandwidthGaussian(cols);
                 return gaussianKernelMatrix(cols, sigma);
@@ -515,9 +490,9 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 return linearKernelMatrix(cols);
             }
             case POLYNOMIAL -> {
-                return polynomialKernelMatrix(cols, polyGamma, polyCoef0, polyDegree);
+                return polynomialKernelMatrix(cols, getPolyGamma(), getPolyCoef0(), getPolyDegree());
             }
-            default -> throw new IllegalStateException("Unknown kernel: " + kernelType);
+            default -> throw new IllegalStateException("Unknown kernel: " + getKernelType());
         }
     }
 
@@ -525,7 +500,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      * Build K for a single variable row index (fast path for Ky).
      */
     private SimpleMatrix kernelMatrixSingle(int rowIdx) {
-        switch (kernelType) {
+        switch (getKernelType()) {
             case GAUSSIAN -> {
                 double sigma = bandwidthGaussian(Collections.singletonList(rowIdx));
                 return gaussianKernelMatrix(Collections.singletonList(rowIdx), sigma);
@@ -534,9 +509,9 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 return linearKernelMatrix(Collections.singletonList(rowIdx));
             }
             case POLYNOMIAL -> {
-                return polynomialKernelMatrix(Collections.singletonList(rowIdx), polyGamma, polyCoef0, polyDegree);
+                return polynomialKernelMatrix(Collections.singletonList(rowIdx), getPolyGamma(), getPolyCoef0(), getPolyDegree());
             }
-            default -> throw new IllegalStateException("Unknown kernel: " + kernelType);
+            default -> throw new IllegalStateException("Unknown kernel: " + getKernelType());
         }
     }
 
@@ -710,7 +685,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         double med2 = dists.get(dists.size() / 2); // median of squared distance
         double sigma = Math.sqrt(med2 / 2.0);
         if (!(sigma > 0.0) || !Double.isFinite(sigma)) sigma = 1.0;
-        sigma *= scalingFactor;
+        sigma *= getScalingFactor();
         return sigma;
     }
 
@@ -724,10 +699,10 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 
         // 1) Build kernels per your selected kernelType
         SimpleMatrix Kx, Ky;
-        switch (kernelType) {
+        switch (getKernelType()) {
             case GAUSSIAN -> {
-                double sigmaX = bandwidth1D(x) * scalingFactor;
-                double sigmaY = bandwidth1D(y) * scalingFactor;
+                double sigmaX = bandwidth1D(x) * getScalingFactor();
+                double sigmaY = bandwidth1D(y) * getScalingFactor();
                 Kx = gaussianKernel1D(x, sigmaX);
                 Ky = gaussianKernel1D(y, sigmaY);
             }
@@ -737,11 +712,11 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
             }
             case POLYNOMIAL -> {
                 // Use polyGamma if >0, else default to 1/d with d=1 ⇒ 1.0
-                double gamma = (this.polyGamma > 0.0) ? this.polyGamma : 1.0;
-                Kx = polynomialKernel1D(x, gamma, this.polyCoef0, this.polyDegree);
-                Ky = polynomialKernel1D(y, gamma, this.polyCoef0, this.polyDegree);
+                double gamma = (this.getPolyGamma() > 0.0) ? this.getPolyGamma() : 1.0;
+                Kx = polynomialKernel1D(x, gamma, this.getPolyCoef0(), this.getPolyDegree());
+                Ky = polynomialKernel1D(y, gamma, this.getPolyCoef0(), this.getPolyDegree());
             }
-            default -> throw new IllegalStateException("Unknown kernel type: " + kernelType);
+            default -> throw new IllegalStateException("Unknown kernel type: " + getKernelType());
         }
 
         // 2) Center the kernels (same centering you use elsewhere)
@@ -752,10 +727,10 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         double stat = Kxc.elementMult(Kyc).elementSum() / n;
 
         // 4) p-value using the same paths as conditional (RZ = I here)
-        if (approximate) {
+        if (isApproximate()) {
             return pValueGammaConditional(Kxc, Kyc, stat, n);
         } else {
-            return permutationPValueConditional(Kxc, Kyc, stat, n, numPermutations, rng);
+            return permutationPValueConditional(Kxc, Kyc, stat, n, getNumPermutations(), rng);
         }
     }
 
@@ -766,10 +741,10 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         if (n != centeredKx.numCols() || n != centeredKy.numRows() || n != centeredKy.numCols())
             throw new IllegalArgumentException("Centered kernels must be n×n");
         double stat = centeredKx.elementMult(centeredKy).elementSum() / n;
-        if (approximate) {
+        if (isApproximate()) {
             return pValueGammaConditional(centeredKx, centeredKy, stat, n);
         } else {
-            return permutationPValueConditional(centeredKx, centeredKy, stat, n, numPermutations, rng);
+            return permutationPValueConditional(centeredKx, centeredKy, stat, n, getNumPermutations(), rng);
         }
     }
 
@@ -869,6 +844,94 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         double sigma = Math.sqrt(med2 / 2.0);
         if (!(sigma > 0.0) || !Double.isFinite(sigma)) sigma = 1.0;
         return sigma;
+    }
+
+    /**
+     * Polynomial kernel params: k(u,v) = (polyGamma * u·v + polyCoef0)^polyDegree
+     */
+    public int getPolyDegree() {
+        return polyDegree;
+    }
+
+    public void setPolyDegree(int polyDegree) {
+        this.polyDegree = polyDegree;
+    }
+
+    /**
+     * Polynomial kernel params: k(u,v) = (polyGamma * u·v + polyCoef0)^polyDegree
+     */
+    public double getPolyCoef0() {
+        return polyCoef0;
+    }
+
+    public void setPolyCoef0(double polyCoef0) {
+        this.polyCoef0 = polyCoef0;
+    }
+
+    /**
+     * Polynomial kernel params: k(u,v) = (polyGamma * u·v + polyCoef0)^polyDegree
+     */
+    public double getPolyGamma() {
+        return polyGamma;
+    }
+
+    public void setPolyGamma(double polyGamma) {
+        this.polyGamma = polyGamma;
+    }
+
+    /**
+     * Kernel type (default Gaussian).
+     */
+    public KernelType getKernelType() {
+        return kernelType;
+    }
+
+    public void setKernelType(KernelType kernelType) {
+        this.kernelType = kernelType;
+    }
+
+    /**
+     * Additive diagonal jitter before inversion of KZ (must be > 0).
+     */
+    public double getEpsilon() {
+        return epsilon;
+    }
+
+    public void setEpsilon(double epsilon) {
+        this.epsilon = epsilon;
+    }
+
+    /**
+     * Scaling for Gaussian bandwidth heuristic (sigma *= scalingFactor).
+     */
+    public double getScalingFactor() {
+        return scalingFactor;
+    }
+
+    public void setScalingFactor(double scalingFactor) {
+        this.scalingFactor = scalingFactor;
+    }
+
+    /**
+     * If true, use Gamma approximation; else run permutation test.
+     */
+    public boolean isApproximate() {
+        return approximate;
+    }
+
+    public void setApproximate(boolean approximate) {
+        this.approximate = approximate;
+    }
+
+    /**
+     * Permutation count if approximate=false.
+     */
+    public int getNumPermutations() {
+        return numPermutations;
+    }
+
+    public void setNumPermutations(int numPermutations) {
+        this.numPermutations = numPermutations;
     }
 
     public enum KernelType {GAUSSIAN, LINEAR, POLYNOMIAL}

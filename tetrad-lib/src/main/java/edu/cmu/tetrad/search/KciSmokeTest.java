@@ -32,11 +32,11 @@ public class KciSmokeTest {
         List<Integer> rows = new ArrayList<>();
         for (int i = 0; i < data.numCols(); i++) rows.add(i);
         Kci k = new Kci(data, map, null, rows);
-        k.approximate = approximate;
-        k.kernelType = Kci.KernelType.GAUSSIAN;
-        k.epsilon = 1e-3;
-        k.scalingFactor = 1.0;
-        k.numPermutations = 500; // lighter permutation for the test
+        k.setApproximate(approximate);
+        k.setKernelType(Kci.KernelType.GAUSSIAN);
+        k.setEpsilon(1e-3);
+        k.setScalingFactor(1.0);
+        k.setNumPermutations(500); // lighter permutation for the test
         return k;
     }
 
@@ -68,7 +68,7 @@ public class KciSmokeTest {
 
         // independent: Y = e  (Y ⟂ X | Z)
         Kci kInd = makeKci(makeDataVxN(600, Double.POSITIVE_INFINITY), /*approximate=*/false);
-        kInd.numPermutations = 4000;    // min p ≈ 1/4001 ≈ 2.5e-4
+        kInd.setNumPermutations(4000);    // min p ≈ 1/4001 ≈ 2.5e-4
         kInd.rng = new Random(123);     // determinism
         double pInd = kInd.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
                 List.of(new GraphNode("Z")), alpha);
@@ -77,7 +77,7 @@ public class KciSmokeTest {
 
         // dependent: Y = X + 0.05*e  (strong dependence)
         Kci kDep = makeKci(makeDataVxN(600, 0.05), /*approximate=*/false);
-        kDep.numPermutations = 4000;
+        kDep.setNumPermutations(4000);
         kDep.rng = new Random(123);
         double pDep = kDep.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
                 List.of(new GraphNode("Z")), alpha);

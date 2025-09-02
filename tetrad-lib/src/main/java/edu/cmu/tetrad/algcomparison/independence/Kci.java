@@ -47,27 +47,27 @@ public class Kci implements IndependenceWrapper {
         edu.cmu.tetrad.search.test.Kci kci = new edu.cmu.tetrad.search.test.Kci((DataSet) dataSet);
         kci.setAlpha(parameters.getDouble(Params.ALPHA));
 
-        kci.epsilon = parameters.getDouble(Params.KCI_EPSILON);
-        kci.scalingFactor = parameters.getDouble(Params.SCALING_FACTOR);     // tune if you like
-        kci.approximate = parameters.getBoolean(Params.KCI_USE_APPROXIMATION);      // fast by default
-        kci.numPermutations = parameters.getInt(Params.KCI_NUM_BOOTSTRAPS);  // only used if approximate=false
+        kci.setEpsilon(parameters.getDouble(Params.KCI_EPSILON));
+        kci.setScalingFactor(parameters.getDouble(Params.SCALING_FACTOR));     // tune if you like
+        kci.setApproximate(parameters.getBoolean(Params.KCI_USE_APPROXIMATION));      // fast by default
+        kci.setNumPermutations(parameters.getInt(Params.KCI_NUM_BOOTSTRAPS));  // only used if approximate=false
         switch (parameters.getInt(Params.KERNEL_TYPE)) {
             case 1:
-                kci.kernelType = edu.cmu.tetrad.search.test.Kci.KernelType.GAUSSIAN;
+                kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.GAUSSIAN);
                 break;
             case 2:
-                kci.kernelType = edu.cmu.tetrad.search.test.Kci.KernelType.LINEAR;
+                kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.LINEAR);
                 break;
             case 3:
-                kci.kernelType = edu.cmu.tetrad.search.test.Kci.KernelType.POLYNOMIAL;
+                kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.POLYNOMIAL);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown kernel type: " + parameters.getInt(Params.KERNEL_TYPE));
         }
 
-        kci.polyDegree = parameters.getInt(Params.POLYNOMIAL_DEGREE);
-        kci.polyCoef0 = parameters.getDouble(Params.POLYNOMIAL_CONSTANT);
-        kci.polyGamma = 1.0 / ((DataSet) dataSet).getNumColumns();
+        kci.setPolyDegree(parameters.getInt(Params.POLYNOMIAL_DEGREE));
+        kci.setPolyCoef0(parameters.getDouble(Params.POLYNOMIAL_CONSTANT));
+        kci.setPolyGamma(1.0 / ((DataSet) dataSet).getNumColumns());
 
         return kci;
     }
