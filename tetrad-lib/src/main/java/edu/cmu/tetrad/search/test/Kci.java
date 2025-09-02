@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.ejml.data.DMatrixRMaj;
@@ -27,7 +28,7 @@ import java.util.*;
  * Notes: - This is a focused class; integrate/rename fields/methods as needed for your codebase. - For large n,
  * consider Nyström downsampling before forming kernels.
  */
-public class Kci implements IndependenceTest {
+public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     /**
      * Data matrix in "variables x samples" layout.
      */
@@ -710,6 +711,163 @@ public class Kci implements IndependenceTest {
         double sigma = Math.sqrt(med2 / 2.0);
         if (!(sigma > 0.0) || !Double.isFinite(sigma)) sigma = 1.0;
         sigma *= scalingFactor;
+        return sigma;
+    }
+
+    @Override
+    // === Public API: marginal (unconditional) HSIC p-value for two 1-D arrays ===
+    public double computePValue(double[] x, double[] y) {
+        if (x == null || y == null) throw new IllegalArgumentException("null input");
+        int n = x.length;
+        if (y.length != n) throw new IllegalArgumentException("Length mismatch");
+        if (n <= 1) return 1.0;
+
+        // 1) Build kernels per your selected kernelType
+        SimpleMatrix Kx, Ky;
+        switch (kernelType) {
+            case GAUSSIAN -> {
+                double sigmaX = bandwidth1D(x) * scalingFactor;
+                double sigmaY = bandwidth1D(y) * scalingFactor;
+                Kx = gaussianKernel1D(x, sigmaX);
+                Ky = gaussianKernel1D(y, sigmaY);
+            }
+            case LINEAR -> {
+                Kx = linearKernel1D(x);
+                Ky = linearKernel1D(y);
+            }
+            case POLYNOMIAL -> {
+                // Use polyGamma if >0, else default to 1/d with d=1 ⇒ 1.0
+                double gamma = (this.polyGamma > 0.0) ? this.polyGamma : 1.0;
+                Kx = polynomialKernel1D(x, gamma, this.polyCoef0, this.polyDegree);
+                Ky = polynomialKernel1D(y, gamma, this.polyCoef0, this.polyDegree);
+            }
+            default -> throw new IllegalStateException("Unknown kernel type: " + kernelType);
+        }
+
+        // 2) Center the kernels (same centering you use elsewhere)
+        SimpleMatrix Kxc = centerKernel(Kx);
+        SimpleMatrix Kyc = centerKernel(Ky);
+
+        // 3) HSIC statistic (unconditional): S = (1/n) * tr(Kxc * Kyc)
+        double stat = Kxc.elementMult(Kyc).elementSum() / n;
+
+        // 4) p-value using the same paths as conditional (RZ = I here)
+        if (approximate) {
+            return pValueGammaConditional(Kxc, Kyc, stat, n);
+        } else {
+            return permutationPValueConditional(Kxc, Kyc, stat, n, numPermutations, rng);
+        }
+    }
+
+    // === Optional: if you like your previous factoring ===
+    public double computePValueFromCenteredKernels(SimpleMatrix centeredKx,
+                                                   SimpleMatrix centeredKy) {
+        int n = centeredKx.numRows();
+        if (n != centeredKx.numCols() || n != centeredKy.numRows() || n != centeredKy.numCols())
+            throw new IllegalArgumentException("Centered kernels must be n×n");
+        double stat = centeredKx.elementMult(centeredKy).elementSum() / n;
+        if (approximate) {
+            return pValueGammaConditional(centeredKx, centeredKy, stat, n);
+        } else {
+            return permutationPValueConditional(centeredKx, centeredKy, stat, n, numPermutations, rng);
+        }
+    }
+
+// === 1-D kernel builders (fast and allocation-light) ===
+
+    // Gaussian (RBF) kernel for a single vector
+    private static SimpleMatrix gaussianKernel1D(double[] v, double sigma) {
+        int n = v.length;
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        double[] kd = K.data;
+        double inv2s2 = 1.0 / Math.max(2.0 * sigma * sigma, 1e-24);
+        int p = 0;
+        for (int i = 0; i < n; i++) {
+            double vi = v[i];
+            for (int j = 0; j < n; j++, p++) {
+                double d = vi - v[j];
+                kd[p] = Math.exp(-(d * d) * inv2s2);
+            }
+        }
+        return SimpleMatrix.wrap(K);
+    }
+
+    // Linear kernel for a single vector: K = v v^T
+    private static SimpleMatrix linearKernel1D(double[] v) {
+        int n = v.length;
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        double[] kd = K.data;
+        int p = 0;
+        for (int i = 0; i < n; i++) {
+            double vi = v[i];
+            for (int j = 0; j < n; j++, p++) {
+                kd[p] = vi * v[j];
+            }
+        }
+        return SimpleMatrix.wrap(K);
+    }
+
+    // Polynomial kernel for a single vector: K = (gamma * (v v^T) + coef0)^degree
+    private static SimpleMatrix polynomialKernel1D(double[] v, double gamma, double coef0, int degree) {
+        int n = v.length;
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        double[] kd = K.data;
+        int p = 0;
+        if (degree == 1) {
+            for (int i = 0; i < n; i++) {
+                double vi = v[i];
+                for (int j = 0; j < n; j++, p++) {
+                    kd[p] = gamma * (vi * v[j]) + coef0;
+                }
+            }
+        } else if (degree == 2) {
+            for (int i = 0; i < n; i++) {
+                double vi = v[i];
+                for (int j = 0; j < n; j++, p++) {
+                    double base = gamma * (vi * v[j]) + coef0;
+                    kd[p] = base * base;
+                }
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                double vi = v[i];
+                for (int j = 0; j < n; j++, p++) {
+                    kd[p] = Math.pow(gamma * (vi * v[j]) + coef0, degree);
+                }
+            }
+        }
+        return SimpleMatrix.wrap(K);
+    }
+
+    // Median-distance bandwidth for 1-D vectors (Silverman-ish but robust)
+    private static double bandwidth1D(double[] v) {
+        int n = v.length;
+        if (n < 2) return 1.0;
+        // Collect pairwise squared distances (can sample for large n)
+        // For simplicity, subsample up to 512 points to keep O(n^2) modest
+        int m = Math.min(n, 512);
+        // uniform sub-sample without replacement
+        int[] idx = new int[n];
+        for (int i = 0; i < n; i++) idx[i] = i;
+        Random r = new Random(7);
+        for (int i = 0; i < m; i++) {
+            int j = i + r.nextInt(n - i);
+            int t = idx[i]; idx[i] = idx[j]; idx[j] = t;
+        }
+        List<Double> d2 = new ArrayList<>(m * (m - 1) / 2);
+        for (int a = 0; a < m; a++) {
+            int i = idx[a];
+            for (int b = a + 1; b < m; b++) {
+                int j = idx[b];
+                double d = v[i] - v[j];
+                d2.add(d * d);
+            }
+        }
+        if (d2.isEmpty()) return 1.0;
+        Collections.sort(d2);
+        double med2 = d2.get(d2.size() / 2);
+        double sigma = Math.sqrt(med2 / 2.0);
+        if (!(sigma > 0.0) || !Double.isFinite(sigma)) sigma = 1.0;
         return sigma;
     }
 
