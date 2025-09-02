@@ -55,7 +55,9 @@ public class Tsc {
     private boolean verbose = false;
     private Map<Set<Integer>, Integer> clusterToRank;
     private int rMax = 3;
-    private boolean allowTriviallySizedClusters = true;
+    // require |C| >= (rank + 1 + minRedundancy)
+    private int minRedundancy = 1;
+
 
     /**
      * Constructs an instance of the TscScored class using the provided variables and covariance matrix.
@@ -191,7 +193,9 @@ public class Tsc {
         for (int rank = 0; rank <= rMax; rank++) {
             int size = rank + 1;
             if (Thread.currentThread().isInterrupted()) break;
-            if (size >= remainingVars.size() - size) continue;
+//            if (size >= remainingVars.size() - size) continue;
+            if (size >= remainingVars.size()) continue; // only require non-empty complement
+
 
             log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
             Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
@@ -241,7 +245,8 @@ public class Tsc {
                         int rankOfUnion = ranksByTest(union);
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
-                        if (rankOfUnion == rank) {
+                        int minSize = rank + 1 + minRedundancy;
+                        if (rankOfUnion == rank && union.size() >= minSize) {
 
                             // Accept this union
                             cluster = union;
@@ -255,7 +260,9 @@ public class Tsc {
                 int clusterRank;
                 clusterRank = ranksByTest(cluster);
 
-                if (clusterRank == rank && (allowTriviallySizedClusters || cluster.size() > size)) {
+                int minSize = rank + 1 + minRedundancy;
+                if (clusterRank == rank && cluster.size() >= minSize) {
+//                if (clusterRank == rank && (allowTriviallySizedClusters || cluster.size() > size)) {
 
                     // --- Rule 3-lite (observed-mediator guard).
                     // If ∃ z ∈ C such that rank(C\{z}, D | z) = 0, the cross-block dependence collapses when conditioning
@@ -367,10 +374,20 @@ public class Tsc {
         }
 
         log("Removing clusters of size 1, as these shouldn't be assigned latents.");
+//        for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
+//            if (cluster.size() == 1) {
+//                clusterToRank.remove(cluster);
+//                log("Removing cluster " + toNamesCluster(cluster));
+//            }
+//        }
+
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
-            if (cluster.size() == 1) {
+            int r = Math.max(0, clusterToRank.getOrDefault(cluster, 0));
+            int minSize = r + 1 + minRedundancy;
+            if (cluster.size() < minSize) {
                 clusterToRank.remove(cluster);
-                log("Removing cluster " + toNamesCluster(cluster));
+                log("Removing cluster " + toNamesCluster(cluster) + " for insufficient redundancy: |C|="
+                    + cluster.size() + " < " + minSize + " = r+1+minRedundancy.");
             }
         }
 
@@ -397,31 +414,45 @@ public class Tsc {
                 continue;
             }
 
-            if (!refined.equals(cluster)) {
+            int newRank = ranksByTest(refined);
+            int minSize2 = newRank + 1 + minRedundancy;
+            if (refined.size() < minSize2) {
                 clusterToRank.remove(cluster);
-
-                for (Set<Integer> candidate : clusterToRank.keySet()) {
-                    if (!Collections.disjoint(refined, candidate)) {
-                        // Enforce NOLAC: do not insert a refined cluster that overlaps an existing one.
-                        // This also prevents residual overlaps caused by statistical noise.
-                        log("Skipping refined cluster " + toNamesCluster(refined)
-                            + " because it overlaps existing cluster " + toNamesCluster(candidate) + ".");
-                        continue C;
-                    }
-                }
-
-                // you can keep rC, or recompute a safer displayed rank
-                // Option A (strict): recompute rank against complement
-                int newRank = ranksByTest(refined);
-
-                // Option B (conservative): keep min(rC, |refined|-1)
-//                int newRank = Math.min(rC, Math.max(0, refined.size() - 1));
-
-                clusterToRank.put(refined, newRank);
                 changedAny = true;
                 log("Refined cluster " + toNamesCluster(cluster) + " → " + toNamesCluster(refined)
-                    + " (rank now " + newRank + ").");
+                    + " rejected: |C| < r+1+minRedundancy (" + refined.size() + " < " + minSize2 + ").");
+                continue;
             }
+            clusterToRank.put(refined, newRank);
+            changedAny = true;
+            log("Refined cluster " + toNamesCluster(cluster) + " → " + toNamesCluster(refined)
+                + " (rank now " + newRank + ").");
+
+//            if (!refined.equals(cluster)) {
+//                clusterToRank.remove(cluster);
+//
+//                for (Set<Integer> candidate : clusterToRank.keySet()) {
+//                    if (!Collections.disjoint(refined, candidate)) {
+//                        // Enforce NOLAC: do not insert a refined cluster that overlaps an existing one.
+//                        // This also prevents residual overlaps caused by statistical noise.
+//                        log("Skipping refined cluster " + toNamesCluster(refined)
+//                            + " because it overlaps existing cluster " + toNamesCluster(candidate) + ".");
+//                        continue C;
+//                    }
+//                }
+//
+//                // you can keep rC, or recompute a safer displayed rank
+//                // Option A (strict): recompute rank against complement
+//                int newRank = ranksByTest(refined);
+//
+//                // Option B (conservative): keep min(rC, |refined|-1)
+////                int newRank = Math.min(rC, Math.max(0, refined.size() - 1));
+//
+//                clusterToRank.put(refined, newRank);
+//                changedAny = true;
+//                log("Refined cluster " + toNamesCluster(cluster) + " → " + toNamesCluster(refined)
+//                    + " (rank now " + newRank + ").");
+//            }
         }
         if (!changedAny) log("No cluster refinement was needed.");
 
@@ -626,8 +657,8 @@ public class Tsc {
         this.rMax = rMax;
     }
 
-    public void setAllowTriviallySizedClusters(boolean allowTriviallySizedClusters) {
-        this.allowTriviallySizedClusters = allowTriviallySizedClusters;
+    public void setMinRedundancy(int k) {
+        this.minRedundancy = Math.max(0, k);
     }
 
     // ---- Canonical key for caching ranks (immutable, sorted) -------------------

@@ -14,11 +14,11 @@ public final class TscStability {
 
     /** Run TSC once and return canonicalized cluster sets (TreeSet for stable equality). */
     public static Set<Set<Integer>> runOnce(List<Node> vars, CovarianceMatrix cov, double alpha, int ess,
-                                            boolean allowTriviallySizedClusters) {
+                                            int minRedundancy) {
         Tsc tsc = new Tsc(vars, cov);
         tsc.setAlpha(alpha);
         tsc.setExpectedSampleSize(ess);
-        tsc.setAllowTriviallySizedClusters(allowTriviallySizedClusters);
+        tsc.setMinRedundancy(minRedundancy);
         tsc.setVerbose(false);
         Map<Set<Integer>, Integer> out = tsc.findClusters();
         Set<Set<Integer>> canon = new HashSet<>();
@@ -28,9 +28,9 @@ public final class TscStability {
 
     /** Keep clusters appearing at both α and α/scale (e.g., scale=5). */
     public static Set<Set<Integer>> dualAlpha(List<Node> vars, CovarianceMatrix cov, double alpha, int ess,
-                                              double scale,  boolean allowTriviallySizedClusters) {
-        Set<Set<Integer>> a = runOnce(vars, cov, alpha, ess, allowTriviallySizedClusters);
-        Set<Set<Integer>> b = runOnce(vars, cov, alpha / scale, ess, allowTriviallySizedClusters);
+                                              double scale,  int minRedundancy) {
+        Set<Set<Integer>> a = runOnce(vars, cov, alpha, ess, minRedundancy);
+        Set<Set<Integer>> b = runOnce(vars, cov, alpha / scale, ess, minRedundancy);
         a.retainAll(b);
         return a;
     }
@@ -38,11 +38,11 @@ public final class TscStability {
     /** Bootstrap stability: resample rows B times; keep clusters seen in >= keepFrac of runs. */
     public static Set<Set<Integer>> bootstrap(int B, double keepFrac,
                                               Function<Integer, CovarianceMatrix> covBuilder, List<Node> vars,
-                                              double alpha, int ess, boolean allowTriviallySizedClusters) {
+                                              double alpha, int ess, int minRedundancy) {
         Map<Set<Integer>, Integer> counts = new HashMap<>();
         for (int b = 0; b < B; b++) {
             CovarianceMatrix covB = covBuilder.apply(b);
-            for (Set<Integer> C : runOnce(vars, covB, alpha, ess, allowTriviallySizedClusters)) {
+            for (Set<Integer> C : runOnce(vars, covB, alpha, ess, minRedundancy)) {
                 counts.merge(C, 1, Integer::sum);
             }
         }

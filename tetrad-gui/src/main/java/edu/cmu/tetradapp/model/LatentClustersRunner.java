@@ -328,7 +328,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
                     parameters.getDouble(Params.REGULARIZATION_LAMBDA),
                     parameters.getInt(Params.MAX_RANK),
                     policy,
-                    parameters.getBoolean(Params.TSC_ALLOW_TRIVIALLY_SIZED_CLUSTERS),
+                    parameters.getInt(Params.TSC_MIN_REDUNDANCY),
                     parameters.getBoolean(Params.VERBOSE)
             );
             case "FOFC" -> BlockDiscoverers.fofc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy,

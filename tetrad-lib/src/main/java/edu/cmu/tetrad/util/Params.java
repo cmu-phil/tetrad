@@ -1092,7 +1092,7 @@ public final class Params {
      */
     public static final String TSC_MIN_RANK_DROP = "tscMinRankDrop";
 
-    public static final String TSC_ALLOW_TRIVIALLY_SIZED_CLUSTERS = "tscAllowTrivialSizedClusters";
+    public static final String TSC_MIN_REDUNDANCY = "tscMinRedundancy";
     /**
      * Constant <code>GFFC_R_MAX="gffc_r_max"</code>
      */

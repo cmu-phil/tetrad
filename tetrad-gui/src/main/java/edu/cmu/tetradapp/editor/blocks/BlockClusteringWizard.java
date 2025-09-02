@@ -360,7 +360,7 @@ public class BlockClusteringWizard extends JPanel {
                         parameters.getDouble(Params.REGULARIZATION_LAMBDA),
                         parameters.getInt(Params.MAX_RANK),
                         policy,
-                        parameters.getBoolean(Params.TSC_ALLOW_TRIVIALLY_SIZED_CLUSTERS),
+                        parameters.getInt(Params.TSC_MIN_REDUNDANCY),
                         parameters.getBoolean(Params.VERBOSE)
                 );
             }
@@ -397,7 +397,7 @@ public class BlockClusteringWizard extends JPanel {
                 paramList.add(Params.ALPHA);
                 paramList.add(Params.REGULARIZATION_LAMBDA);
                 paramList.add(Params.MAX_RANK);
-                paramList.add(Params.TSC_ALLOW_TRIVIALLY_SIZED_CLUSTERS);
+                paramList.add(Params.TSC_MIN_REDUNDANCY);
             }
             case "GFFC" -> {
                 paramList.add(Params.ALPHA);

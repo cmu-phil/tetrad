@@ -24,7 +24,7 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
     private final SingleClusterPolicy policy;
     private final boolean verbose;
     private final int rMax;
-    private final boolean allowTriviallySizedClusters;
+    private final int minRedundancy;
 
     /**
      * Constructs an instance of {@code TscTestBlockDiscoverer}, which discovers blocks of variables based on the TSC
@@ -36,13 +36,13 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
      * @param policy  The policy determining how to handle cases where multiple clusters overlap or conflict.
      */
     public TscTestBlockDiscoverer(DataSet dataSet, double alpha, int ess, double ridge, int rMax,
-                                  SingleClusterPolicy policy, boolean allowTriviallySizedClusters, boolean verbose) {
+                                  SingleClusterPolicy policy, int minRedundancy, boolean verbose) {
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.ess = ess;
         this.rMax = rMax;
         this.policy = policy;
-        this.allowTriviallySizedClusters = allowTriviallySizedClusters;
+        this.minRedundancy =  minRedundancy;
         this.verbose = verbose;
 
         if (ridge < 0) {
@@ -73,7 +73,7 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
         tsc.setAlpha(alpha);
         tsc.setExpectedSampleSize(ess);
         tsc.setRmax(rMax);
-        tsc.setAllowTriviallySizedClusters(allowTriviallySizedClusters);
+        tsc.setMinRedundancy(minRedundancy);
         tsc.setVerbose(verbose);
 
         Map<Set<Integer>, Integer> clusters = tsc.findClusters();

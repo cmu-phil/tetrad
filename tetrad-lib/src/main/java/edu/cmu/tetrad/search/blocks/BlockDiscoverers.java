@@ -81,7 +81,7 @@ public final class BlockDiscoverers {
      * @return a {@code TscTestBlockDiscoverer} instance configured with the specified parameters
      */
     public static BlockDiscoverer tsc(DataSet data, double alpha, int ess, double ridge,
-                                      int rMax, SingleClusterPolicy policy, boolean allowTriviallySizedClusters, boolean verbose) {
-        return new TscTestBlockDiscoverer(data, alpha, ess, ridge, rMax, policy, allowTriviallySizedClusters, verbose);
+                                      int rMax, SingleClusterPolicy policy, int minRedundancy, boolean verbose) {
+        return new TscTestBlockDiscoverer(data, alpha, ess, ridge, rMax, policy, minRedundancy, verbose);
     }
 }

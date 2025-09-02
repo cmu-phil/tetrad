@@ -327,13 +327,13 @@ public class TscHarnessTest {
         
         // Adaptive alpha helps tamp down borderline rank calls as N grows
         double alphaBase =         Math.min(ALPHA, 1.0 / Math.log(Math.max(50, ess)));
-        boolean allowTriviallySizedClusters = true;
+        int minRedundancy = 0;
 
         // ---- Dual-alpha intersection (cheap) ----
         Set<Set<Integer>> dual = runTscOnceCanonical(vars, new CovarianceMatrix(data), alphaBase, ess,
-                allowTriviallySizedClusters);
+                minRedundancy);
         Set<Set<Integer>> dualTight = runTscOnceCanonical(vars, new CovarianceMatrix(data), alphaBase / 5.0, ess,
-                allowTriviallySizedClusters);
+                minRedundancy);
         dual.retainAll(dualTight);
 
         // ---- Bootstrap stability (B=10, keep ≥70%) ----
@@ -344,7 +344,7 @@ public class TscHarnessTest {
             Map<Set<Integer>, Integer> counts = new HashMap<>();
             for (int b = 0; b < B; b++) {
                 CovarianceMatrix covB = bootstrapCovBuilder(data, SEED).apply(b);
-                for (Set<Integer> C : runTscOnceCanonical(vars, covB, alphaBase / 5.0, ess, allowTriviallySizedClusters)) {
+                for (Set<Integer> C : runTscOnceCanonical(vars, covB, alphaBase / 5.0, ess, minRedundancy)) {
                     counts.merge(C, 1, Integer::sum);
                 }
             }
@@ -385,8 +385,8 @@ public class TscHarnessTest {
 
     /** Run TSC once at a given alpha and return canonicalized cluster sets (TreeSet for stable equality). */
     private static Set<Set<Integer>> runTscOnceCanonical(List<Node> vars, CovarianceMatrix cov,
-                                                         double alpha, int ess, boolean allowTriviallySizedClusters) {
-        return TscStability.runOnce(vars, cov, alpha, ess, allowTriviallySizedClusters);
+                                                         double alpha, int ess, int minRedundancy) {
+        return TscStability.runOnce(vars, cov, alpha, ess, minRedundancy);
     }
 
     /** Bootstrap resampler: rows with replacement → CovarianceMatrix. */
