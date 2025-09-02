@@ -24,7 +24,7 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
  * <p><b>Theory (NOLAC) — soundness sketch.</b>
  * We assume a linear-Gaussian SEM with a latent DAG and pure measurement (each observed loads on exactly one latent),
  * independent unique errors across distinct clusters, and generic parameters (no exact cancellations). Under the NOLAC
- * (no overlapping clusters) assumption the indicator sets for distinct latents are disjoint. With a consistent rank
+ * (no overlapping clusters) assumption, the indicator sets for distinct latents are disjoint. With a consistent rank
  * test (e.g., Wilks LRT with a diminishing α), the following properties hold generically:
  *
  * <ul>
@@ -44,7 +44,6 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
  * to reduce Type-I rank errors with sample size. Ensure {@code expectedSampleSize} reflects the covariance sample size.
  */
 public class Tsc {
-    private static final java.util.concurrent.ConcurrentHashMap<Long, long[][]> BINOM_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
     private final List<Node> nodes;
     private final List<Integer> variables;
     private final int sampleSize;
@@ -262,7 +261,6 @@ public class Tsc {
 
                 int minSize = rank + 1 + minRedundancy;
                 if (clusterRank == rank && cluster.size() >= minSize) {
-//                if (clusterRank == rank && (allowTriviallySizedClusters || cluster.size() > size)) {
 
                     // --- Rule 3-lite (observed-mediator guard).
                     // If ∃ z ∈ C such that rank(C\{z}, D | z) = 0, the cross-block dependence collapses when conditioning
@@ -373,14 +371,7 @@ public class Tsc {
             remainingVars.removeAll(used);
         }
 
-        log("Removing clusters of size 1, as these shouldn't be assigned latents.");
-//        for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
-//            if (cluster.size() == 1) {
-//                clusterToRank.remove(cluster);
-//                log("Removing cluster " + toNamesCluster(cluster));
-//            }
-//        }
-
+        log("Removing clusters of size <= rank + 1 + minRedundancy.");
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             int r = Math.max(0, clusterToRank.getOrDefault(cluster, 0));
             int minSize = r + 1 + minRedundancy;
@@ -398,10 +389,7 @@ public class Tsc {
 
         boolean changedAny = false;
 
-        C:
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
-//            int rC = Math.max(0, clusterToRank.getOrDefault(cluster, 0));
-
             int rC = ranksByTest(cluster);
 
             // produce a refined copy (possibly smaller), do not mutate the key in-place
@@ -427,32 +415,6 @@ public class Tsc {
             changedAny = true;
             log("Refined cluster " + toNamesCluster(cluster) + " → " + toNamesCluster(refined)
                 + " (rank now " + newRank + ").");
-
-//            if (!refined.equals(cluster)) {
-//                clusterToRank.remove(cluster);
-//
-//                for (Set<Integer> candidate : clusterToRank.keySet()) {
-//                    if (!Collections.disjoint(refined, candidate)) {
-//                        // Enforce NOLAC: do not insert a refined cluster that overlaps an existing one.
-//                        // This also prevents residual overlaps caused by statistical noise.
-//                        log("Skipping refined cluster " + toNamesCluster(refined)
-//                            + " because it overlaps existing cluster " + toNamesCluster(candidate) + ".");
-//                        continue C;
-//                    }
-//                }
-//
-//                // you can keep rC, or recompute a safer displayed rank
-//                // Option A (strict): recompute rank against complement
-//                int newRank = ranksByTest(refined);
-//
-//                // Option B (conservative): keep min(rC, |refined|-1)
-////                int newRank = Math.min(rC, Math.max(0, refined.size() - 1));
-//
-//                clusterToRank.put(refined, newRank);
-//                changedAny = true;
-//                log("Refined cluster " + toNamesCluster(cluster) + " → " + toNamesCluster(refined)
-//                    + " (rank now " + newRank + ").");
-//            }
         }
         if (!changedAny) log("No cluster refinement was needed.");
 
@@ -529,7 +491,6 @@ public class Tsc {
             changed = false;
 
             // Recompute lists each pass
-            List<Integer> C = new ArrayList<>(Cset);
             List<Integer> D = allVariables();
             D.removeAll(Cset);
 
@@ -653,12 +614,25 @@ public class Tsc {
         rankCache.clear(); // <-- ranks depend on ESS
     }
 
+    /**
+     * The algorithm will consider ranks from 0 up to this value, rMax.
+     *
+     * @param rMax The maximum rank to consider.
+     */
     public void setRmax(int rMax) {
         this.rMax = rMax;
     }
 
-    public void setMinRedundancy(int k) {
-        this.minRedundancy = Math.max(0, k);
+    /**
+     * Sets the minimum redundancy value. Clusters of size rank + 1 can be unstable, as cross-checking is not possible
+     * for them. Setting this value to a number minRedundancy greater or equal to than 0 will tell the algorithm to not
+     * include clusters of size less than rank + 1 + minRedundancy.
+     *
+     * @param minRedundancy the minimum redundancy value; if less than 0, it is automatically set to 0.
+     */
+    public void setMinRedundancy(int minRedundancy) {
+        if (minRedundancy < 0) throw new IllegalArgumentException("Min redundancy must be >= 0");
+        this.minRedundancy = minRedundancy;
     }
 
     // ---- Canonical key for caching ranks (immutable, sorted) -------------------
