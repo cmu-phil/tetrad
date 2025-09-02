@@ -85,7 +85,7 @@ public class Kci implements IndependenceTest {
     /**
      * If true, use Gamma approximation; else run permutation test.
      */
-    public boolean approximate = false;
+    public boolean approximate = true;
     /**
      * Permutation count if approximate=false.
      */
