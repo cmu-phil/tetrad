@@ -275,10 +275,13 @@ public class Tsc {
                             if (Cmz.isEmpty()) continue;
 
                             int[] cmz = Cmz.stream().mapToInt(Integer::intValue).toArray();
-                            int[] zArr = new int[]{ z };
+                            int[] zArr = new int[]{z};
 
                             int rZ = RankTests.estimateWilksRankConditioned(S, cmz, dArray, zArr, expectedSampleSize, alpha);
-                            if (rZ == 0) { collapses = true; break; }
+                            if (rZ == 0) {
+                                collapses = true;
+                                break;
+                            }
                         }
                     }
                     if (collapses) {
@@ -300,60 +303,56 @@ public class Tsc {
 
             boolean didAugment = false;
 
-            for (int _reducedRank = rank - 1; _reducedRank >= 0; _reducedRank--) {
+            for (Set<Integer> C1 : new HashSet<>(newClusters)) {
                 if (Thread.currentThread().isInterrupted()) break;
 
-                for (Set<Integer> C1 : new HashSet<>(newClusters)) {
+                int _size = C1.size();
+
+                // Build a snapshot of used that excludes the elements of C1 (we are allowed to reuse C1 itself)
+                Set<Integer> usedMinusC1 = new HashSet<>(used);
+                usedMinusC1.removeAll(C1);
+
+                for (Set<Integer> _C : P2) {
                     if (Thread.currentThread().isInterrupted()) break;
 
-                    int _size = C1.size();
+                    // Do not augment with anything that collides with variables already committed to other clusters
+                    if (!Collections.disjoint(_C, usedMinusC1)) continue;
 
-                    // Build a snapshot of used that excludes the elements of C1 (we are allowed to reuse C1 itself)
-                    Set<Integer> usedMinusC1 = new HashSet<>(used);
-                    usedMinusC1.removeAll(C1);
+                    Set<Integer> C2 = new HashSet<>(C1);
+                    C2.addAll(_C);
 
-                    for (Set<Integer> _C : P2) {
-                        if (Thread.currentThread().isInterrupted()) break;
+                    if (C2.size() >= this.variables.size() - C2.size()) continue;
 
-                        // Do not augment with anything that collides with variables already committed to other clusters
-                        if (!Collections.disjoint(_C, usedMinusC1)) continue;
+                    // Ensure the *new* elements being added do not collide with usedMinusC1
+                    Set<Integer> delta = new HashSet<>(C2);
+                    delta.removeAll(C1);
+                    if (!Collections.disjoint(delta, usedMinusC1)) continue;
 
-                        Set<Integer> C2 = new HashSet<>(C1);
-                        C2.addAll(_C);
+                    int newRank = ranksByTest(C2);
 
-                        if (C2.size() >= this.variables.size() - C2.size()) continue;
+                    // Augmentation targets bifactor: base subsets show rank = r (often 2);
+                    // adding exactly one indicator that spans the factors should reduce the
+                    // cross-rank to r-1 (often 1). We accept only that exact one-step drop.
+                    int rankC1 = ranksByTest(C1);
+                    if (C2.size() == _size + 1
+                        && rankC1 == rank
+                        && newRank == rank - 1
+                        && !removeClustersBecauseOfRank0Internally(S, C2, expectedSampleSize, alpha)) {
 
-                        // Ensure the *new* elements being added do not collide with usedMinusC1
-                        Set<Integer> delta = new HashSet<>(C2);
-                        delta.removeAll(C1);
-                        if (!Collections.disjoint(delta, usedMinusC1)) continue;
+                        if (newClusters.contains(C2)) continue;
 
-                        int newRank = ranksByTest(C2);
+                        newClusters.remove(C1);
+                        newClusters.add(C2);
+                        //  reducedRank.put(C2, newRank);
 
-                        // Augmentation targets bifactor: base subsets show rank = r (often 2);
-                        // adding exactly one indicator that spans the factors should reduce the
-                        // cross-rank to r-1 (often 1). We accept only that exact one-step drop.
-                        int rankC1 = ranksByTest(C1);
-                        if (C2.size() == _size + 1
-                            && rankC1 == rank
-                            && newRank == rank - 1
-                            && !removeClustersBecauseOfRank0Internally(S, C2, expectedSampleSize, alpha)) {
+                        // Update `used`: remove old C1 contribution, then add C2
+                        used.removeAll(C1);
+                        used.addAll(C2);
 
-                            if (newClusters.contains(C2)) continue;
-
-                            newClusters.remove(C1);
-                            newClusters.add(C2);
-                            //  reducedRank.put(C2, newRank);
-
-                            // Update `used`: remove old C1 contribution, then add C2
-                            used.removeAll(C1);
-                            used.addAll(C2);
-
-                            log("Augmenting cluster " + toNamesCluster(C1) + " to " + toNamesCluster(C2)
-                                + " (rank drop " + rank + "→" + newRank + " — bifactor signature).");
-                            didAugment = true;
-                            break;
-                        }
+                        log("Augmenting cluster " + toNamesCluster(C1) + " to " + toNamesCluster(C2)
+                            + " (rank drop " + rank + "→" + newRank + " — bifactor signature).");
+                        didAugment = true;
+                        break;
                     }
                 }
             }

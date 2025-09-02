@@ -304,7 +304,7 @@ public class TscHarnessTest {
 
     @Test
     public void tsc_onNoLatentDAG_producesAtMostTinyArtifacts() {
-        RandomUtil.getInstance().setSeed(RandomUtil.getInstance().nextLong());
+        RandomUtil.getInstance().setSeed(SEED);
 
         // Slightly sparser random DAG + decent N
         Graph g = RandomGraph.randomGraph(
