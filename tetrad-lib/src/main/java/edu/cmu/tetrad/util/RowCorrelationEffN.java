@@ -4,18 +4,25 @@ import edu.cmu.tetrad.data.DataTransforms;
 import org.ejml.simple.SimpleMatrix;
 
 /**
- * Utility class for estimating the average pairwise row correlation of a data matrix and computing the effective
- * sample size (Neff) based on the correlations.
- *
+ * Utility class for estimating the average pairwise row correlation of a data matrix and computing the effective sample
+ * size (Neff) based on the correlations.
+ * <p>
  * The core functionality involves estimating the Neff value as N / (1 + (N-1)*rhoHat), where rhoHat is the average
  * correlation between rows. The estimation process standardizes the input data matrix, samples a defined number of
  * random row pairs, calculates pairwise correlations, and adjusts the results to avoid negative or singular
  * computations.
- *
+ * <p>
  * This class is designed to handle computation over larger datasets by allowing a maximum number of row pairs to
  * sample, ensuring computational efficiency, and avoiding issues caused by excessively large row combinations.
  */
 public final class RowCorrelationEffN {
+
+    /**
+     * Constructs a new instance of the RowCorrelationEffN class.
+     */
+    public RowCorrelationEffN() {
+
+    }
 
     /**
      * Estimates average pairwise row correlation (by sampling pairs) and returns Neff = N / (1 + (N-1)*rhoHat). Columns
@@ -26,6 +33,8 @@ public final class RowCorrelationEffN {
      *
      * @param X                data matrix N x P (rows = samples, cols = features)
      * @param maxPairsToSample number of random row pairs to sample (cap at C(N,2))
+     * @param N                the number of rows in the data matrix
+     * @return the result of the estimation
      */
     public static Result estimate(SimpleMatrix X,
                                   int maxPairsToSample,
@@ -95,17 +104,28 @@ public final class RowCorrelationEffN {
      * This class is immutable and its fields are final to ensure thread safety.
      */
     public static final class Result {
+        /**
+         * The adjusted average pairwise row correlation value, computed as rho_hat and clamped to the range [0, 1).
+         * This value is an estimate of the average linear correlation between pairs of rows within a dataset, after
+         * applying adjustments to restrict it within the specified bounds for stability and interpretability.
+         */
         public final double avgRowCorrelation; // rho_hat after clamping to [0,1)
+        /**
+         * The effective sample size, calculated as N / (1 + (N-1) * rho_hat).
+         */
         public final double effN;              // N / (1 + (N-1)*rho_hat)
+        /**
+         * The number of row pairs used in the calculation.
+         */
         public final int pairsUsed;
 
         /**
-         * Constructs a Result instance with the specified adjusted average row correlation value,
-         * effective sample size, and the number of row pairs used.
+         * Constructs a Result instance with the specified adjusted average row correlation value, effective sample
+         * size, and the number of row pairs used.
          *
          * @param avgRowCorrelation the adjusted average row correlation value (rho_hat), clamped to the range [0, 1)
-         * @param effN the effective sample size, calculated as N / (1 + (N-1) * rho_hat)
-         * @param pairsUsed the number of row pairs used in the calculation
+         * @param effN              the effective sample size, calculated as N / (1 + (N-1) * rho_hat)
+         * @param pairsUsed         the number of row pairs used in the calculation
          */
         private Result(double avgRowCorrelation, double effN, int pairsUsed) {
             this.avgRowCorrelation = avgRowCorrelation;

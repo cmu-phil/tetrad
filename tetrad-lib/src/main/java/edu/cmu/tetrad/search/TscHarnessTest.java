@@ -23,13 +23,33 @@ import static org.junit.Assert.assertTrue;
 
 
 /**
- * Harness for the current Tsc API: new Tsc(List<Node>, CovarianceMatrix).
+ * The TscHarnessTest class validates the Time Series Clustering (TSC) algorithm and its ability to handle various data
+ * scenarios, particularly with mixed ranks and different structural configurations. The tests in this class aim to
+ * assess the algorithm's clustering quality and provide diagnostic feedback to measure its effectiveness and
+ * reliability under diverse conditions.
  * <p>
- * - Builds population Σ for mixed-rank MIMs (NOLAC, pure measurement) or a DAG w/o latents. - Wraps Σ in
- * CovarianceMatrix (with a nominal sample size N). - Runs Tsc, collects clusters (Map<Set<Integer>, Integer>), and
- * scores vs truth.
+ * The class includes utility methods for working with clustering outputs such as label transformations, purity,
+ * coverage, and metrics like Adjusted Rand Index (ARI). Methods are also provided to facilitate matrix operations and
+ * conduct stability-focused evaluation strategies such as dual-alpha intersection and bootstrap resampling.
  * <p>
- * Adjust the knobs in the CONFIG section to sweep ranks, loadings, impurities, etc.
+ * Fields: - SEED: Specifies the random seed used for reproducible tests. - N: Number of data points generated in the
+ * tests. - LOADING: Controls the loading matrix for data generation. - UNIQUENESS: Specifies the uniqueness thresholds
+ * for data noise. - LATENT_RHO: Correlation coefficient for latent variables in synthetic data. - IMPURITY_EPS:
+ * Impurity threshold for within-block impurity calculations. - ALPHA: Significance level used in the TSC method. -
+ * TRIALS: Number of trials for each test configuration. - RANK_SPECS: List of ranks against which the TSC method's
+ * performance is tested.
+ * <p>
+ * Key Methods: - indicatorsForRank: Determines the required number of indicators for achieving a target rank. - score:
+ * Computes clustering quality metrics such as ARI, purity, and coverage. - toLabels/toLabelsFromSets: Converts block
+ * structures to labeled arrays. - purity: Calculates the purity of a cluster relative to ground truth. - coverage:
+ * Measures the coverage of a ground-truth cluster by a predicted cluster. - adjustedRandIndex: Computes the ARI for
+ * evaluating clustering accuracy. - toParts: Converts labeled clusters into partitioned sets. - comb2: Utility method
+ * for binomial coefficient computation. - transpose, mmul, add: Methods for common matrix operations. -
+ * equicorrelatedSPD: Constructs an equicorrelated symmetric positive definite matrix. - impuritiesWithinBlocks:
+ * Calculates impurity values across clusters in the data. - runTscOnce, stableByDualAlpha, stableByBootstrap: Methods
+ * to run TSC under specific conditions and evaluate cluster stability. - runOnce: Public method to run TSC once with
+ * specified parameters. - bootstrapCovBuilder: Constructs a bootstrap covariance matrix builder for resampling. -
+ * buildMIM: Constructs a Manifest Independence Model for tests involving TSC.
  */
 public class TscHarnessTest {
 
@@ -42,7 +62,6 @@ public class TscHarnessTest {
     private static final double IMPURITY_EPS = 0.00; // 0.00 = clean NOLAC; try 0.05 / 0.10 to inject MM residuals
     private static final double ALPHA = 0.001; // Wilks cutoff used inside Tsc
     private static final int TRIALS = 5;
-
     // Rank mixes to sweep (sum of ranks = # latent factors across blocks)
     private static final List<int[]> RANK_SPECS = List.of(
             new int[]{1, 1, 1, 1, 1},   // five rank-1 blocks
@@ -51,6 +70,21 @@ public class TscHarnessTest {
             new int[]{3, 2, 1},       // rank-3 + rank-2 + rank-1
             new int[]{3, 3}          // two rank-3 blocks
     );
+
+    /**
+     * Constructs a new instance of the TscHarnessTest class.
+     * <p>
+     * This constructor is responsible for initializing the test environment for validating and benchmarking the Time
+     * Series Clustering (TSC) algorithm. It sets up the necessary configuration parameters and ensures that all
+     * prerequisites are ready for executing the defined test methods.
+     * <p>
+     * Preconditions: - The required constants and utility methods (e.g., {@code SEED}, {@code ALPHA}, {@code buildMIM})
+     * must be correctly defined within the class. - Supporting infrastructure, such as the random number generator or
+     * scoring utilities, must be properly initialized prior to test execution.
+     */
+    public TscHarnessTest() {
+
+    }
 
     // indicators per block: must be >= r + 1; more indicators help rank calls
     private static int indicatorsForRank(int r) {
@@ -268,6 +302,78 @@ public class TscHarnessTest {
     }
 
     // ========== TEST 1: Mixed-rank MIMs (NOLAC) ==========
+
+    /**
+     * Run TSC once at a given alpha and return canonicalized cluster sets (TreeSet for stable equality).
+     */
+    private static Set<Set<Integer>> runTscOnceCanonical(List<Node> vars, CovarianceMatrix cov,
+                                                         double alpha, int ess, int minRedundancy) {
+        return runOnce(vars, cov, alpha, ess, minRedundancy);
+    }
+
+    /**
+     * Executes the time series clustering (TSC) algorithm once with the given parameters and
+     * returns canonicalized clusters as a set of sets of integers.
+     *
+     * @param vars          the list of nodes (variables) to be clustered
+     * @param cov           the covariance matrix used for clustering
+     * @param alpha         the significance level for statistical tests within the clustering algorithm
+     * @param ess           the expected sample size, influencing the stability of clustering results
+     * @param minRedundancy the minimum redundancy threshold applied during clustering
+     * @return a set of canonicalized clusters, where each cluster is represented as an unmodifiable
+     *         and sorted set of integers
+     */
+    public static Set<Set<Integer>> runOnce(List<Node> vars, CovarianceMatrix cov, double alpha, int ess,
+                                            int minRedundancy) {
+        Tsc tsc = new Tsc(vars, cov);
+        tsc.setAlpha(alpha);
+        tsc.setExpectedSampleSize(ess);
+        tsc.setMinRedundancy(minRedundancy);
+        tsc.setVerbose(false);
+        Map<Set<Integer>, Integer> out = tsc.findClusters();
+        Set<Set<Integer>> canon = new HashSet<>();
+        for (Set<Integer> C : out.keySet()) canon.add(Collections.unmodifiableSet(new TreeSet<>(C)));
+        return canon;
+    }
+
+    /**
+     * Bootstrap resampler: rows with replacement → CovarianceMatrix.
+     */
+    private static java.util.function.Function<Integer, CovarianceMatrix> bootstrapCovBuilder(DataSet data, long seed) {
+        return (Integer b) -> {
+            int n = data.getNumRows();
+            int[] idx = new int[n];
+            for (int i = 0; i < n; i++) idx[i] = RandomUtil.getInstance().nextInt(n);
+            DataSet boot = data.subsetRows(idx);
+            return new CovarianceMatrix(boot);
+        };
+    }
+
+    /**
+     * Validates the performance of the TSC (Time Series Clustering) algorithm on datasets with mixed ranks using a MIM
+     * (Manifest Independence Model).
+     * <p>
+     * The method tests whether the TSC algorithm can achieve high-quality clustering outcomes when applied to datasets
+     * with varying rank structures. The quality of the clustering is assessed using metrics such as Adjusted Rand Index
+     * (ARI), pairwise precision, pairwise recall, maximum purity, and minimum coverage.
+     * <p>
+     * The test iterates through different rank specifications defined in {@code RANK_SPECS} and performs multiple
+     * trials for each rank configuration, simulating data using a specified random seed to ensure reproducibility. It
+     * builds a synthetic MIM configuration using {@code buildMIM}, runs the TSC algorithm, and evaluates its
+     * performance against ground-truth clusters.
+     * <p>
+     * Key metrics are printed to the console for diagnostic purposes: - Adjusted Rand Index (ARI) - Pairwise Precision
+     * and Recall - Maximum Purity (maxPur) - Minimum Coverage (minCov) - Number of learned clusters
+     * <p>
+     * Assertions are used to ensure that the TSC algorithm produces satisfactory clustering quality. These assertions
+     * provide soft constraints on ARI and pairwise precision, particularly favoring datasets with higher ranks if
+     * quality thresholds are not met.
+     * <p>
+     * Preconditions: - The test assumes that the rank specifications in {@code RANK_SPECS} are valid and that other
+     * constants, such as {@code SEED}, {@code ALPHA}, and {@code TRIALS}, are properly configured. - The
+     * {@code buildMIM} method and requisite scoring utilities (e.g., {@code score}) are already defined and functioning
+     * correctly.
+     */
     @Test
     public void tsc_onMixedRankMIMs_hasHighQuality() {
         Random topRng = new Random(SEED);
@@ -302,6 +408,34 @@ public class TscHarnessTest {
         }
     }
 
+    /**
+     * Tests the Time Series Clustering (TSC) algorithm on a directed acyclic graph (DAG) with no latent variables,
+     * verifying its behavior in a controlled environment.
+     * <p>
+     * This method evaluates the clustering results produced by the TSC algorithm on a randomly generated DAG with
+     * explicit structural constraints and ensures that the algorithm does not infer large clusters from pure observed
+     * data. Specifically:
+     * <p>
+     * - A random DAG is generated with a specified number of nodes, edges, and degrees. - The DAG is used to
+     * instantiate a Structural Equation Model (SEM) for data simulation. - A dual-alpha intersection approach is
+     * applied to identify initial candidate clusters. - Bootstrap stability filtering is performed to retain consistent
+     * clusters across resamples. - The intersection of the dual-alpha and bootstrap results defines the final stable
+     * set.
+     * <p>
+     * The method includes: - Validation of cluster rank for each identified cluster. - Assertions to ensure that
+     * clusters with size ≥ 3 are not present in the final stable set. - A secondary condition that at most one cluster
+     * of size 2 is allowed as a tiny artifact. - Summary output with cluster counts and their size distributions for
+     * diagnostic purposes.
+     * <p>
+     * Assertions: - Asserts that no clusters of size ≥ 3 are inferred in the final stable results. - Asserts that the
+     * number of size-2 clusters (tiny artifacts) does not exceed one.
+     * <p>
+     * Preconditions: - RandomUtil must be properly seeded. - The DAG must conform to the specified constraints with no
+     * latent confounders. - Constants such as SEED and ALPHA are assumed to be defined in the containing test class.
+     * <p>
+     * The test is useful for assessing the robustness of TSC in simple, controlled scenarios and for ensuring that it
+     * does not misinterpret pure observed graph structures.
+     */
     @Test
     public void tsc_onNoLatentDAG_producesAtMostTinyArtifacts() {
         RandomUtil.getInstance().setSeed(SEED);
@@ -324,9 +458,9 @@ public class TscHarnessTest {
         SimpleMatrix S = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
         List<Node> vars = data.getVariables();
         int ess = data.getNumRows();
-        
+
         // Adaptive alpha helps tamp down borderline rank calls as N grows
-        double alphaBase =         Math.min(ALPHA, 1.0 / Math.log(Math.max(50, ess)));
+        double alphaBase = Math.min(ALPHA, 1.0 / Math.log(Math.max(50, ess)));
         int minRedundancy = 0;
 
         // ---- Dual-alpha intersection (cheap) ----
@@ -355,7 +489,7 @@ public class TscHarnessTest {
         // ---- Final stable set = dual-alpha ∩ bootstrap ----
         Set<Set<Integer>> cl = new HashSet<>(dual);
         cl.retainAll(boot);
-        
+
         for (Set<Integer> C : boot) {
             List<Integer> D = new ArrayList<>();
             for (int i = 0; i < vars.size(); i++) {
@@ -381,23 +515,6 @@ public class TscHarnessTest {
 
         assertEquals("Should not see size≥3 clusters in a pure observed DAG (generic parameters).", 0, big);
         assertTrue("At most one tiny size-2 artifact expected.", tiny2 <= 1);
-    }
-
-    /** Run TSC once at a given alpha and return canonicalized cluster sets (TreeSet for stable equality). */
-    private static Set<Set<Integer>> runTscOnceCanonical(List<Node> vars, CovarianceMatrix cov,
-                                                         double alpha, int ess, int minRedundancy) {
-        return TscStability.runOnce(vars, cov, alpha, ess, minRedundancy);
-    }
-
-    /** Bootstrap resampler: rows with replacement → CovarianceMatrix. */
-    private static java.util.function.Function<Integer, CovarianceMatrix> bootstrapCovBuilder(DataSet data, long seed) {
-        return (Integer b) -> {
-            int n = data.getNumRows();
-            int[] idx = new int[n];
-            for (int i = 0; i < n; i++) idx[i] = RandomUtil.getInstance().nextInt(n);
-            DataSet boot = data.subsetRows(idx);
-            return new CovarianceMatrix(boot);
-        };
     }
 
     private Build buildMIM(RunSpec rs) {

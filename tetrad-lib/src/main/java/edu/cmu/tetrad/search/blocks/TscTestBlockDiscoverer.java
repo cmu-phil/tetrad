@@ -4,7 +4,6 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.Tsc;
 import edu.cmu.tetrad.util.RankTests;
-import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
@@ -27,13 +26,18 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
     private final int minRedundancy;
 
     /**
-     * Constructs an instance of {@code TscTestBlockDiscoverer}, which discovers blocks of variables based on the TSC
-     * (Testing Strong Causal structures) algorithm.
+     * Constructs a TscTestBlockDiscoverer instance with the specified parameters for discovering and analyzing
+     * blocks of variables in a dataset using the TSC algorithm.
      *
-     * @param dataSet The dataset containing the variables to be clustered based on causal structure.
-     * @param alpha   The statistical significance level used for hypothesis tests, must be in the range (0, 1).
-     * @param ess     The expected sample size used for clustering and scoring computations.
-     * @param policy  The policy determining how to handle cases where multiple clusters overlap or conflict.
+     * @param dataSet The dataset to process for discovering variable relationships.
+     * @param alpha A significance level parameter used for hypothesis testing, must be in the range (0, 1).
+     * @param ess The equivalent sample size used in certain scoring or prior adjustments.
+     * @param ridge A regularization parameter for ridge regression; must be greater than or equal to 0.
+     * @param rMax The maximum number of iterations or search radius used in the discovery process.
+     * @param policy The single cluster policy dictating the criteria for canonicalizing discovered clusters.
+     * @param minRedundancy The minimum allowed redundancy level among variables in discovered clusters.
+     * @param verbose A flag indicating whether to output detailed logging or debugging information during processing.
+     * @throws IllegalArgumentException If the ridge parameter is less than 0.
      */
     public TscTestBlockDiscoverer(DataSet dataSet, double alpha, int ess, double ridge, int rMax,
                                   SingleClusterPolicy policy, int minRedundancy, boolean verbose) {
@@ -42,7 +46,7 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
         this.ess = ess;
         this.rMax = rMax;
         this.policy = policy;
-        this.minRedundancy =  minRedundancy;
+        this.minRedundancy = minRedundancy;
         this.verbose = verbose;
 
         if (ridge < 0) {
