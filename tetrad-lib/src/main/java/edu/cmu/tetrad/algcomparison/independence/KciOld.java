@@ -3,8 +3,8 @@ package edu.cmu.tetrad.algcomparison.independence;
 import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -19,13 +19,13 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@TestOfIndependence(
-        name = "KCI-Test 2 (Kernel Conditional Independence Test)",
-        command = "kci-test-2",
-        dataType = DataType.Continuous
-)
+//@TestOfIndependence(
+//        name = "KCI-Old-Test (Kernel Conditional Independence Test)",
+//        command = "kci-oldtest",
+//        dataType = DataType.Continuous
+//)
 @General
-public class Kci2 implements IndependenceWrapper {
+public class KciOld implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -33,7 +33,7 @@ public class Kci2 implements IndependenceWrapper {
     /**
      * `Kci` constructor.
      */
-    public Kci2() {
+    public KciOld() {
 
     }
 
@@ -44,31 +44,29 @@ public class Kci2 implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.Kci2 kci = new edu.cmu.tetrad.search.test.Kci2((DataSet) dataSet);
-        kci.setAlpha(parameters.getDouble(Params.ALPHA));
+        edu.cmu.tetrad.search.test.KciOld kci = new edu.cmu.tetrad.search.test.KciOld(SimpleDataLoader.getContinuousDataSet(dataSet),
+                parameters.getDouble(Params.ALPHA));
 
-        kci.epsilon = parameters.getDouble(Params.KCI_EPSILON);
-        kci.scalingFactor = parameters.getDouble(Params.SCALING_FACTOR);     // tune if you like
-        kci.approximate = parameters.getBoolean(Params.KCI_USE_APPROXIMATION);      // fast by default
-        kci.numPermutations = parameters.getInt(Params.KCI_NUM_BOOTSTRAPS);  // only used if approximate=false
         switch (parameters.getInt(Params.KERNEL_TYPE)) {
             case 1:
-                kci.kernelType = edu.cmu.tetrad.search.test.Kci2.KernelType.GAUSSIAN;
+                kci.setKernelType(edu.cmu.tetrad.search.test.KciOld.KernelType.GAUSSIAN);
                 break;
             case 2:
-                kci.kernelType = edu.cmu.tetrad.search.test.Kci2.KernelType.LINEAR;
+                kci.setKernelType(edu.cmu.tetrad.search.test.KciOld.KernelType.LINEAR);
                 break;
             case 3:
-                kci.kernelType = edu.cmu.tetrad.search.test.Kci2.KernelType.POLYNOMIAL;
+                kci.setKernelType(edu.cmu.tetrad.search.test.KciOld.KernelType.POLYNOMIAL);
                 break;
-            default:
-                throw new IllegalArgumentException("Unknown kernel type: " + parameters.getInt(Params.KERNEL_TYPE));
         }
 
-        kci.polyDegree = parameters.getInt(Params.POLYNOMIAL_DEGREE);
-        kci.polyCoef0 = parameters.getDouble(Params.POLYNOMIAL_CONSTANT);
-        kci.polyGamma = 1.0 / ((DataSet) dataSet).getNumColumns();
+        kci.setPolyDegree(parameters.getInt(Params.POLYNOMIAL_DEGREE));
+        kci.setPolyConst(parameters.getDouble(Params.POLYNOMIAL_CONSTANT));
 
+        kci.setApproximate(parameters.getBoolean(Params.KCI_USE_APPROXIMATION));
+        kci.setScalingFactor(parameters.getDouble(Params.SCALING_FACTOR));
+        kci.setNumBootstraps(parameters.getInt(Params.KCI_NUM_BOOTSTRAPS));
+        kci.setThreshold(parameters.getDouble(Params.THRESHOLD_FOR_NUM_EIGENVALUES));
+//        kci.setEpsilon(parameters.getDouble(Params.KCI_EPSILON));
         return kci;
     }
 
@@ -79,7 +77,7 @@ public class Kci2 implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "KCI-2";
+        return "KCI-Old";
     }
 
     /**
@@ -106,7 +104,8 @@ public class Kci2 implements IndependenceWrapper {
         params.add(Params.ALPHA);
         params.add(Params.SCALING_FACTOR);
         params.add(Params.KCI_NUM_BOOTSTRAPS);
-        params.add(Params.KCI_EPSILON);
+        params.add(Params.THRESHOLD_FOR_NUM_EIGENVALUES);
+//        params.add(Params.KCI_EPSILON);
         params.add(Params.KERNEL_TYPE);
         params.add(Params.POLYNOMIAL_DEGREE);
         params.add(Params.POLYNOMIAL_CONSTANT);

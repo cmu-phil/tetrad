@@ -75,7 +75,7 @@ public class TopEigenvalues {
      * @param threshold the threshold for the eigenvalues
      * @return the Eigendecomposition object on which this method is invoked
      */
-    public Kci.EigenReturn invoke(boolean storeV, double threshold) {
+    public KciOld.EigenReturn invoke(boolean storeV, double threshold) {
 
         // Create a SimpleMatrix from the array
         EigResult result = getTopEigen(k, threshold);
@@ -100,7 +100,7 @@ public class TopEigenvalues {
             }
         }
 
-        return new Kci.EigenReturn(D, V, topEigenValues);
+        return new KciOld.EigenReturn(D, V, topEigenValues);
     }
 
     /**
