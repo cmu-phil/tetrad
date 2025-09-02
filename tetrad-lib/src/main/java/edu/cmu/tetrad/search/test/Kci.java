@@ -29,7 +29,7 @@ import java.util.*;
  */
 public class Kci implements IndependenceTest {
     /**
-     * Data matrix in "variables x samples" layout to match common Tetrad use.
+     * Data matrix in "variables x samples" layout.
      */
     private final SimpleMatrix dataVxN;
     /**
