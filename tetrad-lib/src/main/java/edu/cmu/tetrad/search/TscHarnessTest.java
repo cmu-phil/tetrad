@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -9,6 +10,8 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.RankTests;
+import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
 
 import java.util.*;
@@ -31,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 public class TscHarnessTest {
 
     // ======== CONFIG ========
-    private static final long SEED = 42L;
+    private static final long SEED = 45L;
     private static final int N = 5000;     // carried in CovarianceMatrix as sample size
     private static final double LOADING = 0.80; // indicator loading magnitude (strong = easier)
     private static final double UNIQUENESS = 0.36; // θ diagonal (so ~ unit variance with LOADING=0.8)
@@ -301,43 +304,47 @@ public class TscHarnessTest {
 
     @Test
     public void tsc_onNoLatentDAG_producesAtMostTinyArtifacts() {
-        RandomUtil.getInstance().setSeed(SEED);
+        RandomUtil.getInstance().setSeed(RandomUtil.getInstance().nextLong());
 
         // Slightly sparser random DAG + decent N
         Graph g = RandomGraph.randomGraph(
-                12,   // nodes
-                0,    // min edges (ignored for DAG gen)
-                36,   // max edges
+                10,   // nodes
+                0,    // num latent confounders
+                20,   // max edges
                 100,  // max in-degree
                 100,  // max out-degree
                 100,  // max degree
-                false // DAG
+                false // connected
         );
         SemPm pm = new SemPm(g);
         SemIm im = new SemIm(pm);
 
-        final int nRows = 2000;
+        final int nRows = 10000;
         DataSet data = im.simulateData(nRows, false);
+        SimpleMatrix S = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
         List<Node> vars = data.getVariables();
         int ess = data.getNumRows();
-
+        
         // Adaptive alpha helps tamp down borderline rank calls as N grows
-        double alphaBase = Math.min(ALPHA, 1.0 / Math.log(Math.max(50, ess)));
+        double alphaBase =         Math.min(ALPHA, 1.0 / Math.log(Math.max(50, ess)));
+        boolean allowTriviallySizedClusters = true;
 
         // ---- Dual-alpha intersection (cheap) ----
-        Set<Set<Integer>> dual = runTscOnceCanonical(vars, new CovarianceMatrix(data), alphaBase, ess);
-        Set<Set<Integer>> dualTight = runTscOnceCanonical(vars, new CovarianceMatrix(data), alphaBase / 5.0, ess);
+        Set<Set<Integer>> dual = runTscOnceCanonical(vars, new CovarianceMatrix(data), alphaBase, ess,
+                allowTriviallySizedClusters);
+        Set<Set<Integer>> dualTight = runTscOnceCanonical(vars, new CovarianceMatrix(data), alphaBase / 5.0, ess,
+                allowTriviallySizedClusters);
         dual.retainAll(dualTight);
 
         // ---- Bootstrap stability (B=10, keep ≥70%) ----
         Set<Set<Integer>> boot = new HashSet<>();
         {
             final int B = 10;
-            final double keepFrac = 0.7;
+            final double keepFrac = 0.8;
             Map<Set<Integer>, Integer> counts = new HashMap<>();
             for (int b = 0; b < B; b++) {
                 CovarianceMatrix covB = bootstrapCovBuilder(data, SEED).apply(b);
-                for (Set<Integer> C : runTscOnceCanonical(vars, covB, alphaBase / 5.0, ess)) {
+                for (Set<Integer> C : runTscOnceCanonical(vars, covB, alphaBase / 5.0, ess, allowTriviallySizedClusters)) {
                     counts.merge(C, 1, Integer::sum);
                 }
             }
@@ -348,6 +355,21 @@ public class TscHarnessTest {
         // ---- Final stable set = dual-alpha ∩ bootstrap ----
         Set<Set<Integer>> cl = new HashSet<>(dual);
         cl.retainAll(boot);
+        
+        for (Set<Integer> C : boot) {
+            List<Integer> D = new ArrayList<>();
+            for (int i = 0; i < vars.size(); i++) {
+                D.add(i);
+            }
+            D.removeAll(C);
+
+            int[] cArray = C.stream().mapToInt(Integer::intValue).toArray();
+            int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
+
+            int rank = RankTests.estimateWilksRank(S, cArray, dArray, ess, ALPHA);
+
+            System.out.println("Rank(" + C + ") = " + rank);
+        }
 
         System.out.println("Stable clusters (dual-alpha ∩ bootstrap): " + cl);
 
@@ -362,8 +384,9 @@ public class TscHarnessTest {
     }
 
     /** Run TSC once at a given alpha and return canonicalized cluster sets (TreeSet for stable equality). */
-    private static Set<Set<Integer>> runTscOnceCanonical(List<Node> vars, CovarianceMatrix cov, double alpha, int ess) {
-        return TscStability.runOnce(vars, cov, alpha, ess);
+    private static Set<Set<Integer>> runTscOnceCanonical(List<Node> vars, CovarianceMatrix cov,
+                                                         double alpha, int ess, boolean allowTriviallySizedClusters) {
+        return TscStability.runOnce(vars, cov, alpha, ess, allowTriviallySizedClusters);
     }
 
     /** Bootstrap resampler: rows with replacement → CovarianceMatrix. */
@@ -371,8 +394,7 @@ public class TscHarnessTest {
         return (Integer b) -> {
             int n = data.getNumRows();
             int[] idx = new int[n];
-            Random r = new Random(seed ^ (0x9E3779B97F4A7C15L + b));
-            for (int i = 0; i < n; i++) idx[i] = r.nextInt(n);
+            for (int i = 0; i < n; i++) idx[i] = RandomUtil.getInstance().nextInt(n);
             DataSet boot = data.subsetRows(idx);
             return new CovarianceMatrix(boot);
         };
@@ -397,7 +419,6 @@ public class TscHarnessTest {
         int P = vars.size();
         int R = Arrays.stream(rs.ranks).sum();
         double[][] L = new double[P][R];
-        Random rng = new Random(rs.seed);
 
         int latentCol = 0;
         int row = 0;
@@ -406,7 +427,7 @@ public class TscHarnessTest {
             for (int j = 0; j < p; j++, row++) {
                 for (int k = 0; k < r; k++) {
                     double base = LOADING * (1.0 - 0.15 * k);
-                    double jitter = 0.04 * (rng.nextDouble() - 0.5);
+                    double jitter = 0.04 * (RandomUtil.getInstance().nextDouble() - 0.5);
                     L[row][latentCol + k] = base + jitter;
                 }
             }

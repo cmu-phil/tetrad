@@ -56,7 +56,6 @@ public class Tsc {
     private Map<Set<Integer>, Integer> clusterToRank;
     private int rMax = 3;
     private boolean allowTriviallySizedClusters = true;
-//    private Map<Set<Integer>, Integer> reducedRank;
 
     /**
      * Constructs an instance of the TscScored class using the provided variables and covariance matrix.
@@ -188,7 +187,6 @@ public class Tsc {
 
         List<Integer> remainingVars = new ArrayList<>(allVariables());
         clusterToRank = new HashMap<>();
-//        reducedRank = new HashMap<>();
 
         for (int rank = 0; rank <= rMax; rank++) {
             int size = rank + 1;
@@ -266,24 +264,21 @@ public class Tsc {
                     // generically, so this check is asymptotically safe under NOLAC.
                     boolean collapses = false;
                     if (rank > 0) {
+                        List<Integer> Clist = new ArrayList<>(cluster);
                         List<Integer> D = allVariables();
-                        D.removeAll(cluster);
+                        D.removeAll(Clist);
                         int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
 
-                        List<Integer> Clist = new ArrayList<>(cluster);
                         for (int z : Clist) {
                             List<Integer> Cmz = new ArrayList<>(Clist);
                             Cmz.remove((Integer) z);
                             if (Cmz.isEmpty()) continue;
 
                             int[] cmz = Cmz.stream().mapToInt(Integer::intValue).toArray();
-                            int[] zArr = new int[]{z};
+                            int[] zArr = new int[]{ z };
 
                             int rZ = RankTests.estimateWilksRankConditioned(S, cmz, dArray, zArr, expectedSampleSize, alpha);
-                            if (rZ == 0) {
-                                collapses = true;
-                                break;
-                            }
+                            if (rZ == 0) { collapses = true; break; }
                         }
                     }
                     if (collapses) {
@@ -335,20 +330,28 @@ public class Tsc {
 
                         int newRank = ranksByTest(C2);
 
-                        if (C2.size() == _size + 1 && newRank < rank && newRank >= 1) {
+                        // Augmentation targets bifactor: base subsets show rank = r (often 2);
+                        // adding exactly one indicator that spans the factors should reduce the
+                        // cross-rank to r-1 (often 1). We accept only that exact one-step drop.
+                        int rankC1 = ranksByTest(C1);
+                        if (C2.size() == _size + 1
+                            && rankC1 == rank
+                            && newRank == rank - 1
+                            && !removeClustersBecauseOfRank0Internally(S, C2, expectedSampleSize, alpha)) {
+
                             if (newClusters.contains(C2)) continue;
 
                             newClusters.remove(C1);
                             newClusters.add(C2);
-//                reducedRank.put(C2, newRank);
+                            //  reducedRank.put(C2, newRank);
 
                             // Update `used`: remove old C1 contribution, then add C2
                             used.removeAll(C1);
                             used.addAll(C2);
 
-                            log("Augmenting cluster " + toNamesCluster(C1) + " to cluster " + toNamesCluster(C2) + " (rank " + _reducedRank + ").");
+                            log("Augmenting cluster " + toNamesCluster(C1) + " to " + toNamesCluster(C2)
+                                + " (rank drop " + rank + "→" + newRank + " — bifactor signature).");
                             didAugment = true;
-                            // break to restart with newClusters snapshot
                             break;
                         }
                     }
@@ -368,7 +371,6 @@ public class Tsc {
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             if (cluster.size() == 1) {
                 clusterToRank.remove(cluster);
-//                reducedRank.remove(cluster);
                 log("Removing cluster " + toNamesCluster(cluster));
             }
         }
@@ -432,7 +434,6 @@ public class Tsc {
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             if (removeClustersBecauseOfRank0Internally(S, cluster, expectedSampleSize, alpha)) {
                 clusterToRank.remove(cluster);
-//                reducedRank.remove(cluster);
                 penultimateRemoved = true;
             }
         }
@@ -479,8 +480,7 @@ public class Tsc {
      * so genuine clusters survive this trimming asymptotically.
      *
      * <p><b>Notes.</b> (i) We iterate until no removal fires; (ii) We do not mutate the input set; (iii) We cap |Z| by
-     * r_C
-     * which matches the latent boundary dimension and is both theoretically natural and computationally efficient.
+     * r_C which matches the latent boundary dimension and is both theoretically natural and computationally efficient.
      *
      * @param original the candidate cluster (not mutated)
      * @param rC       intended rank of the cluster (≥0)
@@ -620,6 +620,7 @@ public class Tsc {
         if (!(expectedSampleSize == -1 || expectedSampleSize > 0))
             throw new IllegalArgumentException("Expected sample size = -1 or > 0");
         this.expectedSampleSize = expectedSampleSize == -1 ? sampleSize : expectedSampleSize;
+        rankCache.clear(); // <-- ranks depend on ESS
     }
 
     public void setRmax(int rMax) {
