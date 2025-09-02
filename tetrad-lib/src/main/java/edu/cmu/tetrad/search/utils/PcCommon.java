@@ -302,6 +302,7 @@ public final class PcCommon implements IGraphSearch {
         try {
             this.graph = fas.search();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
 
