@@ -1,10 +1,12 @@
 package edu.cmu.tetrad.search.test;
 
+import ai.djl.modality.nlp.preprocess.TextTerminator;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
@@ -96,8 +98,27 @@ public class Kci implements IndependenceTest {
      * Optional: last computed p-value.
      */
     public double lastPValue = Double.NaN;
+    /**
+     * Represents the dataset used for analysis within the Kci class.
+     * It contains the data matrix and associated information required
+     * to perform conditional independence tests, build kernel matrices,
+     * and compute statistical measures. The `dataSet` field is a core
+     * data structure that drives the computations and algorithms
+     * implemented in the Kci class.
+     */
     private DataSet dataSet;
+    /**
+     * A list of Node objects representing variables in the context of the Kci class.
+     * These variables are used in various kernel computation tasks,
+     * independence testing, and other statistical analysis procedures within the KCI framework.
+     */
     private List<Node> variables;
+    /**
+     * Indicates whether verbose output is enabled for the Kci class.
+     * When set to true, additional debugging or informational messages
+     * may be logged or displayed to provide more detailed insights
+     * into the computations and processes within the class.
+     */
     private boolean verbose = false;
 
     // ---------------------- data / indices ----------------------
@@ -456,7 +477,9 @@ public class Kci implements IndependenceTest {
             p = permutationPValueConditional(RX, RY, stat, n, numPermutations, rng);
         }
 
-        System.out.println(new IndependenceFact(x, y, new HashSet<>(z)) + " p = " + p);
+        if (verbose) {
+            TetradLogger.getInstance().log(new IndependenceFact(x, y, new HashSet<>(z)) + " p = " + p);
+        }
 
         this.lastPValue = p;
         return p;
