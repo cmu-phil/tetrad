@@ -58,6 +58,8 @@ public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
                 (RawMarginalIndependenceTest) itest
         );
 
+        gin.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
         // Always keep these numerics; they’re cheap and robust.
         safeCall(() -> gin.setWhitenBeforeSVD(true));
         safeCall(() -> gin.setRidge(1e-8));
@@ -87,6 +89,7 @@ public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     public List<String> getParameters() {
         ArrayList<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
+        params.add(Params.VERBOSE);
         return params;
     }
 

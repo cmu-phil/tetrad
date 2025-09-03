@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -11,10 +9,8 @@ import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.utils.Embedding;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * IndTestBasisFunctionBlocks - Builds a per-variable truncated basis expansion (via Embedding) - Constructs the blocks
@@ -34,6 +30,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     private final SimpleMatrix Sphi;                 // D x D covariance of embedded data
     private final List<List<Integer>> blocks;        // mapping original var -> embedded column indices
     private final IndTestBlocks blocksTest;          // delegate
+    private final int degree;
 
     // ---- Knobs ----
     private double alpha = 0.01;
@@ -51,6 +48,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         if (degree < 0) throw new IllegalArgumentException("degree must be >= 0");
 
         this.raw = raw;
+        this.degree = degree;
         // Keep the exact Node instances from the caller's dataset
         this.variables = new ArrayList<>(raw.getVariables());
 
@@ -143,20 +141,85 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         this.blocksTest.setVerbose(verbose);
     }
 
+
+    @Override
+    public double computePValue(double[] x, double[] y) throws InterruptedException {
+        if (x == null || y == null) return 1.0;
+        int n = x.length;
+        if (y.length != n || n < 3) return 1.0;
+
+        // Build a tiny 2-column dataset for BFIT
+        DataSet ds = twoColumnDataSet("X", x, "Y", y);
+
+        // Build the BFIT test bound to this dataset
+        IndTestBasisFunctionBlocks test =  new IndTestBasisFunctionBlocks(ds, degree);
+
+        // Resolve nodes and run the marginal test
+        Node X = ds.getVariable("X");
+        Node Y = ds.getVariable("Y");
+
+        IndependenceResult r = test.checkIndependence(X, Y, Collections.emptySet());
+        double p = (r != null) ? r.getPValue() : 1.0;
+
+        // Clamp for numeric robustness
+        if (!Double.isFinite(p)) return 1.0;
+        return Math.max(0.0, Math.min(p, 1.0));
+    }
+
     /**
-     * Computes the p-value for statistical tests involving two arrays of data.
-     * This method is not supported for block-based tests and will always throw an exception.
-     * Use the checkIndependence(Node, Node, Set) method with the dataset instead.
-     *
-     * @param x the first array of data values
-     * @param y the second array of data values
-     * @return the p-value as a double
-     * @throws UnsupportedOperationException this method is unsupported for block-based tests
+     * Default multivariate fallback: run BFIT on each column of Y and combine with Fisher.
+     * If you later add a true multivariate BFIT, override this to call it directly.
      */
     @Override
-    public double computePValue(double[] x, double[] y) {
-        throw new UnsupportedOperationException(
-                "Use checkIndependence(Node,Node,Set) with the dataset; array version is unsupported for block tests.");
+    public double computePValue(double[] x, double[][] Y) throws InterruptedException {
+        if (Y == null || Y.length == 0) return 1.0;
+        final int n = x.length;
+        if (Y.length != n) return 1.0;
+
+        double stat = 0.0;
+        int k = 0;
+
+        int m = Y[0].length;
+        for (int j = 0; j < m; j++) {
+            double[] yj = new double[n];
+            for (int i = 0; i < n; i++) yj[i] = Y[i][j];
+            double pj = computePValue(x, yj);
+            if (Double.isNaN(pj)) continue;
+            double pc = Math.max(pj, 1e-300); // avoid log(0)
+            stat += -2.0 * Math.log(pc);
+            k++;
+        }
+        if (k == 0) return 1.0;
+
+        int df = 2 * k;
+        // Chi-square upper tail CDF (use Apache Commons if on classpath)
+        org.apache.commons.math3.distribution.ChiSquaredDistribution chi2 =
+                new org.apache.commons.math3.distribution.ChiSquaredDistribution(df);
+        double cdf = chi2.cumulativeProbability(stat);
+        double p = 1.0 - cdf;
+        if (!Double.isFinite(p)) return 1.0;
+        if (p < 0.0) return 0.0;
+        if (p > 1.0) return 1.0;
+        return p;
+    }
+
+    // --- helper: build a 2-column continuous DataSet (rows = samples) ---
+
+    private static DataSet twoColumnDataSet(String nameX, double[] x,
+                                            String nameY, double[] y) {
+        int n = x.length;
+        double[][] m = new double[n][2];
+        for (int i = 0; i < n; i++) {
+            m[i][0] = x[i];
+            m[i][1] = y[i];
+        }
+        List<Node> vars = new ArrayList<>(2);
+        vars.add(new ContinuousVariable(nameX));
+        vars.add(new ContinuousVariable(nameY));
+
+        DoubleDataBox dataBox = new DoubleDataBox(m);
+
+        return new BoxDataSet(dataBox, vars);
     }
 
     /**
