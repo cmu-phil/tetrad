@@ -68,6 +68,11 @@ public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         edu.cmu.tetrad.search.Gin gin = new edu.cmu.tetrad.search.Gin(parameters.getDouble(Params.ALPHA),
                 (RawMarginalIndependenceTest) test);
 
+//        gin.setAddMargin(1e-3);
+//        gin.setAsymmetryDelta(0.05);
+//        gin.setMaxInDegree(1);
+//        gin.setGapThreshold(0.90);      // allow if (σ_min / σ_next) <= 0.90
+
         return gin.search(dataSet);
     }
 
