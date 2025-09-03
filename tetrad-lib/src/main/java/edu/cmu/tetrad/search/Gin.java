@@ -17,17 +17,11 @@ import static java.lang.Math.*;
 
 /**
  * GIN (Matlab-style): cluster -> merge overlaps -> orient latents by GIN test (IT-mode).
- * <p>
- * Mirrors the MATLAB reference structure:
- *   - Find_Causal_Clusters.m
- *   - Merge_Overlapping_Cluster.m
- *   - GIN_Condition_Test.m
- *   - Find_CO_by_IT.m (IT = independence testing; MI mode is stubbed)
- * <p>
- * Differences:
- *   - EJML (0.44.0) linear algebra
- *   - User-supplied RawMarginalIndependenceTest (supports multivariate Y)
- *   - Optional whitening of covariance blocks before SVD
+ * Lightweight anti-clique controls:
+ *  - asymmetry gate (p_ij - p_ji >= delta)
+ *  - max in-degree cap
+ *  - small margin above alpha
+ *  - singular-gap check on the projection SVD
  */
 public class Gin {
 
@@ -38,9 +32,14 @@ public class Gin {
     private final OrderMode orderMode;
 
     private boolean verbose = false;
-    private boolean whitenBeforeSVD = true; // numerical guard (mirrors MATLAB stability)
-    private double ridge = 1e-8;            // tiny ridge for Σ_YY and Σ_ZZ when whitening
-    private double addMargin = 1e-3;        // tiny cushion above alpha for adding edges (set 0 for original behavior)
+    private boolean whitenBeforeSVD = true; // numerical guard
+    private double ridge = 1e-8;            // ridge for Σ_YY/Σ_ZZ when whitening
+
+    // Anti-clique knobs (cheap):
+    private double addMargin = 1e-3;        // require p >= alpha + margin
+    private double asymmetryDelta = 0.05;   // require p_ij - p_ji >= delta
+    private int    maxInDegree = 1;         // 0 or negative disables capping
+    private double gapThreshold = 0.90;     // accept if (σ_min / σ_next) <= gapThreshold
 
     // ----------------------------- State -----------------------------
 
@@ -58,7 +57,7 @@ public class Gin {
     public Gin(double alpha, RawMarginalIndependenceTest test, OrderMode orderMode) {
         this.alpha = alpha;
         this.test = Objects.requireNonNull(test, "test");
-        this.orderMode = orderMode == null ? OrderMode.IT : orderMode;
+        this.orderMode = (orderMode == null) ? OrderMode.IT : orderMode;
     }
 
     // ----------------------------- Config -----------------------------
@@ -66,8 +65,14 @@ public class Gin {
     public void setVerbose(boolean v) { this.verbose = v; }
     public void setWhitenBeforeSVD(boolean w) { this.whitenBeforeSVD = w; }
     public void setRidge(double r) { this.ridge = Math.max(0.0, r); }
-    /** Set to 0.0 to revert to “p ≥ alpha” rule without cushion. */
+    /** Set to 0.0 to revert to “p ≥ alpha” without cushion. */
     public void setAddMargin(double m) { this.addMargin = Math.max(0.0, m); }
+    /** Asymmetry cushion: require p_ij - p_ji ≥ delta to add i->j. */
+    public void setAsymmetryDelta(double d) { this.asymmetryDelta = Math.max(0.0, d); }
+    /** Max number of parents per latent; ≤0 disables the cap. */
+    public void setMaxInDegree(int k) { this.maxInDegree = k; }
+    /** Require σ_min / σ_next ≤ threshold to accept the projection direction. */
+    public void setGapThreshold(double t) { this.gapThreshold = Math.min(1.0, Math.max(0.0, t)); }
 
     // ----------------------------- API -------------------------------
 
@@ -75,20 +80,18 @@ public class Gin {
     public Graph search(DataSet data) {
         this.data = data;
         this.corr = new CorrelationMatrix(data);
-        this.cov = new SimpleMatrix(corr.getMatrix().getSimpleMatrix());
+        this.cov  = new SimpleMatrix(corr.getMatrix().getSimpleMatrix());
         this.vars = data.getVariables();
 
         // 1) Find causal clusters (Find_Causal_Clusters + Merge_Overlapping_Cluster)
         List<List<Integer>> clusters = findCausalClusters();
 
-        // Fallback: if no seeds survived, use singletons so the pipeline remains usable.
+        // Fallback to singletons if nothing survived
         if (clusters.isEmpty()) {
             List<List<Integer>> singletons = new ArrayList<>();
             for (int i = 0; i < vars.size(); i++) singletons.add(List.of(i));
             clusters = singletons;
-            if (verbose) {
-                TetradLogger.getInstance().log("[GIN] No seed clusters found; falling back to singletons.");
-            }
+            if (verbose) TetradLogger.getInstance().log("[GIN] No seed clusters found; falling back to singletons.");
         }
 
         if (verbose) {
@@ -110,12 +113,10 @@ public class Gin {
 
         // 3) Orient latent-latent edges (Find_CO_by_IT / GIN_Condition_Test)
         if (orderMode == OrderMode.IT) {
-            orientByIndependence(g, clusters, latents);
+            orientByIndependenceFast(g, clusters, latents);
         } else {
-            if (verbose) {
-                TetradLogger.getInstance().log("[GIN] MI mode requested but not implemented; falling back to IT.");
-            }
-            orientByIndependence(g, clusters, latents);
+            if (verbose) TetradLogger.getInstance().log("[GIN] MI mode requested but not implemented; using IT.");
+            orientByIndependenceFast(g, clusters, latents);
         }
 
         return g;
@@ -123,12 +124,6 @@ public class Gin {
 
     // ---------------------- Find_Causal_Clusters ---------------------
 
-    /**
-     * Matlab-style cluster discovery:
-     *  - Scan all 2-seeds satisfying Wilks rank<=1 vs rest
-     *  - Require within-pair dependence (Fisher-Z)
-     *  - Merge overlapping seeds to a fixed point
-     */
     private List<List<Integer>> findCausalClusters() {
         int p = vars.size();
         List<List<Integer>> seeds = new ArrayList<>();
@@ -201,68 +196,115 @@ public class Gin {
         return work;
     }
 
-    // ---------------------- Orientation (IT-mode) --------------------
+    // ---------------------- Orientation (fast IT-mode) --------------------
 
     /**
-     * IT-mode orientation akin to MATLAB: for each ordered pair (Z -> Y),
-     * form e = Y_c * ω (ω from smallest σ of Σ_ZY or whitened variant),
-     * test e ⟂ Z with RawMarginalIndependenceTest (multivariate if available),
-     * then add edges greedily in descending p, avoiding cycles.
+     * Compute both directions once per pair (i<j) to halve work.
+     * Apply:
+     *   - singular-gap guard (cheap)
+     *   - asymmetry gate: p_ij - p_ji >= delta
+     *   - in-degree cap
+     *   - margin above alpha
      */
-    private void orientByIndependence(Graph g, List<List<Integer>> clusters, List<Node> latents) {
-        List<EdgeCand> cands = new ArrayList<>();
+    private void orientByIndependenceFast(Graph g, List<List<Integer>> clusters, List<Node> latents) {
+        int m = clusters.size();
+        List<EdgeCand> cands = new ArrayList<>(2 * m * (m - 1) / 2);
 
-        for (int i = 0; i < clusters.size(); i++) {
-            for (int j = 0; j < clusters.size(); j++) {
-                if (i == j) continue;
+        // Precompute both directions once per unordered pair
+        for (int i = 0; i < m; i++) {
+            for (int j = i + 1; j < m; j++) {
                 if (Thread.currentThread().isInterrupted()) return;
 
-                List<Integer> Z = clusters.get(i);
-                List<Integer> Y = clusters.get(j);
-                if (Z.isEmpty() || Y.isEmpty()) continue;
+                List<Integer> Zi = clusters.get(i);
+                List<Integer> Yj = clusters.get(j);
+                List<Integer> Zj = clusters.get(j);
+                List<Integer> Yi = clusters.get(i);
 
-                double[] e = computeE(Y, Z);
-                double p = pValueEvsZ(e, Z);
+                // i -> j
+                ProjResult proj_ij = computeProjection(Yj, Zi);
+                double p_ij = (proj_ij.acceptable) ? pValueEvsZ(proj_ij.e, Zi) : 0.0;
+
+                // j -> i
+                ProjResult proj_ji = computeProjection(Yi, Zj);
+                double p_ji = (proj_ji.acceptable) ? pValueEvsZ(proj_ji.e, Zj) : 0.0;
 
                 if (verbose) {
                     TetradLogger.getInstance().log(String.format(
-                            "[GIN] p(e ⟂ Z) for L%d->L%d : p=%.4g", i + 1, j + 1, p));
+                            "[GIN] pair L%d↔L%d : p_ij=%.4g (gap=%.3f) | p_ji=%.4g (gap=%.3f)",
+                            i + 1, j + 1, p_ij, proj_ij.gapRatio, p_ji, proj_ji.gapRatio));
                 }
 
-                cands.add(new EdgeCand(i, j, p));
+                // Store both directions with cross-p value for asymmetry gate
+                cands.add(new EdgeCand(i, j, p_ij, p_ji));
+                cands.add(new EdgeCand(j, i, p_ji, p_ij));
             }
         }
 
-        // Greedy add edges with p >= alpha + addMargin
+        // Greedy add edges with anti-clique gates
         cands.sort(Comparator.comparingDouble((EdgeCand c) -> c.p).reversed());
+        int[] inDeg = new int[m];
+
         for (EdgeCand c : cands) {
             if (Thread.currentThread().isInterrupted()) return;
-            if (c.p >= alpha + addMargin) {
-                Node from = latents.get(c.i);
-                Node to = latents.get(c.j);
-                if (!g.isAncestorOf(to, from)) {
-                    g.addDirectedEdge(from, to);
-                }
+
+            // basic acceptance
+            if (c.p < alpha + addMargin) continue;
+
+            // asymmetry gate
+            if (c.p - c.pOpp < asymmetryDelta) continue;
+
+            Node from = latents.get(c.i);
+            Node to   = latents.get(c.j);
+
+            // acyclicity + in-degree cap
+            if (!g.isAncestorOf(to, from) && (maxInDegree <= 0 || inDeg[c.j] < maxInDegree)) {
+                g.addDirectedEdge(from, to);
+                inDeg[c.j]++;
             }
         }
     }
 
     // ---------------------- GIN projection e ------------------------
 
+    private static final class ProjResult {
+        final double[] e;
+        final double gapRatio;   // σ_min / σ_next (<=1); Double.POSITIVE_INFINITY if rank-1
+        final boolean acceptable;
+        ProjResult(double[] e, double gapRatio, boolean acceptable) {
+            this.e = e;
+            this.gapRatio = gapRatio;
+            this.acceptable = acceptable;
+        }
+    }
+
     /**
-     * Build e = Y_c * ω where ω is the right singular vector (smallest σ).
-     * If whitening is enabled, use A = Σ_ZZ^{-1/2} Σ_ZY Σ_YY^{-1/2}, take v_min, then ω = Σ_YY^{-1/2} v_min.
+     * Compute projection e = Y_c * ω.
+     * Also compute gapRatio = σ_min / σ_next and apply (cheap) acceptability test:
+     *   acceptable := (gapRatio <= gapThreshold)
      */
-    private double[] computeE(List<Integer> Y, List<Integer> Z) {
+    private ProjResult computeProjection(List<Integer> Y, List<Integer> Z) {
         final int n = data.getNumRows();
-        if (Y == null || Z == null || Y.isEmpty() || Z.isEmpty()) return new double[n];
+        if (Y == null || Z == null || Y.isEmpty() || Z.isEmpty()) {
+            return new ProjResult(new double[n], Double.POSITIVE_INFINITY, false);
+        }
 
         // Σ blocks
         SimpleMatrix Syy = subCov(cov, Y, Y);
         SimpleMatrix Szz = subCov(cov, Z, Z);
         SimpleMatrix Szy = subCov(cov, Z, Y);
 
+        // Yc (centered)
+        SimpleMatrix Yc = new SimpleMatrix(n, Y.size());
+        for (int j = 0; j < Y.size(); j++) {
+            int col = Y.get(j);
+            double mean = 0.0;
+            for (int i = 0; i < n; i++) mean += data.getDouble(i, col);
+            mean /= n;
+            for (int i = 0; i < n; i++) Yc.set(i, j, data.getDouble(i, col) - mean);
+        }
+
         SimpleMatrix omega;
+        double gapRatio;
 
         if (whitenBeforeSVD) {
             // A = Σ_ZZ^{-1/2} Σ_ZY Σ_YY^{-1/2}
@@ -274,55 +316,53 @@ public class Gin {
             SimpleMatrix W = svd.getW();
             SimpleMatrix V = svd.getV();
 
-            int r = Math.min(W.getNumRows(), W.getNumCols());
-            int minIdx = 0;
-            double minSv = Double.POSITIVE_INFINITY;
+            // smallest and next-smallest σ
+            int r = Math.min(W.numRows(), W.numCols());
+            // Collect singulars
+            double minSv = Double.POSITIVE_INFINITY, nextSv = Double.POSITIVE_INFINITY;
+            int minIdx = -1;
             for (int i = 0; i < r; i++) {
                 double sv = W.get(i, i);
-                if (sv < minSv) { minSv = sv; minIdx = i; }
+                if (sv < minSv) { nextSv = minSv; minSv = sv; minIdx = i; }
+                else if (sv < nextSv) { nextSv = sv; }
             }
+            gapRatio = (nextSv == 0.0) ? 0.0 : (minSv / nextSv);
+            if (minIdx < 0) minIdx = r - 1;
+
             SimpleMatrix vmin = V.extractVector(false, minIdx);
             omega = SyyInvH.mult(vmin);
+
         } else {
             // plain Σ_ZY SVD
             SimpleSVD<SimpleMatrix> svd = Szy.svd();
             SimpleMatrix W = svd.getW();
             SimpleMatrix V = svd.getV();
 
-            int r = Math.min(W.getNumRows(), W.getNumCols());
-            int minIdx = 0;
-            double minSv = Double.POSITIVE_INFINITY;
+            int r = Math.min(W.numRows(), W.numCols());
+            double minSv = Double.POSITIVE_INFINITY, nextSv = Double.POSITIVE_INFINITY;
+            int minIdx = -1;
             for (int i = 0; i < r; i++) {
                 double sv = W.get(i, i);
-                if (sv < minSv) { minSv = sv; minIdx = i; }
+                if (sv < minSv) { nextSv = minSv; minSv = sv; minIdx = i; }
+                else if (sv < nextSv) { nextSv = sv; }
             }
+            gapRatio = (nextSv == 0.0) ? 0.0 : (minSv / nextSv);
+            if (minIdx < 0) minIdx = r - 1;
+
             omega = V.extractVector(false, minIdx);
         }
 
-        // Yc (centered columns)
-        SimpleMatrix Yc = new SimpleMatrix(n, Y.size());
-        for (int j = 0; j < Y.size(); j++) {
-            int col = Y.get(j);
-            double mean = 0.0;
-            for (int i = 0; i < n; i++) mean += data.getDouble(i, col);
-            mean /= n;
-            for (int i = 0; i < n; i++) {
-                Yc.set(i, j, data.getDouble(i, col) - mean);
-            }
-        }
-
-        // e = Yc * ω
-        return Yc.mult(omega).getDDRM().getData();
+        double[] e = Yc.mult(omega).getDDRM().getData();
+        boolean ok = (gapRatio <= gapThreshold) || !Double.isFinite(gapRatio);
+        return new ProjResult(e, gapRatio, ok);
     }
 
     // ---------------------- e ⟂ Z p-value ---------------------------
 
-    /** p-value for (e ⟂ Z) using multivariate overload; interface provides Fisher fallback. */
     private double pValueEvsZ(double[] e, List<Integer> Z) {
         final int n = e.length;
         if (Z == null || Z.isEmpty()) return 1.0;
 
-        // Build n x |Z| block
         double[][] Zcols = new double[n][Z.size()];
         for (int j = 0; j < Z.size(); j++) {
             int col = Z.get(j);
@@ -351,7 +391,7 @@ public class Gin {
             for (int i = 0; i < n; i++) d.add(i, i, ridge);
         }
         SimpleEVD<SimpleMatrix> evd = Ar.eig();
-        int n = Ar.getNumRows();
+        int n = Ar.numRows();
         SimpleMatrix U = new SimpleMatrix(n, n);
         SimpleMatrix Dm = new SimpleMatrix(n, n);
         for (int i = 0; i < n; i++) {
@@ -415,17 +455,18 @@ public class Gin {
 
     private String clustersAsNames(List<List<Integer>> clusters) {
         return clusters.stream()
-                .map(cl -> cl.stream().map(i -> vars.get(i).getName()).toList().toString())
+                .map(cl -> cl.stream().map(i -> vars.get(i).getName()).collect(Collectors.toList()).toString())
                 .collect(Collectors.joining(" | "));
     }
 
-    public enum OrderMode { IT, MI } // MATLAB default is MI; we implement IT and stub MI.
+    public enum OrderMode { IT, MI } // MI stubbed
 
     // --------------------------- Helper ------------------------------
 
     private static final class EdgeCand {
-        final int i, j;
-        final double p;
-        EdgeCand(int i, int j, double p) { this.i = i; this.j = j; this.p = p; }
+        final int i, j;     // direction i -> j
+        final double p;     // p(i->j)
+        final double pOpp;  // p(j->i) for asymmetry gate
+        EdgeCand(int i, int j, double p, double pOpp) { this.i = i; this.j = j; this.p = p; this.pOpp = pOpp; }
     }
 }
