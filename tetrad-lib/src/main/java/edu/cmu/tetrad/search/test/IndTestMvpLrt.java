@@ -71,7 +71,6 @@ public class IndTestMvpLrt implements IndependenceTest {
      * True if verbose output should be printed.
      */
     private boolean verbose;
-    private int effectiveSampleSize;
 
     /**
      * Constructor.
@@ -228,11 +227,6 @@ public class IndTestMvpLrt implements IndependenceTest {
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

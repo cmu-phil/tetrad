@@ -72,7 +72,6 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     private double alpha;
     private boolean verbose = true;
     private double cutoff = Double.NaN;
-    private int effectiveSampleSize;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -341,11 +340,6 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         dataSets.add(this.dataSet);
 
         return dataSets;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

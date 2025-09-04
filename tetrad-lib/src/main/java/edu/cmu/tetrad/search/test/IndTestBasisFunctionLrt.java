@@ -94,7 +94,6 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
      * otherwise, use equations for all of X1, X2,...,Xp.
      */
     private boolean doOneEquationOnly;
-    private int effectiveSampleSize;
 
     /**
      * Constructs an instance of IndTestBasisFunctionLrtCovariance. This constructor initializes the object using a
@@ -313,11 +312,6 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
             throw new IllegalArgumentException("Alpha must be between 0 and 1.");
         }
         this.alpha = alpha;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

@@ -54,7 +54,6 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
      * Represents a boolean flag indicating whether verbose output is to be printed.
      */
     private boolean verbose;
-    private int effectiveSampleSize;
 
     /**
      * Constructor.
@@ -173,11 +172,6 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

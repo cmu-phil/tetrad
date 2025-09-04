@@ -97,7 +97,6 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      * whether to print verbose output
      */
     private boolean verbose;
-    private int effectiveSampleSize;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -297,11 +296,6 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     @Override
     public List<DataSet> getDataSets() {
         return this.dataSets;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

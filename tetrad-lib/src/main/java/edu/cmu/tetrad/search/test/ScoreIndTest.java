@@ -69,7 +69,6 @@ public class ScoreIndTest implements IndependenceTest {
      * A boolean variable indicating whether verbose output should be printed.
      */
     private boolean verbose;
-    private int effectiveSampleSize;
 
     /**
      * <p>Constructor for ScoreIndTest.</p>
@@ -216,11 +215,6 @@ public class ScoreIndTest implements IndependenceTest {
      */
     public List<DataSet> getDataSets() {
         throw new UnsupportedOperationException("Method not implemented");
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

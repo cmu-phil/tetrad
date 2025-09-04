@@ -95,7 +95,6 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
      * Represents a boolean flag indicating whether the independence test is verbose.
      */
     private boolean verbose;
-    private int effectiveSampleSize;
 
     /**
      * Private constructor to prevent instantiation.
@@ -450,11 +449,6 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

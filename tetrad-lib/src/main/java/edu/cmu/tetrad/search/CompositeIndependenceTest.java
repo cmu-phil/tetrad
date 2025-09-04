@@ -15,7 +15,6 @@ import java.util.Set;
  */
 public class CompositeIndependenceTest implements IndependenceTest {
     private final IndependenceTest[] independenceTests;
-    private int effectiveSampleSize;
 
     /**
      * <p>Constructor for CompositeIndependenceTest.</p>
@@ -64,10 +63,5 @@ public class CompositeIndependenceTest implements IndependenceTest {
     @Override
     public void setVerbose(boolean verbose) {
 
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 }

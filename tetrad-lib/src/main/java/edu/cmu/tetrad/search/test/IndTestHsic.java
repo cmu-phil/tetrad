@@ -91,7 +91,6 @@ public final class IndTestHsic implements IndependenceTest {
      * Whether to print verbose output.
      */
     private boolean verbose;
-    private int effectiveSampleSize;
 
 
     /**
@@ -572,11 +571,6 @@ public final class IndTestHsic implements IndependenceTest {
         }
 
         this.alpha = alpha;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

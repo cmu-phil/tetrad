@@ -83,7 +83,6 @@ public final class IndTestCramerT implements IndependenceTest {
      */
     private double storedR;
     private boolean verbose;
-    private int effectiveSampleSize;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -307,11 +306,6 @@ public final class IndTestCramerT implements IndependenceTest {
         }
 
         this.alpha = alpha;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     private ICovarianceMatrix covMatrix() {

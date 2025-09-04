@@ -74,7 +74,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      * True if verbose output should be printed.
      */
     private boolean verbose;
-    private int effectiveSampleSize;
 
     /**
      * Constructor.
@@ -265,11 +264,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         }
 
         return new CovarianceMatrix(DataTransforms.concatenate(_dataSets));
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

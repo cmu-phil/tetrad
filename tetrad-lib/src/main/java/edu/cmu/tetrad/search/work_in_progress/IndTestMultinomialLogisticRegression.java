@@ -93,7 +93,6 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
      * A private boolean field that holds the value of verbose.
      */
     private boolean verbose;
-    private int effectiveSampleSize;
 
     /**
      * <p>Constructor for IndTestMultinomialLogisticRegression.</p>
@@ -386,11 +385,6 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

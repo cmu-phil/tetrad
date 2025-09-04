@@ -70,7 +70,6 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
     private double posterior;
 
     private boolean verbose;
-    private int effectiveSampleSize;
 
     /**
      * Initializes the test using a discrete data sets.
@@ -222,11 +221,6 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
     @Override
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

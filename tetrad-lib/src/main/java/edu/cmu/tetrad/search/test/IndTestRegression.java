@@ -76,7 +76,6 @@ public final class IndTestRegression implements IndependenceTest {
      * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
      */
     private boolean verbose;
-    private int effectiveSampleSize;
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation matrix implied by the
@@ -196,11 +195,6 @@ public final class IndTestRegression implements IndependenceTest {
         }
 
         this.alpha = alpha;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

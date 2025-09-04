@@ -90,7 +90,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      * True if verbose output should be printed.
      */
     private boolean verbose;
-    private int effectiveSampleSize;
 
     /**
      * Constructs the test using the given (mixed) data set.
@@ -274,11 +273,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
             throw new IllegalArgumentException("Alpha must be between 0 and 1.");
         }
         this.alpha = alpha;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

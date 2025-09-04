@@ -106,7 +106,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      * Active row indices (samples) used in this test run.
      */
     private List<Integer> rows;
-    private int effectiveSampleSize;
 
     /**
      * Constructs a Kci instance with the given DataSet.
@@ -349,11 +348,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     @Override
     public void setAlpha(double alpha) {
         this.alpha = alpha;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     // ---------------------- public API ----------------------

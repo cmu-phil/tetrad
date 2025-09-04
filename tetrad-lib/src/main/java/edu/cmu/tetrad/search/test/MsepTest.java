@@ -372,11 +372,6 @@ public class MsepTest implements IndependenceTest {
         throw new UnsupportedOperationException("Method mot implemented.");
     }
 
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        throw new UnsupportedOperationException("Method mot supported.");
-    }
-
     /**
      * Returns the {@link Node} object with the given name.
      *

@@ -139,7 +139,6 @@ public class KciOld implements IndependenceTest, RowsSettable, RawMarginalIndepe
      * The rows used in the test.
      */
     private List<Integer> rows = null;
-    private int effectiveSampleSize;
 
     /**
      * Constructor.
@@ -446,11 +445,6 @@ public class KciOld implements IndependenceTest, RowsSettable, RawMarginalIndepe
         LinkedList<DataSet> L = new LinkedList<>();
         L.add(this.dataSet);
         return L;
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

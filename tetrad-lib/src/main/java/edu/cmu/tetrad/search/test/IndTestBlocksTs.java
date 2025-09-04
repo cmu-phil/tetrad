@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.util.EffectiveSampleSizeAware;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.ejml.simple.SimpleMatrix;
@@ -27,7 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @see edu.cmu.tetrad.search.test.IndTestTrekSep
  */
-public class IndTestBlocksTs implements IndependenceTest, BlockTest {
+public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeAware,  BlockTest {
 
     // ---- Cache sizes (tune) ----
     private static final int RANK_CACHE_MAX = 400_000; // (L,R,n,alpha,splitSeed,randomize,numTrials)->rank
@@ -77,6 +78,7 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
         this.nodeHash = nodesHash;
 
         this.n = blockSpec.dataSet().getNumRows();
+        this.effectiveSampleSize = blockSpec.dataSet().getNumRows();
         this.S = new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix();
 
         final int B = blockSpec.blocks().size();
@@ -180,7 +182,8 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
 
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
+        if (effectiveSampleSize < -1) throw new IllegalArgumentException("Effective sample size must be -1 or >= 0.");
+        this.effectiveSampleSize = effectiveSampleSize == -1 ? this.effectiveSampleSize : effectiveSampleSize;
     }
 
     /**
@@ -285,10 +288,10 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
     }
 
     private int getRank(int[] L, int[] R) {
-        RKey key = new RKey(L, R, n, alpha, splitSeed, randomizeSplits, numTrials);
+        RKey key = new RKey(L, R, effectiveSampleSize, alpha, splitSeed, randomizeSplits, numTrials);
         Integer cached = rankCache.get(key);
         if (cached != null) return cached;
-        int rank = RankTests.estimateWilksRank(S, L, R, n, alpha);
+        int rank = RankTests.estimateWilksRank(S, L, R, effectiveSampleSize, alpha);
         if (rank < 0) rank = 0;
         rankCache.put(key, rank);
         return rank;

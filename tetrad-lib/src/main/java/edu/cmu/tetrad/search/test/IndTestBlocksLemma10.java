@@ -51,7 +51,6 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
     private boolean verbose = false;
     private EqualityMode mode = EqualityMode.LE; // robust default: accept rank <= |C|
     private int tol = 0;                         // integer tolerance on the equality (0 = strict)
-    private int effectiveSampleSize;
 
     /**
      * Constructs an instance of IndTestBlocksLemma10 using the provided block specification. Performs initialization,
@@ -199,11 +198,6 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("Alpha must be in (0,1).");
         this.alpha = alpha; // alpha participates in cache key
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     // === Core ===

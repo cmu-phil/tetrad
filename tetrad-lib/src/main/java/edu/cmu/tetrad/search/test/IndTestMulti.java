@@ -60,7 +60,6 @@ public final class IndTestMulti implements IndependenceTest {
      * True if verbose output should be printed.
      */
     private boolean verbose;
-    private int effectiveSampleSize;
 
     /**
      * Constructs a new pooled independence test for the given data sets.
@@ -137,11 +136,6 @@ public final class IndTestMulti implements IndependenceTest {
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**
