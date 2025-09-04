@@ -56,7 +56,7 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeAwa
     private long splitSeed = 17L;
     private int numTrials = 1; // take min rank over trials
     private boolean leftGetsSmallerHalfWhenOdd = true; // if true and |Zi| is odd, left gets floor(|Zi|/2)
-    private int effectiveSampleSize;
+    private OptionalInt nEff;
 
     /**
      * Construct from a BlockSpec (same pattern as Lemma 10 test).
@@ -78,7 +78,6 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeAwa
         this.nodeHash = nodesHash;
 
         this.n = blockSpec.dataSet().getNumRows();
-        this.effectiveSampleSize = blockSpec.dataSet().getNumRows();
         this.S = new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix();
 
         final int B = blockSpec.blocks().size();
@@ -181,9 +180,14 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeAwa
     }
 
     @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        if (effectiveSampleSize < -1) throw new IllegalArgumentException("Effective sample size must be -1 or >= 0.");
-        this.effectiveSampleSize = effectiveSampleSize == -1 ? this.effectiveSampleSize : effectiveSampleSize;
+    public void setEffectiveSampleSize(int n) {
+        if (n <= 0) throw new IllegalArgumentException("nEff must be > 0");
+        this.nEff = OptionalInt.of(n);
+    }
+
+    @Override
+    public OptionalInt getEffectiveSampleSize() {
+        return this.nEff;
     }
 
     /**
@@ -288,10 +292,10 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeAwa
     }
 
     private int getRank(int[] L, int[] R) {
-        RKey key = new RKey(L, R, effectiveSampleSize, alpha, splitSeed, randomizeSplits, numTrials);
+        RKey key = new RKey(L, R, nEff.orElse(n), alpha, splitSeed, randomizeSplits, numTrials);
         Integer cached = rankCache.get(key);
         if (cached != null) return cached;
-        int rank = RankTests.estimateWilksRank(S, L, R, effectiveSampleSize, alpha);
+        int rank = RankTests.estimateWilksRank(S, L, R, nEff.orElse(n), alpha);
         if (rank < 0) rank = 0;
         rankCache.put(key, rank);
         return rank;
