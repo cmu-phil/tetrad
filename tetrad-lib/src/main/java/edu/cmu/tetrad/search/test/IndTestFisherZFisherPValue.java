@@ -84,8 +84,10 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
      * True if verbose output should be printed.
      */
     private boolean verbose;
+    private int effectiveSampleSize;
 
     /**
+
      * Constructor.
      *
      * @param dataSets The continuous datasets to analyze.
@@ -273,6 +275,11 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         }
 
         return new CovarianceMatrix(DataTransforms.concatenate(_dataSets));
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

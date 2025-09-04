@@ -65,6 +65,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      * higher value allows for greater tolerance for potential dependencies.
      */
     private double alpha;
+    private int effectiveSampleSize;
 
     /**
      * Constructs a new {@code IndTestConditionalCorrelation} to check independence based on conditional correlations
@@ -154,6 +155,11 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     @Override
     public void setAlpha(double alpha) {
         this.alpha = alpha;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

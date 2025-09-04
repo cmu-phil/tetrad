@@ -86,6 +86,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
      */
     private List<Integer> rows = null;
     private double pValue;
+    private int effectiveSampleSize;
 
     /**
      * Constructor.
@@ -259,6 +260,11 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

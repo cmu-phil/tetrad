@@ -211,6 +211,8 @@ public interface IndependenceTest {
     default List<DataSet> getDataSets() {
         throw new UnsupportedOperationException("The getDataSets() method is not implemented for this test.");
     }
+
+    void setEffectiveSampleSize(int effectiveSampleSize);
 }
 
 

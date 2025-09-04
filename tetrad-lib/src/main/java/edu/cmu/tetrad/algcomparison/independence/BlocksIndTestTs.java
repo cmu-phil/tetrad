@@ -2,17 +2,13 @@ package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.test.IndTestBlocksLemma10;
 import edu.cmu.tetrad.search.test.IndTestBlocksTs;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import org.ejml.simple.SimpleMatrix;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -72,6 +68,7 @@ public class BlocksIndTestTs implements BlockIndependenceWrapper {
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
         IndTestBlocksTs test = new IndTestBlocksTs(blockSpec);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
+        test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return test;
     }
 
@@ -105,6 +102,7 @@ public class BlocksIndTestTs implements BlockIndependenceWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 }

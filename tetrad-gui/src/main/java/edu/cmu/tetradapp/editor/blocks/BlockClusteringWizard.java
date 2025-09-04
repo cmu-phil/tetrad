@@ -312,7 +312,7 @@ public class BlockClusteringWizard extends JPanel {
 //                btnSearch.setEnabled(false);
                 status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : "") + " …");
 
-                int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
+                int ess = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
                 ess = ess == -1 ? dataSet.getNumRows() : ess;
 
                 BlockDiscoverer discoverer = buildDiscoverer(alg, testName, ess);
@@ -356,7 +356,7 @@ public class BlockClusteringWizard extends JPanel {
         return switch (alg) {
             case "TSC" -> {
                 yield BlockDiscoverers.tsc(dataSet, parameters.getDouble(Params.ALPHA),
-                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE),
+                        parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE),
                         parameters.getDouble(Params.REGULARIZATION_LAMBDA),
                         parameters.getInt(Params.MAX_RANK),
                         policy,
@@ -366,7 +366,7 @@ public class BlockClusteringWizard extends JPanel {
             }
             case "FOFC" -> {
                 yield BlockDiscoverers.fofc(dataSet, parameters.getDouble(Params.ALPHA),
-                        parameters.getInt(Params.EXPECTED_SAMPLE_SIZE), policy,
+                        parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE), policy,
                         parameters.getBoolean(Params.VERBOSE)
                 );
             }
@@ -406,7 +406,7 @@ public class BlockClusteringWizard extends JPanel {
             default -> paramList.add(Params.ALPHA);
         }
 
-        paramList.add(Params.EXPECTED_SAMPLE_SIZE);
+        paramList.add(Params.EFFECTIVE_SAMPLE_SIZE);
         paramList.add(Params.TSC_SINGLETON_POLICY);
         paramList.add(Params.VERBOSE);
     }

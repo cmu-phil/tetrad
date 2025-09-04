@@ -61,6 +61,7 @@ public class IndTestIod implements IndependenceTest {
      * Whether the test is verbose.
      */
     private boolean verbose;
+    private int effectiveSampleSize;
 
     /**
      * Constructs a new pooled independence test from the given list of independence tests.
@@ -170,6 +171,11 @@ public class IndTestIod implements IndependenceTest {
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

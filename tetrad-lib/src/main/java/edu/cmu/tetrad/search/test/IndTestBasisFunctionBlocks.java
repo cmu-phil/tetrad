@@ -34,6 +34,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
     // ---- Knobs ----
     private double alpha = 0.01;
+    private int effectiveSampleSize;
 
     /**
      * Constructs an instance of {@code IndTestBasisFunctionBlocks} to perform block-based
@@ -242,6 +243,11 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("alpha in (0,1)");
         this.alpha = alpha;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

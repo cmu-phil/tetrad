@@ -83,7 +83,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
         this.parameters = parameters;
         this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
         int sampleSize = dataSet.getNumRows();
-        int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
+        int ess = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
         this.ess = ess == -1 ? sampleSize : ess;
 
         // If we're in simulation mode, grab the true clusters and their latent names so we can use these to
@@ -324,7 +324,7 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
 
         return switch (alg) {
             case "TSC" -> BlockDiscoverers.tsc(dataSet, parameters.getDouble(Params.ALPHA),
-                    parameters.getInt(Params.EXPECTED_SAMPLE_SIZE),
+                    parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE),
                     parameters.getDouble(Params.REGULARIZATION_LAMBDA),
                     parameters.getInt(Params.MAX_RANK),
                     policy,

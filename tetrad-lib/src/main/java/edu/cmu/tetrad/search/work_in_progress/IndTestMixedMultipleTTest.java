@@ -99,6 +99,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
      * test will consider all types of dependencies equally.
      */
     private boolean preferLinear = true;
+    private int effectiveSampleSize;
 
     /**
      * <p>Constructor for IndTestMixedMultipleTTest.</p>
@@ -212,6 +213,11 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

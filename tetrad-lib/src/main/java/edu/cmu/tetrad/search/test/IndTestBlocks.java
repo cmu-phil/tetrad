@@ -43,6 +43,7 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
     // knobs
     private double alpha = 0.01;
     private boolean verbose = false;
+    private int effectiveSampleSize;
 
     /**
      * Constructs an instance of IndTestBlocks using the provided block specification. This class is used for conducting
@@ -163,6 +164,11 @@ public class IndTestBlocks implements IndependenceTest, BlockTest {
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("Alpha must be in (0,1).");
         this.alpha = alpha;  // alpha participates in cache key
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     private int getEstimatedRank(Node x, Node y, Set<Node> z) {

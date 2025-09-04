@@ -77,6 +77,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     private boolean verbose = true;
     private double fisherZ = Double.NaN;
     private double cutoff = Double.NaN;
+    private int effectiveSampleSize;
 
 
     //==========================CONSTRUCTORS=============================//
@@ -387,6 +388,11 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         List<DataSet> dataSets = new ArrayList<>();
         dataSets.add(this.dataSet);
         return dataSets;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

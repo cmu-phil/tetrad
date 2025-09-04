@@ -63,6 +63,7 @@ public class IndTestSepsetDci implements IndependenceTest {
      */
     private final List<Node> observedVars;
     private boolean verbose;
+    private int effectiveSampleSize;
 
     /**
      * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
@@ -210,6 +211,11 @@ public class IndTestSepsetDci implements IndependenceTest {
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

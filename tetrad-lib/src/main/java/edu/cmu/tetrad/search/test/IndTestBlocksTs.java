@@ -55,6 +55,7 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
     private long splitSeed = 17L;
     private int numTrials = 1; // take min rank over trials
     private boolean leftGetsSmallerHalfWhenOdd = true; // if true and |Zi| is odd, left gets floor(|Zi|/2)
+    private int effectiveSampleSize;
 
     /**
      * Construct from a BlockSpec (same pattern as Lemma 10 test).
@@ -175,6 +176,11 @@ public class IndTestBlocksTs implements IndependenceTest, BlockTest {
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("Alpha must be in (0,1).");
         this.alpha = alpha;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

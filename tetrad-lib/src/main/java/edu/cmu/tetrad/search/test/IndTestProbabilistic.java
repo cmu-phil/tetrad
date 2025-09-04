@@ -88,6 +88,7 @@ public class IndTestProbabilistic implements IndependenceTest {
      * The prior equivalent sample size.
      */
     private double priorEquivalentSampleSize = 10;
+    private int effectiveSampleSize;
 
     /**
      * Initializes the test using a discrete data sets.
@@ -327,6 +328,11 @@ public class IndTestProbabilistic implements IndependenceTest {
     @Override
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**

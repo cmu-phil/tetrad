@@ -1056,9 +1056,9 @@ public final class Params {
      */
     public static final String MIMBUILD_TYPE = "mimbuildType";
     /**
-     * Constant <code>EXPECTED_SAMPLE_SIZE="expectedSampleSize"</code>
+     * Constant <code>EFFECTIVE_SAMPLE_SIZE="effectiveSampleSize"</code>
      */
-    public static final String EXPECTED_SAMPLE_SIZE = "expectedSampleSize";
+    public static final String EFFECTIVE_SAMPLE_SIZE = "effectiveSampleSize";
     /**
      * Constant <code>CLUSTER_SIZES="clusterSizes"</code>
      */

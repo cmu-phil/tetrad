@@ -82,6 +82,7 @@ public final class IndTestTrekSep implements IndependenceTest {
      * The significance level of the independence tests.
      */
     private double alpha;
+    private int effectiveSampleSize;
 
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
@@ -330,6 +331,11 @@ public final class IndTestTrekSep implements IndependenceTest {
     @Override
     public List<DataSet> getDataSets() {
         throw new UnsupportedOperationException("Dataset not available.");
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**
