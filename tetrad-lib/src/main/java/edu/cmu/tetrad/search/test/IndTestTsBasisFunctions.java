@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -11,10 +9,7 @@ import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.utils.Embedding;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * IndTestBasisFunctionBlocks - Builds a per-variable truncated basis expansion (via Embedding) - Constructs the blocks
@@ -34,6 +29,7 @@ public class IndTestTsBasisFunctions implements IndependenceTest, RawMarginalInd
     private final SimpleMatrix Sphi;                 // D x D covariance of embedded data
     private final List<List<Integer>> blocks;        // mapping original var -> embedded column indices
     private final IndTestBlocksTs blocksTest;          // delegate
+    private final int degree;
 
     // ---- Knobs ----
     private double alpha = 0.01;
@@ -51,6 +47,7 @@ public class IndTestTsBasisFunctions implements IndependenceTest, RawMarginalInd
         if (degree < 0) throw new IllegalArgumentException("degree must be >= 0");
 
         this.raw = raw;
+        this.degree = degree;
         // Keep the exact Node instances from the caller's dataset
         this.variables = new ArrayList<>(raw.getVariables());
 
@@ -155,8 +152,46 @@ public class IndTestTsBasisFunctions implements IndependenceTest, RawMarginalInd
      */
     @Override
     public double computePValue(double[] x, double[] y) {
-        throw new UnsupportedOperationException(
-                "Use checkIndependence(Node,Node,Set) with the dataset; array version is unsupported for block tests.");
+        if (x == null || y == null) return 1.0;
+        int n = x.length;
+        if (y.length != n || n < 3) return 1.0;
+
+        // Build a tiny 2-column dataset for BFIT
+        DataSet ds = twoColumnDataSet("X", x, "Y", y);
+
+        // Build the BFIT test bound to this dataset
+        IndTestTsBasisFunctions test =  new IndTestTsBasisFunctions(ds, degree);
+
+        // Resolve nodes and run the marginal test
+        Node X = ds.getVariable("X");
+        Node Y = ds.getVariable("Y");
+
+        IndependenceResult r = test.checkIndependence(X, Y, Collections.emptySet());
+        double p = (r != null) ? r.getPValue() : 1.0;
+
+        // Clamp for numeric robustness
+        if (!Double.isFinite(p)) return 1.0;
+        return Math.max(0.0, Math.min(p, 1.0));
+
+//        throw new UnsupportedOperationException(
+//                "Use checkIndependence(Node,Node,Set) with the dataset; array version is unsupported for block tests.");
+    }
+
+    private static DataSet twoColumnDataSet(String nameX, double[] x,
+                                            String nameY, double[] y) {
+        int n = x.length;
+        double[][] m = new double[n][2];
+        for (int i = 0; i < n; i++) {
+            m[i][0] = x[i];
+            m[i][1] = y[i];
+        }
+        List<Node> vars = new ArrayList<>(2);
+        vars.add(new ContinuousVariable(nameX));
+        vars.add(new ContinuousVariable(nameY));
+
+        DoubleDataBox dataBox = new DoubleDataBox(m);
+
+        return new BoxDataSet(dataBox, vars);
     }
 
     /**

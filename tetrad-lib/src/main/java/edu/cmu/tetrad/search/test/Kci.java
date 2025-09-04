@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -689,49 +688,99 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         return sigma;
     }
 
-    @Override
-    // === Public API: marginal (unconditional) HSIC p-value for two 1-D arrays ===
+//    @Override
+//    // === Public API: marginal (unconditional) HSIC p-value for two 1-D arrays ===
+//    public double computePValue(double[] x, double[] y) {
+//        if (x == null || y == null) throw new IllegalArgumentException("null input");
+//        int n = x.length;
+//        if (y.length != n) throw new IllegalArgumentException("Length mismatch");
+//        if (n <= 1) return 1.0;
+//
+//        // 1) Build kernels per your selected kernelType
+//        SimpleMatrix Kx, Ky;
+//        switch (getKernelType()) {
+//            case GAUSSIAN -> {
+//                double sigmaX = bandwidth1D(x) * getScalingFactor();
+//                double sigmaY = bandwidth1D(y) * getScalingFactor();
+//                Kx = gaussianKernel1D(x, sigmaX);
+//                Ky = gaussianKernel1D(y, sigmaY);
+//            }
+//            case LINEAR -> {
+//                Kx = linearKernel1D(x);
+//                Ky = linearKernel1D(y);
+//            }
+//            case POLYNOMIAL -> {
+//                // Use polyGamma if >0, else default to 1/d with d=1 ⇒ 1.0
+//                double gamma = (this.getPolyGamma() > 0.0) ? this.getPolyGamma() : 1.0;
+//                Kx = polynomialKernel1D(x, gamma, this.getPolyCoef0(), this.getPolyDegree());
+//                Ky = polynomialKernel1D(y, gamma, this.getPolyCoef0(), this.getPolyDegree());
+//            }
+//            default -> throw new IllegalStateException("Unknown kernel type: " + getKernelType());
+//        }
+//
+//        // 2) Center the kernels (same centering you use elsewhere)
+//        SimpleMatrix Kxc = centerKernel(Kx);
+//        SimpleMatrix Kyc = centerKernel(Ky);
+//
+//        // 3) HSIC statistic (unconditional): S = (1/n) * tr(Kxc * Kyc)
+//        double stat = Kxc.elementMult(Kyc).elementSum() / n;
+//
+//        // 4) p-value using the same paths as conditional (RZ = I here)
+//        if (isApproximate()) {
+//            return pValueGammaConditional(Kxc, Kyc, stat, n);
+//        } else {
+//            return permutationPValueConditional(Kxc, Kyc, stat, n, getNumPermutations(), rng);
+//        }
+//    }
+
     public double computePValue(double[] x, double[] y) {
-        if (x == null || y == null) throw new IllegalArgumentException("null input");
+        if (x == null || y == null) return 1.0;
         int n = x.length;
-        if (y.length != n) throw new IllegalArgumentException("Length mismatch");
-        if (n <= 1) return 1.0;
+        if (y.length != n || n < 3) return 1.0;
 
-        // 1) Build kernels per your selected kernelType
-        SimpleMatrix Kx, Ky;
-        switch (getKernelType()) {
-            case GAUSSIAN -> {
-                double sigmaX = bandwidth1D(x) * getScalingFactor();
-                double sigmaY = bandwidth1D(y) * getScalingFactor();
-                Kx = gaussianKernel1D(x, sigmaX);
-                Ky = gaussianKernel1D(y, sigmaY);
-            }
-            case LINEAR -> {
-                Kx = linearKernel1D(x);
-                Ky = linearKernel1D(y);
-            }
-            case POLYNOMIAL -> {
-                // Use polyGamma if >0, else default to 1/d with d=1 ⇒ 1.0
-                double gamma = (this.getPolyGamma() > 0.0) ? this.getPolyGamma() : 1.0;
-                Kx = polynomialKernel1D(x, gamma, this.getPolyCoef0(), this.getPolyDegree());
-                Ky = polynomialKernel1D(y, gamma, this.getPolyCoef0(), this.getPolyDegree());
-            }
-            default -> throw new IllegalStateException("Unknown kernel type: " + getKernelType());
+        // Build a tiny 2-column dataset for BFIT
+        DataSet ds = twoColumnDataSet("X", x, "Y", y);
+
+        // Build the BFIT test bound to this dataset
+        Kci test =  new Kci(ds);
+        test.setAlpha(alpha);
+        test.setVerbose(verbose);
+
+        // Resolve nodes and run the marginal test
+        Node X = ds.getVariable("X");
+        Node Y = ds.getVariable("Y");
+
+        IndependenceResult r = null;
+        try {
+            r = test.checkIndependence(X, Y, Collections.emptySet());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
+        double p = (r != null) ? r.getPValue() : 1.0;
 
-        // 2) Center the kernels (same centering you use elsewhere)
-        SimpleMatrix Kxc = centerKernel(Kx);
-        SimpleMatrix Kyc = centerKernel(Ky);
+        // Clamp for numeric robustness
+        if (!Double.isFinite(p)) return 1.0;
+        return Math.max(0.0, Math.min(p, 1.0));
 
-        // 3) HSIC statistic (unconditional): S = (1/n) * tr(Kxc * Kyc)
-        double stat = Kxc.elementMult(Kyc).elementSum() / n;
+//        throw new UnsupportedOperationException(
+//                "Use checkIndependence(Node,Node,Set) with the dataset; array version is unsupported for block tests.");
+    }
 
-        // 4) p-value using the same paths as conditional (RZ = I here)
-        if (isApproximate()) {
-            return pValueGammaConditional(Kxc, Kyc, stat, n);
-        } else {
-            return permutationPValueConditional(Kxc, Kyc, stat, n, getNumPermutations(), rng);
+    private static DataSet twoColumnDataSet(String nameX, double[] x,
+                                            String nameY, double[] y) {
+        int n = x.length;
+        double[][] m = new double[n][2];
+        for (int i = 0; i < n; i++) {
+            m[i][0] = x[i];
+            m[i][1] = y[i];
         }
+        List<Node> vars = new ArrayList<>(2);
+        vars.add(new ContinuousVariable(nameX));
+        vars.add(new ContinuousVariable(nameY));
+
+        DoubleDataBox dataBox = new DoubleDataBox(m);
+
+        return new BoxDataSet(dataBox, vars);
     }
 
     // === Optional: if you like your previous factoring ===

@@ -158,29 +158,38 @@ public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
 
     /** Good first try (default). */
     private static void applyBalanced(edu.cmu.tetrad.search.Gin g) {
-        safeCall(() -> g.setAsymmetryDelta(0.08)); // prefer direction by ≥ 0.08
-        safeCall(() -> g.setAddMargin(0.002));     // require p ≥ alpha + 0.002
-        safeCall(() -> g.setGapThreshold(0.90));   // σ_min/σ_next ≤ 0.90
-        safeCall(() -> g.setMaxInDegree(1));       // ≤ 1 parent per latent
-        safeCall(() -> g.setRidge(1e-8));
+//        safeCall(() -> g.setAsymmetryDelta(0.08)); // prefer direction by ≥ 0.08
+//        safeCall(() -> g.setAddMargin(0.002));     // require p ≥ alpha + 0.002
+//        safeCall(() -> g.setGapThreshold(0.90));   // σ_min/σ_next ≤ 0.90
+//        safeCall(() -> g.setMaxInDegree(5));       // ≤ 1 parent per latent
+//        safeCall(() -> g.setRidge(1e-2));
     }
 
     /** Fewer false edges; for small n or noisier linear tests. */
     private static void applyConservative(edu.cmu.tetrad.search.Gin g) {
-        safeCall(() -> g.setAsymmetryDelta(0.12));
-        safeCall(() -> g.setAddMargin(0.005));
-        safeCall(() -> g.setGapThreshold(0.85));
-        safeCall(() -> g.setMaxInDegree(1));
-        safeCall(() -> g.setRidge(3e-8));
+//        safeCall(() -> g.setPureMode(true));
+//        safeCall(() -> g.setPureGapThreshold(0.95));
+//        safeCall(() -> g.setPureMinVarE(.2));
+//        safeCall(() -> g.setAsymmetryDelta(0.12));
+//        safeCall(() -> g.setAddMargin(0.005));
+//        safeCall(() -> g.setGapThreshold(0.85));
+//        safeCall(() -> g.setMaxInDegree(1));
+//        safeCall(() -> g.setRidge(3e-8));
     }
 
     /** More recall; when signals are strong and/or n is large. */
-    private static void applyExploratory(edu.cmu.tetrad.search.Gin g) {
-        safeCall(() -> g.setAsymmetryDelta(0.05));
-        safeCall(() -> g.setAddMargin(0.001));
-        safeCall(() -> g.setGapThreshold(0.95));
-        safeCall(() -> g.setMaxInDegree(2));
-        safeCall(() -> g.setRidge(1e-8));
+    private static void applyExploratory(edu.cmu.tetrad.search.Gin gin) {
+//        safeCall(() -> g.setAsymmetryDelta(0.05));
+//        safeCall(() -> g.setAddMargin(0.001));
+//        safeCall(() -> g.setGapThreshold(0.95));
+//        safeCall(() -> g.setMaxInDegree(2));
+//        safeCall(() -> g.setRidge(1e-8));
+
+//        gin.setPureMode(false);
+//        gin.setUseHoldout(true);
+//        gin.setConsensusRepeats(5);
+//        gin.setConsensusMode(edu.cmu.tetrad.search.Gin.ConsensusMode.MEDIAN);
+//        gin.setGapThreshold(0.8);   // a tad stricter
     }
 
     // Utility: ignore missing setter methods so this compiles on older Gin versions too.

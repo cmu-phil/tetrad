@@ -45,7 +45,7 @@ public class BasisFunctionIndTestTs implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestTsBasisFunctions test = new IndTestTsBasisFunctions(SimpleDataLoader.getMixedDataSet(dataSet),
+        IndTestTsBasisFunctions test = new IndTestTsBasisFunctions(SimpleDataLoader.getContinuousDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         return test;
