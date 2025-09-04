@@ -13,7 +13,7 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * Hybrid Conditional Gaussian model with discretization for discrete children that have continuous parents.
+ * Mixed Continuous/Discrete model with discretization for discrete children that have continuous parents.
  *
  * <p>Design goals:</p>
  * <ul>
@@ -24,10 +24,10 @@ import java.util.*;
  *   <li>Keep a stable row-indexing contract so tables can be read/written and scored efficiently.</li>
  * </ul>
  */
-public final class HybridCg {
+public final class MixedModel {
 
     // ======== PM (parametric model/skeleton & shapes) ========
-    public static final class HybridPm implements Pm, Serializable {
+    public static final class MixedPm implements Pm, Serializable {
         @Serial
         private static final long serialVersionUID = 1L;
 
@@ -47,8 +47,8 @@ public final class HybridCg {
         // bins = cutpoints.length + 1
         private final double[][][] contParentCutpointsForDiscreteChild;
 
-        public HybridPm(Graph dag, List<Node> nodeOrder, Map<Node, Boolean> discreteFlags,
-                        Map<Node, List<String>> categoryMap) {
+        public MixedPm(Graph dag, List<Node> nodeOrder, Map<Node, Boolean> discreteFlags,
+                       Map<Node, List<String>> categoryMap) {
             this.dag = Objects.requireNonNull(dag, "dag");
             this.nodes = nodeOrder.toArray(new Node[0]);
 
@@ -226,10 +226,10 @@ public final class HybridCg {
     }
 
     // ======== IM (numbers) ========
-    public static final class HybridIm implements Serializable {
+    public static final class MixedIm implements Serializable {
         @Serial
         private static final long serialVersionUID = 1L;
-        private final HybridPm pm;
+        private final MixedPm pm;
 
         // Continuous child: for node y, params[y] is rows x (m+2) where m = #cont parents; cols = [intercept, coeffs..., variance]
         private final double[][][] contParams; // null for discrete children
@@ -237,7 +237,7 @@ public final class HybridCg {
         // Discrete child: probs[y] is rows x card(y)
         private final double[][][] discProbs;   // null for continuous children
 
-        public HybridIm(HybridPm pm) {
+        public MixedIm(MixedPm pm) {
             this.pm = pm;
             int n = pm.nodes.length;
             this.contParams = new double[n][][];
@@ -299,7 +299,7 @@ public final class HybridCg {
         }
 
         // ======== Convenience: compute row indices on-the-fly for a data case ========
-        public static int rowIndexForCase(HybridPm pm, int nodeIndex, DataSet data, int row, int[] colIndex) {
+        public static int rowIndexForCase(MixedPm pm, int nodeIndex, DataSet data, int row, int[] colIndex) {
             int[] dps = pm.getDiscreteParents(nodeIndex);
             int[] cps = pm.getContinuousParents(nodeIndex);
             int[] discVals = new int[dps.length];
@@ -315,7 +315,7 @@ public final class HybridCg {
             return pm.getRowIndex(nodeIndex, discVals, contBins);
         }
 
-        public HybridPm getPm() {
+        public MixedPm getPm() {
             return pm;
         }
 
@@ -472,159 +472,6 @@ public final class HybridCg {
             return new Sample(contCols, discCols, n);
         }
 
-//    // ======== IM (numbers) ========
-//    public static final class HybridIm implements Serializable {
-//        @Serial private static final long serialVersionUID = 1L;
-//        private final HybridPm pm;
-//
-//        // Continuous child: for node y, params[y] is rows x (m+2) where m = #cont parents; cols = [intercept, coeffs..., variance]
-//        private final double[][][] contParams; // null for discrete children
-//
-//        // Discrete child: probs[y] is rows x card(y)
-//        private final double[][][] discProbs;   // null for continuous children
-//
-//        public HybridIm(HybridPm pm) {
-//            this.pm = pm;
-//            int n = pm.nodes.length;
-//            this.contParams = new double[n][][];
-//            this.discProbs = new double[n][][];
-//            for (int y = 0; y < n; y++) {
-//                int rows = pm.getNumRows(y);
-//                if (pm.isDiscrete[y]) {
-//                    this.discProbs[y] = new double[rows][pm.getCardinality(y)];
-//                } else {
-//                    int m = pm.getContinuousParents(y).length;
-//                    this.contParams[y] = new double[rows][m + 2];
-//                    for (int r = 0; r < rows; r++) this.contParams[y][r][m+1] = Double.NaN; // variance unset
-//                }
-//            }
-//        }
-//
-//        public HybridPm getPm() { return pm; }
-//
-//        // ===== Discrete child accessors =====
-//        public double getProbability(int nodeIndex, int rowIndex, int yCategory) { return discProbs[nodeIndex][rowIndex][yCategory]; }
-//        public void setProbability(int nodeIndex, int rowIndex, int yCategory, double p) { discProbs[nodeIndex][rowIndex][yCategory] = p; }
-//        public void normalizeRow(int nodeIndex, int rowIndex) {
-//            double[] row = discProbs[nodeIndex][rowIndex];
-//            double s = 0.0; for (double v : row) s += v; if (s <= 0) { Arrays.fill(row, 1.0/row.length); return; }
-//            for (int j = 0; j < row.length; j++) row[j] /= s;
-//        }
-//
-//        // ===== Continuous child accessors =====
-//        public double getIntercept(int nodeIndex, int rowIndex) { return contParams[nodeIndex][rowIndex][0]; }
-//        public void setIntercept(int nodeIndex, int rowIndex, double v) { contParams[nodeIndex][rowIndex][0] = v; }
-//        public double getCoefficient(int nodeIndex, int rowIndex, int contParentOrderIndex) { return contParams[nodeIndex][rowIndex][1 + contParentOrderIndex]; }
-//        public void setCoefficient(int nodeIndex, int rowIndex, int contParentOrderIndex, double v) { contParams[nodeIndex][rowIndex][1 + contParentOrderIndex] = v; }
-//        public double getVariance(int nodeIndex, int rowIndex) { int m = pm.getContinuousParents(nodeIndex).length; return contParams[nodeIndex][rowIndex][1 + m]; }
-//        public void setVariance(int nodeIndex, int rowIndex, double v) { int m = pm.getContinuousParents(nodeIndex).length; contParams[nodeIndex][rowIndex][1 + m] = v; }
-//
-//        // ===== Sampler =====
-//        /** Lightweight container for sampled columns by node index. */
-//        public static final class Sample {
-//            public final double[][] continuous; // [nodeIndex][row] for continuous nodes; null for discrete
-//            public final int[][] discrete;      // [nodeIndex][row] for discrete nodes; null for continuous
-//            public final int rows;
-//            Sample(double[][] contCols, int[][] discCols, int n) { this.continuous = contCols; this.discrete = discCols; this.rows = n; }
-//        }
-//
-//        /**
-//         * Simulate {@code n} rows from this IM.
-//         * <ul>
-//         *   <li>Order: a topological order over the DAG is computed internally.</li>
-//         *   <li>Discrete child with continuous parents: uses <b>discretized bins</b> of the parent values to select the CPT row.</li>
-//         *   <li>Continuous child: for each discrete-parent stratum, samples from the fitted Gaussian regression.</li>
-//         * </ul>
-//         */
-//        public Sample sample(int n, Random rng) {
-//            if (rng == null) rng = new Random();
-//            final int p = pm.nodes.length;
-//
-//            // Precompute topo order
-//            int[] topo = topologicalOrder(pm.getGraph(), pm.nodes);
-//
-//            // Allocate columns
-//            double[][] contCols = new double[p][];
-//            int[][] discCols = new int[p][];
-//            for (int j = 0; j < p; j++) {
-//                if (pm.isDiscrete(j)) discCols[j] = new int[n]; else contCols[j] = new double[n];
-//            }
-//
-//            // For quick parent lookup per node
-//            int[][] dps = new int[p][]; int[][] cps = new int[p][];
-//            for (int j = 0; j < p; j++) { dps[j] = pm.getDiscreteParents(j); cps[j] = pm.getContinuousParents(j); }
-//
-//            for (int r = 0; r < n; r++) {
-//                for (int idx = 0; idx < topo.length; idx++) {
-//                    int y = topo[idx];
-//                    if (pm.isDiscrete(y)) {
-//                        // build disc parent values
-//                        int[] discVals = new int[dps[y].length];
-//                        for (int i = 0; i < dps[y].length; i++) discVals[i] = discCols[dps[y][i]][r];
-//                        // build cont parent bins (if any)
-//                        int[] contBins = null;
-//                        if (cps[y].length > 0) {
-//                            contBins = new int[cps[y].length];
-//                            double[][] cuts = pm.getContParentCutpointsForDiscreteChild(y)
-//                                    .orElseThrow(() -> new IllegalStateException("cutpoints not set for child " + pm.nodes[y]));
-//                            for (int t = 0; t < cps[y].length; t++) {
-//                                double v = contCols[cps[y][t]][r];
-//                                contBins[t] = binFromCutpoints(cuts[t], v);
-//                            }
-//                        }
-//                        int rowIndex = pm.getRowIndex(y, discVals, contBins);
-//                        discCols[y][r] = sampleCategorical(discProbs[y][rowIndex], rng);
-//                    } else {
-//                        // Continuous child
-//                        int[] discVals = new int[dps[y].length];
-//                        for (int i = 0; i < dps[y].length; i++) discVals[i] = discCols[dps[y][i]][r];
-//                        int rowIndex = pm.getRowIndex(y, discVals, null);
-//                        double mean = getIntercept(y, rowIndex);
-//                        for (int t = 0; t < cps[y].length; t++) mean += getCoefficient(y, rowIndex, t) * contCols[cps[y][t]][r];
-//                        double var = getVariance(y, rowIndex);
-//                        double sd = var > 0 ? Math.sqrt(var) : 0.0;
-//                        contCols[y][r] = mean + sd * rng.nextGaussian();
-//                    }
-//                }
-//            }
-//            return new Sample(contCols, discCols, n);
-//        }
-//
-//        private static int sampleCategorical(double[] probs, Random rng) {
-//            double u = rng.nextDouble();
-//            double c = 0.0; for (int k = 0; k < probs.length; k++) { c += probs[k]; if (u <= c) return k; }
-//            return probs.length - 1; // guard for tiny rounding error
-//        }
-//
-//        private static int binFromCutpoints(double[] cuts, double v) {
-//            int b = 0; while (b < cuts.length && v > cuts[b]) b++; return b; // 0..cuts.length
-//        }
-//
-//        /** Kahn's algorithm using only parent links from Graph. */
-//        private static int[] topologicalOrder(Graph g, Node[] nodes) {
-//            int n = nodes.length;
-//            Map<Node,Integer> idx = new HashMap<>();
-//            for (int i = 0; i < n; i++) idx.put(nodes[i], i);
-//            int[] indeg = new int[n];
-//            List<List<Integer>> children = new ArrayList<>(n);
-//            for (int i = 0; i < n; i++) children.add(new ArrayList<>());
-//            for (int i = 0; i < n; i++) {
-//                Node v = nodes[i];
-//                for (Node p : g.getParents(v)) indeg[i]++;
-//                for (Node ch : g.getChildren(nodes[i])) children.get(i).add(idx.get(ch));
-//            }
-//            ArrayDeque<Integer> q = new ArrayDeque<>();
-//            for (int i = 0; i < n; i++) if (indeg[i] == 0) q.add(i);
-//            int[] order = new int[n]; int k = 0;
-//            while (!q.isEmpty()) {
-//                int u = q.removeFirst(); order[k++] = u;
-//                for (int v : children.get(u)) { if (--indeg[v] == 0) q.add(v); }
-//            }
-//            if (k != n) throw new IllegalStateException("Graph has a cycle or missing nodes in topo sort");
-//            return order;
-//        }
-//    }
-
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
@@ -752,8 +599,8 @@ public final class HybridCg {
                 return b; // 0..cuts.length
             }
 
-            public HybridIm mle(HybridPm pm, DataSet data) {
-                HybridIm im = new HybridIm(pm);
+            public MixedIm mle(MixedPm pm, DataSet data) {
+                MixedIm im = new MixedIm(pm);
                 Node[] nodes = pm.nodes;
 
                 // Precompute variable columns and discrete code maps
@@ -767,7 +614,7 @@ public final class HybridCg {
                 return im;
             }
 
-            private void fitDiscreteChild(HybridPm pm, HybridIm im, DataSet data, int y, int[] colIndex) {
+            private void fitDiscreteChild(MixedPm pm, MixedIm im, DataSet data, int y, int[] colIndex) {
                 int[] dps = pm.getDiscreteParents(y);
                 int[] cps = pm.getContinuousParents(y);
                 int rows = pm.getNumRows(y);
@@ -804,7 +651,7 @@ public final class HybridCg {
                 }
             }
 
-            private void fitContinuousChild(HybridPm pm, HybridIm im, DataSet data, int y, int[] colIndex) {
+            private void fitContinuousChild(MixedPm pm, MixedIm im, DataSet data, int y, int[] colIndex) {
                 int[] dps = pm.getDiscreteParents(y);
                 int[] cps = pm.getContinuousParents(y);
                 int rows = pm.getNumRows(y); // product over discrete-parents only

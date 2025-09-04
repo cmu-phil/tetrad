@@ -1,0 +1,139 @@
+package edu.cmu.tetradapp.editor;
+
+import javax.swing.table.AbstractTableModel;
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Minimal mixed CG editor table:
+ * Each row corresponds to a (discrete-parent configuration) for one target node.
+ * Columns: [Node, DiscreteConfig, Mean, Variance, Betas]
+ */
+public class MixedImNodeEditingTable extends AbstractTableModel {
+
+    public static final int COL_NODE = 0;
+    public static final int COL_CFG  = 1;
+    public static final int COL_MEAN = 2;
+    public static final int COL_VAR  = 3;
+    public static final int COL_BETA = 4;
+
+    private final String[] columns = {"Node", "Config", "Mean", "Variance", "Betas (comma-separated)"};
+
+    /** A tiny row holder. In practice you’ll point these at your Mixed/Cg param objects. */
+    static class Row {
+        String nodeName;
+        String discreteConfig; // e.g. "A=0,B=1"
+        double mean;
+        double variance;
+        double[] betas; // regression coefficients for continuous parents, in a fixed order
+
+        Row(String nodeName, String cfg, double mean, double variance, double[] betas) {
+            this.nodeName = nodeName;
+            this.discreteConfig = cfg;
+            this.mean = mean;
+            this.variance = variance;
+            this.betas = (betas == null ? new double[0] : betas.clone());
+        }
+    }
+
+    private final List<Row> rows = new ArrayList<>();
+
+    public MixedImNodeEditingTable() {
+        // TODO seed with something if you want; otherwise, provide setters to populate.
+        // Example placeholder:
+        rows.add(new Row("Y", "A=0,B=0", 0.0, 1.0, new double[]{0.0, 0.0}));
+    }
+
+    @Override public int getRowCount() { return rows.size(); }
+    @Override public int getColumnCount() { return columns.length; }
+    @Override public String getColumnName(int c) { return columns[c]; }
+    @Override public boolean isCellEditable(int r, int c) { return c != COL_NODE; }
+
+    @Override
+    public Object getValueAt(int r, int c) {
+        Row row = rows.get(r);
+        return switch (c) {
+            case COL_NODE -> row.nodeName;
+            case COL_CFG  -> row.discreteConfig;
+            case COL_MEAN -> row.mean;
+            case COL_VAR  -> row.variance;
+            case COL_BETA -> betasToString(row.betas);
+            default -> "";
+        };
+    }
+
+    @Override
+    public void setValueAt(Object aValue, int r, int c) {
+        Row row = rows.get(r);
+        if (aValue == null) return;
+        try {
+            switch (c) {
+                case COL_CFG -> row.discreteConfig = aValue.toString().trim();
+                case COL_MEAN -> row.mean = Double.parseDouble(aValue.toString());
+                case COL_VAR -> {
+                    double v = Double.parseDouble(aValue.toString());
+                    if (v <= 0) throw new IllegalArgumentException("Variance must be > 0.");
+                    row.variance = v;
+                }
+                case COL_BETA -> row.betas = parseBetas(aValue.toString().trim());
+            }
+            fireTableRowsUpdated(r, r);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex.getMessage(), "Edit Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // --- small helpers ---
+    private static String betasToString(double[] b) {
+        if (b == null || b.length == 0) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < b.length; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(b[i]);
+        }
+        return sb.toString();
+    }
+
+    private static double[] parseBetas(String s) {
+        if (s.isEmpty()) return new double[0];
+        String[] parts = s.split(",");
+        double[] out = new double[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Double.parseDouble(parts[i].trim());
+        return out;
+    }
+
+    public void addDiscreteConfig() {
+        // TODO: compute next config string based on current target’s discrete parents.
+        rows.add(new Row("Y", "A=0,B=1", 0.0, 1.0, new double[]{0.0, 0.0}));
+        int r = rows.size() - 1;
+        fireTableRowsInserted(r, r);
+    }
+
+    public void deleteSelectedConfig(int rowIndex) {
+        if (rowIndex < 0 || rowIndex >= rows.size()) return;
+        rows.remove(rowIndex);
+        fireTableDataChanged();
+    }
+
+    public void validateAndNormalize() {
+        // For CG, no row-wise normalization like CPTs; you can check variance>0, NaNs, etc.
+        for (int r = 0; r < rows.size(); r++) {
+            Row row = rows.get(r);
+            if (!(row.variance > 0)) {
+                JOptionPane.showMessageDialog(null, "Row " + r + " has non-positive variance.", "Validation", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }
+
+    // --- API to integrate with estimator/model layer later ---
+    public List<Object> toParameterBlocks() {
+        // TODO: convert rows to your engine’s parameter objects (e.g., MixedIm / CgIm blocks).
+        return List.of();
+    }
+
+    public void fromParameterBlocks(List<Object> blocks) {
+        // TODO: populate rows from a fitted Mixed/Cg model (SEM or MLE layer).
+    }
+}
