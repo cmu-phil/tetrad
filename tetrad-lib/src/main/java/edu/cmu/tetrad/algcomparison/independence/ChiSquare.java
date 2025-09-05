@@ -54,6 +54,8 @@ public class ChiSquare implements IndependenceWrapper {
             test.setCellTableType(ChiSquareTest.CellTableType.COUNT_SAMPLE);
         }
 
+        test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+
         return test;
     }
 
@@ -88,6 +90,7 @@ public class ChiSquare implements IndependenceWrapper {
         params.add(Params.ALPHA);
         params.add(Params.MIN_COUNT_PER_CELL);
         params.add(Params.CELL_TABLE_TYPE);
+        params.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return params;
     }
 }

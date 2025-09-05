@@ -61,6 +61,7 @@ public class FisherZ implements IndependenceWrapper {
         }
 
         test.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return test;
     }
 
@@ -94,6 +95,7 @@ public class FisherZ implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
         params.add(Params.SINGULARITY_LAMBDA);
+        params.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return params;
     }
 }
