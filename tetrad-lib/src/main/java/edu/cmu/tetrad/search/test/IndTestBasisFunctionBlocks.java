@@ -10,7 +10,6 @@ import edu.cmu.tetrad.search.utils.Embedding;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * IndTestBasisFunctionBlocks - Builds a per-variable truncated basis expansion (via Embedding) - Constructs the blocks
@@ -29,7 +28,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     private final SimpleMatrix Xphi;                 // n x D embedded design
     private final SimpleMatrix Sphi;                 // D x D covariance of embedded data
     private final List<List<Integer>> blocks;        // mapping original var -> embedded column indices
-    private final IndTestBlocks blocksTest;          // delegate
+    private final IndTestBlocksWilkes blocksTest;          // delegate
     private final int degree;
 
     // ---- Knobs ----
@@ -71,7 +70,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
         // 2) Delegate CI testing to IndTestBlocks:
         //    IMPORTANT: pass *this.variables* (the same Node objects you expose)
-        this.blocksTest = new IndTestBlocks(new BlockSpec(embeddedDs, this.blocks, this.variables));
+        this.blocksTest = new IndTestBlocksWilkes(new BlockSpec(embeddedDs, this.blocks, this.variables));
     }
 
     // ====== IndependenceTest API ======

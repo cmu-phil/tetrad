@@ -4,7 +4,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.test.IndTestBlocks;
+import edu.cmu.tetrad.search.test.IndTestBlocksWilkes;
 import edu.cmu.tetrad.search.test.IndTestBlocksLemma10;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -140,7 +140,7 @@ public class TestBlockwiseIndependence {
             meta.add(mvZ);
 
             // Initialize fresh block tests on these incoherent blocks
-            IndTestBlocks testBlocks = new IndTestBlocks(new BlockSpec(sim.data, blocks, meta));
+            IndTestBlocksWilkes testBlocks = new IndTestBlocksWilkes(new BlockSpec(sim.data, blocks, meta));
             testBlocks.setAlpha(alpha);
             IndTestBlocksLemma10 testLemma = new IndTestBlocksLemma10(new BlockSpec(sim.data, blocks, meta));
             testLemma.setAlpha(alpha);
@@ -183,7 +183,7 @@ public class TestBlockwiseIndependence {
             metaVars.add(mv);
         }
 
-        IndTestBlocks blocksTest = new IndTestBlocks(new BlockSpec(sim.data, blocks, metaVars));
+        IndTestBlocksWilkes blocksTest = new IndTestBlocksWilkes(new BlockSpec(sim.data, blocks, metaVars));
         blocksTest.setAlpha(alpha);
         IndTestBlocksLemma10 lemma10Test = new IndTestBlocksLemma10(new BlockSpec(sim.data, blocks, metaVars));
         lemma10Test.setAlpha(alpha);
@@ -320,7 +320,7 @@ public class TestBlockwiseIndependence {
     // ===================== Evaluation: Blockwise over latent meta-variables =====================
     private static void evaluateAndPrintBlockwise(Graph truthGraph,
                                                   IndependenceTest fisherZ,
-                                                  IndTestBlocks blocksTest,
+                                                  IndTestBlocksWilkes blocksTest,
                                                   IndTestBlocksLemma10 lemma10Test,
                                                   List<BlockCase> cases,
                                                   List<Node> metaVars,

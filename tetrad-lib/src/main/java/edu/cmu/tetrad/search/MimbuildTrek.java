@@ -52,6 +52,7 @@ import java.util.List;
  * @see Knowledge
  * @see MimbuildBollen
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public class MimbuildTrek {
     /**
      * The clustering from BPC or equivalent. Small clusters are removed.

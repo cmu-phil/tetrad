@@ -1,12 +1,11 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.Mixed;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.test.IndTestBlocks;
+import edu.cmu.tetrad.search.test.IndTestBlocksWilkes;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -27,6 +26,7 @@ import java.util.List;
 //        dataType = DataType.Mixed
 //)
 @Mixed
+@Deprecated(since = "7.9", forRemoval = false)
 public class BlocksIndTest implements BlockIndependenceWrapper {
 
     @Serial
@@ -57,7 +57,7 @@ public class BlocksIndTest implements BlockIndependenceWrapper {
     }
 
     /**
-     * Creates and returns an instance of the {@link IndTestBlocks} initialized with a specific block specification and
+     * Creates and returns an instance of the {@link IndTestBlocksWilkes} initialized with a specific block specification and
      * a significance level extracted from the provided parameters.
      *
      * @param dataSet    A {@link DataModel} object representing the dataset to be used for the independence test.
@@ -68,7 +68,7 @@ public class BlocksIndTest implements BlockIndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestBlocks test = new IndTestBlocks(blockSpec);
+        IndTestBlocksWilkes test = new IndTestBlocksWilkes(blockSpec);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         return test;
     }

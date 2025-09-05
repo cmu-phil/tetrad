@@ -27,8 +27,8 @@ import java.util.*;
  *
  * @author josephramsey
  * @author bryanandrews
- * @see IndTestBasisFunctionLrtFullSample
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalIndependenceTest {
     /**
      * Represents the dataset used within the class for statistical analyses and computations.

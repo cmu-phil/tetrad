@@ -8,7 +8,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.IndTestBlocks;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 

@@ -29,7 +29,6 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
-import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZPercentIndependent;
 import edu.cmu.tetrad.search.work_in_progress.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -123,9 +122,11 @@ final class IndTestChooser {
 
         if (IndTestType.MIXED_MLR == testType) {
             return new IndTestMultinomialLogisticRegressionWald(dataSet, params.getDouble("alpha", 0.001), false);
-        } else if (IndTestType.LINEAR_REGRESSION == testType) {
-            return new IndTestRegression(dataSet, params.getDouble("alpha", 0.001));
-        } else {
+        }
+//        else if (IndTestType.LINEAR_REGRESSION == testType) {
+//            return new IndTestRegression(dataSet, params.getDouble("alpha", 0.001));
+//        }
+        else {
             params.set("indTestType", IndTestType.MIXED_MLR);
             return new IndTestMultinomialLogisticRegression(dataSet, params.getDouble("alpha", 0.001));
         }
@@ -147,9 +148,9 @@ final class IndTestChooser {
     }
 
     private IndependenceTest getMultiContinuousTest(List<DataSet> dataSets, Parameters params, IndTestType testType) {
-        if (IndTestType.POOL_RESIDUALS_FISHER_Z == testType) {
-            return new IndTestFisherZPercentIndependent(dataSets, params.getDouble("alpha", 0.001));
-        }
+//        if (IndTestType.POOL_RESIDUALS_FISHER_Z == testType) {
+//            return new IndTestFisherZPercentIndependent(dataSets, params.getDouble("alpha", 0.001));
+//        }
 
         if (IndTestType.TIPPETT == testType) {
             List<IndependenceTest> independenceTests = new ArrayList<>();

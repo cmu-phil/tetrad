@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model;
 
@@ -30,7 +30,6 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndTestGSquare;
-import edu.cmu.tetrad.search.test.IndTestRegression;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.IndTestType;
@@ -191,9 +190,11 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
         if (this.source.isContinuous() || this.source.getNumColumns() == 0) {
             if (IndTestType.FISHER_Z == type) {
                 return new IndTestFisherZ(this.source, this.params.getDouble("alpha", 0.001));
-            } else if (IndTestType.LINEAR_REGRESSION == type) {
-                return new IndTestRegression(this.source, this.params.getDouble("alpha", 0.001));
-            } else {
+            }
+//            else if (IndTestType.LINEAR_REGRESSION == type) {
+//                return new IndTestRegression(this.source, this.params.getDouble("alpha", 0.001));
+//            }
+            else {
                 this.params.set("indTestType", IndTestType.FISHER_Z);
                 return new IndTestFisherZ(this.source, this.params.getDouble("alpha", 0.001));
             }
