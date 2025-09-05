@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
@@ -45,7 +46,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class GicScores implements Score {
+public class GicScores implements Score, EffectiveSampleSizeSettable {
 
     // The sample size of the covariance matrix.
     private final int sampleSize;
@@ -69,6 +70,7 @@ public class GicScores implements Score {
     private double penaltyDiscount = 1;
     // Singularity lambda.
     private double singularityLambda = 0.0;
+    private int nEff;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -83,7 +85,7 @@ public class GicScores implements Score {
         setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
-        this.setLambda(log(this.sampleSize));
+        this.setLambda(log(this.nEff));
     }
 
     /**
@@ -285,7 +287,7 @@ public class GicScores implements Score {
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(log(sampleSize));
+        return (int) FastMath.ceil(log(nEff));
     }
 
     /**
@@ -361,6 +363,16 @@ public class GicScores implements Score {
      */
     public void setSingularityLambda(double singularityLambda) {
         this.singularityLambda = singularityLambda;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+    }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
     }
 
     /**

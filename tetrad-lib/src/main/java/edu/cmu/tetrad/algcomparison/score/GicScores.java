@@ -72,6 +72,7 @@ public class GicScores implements ScoreWrapper {
         score.setRuleType(ruleType);
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         return score;
     }
@@ -102,6 +103,7 @@ public class GicScores implements ScoreWrapper {
         parameters.add(Params.PENALTY_DISCOUNT_ZS);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.SINGULARITY_LAMBDA);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
 
         return parameters;
     }
