@@ -168,6 +168,10 @@ public class MvpLikelihood {
             }
         }
 
+        if (discrete_parents.isEmpty()) {
+            throw new IllegalStateException("There were no discrete parents.");
+        }
+
         int p = continuous_parents.size();
 
         this.adTree.buildTable(discrete_parents);

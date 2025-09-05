@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
@@ -54,7 +55,8 @@ public class MvpScore implements Score {
      * @param fDegree        The f degree.
      * @param discretize     a boolean
      */
-    public MvpScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
+    public MvpScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize,
+                    int effectiveSampleSize) {
 
         if (dataSet == null) {
             throw new NullPointerException();
@@ -63,7 +65,10 @@ public class MvpScore implements Score {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         this.likelihood = new MvpLikelihood(dataSet, structurePrior, fDegree, discretize);
-        this.logn = FastMath.log(dataSet.getNumRows());
+//        this.logn = FastMath.log(dataSet.getNumRows());
+
+        int nEff = effectiveSampleSize < 0 ? dataSet.getNumRows() : effectiveSampleSize;
+        this.logn = FastMath.log(nEff);
     }
 
     /**
