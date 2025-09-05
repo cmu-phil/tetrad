@@ -7,6 +7,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.Kci;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -37,9 +38,10 @@ public class TestCheckMarkov {
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(500, false);
 
-        KciOld test = new KciOld(data, alpha);
+        Kci test = new Kci(data);
+        test.setAlpha(alpha);
         test.setApproximate(true);
-        test.setNumBootstraps(1000);
+        test.setNumPermutations(1000);
         test.setScalingFactor(1.0);
 
         test.setVerbose(false);
