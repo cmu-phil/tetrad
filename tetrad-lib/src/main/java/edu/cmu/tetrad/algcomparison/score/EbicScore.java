@@ -62,6 +62,7 @@ public class EbicScore implements ScoreWrapper {
 
         score.setGamma(parameters.getDouble(Params.EBIC_GAMMA));
         score.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return score;
     }
 
@@ -90,6 +91,7 @@ public class EbicScore implements ScoreWrapper {
         parameters.add(Params.EBIC_GAMMA);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.SINGULARITY_LAMBDA);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 

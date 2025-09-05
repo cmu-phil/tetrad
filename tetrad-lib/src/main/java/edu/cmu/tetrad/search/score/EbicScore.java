@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -49,15 +50,13 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class EbicScore implements Score {
+public class EbicScore implements Score, EffectiveSampleSizeSettable {
     // The variables of the covariance matrix.
     private final List<Node> variables;
     // The sample size of the covariance matrix.
-    private final int sampleSize;
+    private int sampleSize;
     // The covariance matrix.
     private ICovarianceMatrix covariances;
-    // The number of variables.
-    private double N;
     // The dataset.
     private Matrix data;
     // True if verbose output should be sent to out.
@@ -66,6 +65,7 @@ public class EbicScore implements Score {
     private double gamma = 1;
     // True if the pseudo-inverse should be used.
     private double lambda = 0.0;
+    private int nEff;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -80,6 +80,7 @@ public class EbicScore implements Score {
         setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -97,6 +98,7 @@ public class EbicScore implements Score {
 
         this.variables = dataSet.getVariables();
         this.sampleSize = dataSet.getNumRows();
+        setEffectiveSampleSize(-1);
 
         DataSet _dataSet = DataTransforms.center(dataSet);
         this.data = _dataSet.getDoubleData();
@@ -142,8 +144,8 @@ public class EbicScore implements Score {
 
         double gamma = this.gamma;//  1.0 - riskBound;
 
-        double score = -(this.N * log(varRy) + (pi * log(this.N)
-                                                + 2 * pi * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
+        double score = -(this.nEff * log(varRy) + (pi * log(this.nEff)
+                                                      + 2 * pi * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
@@ -193,7 +195,7 @@ public class EbicScore implements Score {
      */
     @Override
     public int getMaxDegree() {
-        return (int) ceil(log(this.sampleSize));
+        return (int) ceil(log(this.nEff));
     }
 
     /**
@@ -225,7 +227,8 @@ public class EbicScore implements Score {
 
     private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
-        this.N = covariances.getSampleSize();
+        this.sampleSize = covariances.getSampleSize();
+        setEffectiveSampleSize(-1);
     }
 
     private int[] indices(List<Node> __adj) {
@@ -241,6 +244,16 @@ public class EbicScore implements Score {
      */
     public void setLambda(double lambda) {
         this.lambda = lambda;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+    }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
     }
 }
 
