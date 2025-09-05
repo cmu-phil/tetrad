@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -48,7 +49,7 @@ import static java.lang.Double.NaN;
  * @author Joseph Ramsey refactoring 2024-12-26
  * @version $Id: $Id
  */
-public class IndTestDegenerateGaussianLrt implements IndependenceTest {
+public class IndTestDegenerateGaussianLrt implements IndependenceTest, EffectiveSampleSizeSettable {
     /**
      * A hash of nodes to indices.
      */
@@ -90,6 +91,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      * True if verbose output should be printed.
      */
     private boolean verbose;
+    private int nEff;
 
     /**
      * Constructs the test using the given (mixed) data set.
@@ -118,6 +120,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
                 dataSet, 1, 1, -1);
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
+        setEffectiveSampleSize(-1);
         this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getSimpleMatrix());
         this.setLambda(lambda);
     }
@@ -189,7 +192,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         double sigma1_sq = Math.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices)));
 
         // Log-likelihood ratio statistic
-        double LR_stat = sampleSize * Math.log(sigma0_sq / sigma1_sq);
+        double LR_stat = nEff * Math.log(sigma0_sq / sigma1_sq);
 
         // Degrees of freedom is the number of additional basis columns in Y
         int df = yIndices.length;
@@ -317,5 +320,15 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      */
     public void setLambda(double lambda) {
         this.lambda = lambda;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? sampleSize : nEff;
+    }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return this.nEff;
     }
 }

@@ -45,6 +45,7 @@ public class DegenerateGaussianLrt implements IndependenceWrapper {
         IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt(SimpleDataLoader.getMixedDataSet(dataSet));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return test;
     }
 
@@ -72,6 +73,7 @@ public class DegenerateGaussianLrt implements IndependenceWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.SINGULARITY_LAMBDA);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 

@@ -31,6 +31,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.*;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.util.DeprecationUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -698,6 +699,11 @@ public class AlgorithmCard extends JPanel {
             // 1) Radio-button based type filter
             java.util.function.Predicate<IndependenceTestModel> typeFilter = m -> {
                 Class<?> c = m.getIndependenceTest().clazz();
+
+                if (DeprecationUtils.isClassDeprecated(c)) {
+                    return false;
+                }
+
                 if (this.linearGaussianRadBtn.isSelected()) {
                     return c.isAnnotationPresent(LinearGaussian.class);
                 } else if (this.mixedRadBtn.isSelected()) {
@@ -779,6 +785,11 @@ public class AlgorithmCard extends JPanel {
             // 1) Radio-button type filter
             java.util.function.Predicate<ScoreModel> typeFilter = m -> {
                 Class<?> c = m.getScore().clazz();
+
+                if (DeprecationUtils.isClassDeprecated(c)) {
+                    return false;
+                }
+
                 if (this.linearGaussianRadBtn.isSelected()) {
                     return c.isAnnotationPresent(LinearGaussian.class);
                 } else if (this.mixedRadBtn.isSelected()) {
