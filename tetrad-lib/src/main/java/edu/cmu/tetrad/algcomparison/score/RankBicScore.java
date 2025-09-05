@@ -62,6 +62,7 @@ public class RankBicScore implements ScoreWrapper {
         BlocksBicScore score = new BlocksBicScore(new BlockSpec((DataSet) dataModel, blocks, blockVars));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setEbicGamma(parameters.getDouble(Params.EBIC_GAMMA));
+        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         return score;
     }
@@ -96,6 +97,7 @@ public class RankBicScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.EBIC_GAMMA);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 
