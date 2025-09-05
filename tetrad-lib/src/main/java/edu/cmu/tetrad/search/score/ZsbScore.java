@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -59,7 +60,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class ZsbScore implements Score {
+public class ZsbScore implements Score, EffectiveSampleSizeSettable {
 
     // The variables of the covariance matrix.
     private final List<Node> variables;
@@ -81,6 +82,7 @@ public class ZsbScore implements Score {
     private Matrix data;
     // Singularity lambda
     private double lambda = 0.0;
+    private int nEff;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -95,6 +97,7 @@ public class ZsbScore implements Score {
         setCovariances(covMatrix);
         this.variables = covMatrix.getVariables();
         this.sampleSize = covMatrix.getSampleSize();
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -170,7 +173,7 @@ public class ZsbScore implements Score {
 
         int m0 = estMaxParents[i];
 
-        double score = -(0.5 * sampleSize * log(varRy) + getLambda(m0, pn) * pi);
+        double score = -(0.5 * nEff * log(varRy) + getLambda(m0, pn) * pi);
 
         if (score >= maxScores[i]) {
             maxScores[i] = score;
@@ -224,6 +227,7 @@ public class ZsbScore implements Score {
         }
 
         this.sampleSize = covariances.getSampleSize();
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -266,7 +270,7 @@ public class ZsbScore implements Score {
      */
     @Override
     public int getMaxDegree() {
-        return (int) ceil(log(sampleSize));
+        return (int) ceil(log(nEff));
     }
 
     /**
@@ -322,6 +326,16 @@ public class ZsbScore implements Score {
      */
     public void setLambda(double lambda) {
         this.lambda = lambda;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+    }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
     }
 }
 

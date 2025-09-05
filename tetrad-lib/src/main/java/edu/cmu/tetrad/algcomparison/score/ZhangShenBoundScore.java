@@ -70,6 +70,7 @@ public class ZhangShenBoundScore implements ScoreWrapper {
 
         score.setRiskBound(parameters.getDouble(Params.ZS_RISK_BOUND));
         score.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         return score;
     }
@@ -105,6 +106,7 @@ public class ZhangShenBoundScore implements ScoreWrapper {
         parameters.add(Params.ZS_RISK_BOUND);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.SINGULARITY_LAMBDA);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 
