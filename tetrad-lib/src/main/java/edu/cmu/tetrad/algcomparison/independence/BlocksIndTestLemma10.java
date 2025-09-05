@@ -26,6 +26,7 @@ import java.util.List;
 //        dataType = DataType.Mixed
 //)
 @Mixed
+@Deprecated(since = "7.9", forRemoval = false)
 public class BlocksIndTestLemma10 implements BlockIndependenceWrapper {
 
     @Serial
@@ -67,6 +68,7 @@ public class BlocksIndTestLemma10 implements BlockIndependenceWrapper {
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
         IndTestBlocksLemma10 test = new IndTestBlocksLemma10(blockSpec);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
+        test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return test;
     }
 
@@ -100,6 +102,7 @@ public class BlocksIndTestLemma10 implements BlockIndependenceWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 }

@@ -79,84 +79,6 @@ public class TestBlockwiseIndependence {
         return out;
     }
 
-    /**
-     * Incoherent clusters study:
-     * - X, Y, Z are random disjoint blocks drawn from all observed variables (not aligned to true latent clusters).
-     * - For each case, we initialize a *fresh* blocks-based CI test with just these three blocks and ask:
-     *     [X] ⟂ [Y] | [Z]
-     * - Ground truth: pairwise m-separation on the full latent DAG using observed X, Y, Z.
-     */
-    @Test
-    public void testIncoherentBlocks() {
-        final int incoherentBlockSize = 4;   // e.g., size-4 random blocks as in your example
-        final int nIncoherentCases   = 50;   // number of test cases
-
-        System.out.println("\n=== Incoherent Blocks: [X] ⟂ [Y] | [Z] with random blocks ===");
-        System.out.println("blockSize=" + incoherentBlockSize + ", cases=" + nIncoherentCases + ", n=" + nSamples + ", alpha=" + alpha);
-
-        // Use the same latent model structure; simulate with Gaussian (or swap to your preferred noise)
-        LatentModel lm = buildLatentChainModel(numObservedPerLatent);
-        SimResult sim = simulateLatentData(lm, nSamples, NoiseType.EXPONENTIAL);
-
-        // Build random (incoherent) cases over all observed variables
-        List<BlockCase> cases = buildRandomIncoherentCases(sim.observedNodes, nIncoherentCases, incoherentBlockSize);
-
-        // Metrics for the two blockwise tests
-        Metrics mBlocks = new Metrics("IndTestBlocks (incoherent)");
-        Metrics mLemma  = new Metrics("IndTestBlocksLemma10 (incoherent)");
-
-        // Ground-truth m-separation on the full latent DAG
-        MsepTest dsep = new MsepTest(lm.fullGraph);
-
-        List<Node> allVars = sim.data.getVariables();
-
-        for (BlockCase bc : cases) {
-            // Truth: all (x in X, y in Y) m-separated given Z (observed)
-            boolean truthIndep = allPairsMSep(dsep, bc.X, bc.Y, bc.Z);
-
-            // Build blocks = {X, Y, Z} for THIS case; other variables are ignored (or could be added as singletons if you wish)
-            List<List<Integer>> blocks = new ArrayList<>();
-            List<Node> meta = new ArrayList<>();
-
-            // [X]
-            List<Integer> idxX = new ArrayList<>();
-            for (Node x : bc.X) idxX.add(allVars.indexOf(x));
-            blocks.add(idxX);
-            ContinuousVariable mvX = new ContinuousVariable("INC_X"); mvX.setNodeType(NodeType.LATENT);
-            meta.add(mvX);
-
-            // [Y]
-            List<Integer> idxY = new ArrayList<>();
-            for (Node y : bc.Y) idxY.add(allVars.indexOf(y));
-            blocks.add(idxY);
-            ContinuousVariable mvY = new ContinuousVariable("INC_Y"); mvY.setNodeType(NodeType.LATENT);
-            meta.add(mvY);
-
-            // [Z]
-            List<Integer> idxZ = new ArrayList<>();
-            for (Node z : bc.Z) idxZ.add(allVars.indexOf(z));
-            blocks.add(idxZ);
-            ContinuousVariable mvZ = new ContinuousVariable("INC_Z"); mvZ.setNodeType(NodeType.LATENT);
-            meta.add(mvZ);
-
-            // Initialize fresh block tests on these incoherent blocks
-            IndTestBlocksWilkes testBlocks = new IndTestBlocksWilkes(new BlockSpec(sim.data, blocks, meta));
-            testBlocks.setAlpha(alpha);
-            IndTestBlocksLemma10 testLemma = new IndTestBlocksLemma10(new BlockSpec(sim.data, blocks, meta));
-            testLemma.setAlpha(alpha);
-
-            boolean predBlocksIndep = testBlocks.checkIndependence(mvX, mvY, Collections.singleton(mvZ)).isIndependent();
-            boolean predLemmaIndep  = testLemma.checkIndependence(mvX, mvY, Collections.singleton(mvZ)).isIndependent();
-
-            mBlocks.addCase(truthIndep, predBlocksIndep);
-            mLemma.addCase(truthIndep, predLemmaIndep);
-        }
-
-        System.out.println("\n--- Results: Incoherent block tests ---");
-        mBlocks.print();
-        mLemma.print();
-    }
-
     private void runOnce(LatentModel lm, NoiseType noise, String label) {
         // Simulate data with the requested noise type (both latent and observed errors use same distribution)
         SimResult sim = simulateLatentData(lm, nSamples, noise);
@@ -192,7 +114,6 @@ public class TestBlockwiseIndependence {
         List<BlockCase> cases = buildWithinClusterCases(sim.observedNodes, lm.latentToObserved, latentKeys, nCases);
 
         // Evaluate metrics: (A) pairwise-rank via singleton blocks, (B) blockwise (Blocks), (C) blockwise (Lemma10)
-        evaluateAndPrintRankPairwise(lm.fullGraph, sim.data, cases, latentKeys);
         evaluateAndPrintBlockwise(lm.fullGraph, fisherZ, blocksTest, lemma10Test, cases, metaVars, latentKeys);
     }
 
@@ -246,75 +167,6 @@ public class TestBlockwiseIndependence {
         List<Node> copy = new ArrayList<>(pool);
         Collections.shuffle(copy, rng);
         return new ArrayList<>(copy.subList(0, k));
-    }
-
-    // ===================== Evaluation: Pairwise via rank blocks =====================
-    private static void evaluateAndPrintRankPairwise(Graph truthGraph,
-                                                     DataSet data,
-                                                     List<BlockCase> cases,
-                                                     List<String> latentKeys) {
-        System.out.println("\n--- Pairwise (rank via singleton blocks) ---");
-
-        Metrics mPairRank = new Metrics("Pairwise-Rank [x] ⟂ [y] | [Z]");
-
-        // m-separation ground truth checker
-        MsepTest dsep = new MsepTest(truthGraph);
-
-        // we’ll build tiny block tests on-the-fly per (x,y,Z)
-        List<Node> allVars = data.getVariables();
-
-        for (BlockCase bc : cases) {
-            boolean truthIndep = allPairsMSep(dsep, bc.X, bc.Y, bc.Z);
-
-            // For each (x,y), build [x],[y],[Z] blocks and test independence of metaX, metaY | {metaZ}
-            boolean allPairsSayIndep = true;
-
-            for (Node x : bc.X) {
-                for (Node y : bc.Y) {
-                    // blocks: [x], [y], [Z]
-                    List<List<Integer>> blocksXY = new ArrayList<>();
-                    List<Node> metaVarsXY = new ArrayList<>();
-
-                    // [x]
-                    blocksXY.add(Collections.singletonList(allVars.indexOf(x)));
-                    ContinuousVariable mvx = new ContinuousVariable("MV_x_" + x.getName());
-                    mvx.setNodeType(NodeType.LATENT); // meta tag
-                    metaVarsXY.add(mvx);
-
-                    // [y]
-                    blocksXY.add(Collections.singletonList(allVars.indexOf(y)));
-                    ContinuousVariable mvy = new ContinuousVariable("MV_y_" + y.getName());
-                    mvy.setNodeType(NodeType.LATENT);
-                    metaVarsXY.add(mvy);
-
-                    // [Z] as one block
-                    List<Integer> zIdx = new ArrayList<>();
-                    for (Node z : bc.Z) zIdx.add(allVars.indexOf(z));
-                    blocksXY.add(zIdx);
-                    ContinuousVariable mvz = new ContinuousVariable("MV_Z");
-                    mvz.setNodeType(NodeType.LATENT);
-                    metaVarsXY.add(mvz);
-
-                    // rank-based block test (Lemma 10); alpha consistent with top-level
-                    IndTestBlocksLemma10 localLemma = new IndTestBlocksLemma10(new BlockSpec(data, blocksXY, metaVarsXY));
-                    localLemma.setAlpha(alpha);
-
-                    boolean indep;
-                    // test [x] ⟂ [y] | [Z]
-                    indep = localLemma.checkIndependence(mvx, mvy, Collections.singleton(mvz)).isIndependent();
-
-                    if (!indep) {
-                        allPairsSayIndep = false;
-                        break;
-                    }
-                }
-                if (!allPairsSayIndep) break;
-            }
-
-            mPairRank.addCase(truthIndep, allPairsSayIndep);
-        }
-
-        mPairRank.print();
     }
 
     // ===================== Evaluation: Blockwise over latent meta-variables =====================

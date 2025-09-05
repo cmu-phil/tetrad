@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
@@ -26,7 +27,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Thread-safe LRU caches (like IndTestBlocks).
  */
 @Deprecated(since = "7.9", forRemoval = false)
-public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
+public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, EffectiveSampleSizeSettable {
 
     // ---- Cache sizes (tune) ----
     private static final int PV_CACHE_MAX = 400_000;  // (AC,BC,n,alpha,mode,tol) -> p
@@ -50,8 +51,9 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
     // knobs
     private double alpha = 0.01;
     private boolean verbose = false;
-    private EqualityMode mode = EqualityMode.LE; // robust default: accept rank <= |C|
+    private final EqualityMode mode = EqualityMode.LE; // robust default: accept rank <= |C|
     private int tol = 0;                         // integer tolerance on the equality (0 = strict)
+    private int nEff;
 
     /**
      * Constructs an instance of IndTestBlocksLemma10 using the provided block specification. Performs initialization,
@@ -79,6 +81,7 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
         this.nodeHash = nodesHash;
 
         this.n = blockSpec.dataSet().getNumRows();
+        setEffectiveSampleSize(-1);
         this.S = new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix();
 
         final int B = blockSpec.blocks().size();
@@ -159,11 +162,11 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
         // p-value: same Wilks machinery, treat as unconditioned on empty Z
         double pValue = getPValue(parts.ACcols, parts.BCcols);
 
-//        if (verbose) {
-//            System.out.printf("Lemma10: %s _||_ %s | %s ? estRank=%d, |C|=%d, mode=%s, tol=%d, p=%.4g -> %s%n",
-//                    parts.xName, parts.yName, parts.zNames, estRank, parts.Csize, mode, tol, pValue,
-//                    indep ? "INDEP" : "DEP");
-//        }
+        if (verbose) {
+            System.out.printf("Lemma10: %s _||_ %s | %s ? estRank=%d, |C|=%d, mode=%s, tol=%d, p=%.4g -> %s%n",
+                    parts.xName, parts.yName, parts.zNames, estRank, parts.Csize, mode, tol, pValue,
+                    indep ? "INDEP" : "DEP");
+        }
 
         return new IndependenceResult(
                 new IndependenceFact(parts.xNode, parts.yNode, z),
@@ -204,15 +207,6 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
     // === Core ===
 
     /**
-     * Choose EQ/LE/GE equality mode for rank vs |C|. Default LE (robust).
-     *
-     * @param mode The equality mode.
-     */
-    public void setEqualityMode(EqualityMode mode) {
-        this.mode = Objects.requireNonNull(mode, "mode");
-    }
-
-    /**
      * Integer tolerance on equality (e.g., 1 to allow off-by-one). Default 0.
      *
      * @param tol The tolerance value.
@@ -223,23 +217,23 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
     }
 
     private int getRank(int[] AC, int[] BC) {
-        RKey key = new RKey(AC, BC, n, alpha);
+        RKey key = new RKey(AC, BC, nEff, alpha);
         Integer cached = rankCache.get(key);
         if (cached != null) return cached;
 
-        int rank = RankTests.estimateWilksRank(S, AC, BC, n, alpha);
+        int rank = RankTests.estimateWilksRank(S, AC, BC, nEff, alpha);
         if (rank < 0) rank = 0;
         rankCache.put(key, rank);
         return rank;
     }
 
     private double getPValue(int[] AC, int[] BC) {
-        PKey key = new PKey(AC, BC, n, alpha, mode, tol);
+        PKey key = new PKey(AC, BC, nEff, alpha, mode, tol);
         Double cached = pvalCache.get(key);
         if (cached != null) return cached;
 
         // Use the same p-value path; treat as "unconditioned" by passing empty Z.
-        double p = RankTests.pValueIndepConditioned(S, AC, BC, new int[0], n);
+        double p = RankTests.pValueIndepConditioned(S, AC, BC, new int[0], nEff);
         if (Double.isNaN(p) || Double.isInfinite(p)) p = 1.0;
         p = Math.max(0.0, Math.min(1.0, p));
 
@@ -297,6 +291,16 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
         return blockSpec;
     }
 
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff == -1 ? this.n : nEff;
+    }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
+    }
+
     // === Key bits ===
 
     /**
@@ -351,15 +355,6 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
                         it.remove();
                     } else break;
                 }
-            } finally {
-                lock.unlock();
-            }
-        }
-
-        void clear() {
-            lock.lock();
-            try {
-                map.clear();
             } finally {
                 lock.unlock();
             }

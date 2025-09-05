@@ -7,6 +7,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -18,7 +19,8 @@ import java.util.*;
  * CONTRACT: 'blocks' maps each ORIGINAL variable index v (0..V-1) to the list of embedded column indices in the
  * embedded matrix produced here.
  */
-public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginalIndependenceTest {
+public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginalIndependenceTest,
+        EffectiveSampleSizeSettable {
 
     // ---- Source data ----
     private final DataSet raw;
@@ -33,6 +35,8 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
     // ---- Knobs ----
     private double alpha = 0.01;
+    private int nEff;
+    private final int sampleSize;
 
     /**
      * Constructs an instance of {@code IndTestBasisFunctionBlocks} to perform block-based
@@ -50,6 +54,9 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         this.degree = degree;
         // Keep the exact Node instances from the caller's dataset
         this.variables = new ArrayList<>(raw.getVariables());
+
+        this.sampleSize = raw.getNumRows();
+        setEffectiveSampleSize(-1);
 
         // 1) Build embedded matrix + blocks using your existing Embedding utility
         //    (Adjust the extra args (e.g., intercept/standardization) to your Embedding API as needed.)
@@ -71,6 +78,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         // 2) Delegate CI testing to IndTestBlocks:
         //    IMPORTANT: pass *this.variables* (the same Node objects you expose)
         this.blocksTest = new IndTestBlocksWilkes(new BlockSpec(embeddedDs, this.blocks, this.variables));
+        this.blocksTest.setEffectiveSampleSize(-1);
     }
 
     // ====== IndependenceTest API ======
@@ -261,5 +269,15 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
      */
     public SimpleMatrix getEmbeddedData() {
         return Xphi;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff == -1 ? this.sampleSize : nEff;
+    }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return this.nEff;
     }
 }

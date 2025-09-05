@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
@@ -16,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Block-level CI test using Wilks-rank. Robust to |Y| &lt; |X| by padding Y from the leftover observed pool and, if
  * needed, by subsetting X to |Y|. Thread-safe LRU caches preserved.
  */
-public class IndTestBlocksWilkes implements IndependenceTest, BlockTest {
+public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, EffectiveSampleSizeSettable {
 
     // ---- Cache sizes (tune) ----
     private static final int PV_CACHE_MAX = 400_000;   // (x,y,Z,n,alpha) -> p
@@ -43,6 +44,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest {
     // knobs
     private double alpha = 0.01;
     private boolean verbose = false;
+    private int effN;
 
     /**
      * Constructs an instance of IndTestBlocks using the provided block specification. This class is used for conducting
@@ -69,6 +71,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest {
         this.nodeHash = nodesHash;
 
         this.n = blockSpec.dataSet().getNumRows();
+        setEffectiveSampleSize(-1);
         this.S = new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix();
         // If you prefer covariance:
         // this.S = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix());
@@ -169,12 +172,12 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest {
         KeyParts kp = buildKeyParts(x, y, z);
         // Robustify (X,Y,Z) before using as cache key inputs
         XY pads = robustifyXY(kp.xCols, kp.yCols, kp.zCols);
-        PKey key = new PKey(kp.a, kp.b, kp.zVars, n, alpha);
+        PKey key = new PKey(kp.a, kp.b, kp.zVars, effN, alpha);
 
         Integer cached = rankCache.get(key);
         if (cached != null) return cached;
 
-        int rank = RankTests.estimateWilksRankConditioned(S, pads.xAdj, pads.yAdj, kp.zCols, n, alpha);
+        int rank = RankTests.estimateWilksRankConditioned(S, pads.xAdj, pads.yAdj, kp.zCols, effN, alpha);
         if (rank < 0) rank = 0; // defensive
         rankCache.put(key, rank);
         return rank;
@@ -183,7 +186,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest {
     private double getPValue(Node x, Node y, Set<Node> z) {
         KeyParts kp = buildKeyParts(x, y, z);
         XY pads = robustifyXY(kp.xCols, kp.yCols, kp.zCols);
-        PKey key = new PKey(kp.a, kp.b, kp.zVars, n, alpha);
+        PKey key = new PKey(kp.a, kp.b, kp.zVars, effN, alpha);
 
         Double cached = pvalCache.get(key);
         if (cached != null) return cached;
@@ -308,6 +311,15 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest {
             zblockCache.put(zkey, zCols);
         }
         return new KeyParts(a, b, zVars, xCols, yCols, zCols);
+    }
+
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effN = effectiveSampleSize == -1 ? this.n : effectiveSampleSize;
+    }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return effN;
     }
 
     private record XY(int[] xAdj, int[] yAdj) {

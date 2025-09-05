@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.Mixed;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
@@ -29,6 +27,7 @@ import java.util.List;
 //        dataType = DataType.Mixed
 //)
 //@Mixed
+@Deprecated(since = "7.9", forRemoval = false)
 public class BasisFunctionLrt implements IndependenceWrapper {
 
     @Serial

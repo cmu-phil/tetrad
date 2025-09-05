@@ -29,6 +29,7 @@ import java.util.List;
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 @LinearGaussian
+@Deprecated(since = "7.9", forRemoval = false)
 public class RankIndependenceTestLemma10 implements IndependenceWrapper {
 
     @Serial
