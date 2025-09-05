@@ -287,7 +287,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      */
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.nEff = effectiveSampleSize == -1 ? this.sampleSize : effectiveSampleSize;
+        this.nEff = effectiveSampleSize < 0 ? this.sampleSize : effectiveSampleSize;
     }
 
     /**

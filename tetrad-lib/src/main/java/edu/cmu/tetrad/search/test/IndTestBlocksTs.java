@@ -184,7 +184,7 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
 
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.nEff =  effectiveSampleSize == -1 ? this.n : effectiveSampleSize;
+        this.nEff =  effectiveSampleSize < 0 ? this.n : effectiveSampleSize;
     }
 
     @Override

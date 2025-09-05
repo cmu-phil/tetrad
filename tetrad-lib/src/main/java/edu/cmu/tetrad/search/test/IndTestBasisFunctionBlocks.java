@@ -273,7 +273,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
     @Override
     public void setEffectiveSampleSize(int nEff) {
-        this.nEff = nEff == -1 ? this.sampleSize : nEff;
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
     }
 
     @Override

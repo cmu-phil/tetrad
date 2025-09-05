@@ -293,7 +293,7 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, Effect
 
     @Override
     public void setEffectiveSampleSize(int nEff) {
-        this.nEff = nEff == -1 ? this.n : nEff;
+        this.nEff = nEff < 0 ? this.n : nEff;
     }
 
     @Override

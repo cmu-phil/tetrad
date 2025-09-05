@@ -417,7 +417,7 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
      */
     @Override
     public void setEffectiveSampleSize(int nEff) {
-        this.nEff = nEff == -1 ? nEff : this.sampleSize;
+        this.nEff = nEff < 0 ? nEff : this.sampleSize;
     }
 
     @Override

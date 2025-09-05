@@ -314,7 +314,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
     }
 
     public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effN = effectiveSampleSize == -1 ? this.n : effectiveSampleSize;
+        this.effN = effectiveSampleSize < 0 ? this.n : effectiveSampleSize;
     }
 
     @Override

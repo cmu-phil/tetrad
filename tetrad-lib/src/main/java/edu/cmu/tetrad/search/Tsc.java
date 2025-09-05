@@ -52,7 +52,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
     private final int sampleSize;
     private final SimpleMatrix S;
     private final Map<Key, Integer> rankCache = new ConcurrentHashMap<>();
-    private int expectedSampleSize = -1;
+    private int nEff = -1;
     private double alpha = 0.01;
     private boolean verbose = false;
     private Map<Set<Integer>, Integer> clusterToRank;
@@ -124,7 +124,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
      * @return a set of clusters that match the specified rank, where each cluster is represented as a set of integers
      */
     public Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
-        log("findClustersAtRankTesting size = " + size + ", rank = " + rank + ", ess = " + expectedSampleSize);
+        log("findClustersAtRankTesting size = " + size + ", rank = " + rank + ", ess = " + nEff);
 
         final int n = vars.size();
         final int k = size;
@@ -284,7 +284,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                             int[] cmz = Cmz.stream().mapToInt(Integer::intValue).toArray();
                             int[] zArr = new int[]{z};
 
-                            int rZ = RankTests.estimateWilksRankConditioned(S, cmz, dArray, zArr, expectedSampleSize, alpha);
+                            int rZ = RankTests.estimateWilksRankConditioned(S, cmz, dArray, zArr, nEff, alpha);
                             if (rZ == 0) {
                                 collapses = true;
                                 break;
@@ -344,7 +344,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                     if (C2.size() == _size + 1
                         && rankC1 == rank
                         && newRank == rank - 1
-                        && !removeClustersBecauseOfRank0Internally(S, C2, expectedSampleSize, alpha)) {
+                        && !removeClustersBecauseOfRank0Internally(S, C2, nEff, alpha)) {
 
                         if (newClusters.contains(C2)) continue;
 
@@ -426,7 +426,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
         // Try to split instead of outright reject (Dong-style refinement)
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
-            if (removeClustersBecauseOfRank0Internally(S, cluster, expectedSampleSize, alpha)) {
+            if (removeClustersBecauseOfRank0Internally(S, cluster, nEff, alpha)) {
                 clusterToRank.remove(cluster);
                 penultimateRemoved = true;
             }
@@ -519,7 +519,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                     int[] dArray = Dnow.stream().mapToInt(Integer::intValue).toArray();
                     int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
 
-                    int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, expectedSampleSize, alpha);
+                    int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, nEff, alpha);
                     if (rZ == 0) {
                         // offending subset is Z → remove Z from the cluster
                         Z.forEach(Cset::remove);
@@ -591,7 +591,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
         for (int i = 0; i < xSet.size(); i++) xIndices[i] = xSet.get(i);
         for (int i = 0; i < ySet.size(); i++) yIndices[i] = ySet.get(i);
 
-        return estimateWilksRank(S, xIndices, yIndices, expectedSampleSize, alpha);
+        return estimateWilksRank(S, xIndices, yIndices, nEff, alpha);
     }
 
     private void log(String s) {
@@ -608,20 +608,20 @@ public class Tsc implements EffectiveSampleSizeSettable {
      * @return the effective sample size
      */
     public int getEffectiveSampleSize() {
-        return expectedSampleSize;
+        return nEff;
     }
 
     /**
      * Sets the expected sample size used in calculations. The expected sample size must be either -1, indicating it
      * should default to the current sample size, or a positive integer greater than 0.
      *
-     * @param expectedSampleSize the expected sample size to be set. Must be -1 or a positive integer greater than 0.
+     * @param nEff the expected sample size to be set. Must be -1 or a positive integer greater than 0.
      * @throws IllegalArgumentException if the provided expected sample size is not -1 and less than or equal to 0.
      */
-    public void setEffectiveSampleSize(int expectedSampleSize) {
-        if (!(expectedSampleSize == -1 || expectedSampleSize > 0))
+    public void setEffectiveSampleSize(int nEff) {
+        if (!(nEff == -1 || nEff > 0))
             throw new IllegalArgumentException("Expected sample size = -1 or > 0");
-        this.expectedSampleSize = expectedSampleSize == -1 ? sampleSize : expectedSampleSize;
+        this.nEff = nEff < 0 ? sampleSize : nEff;
         rankCache.clear(); // <-- ranks depend on ESS
     }
 

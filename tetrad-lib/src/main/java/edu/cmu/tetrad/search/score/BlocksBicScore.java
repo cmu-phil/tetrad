@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
@@ -25,7 +26,7 @@ import java.util.*;
  * &amp; Bibby 1979, section 12.6; Anderson 2003, section 12.3.2) This is already in 2 log-likelihood units, so the BIC
  * penalty can be applied directly as 2ℓ - c k log n.
  */
-public class BlocksBicScore implements Score, BlockScore {
+public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSettable {
     // --- Caches ---
     private static final int SCORE_CACHE_MAX = 100_000;
     private static final int XBLOCK_CACHE_MAX = 50_000;
@@ -68,6 +69,7 @@ public class BlocksBicScore implements Score, BlockScore {
     private double penaltyDiscount = 1.0;   // c
     private double ridge = 1e-8;            // regLambda passed to RankTests
     private double ebicGamma = 0.0;         // gamma for EBIC-style extra penalty (0 disables)
+    private int nEff;
 
     /**
      * Constructs a BlocksBicScore object using the provided BlockSpec configuration. This class prepares the necessary
@@ -96,6 +98,8 @@ public class BlocksBicScore implements Score, BlockScore {
         }
 
         this.n = blockSpec.dataSet().getNumRows();
+        setEffectiveSampleSize(-1);
+
         this.Sphi = new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix();
         // this.Sphi = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix()); // alternative
 
@@ -191,9 +195,9 @@ public class BlocksBicScore implements Score, BlockScore {
 
         int p = Xblock.length, q = Yblock.length;
 
-        // Bartlett-style effective n for CCA LLR: nEff = n - 1 - (p + q + 1)/2, floored at 1
-        double nEff = n - 1.0 - 0.5 * (p + q + 1.0);
-        if (nEff < 1.0) nEff = 1.0;
+        // Bartlett-style effective n for CCA LLR: _nEff = n - 1 - (p + q + 1)/2, floored at 1
+        double _nEff = this.nEff - 1.0 - 0.5 * (p + q + 1.0);
+        if (_nEff < 1.0) _nEff = 1.0;
 
         // Pull suffix logs and clamp m by both n and suffix support
         double[] suffix = ent.suffixLogs;
@@ -201,7 +205,7 @@ public class BlocksBicScore implements Score, BlockScore {
             scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
             return Double.NEGATIVE_INFINITY;
         }
-        int m = Math.min(Math.min(p, q), n - 1);
+        int m = Math.min(Math.min(p, q), (int) _nEff - 1);
         m = Math.min(m, suffix.length - 1); // need suffix[m]
         if (m <= 0) {
             scoreCache.put(fkey, -1e-12);
@@ -218,10 +222,11 @@ public class BlocksBicScore implements Score, BlockScore {
         // Evaluate r = m
         {
             double sumLogsTopR = suffix0 - suffix[m];
-            double fit = -nEff * sumLogsTopR;
+            double fit = -_nEff * sumLogsTopR;
             int k = m * (p + q - m);
 
-            double pen = penaltyDiscount * k * Math.log(n);
+            double logN = Math.log(Math.max(_nEff, 2.0));
+            double pen = penaltyDiscount * k * logN;
             if (ebicGamma > 0.0) {
                 pen += 2.0 * ebicGamma * k * Math.log(Ppool);
             }
@@ -235,10 +240,11 @@ public class BlocksBicScore implements Score, BlockScore {
         // Scan r = 1..m-1  (skip r = 0 to avoid null ties)
         for (int r = 1; r < m; r++) {
             double sumLogsTopR = suffix0 - suffix[r];
-            double fit = -nEff * sumLogsTopR;
+            double fit = -_nEff * sumLogsTopR;
             int k = r * (p + q - r);
 
-            double pen = penaltyDiscount * k * Math.log(n);
+            double logN = Math.log(Math.max(_nEff, 2.0));
+            double pen = penaltyDiscount * k * logN;
             if (ebicGamma > 0.0) {
                 pen += 2.0 * ebicGamma * k * Math.log(Ppool);
             }
@@ -399,6 +405,18 @@ public class BlocksBicScore implements Score, BlockScore {
     @Override
     public BlockSpec getBlockSpec() {
         return blockSpec;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.n : nEff;
+        scoreCache.clear();
+        xblockCache.clear();
+    }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
     }
 
     // ----- Key types for caches -----

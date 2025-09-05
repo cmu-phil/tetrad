@@ -398,7 +398,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      */
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.nEff = effectiveSampleSize == -1 ? this.sampleSize : effectiveSampleSize;
+        this.nEff = effectiveSampleSize < 0 ? this.sampleSize : effectiveSampleSize;
     }
 
     @Override

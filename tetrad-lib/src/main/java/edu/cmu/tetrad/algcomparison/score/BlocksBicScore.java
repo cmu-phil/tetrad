@@ -87,6 +87,7 @@ public class BlocksBicScore implements BlockScoreWrapper {
         edu.cmu.tetrad.search.score.BlocksBicScore score = new edu.cmu.tetrad.search.score.BlocksBicScore(
                 blockSpec);
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return score;
     }
 
@@ -123,6 +124,7 @@ public class BlocksBicScore implements BlockScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 

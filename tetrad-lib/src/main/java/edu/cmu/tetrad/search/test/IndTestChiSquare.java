@@ -441,7 +441,7 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
 
     @Override
     public void setEffectiveSampleSize(int nEff) {
-        this.nEff = nEff == -1 ? sampleSize : nEff;
+        this.nEff = nEff < 0 ? sampleSize : nEff;
     }
 
     @Override

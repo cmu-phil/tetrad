@@ -377,7 +377,7 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      */
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.nEff = effectiveSampleSize == -1 ? this.sampleSize : effectiveSampleSize;
+        this.nEff = effectiveSampleSize < 0 ? this.sampleSize : effectiveSampleSize;
     }
 
     @Override
