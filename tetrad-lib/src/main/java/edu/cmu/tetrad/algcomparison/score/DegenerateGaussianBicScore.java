@@ -74,6 +74,7 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
         DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(SimpleDataLoader.getMixedDataSet(dataSet), precomputeCovariances,
                 parameters.getDouble(Params.SINGULARITY_LAMBDA));
         degenerateGaussianScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        degenerateGaussianScore.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return degenerateGaussianScore;
     }
 
@@ -103,6 +104,7 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
         parameters.add(Params.STRUCTURE_PRIOR);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.SINGULARITY_LAMBDA);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 

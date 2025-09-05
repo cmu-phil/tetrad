@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -46,13 +47,15 @@ import java.util.Map;
  * @author Bryan Andrews
  * @version $Id: $Id
  */
-public class DegenerateGaussianScore implements Score {
+public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettable {
     // The mixed variables of the original dataset.
     private final List<Node> variables;
     // The embedding map.
     private final Map<Integer, List<Integer>> embedding;
     // The SEM BIC score.
     private final SemBicScore bic;
+    private final int sampleSize;
+    private int nEff;
 
     /**
      * Constructs the score using a dataset.
@@ -67,6 +70,7 @@ public class DegenerateGaussianScore implements Score {
         }
 
         this.variables = dataSet.getVariables();
+        this.sampleSize = dataSet.getNumRows();
 
         // Expand the discrete columns to give indicators for each category. For the continuous variables, we
         // wet the truncation limit to 1, on the contrqact that the first polynomial for any basis will be just
@@ -77,8 +81,11 @@ public class DegenerateGaussianScore implements Score {
         this.embedding = embeddedData.embedding();
 
         this.bic = new SemBicScore(convertedData, precomputeCovariances);
+        this.bic.setEffectiveSampleSize(this.nEff);
         this.bic.setLambda(lambda);
         this.bic.setStructurePrior(0);
+
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -188,5 +195,19 @@ public class DegenerateGaussianScore implements Score {
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.bic.setPenaltyDiscount(penaltyDiscount);
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+        if (bic == null) {
+            throw new IllegalStateException("bic is null");
+        }
+        this.bic.setEffectiveSampleSize(this.nEff);
+    }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
     }
 }
