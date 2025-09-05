@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.util;
 
-import java.util.OptionalInt;
-
-public interface EffectiveSampleSizeAware {
+public interface EffectiveSampleSizeSettable {
 
     /**
      * Sets the effective sample size, or -1 if the actual sample size should be used.

@@ -4,9 +4,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -105,7 +105,8 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      * differs from the original dataset size, depending on configurations or preprocessing steps. It is particularly
      * relevant to statistical and independence testing procedures where the sample size influences the results.
      */
-    private int sampleSize;
+    private final int sampleSize;
+    private int nEff;
     /**
      * Represents the specific rows being utilized during the independence test. This field holds a list of integers
      * corresponding to the indices of the rows from the data set. If not explicitly set, all rows without missing
@@ -154,6 +155,8 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
         this.allRows = listRows();
+
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -187,7 +190,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      * Computes variance of residuals: Var(R) = sum(R^2) / N
      */
     private double computeVariance(SimpleMatrix residuals) {
-        return residuals.elementMult(residuals).elementSum() / this.sampleSize;
+        return residuals.elementMult(residuals).elementSum() / this.nEff;
     }
 
     /**
@@ -363,7 +366,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
 
         // Compute Likelihood Ratio Statistic
         double epsilon = 1e-10;
-        double LR_stat = this.sampleSize * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
+        double LR_stat = this.nEff * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
 
         // Compute p-value using chi-square distribution
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
@@ -395,11 +398,12 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      */
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
-        if (effectiveSampleSize < 1) {
-            throw new IllegalArgumentException("Sample size must be positive.");
-        }
+        this.nEff = effectiveSampleSize == -1 ? this.sampleSize : effectiveSampleSize;
+    }
 
-        this.sampleSize = effectiveSampleSize;
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
     }
 
     /**

@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.util.EffectiveSampleSizeAware;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.ejml.simple.SimpleMatrix;
@@ -30,7 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Adam Brodie
  * @author josephramsey
  */
-public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeAware,  BlockTest {
+public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSettable,  BlockTest {
 
     // ---- Cache sizes (tune) ----
     private static final int RANK_CACHE_MAX = 400_000; // (L,R,n,alpha,splitSeed,randomize,numTrials)->rank

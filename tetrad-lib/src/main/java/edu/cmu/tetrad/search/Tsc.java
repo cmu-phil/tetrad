@@ -3,7 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.EffectiveSampleSizeAware;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -46,7 +46,7 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
  *
  * @author josephramsey
  */
-public class Tsc implements EffectiveSampleSizeAware {
+public class Tsc implements EffectiveSampleSizeSettable {
     private final List<Node> nodes;
     private final List<Integer> variables;
     private final int sampleSize;

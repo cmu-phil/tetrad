@@ -4,13 +4,12 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -109,6 +108,7 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      * Singularity lambda.
      */
     private double lambda;
+    private int nEff;
 
     /**
      * Constructs an instance of the IndTestBasisFunctionLrt class. This constructor initializes the object using the
@@ -146,6 +146,8 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
         this.allRows = listRows();
+
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -181,7 +183,7 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      * Computes variance of residuals: Var(R) = sum(R^2) / N
      */
     private double computeVariance(SimpleMatrix residuals) {
-        return residuals.elementMult(residuals).elementSum() / this.sampleSize;
+        return residuals.elementMult(residuals).elementSum() / this.nEff;
     }
 
     /**
@@ -354,7 +356,7 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
 
         // Compute Likelihood Ratio Statistic
         double epsilon = 1e-10;
-        double LR_stat = this.sampleSize * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
+        double LR_stat = this.nEff * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
 
         // Compute p-value using chi-square distribution
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
@@ -375,11 +377,12 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      */
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
-        if (effectiveSampleSize < 1) {
-            throw new IllegalArgumentException("Sample size must be positive.");
-        }
+        this.nEff = effectiveSampleSize == -1 ? this.sampleSize : effectiveSampleSize;
+    }
 
-        this.sampleSize = effectiveSampleSize;
+    @Override
+    public int getEffectiveSampleSize() {
+        return this.nEff;
     }
 
     /**

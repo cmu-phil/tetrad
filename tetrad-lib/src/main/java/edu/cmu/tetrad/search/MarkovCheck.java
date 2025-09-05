@@ -2037,6 +2037,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         ((EffectiveSampleSizeSettable) independenceTest).setEffectiveSampleSize(sampleSize);
     }
 
+    public int getEffectiveSampleSize() {
+        return((EffectiveSampleSizeSettable) independenceTest).getEffectiveSampleSize();
+    }
+
     /**
      * Sets the maximum path length for relevant paths.
      *

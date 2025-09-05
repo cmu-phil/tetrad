@@ -24,12 +24,10 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -68,7 +66,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     /**
      * The sample size to use; if not set, the sample size of the data set is used.
      */
-    private int sampleSize;
+    private final int sampleSize;
     /**
      * The correlation matrix.
      */
@@ -85,10 +83,6 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * Stores a reference to the data set passed in through the constructor.
      */
     private DataSet dataSet;
-    /**
-     * Matrix from of the data.a
-     */
-    private Matrix data;
     /**
      * True if verbose output should be printed.
      */
@@ -258,7 +252,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         int n;
 
         if (covMatrix() != null) {
-            r = partialCorrelation(x, y, z, rows, lambda);
+            r = partialCorrelation(x, y, z, rows);
             n = getEffectiveSampleSize();
         } else {
             List<Integer> rows = listRows();
@@ -281,8 +275,19 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         return 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
     }
 
-    private int getEffectiveSampleSize() {
+    public int getEffectiveSampleSize() {
         return nEff;
+    }
+
+    /**
+     * Sets the sample size to use for the independence test, which may be different from the sample size of the data
+     * set or covariance matrix. If not set, the sample size of the data set or covariance matrix is used.
+     *
+     * @param effectiveSampleSize The sample size to use.
+     */
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.nEff = effectiveSampleSize == -1 ? this.sampleSize : effectiveSampleSize;
     }
 
     /**
@@ -382,17 +387,6 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     /**
-     * Sets the sample size to use for the independence test, which may be different from the sample size of the data
-     * set or covariance matrix. If not set, the sample size of the data set or covariance matrix is used.
-     *
-     * @param effectiveSampleSize The sample size to use.
-     */
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.nEff =  effectiveSampleSize == -1 ? this.sampleSize : effectiveSampleSize;
-    }
-
-    /**
      * Returns true iff verbose output should be printed.
      *
      * @return True, if so.
@@ -451,107 +445,18 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     /**
-     * Returns true just in case the varialbe in zList determine xVar.
-     *
-     * @return True, if so.
-     */
-    private boolean determinesPseudoinverse(List<Node> zList, Node xVar) {
-        if (zList == null) {
-            throw new NullPointerException();
-        }
-
-        if (zList.isEmpty()) {
-            return false;
-        }
-
-        for (Node node : zList) {
-            if (node == null) {
-                throw new NullPointerException();
-            }
-        }
-
-        int size = zList.size();
-        int[] zCols = new int[size];
-
-        int xIndex = getVariables().indexOf(xVar);
-        Vector x = this.data.getColumn(xIndex);
-
-        for (int i = 0; i < zList.size(); i++) {
-            zCols[i] = getVariables().indexOf(zList.get(i));
-        }
-
-        CovarianceMatrix cov = new CovarianceMatrix(dataSet);
-
-        int[] rows;
-
-        if (this.rows == null) {
-            rows = new int[this.data.getNumRows()];
-            for (int i = 0; i < rows.length; i++) {
-                rows[i] = i;
-            }
-        } else {
-            rows = new int[this.rows.size()];
-            for (int i = 0; i < rows.length; i++) {
-                rows[i] = this.rows.get(i);
-            }
-        }
-
-        SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
-                cov, true, lambda);
-
-        Matrix selection = data.view(rows, zCols).mat();
-        Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
-        Vector xRes = xPred.minus(x);
-
-        double SSE = 0;
-
-        for (int i = 0; i < xRes.size(); i++) {
-            SSE += xRes.get(i) * xRes.get(i);
-        }
-
-        double variance = SSE / (this.data.getNumRows() - (zList.size() + 1));
-
-        boolean determined = variance < getAlpha();
-
-        if (determined) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Determination found: ").append(xVar).append(
-                    " is determined by {");
-
-            for (int i = 0; i < zList.size(); i++) {
-                sb.append(zList.get(i));
-
-                if (i < zList.size() - 1) {
-                    sb.append(", ");
-                }
-            }
-
-            sb.append("}");
-
-            sb.append(" SSE = ").append(NumberFormatUtil.getInstance().getNumberFormat().format(SSE));
-
-            if (verbose) {
-                TetradLogger.getInstance().log(sb.toString());
-            }
-        }
-
-        return determined;
-    }
-
-    /**
      * Calculates the partial correlation between two nodes, given a set of conditioning variables and a list of rows.
      * If the correlation matrix is already available, it selects the necessary subset. Otherwise, it calculates the
      * covariance matrix from the provided rows and converts it to a correlation matrix.
      *
-     * @param x      The first node.
-     * @param y      The second node.
-     * @param _z     The set of conditioning variables.
-     * @param rows   The list of rows to use for calculating the covariance matrix, if necessary.
-     * @param lambda Singularity lambda.
+     * @param x    The first node.
+     * @param y    The second node.
+     * @param _z   The set of conditioning variables.
+     * @param rows The list of rows to use for calculating the covariance matrix, if necessary.
      * @return The partial correlation value.
      * @throws SingularMatrixException If a singularity occurs when inverting a matrix.
      */
-    private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows, double lambda) throws SingularMatrixException {
+    private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows) throws SingularMatrixException {
         List<Node> z = new ArrayList<>(_z);
 
         int[] indices = new int[z.size() + 2];
@@ -583,7 +488,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * @throws SingularMatrixException If a singularity occurs when inverting a matrix.
      */
     private double getR(Node x, Node y, Set<Node> z, List<Integer> rows) {
-        return partialCorrelation(x, y, z, rows, lambda);
+        return partialCorrelation(x, y, z, rows);
     }
 
     /**

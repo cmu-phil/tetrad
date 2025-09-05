@@ -25,14 +25,13 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
 
@@ -106,6 +105,7 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
      * values of conditioning variables, that coefs as 'determining.'
      */
     private double determinationP = 0.99;
+    private int nEff;
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -230,7 +230,7 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
             }
         }
 
-        ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices, sampleSize);
+        ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices, nEff);
 
         this.xSquare = result.getXSquare();
         this.df = result.getDf();
@@ -440,8 +440,13 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
     }
 
     @Override
-    public void setEffectiveSampleSize(int sampleSize) {
-        this.sampleSize = sampleSize;
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff == -1 ? sampleSize : nEff;
+    }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return this.nEff;
     }
 
     /**
