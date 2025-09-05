@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.special.Gamma;
@@ -47,17 +48,16 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class PoissonPriorScore implements Score {
+public class PoissonPriorScore implements Score, EffectiveSampleSizeSettable {
 
     // The variables of the covariance matrix.
     private final List<Node> variables;
     // The sample size of the covariance matrix.
-    private final int sampleSize;
+    private int sampleSize;
+    private int nEff;
     private DataSet dataSet;
     // The covariance matrix.
     private ICovarianceMatrix covariances;
-    // Sample size or equivalent sample size.
-    private double N;
     // The data, if it is set.
     private Matrix data;
     // True if row subsets should be calculated.
@@ -80,6 +80,7 @@ public class PoissonPriorScore implements Score {
         setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -98,6 +99,7 @@ public class PoissonPriorScore implements Score {
 
         this.variables = dataSet.getVariables();
         this.sampleSize = dataSet.getNumRows();
+        setEffectiveSampleSize(-1);
 
         DataSet _dataSet = DataTransforms.center(dataSet);
         this.data = _dataSet.getDoubleData();
@@ -145,7 +147,7 @@ public class PoissonPriorScore implements Score {
         double r = k * log(lambda);
 
         // Bryan
-        double score = -0.5 * this.N * log(varRy) - 0.5 * k * log(this.N) + r - Gamma.logGamma(k + 1.);
+        double score = -0.5 * this.nEff * log(varRy) - 0.5 * k * log(this.nEff) + r - Gamma.logGamma(k + 1.);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
@@ -187,7 +189,8 @@ public class PoissonPriorScore implements Score {
         }
 
 
-        this.N = covariances.getSampleSize();
+        this.sampleSize = covariances.getSampleSize();
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -226,7 +229,7 @@ public class PoissonPriorScore implements Score {
      */
     @Override
     public int getMaxDegree() {
-        return (int) ceil(log(this.sampleSize));
+        return (int) ceil(log(this.nEff));
     }
 
     /**
@@ -274,6 +277,16 @@ public class PoissonPriorScore implements Score {
         int[] indices = new int[__adj.size()];
         for (int t = 0; t < __adj.size(); t++) indices[t] = this.variables.indexOf(__adj.get(t));
         return indices;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+    }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
     }
 }
 

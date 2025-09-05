@@ -61,6 +61,7 @@ public class PoissonPriorScore implements ScoreWrapper {
 
         score.setLambda(parameters.getDouble(Params.POISSON_LAMBDA));
         score.setSingularityLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         return score;
     }
@@ -90,6 +91,7 @@ public class PoissonPriorScore implements ScoreWrapper {
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.POISSON_LAMBDA);
         parameters.add(Params.SINGULARITY_LAMBDA);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 
