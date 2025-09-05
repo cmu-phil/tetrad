@@ -264,7 +264,7 @@ public class TscHarnessTest {
     private static Set<Set<Integer>> runTscOnce(List<Node> vars, CovarianceMatrix cov, double alpha, int ess) {
         Tsc tsc = new Tsc(vars, cov);
         tsc.setAlpha(alpha);
-        tsc.setExpectedSampleSize(ess);
+        tsc.setEffectiveSampleSize(ess);
         tsc.setVerbose(false);
         Map<Set<Integer>, Integer> out = tsc.findClusters();
         // canonicalize to immutable sets to make set ops safe
@@ -327,7 +327,7 @@ public class TscHarnessTest {
                                             int minRedundancy) {
         Tsc tsc = new Tsc(vars, cov);
         tsc.setAlpha(alpha);
-        tsc.setExpectedSampleSize(ess);
+        tsc.setEffectiveSampleSize(ess);
         tsc.setMinRedundancy(minRedundancy);
         tsc.setVerbose(false);
         Map<Set<Integer>, Integer> out = tsc.findClusters();
@@ -388,7 +388,7 @@ public class TscHarnessTest {
                 // Run TSC
                 Tsc tsc = new Tsc(build.vars, build.cov);
                 tsc.setAlpha(ALPHA);
-                tsc.setExpectedSampleSize(N);
+                tsc.setEffectiveSampleSize(N);
                 tsc.setVerbose(false);
 
                 Map<Set<Integer>, Integer> out = tsc.findClusters();

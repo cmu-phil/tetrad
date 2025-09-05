@@ -56,7 +56,7 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeAwa
     private long splitSeed = 17L;
     private int numTrials = 1; // take min rank over trials
     private boolean leftGetsSmallerHalfWhenOdd = true; // if true and |Zi| is odd, left gets floor(|Zi|/2)
-    private OptionalInt nEff;
+    private int nEff;
 
     /**
      * Construct from a BlockSpec (same pattern as Lemma 10 test).
@@ -78,6 +78,7 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeAwa
         this.nodeHash = nodesHash;
 
         this.n = blockSpec.dataSet().getNumRows();
+        this.nEff = n;
         this.S = new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix();
 
         final int B = blockSpec.blocks().size();
@@ -180,13 +181,12 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeAwa
     }
 
     @Override
-    public void setEffectiveSampleSize(int n) {
-        if (n <= 0) throw new IllegalArgumentException("nEff must be > 0");
-        this.nEff = OptionalInt.of(n);
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.nEff =  effectiveSampleSize == -1 ? this.n : effectiveSampleSize;
     }
 
     @Override
-    public OptionalInt getEffectiveSampleSize() {
+    public int getEffectiveSampleSize() {
         return this.nEff;
     }
 
@@ -292,10 +292,10 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeAwa
     }
 
     private int getRank(int[] L, int[] R) {
-        RKey key = new RKey(L, R, nEff.orElse(n), alpha, splitSeed, randomizeSplits, numTrials);
+        RKey key = new RKey(L, R, nEff, alpha, splitSeed, randomizeSplits, numTrials);
         Integer cached = rankCache.get(key);
         if (cached != null) return cached;
-        int rank = RankTests.estimateWilksRank(S, L, R, nEff.orElse(n), alpha);
+        int rank = RankTests.estimateWilksRank(S, L, R, nEff, alpha);
         if (rank < 0) rank = 0;
         rankCache.put(key, rank);
         return rank;

@@ -75,7 +75,7 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
 
         Tsc tsc = new Tsc(dataSet.getVariables(), new CorrelationMatrix(dataSet));
         tsc.setAlpha(alpha);
-        tsc.setExpectedSampleSize(ess);
+        tsc.setEffectiveSampleSize(ess);
         tsc.setRmax(rMax);
         tsc.setMinRedundancy(minRedundancy);
         tsc.setVerbose(verbose);

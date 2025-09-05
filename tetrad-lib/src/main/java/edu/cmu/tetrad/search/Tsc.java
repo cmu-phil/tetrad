@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.EffectiveSampleSizeAware;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -45,7 +46,7 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
  *
  * @author josephramsey
  */
-public class Tsc {
+public class Tsc implements EffectiveSampleSizeAware {
     private final List<Node> nodes;
     private final List<Integer> variables;
     private final int sampleSize;
@@ -71,7 +72,7 @@ public class Tsc {
         for (int i = 0; i < variables.size(); i++) this.variables.add(i);
         this.S = new CorrelationMatrix(cov).getMatrix().getSimpleMatrix();
         this.sampleSize = cov.getSampleSize();
-        setExpectedSampleSize(-1);
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -602,13 +603,22 @@ public class Tsc {
     }
 
     /**
+     * Returns the effective sample size.
+     *
+     * @return the effective sample size
+     */
+    public int getEffectiveSampleSize() {
+        return expectedSampleSize;
+    }
+
+    /**
      * Sets the expected sample size used in calculations. The expected sample size must be either -1, indicating it
      * should default to the current sample size, or a positive integer greater than 0.
      *
      * @param expectedSampleSize the expected sample size to be set. Must be -1 or a positive integer greater than 0.
      * @throws IllegalArgumentException if the provided expected sample size is not -1 and less than or equal to 0.
      */
-    public void setExpectedSampleSize(int expectedSampleSize) {
+    public void setEffectiveSampleSize(int expectedSampleSize) {
         if (!(expectedSampleSize == -1 || expectedSampleSize > 0))
             throw new IllegalArgumentException("Expected sample size = -1 or > 0");
         this.expectedSampleSize = expectedSampleSize == -1 ? sampleSize : expectedSampleSize;

@@ -85,7 +85,7 @@ public class Ftfc {
 
     private void setEss(int ess) {
         this.ess = ess == -1 ? this.sampleSize : ess;
-        this.tsc.setExpectedSampleSize(ess);
+        this.tsc.setEffectiveSampleSize(ess);
     }
 
     // Canonical, immutable key for clusters to avoid order/mutation hazards
@@ -164,7 +164,7 @@ public class Ftfc {
 
         // Make sure TSC uses same alpha/n as GFFC
         tsc.setAlpha(this.alpha);
-        tsc.setExpectedSampleSize(-1);
+        tsc.setEffectiveSampleSize(-1);
 
         // Unclustered relative to already accepted clusters (any rank)
         List<Integer> unclustered = allVariables();
