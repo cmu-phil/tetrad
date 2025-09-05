@@ -26,6 +26,7 @@ public class TestCheckMarkov {
         new TestCheckMarkov().test1();
     }
 
+    @Test
     public void test1() {
         double alpha = 0.05;
         int numIndep = 0;

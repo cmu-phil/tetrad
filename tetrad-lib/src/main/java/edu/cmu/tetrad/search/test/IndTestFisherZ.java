@@ -105,6 +105,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * Lambda for regularization.
      */
     private double lambda = 0.0;
+    private int nEff;
 
 
     /**
@@ -117,6 +118,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     public IndTestFisherZ(DataSet dataSet, double alpha) {
         this.dataSet = dataSet;
         this.sampleSize = dataSet.getNumRows();
+        setEffectiveSampleSize(-1);
 
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
@@ -156,6 +158,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
         this.sampleSize = data.getNumRows();
+        setEffectiveSampleSize(-1);
         setAlpha(alpha);
     }
 
@@ -172,6 +175,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         this.indexMap = indexMap(this.variables);
         this.nameMap = nameMap(this.variables);
         this.sampleSize = covMatrix.getSampleSize();
+        setEffectiveSampleSize(-1);
         setAlpha(alpha);
     }
 
@@ -255,7 +259,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
 
         if (covMatrix() != null) {
             r = partialCorrelation(x, y, z, rows, lambda);
-            n = sampleSize();
+            n = getEffectiveSampleSize();
         } else {
             List<Integer> rows = listRows();
 
@@ -277,13 +281,17 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         return 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
     }
 
+    private int getEffectiveSampleSize() {
+        return nEff;
+    }
+
     /**
      * Returns the BIC score for this test.
      *
      * @return The BIC score.
      */
     public double getBic() {
-        return -sampleSize() * FastMath.log(1.0 - this.r * this.r) - FastMath.log(sampleSize());
+        return -getEffectiveSampleSize() * FastMath.log(1.0 - this.r * this.r) - FastMath.log(getEffectiveSampleSize());
     }
 
     /**
@@ -379,12 +387,9 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      *
      * @param effectiveSampleSize The sample size to use.
      */
+    @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
-        if (effectiveSampleSize < 1) {
-            throw new IllegalArgumentException("Sample size must be positive.");
-        }
-
-        this.sampleSize = effectiveSampleSize;
+        this.nEff =  effectiveSampleSize == -1 ? this.sampleSize : effectiveSampleSize;
     }
 
     /**
@@ -579,16 +584,6 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      */
     private double getR(Node x, Node y, Set<Node> z, List<Integer> rows) {
         return partialCorrelation(x, y, z, rows, lambda);
-    }
-
-    /**
-     * Returns the sample size. If the dataSet is not null, it returns the number of rows in the dataSet. Otherwise, it
-     * returns the sample size from the covariance matrix.
-     *
-     * @return The sample size.
-     */
-    private int sampleSize() {
-        return this.sampleSize;
     }
 
     /**
