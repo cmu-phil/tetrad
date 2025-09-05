@@ -619,8 +619,6 @@ public class Tsc implements EffectiveSampleSizeSettable {
      * @throws IllegalArgumentException if the provided expected sample size is not -1 and less than or equal to 0.
      */
     public void setEffectiveSampleSize(int nEff) {
-        if (!(nEff == -1 || nEff > 0))
-            throw new IllegalArgumentException("Expected sample size = -1 or > 0");
         this.nEff = nEff < 0 ? sampleSize : nEff;
         rankCache.clear(); // <-- ranks depend on ESS
     }
