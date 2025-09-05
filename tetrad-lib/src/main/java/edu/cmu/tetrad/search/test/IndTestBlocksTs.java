@@ -27,6 +27,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * This class is an elaboration of the IndTestTrekSep class of Adam Brodie and Peter Spirtes.
  *
  * @see edu.cmu.tetrad.search.test.IndTestTrekSep
+ * @author Adam Brodie
+ * @author josephramsey
  */
 public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeAware,  BlockTest {
 

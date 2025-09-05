@@ -40,6 +40,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author josephramsey refactoring 7/4/2018, 12/6/2024
  * @version $Id: $Id
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public class KciOld implements IndependenceTest, RowsSettable, RawMarginalIndependenceTest {
 
     /**

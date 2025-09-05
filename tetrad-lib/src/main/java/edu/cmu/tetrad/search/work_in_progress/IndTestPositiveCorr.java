@@ -48,6 +48,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
  * @version $Id: $Id
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public final class IndTestPositiveCorr implements IndependenceTest {
 
     /**

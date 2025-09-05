@@ -175,9 +175,11 @@ final class IndTestChooser {
             return new ScoreIndTest(imagesScore);
         }
 
-        {
-            return new IndTestFisherZConcatenateResiduals(dataSets, params.getDouble("alpha", 0.001));
-        }
+        throw new IllegalArgumentException("Unsupported test type: " + testType);
+
+//        {
+//            return new IndTestFisherZConcatenateResiduals(dataSets, params.getDouble("alpha", 0.001));
+//        }
     }
 
     private IndependenceTest getDiscreteTest(DataSet dataDiscrete, Parameters params, IndTestType testType) {

@@ -47,6 +47,7 @@ import java.util.Set;
  * @author josephramsey
  * @version $Id: $Id
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public final class IndTestCramerT implements IndependenceTest {
 
     /**

@@ -25,6 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>
  * Thread-safe LRU caches (like IndTestBlocks).
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest {
 
     // ---- Cache sizes (tune) ----

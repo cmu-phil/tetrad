@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Frank Wimberly
  * @version $Id: $Id
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public final class IndTestRegression implements IndependenceTest {
 
     /**

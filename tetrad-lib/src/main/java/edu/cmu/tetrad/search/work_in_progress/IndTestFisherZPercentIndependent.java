@@ -46,6 +46,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author josephramsey
  * @version $Id: $Id
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public final class IndTestFisherZPercentIndependent implements IndependenceTest {
 
     /**

@@ -18,6 +18,7 @@ import java.util.*;
  * CONTRACT: 'blocks' maps each ORIGINAL variable index v (0..V-1) to the list of embedded column indices in the
  * embedded matrix produced here.
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public class IndTestTsBasisFunctions implements IndependenceTest, RawMarginalIndependenceTest {
 
     // ---- Source data ----

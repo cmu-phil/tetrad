@@ -53,6 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id: $Id
  * @see edu.cmu.tetrad.search.work_in_progress.Kpc
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public final class IndTestHsic implements IndependenceTest {
 
     /**

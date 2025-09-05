@@ -29,6 +29,7 @@ import java.util.*;
  * @author bryanandrews
  * @see IndTestBasisFunctionLrt
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
     /**
      * The `dataSet` field holds a reference to the DataSet object used as the primary data structure for representing

@@ -48,6 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id: $Id
  * @see IndTestFisherZ
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public final class IndTestFisherZConcatenateResiduals implements IndependenceTest {
 
     /**

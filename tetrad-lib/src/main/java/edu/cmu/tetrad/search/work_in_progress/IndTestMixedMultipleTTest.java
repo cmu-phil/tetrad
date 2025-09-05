@@ -52,6 +52,7 @@ import java.util.*;
  * @author Augustus Mayo.
  * @version $Id: $Id
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public class IndTestMixedMultipleTTest implements IndependenceTest {
     /**
      * The original data set.

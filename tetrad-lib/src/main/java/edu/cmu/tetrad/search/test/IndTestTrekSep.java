@@ -40,7 +40,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Adam Brodie
  * @version $Id: $Id
+ * @deprecated Use IndTestBlocksTs instead.
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public final class IndTestTrekSep implements IndependenceTest {
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)

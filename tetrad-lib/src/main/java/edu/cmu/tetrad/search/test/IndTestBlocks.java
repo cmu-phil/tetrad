@@ -16,6 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Block-level CI test using Wilks-rank. Robust to |Y| &lt; |X| by padding Y from the leftover observed pool and, if
  * needed, by subsetting X to |Y|. Thread-safe LRU caches preserved.
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public class IndTestBlocks implements IndependenceTest, BlockTest {
 
     // ---- Cache sizes (tune) ----

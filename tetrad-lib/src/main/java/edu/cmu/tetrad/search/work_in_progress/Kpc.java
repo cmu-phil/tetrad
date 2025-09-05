@@ -52,6 +52,7 @@ import java.util.Set;
  * @author Robert Tillman.
  * @version $Id: $Id
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public class Kpc implements IGraphSearch {
 
     /**
