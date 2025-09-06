@@ -4,7 +4,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.Triple;
+import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -16,7 +16,9 @@ import java.util.*;
 
 /**
  * Pc (Unified "Classic PC")
- * (…existing class-level Javadoc unchanged…)
+ *
+ * Skeleton via FAS (stable toggle), orient unshielded triples using VANILLA/CPC/MAX_P, then Meek rules to closure.
+ * Deterministic: sorted names, canonical (x,y) endpoint ordering. No internal CI cache (wrap your test if desired).
  */
 public class Pc implements IGraphSearch {
 
@@ -33,15 +35,16 @@ public class Pc implements IGraphSearch {
 
     // MAX-P options
     private boolean maxPGlobalOrder = false;     // if true, apply global order
-    private boolean maxPDepthStratified = true;  // when global order is on, process by increasing |S|
+    private boolean maxPDepthStratified = true;  // when global is on, process by increasing |S|
     private double  maxPMargin = 0.0;            // margin guard; 0 => off
 
     // Optional tie logging for MAX_P
     private boolean logMaxPTies = false;
     private java.io.PrintStream logStream = System.out;
-    private Fas fas = null;
 
-    public Pc(IndependenceTest test) { this.test = test; }
+    private Fas fas = null; // expose via getFas()
+
+    public Pc(IndependenceTest test) { this.test = new CachingIndependenceTest(test); }
 
     // ----- Configuration setters -----
     public void setKnowledge(Knowledge knowledge) { this.knowledge = new Knowledge(knowledge); }
@@ -58,6 +61,7 @@ public class Pc implements IGraphSearch {
     public void setMaxPMargin(double margin) { this.maxPMargin = Math.max(0.0, margin); }
 
     // ----- Entry points -----
+    @Override
     public Graph search() throws InterruptedException {
         return search(test.getVariables());
     }
@@ -86,14 +90,14 @@ public class Pc implements IGraphSearch {
     }
 
     // ------------------------------------------------------------------------------------
-    // NEW: Triple classification APIs
+    // Triple classification APIs (unshielded only), deterministic order
     // ------------------------------------------------------------------------------------
 
     /** Returns all unshielded triples that are definite colliders: x -> z <- y. */
     public List<Triple> getColliderTriples(Graph g) {
         List<Triple> result = new ArrayList<>();
         for (Triple t : collectUnshieldedTriples(g)) {
-            if (g.isParentOf(t.getX(), t.getZ()) && g.isParentOf(t.getY(), t.getZ())) {
+            if (g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z)) {
                 result.add(t);
             }
         }
@@ -104,13 +108,12 @@ public class Pc implements IGraphSearch {
     public List<Triple> getNoncolliderTriples(Graph g) {
         List<Triple> result = new ArrayList<>();
         for (Triple t : collectUnshieldedTriples(g)) {
-            boolean intoZFromX = g.isParentOf(t.getX(), t.getZ());
-            boolean intoZFromY = g.isParentOf(t.getY(), t.getZ());
-            boolean outOfZToX  = g.isParentOf(t.getZ(), t.getX());
-            boolean outOfZToY  = g.isParentOf(t.getZ(), t.getY());
-            boolean undZX = isUndirected(g, t.getZ(), t.getX());
-            boolean undZY = isUndirected(g, t.getZ(), t.getY());
-
+            boolean intoZFromX = g.isParentOf(t.x, t.z);
+            boolean intoZFromY = g.isParentOf(t.y, t.z);
+            boolean outOfZToX  = g.isParentOf(t.z, t.x);
+            boolean outOfZToY  = g.isParentOf(t.z, t.y);
+            boolean undZX = isUndirected(g, t.z, t.x);
+            boolean undZY = isUndirected(g, t.z, t.y);
             // Definite noncollider only when BOTH incident edges have tails at z
             // i.e., z->x or undirected (tail at z), and z->y or undirected,
             // and there are NO arrowheads pointing into z.
@@ -123,30 +126,25 @@ public class Pc implements IGraphSearch {
 
     /**
      * Returns unshielded triples that are neither definite colliders nor definite noncolliders
-     * under the current graph marks—i.e., mixed or unresolved at z (includes undirected/bidirected/mixed).
+     * under the current graph marks—i.e., mixed or unresolved at z.
      */
     public List<Triple> getAmbiguousTriples(Graph g) {
         List<Triple> result = new ArrayList<>();
         for (Triple t : collectUnshieldedTriples(g)) {
-            boolean collider = g.isParentOf(t.getX(), t.getZ()) && g.isParentOf(t.getY(), t.getZ());
-
-            boolean intoZFromX = g.isParentOf(t.getX(), t.getZ());
-            boolean intoZFromY = g.isParentOf(t.getY(), t.getZ());
-            boolean outOfZToX  = g.isParentOf(t.getZ(), t.getX());
-            boolean outOfZToY  = g.isParentOf(t.getZ(), t.getY());
-            boolean undZX = isUndirected(g, t.getZ(), t.getX());
-            boolean undZY = isUndirected(g, t.getZ(), t.getY());
-
+            boolean collider = g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z);
+            boolean intoZFromX = g.isParentOf(t.x, t.z);
+            boolean intoZFromY = g.isParentOf(t.y, t.z);
+            boolean outOfZToX  = g.isParentOf(t.z, t.x);
+            boolean outOfZToY  = g.isParentOf(t.z, t.y);
+            boolean undZX = isUndirected(g, t.z, t.x);
+            boolean undZY = isUndirected(g, t.z, t.y);
             boolean noncollider = !intoZFromX && !intoZFromY && (outOfZToX || undZX) && (outOfZToY || undZY);
-
-            if (!collider && !noncollider) {
-                result.add(t);
-            }
+            if (!collider && !noncollider) result.add(t);
         }
         return result;
     }
 
-    // Helper: collect all unshielded triples, deterministically ordered.
+    // Helper: collect all unshielded triples, with (x,y) endpoints canonicalized by name.
     private List<Triple> collectUnshieldedTriples(Graph g) {
         List<Node> nodes = new ArrayList<>(g.getNodes());
         nodes.sort(Comparator.comparing(Node::getName));
@@ -157,20 +155,21 @@ public class Pc implements IGraphSearch {
             adj.sort(Comparator.comparing(Node::getName));
             int m = adj.size();
             for (int i = 0; i < m; i++) {
-                Node x = adj.get(i);
+                Node xi = adj.get(i);
                 for (int j = i + 1; j < m; j++) {
-                    Node y = adj.get(j);
-                    if (!g.isAdjacentTo(x, y)) {
+                    Node yj = adj.get(j);
+                    if (!g.isAdjacentTo(xi, yj)) {
+                        Node x = xi, y = yj;
+                        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
                         triples.add(new Triple(x, z, y));
                     }
                 }
             }
         }
-        // deterministic sort of triples
         triples.sort(Comparator
-                .comparing((Triple t) -> t.getX().getName())
-                .thenComparing(t -> t.getZ().getName())
-                .thenComparing(t -> t.getY().getName()));
+                .comparing((Triple t) -> t.x.getName())
+                .thenComparing(t -> t.z.getName())
+                .thenComparing(t -> t.y.getName()));
         return triples;
     }
 
@@ -180,31 +179,10 @@ public class Pc implements IGraphSearch {
     }
 
     // ------------------------------------------------------------------------------------
-    // Collider orientation (existing implementation)
+    // Collider orientation
     // ------------------------------------------------------------------------------------
     private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets) throws InterruptedException {
-        final List<Node> nodes = new ArrayList<>(g.getNodes());
-        nodes.sort(Comparator.comparing(Node::getName));
-
-        List<Triple> triples = new ArrayList<>();
-        for (Node z : nodes) {
-            List<Node> adj = new ArrayList<>(g.getAdjacentNodes(z));
-            adj.sort(Comparator.comparing(Node::getName));
-            int m = adj.size();
-            for (int i = 0; i < m; i++) {
-                Node x = adj.get(i);
-                for (int j = i + 1; j < m; j++) {
-                    Node y = adj.get(j);
-                    if (!g.isAdjacentTo(x, y)) {
-                        triples.add(new Triple(x, z, y));
-                    }
-                }
-            }
-        }
-        triples.sort(Comparator
-                .comparing((Triple t) -> t.getX().getName())
-                .thenComparing(t -> t.getZ().getName())
-                .thenComparing(t -> t.getY().getName()));
+        List<Triple> triples = collectUnshieldedTriples(g);
 
         if (colliderRule == ColliderRule.MAX_P && maxPGlobalOrder) {
             orientMaxPGlobal(g, triples);
@@ -213,13 +191,15 @@ public class Pc implements IGraphSearch {
 
         for (Triple t : triples) {
             checkTimeout();
-            if (g.isParentOf(t.getX(), t.getZ()) && g.isParentOf(t.getY(), t.getZ())) continue;
+
+            // Already collider? skip
+            if (g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z)) continue;
 
             ColliderOutcome outcome = switch (colliderRule) {
                 case VANILLA -> {
-                    Set<Node> s = fasSepsets.get(t.getX(), t.getY());
+                    Set<Node> s = fasSepsets.get(t.x, t.y);
                     if (s == null) yield ColliderOutcome.NO_SEPSET;
-                    yield s.contains(t.getZ()) ? ColliderOutcome.DEPENDENT : ColliderOutcome.INDEPENDENT;
+                    yield s.contains(t.z) ? ColliderOutcome.DEPENDENT : ColliderOutcome.INDEPENDENT;
                 }
                 case CPC   -> judgeConservative(t, g);
                 case MAX_P -> judgeMaxP(t, g);
@@ -227,31 +207,32 @@ public class Pc implements IGraphSearch {
 
             switch (outcome) {
                 case INDEPENDENT -> {
-                    if (canOrientCollider(g, t.getX(), t.getZ(), t.getY())) {
-                        GraphUtils.orientCollider(g, t.getX(), t.getZ(), t.getY());
+                    if (canOrientCollider(g, t.x, t.z, t.y)) {
+                        GraphUtils.orientCollider(g, t.x, t.z, t.y);
                         if (verbose) TetradLogger.getInstance().log(
-                                "Collider oriented: " + t.getX().getName() + " -> " + t.getZ().getName() + " <- " + t.getY().getName());
+                                "Collider oriented: " + t.x.getName() + " -> " + t.z.getName() + " <- " + t.y.getName());
                     }
                 }
                 case DEPENDENT, NO_SEPSET -> { /* leave unoriented */ }
                 case AMBIGUOUS -> {
                     if (allowBidirected == AllowBidirected.ALLOW) {
-                        // Optionally mark as bidirected for illustration, if your Graph supports it.
+                        // Optionally mark ambiguity if your Graph supports bidirected marks.
                     }
                     if (verbose) TetradLogger.getInstance().log(
-                            "Ambiguous triple: " + t.getX().getName() + " - " + t.getZ().getName() + " - " + t.getY().getName());
+                            "Ambiguous triple: " + t.x.getName() + " - " + t.z.getName() + " - " + t.y.getName());
                 }
             }
         }
     }
 
+    /** Global, order-independent MAX-P collider orientation (optionally depth-stratified; avoids ↔). */
     private void orientMaxPGlobal(Graph g, List<Triple> triples) throws InterruptedException {
         List<MaxPDecision> winners = new ArrayList<>();
         for (Triple t : triples) {
             checkTimeout();
             MaxPDecision d = decideMaxPDetail(t, g);
             if (d.outcome == ColliderOutcome.AMBIGUOUS && logMaxPTies) {
-                // tie details printed in decideMaxPDetail if enabled
+                // (details already printed inside decideMaxPDetail if enabled)
             }
             if (d.outcome == ColliderOutcome.INDEPENDENT) {
                 winners.add(d);
@@ -267,16 +248,16 @@ public class Pc implements IGraphSearch {
                 List<MaxPDecision> level = e.getValue();
                 level.sort(Comparator
                         .comparingDouble((MaxPDecision m) -> m.bestP).reversed()
-                        .thenComparing(m -> m.t.getX().getName())
-                        .thenComparing(m -> m.t.getZ().getName())
-                        .thenComparing(m -> m.t.getY().getName())
+                        .thenComparing(m -> m.t.x.getName())
+                        .thenComparing(m -> m.t.z.getName())
+                        .thenComparing(m -> m.t.y.getName())
                         .thenComparing(m -> stringifySet(m.bestS)));
                 for (MaxPDecision d : level) {
-                    if (canOrientCollider(g, d.t.getX(), d.t.getZ(), d.t.getY())) {
-                        GraphUtils.orientCollider(g, d.t.getX(), d.t.getZ(), d.t.getY());
+                    if (canOrientCollider(g, d.t.x, d.t.z, d.t.y)) {
+                        GraphUtils.orientCollider(g, d.t.x, d.t.z, d.t.y);
                         if (verbose) TetradLogger.getInstance().log(
                                 "[MAX-P global(d=" + d.bestS.size() + ")] " +
-                                d.t.getX().getName() + " -> " + d.t.getZ().getName() + " <- " + d.t.getY().getName() +
+                                d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName() +
                                 " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
                     }
                 }
@@ -284,32 +265,36 @@ public class Pc implements IGraphSearch {
         } else {
             winners.sort(Comparator
                     .comparingDouble((MaxPDecision d) -> d.bestP).reversed()
-                    .thenComparing(d -> d.t.getX().getName())
-                    .thenComparing(d -> d.t.getZ().getName())
-                    .thenComparing(d -> d.t.getY().getName())
+                    .thenComparing(d -> d.t.x.getName())
+                    .thenComparing(d -> d.t.z.getName())
+                    .thenComparing(d -> d.t.y.getName())
                     .thenComparing(d -> stringifySet(d.bestS)));
 
             for (MaxPDecision d : winners) {
-                if (canOrientCollider(g, d.t.getX(), d.t.getZ(), d.t.getY())) {
-                    GraphUtils.orientCollider(g, d.t.getX(), d.t.getZ(), d.t.getY());
+                if (canOrientCollider(g, d.t.x, d.t.z, d.t.y)) {
+                    GraphUtils.orientCollider(g, d.t.x, d.t.z, d.t.y);
                     if (verbose) TetradLogger.getInstance().log(
                             "[MAX-P global] Collider oriented: " +
-                            d.t.getX().getName() + " -> " + d.t.getZ().getName() + " <- " + d.t.getY().getName() +
+                            d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName() +
                             " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
                 }
             }
         }
     }
 
-    // ----- CPC/MAX-P decisions (unchanged) ---------------------------------------------
+    // ----- CPC/MAX-P decisions -----------------------------------------------------------
 
     private ColliderOutcome judgeConservative(Triple t, Graph g) throws InterruptedException {
+        // Ensure canonical (x,y) in case a caller ever constructs Triple differently
+        Node x = t.x, y = t.y;
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
+
         boolean sawIncludesZ = false, sawExcludesZ = false, sawAny = false;
 
-        for (SepCandidate cand : enumerateSepsetsWithPvals(t.getX(), t.getY(), g)) {
+        for (SepCandidate cand : enumerateSepsetsWithPvals(x, y, g)) {
             if (!cand.independent) continue;
             sawAny = true;
-            if (cand.S.contains(t.getZ())) sawIncludesZ = true; else sawExcludesZ = true;
+            if (cand.S.contains(t.z)) sawIncludesZ = true; else sawExcludesZ = true;
             if (sawIncludesZ && sawExcludesZ) return ColliderOutcome.AMBIGUOUS;
         }
 
@@ -323,9 +308,17 @@ public class Pc implements IGraphSearch {
         return decideMaxPDetail(t, g).outcome;
     }
 
+    /**
+     * Detailed MAX-P: returns outcome + bestP + bestS. Applies the margin guard:
+     * if both sides have candidates and their best p's differ by < maxPMargin, returns AMBIGUOUS.
+     */
     private MaxPDecision decideMaxPDetail(Triple t, Graph g) throws InterruptedException {
+        // Canonicalize (x,y) defensively
+        Node x = t.x, y = t.y;
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
+
         List<SepCandidate> indep = new ArrayList<>();
-        for (SepCandidate cand : enumerateSepsetsWithPvals(t.getX(), t.getY(), g)) {
+        for (SepCandidate cand : enumerateSepsetsWithPvals(x, y, g)) {
             if (cand.independent) indep.add(cand);
         }
         if (indep.isEmpty()) return new MaxPDecision(t, ColliderOutcome.NO_SEPSET, Double.NaN, Collections.emptySet());
@@ -334,12 +327,12 @@ public class Pc implements IGraphSearch {
         List<SepCandidate> ties = new ArrayList<>();
         for (SepCandidate c : indep) if (c.p == bestP) ties.add(c);
         ties.sort(Comparator
-                .comparing((SepCandidate c) -> c.S.contains(t.getZ()))
+                .comparing((SepCandidate c) -> c.S.contains(t.z))   // prefer excludes-Z first in ordering
                 .thenComparing(c -> stringifySet(c.S)));
 
         double bestExcl = Double.NEGATIVE_INFINITY, bestIncl = Double.NEGATIVE_INFINITY;
         for (SepCandidate c : indep) {
-            if (c.S.contains(t.getZ())) bestIncl = Math.max(bestIncl, c.p);
+            if (c.S.contains(t.z)) bestIncl = Math.max(bestIncl, c.p);
             else bestExcl = Math.max(bestExcl, c.p);
         }
         boolean hasExcl = bestExcl > Double.NEGATIVE_INFINITY;
@@ -347,21 +340,21 @@ public class Pc implements IGraphSearch {
 
         if (hasExcl && hasIncl) {
             if (bestExcl >= bestIncl + maxPMargin) {
-                Set<Node> bestS = firstTieMatchingContainsZ(ties, t.getZ(), false);
+                Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, false);
                 return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
             }
             if (bestIncl >= bestExcl + maxPMargin) {
-                Set<Node> bestS = firstTieMatchingContainsZ(ties, t.getZ(), true);
+                Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, true);
                 return new MaxPDecision(t, ColliderOutcome.DEPENDENT, bestIncl, bestS);
             }
             if (logMaxPTies && ties.size() > 1) debugPrintMaxPTies(t, bestP, ties);
             return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, Math.max(bestExcl, bestIncl),
                     ties.isEmpty() ? Collections.emptySet() : ties.get(0).S);
         } else if (hasExcl) {
-            Set<Node> bestS = firstTieMatchingContainsZ(ties, t.getZ(), false);
+            Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, false);
             return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
         } else if (hasIncl) {
-            Set<Node> bestS = firstTieMatchingContainsZ(ties, t.getZ(), true);
+            Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, true);
             return new MaxPDecision(t, ColliderOutcome.DEPENDENT, bestIncl, bestS);
         } else {
             return new MaxPDecision(t, ColliderOutcome.NO_SEPSET, Double.NaN, Collections.emptySet());
@@ -378,6 +371,9 @@ public class Pc implements IGraphSearch {
     // ----- enumeration (unique S across both sides), rely on external cache --------------
 
     private Iterable<SepCandidate> enumerateSepsetsWithPvals(Node x, Node y, Graph g) throws InterruptedException {
+        // Enforce canonical (x,y)
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
+
         Map<String, SepCandidate> uniq = new LinkedHashMap<>(); // deterministic order
 
         List<Node> adjx = new ArrayList<>(g.getAdjacentNodes(x));
@@ -419,11 +415,14 @@ public class Pc implements IGraphSearch {
 
     private void debugPrintMaxPTies(Triple t, double bestP, List<SepCandidate> ties) {
         if (logStream == null) return;
-        String header = "[MAX-P tie] pair=(" + t.getX().getName() + "," + t.getY().getName() + "), z=" + t.getZ().getName()
+        Node x = t.x, y = t.y;
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
+
+        String header = "[MAX-P tie] pair=(" + x.getName() + "," + y.getName() + "), z=" + t.z.getName()
                         + ", bestP=" + bestP + ", #ties=" + ties.size();
         logStream.println(header);
         for (SepCandidate c : ties) {
-            boolean containsZ = c.S.contains(t.getZ());
+            boolean containsZ = c.S.contains(t.z);
             String line = "  S=" + stringifySet(c.S) + " | contains(z)=" + containsZ + " | p=" + c.p;
             logStream.println(line);
         }
@@ -461,9 +460,8 @@ public class Pc implements IGraphSearch {
         }
     }
 
-    public Fas getFas() {
-        return fas;
-    }
+    /** Access to the FAS used to build the skeleton. */
+    public Fas getFas() { return fas; }
 
     // ------------------------------------------------------------
     // Enums & small records
@@ -471,6 +469,12 @@ public class Pc implements IGraphSearch {
     public enum ColliderRule { VANILLA, CPC, MAX_P }
     public enum AllowBidirected { ALLOW, DISALLOW }
     private enum ColliderOutcome { INDEPENDENT, DEPENDENT, AMBIGUOUS, NO_SEPSET }
+
+    /** Public so callers can use it in results. Endpoints (x,y) are canonicalized by name when created here. */
+    public static final class Triple {
+        public final Node x, z, y;
+        public Triple(Node x, Node z, Node y) { this.x = x; this.z = z; this.y = y; }
+    }
 
     private static final class SepCandidate {
         final Set<Node> S;         // deterministic storage
