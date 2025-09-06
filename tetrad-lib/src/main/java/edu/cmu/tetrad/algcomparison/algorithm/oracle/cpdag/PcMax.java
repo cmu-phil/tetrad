@@ -40,6 +40,7 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
         command = "pc-max",
         algoType = AlgType.forbid_latent_common_causes
 )
+@Deprecated(since = "7.9", forRemoval = false)
 @Bootstrapping
 public class PcMax extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
@@ -92,7 +93,7 @@ public class PcMax extends AbstractBootstrapAlgorithm implements Algorithm, HasK
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
         search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setColliderRule(Pc.ColliderRule.MAX_P);
+        search.setColldierOrientationStyle(Pc.ColliderRule.MAX_P);
         search.setAllowBidirected(parameters.getBoolean(Params.ALLOW_BIDIRECTED) ? Pc.AllowBidirected.ALLOW : Pc.AllowBidirected.DISALLOW);
         search.setLogMaxPTies(true);
         search.setMaxPGlobalOrder(false);

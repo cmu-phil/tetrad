@@ -152,7 +152,7 @@ public class MimbuildTrek {
         Graph graph;
 
         Pc search = new Pc(new IndTestTrekSep(measuresCov, this.alpha, clustering, latents));
-        search.setColliderRule(Pc.ColliderRule.CPC);
+        search.setColldierOrientationStyle(Pc.ColliderRule.CPC);
         search.setKnowledge(this.knowledge);
         graph = search.search();
 

@@ -26,7 +26,7 @@ public class Pc implements IGraphSearch {
     private Knowledge knowledge = new Knowledge();
     private int depth = -1;                  // -1 => no cap
     private boolean fasStable = true;        // PC-Stable skeleton
-    private ColliderRule colliderRule = ColliderRule.VANILLA;
+    private ColliderRule colldierOrientationStyle = ColliderRule.VANILLA;
     private AllowBidirected allowBidirected = AllowBidirected.DISALLOW;
     private boolean verbose = false;
 
@@ -50,7 +50,7 @@ public class Pc implements IGraphSearch {
     public void setKnowledge(Knowledge knowledge) { this.knowledge = new Knowledge(knowledge); }
     public void setDepth(int depth) { this.depth = depth; }
     public void setFasStable(boolean fasStable) { this.fasStable = fasStable; }
-    public void setColliderRule(ColliderRule rule) { this.colliderRule = rule; }
+    public void setColldierOrientationStyle(ColliderRule rule) { this.colldierOrientationStyle = rule; }
     public void setAllowBidirected(AllowBidirected allow) { this.allowBidirected = allow; }
     public void setVerbose(boolean verbose) { this.verbose = verbose; }
     public void setTimeoutMs(long timeoutMs) { this.timeoutMs = timeoutMs; }
@@ -184,7 +184,7 @@ public class Pc implements IGraphSearch {
     private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets) throws InterruptedException {
         List<Triple> triples = collectUnshieldedTriples(g);
 
-        if (colliderRule == ColliderRule.MAX_P && maxPGlobalOrder) {
+        if (colldierOrientationStyle == ColliderRule.MAX_P && maxPGlobalOrder) {
             orientMaxPGlobal(g, triples);
             return;
         }
@@ -195,7 +195,7 @@ public class Pc implements IGraphSearch {
             // Already collider? skip
             if (g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z)) continue;
 
-            ColliderOutcome outcome = switch (colliderRule) {
+            ColliderOutcome outcome = switch (colldierOrientationStyle) {
                 case VANILLA -> {
                     Set<Node> s = fasSepsets.get(t.x, t.y);
                     if (s == null) yield ColliderOutcome.NO_SEPSET;

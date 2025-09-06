@@ -37,6 +37,7 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
         command = "cpc",
         algoType = AlgType.forbid_latent_common_causes
 )
+@Deprecated(since = "7.9", forRemoval = false)
 @Bootstrapping
 public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
@@ -98,7 +99,7 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
         search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setColliderRule(Pc.ColliderRule.CPC);
+        search.setColldierOrientationStyle(Pc.ColliderRule.CPC);
         search.setAllowBidirected(allowBidirected ? Pc.AllowBidirected.ALLOW : Pc.AllowBidirected.DISALLOW);
         Graph graph = search.search();
         stampWithBic(graph, dataModel);
@@ -148,7 +149,6 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.ALLOW_BIDIRECTED);
-        parameters.add(Params.GUARANTEE_CPDAG);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);
 

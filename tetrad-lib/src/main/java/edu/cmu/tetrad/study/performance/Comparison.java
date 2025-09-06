@@ -204,7 +204,7 @@ public class Comparison {
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Pc search = new Pc(test);
-            search.setColliderRule(Pc.ColliderRule.CPC);
+            search.setColldierOrientationStyle(Pc.ColliderRule.CPC);
             result.setResultGraph(search.search());
             Graph dag = new EdgeListGraph(trueDag);
             result.setCorrectResult(GraphTransforms.dagToCpdag(dag));

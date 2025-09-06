@@ -1101,6 +1101,10 @@ public final class Params {
      * Constant <code>ALLOW_BIDIRECTED="allowBidirected"</code>
      */
     public static final String ALLOW_BIDIRECTED = "allowBidirected";
+    /**
+     * Constant <code>COLLIDER_ORIENTATION_STYLE="colliderOrientationStyle"</code>
+     */
+    public static final String COLLIDER_ORIENTATION_STYLE = "colliderOrientationStyle";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

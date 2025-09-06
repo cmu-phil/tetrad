@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.annotation;
 
+import edu.cmu.tetrad.util.DeprecationUtils;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;

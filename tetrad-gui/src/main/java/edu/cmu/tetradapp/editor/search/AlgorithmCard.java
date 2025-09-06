@@ -646,6 +646,7 @@ public class AlgorithmCard extends JPanel {
         ButtonModel selectedAlgoType = this.algoFilterBtnGrp.getSelection();
         if (selectedAlgoType != null) {
             AlgorithmModels algorithmModels = AlgorithmModels.getInstance();
+
             String algoType = selectedAlgoType.getActionCommand();
 
             // Base stream by type selection

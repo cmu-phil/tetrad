@@ -115,7 +115,7 @@ public class TestPcStableMax {
 
         Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.11));
         pc.setFasStable(true);
-        pc.setColliderRule(Pc.ColliderRule.MAX_P);
+        pc.setColldierOrientationStyle(Pc.ColliderRule.MAX_P);
         pc.setKnowledge(knowledge);
 
         Graph CPDAG = null;
@@ -186,7 +186,7 @@ public class TestPcStableMax {
         IndependenceTest independence = new MsepTest(graph);
         Pc pc = new Pc(independence);
         pc.setFasStable(true);
-        pc.setColliderRule(Pc.ColliderRule.MAX_P);
+        pc.setColldierOrientationStyle(Pc.ColliderRule.MAX_P);
 
         // Set up search.
         pc.setKnowledge(knowledge);

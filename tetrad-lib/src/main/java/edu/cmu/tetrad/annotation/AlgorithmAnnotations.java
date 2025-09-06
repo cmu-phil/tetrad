@@ -61,6 +61,10 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
         return filterOutByAnnotation(list, Experimental.class);
     }
 
+    public List<AnnotatedClass<Algorithm>> filterOutDeprecated(List<AnnotatedClass<Algorithm>> list) {
+        return filterOutByAnnotation(list, Deprecated.class);
+    }
+
     /**
      * Checks if the algorithm takes multiple data sets.
      *

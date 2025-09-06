@@ -86,8 +86,16 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
             knowledge = timeSeries.getKnowledge();
         }
 
+        edu.cmu.tetrad.search.Fci.ColliderRule colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
+            case 1 -> edu.cmu.tetrad.search.Fci.ColliderRule.VANILLA;
+            case 2 -> edu.cmu.tetrad.search.Fci.ColliderRule.CPC;
+            case 3 -> edu.cmu.tetrad.search.Fci.ColliderRule.MAX_P;
+            default -> throw new IllegalArgumentException("Invalid collider orientation style");
+        };
+
         edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(this.test.getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setR0ColliderRule(colliderOrientationStyle);
         search.setKnowledge(this.knowledge);
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -141,6 +149,7 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.STABLE_FAS);
+        parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.DO_POSSIBLE_DSEP);
         parameters.add(Params.COMPLETE_RULE_SET_USED);

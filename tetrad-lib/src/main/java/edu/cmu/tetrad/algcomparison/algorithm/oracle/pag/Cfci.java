@@ -35,6 +35,7 @@ import java.util.List;
         command = "cfci",
         algoType = AlgType.allow_latent_common_causes
 )
+@Deprecated(since = "7.9", forRemoval = false)
 @Bootstrapping
 public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {

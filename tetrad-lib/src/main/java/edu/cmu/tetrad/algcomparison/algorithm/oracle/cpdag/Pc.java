@@ -83,12 +83,19 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
 
         boolean allowBidirected = parameters.getBoolean(Params.ALLOW_BIDIRECTED);
 
+        edu.cmu.tetrad.search.Pc.ColliderRule colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
+            case 1 -> edu.cmu.tetrad.search.Pc.ColliderRule.VANILLA;
+            case 2 -> edu.cmu.tetrad.search.Pc.ColliderRule.CPC;
+            case 3 -> edu.cmu.tetrad.search.Pc.ColliderRule.MAX_P;
+            default -> throw new IllegalArgumentException("Invalid collider orientation style");
+        };
+
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
         search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setColliderRule(edu.cmu.tetrad.search.Pc.ColliderRule.VANILLA);
+        search.setColldierOrientationStyle(colliderOrientationStyle);
         search.setAllowBidirected(allowBidirected ? edu.cmu.tetrad.search.Pc.AllowBidirected.ALLOW
                 : edu.cmu.tetrad.search.Pc.AllowBidirected.DISALLOW);
         Graph graph = search.search();
@@ -129,6 +136,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
+        parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
         parameters.add(Params.ALLOW_BIDIRECTED);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);

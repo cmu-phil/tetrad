@@ -60,6 +60,9 @@ public final class AlgorithmModels {
         List<AnnotatedClass<Algorithm>> list = Tetrad.enableExperimental
                 ? algoAnno.getAnnotatedClasses()
                 : algoAnno.filterOutExperimental(algoAnno.getAnnotatedClasses());
+
+        list = algoAnno.filterOutDeprecated(list);
+
         this.models = Collections.unmodifiableList(
                 list.stream()
                         .map(AlgorithmModel::new)

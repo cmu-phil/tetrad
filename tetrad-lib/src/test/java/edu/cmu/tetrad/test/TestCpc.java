@@ -101,7 +101,7 @@ public class TestCpc {
         IndependenceTest test = new IndTestFisherZ(_dataSet, 0.05);
 
         Pc search = new Pc(test);
-        search.setColliderRule(Pc.ColliderRule.CPC);
+        search.setColldierOrientationStyle(Pc.ColliderRule.CPC);
         try {
             Graph resultGraph = search.search();
         } catch (InterruptedException e) {
@@ -122,7 +122,7 @@ public class TestCpc {
         // Set up search.
         IndependenceTest independence = new MsepTest(graph);
         Pc search = new Pc(independence);
-        search.setColliderRule(Pc.ColliderRule.CPC);
+        search.setColldierOrientationStyle(Pc.ColliderRule.CPC);
 
         // Run search
         Graph resultGraph = null;
@@ -154,7 +154,7 @@ public class TestCpc {
         // Set up search.
         IndependenceTest independence = new MsepTest(graph);
         Pc cpc = new Pc(independence);
-        cpc.setColliderRule(Pc.ColliderRule.CPC);
+        cpc.setColldierOrientationStyle(Pc.ColliderRule.CPC);
 
         // Set up search.
 //        IndependenceTest independence = new IndTestGraph(graph);

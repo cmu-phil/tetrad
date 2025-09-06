@@ -332,7 +332,7 @@ public class TestPc {
                     break;
                 case 1:
                     search = new Pc(test);
-                    ((Pc) search).setColliderRule(Pc.ColliderRule.CPC);
+                    ((Pc) search).setColldierOrientationStyle(Pc.ColliderRule.CPC);
                     break;
                 case 2:
                     search = new Fges(score);
@@ -683,7 +683,7 @@ public class TestPc {
                     break;
                 case 1:
                     search = new Pc(test);
-                    ((Pc) search).setColliderRule(Pc.ColliderRule.CPC);
+                    ((Pc) search).setColldierOrientationStyle(Pc.ColliderRule.CPC);
                     try {
                         out = search.search();
                     } catch (InterruptedException e) {

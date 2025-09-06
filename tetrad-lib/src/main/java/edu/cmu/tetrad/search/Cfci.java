@@ -48,6 +48,7 @@ import java.util.*;
  * @see #getAmbiguousTriples()
  * @see Knowledge
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public final class Cfci implements IGraphSearch {
 
     /**
