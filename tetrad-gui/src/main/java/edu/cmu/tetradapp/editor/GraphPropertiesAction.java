@@ -203,12 +203,6 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
         panel.setLayout(new BorderLayout());
         panel.add(b);
 
-//        Node x = getGraph().getNode("X5");
-
-        for (Node x : getGraph().getNodes()) {
-            System.out.println("district(" + x + ") = " + GraphUtils.district(x, getGraph()));
-        }
-
         EditorWindow window = new EditorWindow(panel,
                 "Graph Properties", "Close", false, workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);

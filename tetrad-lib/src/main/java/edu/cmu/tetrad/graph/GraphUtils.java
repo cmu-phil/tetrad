@@ -3360,6 +3360,11 @@ public final class GraphUtils {
         return fixedDirections;
     }
 
+    public static void orientCollider(Graph g, Node x, Node z, Node y) {
+        g.setEndpoint(x, z, Endpoint.ARROW);
+        g.setEndpoint(y, z, Endpoint.ARROW);
+    }
+
     /**
      * The GraphType enum represents the types of graphs that can be used in the application.
      */

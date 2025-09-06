@@ -344,6 +344,7 @@ public class CompareTwoGraphs {
         statistics.add(new TrueDagPrecisionTails());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new BidirectedLatentPrecision());
+        statistics.add(new LegalCpdag());
         statistics.add(new LegalPag());
         statistics.add(new Maximal());
 

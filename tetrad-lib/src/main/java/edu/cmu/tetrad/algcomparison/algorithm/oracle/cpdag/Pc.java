@@ -13,6 +13,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.ClassicPc;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -82,22 +83,15 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
             knowledge = timeSeries.getKnowledge();
         }
 
-        PcCommon.ConflictRule conflictRule = switch (parameters.getInt(Params.CONFLICT_RULE)) {
-            case 1 -> PcCommon.ConflictRule.PRIORITIZE_EXISTING;
-            case 2 -> PcCommon.ConflictRule.ORIENT_BIDIRECTED;
-            case 3 -> PcCommon.ConflictRule.OVERWRITE_EXISTING;
-            default ->
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-        };
+        boolean allowBidirected = parameters.getBoolean(Params.ALLOW_BIDIRECTED);
 
-        edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
-        search.setUseMaxPOrientation(false); // sepset orientation.
+        edu.cmu.tetrad.search.ClassicPc search = new edu.cmu.tetrad.search.ClassicPc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setGuaranteeCpdag(parameters.getBoolean(Params.GUARANTEE_CPDAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
-        search.setStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setConflictRule(conflictRule);
+        search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
+        search.setColliderRule(ClassicPc.ColliderRule.VANILLA);
+        search.setAllowBidirected(allowBidirected ? ClassicPc.AllowBidirected.ALLOW : ClassicPc.AllowBidirected.DISALLOW);
         Graph graph = search.search();
         stampWithBic(graph, dataModel);
 
@@ -136,7 +130,8 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
-        parameters.add(Params.CONFLICT_RULE);
+//        parameters.add(Params.CONFLICT_RULE);
+        parameters.add(Params.ALLOW_BIDIRECTED);
         parameters.add(Params.GUARANTEE_CPDAG);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);

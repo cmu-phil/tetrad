@@ -62,7 +62,7 @@ import java.util.Set;
  * @see Fci
  * @see Knowledge
  */
-public class Pc implements IGraphSearch {
+public class PcCopy implements IGraphSearch {
     /**
      * The oracle for conditional independence facts.
      */
@@ -75,6 +75,10 @@ public class Pc implements IGraphSearch {
      * The knowledge specification.
      */
     private Knowledge knowledge = new Knowledge();
+//    /**
+//     * The sepset map from the most recent search.
+//     */
+//    private SepsetMap sepsets;
     /**
      * The depth of the search.
      */
@@ -119,8 +123,23 @@ public class Pc implements IGraphSearch {
      */
     private boolean useMaxPOrientation = false;
     /**
-     * The FAS implementation to use (the first step of PC).
+     * Indicates whether the max-p orientation heuristic is enabled during the PC algorithm's execution. This heuristic
+     * affects the way causal relationships are oriented in the graph, prioritizing orientations based on maximum
+     * p-values. When enabled, the max-p heuristic is applied to improve the efficiency and accuracy of edge
+     * directionality in causal discovery.
+     * <p>
+     * Default value is typically false unless explicitly set via configuration.
      */
+    private boolean maxPOrientationHeuristic = false;
+    /**
+     * Represents the maximum path length considered by the max-p orientation heuristic in the PC algorithm during the
+     * causal discovery process.
+     * <p>
+     * This parameter defines an upper limit on the length of paths evaluated for collider orientation decisions when
+     * the max-p orientation heuristic is enabled. It helps to control the computational complexity and heuristic
+     * behavior of the search process. A value of `5` is set as the default maximum length.
+     */
+    private int maxPOrientationHeuristicMaxLength = 5;
     private Fas fas;
 
     /**
@@ -129,7 +148,7 @@ public class Pc implements IGraphSearch {
      * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
      *                         independence test, for fear of duplicating the data set!
      */
-    public Pc(IndependenceTest independenceTest) {
+    public PcCopy(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException("Independence test is null.");
         }
@@ -444,6 +463,29 @@ public class Pc implements IGraphSearch {
      */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
+    }
+
+    /**
+     * Sets whether to use the max-p orientation heuristic in the PC algorithm. This heuristic impacts the method of
+     * orienting edges in the generated graph during causal discovery.
+     *
+     * @param maxPOrientationHeuristic A boolean value indicating whether the max-p orientation heuristic should be
+     *                                 used. True enables the heuristic, while false disables it.
+     */
+    public void setMaxPOrientationHeuristic(boolean maxPOrientationHeuristic) {
+        this.maxPOrientationHeuristic = maxPOrientationHeuristic;
+    }
+
+    /**
+     * Sets the maximum length parameter for the max-p orientation heuristic. This parameter is used to define the upper
+     * limit on the length of paths considered by the max-p orientation heuristic during the search process.
+     *
+     * @param maxPOrientationHeuristicMaxLength The maximum length for the max-p orientation heuristic. A positive
+     *                                          integer value specifies the limit, while a value of -1 disables the
+     *                                          limit.
+     */
+    public void setMaxPOrientationHeuristicMaxLength(int maxPOrientationHeuristicMaxLength) {
+        this.maxPOrientationHeuristicMaxLength = maxPOrientationHeuristicMaxLength;
     }
 }
 

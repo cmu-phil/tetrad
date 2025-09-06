@@ -13,6 +13,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.ClassicPc;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -95,16 +96,15 @@ public class PcMax extends AbstractBootstrapAlgorithm implements Algorithm, HasK
                     throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
         };
 
-        edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
-        search.setUseMaxPOrientation(true);
+        edu.cmu.tetrad.search.ClassicPc search = new edu.cmu.tetrad.search.ClassicPc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxPOrientationHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
-        search.setMaxPOrientationHeuristicMaxLength(parameters.getInt(Params.MaX_PAX_P_ORIENTATION_HEURISTIC_MAX_LENGTH));
-        search.setGuaranteeCpdag(parameters.getBoolean(Params.GUARANTEE_CPDAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
-        search.setStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setConflictRule(conflictRule);
+        search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
+        search.setColliderRule(ClassicPc.ColliderRule.MAX_P);
+        search.setAllowBidirected(parameters.getBoolean(Params.ALLOW_BIDIRECTED) ? ClassicPc.AllowBidirected.ALLOW : ClassicPc.AllowBidirected.DISALLOW);
+        search.setLogMaxPTies(true);
+        search.setMaxPGlobalOrder(false);
         Graph graph = search.search();
         stampWithBic(graph, dataModel);
 
@@ -143,10 +143,7 @@ public class PcMax extends AbstractBootstrapAlgorithm implements Algorithm, HasK
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
-        parameters.add(Params.CONFLICT_RULE);
-        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
-        parameters.add(Params.MaX_PAX_P_ORIENTATION_HEURISTIC_MAX_LENGTH);
-        parameters.add(Params.GUARANTEE_CPDAG);
+        parameters.add(Params.ALLOW_BIDIRECTED);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.VERBOSE);
