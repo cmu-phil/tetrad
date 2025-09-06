@@ -258,15 +258,40 @@ public class Fas {
                 }
             });
 
+//            // 2) Apply sequentially to the live graph and sepsets.
+//            for (EdgeRemoval r : removals) {
+//                if (Thread.currentThread().isInterrupted()) break;
+//
+//                // Respect required-edge knowledge again at apply time.
+//                if (knowledge.noEdgeRequired(r.x.getName(), r.y.getName())) {
+//                    if (modify.isAdjacentTo(r.x, r.y)) {
+//                        modify.removeEdge(r.x, r.y);
+//                        this.sepset.set(r.x, r.y, r.S);
+//                        anyRemoved = true;
+//
+//                        if (verbose) {
+//                            TetradLogger.getInstance().log(
+//                                    LogUtilsSearch.independenceFactMsg(r.x, r.y, r.S, r.pValue));
+//                        }
+//                    }
+//                }
+//            }
+
             // 2) Apply sequentially to the live graph and sepsets.
-            for (EdgeRemoval r : removals) {
+            List<EdgeRemoval> toApply = new ArrayList<>(removals);
+            toApply.sort(Comparator
+                    .comparing((EdgeRemoval r) -> r.x.getName())
+                    .thenComparing(r -> r.y.getName())
+                    .thenComparingInt(r -> r.S.size())); // tie-breaker: smaller S first
+
+            for (EdgeRemoval r : toApply) {
                 if (Thread.currentThread().isInterrupted()) break;
 
-                // Respect required-edge knowledge again at apply time.
                 if (knowledge.noEdgeRequired(r.x.getName(), r.y.getName())) {
                     if (modify.isAdjacentTo(r.x, r.y)) {
                         modify.removeEdge(r.x, r.y);
-                        this.sepset.set(r.x, r.y, r.S);
+                        Set<Node> SSaved = new LinkedHashSet<>(r.S);
+                        this.sepset.set(r.x, r.y, SSaved);
                         anyRemoved = true;
 
                         if (verbose) {
@@ -377,7 +402,8 @@ public class Fas {
 
                     if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
                         modify.removeEdge(x, y);
-                        this.sepset.set(x, y, S);
+                        Set<Node> sSaved = new LinkedHashSet<>(S);
+                        this.sepset.set(x, y, sSaved);
 
                         if (verbose) {
                             TetradLogger.getInstance().log(
