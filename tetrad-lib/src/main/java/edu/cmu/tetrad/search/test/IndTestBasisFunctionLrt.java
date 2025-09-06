@@ -3,7 +3,6 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Matrix;

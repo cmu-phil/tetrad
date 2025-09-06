@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FgesOrienter;
 
 import java.util.HashMap;
@@ -58,7 +58,7 @@ public class Mmhc implements IGraphSearch {
     /**
      * <p>Constructor for Mmhc.</p>
      *
-     * @param test    a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test    a {@link IndependenceTest} object
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public Mmhc(IndependenceTest test, DataSet dataSet) {
@@ -73,7 +73,7 @@ public class Mmhc implements IGraphSearch {
     /**
      * <p>Getter for the field <code>independenceTest</code>.</p>
      *
-     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @return a {@link IndependenceTest} object
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;

@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 
 import java.util.ArrayList;

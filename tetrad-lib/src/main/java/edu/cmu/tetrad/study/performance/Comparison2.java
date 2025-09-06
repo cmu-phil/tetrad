@@ -11,6 +11,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.TsDagToPag;

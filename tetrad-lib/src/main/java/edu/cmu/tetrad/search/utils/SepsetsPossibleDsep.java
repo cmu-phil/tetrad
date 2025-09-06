@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.util.SublistGenerator;
 import org.apache.commons.math3.util.FastMath;
@@ -56,7 +56,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
      * <p>Constructor for SepsetsPossibleDsep.</p>
      *
      * @param graph                       a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param test                        a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test                        a {@link IndependenceTest} object
      * @param knowledge                   a {@link edu.cmu.tetrad.data.Knowledge} object
      * @param depth                       the depth of the search
      * @param maxDiscriminatingPathLength the maximum length of discriminating paths

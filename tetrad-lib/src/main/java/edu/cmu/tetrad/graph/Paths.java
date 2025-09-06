@@ -1,11 +1,9 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
-import edu.cmu.tetrad.search.score.GraphScore;
-import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;

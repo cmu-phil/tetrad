@@ -20,7 +20,7 @@
 /// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.beans.PropertyChangeListener;

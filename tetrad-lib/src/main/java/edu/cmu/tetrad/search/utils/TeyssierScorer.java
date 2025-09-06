@@ -2,7 +2,7 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import org.jetbrains.annotations.NotNull;

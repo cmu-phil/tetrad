@@ -31,6 +31,7 @@ import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -757,7 +758,7 @@ public class TestFci {
         SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(4.0);
 
-        IGraphSearch search = new Pc(test);
+        Pc search = new Pc(test);
 
         try {
             return search.search();

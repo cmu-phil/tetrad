@@ -27,6 +27,7 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.sem.SemIm;
@@ -119,7 +120,6 @@ public class TestPc {
 
         Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.05));
         pc.setKnowledge(knowledge);
-        pc.setGuaranteeCpdag(true);
 
         Graph CPDAG = null;
         try {
@@ -673,8 +673,7 @@ public class TestPc {
             switch (t) {
                 case 0:
                     search = new Pc(test);
-                    ((Pc) search).setGuaranteeCpdag(false);
-                    ((Pc) search).setStable(false);
+                    ((Pc) search).setFasStable(false);
                     try {
                         out = search.search();
                     } catch (InterruptedException e) {

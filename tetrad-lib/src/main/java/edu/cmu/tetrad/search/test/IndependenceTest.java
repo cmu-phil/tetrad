@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +93,7 @@ public interface IndependenceTest {
      * Returns an Independence test for a sublist of the variables.
      *
      * @param vars The sublist of variables.
-     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @return a {@link IndependenceTest} object
      */
     default IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("Independence subset feature is not implemented.");

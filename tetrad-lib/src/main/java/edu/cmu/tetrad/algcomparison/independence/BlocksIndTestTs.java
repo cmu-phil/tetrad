@@ -4,7 +4,7 @@ import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.test.IndTestBlocksTs;
 import edu.cmu.tetrad.util.Parameters;

@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -86,7 +86,7 @@ public class VcFas {
     /**
      * <p>Constructor for VcFas.</p>
      *
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test a {@link IndependenceTest} object
      */
     public VcFas(IndependenceTest test) {
         this.graph = new EdgeListGraph(test.getVariables());

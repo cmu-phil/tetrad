@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.utils.PcCommon;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -113,13 +113,6 @@ public final class Cpc implements IGraphSearch {
      */
     private boolean guaranteeCpdag = true;
     /**
-     * The `conflictRule` variable represents the conflict rule used for resolving collider orientation conflicts during
-     * the search. It is an enum value defined in the `PcCommon` class.
-     *
-     * @see PcCommon.ConflictRule
-     */
-    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
-    /**
      * Determines whether verbose output should be printed.
      */
     private boolean verbose = false;
@@ -168,20 +161,11 @@ public final class Cpc implements IGraphSearch {
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
 
-        PcCommon search = new PcCommon(independenceTest);
+        Pc search = new Pc(independenceTest);
         search.setDepth(depth);
-        search.setConflictRule(conflictRule);
-        search.setGuaranteeCpdag(guaranteeCpdag);
         search.setKnowledge(this.knowledge);
-
-        if (stable) {
-            search.setFasType(PcCommon.FasType.STABLE);
-        } else {
-            search.setFasType(PcCommon.FasType.REGULAR);
-        }
-
-        search.setColliderDiscovery(PcCommon.ColliderDiscovery.CONSERVATIVE);
-        search.setConflictRule(conflictRule);
+        search.setFasStable(this.stable);
+        search.setColliderRule(Pc.ColliderRule.CPC);
         search.setVerbose(verbose);
 
         this.graph = search.search();
@@ -195,9 +179,9 @@ public final class Cpc implements IGraphSearch {
             TetradLogger.getInstance().log("Finishing CPC algorithm.");
         }
 
-        this.colliderTriples = search.getColliderTriples();
-        this.noncolliderTriples = search.getNoncolliderTriples();
-        this.ambiguousTriples = search.getAmbiguousTriples();
+//        this.colliderTriples = search.getColliderTriples();
+//        this.noncolliderTriples = search.getNoncolliderTriples();
+//        this.ambiguousTriples = search.getAmbiguousTriples();
 
         logTriples();
 
@@ -337,16 +321,6 @@ public final class Cpc implements IGraphSearch {
      */
     public void setStable(boolean stable) {
         this.stable = stable;
-    }
-
-    /**
-     * Sets which conflict rule to use for resolving collider orientation conflicts.
-     *
-     * @param conflictRule The rule.
-     * @see edu.cmu.tetrad.search.utils.PcCommon.ConflictRule
-     */
-    public void setConflictRule(PcCommon.ConflictRule conflictRule) {
-        this.conflictRule = conflictRule;
     }
 
     /**

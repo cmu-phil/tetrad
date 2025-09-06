@@ -2,7 +2,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.test.IndTestBlocksWilkes;
 import edu.cmu.tetrad.search.test.IndTestBlocksLemma10;

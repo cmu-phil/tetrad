@@ -26,7 +26,7 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -126,7 +126,7 @@ public final class GraphSearchUtils {
      * as X--&gt;W&lt;--Y if W is *determined by* the sepset of (X, Y), rather than W just being *in* the sepset of (X,
      * Y).
      *
-     * @param test      a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test      a {@link IndependenceTest} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @throws java.lang.InterruptedException if any.
@@ -934,7 +934,7 @@ public final class GraphSearchUtils {
      * @param x     a {@link edu.cmu.tetrad.graph.Node} object
      * @param y     a {@link edu.cmu.tetrad.graph.Node} object
      * @param z     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param test  a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test  a {@link IndependenceTest} object
      * @param depth a int
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link edu.cmu.tetrad.search.utils.GraphSearchUtils.CpcTripleType} object

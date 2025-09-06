@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
 import java.util.*;
@@ -230,7 +230,7 @@ public class MbUtils {
      *
      * @param orientBidirectedEdges True iff bidirected edges should be oriented as if they were undirected.
      * @param mbCPDAG               a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param test                  a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test                  a {@link IndependenceTest} object
      * @param depth                 a int
      * @param target                a {@link edu.cmu.tetrad.graph.Node} object
      * @return a list of Dag's.

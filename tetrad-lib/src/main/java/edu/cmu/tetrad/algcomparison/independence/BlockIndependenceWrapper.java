@@ -1,13 +1,8 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.algcomparison.utils.HasParameters;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.Serial;
 import java.util.List;

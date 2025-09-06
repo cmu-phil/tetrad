@@ -4,7 +4,6 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;

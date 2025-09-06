@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -94,7 +95,7 @@ public final class Rfci implements IGraphSearch {
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.
      *
-     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param independenceTest a {@link IndependenceTest} object
      */
     public Rfci(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -109,7 +110,7 @@ public final class Rfci implements IGraphSearch {
      * Constructs a new RFCI search for the given independence test and background knowledge and a list of variables to
      * search over.
      *
-     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param independenceTest a {@link IndependenceTest} object
      * @param searchVars       a {@link java.util.List} object
      */
     public Rfci(IndependenceTest independenceTest, List<Node> searchVars) {

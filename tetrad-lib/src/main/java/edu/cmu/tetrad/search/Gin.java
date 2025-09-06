@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.simple.SimpleEVD;

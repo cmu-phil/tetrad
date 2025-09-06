@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;

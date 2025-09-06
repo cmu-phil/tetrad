@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -34,8 +34,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.util.*;
-
-import static edu.cmu.tetrad.util.MillisecondTimes.type;
 
 /**
  * Holds a tetrad-style graph with all of the constructors necessary for it to serve as a model for the tetrad

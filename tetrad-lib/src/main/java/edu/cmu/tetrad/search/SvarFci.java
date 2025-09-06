@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -101,7 +102,7 @@ public final class SvarFci implements IGraphSearch {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      *
-     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param independenceTest a {@link IndependenceTest} object
      */
     public SvarFci(IndependenceTest independenceTest) {
         if (independenceTest == null) {

@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.ChoiceGenerator;

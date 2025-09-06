@@ -3,7 +3,7 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
@@ -60,7 +60,7 @@ public class GraspTol {
     /**
      * <p>Constructor for GraspTol.</p>
      *
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test a {@link IndependenceTest} object
      */
     public GraspTol(@NotNull IndependenceTest test) {
         this.test = test;
@@ -71,7 +71,7 @@ public class GraspTol {
     /**
      * <p>Constructor for GraspTol.</p>
      *
-     * @param test  a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test  a {@link IndependenceTest} object
      * @param score a {@link edu.cmu.tetrad.search.score.Score} object
      */
     public GraspTol(@NotNull IndependenceTest test, Score score) {

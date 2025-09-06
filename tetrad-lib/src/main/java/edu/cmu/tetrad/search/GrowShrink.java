@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 
 import java.util.HashSet;
 import java.util.LinkedList;

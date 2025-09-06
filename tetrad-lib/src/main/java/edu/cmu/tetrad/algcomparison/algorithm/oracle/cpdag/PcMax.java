@@ -13,8 +13,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.ClassicPc;
-import edu.cmu.tetrad.search.utils.PcCommon;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -88,23 +87,16 @@ public class PcMax extends AbstractBootstrapAlgorithm implements Algorithm, HasK
             knowledge = timeSeries.getKnowledge();
         }
 
-        PcCommon.ConflictRule conflictRule = switch (parameters.getInt(Params.CONFLICT_RULE)) {
-            case 1 -> PcCommon.ConflictRule.PRIORITIZE_EXISTING;
-            case 2 -> PcCommon.ConflictRule.ORIENT_BIDIRECTED;
-            case 3 -> PcCommon.ConflictRule.OVERWRITE_EXISTING;
-            default ->
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-        };
-
-        edu.cmu.tetrad.search.ClassicPc search = new edu.cmu.tetrad.search.ClassicPc(getIndependenceWrapper().getTest(dataModel, parameters));
+        edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
         search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setColliderRule(ClassicPc.ColliderRule.MAX_P);
-        search.setAllowBidirected(parameters.getBoolean(Params.ALLOW_BIDIRECTED) ? ClassicPc.AllowBidirected.ALLOW : ClassicPc.AllowBidirected.DISALLOW);
+        search.setColliderRule(Pc.ColliderRule.MAX_P);
+        search.setAllowBidirected(parameters.getBoolean(Params.ALLOW_BIDIRECTED) ? Pc.AllowBidirected.ALLOW : Pc.AllowBidirected.DISALLOW);
         search.setLogMaxPTies(true);
         search.setMaxPGlobalOrder(false);
+        search.setMaxPDepthStratified(false);
         Graph graph = search.search();
         stampWithBic(graph, dataModel);
 

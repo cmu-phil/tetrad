@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 
 import java.util.List;
@@ -48,7 +48,7 @@ public class SepsetsSet implements SepsetProducer {
      * <p>Constructor for SepsetsSet.</p>
      *
      * @param sepsets a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
-     * @param test    a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test    a {@link IndependenceTest} object
      */
     public SepsetsSet(SepsetMap sepsets, IndependenceTest test) {
         this.sepsets = sepsets;

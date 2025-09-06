@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**

@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -90,7 +90,7 @@ public final class VcPcAlt implements IGraphSearch {
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
      *
-     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param independenceTest a {@link IndependenceTest} object
      */
     public VcPcAlt(IndependenceTest independenceTest) {
         if (independenceTest == null) {

@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -46,24 +46,8 @@ public class PcRunner extends AbstractAlgorithmRunner
     @Serial
     private static final long serialVersionUID = 23L;
 
-    /**
-     * The external graph, if any, to use as a starting point for the search.
-     */
-    private Graph externalGraph;
-
-    /**
-     * The set of edges that are adjacent in the PC graph.
-     */
-    private Set<Edge> pcAdjacent;
-
-    /**
-     * The set of edges that are non-adjacent in the PC graph.
-     */
-    private Set<Edge> pcNonadjacent;
-
 
     //============================CONSTRUCTORS============================//
-
 
     /**
      * Constructs a wrapper for the given DataWrapper. The DataWrapper must contain a DataSet that is either a DataSet
@@ -85,33 +69,6 @@ public class PcRunner extends AbstractAlgorithmRunner
      */
     public PcRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-    }
-
-    // Starts PC from the given graph.
-
-    /**
-     * <p>Constructor for PcRunner.</p>
-     *
-     * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
-     */
-    public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
-        super(dataWrapper, params, null);
-        this.externalGraph = graphWrapper.getGraph();
-    }
-
-    /**
-     * <p>Constructor for PcRunner.</p>
-     *
-     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param graphWrapper      a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     */
-    public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(dataWrapper, params, knowledgeBoxModel);
-        this.externalGraph = graphWrapper.getGraph();
     }
 
     /**
@@ -230,7 +187,6 @@ public class PcRunner extends AbstractAlgorithmRunner
         Graph graph;
         Pc pc = new Pc(getIndependenceTest());
         pc.setKnowledge(knowledge);
-        pc.setGuaranteeCpdag(isGuaranteeCpdag());
         pc.setDepth(depth);
         try {
             graph = pc.search();
@@ -249,13 +205,12 @@ public class PcRunner extends AbstractAlgorithmRunner
         }
 
         setResultGraph(graph);
-        setPcFields(pc);
     }
 
     /**
      * <p>getIndependenceTest.</p>
      *
-     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @return a {@link IndependenceTest} object
      */
     public IndependenceTest getIndependenceTest() {
         Object dataModel = getDataModel();
@@ -294,24 +249,6 @@ public class PcRunner extends AbstractAlgorithmRunner
     }
 
     /**
-     * <p>getAdj.</p>
-     *
-     * @return a {@link java.util.Set} object
-     */
-    public Set<Edge> getAdj() {
-        return new HashSet<>(this.pcAdjacent);
-    }
-
-    /**
-     * <p>getNonAdj.</p>
-     *
-     * @return a {@link java.util.Set} object
-     */
-    public Set<Edge> getNonAdj() {
-        return new HashSet<>(this.pcNonadjacent);
-    }
-
-    /**
      * <p>supportsKnowledge.</p>
      *
      * @return a boolean
@@ -336,11 +273,6 @@ public class PcRunner extends AbstractAlgorithmRunner
         return getParams().getBoolean(Params.GUARANTEE_CPDAG, false);
     }
 
-    private void setPcFields(Pc pc) {
-        this.pcAdjacent = pc.getAdjacencies();
-        this.pcNonadjacent = pc.getNonadjacencies();
-        List<Node> pcNodes = getGraph().getNodes();
-    }
 }
 
 

@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;

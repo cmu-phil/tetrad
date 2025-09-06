@@ -3,7 +3,6 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.GammaDistribution;
@@ -786,8 +785,8 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     // === Optional: if you like your previous factoring ===
     public double computePValueFromCenteredKernels(SimpleMatrix centeredKx,
                                                    SimpleMatrix centeredKy) {
-        int n = centeredKx.numRows();
-        if (n != centeredKx.numCols() || n != centeredKy.numRows() || n != centeredKy.numCols())
+        int n = centeredKx.getNumRows();
+        if (n != centeredKx.getNumCols() || n != centeredKy.getNumRows() || n != centeredKy.getNumCols())
             throw new IllegalArgumentException("Centered kernels must be n×n");
         double stat = centeredKx.elementMult(centeredKy).elementSum() / n;
         if (isApproximate()) {

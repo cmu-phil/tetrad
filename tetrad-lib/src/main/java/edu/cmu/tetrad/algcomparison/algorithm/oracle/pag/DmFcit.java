@@ -15,7 +15,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fcit;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceResult;

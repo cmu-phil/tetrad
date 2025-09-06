@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.score.ImagesScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
@@ -51,7 +51,7 @@ final class IndTestChooser {
      *
      * @param dataSource a {@link java.lang.Object} object
      * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
-     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @return a {@link IndependenceTest} object
      */
     public IndependenceTest getTest(Object dataSource, Parameters params) {
         return getTest(dataSource, params, IndTestType.DEFAULT);

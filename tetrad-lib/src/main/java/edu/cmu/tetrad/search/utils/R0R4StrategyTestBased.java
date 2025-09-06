@@ -5,7 +5,7 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;

@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -1889,11 +1889,11 @@ public class Dci {
      */
     private void resolveResultingIndependenciesC() throws InterruptedException {
         List<SepsetMapDci> allSepsets = new ArrayList<>();
-        Pc fci = new Pc(new IndTestSepsetDci(combineSepsets(this.sepsetMaps), this.variables));
+        Pc pc = new Pc(new IndTestSepsetDci(combineSepsets(this.sepsetMaps), this.variables));
         System.out.println("Starting pc...");
         SepsetMapDci consSepset = new SepsetMapDci();
-        Graph fciResult = fci.search();
-        SepsetMap fciSepset = fci.getSepsets();
+        Graph fciResult = pc.search();
+        SepsetMap fciSepset = pc.getSepsets();
         for (int k = 0; k < this.marginalVars.size(); k++) {
             SepsetMapDci newSepset = new SepsetMapDci(this.sepsetMaps.get(k));
             List<NodePair> pairs = allNodePairs(new ArrayList<>(this.marginalVars.get(k)));

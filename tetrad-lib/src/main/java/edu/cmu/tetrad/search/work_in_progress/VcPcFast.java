@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -103,7 +103,7 @@ public final class VcPcFast implements IGraphSearch {
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
      *
-     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param independenceTest a {@link IndependenceTest} object
      */
     public VcPcFast(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -642,7 +642,7 @@ public final class VcPcFast implements IGraphSearch {
      * @param x       a {@link edu.cmu.tetrad.graph.Node} object
      * @param y       a {@link edu.cmu.tetrad.graph.Node} object
      * @param z       a {@link edu.cmu.tetrad.graph.Node} object
-     * @param test    a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test    a {@link IndependenceTest} object
      * @param depth   a int
      * @param graph   a {@link edu.cmu.tetrad.graph.Graph} object
      * @param verbose a boolean

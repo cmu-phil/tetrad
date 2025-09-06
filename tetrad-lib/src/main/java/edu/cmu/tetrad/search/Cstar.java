@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
@@ -703,7 +704,7 @@ public class Cstar {
         IndependenceTest test = this.test.getTest(sample, parameters);
         test.setVerbose(false);
         Pc pc = new Pc(test);
-        pc.setStable(true);
+        pc.setFasStable(true);
         pc.setVerbose(false);
         return pc.search();
     }

@@ -13,8 +13,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.ClassicPc;
-import edu.cmu.tetrad.search.utils.PcCommon;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -94,13 +93,13 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
 
         boolean allowBidirected = parameters.getBoolean(Params.ALLOW_BIDIRECTED);
 
-        edu.cmu.tetrad.search.ClassicPc search = new edu.cmu.tetrad.search.ClassicPc(getIndependenceWrapper().getTest(dataModel, parameters));
+        edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
         search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setColliderRule(ClassicPc.ColliderRule.CPC);
-        search.setAllowBidirected(allowBidirected ? ClassicPc.AllowBidirected.ALLOW : ClassicPc.AllowBidirected.DISALLOW);
+        search.setColliderRule(Pc.ColliderRule.CPC);
+        search.setAllowBidirected(allowBidirected ? Pc.AllowBidirected.ALLOW : Pc.AllowBidirected.DISALLOW);
         Graph graph = search.search();
         stampWithBic(graph, dataModel);
 

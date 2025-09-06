@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 

@@ -30,7 +30,7 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -107,7 +107,7 @@ public final class SampleVcpcFast implements IGraphSearch {
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
      *
-     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param independenceTest a {@link IndependenceTest} object
      */
     public SampleVcpcFast(IndependenceTest independenceTest) {
         if (independenceTest == null) {

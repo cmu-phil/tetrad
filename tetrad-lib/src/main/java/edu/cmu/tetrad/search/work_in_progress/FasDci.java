@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -109,7 +109,7 @@ public class FasDci {
      * Constructs a new FastAdjacencySearch for DCI.
      *
      * @param graph            a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param independenceTest a {@link IndependenceTest} object
      */
     public FasDci(Graph graph, IndependenceTest independenceTest) {
         this.graph = graph;
@@ -121,7 +121,7 @@ public class FasDci {
      * Constructs a new FastAdjacencySearch for DCI with independence test pooling to resolve inconsistencies.
      *
      * @param graph               a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param independenceTest    a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param independenceTest    a {@link IndependenceTest} object
      * @param method              a {@link edu.cmu.tetrad.search.utils.ResolveSepsets.Method} object
      * @param marginalVars        a {@link java.util.List} object
      * @param independenceTests   a {@link java.util.List} object

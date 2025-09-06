@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

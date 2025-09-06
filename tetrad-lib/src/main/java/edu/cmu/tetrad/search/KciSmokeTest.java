@@ -30,7 +30,7 @@ public class KciSmokeTest {
         Node X = new GraphNode("X"), Y = new GraphNode("Y"), Z = new GraphNode("Z");
         Map<Node,Integer> map = Map.of(X,0, Y,1, Z,2);
         List<Integer> rows = new ArrayList<>();
-        for (int i = 0; i < data.numCols(); i++) rows.add(i);
+        for (int i = 0; i < data.getNumCols(); i++) rows.add(i);
         Kci k = new Kci(data, map, null, rows);
         k.setApproximate(approximate);
         k.setKernelType(Kci.KernelType.GAUSSIAN);

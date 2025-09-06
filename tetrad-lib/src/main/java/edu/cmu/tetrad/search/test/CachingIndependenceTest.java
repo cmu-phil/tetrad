@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
 
 import java.util.*;
 

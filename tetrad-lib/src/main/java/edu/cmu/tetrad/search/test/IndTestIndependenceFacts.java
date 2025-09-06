@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 

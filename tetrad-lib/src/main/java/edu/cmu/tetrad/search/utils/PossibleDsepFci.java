@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import org.apache.commons.math3.util.FastMath;
 
@@ -116,7 +116,7 @@ public class PossibleDsepFci {
     /**
      * <p>Getter for the field <code>sepset</code>.</p>
      *
-     * @param test  a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test  a {@link IndependenceTest} object
      * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
      * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link java.util.Set} object

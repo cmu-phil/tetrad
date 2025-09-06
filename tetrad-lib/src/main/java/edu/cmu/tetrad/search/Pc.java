@@ -1,452 +1,459 @@
-/// ////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
-//                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.PcCommon;
+import edu.cmu.tetrad.search.test.CachingIndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
- * Implements the Peter/Clark (PC) algorithm, which uses conditional independence testing as an oracle to do three
- * things: (1) Remove extraneous edges from a complete graph, (2) orient the unshielded colliders in the graph. And, (2)
- * Make any additional orientations that are capable of avoiding additional unshielded colliders in the graph. A version
- * of this algorithm was proposed earlier than this, but the standard reference for the algorithm is in Chapter 6 of the
- * following book:
- * <p>
- * Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT press.
- * <p>
- * A modified rule set capable of dealing effectively with knowledge of required and forbidden edges is due to Chris
- * Meek, with this reference:
- * <p>
- * Meek, C. (1995), "Causal inference and causal explanation with background knowledge."
- * <p>
- * See setter methods for "knobs" you can turn to control the output of PC and their defaults.
- * <p>
- * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
- * tiers.
+ * # Pc (Unified "Classic PC")
  *
- * @author peterspirtes
- * @author chrismeek
- * @author clarkglymour
- * @author josephramsey
- * @version $Id: $Id
- * @see Fci
- * @see Knowledge
+ * A single, configurable implementation of the classic PC algorithm:
+ *  1) Skeleton via FAS (stable toggle)
+ *  2) Orient unshielded triples as colliders using one of:
+ *     - VANILLA: use the (first-found) sepset from FAS; orient X->Z<-Y iff Z ∉ S(X,Y).
+ *     - CPC: Conservative PC; enumerate separating sets from adjacencies of X and Y; orient iff ALL separating sets exclude Z,
+ *            dependent iff ALL include Z, otherwise ambiguous.
+ *     - MAX_P: Among separating sets, pick S* with the largest p-value; orient independent iff Z ∉ S*, dependent iff Z ∈ S*.
+ *            Ties that disagree ⇒ ambiguous. Optional global ordering by p (stable) with depth stratification.
+ *  3) Close under Meek rules.
+ *
+ * Notes:
+ *  - Deterministic processing (sorted names & tie-breakers).
+ *  - No internal CI cache here; for speed, wrap your base test with CachingIndependenceTest.
+ *  - Enumeration de-dups identical S across both sides (adj(X)\{Y} and adj(Y)\{X}) for clean logs & logic.
+ *  - Optional margin guard for MAX_P decisions to avoid brittle calls.
+ *  - Optional allowance of bidirected edges to illustrate ambiguous colliders (off by default).
  */
 public class Pc implements IGraphSearch {
-    /**
-     * The oracle for conditional independence facts.
-     */
-    private final IndependenceTest independenceTest;
-    /**
-     * The logger.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-    /**
-     * The knowledge specification.
-     */
+
+    private final IndependenceTest test;
     private Knowledge knowledge = new Knowledge();
-    /**
-     * The depth of the search.
-     */
-    private int depth = 1000;
-    /**
-     * The graph from the most recent search.
-     */
-    private Graph graph;
-    /**
-     * Represents the start time of the algorithm or process execution within the PC search implementation. Tracks the
-     * time when the execution begins, typically measured in milliseconds since the epoch. This is used for calculating
-     * execution duration and performance analysis.
-     */
-    private long startTime = -1;
-    /**
-     * The timeout duration for the search process, in milliseconds. If set to -1, it indicates that no timeout is
-     * enforced.
-     */
-    private long timeout = -1;
-    /**
-     * The elapsed time of the most recent search.
-     */
-    private long elapsedTime;
-    /**
-     * Whether the search is verbose.
-     */
+    private int depth = -1;                  // -1 => no cap
+    private boolean fasStable = true;        // PC-Stable skeleton
+    private ColliderRule colliderRule = ColliderRule.VANILLA;
+    private AllowBidirected allowBidirected = AllowBidirected.DISALLOW;
     private boolean verbose = false;
-    /**
-     * The rule to use for resolving collider orientation conflicts.
-     */
-    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
-    /**
-     * Whether the stable adjacency search should be used.
-     */
-    private boolean stable = true;
-    /**
-     * Whether cycles should be checked in the Meek rules.
-     */
-    private boolean guaranteeCpdag = true;
-    /**
-     * Whether the max-p heuristic should be used for collider discovery.
-     */
-    private boolean useMaxPOrientation = false;
-    /**
-     * The FAS implementation to use (the first step of PC).
-     */
-    private Fas fas;
 
-    /**
-     * Constructs a new PC search using the given independence test as oracle.
-     *
-     * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
-     *                         independence test, for fear of duplicating the data set!
-     */
-    public Pc(IndependenceTest independenceTest) {
-        if (independenceTest == null) {
-            throw new NullPointerException("Independence test is null.");
-        }
+    private long timeoutMs = -1;             // <0 => no timeout
+    private long startTimeMs = 0;
 
-        this.independenceTest = independenceTest;
-    }
+    // MAX-P options
+    private boolean maxPGlobalOrder = false;     // if true, apply global order
+    private boolean maxPDepthStratified = true;  // when global order is on, process by increasing |S|
+    private double  maxPMargin = 0.0;            // margin guard; 0 => off
 
+    // Optional tie logging for MAX_P
+    private boolean logMaxPTies = false;
+    private java.io.PrintStream logStream = System.out;
+    private Fas fas = null;
 
-    /**
-     * Runs PC starting with a complete graph over all nodes of the given conditional independence test, using the given
-     * independence test and knowledge and returns the resultant graph. The returned graph will be a CPDAG if the
-     * independence information is consistent with the hypothesis that there are no latent common causes. It may,
-     * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
-     * of latent common causes, or due to statistical errors in conditional independence judgments.
-     *
-     * @throws InterruptedException if any
-     * @see Fci
-     */
-    @Override
+    public Pc(IndependenceTest test) { this.test = new CachingIndependenceTest(test); }
+
+    // ----- Configuration setters -----
+    public void setKnowledge(Knowledge knowledge) { this.knowledge = new Knowledge(knowledge); }
+    public void setDepth(int depth) { this.depth = depth; }
+    public void setFasStable(boolean fasStable) { this.fasStable = fasStable; }
+    public void setColliderRule(ColliderRule rule) { this.colliderRule = rule; }
+    public void setAllowBidirected(AllowBidirected allow) { this.allowBidirected = allow; }
+    public void setVerbose(boolean verbose) { this.verbose = verbose; }
+    public void setTimeoutMs(long timeoutMs) { this.timeoutMs = timeoutMs; }
+    public void setLogMaxPTies(boolean enabled) { this.logMaxPTies = enabled; }
+    public void setLogStream(java.io.PrintStream out) { this.logStream = out; }
+    /** Order-independent MAX-P collider orientation via global p-sort. */
+    public void setMaxPGlobalOrder(boolean enabled) { this.maxPGlobalOrder = enabled; }
+    /** When global MAX-P is used, process winners by increasing |S| (safer). */
+    public void setMaxPDepthStratified(boolean enabled) { this.maxPDepthStratified = enabled; }
+    /** Margin guard for MAX-P: require best side to exceed the other by at least margin; else ambiguous. */
+    public void setMaxPMargin(double margin) { this.maxPMargin = Math.max(0.0, margin); }
+
+    // ----- Entry points -----
     public Graph search() throws InterruptedException {
-        return search(new HashSet<>(this.independenceTest.getVariables()));
+        return search(test.getVariables());
     }
 
-    /**
-     * Runs PC starting with a complete graph over all nodes of the given conditional independence test, using the given
-     * independence test and knowledge and returns the resultant graph. The returned graph will be a CPDAG if the
-     * independence information is consistent with the hypothesis that there are no latent common causes. It may,
-     * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
-     * of latent common causes, or due to statistical errors in conditional independence judgments.
-     *
-     * @param nodes The sublist of nodes.
-     * @return The result graph
-     * @throws InterruptedException if any
-     * @see Fci
-     */
-    public Graph search(Set<Node> nodes) throws InterruptedException {
-        if (verbose) {
-            this.logger.log("Starting PC algorithm");
-            this.logger.log("Independence test = " + getIndependenceTest() + ".");
+    public Graph search(List<Node> nodes) throws InterruptedException {
+        checkVars(nodes);
+        this.startTimeMs = System.currentTimeMillis();
+
+        // 1) Skeleton via FAS
+        fas = new Fas(test);
+        fas.setKnowledge(knowledge);
+        fas.setDepth(depth);
+        fas.setStable(fasStable);
+        fas.setVerbose(verbose);
+
+        Graph g = fas.search(nodes);
+        SepsetMap sepsets = fas.getSepsets();
+
+        // 2) Orient colliders
+        orientUnshieldedTriples(g, sepsets);
+
+        // 3) Meek rules to closure
+        applyMeekRules(g);
+
+        return g;
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Collider orientation
+    // ------------------------------------------------------------------------------------
+    private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets) throws InterruptedException {
+        final List<Node> nodes = new ArrayList<>(g.getNodes());
+        nodes.sort(Comparator.comparing(Node::getName));
+
+        // Collect unshielded triples (X - Z - Y) with X != Y and X not adjacent to Y
+        List<Triple> triples = new ArrayList<>();
+        for (Node z : nodes) {
+            List<Node> adj = new ArrayList<>(g.getAdjacentNodes(z));
+            adj.sort(Comparator.comparing(Node::getName));
+            int m = adj.size();
+            for (int i = 0; i < m; i++) {
+                Node x = adj.get(i);
+                for (int j = i + 1; j < m; j++) {
+                    Node y = adj.get(j);
+                    if (!g.isAdjacentTo(x, y)) {
+                        triples.add(new Triple(x, z, y));
+                    }
+                }
+            }
         }
 
-        long startTime = System.currentTimeMillis();
-        setStartTime(startTime);
+        // Deterministic processing order
+        triples.sort(Comparator
+                .comparing((Triple t) -> t.x.getName())
+                .thenComparing(t -> t.z.getName())
+                .thenComparing(t -> t.y.getName()));
 
-        if (getIndependenceTest() == null) {
-            throw new NullPointerException("Null independence test.");
+        // Optional global MAX-P (order-independent)
+        if (colliderRule == ColliderRule.MAX_P && maxPGlobalOrder) {
+            orientMaxPGlobal(g, triples);
+            return;
         }
 
-        List<Node> allNodes = getIndependenceTest().getVariables();
-        if (!new HashSet<>(allNodes).containsAll(nodes)) {
-            throw new IllegalArgumentException("All of the given nodes must " +
-                                               "be in the domain of the independence test provided.");
+        // Local (per-triple) path
+        for (Triple t : triples) {
+            checkTimeout();
+
+            // Already collider? skip
+            if (g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z)) continue;
+
+            ColliderOutcome outcome = switch (colliderRule) {
+                case VANILLA -> {
+                    Set<Node> s = fasSepsets.get(t.x, t.y);
+                    if (s == null) yield ColliderOutcome.NO_SEPSET;
+                    yield s.contains(t.z) ? ColliderOutcome.DEPENDENT : ColliderOutcome.INDEPENDENT;
+                }
+                case CPC   -> judgeConservative(t, g);
+                case MAX_P -> judgeMaxP(t, g);
+            };
+
+            switch (outcome) {
+                case INDEPENDENT -> {
+                    if (canOrientCollider(g, t.x, t.z, t.y)) {
+                        GraphUtils.orientCollider(g, t.x, t.z, t.y);
+                        if (verbose) TetradLogger.getInstance().log(
+                                "Collider oriented: " + t.x.getName() + " -> " + t.z.getName() + " <- " + t.y.getName());
+                    }
+                }
+                case DEPENDENT, NO_SEPSET -> { /* leave unoriented */ }
+                case AMBIGUOUS -> {
+                    if (allowBidirected == AllowBidirected.ALLOW) {
+                        // For illustration you could add bidirected marks here if your graph supports them.
+                    }
+                    if (verbose) TetradLogger.getInstance().log(
+                            "Ambiguous triple: " + t.x.getName() + " - " + t.z.getName() + " - " + t.y.getName());
+                }
+            }
+        }
+    }
+
+    /** Global, order-independent MAX-P collider orientation (optionally depth-stratified; avoids ↔). */
+    private void orientMaxPGlobal(Graph g, List<Triple> triples) throws InterruptedException {
+        // Phase 1: compute local MAX-P decisions; keep only INDEPENDENT winners
+        List<MaxPDecision> winners = new ArrayList<>();
+        for (Triple t : triples) {
+            checkTimeout();
+            MaxPDecision d = decideMaxPDetail(t, g);
+            if (d.outcome == ColliderOutcome.AMBIGUOUS && logMaxPTies) {
+                // tie details already printed in decideMaxPDetail if enabled
+            }
+            if (d.outcome == ColliderOutcome.INDEPENDENT) {
+                winners.add(d);
+            }
         }
 
-        PcCommon search = getPcCommon();
-        search.setStartTime(this.getStartTime());
-        search.setTimeout(this.getTimeout());
-
-        if (stable) {
-            search.setFasType(PcCommon.FasType.STABLE);
+        if (maxPDepthStratified) {
+            // Phase 2a: bucket by |S| (conditioning depth)
+            Map<Integer, List<MaxPDecision>> buckets = new TreeMap<>();
+            for (MaxPDecision d : winners) {
+                buckets.computeIfAbsent(d.bestS.size(), k -> new ArrayList<>()).add(d);
+            }
+            // Phase 3a: within each depth, sort by p desc (deterministic ties) and apply greedily
+            for (Map.Entry<Integer, List<MaxPDecision>> e : buckets.entrySet()) {
+                List<MaxPDecision> level = e.getValue();
+                level.sort(Comparator
+                        .comparingDouble((MaxPDecision m) -> m.bestP).reversed()
+                        .thenComparing(m -> m.t.x.getName())
+                        .thenComparing(m -> m.t.z.getName())
+                        .thenComparing(m -> m.t.y.getName())
+                        .thenComparing(m -> stringifySet(m.bestS)));
+                for (MaxPDecision d : level) {
+                    if (canOrientCollider(g, d.t.x, d.t.z, d.t.y)) {
+                        GraphUtils.orientCollider(g, d.t.x, d.t.z, d.t.y);
+                        if (verbose) TetradLogger.getInstance().log(
+                                "[MAX-P global(d=" + d.bestS.size() + ")] " +
+                                d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName() +
+                                " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
+                    }
+                }
+            }
         } else {
-            search.setFasType(PcCommon.FasType.REGULAR);
+            // Phase 2b/3b: single global ordering
+            winners.sort(Comparator
+                    .comparingDouble((MaxPDecision d) -> d.bestP).reversed()
+                    .thenComparing(d -> d.t.x.getName())
+                    .thenComparing(d -> d.t.z.getName())
+                    .thenComparing(d -> d.t.y.getName())
+                    .thenComparing(d -> stringifySet(d.bestS)));
+
+            for (MaxPDecision d : winners) {
+                if (canOrientCollider(g, d.t.x, d.t.z, d.t.y)) {
+                    GraphUtils.orientCollider(g, d.t.x, d.t.z, d.t.y);
+                    if (verbose) TetradLogger.getInstance().log(
+                            "[MAX-P global] Collider oriented: " +
+                            d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName() +
+                            " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
+                }
+            }
+        }
+    }
+
+    // ----- CPC/MAX-P decisions -----------------------------------------------------------
+
+    private ColliderOutcome judgeConservative(Triple t, Graph g) throws InterruptedException {
+        boolean sawIncludesZ = false, sawExcludesZ = false, sawAny = false;
+
+        for (SepCandidate cand : enumerateSepsetsWithPvals(t.x, t.y, g)) {
+            if (!cand.independent) continue;
+            sawAny = true;
+            if (cand.S.contains(t.z)) sawIncludesZ = true; else sawExcludesZ = true;
+            if (sawIncludesZ && sawExcludesZ) return ColliderOutcome.AMBIGUOUS;
         }
 
-        if (useMaxPOrientation) {
-            search.setColliderDiscovery(PcCommon.ColliderDiscovery.MAX_P);
+        if (!sawAny) return ColliderOutcome.NO_SEPSET;
+        if (sawExcludesZ && !sawIncludesZ) return ColliderOutcome.INDEPENDENT;
+        if (sawIncludesZ && !sawExcludesZ) return ColliderOutcome.DEPENDENT;
+        return ColliderOutcome.AMBIGUOUS;
+    }
+
+    private ColliderOutcome judgeMaxP(Triple t, Graph g) throws InterruptedException {
+        return decideMaxPDetail(t, g).outcome;
+    }
+
+    /**
+     * Detailed MAX-P: returns outcome + bestP + bestS. Applies the margin guard:
+     * if both sides have candidates and their best p's differ by < maxPMargin, returns AMBIGUOUS.
+     */
+    private MaxPDecision decideMaxPDetail(Triple t, Graph g) throws InterruptedException {
+        List<SepCandidate> indep = new ArrayList<>();
+        for (SepCandidate cand : enumerateSepsetsWithPvals(t.x, t.y, g)) {
+            if (cand.independent) indep.add(cand);
+        }
+        if (indep.isEmpty()) return new MaxPDecision(t, ColliderOutcome.NO_SEPSET, Double.NaN, Collections.emptySet());
+
+        // Overall best p (for logging / deterministic bestS selection)
+        double bestP = indep.stream().mapToDouble(c -> c.p).max().orElse(Double.NEGATIVE_INFINITY);
+        List<SepCandidate> ties = new ArrayList<>();
+        for (SepCandidate c : indep) if (c.p == bestP) ties.add(c);
+        ties.sort(Comparator
+                .comparing((SepCandidate c) -> c.S.contains(t.z))   // prefer excludes-Z first in ordering
+                .thenComparing(c -> stringifySet(c.S)));
+
+        // Side-wise best p for margin guard
+        double bestExcl = Double.NEGATIVE_INFINITY, bestIncl = Double.NEGATIVE_INFINITY;
+        for (SepCandidate c : indep) {
+            if (c.S.contains(t.z)) bestIncl = Math.max(bestIncl, c.p);
+            else bestExcl = Math.max(bestExcl, c.p);
+        }
+        boolean hasExcl = bestExcl > Double.NEGATIVE_INFINITY;
+        boolean hasIncl = bestIncl > Double.NEGATIVE_INFINITY;
+
+        if (hasExcl && hasIncl) {
+            if (bestExcl >= bestIncl + maxPMargin) {
+                // choose a top excluding-Z set deterministically
+                Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, false);
+                return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
+            }
+            if (bestIncl >= bestExcl + maxPMargin) {
+                Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, true);
+                return new MaxPDecision(t, ColliderOutcome.DEPENDENT, bestIncl, bestS);
+            }
+            // within margin: ambiguous
+            if (logMaxPTies && ties.size() > 1) debugPrintMaxPTies(t, bestP, ties);
+            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, Math.max(bestExcl, bestIncl),
+                    ties.isEmpty() ? Collections.emptySet() : ties.get(0).S);
+        } else if (hasExcl) {
+            Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, false);
+            return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
+        } else if (hasIncl) {
+            Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, true);
+            return new MaxPDecision(t, ColliderOutcome.DEPENDENT, bestIncl, bestS);
         } else {
-            search.setColliderDiscovery(PcCommon.ColliderDiscovery.FAS_SEPSETS);
+            return new MaxPDecision(t, ColliderOutcome.NO_SEPSET, Double.NaN, Collections.emptySet());
         }
+    }
 
-        this.graph = search.search();
-        this.fas = search.getFas();
-
-        this.elapsedTime = System.currentTimeMillis() - startTime;
-
-        if (verbose) {
-            this.logger.log("Elapsed Wall time = " + elapsedTime + " ms");
-            this.logger.log("Finishing PC Algorithm.");
-            this.logger.flush();
+    private Set<Node> firstTieMatchingContainsZ(List<SepCandidate> ties, Node z, boolean containsZ) {
+        for (SepCandidate c : ties) {
+            if (c.S.contains(z) == containsZ) return c.S;
         }
-
-        return this.graph;
+        return ties.isEmpty() ? Collections.emptySet() : ties.get(0).S;
     }
 
-    /**
-     * Retrieves an instance of the {@link PcCommon} class with the specified configurations.
-     *
-     * @return The {@link PcCommon} instance.
-     */
-    @NotNull
-    private PcCommon getPcCommon() {
-        PcCommon search = new PcCommon(independenceTest);
-        search.setDepth(depth);
-        search.setGuaranteeCpdag(guaranteeCpdag);
-        search.setKnowledge(this.knowledge);
+    // ----- enumeration (unique S across both sides), rely on external cache --------------
 
-        if (stable) {
-            search.setFasType(PcCommon.FasType.STABLE);
-        } else {
-            search.setFasType(PcCommon.FasType.REGULAR);
+    /**
+     * Enumerate S from adj(x)\{y} and adj(y)\{x}, de-duplicated across both sides
+     * (by sorted-name key). Relies on the provided test (ideally wrapped with a cache)
+     * to avoid redundant evaluations.
+     */
+    private Iterable<SepCandidate> enumerateSepsetsWithPvals(Node x, Node y, Graph g) throws InterruptedException {
+        Map<String, SepCandidate> uniq = new LinkedHashMap<>(); // deterministic order
+
+        List<Node> adjx = new ArrayList<>(g.getAdjacentNodes(x));
+        List<Node> adjy = new ArrayList<>(g.getAdjacentNodes(y));
+        adjx.remove(y);
+        adjy.remove(x);
+
+        adjx.sort(Comparator.comparing(Node::getName));
+        adjy.sort(Comparator.comparing(Node::getName));
+
+        final int depthCap = (depth < 0) ? Integer.MAX_VALUE : depth;
+        int maxAdj = Math.max(adjx.size(), adjy.size());
+
+        for (int d = 0; d <= Math.min(depthCap, maxAdj); d++) {
+            for (List<Node> adj : new List[]{adjx, adjy}) {
+                if (d > adj.size()) continue;
+
+                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
+                int[] choice;
+                while ((choice = gen.next()) != null) {
+                    checkTimeout();
+                    Set<Node> S = GraphUtils.asSet(choice, adj);
+                    String sKey = setKey(S);
+                    if (uniq.containsKey(sKey)) continue; // de-dup across sides
+
+                    IndependenceResult r = test.checkIndependence(x, y, S);
+                    uniq.put(sKey, new SepCandidate(S, r.isIndependent(), r.getPValue()));
+                }
+            }
         }
+        return uniq.values();
+    }
 
-        if (useMaxPOrientation) {
-            search.setColliderDiscovery(PcCommon.ColliderDiscovery.MAX_P);
-        } else {
-            search.setColliderDiscovery(PcCommon.ColliderDiscovery.FAS_SEPSETS);
+    private String setKey(Set<Node> S) {
+        List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
+        Collections.sort(names);
+        return String.join("\u0001", names); // non-printing field separator
+    }
+
+    private void debugPrintMaxPTies(Triple t, double bestP, List<SepCandidate> ties) {
+        if (logStream == null) return;
+        String header = "[MAX-P tie] pair=(" + t.x.getName() + "," + t.y.getName() + "), z=" + t.z.getName()
+                        + ", bestP=" + bestP + ", #ties=" + ties.size();
+        logStream.println(header);
+        for (SepCandidate c : ties) {
+            boolean containsZ = c.S.contains(t.z);
+            String line = "  S=" + stringifySet(c.S) + " | contains(z)=" + containsZ + " | p=" + c.p;
+            logStream.println(line);
         }
-
-        search.setConflictRule(conflictRule);
-        search.setVerbose(verbose);
-
-        long startTime = System.currentTimeMillis();
-        setStartTime(startTime);
-        search.setStartTime(startTime);
-
-        return search;
     }
 
-    /**
-     * Sets whether cycles should be checked.
-     *
-     * @param guaranteeCpdag Set to true just in case edges will not be added if they create cycles.
-     */
-    public void setGuaranteeCpdag(boolean guaranteeCpdag) {
-        this.guaranteeCpdag = guaranteeCpdag;
+    private String stringifySet(Set<Node> S) {
+        List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
+        Collections.sort(names);
+        return "{" + String.join(",", names) + "}";
     }
 
-    /**
-     * Returns the independence test being used in the search.
-     *
-     * @return this test.
-     */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
+    // ----- checks / utils ---------------------------------------------------------------
+
+    private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
+        if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
+        if (allowBidirected != AllowBidirected.ALLOW && (g.isParentOf(z, x) || g.isParentOf(z, y))) return false;
+        return true;
     }
 
-    /**
-     * Returns the knowledge specification used in the search. Non-null.
-     *
-     * @return This knowledge.
-     */
-    public Knowledge getKnowledge() {
-        return this.knowledge;
+    private void applyMeekRules(Graph g) throws InterruptedException {
+        new MeekRules().orientImplied(g);
     }
 
-    /**
-     * Sets the knowledge specification to be used in the search. May not be null.
-     *
-     * @param knowledge The knowledge.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException("Knowledge is null.");
+    private void checkVars(List<Node> nodes) {
+        if (!new HashSet<>(test.getVariables()).containsAll(nodes)) {
+            throw new IllegalArgumentException("All nodes must be contained in the test's variables.");
         }
-
-        this.knowledge = knowledge;
     }
 
-    /**
-     * Returns the sepset map from the most recent search. Non-null after the first call to <code>search()</code>.
-     *
-     * @return This map.
-     */
+    private void checkTimeout() throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) throw new InterruptedException("Interrupted");
+        if (timeoutMs >= 0) {
+            long now = System.currentTimeMillis();
+            if (now - startTimeMs > timeoutMs) throw new InterruptedException("Timed out after " + (now - startTimeMs) + " ms");
+        }
+    }
+
     public SepsetMap getSepsets() {
-        return this.fas.getSepsets();
-    }
-
-    /**
-     * Returns the current depth of search--that is, the maximum number of conditioning nodes for any conditional
-     * independence checked. Default is 1000.
-     *
-     * @return This depth.
-     */
-    public int getDepth() {
-        return this.depth;
-    }
-
-    /**
-     * Sets the depth of the search--that is, the maximum number of conditioning nodes for any conditional independence
-     * checked.
-     *
-     * @param depth The depth of the search. The default is 1000. A value of -1 may be used to indicate that the depth
-     *              should be high (1000). A value of Integer.MAX_VALUE may not be used due to a bug on multicore
-     *              machines.
-     */
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
+        if (this.fas == null) {
+            throw new  IllegalStateException("SepsetMap not initialized");
         }
 
-        if (depth > 1000) {
-            throw new IllegalArgumentException("Depth must be <= 1000.");
+        return fas.getSepsets();
+    }
+
+    // ------------------------------------------------------------
+    // Enums & small records
+    // ------------------------------------------------------------
+    public enum ColliderRule { VANILLA, CPC, MAX_P }
+    public enum AllowBidirected { ALLOW, DISALLOW }
+    private enum ColliderOutcome { INDEPENDENT, DEPENDENT, AMBIGUOUS, NO_SEPSET }
+
+    private static final class Triple {
+        final Node x, z, y;
+        Triple(Node x, Node z, Node y) { this.x = x; this.z = z; this.y = y; }
+    }
+
+    private static final class SepCandidate {
+        final Set<Node> S;         // deterministic storage
+        final boolean independent;
+        final double p;
+        SepCandidate(Set<Node> S, boolean independent, double p) {
+            List<Node> sorted = new ArrayList<>(S);
+            sorted.sort(Comparator.comparing(Node::getName));
+            this.S = new LinkedHashSet<>(sorted);
+            this.independent = independent;
+            this.p = p;
         }
-
-        this.depth = depth;
     }
 
-    /**
-     * Returns the elapsed time of the search, in milliseconds.
-     *
-     * @return this time.
-     */
-    public long getElapsedTime() {
-        return this.elapsedTime;
-    }
-
-    /**
-     * Returns The edges of the searched graph.
-     *
-     * @return This set.
-     */
-    public Set<Edge> getAdjacencies() {
-        return new HashSet<>(this.graph.getEdges());
-    }
-
-    /**
-     * Returns the non-adjacencies of the searched graph.
-     *
-     * @return This set.
-     */
-    public Set<Edge> getNonadjacencies() {
-        Graph complete = GraphUtils.completeGraph(this.graph);
-        Set<Edge> nonAdjacencies = complete.getEdges();
-        Graph undirected = GraphUtils.undirectedGraph(this.graph);
-        nonAdjacencies.removeAll(undirected.getEdges());
-        return new HashSet<>(nonAdjacencies);
-    }
-
-    /**
-     * Sets whether verbose output should be given. Default is false.
-     *
-     * @param verbose True iff the case.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * Sets whether the stable adjacency search should be used. Default is false. Default is false. See the following
-     * reference for this:
-     * <p>
-     * Colombo, D., &amp; Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J. Mach.
-     * Learn. Res., 15(1), 3741-3782.
-     *
-     * @param stable True iff the case.
-     */
-    public void setStable(boolean stable) {
-        this.stable = stable;
-    }
-
-    /**
-     * Sets which conflict-rule to use for resolving collider orientation conflicts. Default is
-     * ConflictRule.PRIORITIZE_EXISTING.
-     *
-     * @param conflictRule The rule.
-     * @see PcCommon.ConflictRule
-     */
-    public void setConflictRule(PcCommon.ConflictRule conflictRule) {
-        this.conflictRule = conflictRule;
-    }
-
-    /**
-     * Sets whether the max-p heuristic should be used for collider discovery. Default is true. See the following
-     * reference for this:
-     * <p>
-     * Ramsey, J. (2016). Improving the accuracy and scalability of the pc algorithm by maximizing p-value. arXiv
-     * preprint arXiv:1610.00378.
-     *
-     * @param useMaxPOrientation True, if so.
-     */
-    public void setUseMaxPOrientation(boolean useMaxPOrientation) {
-        this.useMaxPOrientation = useMaxPOrientation;
-    }
-
-    /**
-     * Represents the start time of the algorithm or process execution within the PC search implementation. Tracks the
-     * time when the execution begins, typically measured in milliseconds since the epoch. This is used for calculating
-     * execution duration and performance analysis.
-     *
-     * @return The start time of the process execution in milliseconds since the epoch.
-     */
-    public long getStartTime() {
-        return startTime;
-    }
-
-    /**
-     * Sets the start time of the algorithm or process execution. Used to indicate when the execution begins, typically
-     * measured in milliseconds since the epoch. This value is instrumental in tracking execution duration and
-     * performance metrics.
-     *
-     * @param startTime The start time of the execution in milliseconds.
-     */
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
-    }
-
-    /**
-     * The timeout duration for the search process, in milliseconds. If set to -1, it indicates that no timeout is
-     * enforced.
-     *
-     * @return The timeout duration in milliseconds, or -1 if timeout is not enforced.
-     */
-    public long getTimeout() {
-        return timeout;
-    }
-
-    /**
-     * Sets the search timeout in milliseconds (-1 to disable).
-     *
-     * @param timeout The timeout value in milliseconds. A non-negative value specifies the maximum allowed execution
-     *                time while -1 disables the timeout.
-     */
-    public void setTimeout(long timeout) {
-        this.timeout = timeout;
+    private static final class MaxPDecision {
+        final Triple t;
+        final ColliderOutcome outcome;
+        final double bestP;
+        final Set<Node> bestS;
+        MaxPDecision(Triple t, ColliderOutcome outcome, double bestP, Set<Node> bestS) {
+            this.t = t;
+            this.outcome = outcome;
+            this.bestP = bestP;
+            this.bestS = bestS;
+        }
     }
 }
-
-
-
-

@@ -13,8 +13,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.ClassicPc;
-import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -85,13 +83,14 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
 
         boolean allowBidirected = parameters.getBoolean(Params.ALLOW_BIDIRECTED);
 
-        edu.cmu.tetrad.search.ClassicPc search = new edu.cmu.tetrad.search.ClassicPc(getIndependenceWrapper().getTest(dataModel, parameters));
+        edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
         search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setColliderRule(ClassicPc.ColliderRule.VANILLA);
-        search.setAllowBidirected(allowBidirected ? ClassicPc.AllowBidirected.ALLOW : ClassicPc.AllowBidirected.DISALLOW);
+        search.setColliderRule(edu.cmu.tetrad.search.Pc.ColliderRule.VANILLA);
+        search.setAllowBidirected(allowBidirected ? edu.cmu.tetrad.search.Pc.AllowBidirected.ALLOW
+                : edu.cmu.tetrad.search.Pc.AllowBidirected.DISALLOW);
         Graph graph = search.search();
         stampWithBic(graph, dataModel);
 
@@ -130,9 +129,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
-//        parameters.add(Params.CONFLICT_RULE);
         parameters.add(Params.ALLOW_BIDIRECTED);
-        parameters.add(Params.GUARANTEE_CPDAG);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.VERBOSE);

@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -117,7 +118,7 @@ public final class FciMax implements IGraphSearch {
     /**
      * Constructor.
      *
-     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param independenceTest a {@link IndependenceTest} object
      */
     public FciMax(IndependenceTest independenceTest) {
         if (independenceTest == null) {

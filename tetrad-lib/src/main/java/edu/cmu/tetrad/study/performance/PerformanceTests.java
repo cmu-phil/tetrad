@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
@@ -424,7 +425,7 @@ public class PerformanceTests {
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         Pc pc = new Pc(test);
-        pc.setStable(true);
+        pc.setFasStable(true);
 
         Graph estCPDAG = pc.search();
 
@@ -1694,7 +1695,7 @@ public class PerformanceTests {
         System.out.println("First FAS graph = " + left);
 
         Pc pc2 = new Pc(new MsepTest(dag));
-        pc2.setStable(true);
+        pc2.setFasStable(true);
         Graph top = pc2.search();
 
         System.out.println("Second FAS graph = " + top);

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.DiscriminatingPath;
 import edu.cmu.tetrad.search.utils.PreserveMarkov;
 import edu.cmu.tetrad.search.utils.FciOrient;

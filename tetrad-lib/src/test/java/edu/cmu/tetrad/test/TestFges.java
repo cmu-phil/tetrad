@@ -38,7 +38,7 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FgesMb;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.BdeScore;
 import edu.cmu.tetrad.search.score.GraphScore;
