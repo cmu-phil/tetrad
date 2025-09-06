@@ -44,7 +44,7 @@ import java.util.*;
  * @author josephramsey
  * @version $Id: $Id
  * @see Fci
- * @see Cpc
+ * @see Pc
  * @see #getAmbiguousTriples()
  * @see Knowledge
  */
@@ -288,7 +288,7 @@ public final class Cfci implements IGraphSearch {
      * Returns the ambiguous triples found in the search.
      *
      * @return This set.
-     * @see Cpc
+     * @see Pc
      */
     public Set<Triple> getAmbiguousTriples() {
         return new HashSet<>(this.ambiguousTriples);

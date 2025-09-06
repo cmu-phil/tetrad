@@ -151,7 +151,8 @@ public class MimbuildTrek {
         this.latentsCov = new CovarianceMatrix(latents, cov, measuresCov.getSampleSize());
         Graph graph;
 
-        Cpc search = new Cpc(new IndTestTrekSep(measuresCov, this.alpha, clustering, latents));
+        Pc search = new Pc(new IndTestTrekSep(measuresCov, this.alpha, clustering, latents));
+        search.setColliderRule(Pc.ColliderRule.CPC);
         search.setKnowledge(this.knowledge);
         graph = search.search();
 

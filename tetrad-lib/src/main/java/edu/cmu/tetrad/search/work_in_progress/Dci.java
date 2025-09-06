@@ -1893,7 +1893,7 @@ public class Dci {
         System.out.println("Starting pc...");
         SepsetMapDci consSepset = new SepsetMapDci();
         Graph fciResult = pc.search();
-        SepsetMap fciSepset = pc.getSepsets();
+        SepsetMap fciSepset = pc.getFas().getSepsets();
         for (int k = 0; k < this.marginalVars.size(); k++) {
             SepsetMapDci newSepset = new SepsetMapDci(this.sepsetMaps.get(k));
             List<NodePair> pairs = allNodePairs(new ArrayList<>(this.marginalVars.get(k)));

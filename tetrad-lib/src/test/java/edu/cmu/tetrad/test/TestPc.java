@@ -331,7 +331,8 @@ public class TestPc {
                     search = new Pc(test);
                     break;
                 case 1:
-                    search = new Cpc(test);
+                    search = new Pc(test);
+                    ((Pc) search).setColliderRule(Pc.ColliderRule.CPC);
                     break;
                 case 2:
                     search = new Fges(score);
@@ -681,8 +682,8 @@ public class TestPc {
                     }
                     break;
                 case 1:
-                    search = new Cpc(test);
-                    ((Cpc) search).setGuaranteeCpdag(false);
+                    search = new Pc(test);
+                    ((Pc) search).setColliderRule(Pc.ColliderRule.CPC);
                     try {
                         out = search.search();
                     } catch (InterruptedException e) {

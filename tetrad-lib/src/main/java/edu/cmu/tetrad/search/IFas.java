@@ -78,7 +78,7 @@ public interface IFas extends IGraphSearch {
      *
      * @param node The node
      * @return The list.
-     * @see Cpc
+     * @see Pc
      * @see Cfci
      */
     List<Triple> getAmbiguousTriples(Node node);

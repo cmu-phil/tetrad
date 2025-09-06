@@ -203,7 +203,8 @@ public class Comparison {
             result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
-            Cpc search = new Cpc(test);
+            Pc search = new Pc(test);
+            search.setColliderRule(Pc.ColliderRule.CPC);
             result.setResultGraph(search.search());
             Graph dag = new EdgeListGraph(trueDag);
             result.setCorrectResult(GraphTransforms.dagToCpdag(dag));

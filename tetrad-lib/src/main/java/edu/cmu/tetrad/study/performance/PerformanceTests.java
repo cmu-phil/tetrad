@@ -594,7 +594,8 @@ public class PerformanceTests {
 
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
-        Cpc cpc = new Cpc(test);
+        Pc cpc = new Pc(test);
+        cpc.setColliderRule(Pc.ColliderRule.CPC);
         cpc.setVerbose(false);
         cpc.setDepth(depth);
 //        pcStable.setOut(out);
@@ -676,8 +677,9 @@ public class PerformanceTests {
 
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
-        Cpc cpcStable = new Cpc(test);
-        cpcStable.setStable(true);
+        Pc cpcStable = new Pc(test);
+        cpcStable.setFasStable(true);
+        cpcStable.setColliderRule(Pc.ColliderRule.CPC);
         cpcStable.setVerbose(false);
         cpcStable.setDepth(depth);
 

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -25,10 +25,9 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Cpc;
-import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -101,7 +100,8 @@ public class TestCpc {
 
         IndependenceTest test = new IndTestFisherZ(_dataSet, 0.05);
 
-        Cpc search = new Cpc(test);
+        Pc search = new Pc(test);
+        search.setColliderRule(Pc.ColliderRule.CPC);
         try {
             Graph resultGraph = search.search();
         } catch (InterruptedException e) {
@@ -121,7 +121,8 @@ public class TestCpc {
 
         // Set up search.
         IndependenceTest independence = new MsepTest(graph);
-        IGraphSearch search = new Cpc(independence);
+        Pc search = new Pc(independence);
+        search.setColliderRule(Pc.ColliderRule.CPC);
 
         // Run search
         Graph resultGraph = null;
@@ -152,8 +153,8 @@ public class TestCpc {
 
         // Set up search.
         IndependenceTest independence = new MsepTest(graph);
-        Cpc cpc = new Cpc(independence);
-        cpc.setGuaranteeCpdag(false);
+        Pc cpc = new Pc(independence);
+        cpc.setColliderRule(Pc.ColliderRule.CPC);
 
         // Set up search.
 //        IndependenceTest independence = new IndTestGraph(graph);
