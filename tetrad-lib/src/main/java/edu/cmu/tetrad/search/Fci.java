@@ -408,6 +408,7 @@ public final class Fci implements IGraphSearch {
     // -------------------------
     private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
         if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
+        if (!FciOrient.isArrowheadAllowed(x, z, g, knowledge) || !FciOrient.isArrowheadAllowed(y, z, g, knowledge)) return false;
         // In PAGs we typically avoid creating arrowheads conflicting with existing tails at z->x / z->y
         if (g.isParentOf(z, x) || g.isParentOf(z, y)) return false;
         return true;

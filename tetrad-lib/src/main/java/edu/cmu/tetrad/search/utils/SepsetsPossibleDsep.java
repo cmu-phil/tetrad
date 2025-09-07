@@ -198,6 +198,8 @@ public class SepsetsPossibleDsep implements SepsetProducer {
             if (choice.length < 1) continue;
 
             Set<Node> condSet = GraphUtils.asSet(choice, possibleDsep);
+            condSet.remove(node1);
+            condSet.remove(node2);
 
             if (s != null && !condSet.containsAll(s)) {
                 continue;

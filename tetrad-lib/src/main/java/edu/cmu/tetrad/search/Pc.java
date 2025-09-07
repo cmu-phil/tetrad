@@ -438,12 +438,20 @@ public class Pc implements IGraphSearch {
 
     private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
         if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
+        if (!isArrowheadAllowed(x, z, knowledge) || !isArrowheadAllowed(y, z, knowledge)) return false;
         if (allowBidirected != AllowBidirected.ALLOW && (g.isParentOf(z, x) || g.isParentOf(z, y))) return false;
         return true;
     }
 
     private void applyMeekRules(Graph g) throws InterruptedException {
-        new MeekRules().orientImplied(g);
+        MeekRules meekRules = new MeekRules();
+        meekRules.setKnowledge(knowledge);
+        meekRules.orientImplied(g);
+    }
+
+    private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
+        if (knowledge.isEmpty()) return true;
+        return !knowledge.isRequired(to.toString(), from.toString()) && !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     private void checkVars(List<Node> nodes) {

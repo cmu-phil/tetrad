@@ -135,39 +135,61 @@ public class FciOrient {
         this.knowledge = strategy.getknowledge();
     }
 
+//    /**
+//     * Returns true iff an arrowhead at Y on edge (X, Y) is allowed (i.e., we may orient to x *-> y), respecting current
+//     * endpoints and Knowledge.
+//     */
+//    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge K) {
+//        if (!graph.isAdjacentTo(x, y)) return false;
+//
+//        Endpoint eXY = graph.getEndpoint(x, y); // at y
+//        Endpoint eYX = graph.getEndpoint(y, x); // at x
+//
+//        // If Y already has an arrowhead, it's allowed (no change).
+//        if (eXY == Endpoint.ARROW) return true;
+//
+//        // If Y is fixed as a tail, we cannot put an arrowhead at Y.
+//        if (eXY == Endpoint.TAIL) return false;
+//
+//        // Knowledge: if x->y is forbidden, we cannot place an arrowhead at Y.
+//        if (K != null && K.isForbidden(x.getName(), y.getName()) && eYX != Endpoint.ARROW) return false;
+//
+//        // (Optional) If K *requires* y->x, we also must not put an arrowhead at Y.
+//        if (K != null && K.isRequired(y.getName(), x.getName())) return false;
+//
+//        // Otherwise Y is a circle here; arrowhead at Y is permitted.
+//        // Note: eYX (endpoint at x) can be TAIL (giving x -o y -> x->y) or ARROW (giving y<->x) in a PAG.
+//        return eXY == Endpoint.CIRCLE;
+//    }
+
     /**
-     * Determines whether an arrowhead is allowed between two nodes in a graph, based on specific conditions.
-     *
-     * @param x         The first node.
-     * @param y         The second node.
-     * @param graph     The graph data structure.
-     * @param knowledge The knowledge base containing forbidden connections.
-     * @return true if an arrowhead is allowed between X and Y, false otherwise.
+     * Returns true iff an arrowhead at Y on edge (X, Y) is allowed (i.e., we may orient to x *-> y), respecting current
+     * endpoints and Knowledge. In Tetrad: getEndpoint(x,y) is endpoint AT y.
      */
-    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
+    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge K) {
         if (!graph.isAdjacentTo(x, y)) return false;
 
-        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
+        Endpoint eXY = graph.getEndpoint(x, y); // endpoint at y
+        Endpoint eYX = graph.getEndpoint(y, x); // endpoint at x
 
-        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return false;
-        }
+        // Already arrow at Y => allowed (no change).
+        if (eXY == Endpoint.ARROW) return true;
 
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
-                return true;
-            }
-        }
+        // Tail fixed at Y => cannot put an arrowhead at Y.
+        if (eXY == Endpoint.TAIL) return false;
 
-        if (graph.getEndpoint(y, x) == Endpoint.TAIL && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
-                return false;
-            }
-        }
+        // If knowledge REQUIRES y->x, disallow arrowhead at Y (bidirected would violate the requirement).
+        if (K != null && K.isRequired(y.getName(), x.getName())) return false;
 
-        return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
+        // If knowledge FORBIDS x->y, only allow an arrowhead at Y when we ALREADY have an arrowhead at X
+        // (so we'd make x <-> y). Otherwise, block to avoid x->y.
+        if (K != null && K.isForbidden(x.getName(), y.getName()) && eYX != Endpoint.ARROW) return false;
+
+        // (Optional policy) If you also want to forbid bidirected when y->x is forbidden, uncomment:
+//        if (K != null && K.isForbidden(y.getName(), x.getName()) && eYX == Endpoint.ARROW) return false;
+
+        // Otherwise, circle at Y is orientable.
+        return eXY == Endpoint.CIRCLE;
     }
 
     /**
@@ -810,7 +832,7 @@ public class FciOrient {
     /**
      * Makes a list of tasks for the discriminating path orientation step based on the current graph.
      *
-     * @param graph           the graph
+     * @param graph            the graph
      * @param allowedColliders the allowed colliders
      * @return the list of tasks
      */
