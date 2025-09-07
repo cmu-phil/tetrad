@@ -1,12 +1,9 @@
 package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.util.RankTests;
-import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
@@ -331,7 +328,8 @@ public final class BlocksUtil {
 
     private static int[] toIndexArray(Collection<Integer> list) {
         int[] a = new int[list.size()];
-        int k = 0; for (int v : list) a[k++] = v;
+        int k = 0;
+        for (int v : list) a[k++] = v;
         return a;
     }
 
