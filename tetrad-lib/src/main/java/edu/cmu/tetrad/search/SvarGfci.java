@@ -43,6 +43,7 @@ import java.util.Set;
 /**
  * Represents a FGES-FCI search algorithm for structure learning in causal discovery.
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public final class SvarGfci implements IGraphSearch {
     /**
      * The conditional independence test.

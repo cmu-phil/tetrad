@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
-import edu.cmu.tetrad.algcomparison.algorithm.*;
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -29,14 +32,13 @@ import java.util.List;
  * series data.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "SvarGFCI",
-        command = "svar-gfci",
+        name = "SvarBossFci",
+        command = "svar-boss-fci",
         algoType = AlgType.allow_latent_common_causes
 )
-@Deprecated(since = "7.9", forRemoval = false)
 @TimeSeries
 @Bootstrapping
-public class SvarGfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
+public class SvarBossFfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         TakesScoreWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -60,16 +62,16 @@ public class SvarGfci extends AbstractBootstrapAlgorithm implements Algorithm, H
     /**
      * <p>Constructor for SvarGfci.</p>
      */
-    public SvarGfci() {
+    public SvarBossFfci() {
     }
 
     /**
      * <p>Constructor for SvarGfci.</p>
      *
-     * @param type  a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
-     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     * @param type  a {@link IndependenceWrapper} object
+     * @param score a {@link ScoreWrapper} object
      */
-    public SvarGfci(IndependenceWrapper type, ScoreWrapper score) {
+    public SvarBossFfci(IndependenceWrapper type, ScoreWrapper score) {
         this.test = type;
         this.score = score;
     }
@@ -97,7 +99,7 @@ public class SvarGfci extends AbstractBootstrapAlgorithm implements Algorithm, H
         }
 
         dataModel.setKnowledge(this.knowledge);
-        edu.cmu.tetrad.search.SvarGfci search = new edu.cmu.tetrad.search.SvarGfci(this.test.getTest(dataModel, parameters),
+        edu.cmu.tetrad.search.SvarBossFci search = new edu.cmu.tetrad.search.SvarBossFci(this.test.getTest(dataModel, parameters),
                 this.score.getScore(dataModel, parameters));
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -122,7 +124,7 @@ public class SvarGfci extends AbstractBootstrapAlgorithm implements Algorithm, H
      * @return The description of this method.
      */
     public String getDescription() {
-        return "SavrGFCI (SVAR GFCI) using " + this.test.getDescription() + " and " + this.score.getDescription();
+        return "SVAR BOSS FCI using " + this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**
