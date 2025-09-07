@@ -231,52 +231,8 @@ public class SvarFas implements IFas {
         this.verbose = verbose;
     }
 
-    /**
-     * @throws UnsupportedOperationException since not implementedd.
-     */
     @Override
-    public long getElapsedTime() {
-        throw new UnsupportedOperationException("This method is not used.");
-    }
-
-    /**
-     * Retrieves the list of nodes from the current object.
-     *
-     * @return The list of nodes.
-     */
-    @Override
-    public List<Node> getNodes() {
-        return this.test.getVariables();
-    }
-
-    /**
-     * Retrieves the list of ambiguous triples involving the given node.
-     *
-     * @param node The node.
-     * @return The list of ambiguous triples involving the given node.
-     */
-    @Override
-    public List<Triple> getAmbiguousTriples(Node node) {
-        throw new UnsupportedOperationException("This method is not used.");
-    }
-
-    /**
-     * Sets the output stream for printing.
-     *
-     * @param out The output stream to be set.
-     */
-    @Override
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    @Override
-    public void setStartTime(long startTime) {
-
-    }
-
-    @Override
-    public void setTimeout(long timeout) {
+    public void setStable(boolean stable) {
 
     }
 

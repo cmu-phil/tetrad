@@ -1,10 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -45,7 +42,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @see Fci
  * @see Knowledge
  */
-public class Fas {
+public class Fas implements IFas {
 
     /**
      * Represents the core independence test utilized in the FAS algorithm to determine conditional independence
@@ -493,24 +490,6 @@ public class Fas {
      */
     public List<Node> getNodes() {
         return test.getVariables();
-    }
-
-    /**
-     * Retrieves the current output stream used for logging or display purposes.
-     *
-     * @return The output stream instance associated with the logging or output operations.
-     */
-    public PrintStream getOut() {
-        return out;
-    }
-
-    /**
-     * Sets the output stream to be used for logging or other display purposes.
-     *
-     * @param out The output stream to which messages or data will be printed.
-     */
-    public void setOut(PrintStream out) {
-        this.out = out;
     }
 
     // ---------------------------------------------------------------------

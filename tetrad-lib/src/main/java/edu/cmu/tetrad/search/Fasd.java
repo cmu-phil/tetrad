@@ -242,54 +242,8 @@ public class Fasd implements IFas {
         this.verbose = verbose;
     }
 
-    /**
-     * Returns the elapsed time of the method execution.
-     *
-     * @return the elapsed time in milliseconds
-     */
     @Override
-    public long getElapsedTime() {
-        return 0;
-    }
-
-    /**
-     * Retrieves the list of nodes from the current object.
-     *
-     * @return A list of Node objects representing the nodes in this object.
-     */
-    @Override
-    public List<Node> getNodes() {
-        return this.test.getVariables();
-    }
-
-    /**
-     * Retrieves a list of ambiguous triples for the given node.
-     *
-     * @param node The node for which to retrieve the ambiguous triples.
-     * @return A list of Triple objects representing the ambiguous triples.
-     */
-    @Override
-    public List<Triple> getAmbiguousTriples(Node node) {
-        return new ArrayList<>();
-    }
-
-    /**
-     * Sets the output stream for this object.
-     *
-     * @param out The output stream to be set.
-     */
-    @Override
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    @Override
-    public void setStartTime(long startTime) {
-
-    }
-
-    @Override
-    public void setTimeout(long timeout) {
+    public void setStable(boolean stable) {
 
     }
 

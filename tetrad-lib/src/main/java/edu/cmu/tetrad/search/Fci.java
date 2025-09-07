@@ -114,11 +114,15 @@ public final class Fci implements IGraphSearch {
     // -------------------------
     // Search
     // -------------------------
-    @Override
+
     public Graph search() throws InterruptedException {
+        return search(new Fas(getIndependenceTest()));
+    }
+
+    public Graph search(IFas fas) throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
 
-        Fas fas = new Fas(getIndependenceTest());
+//        Fas fas = new Fas(getIndependenceTest());
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting FCI algorithm.");
