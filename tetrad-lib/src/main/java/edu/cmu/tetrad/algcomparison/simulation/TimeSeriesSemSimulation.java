@@ -133,8 +133,9 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
             DataSet dataSet = im.simulateData(sampleSize, saveLatentVars);
 
+            // This causes issues downstream when further time lag datasets are created, making for some weird
+            // variable names.
 //            int numLags = ((TimeLagGraph) graph).getMaxLag();
-
 //            dataSet = TsUtils.createLagData(dataSet, numLags);
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
