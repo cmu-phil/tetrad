@@ -65,6 +65,7 @@ import java.util.concurrent.RecursiveTask;
  * @see FciOrient
  * @see Knowledge
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public final class FciMax implements IGraphSearch {
     /**
      * The independence test.

@@ -133,9 +133,9 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
             DataSet dataSet = im.simulateData(sampleSize, saveLatentVars);
 
-            int numLags = ((TimeLagGraph) graph).getMaxLag();
+//            int numLags = ((TimeLagGraph) graph).getMaxLag();
 
-            dataSet = TsUtils.createLagData(dataSet, numLags);
+//            dataSet = TsUtils.createLagData(dataSet, numLags);
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
                 double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);

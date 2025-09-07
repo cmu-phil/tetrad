@@ -20,6 +20,7 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
+import edu.cmu.tetrad.algcomparison.algorithm.ExtraLatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
@@ -668,9 +669,12 @@ public class AlgorithmCard extends JPanel {
             if (this.blockSpec != null) {
                 baseStream = baseStream.filter(m -> {
                     Class<?> c = m.getAlgorithm().clazz();
-                    return /*TakesIndependenceWrapper.class.isAssignableFrom(c)
-                           || TakesScoreWrapper.class.isAssignableFrom(c)
-                           ||*/ LatentStructureAlgorithm.class.isAssignableFrom(c);
+                    return LatentStructureAlgorithm.class.isAssignableFrom(c);
+                });
+            } else {
+                baseStream = baseStream.filter(m -> {
+                    Class<?> c = m.getAlgorithm().clazz();
+                    return !ExtraLatentStructureAlgorithm.class.isAssignableFrom(c);
                 });
             }
 

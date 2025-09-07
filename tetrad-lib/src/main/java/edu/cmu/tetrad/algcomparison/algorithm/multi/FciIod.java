@@ -33,8 +33,8 @@ import java.util.List;
  * @see IndTestIod
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FCI-IOD",
-        command = "fci-iod",
+        name = "IOD",
+        command = "iod",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.All
 )
@@ -147,7 +147,7 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
      */
     @Override
     public String getDescription() {
-        return "FCI-IOD";
+        return "IOD";
     }
 
     /**

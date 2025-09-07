@@ -241,7 +241,13 @@ public final class GraphUtils {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph completeGraph(Graph graph) {
-        Graph graph2 = new EdgeListGraph(graph.getNodes());
+        Graph graph2;
+
+        if (graph instanceof SvarEdgeListGraph) {
+            graph2 = new SvarEdgeListGraph(graph.getNodes());
+        } else {
+            graph2 = new EdgeListGraph(graph.getNodes());
+        }
 
         graph2.removeEdges(new ArrayList<>(graph2.getEdges()));
 
