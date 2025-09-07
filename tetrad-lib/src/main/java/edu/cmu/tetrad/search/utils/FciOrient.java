@@ -135,33 +135,6 @@ public class FciOrient {
         this.knowledge = strategy.getknowledge();
     }
 
-//    /**
-//     * Returns true iff an arrowhead at Y on edge (X, Y) is allowed (i.e., we may orient to x *-> y), respecting current
-//     * endpoints and Knowledge.
-//     */
-//    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge K) {
-//        if (!graph.isAdjacentTo(x, y)) return false;
-//
-//        Endpoint eXY = graph.getEndpoint(x, y); // at y
-//        Endpoint eYX = graph.getEndpoint(y, x); // at x
-//
-//        // If Y already has an arrowhead, it's allowed (no change).
-//        if (eXY == Endpoint.ARROW) return true;
-//
-//        // If Y is fixed as a tail, we cannot put an arrowhead at Y.
-//        if (eXY == Endpoint.TAIL) return false;
-//
-//        // Knowledge: if x->y is forbidden, we cannot place an arrowhead at Y.
-//        if (K != null && K.isForbidden(x.getName(), y.getName()) && eYX != Endpoint.ARROW) return false;
-//
-//        // (Optional) If K *requires* y->x, we also must not put an arrowhead at Y.
-//        if (K != null && K.isRequired(y.getName(), x.getName())) return false;
-//
-//        // Otherwise Y is a circle here; arrowhead at Y is permitted.
-//        // Note: eYX (endpoint at x) can be TAIL (giving x -o y -> x->y) or ARROW (giving y<->x) in a PAG.
-//        return eXY == Endpoint.CIRCLE;
-//    }
-
     /**
      * Returns true iff an arrowhead at Y on edge (X, Y) is allowed (i.e., we may orient to x *-> y), respecting current
      * endpoints and Knowledge. In Tetrad: getEndpoint(x,y) is endpoint AT y.
@@ -184,9 +157,6 @@ public class FciOrient {
         // If knowledge FORBIDS x->y, only allow an arrowhead at Y when we ALREADY have an arrowhead at X
         // (so we'd make x <-> y). Otherwise, block to avoid x->y.
         if (K != null && K.isForbidden(x.getName(), y.getName()) && eYX != Endpoint.ARROW) return false;
-
-        // (Optional policy) If you also want to forbid bidirected when y->x is forbidden, uncomment:
-//        if (K != null && K.isForbidden(y.getName(), x.getName()) && eYX == Endpoint.ARROW) return false;
 
         // Otherwise, circle at Y is orientable.
         return eXY == Endpoint.CIRCLE;
