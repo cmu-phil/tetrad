@@ -189,6 +189,8 @@ public class Pc implements IGraphSearch {
             return;
         }
 
+        List<Triple> ambiguousTriples = new ArrayList<>();
+
         for (Triple t : triples) {
             checkTimeout();
 
@@ -216,6 +218,7 @@ public class Pc implements IGraphSearch {
                 case DEPENDENT, NO_SEPSET -> { /* leave unoriented */ }
                 case AMBIGUOUS -> {
                     if (allowBidirected == AllowBidirected.ALLOW) {
+                        ambiguousTriples.add(t);
                         // Optionally mark ambiguity if your Graph supports bidirected marks.
                     }
                     if (verbose) TetradLogger.getInstance().log(
@@ -223,6 +226,13 @@ public class Pc implements IGraphSearch {
                 }
             }
         }
+
+        Set<edu.cmu.tetrad.graph.Triple> _ambiguousTriples = new HashSet<>();
+        for (Triple t : ambiguousTriples) {
+            _ambiguousTriples.add(new edu.cmu.tetrad.graph.Triple(t.x, t.z, t.y));
+        }
+
+        g.setAmbiguousTriples(_ambiguousTriples);
     }
 
     /** Global, order-independent MAX-P collider orientation (optionally depth-stratified; avoids ↔). */
