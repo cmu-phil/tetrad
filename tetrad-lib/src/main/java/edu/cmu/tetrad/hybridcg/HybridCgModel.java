@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.mixed;
+package edu.cmu.tetrad.hybridcg;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
@@ -24,10 +24,10 @@ import java.util.*;
  *   <li>Keep a stable row-indexing contract so tables can be read/written and scored efficiently.</li>
  * </ul>
  */
-public final class MixedModel {
+public final class HybridCgModel {
 
     // ======== PM (parametric model/skeleton & shapes) ========
-    public static final class MixedPm implements Pm, Serializable {
+    public static final class HybridCgPm implements Pm, Serializable {
         @Serial
         private static final long serialVersionUID = 1L;
 
@@ -47,8 +47,8 @@ public final class MixedModel {
         // bins = cutpoints.length + 1
         private final double[][][] contParentCutpointsForDiscreteChild;
 
-        public MixedPm(Graph dag, List<Node> nodeOrder, Map<Node, Boolean> discreteFlags,
-                       Map<Node, List<String>> categoryMap) {
+        public HybridCgPm(Graph dag, List<Node> nodeOrder, Map<Node, Boolean> discreteFlags,
+                          Map<Node, List<String>> categoryMap) {
             this.dag = Objects.requireNonNull(dag, "dag");
             this.nodes = nodeOrder.toArray(new Node[0]);
 
@@ -226,10 +226,10 @@ public final class MixedModel {
     }
 
     // ======== IM (numbers) ========
-    public static final class MixedIm implements Serializable {
+    public static final class HybridCgIm implements Serializable {
         @Serial
         private static final long serialVersionUID = 1L;
-        private final MixedPm pm;
+        private final HybridCgPm pm;
 
         // Continuous child: for node y, params[y] is rows x (m+2) where m = #cont parents; cols = [intercept, coeffs..., variance]
         private final double[][][] contParams; // null for discrete children
@@ -237,7 +237,7 @@ public final class MixedModel {
         // Discrete child: probs[y] is rows x card(y)
         private final double[][][] discProbs;   // null for continuous children
 
-        public MixedIm(MixedPm pm) {
+        public HybridCgIm(HybridCgPm pm) {
             this.pm = pm;
             int n = pm.nodes.length;
             this.contParams = new double[n][][];
@@ -299,7 +299,7 @@ public final class MixedModel {
         }
 
         // ======== Convenience: compute row indices on-the-fly for a data case ========
-        public static int rowIndexForCase(MixedPm pm, int nodeIndex, DataSet data, int row, int[] colIndex) {
+        public static int rowIndexForCase(HybridCgPm pm, int nodeIndex, DataSet data, int row, int[] colIndex) {
             int[] dps = pm.getDiscreteParents(nodeIndex);
             int[] cps = pm.getContinuousParents(nodeIndex);
             int[] discVals = new int[dps.length];
@@ -315,7 +315,7 @@ public final class MixedModel {
             return pm.getRowIndex(nodeIndex, discVals, contBins);
         }
 
-        public MixedPm getPm() {
+        public HybridCgPm getPm() {
             return pm;
         }
 
@@ -599,8 +599,8 @@ public final class MixedModel {
                 return b; // 0..cuts.length
             }
 
-            public MixedIm mle(MixedPm pm, DataSet data) {
-                MixedIm im = new MixedIm(pm);
+            public HybridCgIm mle(HybridCgPm pm, DataSet data) {
+                HybridCgIm im = new HybridCgIm(pm);
                 Node[] nodes = pm.nodes;
 
                 // Precompute variable columns and discrete code maps
@@ -614,7 +614,7 @@ public final class MixedModel {
                 return im;
             }
 
-            private void fitDiscreteChild(MixedPm pm, MixedIm im, DataSet data, int y, int[] colIndex) {
+            private void fitDiscreteChild(HybridCgPm pm, HybridCgIm im, DataSet data, int y, int[] colIndex) {
                 int[] dps = pm.getDiscreteParents(y);
                 int[] cps = pm.getContinuousParents(y);
                 int rows = pm.getNumRows(y);
@@ -651,7 +651,7 @@ public final class MixedModel {
                 }
             }
 
-            private void fitContinuousChild(MixedPm pm, MixedIm im, DataSet data, int y, int[] colIndex) {
+            private void fitContinuousChild(HybridCgPm pm, HybridCgIm im, DataSet data, int y, int[] colIndex) {
                 int[] dps = pm.getDiscreteParents(y);
                 int[] cps = pm.getContinuousParents(y);
                 int rows = pm.getNumRows(y); // product over discrete-parents only

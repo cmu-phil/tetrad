@@ -3,11 +3,11 @@ package edu.cmu.tetradapp.editor;
 import javax.swing.*;
 import java.awt.*;
 
-public final class MixedImEditorWizard {
+public final class HybridCgImEditorWizard {
 
-    private MixedImEditorWizard() {}
+    private HybridCgImEditorWizard() {}
 
-    public static JDialog create(Window owner, MixedImEditor editor) {
+    public static JDialog create(Window owner, HybridCgImEditor editor) {
         JDialog dlg = new JDialog(owner, "Mixed IM Wizard", Dialog.ModalityType.MODELESS);
         dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 

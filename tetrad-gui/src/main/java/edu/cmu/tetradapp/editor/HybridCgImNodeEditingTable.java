@@ -4,14 +4,13 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
- * Minimal mixed CG editor table:
+ * Minimal hybrid CG editor table:
  * Each row corresponds to a (discrete-parent configuration) for one target node.
  * Columns: [Node, DiscreteConfig, Mean, Variance, Betas]
  */
-public class MixedImNodeEditingTable extends AbstractTableModel {
+public class HybridCgImNodeEditingTable extends AbstractTableModel {
 
     public static final int COL_NODE = 0;
     public static final int COL_CFG  = 1;
@@ -21,7 +20,7 @@ public class MixedImNodeEditingTable extends AbstractTableModel {
 
     private final String[] columns = {"Node", "Config", "Mean", "Variance", "Betas (comma-separated)"};
 
-    /** A tiny row holder. In practice you’ll point these at your Mixed/Cg param objects. */
+    /** A tiny row holder. In practice you’ll point these at your HybridCgIm param objects. */
     static class Row {
         String nodeName;
         String discreteConfig; // e.g. "A=0,B=1"
@@ -40,7 +39,7 @@ public class MixedImNodeEditingTable extends AbstractTableModel {
 
     private final List<Row> rows = new ArrayList<>();
 
-    public MixedImNodeEditingTable() {
+    public HybridCgImNodeEditingTable() {
         // TODO seed with something if you want; otherwise, provide setters to populate.
         // Example placeholder:
         rows.add(new Row("Y", "A=0,B=0", 0.0, 1.0, new double[]{0.0, 0.0}));
@@ -118,7 +117,7 @@ public class MixedImNodeEditingTable extends AbstractTableModel {
     }
 
     public void validateAndNormalize() {
-        // For CG, no row-wise normalization like CPTs; you can check variance>0, NaNs, etc.
+        // For HybridCg, no row-wise normalization like CPTs; you can check variance>0, NaNs, etc.
         for (int r = 0; r < rows.size(); r++) {
             Row row = rows.get(r);
             if (!(row.variance > 0)) {
@@ -129,11 +128,11 @@ public class MixedImNodeEditingTable extends AbstractTableModel {
 
     // --- API to integrate with estimator/model layer later ---
     public List<Object> toParameterBlocks() {
-        // TODO: convert rows to your engine’s parameter objects (e.g., MixedIm / CgIm blocks).
+        // TODO: convert rows to your engine’s parameter objects (e.g., HybridCgIm blocks).
         return List.of();
     }
 
     public void fromParameterBlocks(List<Object> blocks) {
-        // TODO: populate rows from a fitted Mixed/Cg model (SEM or MLE layer).
+        // TODO: populate rows from a fitted HybridCgIm model (SEM or MLE layer).
     }
 }

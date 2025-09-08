@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.mixed;
+package edu.cmu.tetrad.hybridcg;
 
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-public class TestMixedModelModel {
+public class TestHybridCgModelModel {
 
     @Test
     public void test() {
@@ -47,7 +47,7 @@ public class TestMixedModelModel {
             if (discrete) cats.put(v, ((DiscreteVariable) v).getCategories());
         }
 
-        MixedModel.MixedPm pm = new MixedModel.MixedPm(g, nodeOrder, isDisc, cats);
+        HybridCgModel.HybridCgPm pm = new HybridCgModel.HybridCgPm(g, nodeOrder, isDisc, cats);
 
         for (Node child : nodeOrder) {
             int y = pm.indexOf(child);
@@ -85,10 +85,10 @@ public class TestMixedModelModel {
             pm.setContParentCutpointsForDiscreteChild(child, cutpoints);
         }
 
-        MixedModel.MixedIm im = randomIm(pm, new Random());
+        HybridCgModel.HybridCgIm im = randomIm(pm, new Random());
 
         int n = 5000;
-        MixedModel.MixedIm.Sample draw = im.sample(n, new Random(42));
+        HybridCgModel.HybridCgIm.Sample draw = im.sample(n, new Random(42));
 
         // Convert to a Tetrad DataSet (choose any node order you want in the output)
         List<Node> outOrder = Arrays.asList(pm.getNodes()); // same order as PM
@@ -97,8 +97,8 @@ public class TestMixedModelModel {
 //        System.out.println(simulated);
 
         // Dirichlet alpha = 1.0 for CPT smoothing; shareVarianceAcrossRows = false (change if strata are thin)
-        MixedModel.MixedIm.HybridEstimator est = new MixedModel.MixedIm.HybridEstimator(1.0, false);
-        MixedModel.MixedIm im2 = est.mle(pm, simulated);
+        HybridCgModel.HybridCgIm.HybridEstimator est = new HybridCgModel.HybridCgIm.HybridEstimator(1.0, false);
+        HybridCgModel.HybridCgIm im2 = est.mle(pm, simulated);
 
         System.out.println(im2);
 
@@ -116,8 +116,8 @@ public class TestMixedModelModel {
 
     }
 
-    public static MixedModel.MixedIm randomIm(MixedModel.MixedPm pm, Random rng) {
-        MixedModel.MixedIm im = new MixedModel.MixedIm(pm);
+    public static HybridCgModel.HybridCgIm randomIm(HybridCgModel.HybridCgPm pm, Random rng) {
+        HybridCgModel.HybridCgIm im = new HybridCgModel.HybridCgIm(pm);
         int n = pm.getNodes().length;
 
         for (int y = 0; y < n; y++) {
