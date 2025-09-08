@@ -16,10 +16,14 @@ public class UnmixCausalProcesses {
         public int K;                 // number of clusters to produce
         public long seed = 13;
         public int kmeansIters = 50;
-        public boolean doOneReassign = true;
+        public boolean doOneReassign = true;         // kept for backward-compat; if true uses maxPasses>=1
         public boolean robustScaleResiduals = true;
 
-        // NEW: parent-superset initializer for very different component graphs
+        // NEW: multiple reassignment control
+        public int reassignMaxPasses = 100;            // set >1 to do multiple passes
+        public boolean reassignStopIfNoChange = true;
+
+        // Optional robust initializer when component graphs differ a lot
         public boolean useParentSuperset = false;
         public ParentSupersetBuilder.Config supersetCfg = new ParentSupersetBuilder.Config();
     }
@@ -29,7 +33,7 @@ public class UnmixCausalProcesses {
      *  1) build row signatures (residuals) either from pooled graph or parent-superset
      *  2) k-means on residuals
      *  3) per-cluster search
-     *  4) optional one hard reassignment and fast refit (no re-search)
+     *  4) (optional) multiple hard reassignment passes with fast refit
      */
     public static UnmixResult run(
             DataSet data,
@@ -50,23 +54,29 @@ public class UnmixCausalProcesses {
         KMeans.Result km = KMeans.cluster(R, cfg.K, cfg.kmeansIters, cfg.seed);
         int[] z = km.labels;
 
-        // 3) build per-cluster datasets
+        // 3) build per-cluster datasets and search per cluster (initial)
         List<DataSet> parts = splitByLabels(data, z, cfg.K);
+        List<Graph> graphs = parts.stream().map(perClusterSearch).collect(Collectors.toList());
 
-        // 4) search per cluster
-        List<Graph> graphs = parts.stream()
-                .map(perClusterSearch)
-                .collect(Collectors.toList());
+        // Normalize config flags: respect legacy doOneReassign
+        int maxPasses = Math.max(cfg.reassignMaxPasses, cfg.doOneReassign ? 1 : 0);
 
-        // 5) optional one reassignment pass (cheap)
-        if (cfg.doOneReassign) {
+        // 4) multiple reassignment passes (cheap): diagonal-Gaussian on fixed R, but
+        //     variances are re-estimated from current labels each pass.
+        for (int pass = 0; pass < maxPasses; pass++) {
             int[] z2 = RowReassign.reassignByDiagGaussian(R, z, cfg.K);
-            if (!Arrays.equals(z, z2)) {
-                z = z2;
-                parts = splitByLabels(data, z, cfg.K);
-                graphs = parts.stream().map(perClusterSearch).collect(Collectors.toList());
-            }
+
+            boolean changed = !Arrays.equals(z, z2);
+            if (!changed && cfg.reassignStopIfNoChange) break;
+
+            z = z2;
+
+            // Rebuild splits and (re)search per cluster.
+            // This keeps structures reasonably in sync with changing assignments.
+            parts = splitByLabels(data, z, cfg.K);
+            graphs = parts.stream().map(perClusterSearch).collect(Collectors.toList());
         }
+
         return new UnmixResult(z, cfg.K, parts, graphs);
     }
 
@@ -78,11 +88,9 @@ public class UnmixCausalProcesses {
             Function<DataSet, Graph> pooledSearch // may be null when useParentSuperset=true
     ) {
         if (cfg.useParentSuperset) {
-            // Parent-superset path: no pooled DAG assumption
             Map<Node, List<Node>> paSuperset = ParentSupersetBuilder.build(data, cfg.supersetCfg);
             return ResidualUtils.residualMatrix(data, paSuperset, regressor);
         } else {
-            // Pooled DAG path
             Objects.requireNonNull(pooledSearch, "pooledSearch must be provided when useParentSuperset=false");
             Graph gPool = pooledSearch.apply(data);
             return ResidualUtils.residualMatrix(data, gPool, regressor);
@@ -97,27 +105,24 @@ public class UnmixCausalProcesses {
 
         for (int i = 0; i < n; i++) {
             int lab = z[i];
-            if (lab >= 0 && lab < K) {
-                idx.get(lab).add(i);
-            }
+            if (lab >= 0 && lab < K) idx.get(lab).add(i);
         }
 
         List<DataSet> out = new ArrayList<>(K);
         for (int k = 0; k < K; k++) {
             List<Integer> rows = idx.get(k);
             if (rows.isEmpty()) {
-                // empty cluster → return empty dataset with same variables
                 DoubleDataBox box = new DoubleDataBox(0, data.getVariables().size());
                 out.add(new BoxDataSet(box, data.getVariables()));
             } else {
-                int[] rowArray = rows.stream().mapToInt(Integer::intValue).toArray();
-                out.add(data.subsetRows(rowArray));
+                int[] rowsArray = rows.stream().mapToInt(Integer::intValue).toArray();
+                out.add(data.subsetRows(rowsArray));
             }
         }
         return out;
     }
 
-    /** Try K=Kmin..Kmax and pick the one with the best internal diag-Gaussian score under the SAME initializer as run(). */
+    /** Try K=Kmin..Kmax and pick the one with the best internal diag-Gaussian score using the same initializer. */
     public static UnmixResult selectK(
             DataSet data,
             int Kmin,
@@ -126,7 +131,7 @@ public class UnmixCausalProcesses {
             Function<DataSet, Graph> pooledSearch,   // may be null if using parent-superset
             Function<DataSet, Graph> perClusterSearch,
             long seed,
-            Config baseCfg // we copy initializer knobs from here
+            Config baseCfg
     ) {
         Objects.requireNonNull(baseCfg, "baseCfg");
         double bestScore = Double.POSITIVE_INFINITY;
@@ -134,18 +139,19 @@ public class UnmixCausalProcesses {
 
         for (int K = Kmin; K <= Kmax; K++) {
             Config cfg = new Config();
-            // copy initializer knobs
+            // copy initializer & loop knobs
             cfg.useParentSuperset = baseCfg.useParentSuperset;
             cfg.supersetCfg = baseCfg.supersetCfg;
             cfg.robustScaleResiduals = baseCfg.robustScaleResiduals;
-            cfg.doOneReassign = baseCfg.doOneReassign; // OK to keep same
             cfg.kmeansIters = baseCfg.kmeansIters;
+            cfg.reassignMaxPasses = baseCfg.reassignMaxPasses;
+            cfg.reassignStopIfNoChange = baseCfg.reassignStopIfNoChange;
             cfg.seed = seed;
             cfg.K = K;
 
             UnmixResult res = run(data, cfg, regressor, pooledSearch, perClusterSearch);
 
-            // Rebuild residuals the SAME way for scoring
+            // Score using SAME residuals path
             double[][] R = buildResiduals(data, cfg, regressor, pooledSearch);
             if (cfg.robustScaleResiduals) ResidualUtils.robustStandardizeInPlace(R);
             double score = avgDiagGaussianScore(R, res.labels, K);

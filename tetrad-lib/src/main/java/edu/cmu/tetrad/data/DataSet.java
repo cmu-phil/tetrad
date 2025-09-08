@@ -349,6 +349,8 @@ public interface DataSet extends DataModel {
      */
     DataSet subsetRows(int[] rows);
 
+    DataSet subsetRows(List<Integer> rows);
+
     /**
      * <p>toString.</p>
      *

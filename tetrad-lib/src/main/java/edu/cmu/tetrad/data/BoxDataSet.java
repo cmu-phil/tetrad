@@ -1047,6 +1047,11 @@ public final class BoxDataSet implements DataSet {
         return _data;
     }
 
+    @Override
+    public DataSet subsetRows(List<Integer> rows) {
+        return subsetRows(rows.stream().mapToInt(Integer::intValue).toArray());
+    }
+
     /**
      * {@inheritDoc}
      */

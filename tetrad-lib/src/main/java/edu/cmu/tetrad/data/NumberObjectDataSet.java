@@ -74,8 +74,7 @@ import java.util.*;
  * @see edu.cmu.tetrad.data.Variable
  * @see Knowledge
  */
-public final class NumberObjectDataSet
-        implements DataSet {
+public final class NumberObjectDataSet implements DataSet {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -1104,6 +1103,11 @@ public final class NumberObjectDataSet
         }
 
         return _data;
+    }
+
+    @Override
+    public DataSet subsetRows(List<Integer> rows) {
+        return subsetRows(rows.stream().mapToInt(Integer::intValue).toArray());
     }
 
     /**
