@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -25,8 +25,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import org.apache.commons.math3.util.FastMath;
@@ -276,13 +276,6 @@ public final class SemIm implements Im, ISemIm {
 
         this.distributions = new HashMap<>();
 
-        // Careful with this! These must not be left in! They override the
-        // normal behavior!
-//        for (Node node : variableNodes) {
-//            this.distributions.put(node, new Uniform(-1, 1));
-//        }
-
-
         // 1 = Normal, 2 = Uniform, 3 = Exponential, 4 = Gumbel
         this.errorParam1 = parameters.getDouble(Params.SIMULATION_PARAM1);
         this.errorParam2 = parameters.getDouble(Params.SIMULATION_PARAM2);
@@ -449,6 +442,84 @@ public final class SemIm implements Im, ISemIm {
         return new SemIm(SemPm.serializableInstance());
     }
 
+//    /** Robust log|Σ| for SPD Σ via Cholesky; throws if not SPD. */
+//    private static double safeLogDetSymPD(Matrix S) {
+//        Matrix L = MatrixUtils.cholesky(S); // lower-tri; throws if not PD
+//        double sum = 0.0;
+//        for (int i = 0; i < L.getNumRows(); i++) {
+//            double d = L.get(i, i);
+//            if (!(d > 0.0) || Double.isNaN(d) || Double.isInfinite(d)) {
+//                throw new IllegalStateException("Cholesky diagonal not positive.");
+//            }
+//            sum += Math.log(d);
+//        }
+//        return 2.0 * sum;
+//    }
+
+    /** Robust log|Σ| for (near-)SPD Σ via Cholesky with tiny jitter fallback. */
+    private static double safeLogDetSymPD(Matrix S) {
+        try {
+            Matrix L = MatrixUtils.cholesky(S);
+            double sum = 0.0;
+            for (int i = 0; i < L.getNumRows(); i++) {
+                double d = L.get(i, i);
+                if (!(d > 0.0) || Double.isNaN(d) || Double.isInfinite(d)) {
+                    throw new IllegalStateException("Cholesky diagonal not positive.");
+                }
+                sum += Math.log(d);
+            }
+            return 2.0 * sum;
+        } catch (Throwable t) {
+            // Add a tiny jitter proportional to average diagonal, retry once
+            int n = S.getNumRows();
+            double avgDiag = 0.0;
+            for (int i = 0; i < n; i++) avgDiag += Math.max(0.0, S.get(i, i));
+            avgDiag = (n > 0 ? avgDiag / n : 1.0);
+            double eps = 1e-8 * (avgDiag > 0.0 ? avgDiag : 1.0);
+
+            Matrix Sj = S.copy();
+            for (int i = 0; i < n; i++) Sj.set(i, i, Sj.get(i, i) + eps);
+
+            Matrix L = MatrixUtils.cholesky(Sj); // will throw if truly not SPD
+            double sum = 0.0;
+            for (int i = 0; i < n; i++) sum += Math.log(L.get(i, i));
+            return 2.0 * sum;
+        }
+    }
+
+    /** Solve SPD A * X = B using Cholesky(A) without forming A^{-1}. */
+    private static Matrix cholSolveSPD(Matrix A, Matrix B) {
+        Matrix L = MatrixUtils.cholesky(A);              // A = L Lᵀ
+        int n = L.getNumRows();
+        int m = B.getNumColumns();
+        Matrix Y = new Matrix(n, m);
+        Matrix X = new Matrix(n, m);
+
+        // Forward solve: L * Y = B
+        for (int k = 0; k < m; k++) {
+            for (int i = 0; i < n; i++) {
+                double s = B.get(i, k);
+                for (int j = 0; j < i; j++) s -= L.get(i, j) * Y.get(j, k);
+                Y.set(i, k, s / L.get(i, i));
+            }
+        }
+        // Back solve: Lᵀ * X = Y
+        for (int k = 0; k < m; k++) {
+            for (int i = n - 1; i >= 0; i--) {
+                double s = Y.get(i, k);
+                for (int j = i + 1; j < n; j++) s -= L.get(j, i) * X.get(j, k);
+                X.set(i, k, s / L.get(i, i));
+            }
+        }
+        return X;
+    }
+
+    /** Compute trace(A^{-1} B) for SPD A using Cholesky solves. */
+    private static double traceAInvB_SPD(Matrix A, Matrix B) {
+        Matrix X = cholSolveSPD(A, B);   // X = A^{-1} B
+        return X.trace();
+    }
+
     /**
      * <p>updatedIm.</p>
      *
@@ -537,6 +608,9 @@ public final class SemIm implements Im, ISemIm {
             Mapping mapping = freeMappings().get(i);
             mapping.setValue(params[i]);
         }
+
+        this.implCovar = null;
+        this.standardErrors = null;
     }
 
     /**
@@ -584,9 +658,13 @@ public final class SemIm implements Im, ISemIm {
             int index = getFreeParameters().indexOf(parameter);
             Mapping mapping = this.freeMappings.get(index);
             mapping.setValue(value);
+            this.implCovar = null;          // force recompute next time
+            this.standardErrors = null;     // invalidate SE cache
         } else if (getMeanParameters().contains(parameter)) {
             int index = getMeanParameters().indexOf(parameter);
             this.variableMeans[index] = value;
+            this.implCovar = null;          // force recompute next time
+            this.standardErrors = null;     // invalidate SE cache
         } else {
             throw new IllegalArgumentException("That parameter cannot be set in "
                                                + "this model: " + parameter);
@@ -600,17 +678,30 @@ public final class SemIm implements Im, ISemIm {
      * @param value     the new value for the parameter. Must be a double.
      * @throws IllegalArgumentException if the parameter is not a fixed parameter in the model.
      */
+//    public void setFixedParamValue(Parameter parameter, double value) {
+//        if (!getFixedParameters().contains(parameter)) {
+//            throw new IllegalArgumentException(
+//                    "Not a fixed parameter in " + "this model: " + parameter);
+//        }
+//
+//        // Note this assumes the fixedMappings are in the same order as the
+//        // fixed freeParameters.
+//        int index = getFixedParameters().indexOf(parameter);
+//        Mapping mapping = this.fixedMappings.get(index);
+//        mapping.setValue(value);
+//    }
+
     public void setFixedParamValue(Parameter parameter, double value) {
         if (!getFixedParameters().contains(parameter)) {
-            throw new IllegalArgumentException(
-                    "Not a fixed parameter in " + "this model: " + parameter);
+            throw new IllegalArgumentException("Not a fixed parameter in this model: " + parameter);
         }
-
-        // Note this assumes the fixedMappings are in the same order as the
-        // fixed freeParameters.
         int index = getFixedParameters().indexOf(parameter);
         Mapping mapping = this.fixedMappings.get(index);
         mapping.setValue(value);
+
+        // Invalidate derived caches
+        this.implCovar = null;
+        this.standardErrors = null;
     }
 
     /**
@@ -698,11 +789,9 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * <p>Setter for the field <code>errCovar</code>.</p>
-     *
-     * @param x     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param value a double
-     */
+     * @deprecated Use setErrVar(x, value) for variances, or setErrCovar(x, y, value) for covariances.
+     * */
+    @Deprecated
     public void setErrCovar(Node x, double value) {
         SemGraph graph = getSemPm().getGraph();
         Node exogenousX = graph.getExogenous(x);
@@ -733,14 +822,14 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * Sets the mean associated with the given node.
+     * Sets the standard deviation value for the specified node.
      *
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
-     * @param mean a double
+     * @param node The node for which the standard deviation is being set.
+     * @param stdDev The standard deviation value to be assigned to the provided node.
      */
-    public void setMeanStandardDeviation(Node node, double mean) {
+    public void setMeanStandardDeviation(Node node, double stdDev) {
         int index = this.variableNodes.indexOf(node);
-        this.variableMeansStdDev[index] = mean;
+        this.variableMeansStdDev[index] = stdDev;
     }
 
     /**
@@ -879,7 +968,6 @@ public final class SemIm implements Im, ISemIm {
      */
     public double getVariance(Node node, Matrix implCovar) {
         if (getSemPm().getGraph().isExogenous(node)) {
-//            if (node.getNodeType() == NodeType.ERROR) {
             Parameter parameter = getSemPm().getVarianceParameter(node);
 
             // This seems to be required to get the show/hide error terms
@@ -891,7 +979,6 @@ public final class SemIm implements Im, ISemIm {
             return getParamValue(parameter);
         } else {
             int index = this.variableNodes.indexOf(node);
-//            TetradMatrix implCovar = getImplCovar();
             return implCovar.get(index, index);
         }
     }
@@ -1115,45 +1202,102 @@ public final class SemIm implements Im, ISemIm {
         }
     }
 
+//    private double getFml2() {
+//        Matrix sigma;
+//        try {
+//            sigma = implCovarMeas();
+//        } catch (Exception e) {
+//            return Double.NaN;
+//        }
+//        Matrix s = this.sampleCovarC;
+//        if (s == null) return Double.NaN;
+//
+//        try {
+//            // F_ML = log|Σ| + trace(Σ^{-1} S) - log|S| - p
+//            double logDetSigma = safeLogDetSymPD(sigma);
+//            double logDetS = safeLogDetSymPD(s);
+//            double tr = traceAInvB_SPD(sigma, s);
+//            return logDetSigma + tr - logDetS - getMeasuredNodes().size();
+//        } catch (Exception ex) {
+//            return Double.NaN;
+//        }
+//    }
+
     private double getFml2() {
-        Matrix sigma;
-
+        Matrix Sigma;
         try {
-            sigma = implCovarMeas();
+            Sigma = implCovarMeas();
         } catch (Exception e) {
             return Double.NaN;
         }
+        Matrix S = this.sampleCovarC;
+        if (S == null) return Double.NaN;
 
-        Matrix s = this.sampleCovarC;
-
-        double fml;
+        // Symmetrize to reduce roundoff asymmetry.
+        Sigma = MatrixUtils.symmetrize(Sigma);
+        S     = MatrixUtils.symmetrize(S);
 
         try {
-            fml = FastMath.log(sigma.det()) + (s.times(sigma.inverse())).trace() - FastMath.log(s.det()) - getMeasuredNodes().size();
-        } catch (Exception e) {
+            // log|Σ| and log|S| with Cholesky + tiny jitter fallback
+            double logDetSigma = safeLogDetSymPD(Sigma);
+            double logDetS     = safeLogDetSymPD(S);
+
+            // trace(Σ^{-1} S) using Cholesky solve of Σ; if Σ not SPD, jitter its diagonal once.
+            double tr;
+            try {
+                tr = traceAInvB_SPD(Sigma, S);
+            } catch (Throwable t) {
+                int n = Sigma.getNumRows();
+                double avgDiag = 0.0;
+                for (int i = 0; i < n; i++) avgDiag += Math.max(0.0, Sigma.get(i, i));
+                avgDiag = (n > 0 ? avgDiag / n : 1.0);
+                double eps = 1e-8 * (avgDiag > 0.0 ? avgDiag : 1.0);
+
+                Matrix SigmaJ = Sigma.copy();
+                for (int i = 0; i < n; i++) SigmaJ.set(i, i, SigmaJ.get(i, i) + eps);
+
+                tr = traceAInvB_SPD(SigmaJ, S);
+            }
+
+            // F_ML = log|Σ| + trace(Σ^{-1} S) - log|S| - p
+            return logDetSigma + tr - logDetS - getMeasuredNodes().size();
+        } catch (Exception ex) {
             return Double.NaN;
         }
-
-        return fml;
     }
 
     private double getFgls() {
-        Matrix implCovarMeas;
-
+        // Compute FGLS without forming an explicit inverse; use Cholesky solves
+        // F_GLS = 0.5 * || I - Σ S^{-1} ||_F^2, where Σ is implied cov over measured vars and S is sample cov.
+        Matrix Sigma;
         try {
-            implCovarMeas = implCovarMeas();
+            Sigma = implCovarMeas();
         } catch (Exception e) {
             return Double.NaN;
         }
 
-        if (this.sampleCovInv == null) {
-            Matrix sampleCovar = this.sampleCovarC;
-            this.sampleCovInv = sampleCovar.inverse();
+        Matrix S = this.sampleCovarC;
+        if (S == null) return Double.NaN;
+
+        // Compute S^{-1} per-call via SPD solve (with tiny jitter fallback); do NOT cache.
+        Matrix I = Matrix.identity(S.getNumRows());
+        Matrix Sinv;
+        try {
+            Sinv = cholSolveSPD(S, I); // solve S * X = I
+        } catch (Throwable t) {
+            // Near-SPD fallback: add a tiny jitter to the diagonal and retry
+            int n = S.getNumRows();
+            double avgDiag = 0.0;
+            for (int i = 0; i < n; i++) avgDiag += Math.max(0.0, S.get(i, i));
+            avgDiag = (n > 0 ? avgDiag / n : 1.0);
+            double eps = 1e-8 * (avgDiag > 0.0 ? avgDiag : 1.0);
+            Matrix Sj = S.copy();
+            for (int i = 0; i < n; i++) Sj.set(i, i, Sj.get(i, i) + eps);
+            Sinv = cholSolveSPD(Sj, I);
         }
 
-        Matrix I = Matrix.identity(implCovarMeas.getNumRows());
-        Matrix diff = I.minus((implCovarMeas.times(this.sampleCovInv)));
-
+        Matrix diff = Matrix.identity(Sigma.getNumRows()).minus(Sigma.times(Sinv));
+        // 0.5 * trace(diff * diff) equals 0.5 * ||diff||_F^2 when diff is symmetric; we use the general form
         return 0.5 * (diff.times(diff)).trace();
     }
 
@@ -1165,15 +1309,19 @@ public final class SemIm implements Im, ISemIm {
      * @return a double
      */
     public double getTruncLL() {
-        // Formula Bollen p. 263.
-
         Matrix Sigma = implCovarMeas();
-
-        // Using (n - 1) / n * s as in Bollen p. 134 causes sinkholes to open
-        // up immediately. Not sure why.
         Matrix S = this.sampleCovarC;
         int n = getSampleSize();
-        return -(n - 1) / 2. * (logDet(Sigma) + traceAInvB(Sigma, S));
+        if (S == null || n <= 1) return Double.NaN;
+
+        try {
+            // -(n-1)/2 * ( log|Σ| + trace(Σ^{-1} S) )
+            double logDetSigma = safeLogDetSymPD(Sigma);
+            double tr = traceAInvB_SPD(Sigma, S);
+            return -0.5 * (n - 1) * (logDetSigma + tr);
+        } catch (Exception ex) {
+            return Double.NaN;
+        }
     }
 
     /**
@@ -1192,9 +1340,17 @@ public final class SemIm implements Im, ISemIm {
      */
     @Override
     public double getRmsea() {
-        double v = getChiSquare() - this.semPm.getDof();
-        double v1 = this.semPm.getDof() * (getSampleSize() - 1);
-        return sqrt(v) / sqrt(v1);
+        double chi2 = getChiSquare();
+        int dof = this.semPm.getDof();
+        int n = Math.max(1, getSampleSize() - 1);
+
+        if (dof <= 0 || Double.isNaN(chi2)) return Double.NaN;
+
+        double num = Math.max(0.0, chi2 - dof);
+        double den = dof * n;
+        if (den <= 0.0) return Double.NaN;
+
+        return Math.sqrt(num / den);
     }
 
     /**
@@ -1202,15 +1358,21 @@ public final class SemIm implements Im, ISemIm {
      */
     @Override
     public double getCfi() {
-        if (getSampleCovar() == null) {
-            return Double.NaN;
-        }
+        if (getSampleCovar() == null) return Double.NaN;
 
         SemIm nullIm = independenceModel();
         double nullChiSq = nullIm.getChiSquare();
         double dNull = nullChiSq - nullIm.getSemPm().getDof();
-        double dProposed = getChiSquare() - getSemPm().getDof();
-        return (dNull - dProposed) / dNull;
+
+        double dProp = getChiSquare() - getSemPm().getDof();
+
+        if (Double.isNaN(dNull) || dNull <= 0.0) return Double.NaN;
+
+        double cfi = (dNull - dProp) / dNull;
+        if (Double.isNaN(cfi)) return Double.NaN;
+        if (cfi < 0.0) cfi = 0.0;
+        if (cfi > 1.0) cfi = 1.0;
+        return cfi;
     }
 
     private SemIm independenceModel() {
@@ -1316,8 +1478,14 @@ public final class SemIm implements Im, ISemIm {
                             continue;
                         }
                         Node child = semGraph.getChildren(parent).iterator().next();
-                        double paramValue = getParamValue(child, child);
-                        sum += getNextNormal(0.0, paramValue);
+
+//                        double var = getParamValue(child, child);
+//                        sum += getNextNormal(0.0, Math.sqrt(var));
+
+                        // inside simulateTimeSeries(), in the 'if (parent.getNodeType() == NodeType.ERROR)' branch
+                        Node errorNode = parent;
+                        double var = getParamValue(errorNode, errorNode);
+                        sum += getNextNormal(0.0, Math.sqrt(Math.max(0.0, var)));
                     } else {
                         TimeLagGraph.NodeId id = timeSeriesGraph.getNodeId(parent);
                         int fromIndex = nodeIndices.get(timeSeriesGraph.getNode(id.getName(), 0));
@@ -1346,21 +1514,6 @@ public final class SemIm implements Im, ISemIm {
         numRandomCalls++;
         return RandomUtil.getInstance().nextGaussian(mean, stdDev);
     }
-
-//    /**
-//     * This simulate method uses the implied covariance metrix directly to
-//     * simulate data, instead of going tier by tier. It should work for cyclic
-//     * graphs as well as acyclic graphs.
-//     *
-//     * @param sampleSize how many data points in sample
-//     * @param seed       a seed for random number generation
-//     */
-//    @Override
-//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-//        RandomUtil random = RandomUtil.getInstance();
-//        random.setSeed(seed);
-//        return simulateData(sampleSize, latentDataSaved);
-//    }
 
     /**
      * Simulates data from this Sem using a Cholesky decomposition of the implied covariance matrix. This method works
@@ -1634,6 +1787,8 @@ public final class SemIm implements Im, ISemIm {
                 this.errorParam2);
     }
 
+    // For testing.
+
     private double getNextExponential() {
         numRandomCalls++;
         return RandomUtil.getInstance().nextExponential(this.errorParam1);
@@ -1658,56 +1813,82 @@ public final class SemIm implements Im, ISemIm {
 
         int numVars = getVariableNodes().size();
 
-        // Calculate inv(I - edgeCoefC)
+        // Compute A = I - Bᵀ and (optionally) its inverse
         Matrix B = edgeCoef().transpose();
-        Matrix iMinusBInv = Matrix.identity(B.getNumRows()).minus(B).inverse();
+        Matrix A = Matrix.identity(B.getNumRows()).minus(B);
 
-        // Pick error values e, for each calculate inv * e.
+        Matrix Ainv;
+        try {
+            Ainv = A.inverse(); // Could be replaced by a cached factorization if available
+        } catch (Exception ex) {
+            throw new IllegalStateException("Reduced-form simulation failed: (I - B) is singular/ill-conditioned.", ex);
+        }
+
+        // Prepare correlated error generator when Gaussian
+        Matrix L = null;
+        boolean useCorrelatedGaussian = (errorType == 1); // Normal
+        if (useCorrelatedGaussian) {
+            try {
+                L = MatrixUtils.cholesky(errCovar()); // lower-tri; throws if not PD
+            } catch (Exception ex) {
+                throw new IllegalStateException("errCovar must be SPD for Gaussian correlated errors.", ex);
+            }
+        }
+
         Matrix sim = new Matrix(sampleSize, numVars);
 
         ROW:
         for (int row = 0; row < sampleSize; row++) {
+            Vector e = new Vector(numVars);
 
-            // Step 1. Generate normal samples.
-            Vector e = new Vector(this.edgeCoef.getNumColumns());
+            if (useCorrelatedGaussian) {
+                // e = L z, z ~ N(0, I)
+                double[] z = new double[numVars];
+                for (int i = 0; i < numVars; i++) z[i] = RandomUtil.getInstance().nextGaussian(0, 1.0);
 
-            for (int i = 0; i < e.size(); i++) {
-                if (errorType == 1) {
-                    double errCovar = this.errCovar.get(i, i);
-                    if (errCovar == 0.0) {
-                        e.set(i, 0.0);
+                for (int i = 0; i < numVars; i++) {
+                    double s = 0.0;
+                    for (int j = 0; j <= i; j++) s += L.get(i, j) * z[j];
+                    e.set(i, s);
+                }
+            } else {
+                // Non-Gaussian path: preserve original per-coordinate draws (independent).
+                // Note: off-diagonal errCovar entries are ignored for non-Gaussian error types.
+                for (int i = 0; i < numVars; i++) {
+                    if (errorType == 1) {
+                        // not taken; kept for completeness
+                        double v = this.errCovar.get(i, i);
+                        e.set(i, v == 0.0 ? 0.0 : RandomUtil.getInstance().nextGaussian(0, Math.sqrt(v)));
+                    } else if (errorType == 2) {
+                        e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));
+                    } else if (errorType == 3) {
+                        e.set(i, RandomUtil.getInstance().nextExponential(errorParam1));
+                    } else if (errorType == 4) {
+                        e.set(i, RandomUtil.getInstance().nextGumbel(errorParam1, errorParam2));
+                    } else if (errorType == 5) {
+                        e.set(i, RandomUtil.getInstance().nextGamma(errorParam1, errorParam2));
                     } else {
-                        e.set(i, RandomUtil.getInstance().nextGaussian(0, sqrt(errCovar)));
+                        e.set(i, 0.0);
                     }
-                } else if (errorType == 2) {
-                    e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));
-                } else if (errorType == 3) {
-                    e.set(i, RandomUtil.getInstance().nextExponential(errorParam1));
-                } else if (errorType == 4) {
-                    e.set(i, RandomUtil.getInstance().nextGumbel(errorParam1, errorParam2));
-                } else if (errorType == 5) {
-                    e.set(i, RandomUtil.getInstance().nextGamma(errorParam1, errorParam2));
                 }
             }
 
-            // Step 3. Calculate the new rows in the data.
-            Vector sample = iMinusBInv.times(e);
+            // x = A^{-1} e
+            Vector sample = Ainv.times(e);
             sim.assignRow(row, sample);
 
+            // add means and positivity constraint
             for (int col = 0; col < sample.size(); col++) {
                 double value = sim.get(row, col) + this.variableMeans[col];
-
                 if (isSimulatedPositiveDataOnly() && value < 0) {
                     row--;
                     continue ROW;
                 }
-
                 sim.set(row, col, value);
             }
         }
 
         List<Node> continuousVars = new ArrayList<>();
-
         for (Node node : getVariableNodes()) {
             ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
@@ -1715,15 +1896,8 @@ public final class SemIm implements Im, ISemIm {
         }
 
         DataSet fullDataSet = new BoxDataSet(new DoubleDataBox(sim.toArray()), continuousVars);
-
-        if (latentDataSaved) {
-            return fullDataSet;
-        } else {
-            return DataTransforms.restrictToMeasured(fullDataSet);
-        }
+        return latentDataSaved ? fullDataSet : DataTransforms.restrictToMeasured(fullDataSet);
     }
-
-    // For testing.
 
     /**
      * <p>simulateOneRecord.</p>
@@ -2226,6 +2400,10 @@ public final class SemIm implements Im, ISemIm {
         return Collections.unmodifiableList(mappings);
     }
 
+//    private double logDet(Matrix matrix2D) {
+//        double det = matrix2D.det();
+//        return FastMath.log(FastMath.abs(det));
+
     private List<Parameter> initFixedParameters() {
         List<Parameter> fixedParameters = new ArrayList<>();
 
@@ -2269,26 +2447,16 @@ public final class SemIm implements Im, ISemIm {
 
     }
 
+    ////        return det > 0 ? FastMath.log(det) : 0;
+//    }
     private double logDet(Matrix matrix2D) {
-        double det = matrix2D.det();
-        return FastMath.log(FastMath.abs(det));
-//        return det > 0 ? FastMath.log(det) : 0;
+        // Keep signature but route to robust SPD log-det.
+        return safeLogDetSymPD(matrix2D);
     }
 
     private double traceAInvB(Matrix A, Matrix B) {
-
-        // Note that at this point the sem and the sample covar MUST have the
-        // same variables in the same order.
-        Matrix inverse = A.inverse();
-        Matrix product = inverse.times(B);
-
-        double trace = product.trace();
-
-        if (trace < -1e-8) {
-            return 0;
-        }
-
-        return trace;
+        // Assumes SPD A; use Cholesky-based solve for numerical stability.
+        return traceAInvB_SPD(A, B);
     }
 
     private Matrix edgeCoef() {

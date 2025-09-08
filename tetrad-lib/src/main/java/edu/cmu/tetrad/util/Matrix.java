@@ -844,6 +844,10 @@ public class Matrix implements TetradSerializable {
     public SimpleMatrix getData() {
         return data;
     }
+
+    public Matrix solve(Matrix yzCovModel) {
+        return yzCovModel.solve(this);
+    }
 }
 
 

@@ -1154,4 +1154,15 @@ public final class MatrixUtils {
 
         return copy;
     }
+
+    public static Matrix symmetrize(Matrix sigma) {
+        if (sigma == null) {
+            throw new NullPointerException("Matrix must not be null.");
+        }
+        if (sigma.getNumRows() != sigma.getNumColumns()) {
+            throw new IllegalArgumentException("Matrix must be square to symmetrize.");
+        }
+        // Return (A + A^T)/2 without mutating the original matrix.
+        return sigma.plus(sigma.transpose()).scale(0.5);
+    }
 }
