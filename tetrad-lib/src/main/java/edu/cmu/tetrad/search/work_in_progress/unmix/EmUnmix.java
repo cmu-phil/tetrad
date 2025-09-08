@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.unmix;
+package edu.cmu.tetrad.search.work_in_progress.unmix;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;

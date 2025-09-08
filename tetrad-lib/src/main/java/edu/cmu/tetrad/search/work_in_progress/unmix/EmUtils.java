@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.unmix;
+package edu.cmu.tetrad.search.work_in_progress.unmix;
 
 public final class EmUtils {
 
