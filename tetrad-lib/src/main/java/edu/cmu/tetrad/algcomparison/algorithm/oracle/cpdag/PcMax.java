@@ -93,7 +93,7 @@ public class PcMax extends AbstractBootstrapAlgorithm implements Algorithm, HasK
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
         search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setColldierOrientationStyle(Pc.ColliderRule.MAX_P);
+        search.setColliderOrientationStyle(Pc.ColliderOrientationStyle.MAX_P);
         search.setAllowBidirected(parameters.getBoolean(Params.ALLOW_BIDIRECTED) ? Pc.AllowBidirected.ALLOW : Pc.AllowBidirected.DISALLOW);
         search.setLogMaxPTies(true);
         search.setMaxPGlobalOrder(false);

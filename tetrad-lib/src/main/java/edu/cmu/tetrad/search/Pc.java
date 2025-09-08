@@ -26,7 +26,7 @@ public class Pc implements IGraphSearch {
     private Knowledge knowledge = new Knowledge();
     private int depth = -1;                  // -1 => no cap
     private boolean fasStable = true;        // PC-Stable skeleton
-    private ColliderRule colldierOrientationStyle = ColliderRule.VANILLA;
+    private ColliderOrientationStyle colldierOrientationStyle = ColliderOrientationStyle.VANILLA;
     private AllowBidirected allowBidirected = AllowBidirected.DISALLOW;
     private boolean verbose = false;
 
@@ -50,7 +50,7 @@ public class Pc implements IGraphSearch {
     public void setKnowledge(Knowledge knowledge) { this.knowledge = new Knowledge(knowledge); }
     public void setDepth(int depth) { this.depth = depth; }
     public void setFasStable(boolean fasStable) { this.fasStable = fasStable; }
-    public void setColldierOrientationStyle(ColliderRule rule) { this.colldierOrientationStyle = rule; }
+    public void setColliderOrientationStyle(ColliderOrientationStyle rule) { this.colldierOrientationStyle = rule; }
     public void setAllowBidirected(AllowBidirected allow) { this.allowBidirected = allow; }
     public void setVerbose(boolean verbose) { this.verbose = verbose; }
     public void setTimeoutMs(long timeoutMs) { this.timeoutMs = timeoutMs; }
@@ -184,7 +184,7 @@ public class Pc implements IGraphSearch {
     private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets) throws InterruptedException {
         List<Triple> triples = collectUnshieldedTriples(g);
 
-        if (colldierOrientationStyle == ColliderRule.MAX_P && maxPGlobalOrder) {
+        if (colldierOrientationStyle == ColliderOrientationStyle.MAX_P && maxPGlobalOrder) {
             orientMaxPGlobal(g, triples);
             return;
         }
@@ -484,7 +484,7 @@ public class Pc implements IGraphSearch {
     // ------------------------------------------------------------
     // Enums & small records
     // ------------------------------------------------------------
-    public enum ColliderRule { VANILLA, CPC, MAX_P }
+    public enum ColliderOrientationStyle { VANILLA, CPC, MAX_P }
     public enum AllowBidirected { ALLOW, DISALLOW }
     private enum ColliderOutcome { INDEPENDENT, DEPENDENT, AMBIGUOUS, NO_SEPSET }
 

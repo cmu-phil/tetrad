@@ -595,7 +595,7 @@ public class PerformanceTests {
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         Pc cpc = new Pc(test);
-        cpc.setColldierOrientationStyle(Pc.ColliderRule.CPC);
+        cpc.setColliderOrientationStyle(Pc.ColliderOrientationStyle.CPC);
         cpc.setVerbose(false);
         cpc.setDepth(depth);
 //        pcStable.setOut(out);
@@ -679,7 +679,7 @@ public class PerformanceTests {
 
         Pc cpcStable = new Pc(test);
         cpcStable.setFasStable(true);
-        cpcStable.setColldierOrientationStyle(Pc.ColliderRule.CPC);
+        cpcStable.setColliderOrientationStyle(Pc.ColliderOrientationStyle.CPC);
         cpcStable.setVerbose(false);
         cpcStable.setDepth(depth);
 
