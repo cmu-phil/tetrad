@@ -1,8 +1,7 @@
 package edu.cmu.tetrad.unmix;
 
-import edu.cmu.tetrad.data.DataBox;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -10,7 +9,6 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class UnmixCausalProcesses {
 
@@ -20,129 +18,181 @@ public class UnmixCausalProcesses {
         public int kmeansIters = 50;
         public boolean doOneReassign = true;
         public boolean robustScaleResiduals = true;
+
+        // NEW: parent-superset initializer for very different component graphs
+        public boolean useParentSuperset = false;
+        public ParentSupersetBuilder.Config supersetCfg = new ParentSupersetBuilder.Config();
     }
 
     /**
      * Main entry:
-     *  1) pooled graph
-     *  2) residual matrix
-     *  3) k-means on residuals
-     *  4) per-cluster search
-     *  5) optional one hard reassignment and fast refit (no re-search)
+     *  1) build row signatures (residuals) either from pooled graph or parent-superset
+     *  2) k-means on residuals
+     *  3) per-cluster search
+     *  4) optional one hard reassignment and fast refit (no re-search)
      */
     public static UnmixResult run(
             DataSet data,
             Config cfg,
             ResidualRegressor regressor,
-            Function<DataSet, Graph> pooledSearch,
+            Function<DataSet, Graph> pooledSearch,   // may be null if useParentSuperset=true
             Function<DataSet, Graph> perClusterSearch
     ) {
-        Objects.requireNonNull(data);
-        Objects.requireNonNull(regressor);
-        Graph Gpool = pooledSearch.apply(data);
+        Objects.requireNonNull(data, "data");
+        Objects.requireNonNull(regressor, "regressor");
+        Objects.requireNonNull(perClusterSearch, "perClusterSearch");
 
-        // residuals
-        double[][] R = ResidualUtils.residualMatrix(data, Gpool, regressor);
+        // 1) residual signatures
+        double[][] R = buildResiduals(data, cfg, regressor, pooledSearch);
         if (cfg.robustScaleResiduals) ResidualUtils.robustStandardizeInPlace(R);
 
-        // cluster rows
+        // 2) cluster rows
         KMeans.Result km = KMeans.cluster(R, cfg.K, cfg.kmeansIters, cfg.seed);
         int[] z = km.labels;
 
-        // build per-cluster datasets
+        // 3) build per-cluster datasets
         List<DataSet> parts = splitByLabels(data, z, cfg.K);
 
-        // search per cluster
+        // 4) search per cluster
         List<Graph> graphs = parts.stream()
                 .map(perClusterSearch)
                 .collect(Collectors.toList());
 
-        // optional one reassignment pass (cheap)
+        // 5) optional one reassignment pass (cheap)
         if (cfg.doOneReassign) {
             int[] z2 = RowReassign.reassignByDiagGaussian(R, z, cfg.K);
             if (!Arrays.equals(z, z2)) {
                 z = z2;
                 parts = splitByLabels(data, z, cfg.K);
-                // fast refit: keep graphs or re-search (toggle here as you like).
                 graphs = parts.stream().map(perClusterSearch).collect(Collectors.toList());
             }
         }
         return new UnmixResult(z, cfg.K, parts, graphs);
     }
 
+    /** Build residual matrix according to the chosen initializer. */
+    private static double[][] buildResiduals(
+            DataSet data,
+            Config cfg,
+            ResidualRegressor regressor,
+            Function<DataSet, Graph> pooledSearch // may be null when useParentSuperset=true
+    ) {
+        if (cfg.useParentSuperset) {
+            // Parent-superset path: no pooled DAG assumption
+            Map<Node, List<Node>> paSuperset = ParentSupersetBuilder.build(data, cfg.supersetCfg);
+            return ResidualUtils.residualMatrix(data, paSuperset, regressor);
+        } else {
+            // Pooled DAG path
+            Objects.requireNonNull(pooledSearch, "pooledSearch must be provided when useParentSuperset=false");
+            Graph gPool = pooledSearch.apply(data);
+            return ResidualUtils.residualMatrix(data, gPool, regressor);
+        }
+    }
+
+    /** Split a dataset into K parts based on cluster labels (bounds-safe, preserves var metadata). */
     private static List<DataSet> splitByLabels(DataSet data, int[] z, int K) {
         int n = data.getNumRows();
-        List<List<Integer>> idx = new ArrayList<>();
+        List<List<Integer>> idx = new ArrayList<>(K);
         for (int k = 0; k < K; k++) idx.add(new ArrayList<>());
-        for (int i = 0; i < n; i++) idx.get(z[i]).add(i);
 
-        List<DataSet> out = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            int lab = z[i];
+            if (lab >= 0 && lab < K) {
+                idx.get(lab).add(i);
+            }
+        }
+
+        List<DataSet> out = new ArrayList<>(K);
         for (int k = 0; k < K; k++) {
             List<Integer> rows = idx.get(k);
             if (rows.isEmpty()) {
-                // make an empty dataset with same vars
-                DoubleDataBox dataBox = new DoubleDataBox(0, data.getVariables().size());
-                out.add(new BoxDataSet(dataBox, data.getVariables()));
-                continue;
+                // empty cluster → return empty dataset with same variables
+                DoubleDataBox box = new DoubleDataBox(0, data.getVariables().size());
+                out.add(new BoxDataSet(box, data.getVariables()));
+            } else {
+                int[] rowArray = rows.stream().mapToInt(Integer::intValue).toArray();
+                out.add(data.subsetRows(rowArray));
             }
-
-            int[] rowArray = rows.stream().mapToInt(Integer::intValue).toArray();
-            DataSet dk = data.subsetRows(rowArray);
-            out.add(dk);
         }
         return out;
     }
 
-    /** Utility to try K=1..Kmax and pick by simple internal criterion (avg diag-Gaussian score). */
+    /** Try K=Kmin..Kmax and pick the one with the best internal diag-Gaussian score under the SAME initializer as run(). */
     public static UnmixResult selectK(
             DataSet data,
             int Kmin,
             int Kmax,
             ResidualRegressor regressor,
-            Function<DataSet, Graph> pooledSearch,
+            Function<DataSet, Graph> pooledSearch,   // may be null if using parent-superset
             Function<DataSet, Graph> perClusterSearch,
-            long seed
+            long seed,
+            Config baseCfg // we copy initializer knobs from here
     ) {
+        Objects.requireNonNull(baseCfg, "baseCfg");
         double bestScore = Double.POSITIVE_INFINITY;
         UnmixResult best = null;
+
         for (int K = Kmin; K <= Kmax; K++) {
             Config cfg = new Config();
-            cfg.K = K; cfg.seed = seed;
+            // copy initializer knobs
+            cfg.useParentSuperset = baseCfg.useParentSuperset;
+            cfg.supersetCfg = baseCfg.supersetCfg;
+            cfg.robustScaleResiduals = baseCfg.robustScaleResiduals;
+            cfg.doOneReassign = baseCfg.doOneReassign; // OK to keep same
+            cfg.kmeansIters = baseCfg.kmeansIters;
+            cfg.seed = seed;
+            cfg.K = K;
+
             UnmixResult res = run(data, cfg, regressor, pooledSearch, perClusterSearch);
-            // compute internal score: average row-wise score against its cluster
-            double[][] R = ResidualUtils.residualMatrix(data, pooledSearch.apply(data), regressor);
-            ResidualUtils.robustStandardizeInPlace(R);
+
+            // Rebuild residuals the SAME way for scoring
+            double[][] R = buildResiduals(data, cfg, regressor, pooledSearch);
+            if (cfg.robustScaleResiduals) ResidualUtils.robustStandardizeInPlace(R);
             double score = avgDiagGaussianScore(R, res.labels, K);
+
             if (score < bestScore) { bestScore = score; best = res; }
         }
         return best;
     }
 
+    /** Internal: average per-row diagonal-Gaussian residual score within assigned cluster. */
     private static double avgDiagGaussianScore(double[][] R, int[] z, int K) {
-        // reuse RowReassign code to compute per-row scores
         int n = R.length, p = n == 0 ? 0 : R[0].length;
-        // quick variance per cluster/column
         double[][] s2 = new double[K][p];
         int[] cnt = new int[K];
         double[][] sum = new double[K][p], sum2 = new double[K][p];
+
         for (int i = 0; i < n; i++) {
-            int k = z[i]; cnt[k]++;
-            for (int j = 0; j < p; j++) { sum[k][j]+=R[i][j]; sum2[k][j]+=R[i][j]*R[i][j]; }
+            int k = z[i];
+            if (k < 0 || k >= K) continue;
+            cnt[k]++;
+            for (int j = 0; j < p; j++) {
+                double rij = R[i][j];
+                sum[k][j]  += rij;
+                sum2[k][j] += rij * rij;
+            }
         }
+
         for (int k = 0; k < K; k++) {
             for (int j = 0; j < p; j++) {
-                double mean = cnt[k] > 0 ? sum[k][j]/cnt[k] : 0.0;
-                double var = cnt[k] > 1 ? (sum2[k][j]-cnt[k]*mean*mean)/Math.max(cnt[k]-1,1) : 1.0;
+                double mean = cnt[k] > 0 ? sum[k][j] / cnt[k] : 0.0;
+                double var  = cnt[k] > 1 ? (sum2[k][j] - cnt[k] * mean * mean) / Math.max(cnt[k] - 1, 1) : 1.0;
                 s2[k][j] = Math.max(var, 1e-6);
             }
         }
-        double total = 0;
+
+        double total = 0.0;
+        int used = 0;
         for (int i = 0; i < n; i++) {
             int k = z[i];
-            double s = 0;
-            for (int j = 0; j < p; j++) s += (R[i][j]*R[i][j])/s2[k][j] + Math.log(s2[k][j]);
+            if (k < 0 || k >= K) continue;
+            double s = 0.0;
+            for (int j = 0; j < p; j++) {
+                s += (R[i][j] * R[i][j]) / s2[k][j] + Math.log(s2[k][j]);
+            }
             total += s;
+            used++;
         }
-        return total / Math.max(n,1);
+        return used == 0 ? Double.POSITIVE_INFINITY : total / used;
     }
 }
