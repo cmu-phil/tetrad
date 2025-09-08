@@ -90,7 +90,7 @@ public class TestUnmix {
         Function<DataSet, Graph> perCluster = ds -> {
             try {
                 SemBicScore score = new SemBicScore(new CovarianceMatrix(ds));
-                score.setPenaltyDiscount(2);
+                score.setPenaltyDiscount(4);
                 return new PermutationSearch(new Boss(score)).search();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -107,7 +107,7 @@ public class TestUnmix {
         cfg.useParentSuperset = true;
         cfg.supersetCfg.topM = 10;
         cfg.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.KENDALL;
-        cfg.supersetCfg.useBagging = false; // keep simple first
+        cfg.supersetCfg.useBagging = false;
         cfg.robustScaleResiduals = true;
         cfg.reassignMaxPasses = 3;
         cfg.reassignStopIfNoChange = true;
