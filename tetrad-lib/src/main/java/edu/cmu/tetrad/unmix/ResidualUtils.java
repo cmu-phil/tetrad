@@ -4,20 +4,22 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Utilities for computing residual matrices given a regressor and either
- * (a) a graph with parent sets, or (b) an explicit parent map.
- * Also includes robust column scaling.
+ * Utilities for computing residual matrices given a regressor and either (a) a graph with parent sets, or (b) an
+ * explicit parent map. Also includes robust column scaling.
  */
 public final class ResidualUtils {
 
-    private ResidualUtils() { }
+    private ResidualUtils() {
+    }
 
     /**
-     * Build an n × p residual matrix for all measured nodes in the dataset,
-     * using parents from the given graph.
+     * Build an n × p residual matrix for all measured nodes in the dataset, using parents from the given graph.
      */
     public static double[][] residualMatrix(DataSet data,
                                             Graph g,
@@ -37,8 +39,7 @@ public final class ResidualUtils {
     }
 
     /**
-     * Build an n × p residual matrix using a custom parent map
-     * (e.g., from ParentSupersetBuilder).
+     * Build an n × p residual matrix using a custom parent map (e.g., from ParentSupersetBuilder).
      */
     public static double[][] residualMatrix(DataSet data,
                                             Map<Node, List<Node>> parentsMap,
@@ -58,8 +59,7 @@ public final class ResidualUtils {
     }
 
     /**
-     * Divide each column by robust scale (MAD/0.6745).
-     * Avoids zero-divide by adding epsilon.
+     * Divide each column by robust scale (MAD/0.6745). Avoids zero-divide by adding epsilon.
      */
     public static void robustStandardizeInPlace(double[][] R) {
         if (R.length == 0) return;

@@ -3,16 +3,36 @@ package edu.cmu.tetrad.unmix;
 import java.util.Arrays;
 import java.util.Random;
 
+/**
+ * Simple K-means clustering with Euclidean distance and a lightweight k-means++ initializer.
+ * This utility is intended for clustering residual-signature rows during unmixing workflows.
+ */
 public final class KMeans {
+    /**
+     * Result of a K-means run.
+     * Contains hard cluster labels for each row and the final centroids.
+     */
     public static class Result {
         public final int[] labels;
         public final double[][] centroids;
+        /**
+         * Constructs a KMeans.Result.
+         * @param labels cluster assignment for each input row (length n)
+         * @param centroids the K x d matrix of final centroids
+         */
         public Result(int[] labels, double[][] centroids) {
             this.labels = labels; this.centroids = centroids;
         }
     }
 
-    /** K-means with Euclidean distance. maxIter ~ 50 is plenty for residuals. */
+    /**
+     * Runs K-means with Euclidean distance and a k-means++ style initialization.
+     * @param X n x d matrix of data points to cluster
+     * @param K number of clusters
+     * @param maxIter maximum number of Lloyd iterations to perform
+     * @param seed random seed for initialization
+     * @return the clustering result containing labels and centroids
+     */
     public static Result cluster(double[][] X, int K, int maxIter, long seed) {
         int n = X.length, d = n == 0 ? 0 : X[0].length;
         Random rnd = new Random(seed);

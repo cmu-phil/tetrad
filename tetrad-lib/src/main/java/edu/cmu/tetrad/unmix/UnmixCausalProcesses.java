@@ -10,30 +10,23 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Procedures to unmix heterogeneous datasets into clusters of causal processes. Provides a main run(...) entry point
+ * and a selectK(...) helper for model selection.
+ */
 public class UnmixCausalProcesses {
 
-    public static class Config {
-        public int K;                 // number of clusters to produce
-        public long seed = 13;
-        public int kmeansIters = 50;
-        public boolean doOneReassign = true;         // kept for backward-compat; if true uses maxPasses>=1
-        public boolean robustScaleResiduals = true;
-
-        // NEW: multiple reassignment control
-        public int reassignMaxPasses = 100;            // set >1 to do multiple passes
-        public boolean reassignStopIfNoChange = true;
-
-        // Optional robust initializer when component graphs differ a lot
-        public boolean useParentSuperset = false;
-        public ParentSupersetBuilder.Config supersetCfg = new ParentSupersetBuilder.Config();
-    }
-
     /**
-     * Main entry:
-     *  1) build row signatures (residuals) either from pooled graph or parent-superset
-     *  2) k-means on residuals
-     *  3) per-cluster search
-     *  4) (optional) multiple hard reassignment passes with fast refit
+     * Unmixes the dataset into K clusters of causal processes. Steps: 1) Build per-row residual signatures from either
+     * a pooled graph or a parent-superset initializer. 2) Cluster the residuals with K-means. 3) Run a structure search
+     * per cluster to estimate a graph. 4) Optionally perform multiple reassignment passes with fast variance refits.
+     *
+     * @param data             input dataset to unmix
+     * @param cfg              configuration controlling K, initializer, and reassignment behavior
+     * @param regressor        residual regressor used to compute signatures
+     * @param pooledSearch     function that returns a pooled graph when useParentSuperset=false; may be null otherwise
+     * @param perClusterSearch function applied to each cluster-specific dataset to estimate a graph
+     * @return the unmixing result containing labels, cluster datasets, and cluster graphs
      */
     public static UnmixResult run(
             DataSet data,
@@ -80,7 +73,9 @@ public class UnmixCausalProcesses {
         return new UnmixResult(z, cfg.K, parts, graphs);
     }
 
-    /** Build residual matrix according to the chosen initializer. */
+    /**
+     * Build residual matrix according to the chosen initializer.
+     */
     private static double[][] buildResiduals(
             DataSet data,
             Config cfg,
@@ -97,7 +92,9 @@ public class UnmixCausalProcesses {
         }
     }
 
-    /** Split a dataset into K parts based on cluster labels (bounds-safe, preserves var metadata). */
+    /**
+     * Split a dataset into K parts based on cluster labels (bounds-safe, preserves var metadata).
+     */
     private static List<DataSet> splitByLabels(DataSet data, int[] z, int K) {
         int n = data.getNumRows();
         List<List<Integer>> idx = new ArrayList<>(K);
@@ -122,7 +119,20 @@ public class UnmixCausalProcesses {
         return out;
     }
 
-    /** Try K=Kmin..Kmax and pick the one with the best internal diag-Gaussian score using the same initializer. */
+    /**
+     * Tries K in the range [Kmin, Kmax] and returns the best solution according to an internal diagonal-Gaussian
+     * residual score computed with the same initializer path.
+     *
+     * @param data             dataset to unmix
+     * @param Kmin             minimum number of clusters to evaluate (inclusive)
+     * @param Kmax             maximum number of clusters to evaluate (inclusive)
+     * @param regressor        residual regressor used to compute signatures
+     * @param pooledSearch     pooled graph provider (may be null when using parent-superset)
+     * @param perClusterSearch function to estimate a graph on each cluster-specific dataset
+     * @param seed             random seed used for K-means
+     * @param baseCfg          base configuration whose initializer and loop knobs are copied per K
+     * @return the UnmixResult for the selected K
+     */
     public static UnmixResult selectK(
             DataSet data,
             int Kmin,
@@ -156,12 +166,17 @@ public class UnmixCausalProcesses {
             if (cfg.robustScaleResiduals) ResidualUtils.robustStandardizeInPlace(R);
             double score = avgDiagGaussianScore(R, res.labels, K);
 
-            if (score < bestScore) { bestScore = score; best = res; }
+            if (score < bestScore) {
+                bestScore = score;
+                best = res;
+            }
         }
         return best;
     }
 
-    /** Internal: average per-row diagonal-Gaussian residual score within assigned cluster. */
+    /**
+     * Internal: average per-row diagonal-Gaussian residual score within assigned cluster.
+     */
     private static double avgDiagGaussianScore(double[][] R, int[] z, int K) {
         int n = R.length, p = n == 0 ? 0 : R[0].length;
         double[][] s2 = new double[K][p];
@@ -174,7 +189,7 @@ public class UnmixCausalProcesses {
             cnt[k]++;
             for (int j = 0; j < p; j++) {
                 double rij = R[i][j];
-                sum[k][j]  += rij;
+                sum[k][j] += rij;
                 sum2[k][j] += rij * rij;
             }
         }
@@ -182,7 +197,7 @@ public class UnmixCausalProcesses {
         for (int k = 0; k < K; k++) {
             for (int j = 0; j < p; j++) {
                 double mean = cnt[k] > 0 ? sum[k][j] / cnt[k] : 0.0;
-                double var  = cnt[k] > 1 ? (sum2[k][j] - cnt[k] * mean * mean) / Math.max(cnt[k] - 1, 1) : 1.0;
+                double var = cnt[k] > 1 ? (sum2[k][j] - cnt[k] * mean * mean) / Math.max(cnt[k] - 1, 1) : 1.0;
                 s2[k][j] = Math.max(var, 1e-6);
             }
         }
@@ -200,5 +215,21 @@ public class UnmixCausalProcesses {
             used++;
         }
         return used == 0 ? Double.POSITIVE_INFINITY : total / used;
+    }
+
+    public static class Config {
+        public int K;                 // number of clusters to produce
+        public long seed = 13;
+        public int kmeansIters = 50;
+        public boolean doOneReassign = true;         // kept for backward-compat; if true uses maxPasses>=1
+        public boolean robustScaleResiduals = true;
+
+        // NEW: multiple reassignment control
+        public int reassignMaxPasses = 100;            // set >1 to do multiple passes
+        public boolean reassignStopIfNoChange = true;
+
+        // Optional robust initializer when component graphs differ a lot
+        public boolean useParentSuperset = false;
+        public ParentSupersetBuilder.Config supersetCfg = new ParentSupersetBuilder.Config();
     }
 }

@@ -6,11 +6,18 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.List;
 
+/**
+ * Linear regression regressor using a QR-based normal equations solve.
+ * Model: y = beta0 + sum_j beta_j * x_j. Provides fitted values and residuals via ResidualRegressor.
+ */
 public class LinearQRRegressor implements ResidualRegressor {
     private SimpleMatrix B;   // coefficients (pParents+1 x 1), includes intercept
     private int[] parentCols;
     private int yCol;
 
+    /** {@inheritDoc}
+     * Fits OLS coefficients including an intercept using parent columns from the dataset.
+     */
     @Override
     public void fit(DataSet data, Node target, List<Node> parents) {
         this.yCol = data.getColumnIndex(target);
@@ -32,6 +39,9 @@ public class LinearQRRegressor implements ResidualRegressor {
         this.B = XtX.solve(XtY);
     }
 
+    /** {@inheritDoc}
+     * Produces fitted values for each row; fits lazily if not already fitted.
+     */
     @Override
     public double[] predict(DataSet data, Node target, List<Node> parents) {
         int n = data.getNumRows(), p = parentCols.length;
