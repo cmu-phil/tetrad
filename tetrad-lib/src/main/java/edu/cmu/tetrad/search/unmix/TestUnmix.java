@@ -6,12 +6,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.work_in_progress.unmix.LinearQRRegressor;
-import edu.cmu.tetrad.search.work_in_progress.unmix.UnmixCausalProcesses;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -20,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -35,7 +31,7 @@ public class TestUnmix {
     /**
      * Shuffle dataset rows and apply same permutation to labels.
      */
-    private static MixOut shuffleWithLabels(DataSet concat, int[] labels, long seed) {
+    private static LabeledData shuffleWithLabels(DataSet concat, int[] labels, long seed) {
         int n = concat.getNumRows();
         List<Integer> perm = new ArrayList<>(n);
         for (int i = 0; i < n; i++) perm.add(i);
@@ -43,7 +39,7 @@ public class TestUnmix {
         DataSet shuffled = concat.subsetRows(perm);
         int[] y = new int[n];
         for (int i = 0; i < n; i++) y[i] = labels[perm.get(i)];
-        MixOut out = new MixOut();
+        LabeledData out = new LabeledData();
         out.data = shuffled;
         out.labels = y;
         return out;
@@ -80,7 +76,7 @@ public class TestUnmix {
     /**
      * Make a two-regime mixture with small topology differences and non-Gaussian errors.
      */
-    private static @NotNull MixOut getMixOutTopoDiff() {
+    private static @NotNull TestUnmix.LabeledData getMixOutTopoDiff() {
         int p = 12, n1 = 800, n2 = 800;
         long seed = 7;
 
@@ -170,27 +166,6 @@ public class TestUnmix {
         return skelDiff + orientDiff;
     }
 
-    private static Function<DataSet, Graph> pooled() {
-        return ds -> {
-            if (ds.getNumRows() < 50) {
-                return null;
-            }
-
-            try {
-                IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), 0.01);
-                Pc pc = new Pc(test);
-                pc.setColliderOrientationStyle(Pc.ColliderOrientationStyle.MAX_P);
-                return pc.search();
-//
-//                edu.cmu.tetrad.search.score.SemBicScore score = new edu.cmu.tetrad.search.score.SemBicScore(new CovarianceMatrix(ds));
-//                score.setPenaltyDiscount(2);
-//                return new PermutationSearch(new Boss(score)).search();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        };
-    }
-
     private static Set<String> directedEdgeSet(Graph G) {
         Set<String> s = new HashSet<>();
         for (Edge e : G.getEdges()) if (e.isDirected()) s.add(e.getNode1().getName() + ">" + e.getNode2().getName());
@@ -205,10 +180,6 @@ public class TestUnmix {
             s.add(key);
         }
         return s;
-    }
-
-    private static Function<DataSet, Graph> perCluster() {
-        return pooled();
     }
 
     private static Set<String> stripDirections(Set<String> dir) {
@@ -336,7 +307,7 @@ public class TestUnmix {
      */
     @Test
     public void testEmUnmix() {
-        MixOut mix = getMixOutTopoDiff();
+        LabeledData mix = getMixOutTopoDiff();
         DataSet mixedData = mix.data;
 
         EmUnmix.Config cfg = new EmUnmix.Config();
@@ -438,26 +409,21 @@ public class TestUnmix {
         int[] lab = new int[n1 + n2];
         Arrays.fill(lab, 0, n1, 0);
         Arrays.fill(lab, n1, n1 + n2, 1);
-        MixOut mix = shuffleWithLabels(concat, lab, seed);
+        LabeledData labeldData = shuffleWithLabels(concat, lab, seed);
 
-        EmUnmix.Config ec = new EmUnmix.Config();
-        ec.K = 2;
-        ec.useParentSuperset = true;
-        ec.supersetCfg.topM = 12;
-        ec.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.KENDALL;
-        ec.robustScaleResiduals = true;
-        ec.covType = GaussianMixtureEM.CovarianceType.FULL;
-        ec.emMaxIters = 200;
-        ec.kmeansRestarts = 10;
-
-        UnmixResult rEM = EmUnmix.run(mix.data, ec, new LinearQRRegressor(), pooled(), perCluster());
+        UnmixResult rEM = Unmix.getUnmixResult(labeldData.data, labeldData.labels);
 
         Graph[] truth = new Graph[]{gA, gB};
         GraphMetrics gmEM = graphMetrics(truth, rEM.clusterGraphs);
 
         System.out.printf("\n=== Phase3 (semi-synth) ===%n");
-        System.out.printf("EM baseline:          ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
-                adjustedRandIndex(mix.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
+
+        if (labeldData.labels == null) {
+            System.out.printf("Labels were not supplied.");
+        } else {
+            System.out.printf("EM baseline:          ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
+                    adjustedRandIndex(labeldData.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
+        }
     }
 
     private record GraphMetrics(double adjF1, double arrowF1, int shd) {
@@ -469,7 +435,7 @@ public class TestUnmix {
 
     // ---------- helpers ----------
 
-    private static class MixOut {
+    public static class LabeledData {
         DataSet data;
         int[] labels;
     }
