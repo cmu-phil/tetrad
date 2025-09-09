@@ -21,14 +21,15 @@ import java.util.stream.Collectors;
 
 /**
  * Better-targeted unmixing tests with ground-truth labels + ARI.
+ * - params-only test (pooled initializer, no residual scaling, Laplace reassignment)
+ * - small topology difference test (parent-superset initializer, residual scaling)
+ * - EM-on-residuals baseline (parent-superset, diagonal covariance), with ARI
  */
 public class TestUnmixBetter {
 
     // ---------- utilities ----------
 
-    /**
-     * Shuffle dataset rows and apply same permutation to labels.
-     */
+    /** Shuffle dataset rows and apply same permutation to labels. */
     private static MixOut shuffleWithLabels(DataSet concat, int[] labels, long seed) {
         int n = concat.getNumRows();
         List<Integer> perm = new ArrayList<>(n);
@@ -43,9 +44,7 @@ public class TestUnmixBetter {
         return out;
     }
 
-    /**
-     * Quick ARI for diagnostics.
-     */
+    /** Quick ARI for diagnostics. */
     private static double adjustedRandIndex(int[] a, int[] b) {
         int n = a.length;
         int maxA = Arrays.stream(a).max().orElse(0);
@@ -66,10 +65,7 @@ public class TestUnmixBetter {
         double max = 0.5 * (rowComb + colComb);
         return (sumComb - exp) / (max - exp + 1e-12);
     }
-
-    private static double comb2(int m) {
-        return m < 2 ? 0 : m * (m - 1) / 2.0;
-    }
+    private static double comb2(int m) { return m < 2 ? 0 : m * (m - 1) / 2.0; }
 
     private static Function<DataSet, Graph> bossPerm() {
         return ds -> {
@@ -83,16 +79,17 @@ public class TestUnmixBetter {
         };
     }
 
-    private static @NotNull MixOut getMixOut() {
+    /** Make a two-regime mixture with small topology differences and non-Gaussian errors. */
+    private static @NotNull MixOut getMixOutTopoDiff() {
         int p = 12, n1 = 800, n2 = 800;
         long seed = 7;
 
-        // Base graph and a slightly modified version (same skeleton; flip a few directions)
         List<Node> vars = new ArrayList<>();
         for (int i = 0; i < p; i++) vars.add(new ContinuousVariable("X" + i));
         Graph gA = RandomGraph.randomGraph(vars, 0, 14, 100, 100, 100, false);
         Graph gB = copyWithFlippedDirections(gA, 4, new Random(seed)); // flip ~4 edges
 
+        // Non-Gaussian errors (e.g., Laplace): SIMULATION_ERROR_TYPE = 3
         Parameters params = new Parameters();
         params.set(Params.SIMULATION_ERROR_TYPE, 3);
         params.set(Params.SIMULATION_PARAM1, 1);
@@ -108,67 +105,57 @@ public class TestUnmixBetter {
         Arrays.fill(labels, 0, n1, 0);
         Arrays.fill(labels, n1, n1 + n2, 1);
 
-        MixOut mix = shuffleWithLabels(concat, labels, seed);
-        return mix;
+        return shuffleWithLabels(concat, labels, seed);
     }
 
-    // ---------- Test 1: same topology, different parameters (easiest) ----------
-
+    /** Correctly copy g and flip a few directions while preserving skeleton. */
     private static Graph copyWithFlippedDirections(Graph g, int flips, Random rnd) {
-        Graph h = new EdgeListGraph(g.getNodes());
-        List<Edge> dir = h.getEdges().stream().filter(e -> e.isDirected()).collect(Collectors.toList());
-        if (dir.size() == 0) return h;
+        Graph h = new EdgeListGraph(g); // copy nodes + edges (or: new EdgeListGraph(g))
+        List<Edge> dir = h.getEdges().stream().filter(Edge::isDirected).collect(Collectors.toList());
+        if (dir.isEmpty()) return h;
         Collections.shuffle(dir, rnd);
         int done = 0;
         for (Edge e : dir) {
             if (done >= flips) break;
             Node a = e.getNode1(), b = e.getNode2();
-            if (h.isAdjacentTo(a, b)) {
-                h.removeEdge(e);
-                // try to flip direction if it doesn't create a duplicate
-                Edge rev = Edges.directedEdge(b, a);
-                if (!h.isAdjacentTo(b, a)) {
-                    h.addEdge(rev);
-                    done++;
-                } else {
-                    // if reverse exists, just put back original to preserve skeleton
-                    h.addEdge(e);
-                }
-            }
+            if (!h.isAdjacentTo(a, b)) continue;
+            h.removeEdge(e);
+            Edge rev = Edges.directedEdge(b, a);
+            if (!h.isAdjacentTo(b, a)) { h.addEdge(rev); done++; }
+            else { h.addEdge(e); }
         }
         return h;
     }
 
-    // ---------- Test 2: small topology differences (moderate) ----------
+    // ---------- Tests ----------
 
+    /** Params-only difference: same DAG, different parameters; pooled init; no residual scaling; Laplace reassignment. */
     @Test
     public void unmix_paramsOnly_twoRegimes() {
         int p = 12, n1 = 700, n2 = 700;
         long seed = 42;
 
-        // Variables and a single random DAG
+        // Single DAG
         List<Node> vars = new ArrayList<>();
         for (int i = 0; i < p; i++) vars.add(new ContinuousVariable("X" + i));
         Graph g = RandomGraph.randomGraph(vars, 0, 12, 100, 100, 100, false);
 
-        // Same DAG, but FORCE large parameter differences for regime B
+        // Non-Gaussian errors to ease separation (still fine if Gaussian)
         Parameters params = new Parameters();
         params.set(Params.SIMULATION_ERROR_TYPE, 3);
         params.set(Params.SIMULATION_PARAM1, 1);
 
-        SemIm imA = new SemIm(new SemPm(g), params);           // regime A (baseline)
-        SemIm imB = new SemIm(new SemPm(g), params);           // regime B (we'll modify)
+        SemIm imA = new SemIm(new SemPm(g), params);  // baseline params
+        SemIm imB = new SemIm(new SemPm(g), params);  // will be scaled
 
-        // Scale all edge coefficients up and error variances up (stronger differences)
-        double coefScale = 1.8;    // try 1.5–2.0
-        double noiseScale = 2.0;   // try 1.5–3.0
-        g.getEdges().forEach(e -> {
+        // Force parameter differences in regime B
+        double coefScale = 2.2, noiseScale = 2.5;
+        for (Edge e : g.getEdges()) {
             try {
                 double b = imB.getEdgeCoef(e);
                 imB.setEdgeCoef(e.getNode1(), e.getNode2(), coefScale * b);
-            } catch (Exception ignore) {
-            }
-        });
+            } catch (Exception ignore) {}
+        }
         for (Node v : vars) {
             double v0 = imB.getErrVar(v);
             imB.setErrVar(v, noiseScale * v0);
@@ -176,92 +163,75 @@ public class TestUnmixBetter {
 
         DataSet d1 = imA.simulateData(n1, false);
         DataSet d2 = imB.simulateData(n2, false);
-
         DataSet concat = DataTransforms.concatenate(d1, d2);
         int[] labels = new int[n1 + n2];
         Arrays.fill(labels, 0, n1, 0);
         Arrays.fill(labels, n1, n1 + n2, 1);
+        MixOut mix = shuffleWithLabels(concat, labels, seed);
 
-        // shuffle rows + labels together
-        var mix = shuffleWithLabels(concat, labels, seed);
-
-        // Config: pooled initializer is fine here; TURN OFF scaling
         UnmixCausalProcesses.Config cfg = new UnmixCausalProcesses.Config();
         cfg.K = 2;
-        cfg.useParentSuperset = false;
-//        cfg.robustScaleResiduals = false;     // <-- critical
-
-        cfg.useLaplaceReassign = true;
-        cfg.robustScaleResiduals = false;   // keep scale info when regimes differ by noise/coeff magnitudes
-
+        cfg.useParentSuperset = false;     // pooled is fine for params-only
+        cfg.robustScaleResiduals = false;  // keep magnitude signal
         cfg.kmeansIters = 100;
         cfg.reassignMaxPasses = 3;
         cfg.reassignStopIfNoChange = true;
+        cfg.useLaplaceReassign = true;     // non-Gaussian scoring helps
 
         ResidualRegressor reg = new LinearQRRegressor();
 
-        Function<DataSet, Graph> bossPerm = ds -> {
-            try {
-                var score = new SemBicScore(new CovarianceMatrix(ds));
-                score.setPenaltyDiscount(2);
-                return new PermutationSearch(new Boss(score)).search();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        };
-
-        UnmixResult res = UnmixCausalProcesses.run(mix.data, cfg, reg, bossPerm, bossPerm);
+        Function<DataSet, Graph> pooled = bossPerm();
+        UnmixResult res = UnmixCausalProcesses.run(mix.data, cfg, reg, pooled, pooled);
 
         double ari = adjustedRandIndex(mix.labels, res.labels);
         System.out.println("Params-only ARI = " + ari);
         for (int k = 0; k < res.K; k++) {
-            System.out.printf("cluster %d: n=%d%n", k, res.clusterData.get(k).getNumRows());
+            System.out.printf("cluster %d: n=%d graph=%s%n", k, res.clusterData.get(k).getNumRows(), res.clusterGraphs.get(k));
         }
     }
 
+    /** Small topology differences: parent-superset initializer; residual scaling on; Gaussian reassignment OK. */
     @Test
     public void unmix_smallTopoDiff_twoRegimes() {
-        MixOut mix = getMixOut();
+        MixOut mix = getMixOutTopoDiff();
 
-        // Config: parent-superset initializer helps when topologies differ
         UnmixCausalProcesses.Config cfg = new UnmixCausalProcesses.Config();
         cfg.K = 2;
         cfg.useParentSuperset = true;
         cfg.supersetCfg.topM = 10;
-        cfg.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.KENDALL; // robust
-        cfg.supersetCfg.useBagging = false; // start simple
-        cfg.robustScaleResiduals = true;
+        cfg.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.KENDALL;
+        cfg.supersetCfg.useBagging = false;
+        cfg.robustScaleResiduals = true; // emphasize geometry vs magnitude
         cfg.kmeansIters = 100;
         cfg.reassignMaxPasses = 3;
         cfg.reassignStopIfNoChange = true;
+        cfg.useLaplaceReassign = false;   // Gaussian scoring is fine here
 
         ResidualRegressor reg = new LinearQRRegressor();
-        UnmixResult res = UnmixCausalProcesses.run(
-                mix.data, cfg, reg, null, bossPerm()
-        );
+        UnmixResult res = UnmixCausalProcesses.run(mix.data, cfg, reg, null, bossPerm());
 
         double ari = adjustedRandIndex(mix.labels, res.labels);
         System.out.println("Small-topology-diff ARI = " + ari);
         for (int k = 0; k < res.K; k++) {
-            System.out.printf("cluster %d: n=%d%n", k, res.clusterData.get(k).getNumRows());
+            System.out.printf("cluster %d: n=%d graph=%s%n", k, res.clusterData.get(k).getNumRows(), res.clusterGraphs.get(k));
         }
-        // Expect ARI ~0.4–0.8 depending on flip count and sample size; tune topM / reg if low.
     }
 
+    /** EM-on-residuals baseline on the same topo-diff mixture; parent-superset + diagonal cov; reports ARI. */
     @Test
-    public void testEuUnmix() {
-        MixOut mix = getMixOut();
-
+    public void testEmUnmix() {
+        MixOut mix = getMixOutTopoDiff();
         DataSet mixedData = mix.data;
 
-        // Build residuals using pooled graph (params-only) or superset (topology differences)
         EmUnmix.Config cfg = new EmUnmix.Config();
         cfg.K = 2;
-        cfg.useParentSuperset = false;      // true if graphs differ a lot
-        cfg.robustScaleResiduals = false;   // keep scale info for params-only mixtures
-        cfg.covType = GaussianMixtureEM.CovarianceType.FULL;
+        cfg.useParentSuperset = true;             // topo difference → superset init
+        cfg.supersetCfg.topM = 10;
+        cfg.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.KENDALL;
+        cfg.robustScaleResiduals = true;          // geometry over magnitude
+        cfg.covType = GaussianMixtureEM.CovarianceType.DIAGONAL; // fast & robust
         cfg.emMaxIters = 200;
-        cfg.kmeansRestarts = 5;
+        cfg.kmeansRestarts = 10;                  // stabler init
 
         ResidualRegressor reg = new LinearQRRegressor();
 
@@ -269,53 +239,36 @@ public class TestUnmixBetter {
                 mixedData,
                 cfg,
                 reg,
-                pooledDs -> {
-                    try {
-                        return new PermutationSearch(new Boss(new SemBicScore(new CovarianceMatrix(pooledDs)))).search();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                ds -> { // pooled path unused when useParentSuperset=true, but keep for completeness
+                    try { return new PermutationSearch(new Boss(new SemBicScore(new CovarianceMatrix(ds)))).search(); }
+                    catch (InterruptedException e) { throw new RuntimeException(e); }
                 },
-                clusterDs -> {
-                    try {
-                        return new PermutationSearch(new Boss(new SemBicScore(new CovarianceMatrix(clusterDs)))).search();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                ds -> {
+                    try { return new PermutationSearch(new Boss(new SemBicScore(new CovarianceMatrix(ds)))).search(); }
+                    catch (InterruptedException e) { throw new RuntimeException(e); }
                 }
         );
 
-        System.out.println("res graphs = " + res.clusterGraphs);
+        double ari = adjustedRandIndex(mix.labels, res.labels);
+        System.out.println("EM-on-residuals ARI = " + ari);
+        System.out.println("EM graphs = " + res.clusterGraphs);
 
-        // Or pick K by BIC:
+        // Optional: pick K by BIC on residuals
         UnmixResult best = EmUnmix.selectK(
                 mixedData, 1, 5, reg,
-                pooledDs -> {
-                    try {
-                        return new PermutationSearch(new Boss(new SemBicScore(new CovarianceMatrix(pooledDs)))).search();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
-                clusterDs -> {
-                    try {
-                        return new PermutationSearch(new Boss(new SemBicScore(new CovarianceMatrix(clusterDs)))).search();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
+                ds -> { try { return new PermutationSearch(new Boss(new SemBicScore(new CovarianceMatrix(ds)))).search(); }
+                catch (InterruptedException e) { throw new RuntimeException(e); } },
+                ds -> { try { return new PermutationSearch(new Boss(new SemBicScore(new CovarianceMatrix(ds)))).search(); }
+                catch (InterruptedException e) { throw new RuntimeException(e); } },
                 cfg
         );
-
-        System.out.println("best graphs = " + best.clusterGraphs);
+        System.out.println("EM best-K graphs = " + best.clusterGraphs);
     }
 
-
-    // ---------- helpers to flip edge orientations while keeping skeleton ----------
+    // ---------- helpers ----------
 
     private static class MixOut {
         DataSet data;
         int[] labels;
     }
-
 }
