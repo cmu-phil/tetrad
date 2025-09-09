@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * - small topology difference test (parent-superset initializer, residual scaling)
  * - EM-on-residuals baseline (parent-superset, diagonal covariance), with ARI
  */
-public class TestUnmixBetter {
+public class TestCausalUnmixerBetter {
 
     // ---------- utilities ----------
 

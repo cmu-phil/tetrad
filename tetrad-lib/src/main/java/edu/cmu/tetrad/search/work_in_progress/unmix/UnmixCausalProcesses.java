@@ -28,7 +28,7 @@ public class UnmixCausalProcesses {
             DataSet data,
             Config cfg,
             ResidualRegressor regressor,
-            Function<DataSet, Graph> pooledSearch,   // may be null if useParentSuperset=true
+            Function<DataSet, Graph> pooledSearch,
             Function<DataSet, Graph> perClusterSearch
     ) {
         Objects.requireNonNull(data, "data");
@@ -39,10 +39,23 @@ public class UnmixCausalProcesses {
         double[][] R = buildResiduals(data, cfg, regressor, pooledSearch);
         if (cfg.robustScaleResiduals) ResidualUtils.robustStandardizeInPlace(R);
 
-        // 2) cluster rows
-//        KMeans.Result km = KMeans.cluster(R, cfg.K, cfg.kmeansIters, cfg.seed);
-        KMeans.Result km = KMeans.clusterWithRestarts(R, cfg.K, cfg.kmeansIters, cfg.seed, /*restarts=*/10);
-        int[] z = km.labels;
+        // 2) cluster rows (GMM or KMeans)
+        GaussianMixtureEM.Model gmmModel = null;
+        int[] z;
+
+        if (cfg.useGmmClustering) {
+            GaussianMixtureEM.Config gcfg = new GaussianMixtureEM.Config();
+            gcfg.K = cfg.K;
+            gcfg.seed = cfg.seed;
+
+            // Fit on residual features R
+            gmmModel = GaussianMixtureEM.fit(R, gcfg);
+            z = EmUtils.mapLabels(gmmModel.responsibilities);
+        } else {
+            // KMeans path (what you had)
+            KMeans.Result km = KMeans.clusterWithRestarts(R, cfg.K, cfg.kmeansIters, cfg.seed, 10);
+            z = km.labels;
+        }
 
         // 3) split and per-cluster search (guard empty clusters)
         List<DataSet> parts = splitByLabels(data, z, cfg.K);
@@ -52,26 +65,12 @@ public class UnmixCausalProcesses {
         int maxPasses = Math.max(cfg.reassignMaxPasses, cfg.doOneReassign ? 1 : 0);
 
         // 4) multi-pass reassignment using cluster mechanisms
-//        for (int pass = 0; pass < maxPasses; pass++) {
-//            int[] z2 = RowReassignByClusterModels.reassign(data, parts, graphs, regressor);
-//
-//            boolean changed = !Arrays.equals(z, z2);
-//            if (!changed && cfg.reassignStopIfNoChange) break;
-//
-//            z = z2;
-//            parts = splitByLabels(data, z, cfg.K);
-//            graphs = searchPerCluster(parts, perClusterSearch);
-//        }
-
         for (int pass = 0; pass < maxPasses; pass++) {
             int[] z2;
             if (cfg.useLaplaceReassign) {
-                // Non-Gaussian (Laplace) scoring
                 z2 = RowReassignByClusterModelsLaplace.reassign(data, parts, graphs, regressor);
             } else {
-                // Gaussian scoring (what you had before)
-                // z2 = RowReassign.reassignByDiagGaussian(R, z, cfg.K);  // old simple version
-                z2 = RowReassignByClusterModels.reassign(data, parts, graphs, regressor); // mechanism-aware L2
+                z2 = RowReassignByClusterModels.reassign(data, parts, graphs, regressor);
             }
             boolean changed = !java.util.Arrays.equals(z, z2);
             if (!changed && cfg.reassignStopIfNoChange) break;
@@ -81,7 +80,7 @@ public class UnmixCausalProcesses {
             graphs = searchPerCluster(parts, perClusterSearch);
         }
 
-        return new UnmixResult(z, cfg.K, parts, graphs);
+        return new UnmixResult(z, cfg.K, parts, graphs, gmmModel);
     }
 
     /** Build residual matrix according to the chosen initializer. */

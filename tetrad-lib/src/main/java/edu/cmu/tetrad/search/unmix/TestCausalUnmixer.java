@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -23,26 +24,9 @@ import java.util.stream.Collectors;
  * scaling, Laplace reassignment) - small topology difference test (parent-superset initializer, residual scaling) -
  * EM-on-residuals baseline (parent-superset, diagonal covariance), with ARI
  */
-public class TestUnmix {
+public class TestCausalUnmixer {
 
     // ---------- utilities ----------
-
-    /**
-     * Shuffle dataset rows and apply same permutation to labels.
-     */
-    private static LabeledData shuffleWithLabels(DataSet concat, int[] labels, long seed) {
-        int n = concat.getNumRows();
-        List<Integer> perm = new ArrayList<>(n);
-        for (int i = 0; i < n; i++) perm.add(i);
-        Collections.shuffle(perm, new Random(seed));
-        DataSet shuffled = concat.subsetRows(perm);
-        int[] y = new int[n];
-        for (int i = 0; i < n; i++) y[i] = labels[perm.get(i)];
-        LabeledData out = new LabeledData();
-        out.data = shuffled;
-        out.labels = y;
-        return out;
-    }
 
     /**
      * Quick ARI for diagnostics.
@@ -75,7 +59,7 @@ public class TestUnmix {
     /**
      * Make a two-regime mixture with small topology differences and non-Gaussian errors.
      */
-    private static @NotNull TestUnmix.LabeledData getMixOutTopoDiff() {
+    private static @NotNull TestCausalUnmixer.LabeledData getMixOutTopoDiff() {
         int p = 12, n1 = 800, n2 = 800;
         long seed = 7;
 
@@ -385,46 +369,96 @@ public class TestUnmix {
         SemIm imBack = new SemIm(new SemPm(gBackbone), params);
         DataSet Dreal = imBack.simulateData(n1 + n2, false); // “realistic” marginal structure
 
-        // Now create two regimes by injecting controlled shifts on top of Dreal’s covariance:
-        // (A) keep backbone; (B) flip edges & scale some parameters — simulate from shifted SEMs.
+        // Two regimes: (A) keep backbone; (B) flip edges & scale some parameters
         Graph gA = gBackbone.copy();
         Graph gB = copyWithFlippedDirections(gBackbone, flips, new Random(seed));
         SemIm imA = new SemIm(new SemPm(gA), params);
         SemIm imB = new SemIm(new SemPm(gB), params);
-        // Scale B
+
         double coefScale = 1.6, noiseScale = 1.8;
         for (Edge e : gB.getEdges()) {
             try {
                 double b = imB.getEdgeCoef(e);
                 imB.setEdgeCoef(e.getNode1(), e.getNode2(), coefScale * b);
-            } catch (Exception ignore) {
-            }
+            } catch (Exception ignore) {}
         }
         for (Node v : vars) imB.setErrVar(v, noiseScale * imB.getErrVar(v));
 
         DataSet dA = imA.simulateData(n1, false);
         DataSet dB = imB.simulateData(n2, false);
         DataSet concat = DataTransforms.concatenate(dA, dB);
+
+        // Ground-truth labels before shuffle
         int[] lab = new int[n1 + n2];
         Arrays.fill(lab, 0, n1, 0);
         Arrays.fill(lab, n1, n1 + n2, 1);
-        LabeledData labeldData = shuffleWithLabels(concat, lab, seed);
 
-        UnmixResult rEM = Unmix.getUnmixResult(labeldData.data, labeldData.labels);
+        // Shuffle rows + labels together (local helper)
+        LabeledData mixed = shuffleWithLabels(concat, lab, seed);
+
+        // === Run the causal unmixer (EM-based) ===
+        UnmixResult rEM = CausalUnmixer.getUnmixedResult(mixed.data, mixed.labels);
 
         Graph[] truth = new Graph[]{gA, gB};
         GraphMetrics gmEM = graphMetrics(truth, rEM.clusterGraphs);
 
         System.out.printf("\n=== Phase3 (semi-synth) ===%n");
-
-        if (labeldData.labels == null) {
+        if (mixed.labels == null) {
             System.out.println("Labels were not supplied.");
         } else {
-            System.out.printf("EM:          ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
-                    adjustedRandIndex(labeldData.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
+            System.out.printf("EM baseline:  ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
+                    adjustedRandIndex(mixed.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
         }
+
+        // === Optional: K=1 baseline for diagnostics (ΔBIC etc.) ===
+        // Build a Config aligned with your Unmix default (or copy what Unmix uses)
+        EmUnmix.Config cfg = new EmUnmix.Config();
+        cfg.K = 2;
+        cfg.useParentSuperset = true;
+        cfg.supersetCfg.topM = 12;
+        cfg.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.KENDALL;
+        cfg.robustScaleResiduals = true;
+        cfg.covType = GaussianMixtureEM.CovarianceType.FULL;
+        cfg.emMaxIters = 200;
+        cfg.kmeansRestarts = 10;
+
+        // Define a regressor + searches compatible with your Unmix pipe
+        LinearQRRegressor reg = new LinearQRRegressor().setRidgeLambda(1e-3);
+        Function<DataSet, Graph> pooledSearch = CausalUnmixer.pooled();
+        Function<DataSet, Graph> perClusterSearch = CausalUnmixer.perCluster();
+
+        // Rerun EM with K=1 (copy cfg and set K=1)
+        EmUnmix.Config cfgK1 = cfg.copy();
+        cfgK1.K = 1;
+
+        UnmixResult rK1 = EmUnmix.run(mixed.data, cfgK1, reg, pooledSearch, perClusterSearch);
+
+        // Compute ΔBIC = BIC(K=2) - BIC(K=1); negative favors K=2
+        GaussianMixtureEM.Model m2 = rEM.gmmModel;
+        GaussianMixtureEM.Model m1 = rK1.gmmModel;
+        int n = mixed.data.getNumRows();
+        double bic2 = m2.bic(n);
+        double bic1 = m1.bic(n);
+        double deltaBic = bic2 - bic1;
+
+        System.out.printf("ΔBIC (K=2 vs K=1): %.1f (negative favors K=2)%n", deltaBic);
     }
 
+    // Shuffle helper identical to your earlier version
+    private static LabeledData shuffleWithLabels(DataSet concat, int[] labels, long seed) {
+        int n = concat.getNumRows();
+        List<Integer> perm = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) perm.add(i);
+        Collections.shuffle(perm, new Random(seed));
+        DataSet shuffled = concat.subsetRows(perm);
+        int[] y = new int[n];
+        for (int i = 0; i < n; i++) y[i] = labels[perm.get(i)];
+
+        LabeledData out = new LabeledData();
+        out.data = shuffled;
+        out.labels = y;
+        return out;
+    }
     private record GraphMetrics(double adjF1, double arrowF1, int shd) {
     }
 

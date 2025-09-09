@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model.datamanip;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.search.unmix.CausalUnmixer;
 import edu.cmu.tetrad.search.unmix.UnmixResult;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -65,7 +66,7 @@ public class CausalUnmix extends DataWrapper {
             throw new IllegalArgumentException("Only tabular data sets can be split.");
         }
 
-        UnmixResult result = edu.cmu.tetrad.search.unmix.Unmix.getUnmixResult((DataSet) first);
+        UnmixResult result = CausalUnmixer.getUnmixedResult((DataSet) first);
 
         List<DataSet> _dataSets = result.clusterData;
 

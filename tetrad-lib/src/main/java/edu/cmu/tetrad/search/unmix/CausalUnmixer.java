@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import org.jetbrains.annotations.NotNull;
@@ -15,26 +16,26 @@ import java.util.function.Function;
  * Simple façade for EM-based unmixing + per-cluster structure learning. Defaults: K=2, robust residual scaling,
  * parent-superset, PC-Max graphs.
  */
-public class Unmix {
+public class CausalUnmixer {
 
     /**
      * Convenience: run EM unmixing with sane defaults (K=2).
      */
-    public static @NotNull UnmixResult getUnmixResult(DataSet data) {
-        return getUnmixResult(data, null, defaults());
+    public static @NotNull UnmixResult getUnmixedResult(DataSet data) {
+        return getUnmixedResult(data, null, defaults());
     }
 
     /**
      * Optional warm start: if labels != null and EM supports it, they’ll be used.
      */
-    public static @NotNull UnmixResult getUnmixResult(DataSet data, int[] labels) {
-        return getUnmixResult(data, labels, defaults());
+    public static @NotNull UnmixResult getUnmixedResult(DataSet data, int[] labels) {
+        return getUnmixedResult(data, labels, defaults());
     }
 
     /**
      * Full control entry point.
      */
-    public static @NotNull UnmixResult getUnmixResult(
+    public static @NotNull UnmixResult getUnmixedResult(
             DataSet data,
             int[] initLabels,
             @NotNull Config cfg
@@ -77,6 +78,7 @@ public class Unmix {
         UnmixResult result;
         if (cfg.K != null) {
             result = EmUnmix.run(data, ec, reg, cfg.pooledGraphFn.apply(cfg), cfg.perClusterGraphFn.apply(cfg));
+            result.cfg = cfg;
         } else {
             // select K in [Kmin, Kmax] via BIC using the same graph functions & EM defaults
             result = EmUnmix.selectK(data, cfg.Kmin, cfg.Kmax, reg,
@@ -110,8 +112,8 @@ public class Unmix {
         c.ridgeLambda = 1e-3;
 
         // Graphers
-        c.pooledGraphFn = Unmix::pcMaxGrapher;
-        c.perClusterGraphFn = Unmix::pcMaxGrapher;
+        c.pooledGraphFn = CausalUnmixer::pcMaxGrapher;
+        c.perClusterGraphFn = CausalUnmixer::pcMaxGrapher;
 
         // PC alpha / style
         c.pcAlpha = 0.01;
@@ -133,13 +135,19 @@ public class Unmix {
                 Pc pc = new Pc(test);
                 pc.setColliderOrientationStyle(cfg.pcColliderStyle);
                 Graph g = pc.search();
-                // Optional: project to CPDAG for comparability downstream, if desired.
-                // return GraphTransforms.dagToCpdag(g);
-                return g;
+                return GraphTransforms.dagToCpdag(g);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         };
+    }
+
+    public static Function<DataSet, Graph> pooled() {
+        return pcMaxGrapher(defaults());
+    }
+
+    public static Function<DataSet, Graph> perCluster() {
+        return pcMaxGrapher(defaults());
     }
 
     // --------- Config holder ---------

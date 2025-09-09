@@ -74,7 +74,7 @@ public final class EmUnmix {
         List<DataSet> parts = splitByLabels(data, z, cfg.K);
         List<Graph> graphs = searchPerCluster(parts, perClusterSearch);
 
-        return new UnmixResult(z, cfg.K, parts, graphs);
+        return new UnmixResult(z, cfg.K, parts, graphs, model);
     }
 
     /**
@@ -125,7 +125,7 @@ public final class EmUnmix {
                 int[] z = EmUtils.mapLabels(m.responsibilities);
                 List<DataSet> parts = splitByLabels(data, z, K);
                 List<Graph> graphs = searchPerCluster(parts, perClusterSearch);
-                best = new UnmixResult(z, K, parts, graphs);
+                best = new UnmixResult(z, K, parts, graphs, m);
             }
         }
         return best;
@@ -219,6 +219,28 @@ public final class EmUnmix {
         public double covShrinkage;
         public int annealSteps;
         public double annealStartT;
+        public long randomSeed = 35L;
+
+        public Config copy() {
+            Config copy = new Config();
+            copy.K = K;
+            copy.useParentSuperset = useParentSuperset;
+            copy.supersetCfg = supersetCfg;
+            copy.robustScaleResiduals = robustScaleResiduals;
+            copy.covType = covType;
+            copy.emMaxIters = emMaxIters;
+            copy.emTol = emTol;
+            copy.seed = seed;
+            copy.ridge = ridge;
+            copy.kmeansRestarts = kmeansRestarts;
+            copy.useMAP = useMAP;
+            copy.covRidgeRel = covRidgeRel;
+            copy.covShrinkage = covShrinkage;
+            copy.annealSteps = annealSteps;
+            copy.annealStartT = annealStartT;
+
+            return copy;
+        }
     }
 
     /**

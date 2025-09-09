@@ -218,6 +218,37 @@ public final class GaussianMixtureEM {
         for (double[] row : A) Arrays.fill(row, 0.0);
     }
 
+    public static double gaussianPdf(double[] x, double[] mean, double[][] cov, CovarianceType covType) {
+        int d = x.length;
+        double[] diff = new double[d];
+        for (int i = 0; i < d; i++) diff[i] = x[i] - mean[i];
+
+        if (covType == CovarianceType.DIAGONAL) {
+            // cov[k][j][0] holds variance for j-th dimension
+            double det = 1.0, quad = 0.0;
+            for (int j = 0; j < d; j++) {
+                double var = cov[j][0]; // diagonal stored as cov[j][0]
+                det *= var;
+                quad += (diff[j] * diff[j]) / var;
+            }
+            double norm = 1.0 / (Math.pow(2 * Math.PI, d / 2.0) * Math.sqrt(det));
+            return norm * Math.exp(-0.5 * quad);
+        } else {
+            // FULL covariance
+            // build matrix objects for inversion/determinant
+            org.ejml.simple.SimpleMatrix Sigma = new org.ejml.simple.SimpleMatrix(cov);
+            double det = Sigma.determinant();
+            if (det <= 0) det = 1e-12; // safeguard
+            org.ejml.simple.SimpleMatrix inv = Sigma.invert();
+
+            org.ejml.simple.SimpleMatrix v = new org.ejml.simple.SimpleMatrix(d, 1, true, diff);
+            double quad = v.transpose().mult(inv).mult(v).get(0);
+
+            double norm = 1.0 / (Math.pow(2 * Math.PI, d / 2.0) * Math.sqrt(det));
+            return norm * Math.exp(-0.5 * quad);
+        }
+    }
+
     /**
      * Specifies the type of covariance matrix used in the Gaussian Mixture Model (GMM)
      * implemented by the GaussianMixtureEM class.
@@ -287,6 +318,22 @@ public final class GaussianMixtureEM {
             this.logLikelihood = ll;
             this.responsibilities = resp;
         }
+
+        public double bic(int n) {
+            // n = number of rows used to fit the model
+            int d = this.d;
+            int K = this.K;
+
+            int covParamsPerComp = (covType == CovarianceType.FULL)
+                    ? (d * (d + 1)) / 2
+                    : d; // DIAGONAL
+
+            int numParams = (K - 1)            // weights (sum to 1)
+                            + K * d                    // means
+                            + K * covParamsPerComp;    // covariance params
+
+            return -2.0 * this.logLikelihood + numParams * Math.log(Math.max(1, n));
+        }
     }
 
     public static final class Config {
@@ -301,6 +348,22 @@ public final class GaussianMixtureEM {
         public double covShrinkage;
         public int annealSteps;
         public double annealStartT;
+
+        public Config copy() {
+            Config copy = new Config();
+            copy.K = K;
+            copy.covType = covType;
+            copy.maxIters = maxIters;
+            copy.tol = tol;
+            copy.ridge = ridge;
+            copy.kmeansRestarts = kmeansRestarts;
+            copy.covRidgeRel = covRidgeRel;
+            copy.covShrinkage = covShrinkage;
+            copy.annealSteps = annealSteps;
+            copy.annealStartT = annealStartT;
+            return copy;
+
+        }
     }
 
     /**

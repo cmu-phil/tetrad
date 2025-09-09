@@ -21,7 +21,7 @@ import org.junit.Test;
 import java.util.*;
 import java.util.function.Function;
 
-public class TestUnmix {
+public class TestCausalUnmixer {
 
     private static MixOut genMixture(int n1, int n2, int n3) {
         List<Node> nodes = new ArrayList<>();
