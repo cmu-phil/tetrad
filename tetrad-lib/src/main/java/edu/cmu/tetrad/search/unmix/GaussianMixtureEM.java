@@ -2,44 +2,14 @@ package edu.cmu.tetrad.search.unmix;
 
 import java.util.Arrays;
 
-/** Lightweight Gaussian Mixture EM with full or diagonal covariance. */
+/**
+ * Lightweight Gaussian Mixture EM with full or diagonal covariance.
+ */
 public final class GaussianMixtureEM {
 
-    public enum CovarianceType { FULL, DIAGONAL }
-
-    public static final class Model {
-        public final int K, d;
-        public final double[] weights;          // K
-        public final double[][] means;          // K x d
-        public final double[][][] covs;         // K x d x d  (or diagonal in [k][j][0] if DIAGONAL)
-        public final CovarianceType covType;
-        public final double logLikelihood;
-        public final double[][] responsibilities; // n x K
-
-        public Model(int K, int d, CovarianceType covType,
-                     double[] w, double[][] mu, double[][][] covs,
-                     double ll, double[][] resp) {
-            this.K = K; this.d = d; this.covType = covType;
-            this.weights = w; this.means = mu; this.covs = covs;
-            this.logLikelihood = ll; this.responsibilities = resp;
-        }
-    }
-
-    public static final class Config {
-        public int K;
-        public CovarianceType covType = CovarianceType.DIAGONAL;
-        public int maxIters = 200;
-        public double tol = 1e-5;
-        public long seed = 13L;
-        public double ridge = 1e-6;  // covariance regularizer
-        public int kmeansRestarts = 5; // for init
-        public double covRidgeRel;
-        public double covShrinkage;
-        public int annealSteps;
-        public double annealStartT;
-    }
-
-    /** Fit a GMM by EM on X (n x d). Returns the model with responsibilities (soft labels). */
+    /**
+     * Fit a GMM by EM on X (n x d). Returns the model with responsibilities (soft labels).
+     */
     public static Model fit(double[][] X, Config cfg) {
         int n = X.length;
         int d = n == 0 ? 0 : X[0].length;
@@ -62,14 +32,13 @@ public final class GaussianMixtureEM {
             mStep(X, R, w, mu, S, cfg.covType, cfg.ridge);
 
             if (Math.abs(ll - prevLL) < cfg.tol * (1 + Math.abs(prevLL))) {
-                prevLL = ll; break;
+                prevLL = ll;
+                break;
             }
             prevLL = ll;
         }
         return new Model(cfg.K, d, cfg.covType, w, mu, S, prevLL, R);
     }
-
-    // ---------- E-step ----------
 
     private static double eStep(double[][] X, double[] w, double[][] mu, double[][][] S,
                                 CovarianceType covType, double[][] R) {
@@ -100,7 +69,8 @@ public final class GaussianMixtureEM {
         int d = x.length;
         double quad, logdet;
         if (type == CovarianceType.DIAGONAL) {
-            quad = 0.0; logdet = 0.0;
+            quad = 0.0;
+            logdet = 0.0;
             for (int j = 0; j < d; j++) {
                 double v = Math.max(S[j][0], 1e-12);
                 double z = x[j] - m[j];
@@ -116,8 +86,6 @@ public final class GaussianMixtureEM {
         }
         return -0.5 * (d * Math.log(2 * Math.PI) + logdet + quad);
     }
-
-    // ---------- M-step ----------
 
     private static void mStep(double[][] X, double[][] R, double[] w, double[][] mu, double[][][] S,
                               CovarianceType covType, double ridge) {
@@ -168,7 +136,7 @@ public final class GaussianMixtureEM {
         }
     }
 
-    // ---------- init moments from hard labels ----------
+    // ---------- E-step ----------
 
     private static void hardMoments(double[][] X, int[] z, double[] w, double[][] mu, double[][][] S,
                                     CovarianceType covType, double ridge) {
@@ -190,29 +158,31 @@ public final class GaussianMixtureEM {
             for (int k = 0; k < K; k++) {
                 for (int j = 0; j < d; j++) {
                     double s2 = 0.0;
-                    for (int i = 0; i < n; i++) if (z[i] == k) {
-                        double zt = X[i][j] - mu[k][j]; s2 += zt * zt;
-                    }
+                    for (int i = 0; i < n; i++)
+                        if (z[i] == k) {
+                            double zt = X[i][j] - mu[k][j];
+                            s2 += zt * zt;
+                        }
                     S[k][j][0] = s2 / Math.max(cnt[k], 1) + ridge;
                 }
             }
         } else {
             for (int k = 0; k < K; k++) {
-                for (int a = 0; a < d; a++) for (int b = 0; b < d; b++) {
-                    double s = 0.0;
-                    for (int i = 0; i < n; i++) if (z[i] == k) {
-                        double za = X[i][a] - mu[k][a];
-                        double zb = X[i][b] - mu[k][b];
-                        s += za * zb;
+                for (int a = 0; a < d; a++)
+                    for (int b = 0; b < d; b++) {
+                        double s = 0.0;
+                        for (int i = 0; i < n; i++)
+                            if (z[i] == k) {
+                                double za = X[i][a] - mu[k][a];
+                                double zb = X[i][b] - mu[k][b];
+                                s += za * zb;
+                            }
+                        S[k][a][b] = s / Math.max(cnt[k], 1);
                     }
-                    S[k][a][b] = s / Math.max(cnt[k], 1);
-                }
                 for (int j = 0; j < d; j++) S[k][j][j] += ridge;
             }
         }
     }
-
-    // ---------- helpers ----------
 
     private static double[][][] allocCov(int K, int d, CovarianceType type) {
         double[][][] S = new double[K][][];
@@ -226,22 +196,127 @@ public final class GaussianMixtureEM {
         return S;
     }
 
+    // ---------- M-step ----------
+
     private static double[] sub(double[] a, double[] b) {
         double[] r = new double[a.length];
         for (int i = 0; i < a.length; i++) r[i] = a[i] - b[i];
         return r;
     }
+
+    // ---------- init moments from hard labels ----------
+
     private static double dot(double[] a, double[] b) {
-        double s = 0.0; for (int i = 0; i < a.length; i++) s += a[i]*b[i]; return s;
+        double s = 0.0;
+        for (int i = 0; i < a.length; i++) s += a[i] * b[i];
+        return s;
     }
+
+    // ---------- helpers ----------
+
     private static void zero(double[][] A) {
         for (double[] row : A) Arrays.fill(row, 0.0);
     }
 
-    /** tiny Cholesky with log|L| tracked; minimal checks, assume SPD with ridge. */
+    /**
+     * Specifies the type of covariance matrix used in the Gaussian Mixture Model (GMM)
+     * implemented by the GaussianMixtureEM class.
+     *
+     * The covariance type determines the complexity and flexibility of the model:
+     * - FULL: Each component in the GMM has its own full covariance matrix.
+     * - DIAGONAL: Each component in the GMM has a diagonal covariance matrix.
+     *
+     * The choice of covariance type affects the computational cost and the type
+     * of relationships that can be modeled by the GMM.
+     */
+    public enum CovarianceType {
+
+        /**
+         * Represents the FULL covariance type for the Gaussian Mixture Model (GMM).
+         *
+         * The FULL covariance type specifies that each component in the GMM has its own
+         * full covariance matrix. This allows for the modeling of complex relationships
+         * between features but increases computational cost compared to simpler covariance
+         * types, such as DIAGONAL.
+         */
+        FULL,
+
+        /**
+         * Represents the DIAGONAL covariance type for the Gaussian Mixture Model (GMM).
+         *
+         * The DIAGONAL covariance type specifies that each component in the GMM has
+         * a diagonal covariance matrix. This type of covariance matrix assumes that
+         * the features of the data are uncorrelated and have different variances.
+         *
+         * Using a diagonal covariance matrix reduces the complexity and computational
+         * cost of the model compared to a FULL covariance matrix. However, it imposes
+         * stronger assumptions on the data and may not capture correlations between
+         * features effectively.
+         */
+        DIAGONAL}
+
+    /**
+     * Represents the Gaussian Mixture Model (GMM) computed and used in the
+     * GaussianMixtureEM class. This class encapsulates the parameters of
+     * the GMM, as well as related information such as soft cluster assignments
+     * (responsibilities) and the model's overall log-likelihood.
+     *
+     * The parameters of the GMM include the number of components (K), the
+     * dimensionality of the data, the component weights, the mean vectors,
+     * and the covariance matrices. The type of covariance matrices is
+     * also specified (e.g., full or diagonal).
+     */
+    public static final class Model {
+        public final int K, d;
+        public final double[] weights;          // K
+        public final double[][] means;          // K x d
+        public final double[][][] covs;         // K x d x d  (or diagonal in [k][j][0] if DIAGONAL)
+        public final CovarianceType covType;
+        public final double logLikelihood;
+        public final double[][] responsibilities; // n x K
+
+        public Model(int K, int d, CovarianceType covType,
+                     double[] w, double[][] mu, double[][][] covs,
+                     double ll, double[][] resp) {
+            this.K = K;
+            this.d = d;
+            this.covType = covType;
+            this.weights = w;
+            this.means = mu;
+            this.covs = covs;
+            this.logLikelihood = ll;
+            this.responsibilities = resp;
+        }
+    }
+
+    public static final class Config {
+        public int K;
+        public CovarianceType covType = CovarianceType.DIAGONAL;
+        public int maxIters = 200;
+        public double tol = 1e-5;
+        public long seed = 13L;
+        public double ridge = 1e-6;  // covariance regularizer
+        public int kmeansRestarts = 5; // for init
+        public double covRidgeRel;
+        public double covShrinkage;
+        public int annealSteps;
+        public double annealStartT;
+    }
+
+    /**
+     * tiny Cholesky with log|L| tracked; minimal checks, assume SPD with ridge.
+     */
     private static final class Chol {
-        final double[][] L; final int n; final double logDiagSum;
-        private Chol(double[][] L, double logDiagSum) { this.L = L; this.n = L.length; this.logDiagSum = logDiagSum; }
+        final double[][] L;
+        final int n;
+        final double logDiagSum;
+
+        private Chol(double[][] L, double logDiagSum) {
+            this.L = L;
+            this.n = L.length;
+            this.logDiagSum = logDiagSum;
+        }
+
         static Chol decompose(double[][] A) {
             int n = A.length;
             double[][] L = new double[n][n];
@@ -261,6 +336,7 @@ public final class GaussianMixtureEM {
             }
             return new Chol(L, logDiagSum);
         }
+
         double[] solve(double[] b) {
             double[] y = b.clone();
             // forward

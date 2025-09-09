@@ -1,15 +1,41 @@
 package edu.cmu.tetrad.search.unmix;
 
+import edu.cmu.tetrad.util.StatUtils;
+
 import java.util.Arrays;
 import java.util.Random;
 
+/**
+ * Implements the K-Means clustering algorithm using the k-means++ initialization
+ * method and iterative refinement. The algorithm partitions a dataset into a specified
+ * number of clusters by minimizing the sum of squared distances between points and
+ * their respective cluster centroids.
+ */
 public final class KMeans {
+
+    /**
+     * Represents the result of a clustering operation using the KMeans algorithm.
+     * The result includes the assignments of data points to clusters (labels)
+     * and the centroids of the clusters.
+     */
     public static class Result {
         public final int[] labels;
         public final double[][] centroids;
         public Result(int[] labels, double[][] centroids) { this.labels = labels; this.centroids = centroids; }
     }
 
+    /**
+     * Performs k-means clustering on a given dataset.
+     *
+     * @param X The data points to be clustered, represented as a 2D array where each row corresponds to a data point
+     *          and each column corresponds to a feature. The dataset must be non-null.
+     * @param K The number of clusters to create. If K is greater than the number of data points, it will be adjusted
+     *          to the number of data points. K must be a positive integer.
+     * @param maxIter The maximum number of iterations the algorithm will run. Must be a positive integer.
+     * @param seed The seed for the random number generator used to initialize the cluster centroids.
+     * @return An instance of the {@code Result} class containing the cluster assignments (labels) for each data point
+     *         and the coordinates of the centroids of the clusters.
+     */
     public static Result cluster(double[][] X, int K, int maxIter, long seed) {
         int n = X.length, d = (n == 0 ? 0 : X[0].length);
         if (n == 0 || K <= 0) return new Result(new int[0], new double[Math.max(K,0)][d]);
@@ -31,8 +57,7 @@ public final class KMeans {
                 double d2 = sqDist(X[i], C[k - 1]);
                 if (d2 < dist2[i]) dist2[i] = d2;
             }
-            double sum = 0.0;
-            for (double v : dist2) sum += v;
+            double sum = StatUtils.sum(dist2);
 
             int pick;
             if (sum == 0.0 || Double.isNaN(sum) || Double.isInfinite(sum)) {
