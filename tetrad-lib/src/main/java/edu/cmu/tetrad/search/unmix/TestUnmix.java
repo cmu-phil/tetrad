@@ -418,9 +418,9 @@ public class TestUnmix {
         System.out.printf("\n=== Phase3 (semi-synth) ===%n");
 
         if (labeldData.labels == null) {
-            System.out.printf("Labels were not supplied.");
+            System.out.println("Labels were not supplied.");
         } else {
-            System.out.printf("EM baseline:          ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
+            System.out.printf("EM:          ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
                     adjustedRandIndex(labeldData.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
         }
     }
