@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search.work_in_progress.unmix;
+package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
@@ -7,7 +7,6 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.unmix.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -76,7 +75,7 @@ public class RoadmapTest {
     /**
      * Orientation accuracy only among edges that are directed in BOTH truth and estimate.
      */
-    private static double arrowAccBothOriented(Graph[] truth, java.util.List<Graph> found) {
+    private static double arrowAccBothOriented(Graph[] truth, List<Graph> found) {
         int[][] perms = {{0, 1}, {1, 0}};
         double best = 0.0;
         for (int[] pm : perms) {
@@ -397,36 +396,13 @@ public class RoadmapTest {
         for (Scenario sc : scenarios) {
             System.out.println("\n=== Phase1: " + sc.name + " | noise=" + sc.noise + " ===");
 
-            // Residual-clustering pipeline
-            UnmixCausalProcesses.Config uc = new UnmixCausalProcesses.Config();
-            uc.K = 2;
-            uc.useParentSuperset = sc.kind != Scenario.Kind.PARAMS_ONLY;
-            uc.robustScaleResiduals = (sc.kind != Scenario.Kind.PARAMS_ONLY);
-            uc.kmeansIters = 100;
-            uc.reassignMaxPasses = 3;
-            uc.reassignStopIfNoChange = true;
-            uc.useLaplaceReassign = (sc.noise != NoiseFamily.GAUSSIAN); // LiNG-friendly
-
-            // --- NEW: configure clustering & feature options ---
-            uc.useGmmClustering = true;
-            uc.featureMode = UnmixCausalProcesses.Config.FeatureMode.RAW;
-            uc.featureScale = UnmixCausalProcesses.Config.ScaleMode.ROBUST_IQR;
-            uc.robustScaleResiduals = true;
-
-            // Use ridge-regularized regressor
-            LinearQRRegressor reg = new LinearQRRegressor();
-            reg.setRidgeLambda(1e-3);
-            long t0 = System.currentTimeMillis();
-            UnmixResult rUC = UnmixCausalProcesses.run(sc.mixed, uc, reg, pooled(), perCluster());
-            long t1 = System.currentTimeMillis();
-
             // EM-on-residuals baseline (known K)
             EmUnmix.Config ec = new EmUnmix.Config();
             ec.K = 2;
-            ec.useParentSuperset = uc.useParentSuperset;
+            ec.useParentSuperset = true;
             ec.supersetCfg.topM = 10;
             ec.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.KENDALL;
-            ec.robustScaleResiduals = uc.robustScaleResiduals;
+            ec.robustScaleResiduals = true;
             ec.covType = (sc.mixed.getNumColumns() <= 20)
                     ? GaussianMixtureEM.CovarianceType.FULL
                     : GaussianMixtureEM.CovarianceType.DIAGONAL;
@@ -441,17 +417,13 @@ public class RoadmapTest {
             UnmixResult rEMbest = EmUnmix.selectK(sc.mixed, 1, 4, new LinearQRRegressor(), pooled(), perCluster(), ec);
 
             // Metrics
-            double ariUC = adjustedRandIndex(sc.labels, rUC.labels);
             double ariEM = adjustedRandIndex(sc.labels, rEM.labels);
             double ariEMbest = adjustedRandIndex(sc.labels, rEMbest.labels);
 
             // Graph metrics per regime (compare discovered vs true)
-            GraphMetrics gmUC = graphMetrics(sc.truthGraphs, rUC.clusterGraphs);
             GraphMetrics gmEM = graphMetrics(sc.truthGraphs, rEM.clusterGraphs);
             GraphMetrics gmEMbest = graphMetrics(sc.truthGraphs, rEMbest.clusterGraphs);
 
-            System.out.printf("Residual-clustering:  ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d  time=%dms%n",
-                    ariUC, gmUC.adjF1, gmUC.arrowF1, gmUC.shd, (t1 - t0));
             System.out.printf("EM (K=2):             ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d  time=%dms%n",
                     ariEM, gmEM.adjF1, gmEM.arrowF1, gmEM.shd, (s1 - s0));
             System.out.printf("EM (selectK):         ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
@@ -492,10 +464,9 @@ public class RoadmapTest {
             double ariRaw = adjustedRandIndex(sc.labels, zRaw);
             System.out.printf("EM (raw X, K=2):      ARI=%.3f  time=%dms%n", ariRaw, (rx1 - rx0));
 
-            double arrBothUC = arrowAccBothOriented(sc.truthGraphs, rUC.clusterGraphs);
             double arrBothEM = arrowAccBothOriented(sc.truthGraphs, rEM.clusterGraphs);
             double arrBothEMbest = arrowAccBothOriented(sc.truthGraphs, rEMbest.clusterGraphs);
-            System.out.printf("ArrowOK(both oriented): UC=%.3f  EM=%.3f  EM(bestK)=%.3f%n", arrBothUC, arrBothEM, arrBothEMbest);
+            System.out.printf("ArrowOK(both oriented): EM=%.3f  EM(bestK)=%.3f%n", arrBothEM, arrBothEMbest);
         }
     }
 
@@ -515,20 +486,10 @@ public class RoadmapTest {
                 int n1 = (int) Math.round(nTot * fracA);
                 int n2 = nTot - n1;
                 for (double sig : signalScales) {
-                    List<Double> arisUC = new ArrayList<>();
                     List<Double> arisEM = new ArrayList<>();
                     for (int r = 0; r < repeats; r++) {
                         long s = seed + 1000L * r;
                         Scenario sc = Scenario.smallTopoFlipParamScaled(p, n1, n2, flips, sig, NoiseFamily.LAPLACE, s);
-
-                        // configs as in Phase 1 topo-diff
-                        UnmixCausalProcesses.Config uc = new UnmixCausalProcesses.Config();
-                        uc.K = 2;
-                        uc.useParentSuperset = true;
-                        uc.robustScaleResiduals = true;
-                        uc.kmeansIters = 100;
-                        uc.reassignMaxPasses = 3;
-                        uc.useLaplaceReassign = true;
 
                         EmUnmix.Config ec = new EmUnmix.Config();
                         ec.K = 2;
@@ -540,16 +501,13 @@ public class RoadmapTest {
                         ec.emMaxIters = 400;
                         ec.kmeansRestarts = 10;
 
-                        UnmixResult rUC = UnmixCausalProcesses.run(sc.mixed, uc, new LinearQRRegressor(), pooled(), perCluster());
                         UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor(), pooled(), perCluster());
 
-                        arisUC.add(adjustedRandIndex(sc.labels, rUC.labels));
                         arisEM.add(adjustedRandIndex(sc.labels, rEM.labels));
                     }
                     String tag = String.format("n=%d  fracA=%.2f  signal=%.1f", nTot, fracA, sig);
-                    System.out.printf("%s | ARI-UC median=%.3f IQR=%.3f | ARI-EM median=%.3f IQR=%.3f%n",
+                    System.out.printf("%s | ARI-EM median=%.3f IQR=%.3f%n",
                             tag,
-                            median(arisUC), iqr(arisUC),
                             median(arisEM), iqr(arisEM));
                 }
             }
@@ -599,15 +557,6 @@ public class RoadmapTest {
         Arrays.fill(lab, n1, n1 + n2, 1);
         MixOut mix = shuffleWithLabels(concat, lab, seed);
 
-        // Run both methods
-        UnmixCausalProcesses.Config uc = new UnmixCausalProcesses.Config();
-        uc.K = 2;
-        uc.useParentSuperset = true;
-        uc.robustScaleResiduals = true;
-        uc.kmeansIters = 100;
-        uc.reassignMaxPasses = 3;
-        uc.useLaplaceReassign = true;
-
         EmUnmix.Config ec = new EmUnmix.Config();
         ec.K = 2;
         ec.useParentSuperset = true;
@@ -618,29 +567,13 @@ public class RoadmapTest {
         ec.emMaxIters = 200;
         ec.kmeansRestarts = 10;
 
-        UnmixResult rUC = UnmixCausalProcesses.run(mix.data, uc, new LinearQRRegressor(), pooled(), perCluster());
         UnmixResult rEM = EmUnmix.run(mix.data, ec, new LinearQRRegressor(), pooled(), perCluster());
 
-//        System.out.println("\n--- Residual clustering graphs ---");
-//        for (int k = 0; k < rUC.clusterGraphs.size(); k++) {
-//            System.out.println("Cluster " + k + ":");
-//            System.out.println(rUC.clusterGraphs.get(k));
-//        }
-//
-//        System.out.println("\n--- EM clustering graphs ---");
-//        for (int k = 0; k < rEM.clusterGraphs.size(); k++) {
-//            System.out.println("Cluster " + k + ":");
-//            System.out.println(rEM.clusterGraphs.get(k));
-//        }
-
         Graph[] truth = new Graph[]{gA, gB};
-        GraphMetrics gmUC = graphMetrics(truth, rUC.clusterGraphs);
         GraphMetrics gmEM = graphMetrics(truth, rEM.clusterGraphs);
 
         System.out.printf("\n=== Phase3 (semi-synth) ===%n");
-        System.out.printf("Residual-clustering:  ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
-                adjustedRandIndex(mix.labels, rUC.labels), gmUC.adjF1, gmUC.arrowF1, gmUC.shd);
-        System.out.printf("EM baseline:          ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
+        System.out.printf("EM:          ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
                 adjustedRandIndex(mix.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
     }
 
