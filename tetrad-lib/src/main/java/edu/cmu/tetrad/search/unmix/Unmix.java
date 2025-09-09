@@ -2,105 +2,177 @@ package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.work_in_progress.unmix.LinearQRRegressor;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * The Unmix class provides methods to perform clustering and structure learning on datasets.
- * It combines Gaussian Mixture Models (GMMs) and graph learning techniques to partition data
- * into clusters and compute cluster-specific causal graphs.
+ * Simple façade for EM-based unmixing + per-cluster structure learning. Defaults: K=2, robust residual scaling,
+ * parent-superset, PC-Max graphs.
  */
 public class Unmix {
-    private static @NotNull UnmixResult getUnmixResult(TestUnmix.LabeledData mix) {
-        EmUnmix.Config ec = new EmUnmix.Config();
-        ec.K = 2;
-        ec.useParentSuperset = true;
-        ec.supersetCfg.topM = 12;
-        ec.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.KENDALL;
-        ec.robustScaleResiduals = true;
-        ec.covType = GaussianMixtureEM.CovarianceType.FULL;
-        ec.emMaxIters = 200;
-        ec.kmeansRestarts = 10;
-
-        return EmUnmix.run(mix.data, ec, new LinearQRRegressor(), pooled(), perCluster());
-    }
 
     /**
-     * Computes the unmixing result by clustering and structure learning on the provided dataset.
-     *
-     * @param data the dataset to be analyzed, containing observations to be clustered.
-     * @return an UnmixResult object, which contains the clustering results,
-     *         including labels, cluster-specific datasets, and learned graphs.
+     * Convenience: run EM unmixing with sane defaults (K=2).
      */
     public static @NotNull UnmixResult getUnmixResult(DataSet data) {
-        TestUnmix.LabeledData labeledData = new TestUnmix.LabeledData();
-        labeledData.labels = null;
-        labeledData.data = data;
-
-        return getUnmixResult(labeledData);
+        return getUnmixResult(data, null, defaults());
     }
 
     /**
-     * Computes the unmixing result by performing clustering and structure learning on the provided dataset
-     * and its associated labels.
-     *
-     * @param data   the dataset to be analyzed, containing observations to be clustered.
-     * @param labels an array of integers representing the initial labels for the dataset,
-     *               where each value corresponds to the cluster assignment of a data point.
-     * @return an UnmixResult object, which contains the clustering results,
-     *         including updated labels, cluster-specific datasets, and learned graphs.
+     * Optional warm start: if labels != null and EM supports it, they’ll be used.
      */
     public static @NotNull UnmixResult getUnmixResult(DataSet data, int[] labels) {
-        TestUnmix.LabeledData labeledData = new TestUnmix.LabeledData();
-        labeledData.labels = labels;
-        labeledData.data = data;
-
-        return getUnmixResult(labeledData);
+        return getUnmixResult(data, labels, defaults());
     }
 
     /**
-     * Creates a function that processes a DataSet to generate a causal graph using the PC algorithm,
-     * based on a Fisher Z-test of independence. The function imposes a row limit to ensure the dataset
-     * has a sufficient number of observations to produce meaningful results. If the dataset contains
-     * fewer than 50 rows, it returns null. If processing is interrupted, a RuntimeException is thrown.
-     *
-     * @return a Function that takes a DataSet as input and produces a Graph as output, or null if
-     *         the dataset does not meet the minimum size requirement.
+     * Full control entry point.
      */
-    public static Function<DataSet, Graph> pooled() {
+    public static @NotNull UnmixResult getUnmixResult(
+            DataSet data,
+            int[] initLabels,
+            @NotNull Config cfg
+    ) {
+        Objects.requireNonNull(data, "data");
+
+        // ----- Build EM config from high-level config -----
+        EmUnmix.Config ec = new EmUnmix.Config();
+        ec.K = cfg.K;                                 // if null, EmUnmix.selectK will be used below
+        ec.useParentSuperset = cfg.useParentSuperset;
+        ec.supersetCfg.topM = cfg.supersetTopM;
+        ec.supersetCfg.scoreType = cfg.supersetScore;
+        ec.robustScaleResiduals = cfg.robustScaleResiduals;
+
+        // Covariance policy
+        int n = data.getNumRows();
+        int p = data.getNumColumns();
+        int K = (cfg.K != null ? cfg.K : Math.max(cfg.Kmin, 2));
+        boolean okFull = (n / Math.max(1, K)) >= (p + cfg.fullSigmaSafetyMargin);
+        ec.covType = okFull ? GaussianMixtureEM.CovarianceType.FULL
+                : GaussianMixtureEM.CovarianceType.DIAGONAL;
+
+        // EM stability knobs
+        ec.kmeansRestarts = cfg.kmeansRestarts;
+        ec.emMaxIters = cfg.emMaxIters;
+        ec.covRidgeRel = cfg.covRidgeRel;
+        ec.covShrinkage = cfg.covShrinkage;
+        ec.annealSteps = cfg.annealSteps;
+        ec.annealStartT = cfg.annealStartT;
+
+//        // Optional warm start: if EmUnmix supports initLabels, set them here.
+//        // (No-op if the field/method doesn’t exist in your EmUnmix.)
+//        try {
+//            ec.initLabels = initLabels; // comment this if your EmUnmix.Config doesn’t have it
+//        } catch (Throwable ignore) { /* compatible with older EmUnmix */ }
+
+        LinearQRRegressor reg = new LinearQRRegressor().setRidgeLambda(cfg.ridgeLambda);
+
+        // ----- Run EM (fixed K or selectK by BIC) -----
+        UnmixResult result;
+        if (cfg.K != null) {
+            result = EmUnmix.run(data, ec, reg, cfg.pooledGraphFn.apply(cfg), cfg.perClusterGraphFn.apply(cfg));
+        } else {
+            // select K in [Kmin, Kmax] via BIC using the same graph functions & EM defaults
+            result = EmUnmix.selectK(data, cfg.Kmin, cfg.Kmax, reg,
+                    cfg.pooledGraphFn.apply(cfg), cfg.perClusterGraphFn.apply(cfg), ec);
+        }
+
+        return result;
+    }
+
+    // --------- Defaults & Graph builders ---------
+
+    public static @NotNull Config defaults() {
+        Config c = new Config();
+
+        c.K = 2;                          // set to null to enable selectK
+        c.Kmin = 1;
+        c.Kmax = 4;
+
+        c.useParentSuperset = true;
+        c.supersetTopM = 12;
+        c.supersetScore = ParentSupersetBuilder.ScoreType.KENDALL;
+        c.robustScaleResiduals = true;
+
+        c.kmeansRestarts = 20;
+        c.emMaxIters = 300;
+        c.covRidgeRel = 1e-3;
+        c.covShrinkage = 0.10;
+        c.annealSteps = 15;
+        c.annealStartT = 0.8;
+        c.fullSigmaSafetyMargin = 10;     // requires n/K >= p + 10 for FULL Σ
+        c.ridgeLambda = 1e-3;
+
+        // Graphers
+        c.pooledGraphFn = Unmix::pcMaxGrapher;
+        c.perClusterGraphFn = Unmix::pcMaxGrapher;
+
+        // PC alpha / style
+        c.pcAlpha = 0.01;
+        c.pcColliderStyle = Pc.ColliderOrientationStyle.MAX_P;
+
+        return c;
+    }
+
+    /**
+     * Returns a Function<DataSet, Graph> that runs PC-Max with FisherZ on the dataset.
+     */
+    private static Function<DataSet, Graph> pcMaxGrapher(Config cfg) {
         return ds -> {
-            if (ds.getNumRows() < 50) {
-                return null;
-            }
+            // Avoid NPEs downstream: return empty graph instead of null for tiny datasets.
+            if (ds.getNumRows() < 50) return new EdgeListGraph(ds.getVariables());
 
             try {
-                IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), 0.01);
+                IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), cfg.pcAlpha);
                 Pc pc = new Pc(test);
-                pc.setColliderOrientationStyle(Pc.ColliderOrientationStyle.MAX_P);
-                return pc.search();
-
-//                edu.cmu.tetrad.search.score.SemBicScore score = new edu.cmu.tetrad.search.score.SemBicScore(new CovarianceMatrix(ds));
-//                score.setPenaltyDiscount(2);
-//                return new PermutationSearch(new Boss(score)).search();
+                pc.setColliderOrientationStyle(cfg.pcColliderStyle);
+                Graph g = pc.search();
+                // Optional: project to CPDAG for comparability downstream, if desired.
+                // return GraphTransforms.dagToCpdag(g);
+                return g;
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         };
     }
 
-    /**
-     * Creates a function that processes a DataSet to generate a causal graph for each cluster
-     * by leveraging clustering and structure learning algorithms. This method is intended
-     * to be used on clustered datasets to produce cluster-specific graphs.
-     *
-     * @return a Function that takes a DataSet as input and produces a Graph as output for each cluster.
-     */
-    public static Function<DataSet, Graph> perCluster() {
-        return pooled();
+    // --------- Config holder ---------
+
+    public static class Config {
+        // K handling
+        public Integer K = 2;          // if null, selectK is used
+        public int Kmin = 1, Kmax = 4;
+
+        // Residual-EM options
+        public boolean useParentSuperset = true;
+        public int supersetTopM = 12;
+        public ParentSupersetBuilder.ScoreType supersetScore = ParentSupersetBuilder.ScoreType.KENDALL;
+        public boolean robustScaleResiduals = true;
+
+        // EM stability
+        public int kmeansRestarts = 20;
+        public int emMaxIters = 300;
+        public double covRidgeRel = 1e-3;
+        public double covShrinkage = 0.10;
+        public int annealSteps = 15;
+        public double annealStartT = 0.8;
+        public int fullSigmaSafetyMargin = 10; // FULL Σ if n/K >= p + margin
+
+        // Regression
+        public double ridgeLambda = 1e-3;
+
+        // Graphers
+        public java.util.function.Function<Config, Function<DataSet, Graph>> pooledGraphFn;
+        public java.util.function.Function<Config, Function<DataSet, Graph>> perClusterGraphFn;
+
+        // PC settings
+        public double pcAlpha = 0.01;
+        public Pc.ColliderOrientationStyle pcColliderStyle = Pc.ColliderOrientationStyle.MAX_P;
     }
 }

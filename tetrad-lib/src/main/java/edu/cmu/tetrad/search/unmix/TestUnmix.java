@@ -8,7 +8,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.work_in_progress.unmix.LinearQRRegressor;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;

@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.unmix.LinearQRRegressor;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.search.unmix.ParentSupersetBuilder;
