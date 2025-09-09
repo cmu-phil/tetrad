@@ -70,7 +70,6 @@ public final class EmUnmix {
         GaussianMixtureEM.Model model = GaussianMixtureEM.fit(R, emc);
         int[] z = EmUtils.mapLabels(model.responsibilities);
 
-        // 3) Split & per-cluster search
         List<DataSet> parts = splitByLabels(data, z, cfg.K);
         List<Graph> graphs = searchPerCluster(parts, perClusterSearch);
 
@@ -100,12 +99,16 @@ public final class EmUnmix {
             Function<DataSet, Graph> perClusterSearch,
             Config base
     ) {
-        double bestBIC = Double.NEGATIVE_INFINITY;
+        double bestBIC = Double.POSITIVE_INFINITY;  // minimize BIC
         UnmixResult best = null;
+
         for (int K = Kmin; K <= Kmax; K++) {
+            if (K < 1) throw new IllegalArgumentException("K must be >= 1");
+            if (K > data.getNumRows()) throw new IllegalArgumentException("K cannot exceed number of rows");
+
             Config cfg = copy(base);
             cfg.K = K;
-            // Build residuals once (so BIC compares apples-to-apples)
+
             double[][] R = buildResiduals(data, cfg, regressor, pooledSearch);
             if (cfg.robustScaleResiduals) ResidualUtils.robustStandardizeInPlace(R);
 
@@ -119,8 +122,9 @@ public final class EmUnmix {
             emc.kmeansRestarts = cfg.kmeansRestarts;
 
             GaussianMixtureEM.Model m = GaussianMixtureEM.fit(R, emc);
-            double bic = EmUtils.bic(m, R.length);
-            if (bic > bestBIC) {
+            double bic = m.bic(R.length);  // lower is better
+
+            if (bic < bestBIC) {
                 bestBIC = bic;
                 int[] z = EmUtils.mapLabels(m.responsibilities);
                 List<DataSet> parts = splitByLabels(data, z, K);
@@ -225,7 +229,7 @@ public final class EmUnmix {
             Config copy = new Config();
             copy.K = K;
             copy.useParentSuperset = useParentSuperset;
-            copy.supersetCfg = supersetCfg;
+            copy.supersetCfg = ParentSupersetBuilderCopy.copy(supersetCfg);
             copy.robustScaleResiduals = robustScaleResiduals;
             copy.covType = covType;
             copy.emMaxIters = emMaxIters;

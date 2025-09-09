@@ -428,7 +428,7 @@ public class TestCausalUnmixer {
         Function<DataSet, Graph> perClusterSearch = CausalUnmixer.perCluster();
 
         // Rerun EM with K=1 (copy cfg and set K=1)
-        EmUnmix.Config cfgK1 = cfg.copy();
+        EmUnmix.Config cfgK1 = cfg;
         cfgK1.K = 1;
 
         UnmixResult rK1 = EmUnmix.run(mixed.data, cfgK1, reg, pooledSearch, perClusterSearch);

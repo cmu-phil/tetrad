@@ -32,6 +32,10 @@ public class CausalUnmixer {
         return getUnmixedResult(data, labels, defaults());
     }
 
+    public static @NotNull UnmixResult getUnmixedResult(DataSet data, @NotNull Config cfg) {
+        return getUnmixedResult(data, null, cfg);
+    }
+
     /**
      * Full control entry point.
      */
@@ -44,7 +48,7 @@ public class CausalUnmixer {
 
         // ----- Build EM config from high-level config -----
         EmUnmix.Config ec = new EmUnmix.Config();
-        ec.K = cfg.K;                                 // if null, EmUnmix.selectK will be used below
+        ec.K = (cfg.K != null ? cfg.K : Math.max(cfg.Kmin, 1));  // safe default
         ec.useParentSuperset = cfg.useParentSuperset;
         ec.supersetCfg.topM = cfg.supersetTopM;
         ec.supersetCfg.scoreType = cfg.supersetScore;
@@ -78,7 +82,6 @@ public class CausalUnmixer {
         UnmixResult result;
         if (cfg.K != null) {
             result = EmUnmix.run(data, ec, reg, cfg.pooledGraphFn.apply(cfg), cfg.perClusterGraphFn.apply(cfg));
-            result.cfg = cfg;
         } else {
             // select K in [Kmin, Kmax] via BIC using the same graph functions & EM defaults
             result = EmUnmix.selectK(data, cfg.Kmin, cfg.Kmax, reg,
@@ -134,8 +137,7 @@ public class CausalUnmixer {
                 IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), cfg.pcAlpha);
                 Pc pc = new Pc(test);
                 pc.setColliderOrientationStyle(cfg.pcColliderStyle);
-                Graph g = pc.search();
-                return GraphTransforms.dagToCpdag(g);
+                return pc.search();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

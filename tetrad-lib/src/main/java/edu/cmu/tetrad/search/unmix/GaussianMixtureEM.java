@@ -87,99 +87,167 @@ public final class GaussianMixtureEM {
         return -0.5 * (d * Math.log(2 * Math.PI) + logdet + quad);
     }
 
+    // ---------- M-step ----------
     private static void mStep(double[][] X, double[][] R, double[] w, double[][] mu, double[][][] S,
                               CovarianceType covType, double ridge) {
-        int n = X.length, d = X[0].length, K = w.length;
+        final int n = X.length;
+        final int d = (n == 0) ? 0 : X[0].length;
+        final int K = w.length;
 
-        // weights, means
+        // r_k (soft counts) and means
+        double[] rk = new double[K];
         for (int k = 0; k < K; k++) {
-            double rk = 0.0;
+            rk[k] = 0.0;
             Arrays.fill(mu[k], 0.0);
-            for (int i = 0; i < n; i++) {
-                double rik = R[i][k];
-                rk += rik;
-                for (int j = 0; j < d; j++) mu[k][j] += rik * X[i][j];
-            }
-            w[k] = Math.max(rk, 1e-12) / n;
-            for (int j = 0; j < d; j++) mu[k][j] /= Math.max(rk, 1e-12);
         }
 
-        // covariances
+        for (int i = 0; i < n; i++) {
+            double[] xi = X[i];
+            double[] Ri = R[i];
+            for (int k = 0; k < K; k++) {
+                double rik = Ri[k];
+                rk[k] += rik;
+                for (int j = 0; j < d; j++) mu[k][j] += rik * xi[j];
+            }
+        }
+
+        // finalize means; update weights
+        double sumw = 0.0;
         for (int k = 0; k < K; k++) {
-            if (covType == CovarianceType.DIAGONAL) {
-                Arrays.stream(S[k]).forEach(row -> Arrays.fill(row, 0.0));
-                double rk = Math.max(w[k] * n, 1e-12);
-                for (int i = 0; i < n; i++) {
-                    double rik = R[i][k];
+            double denom = Math.max(rk[k], 1e-12);
+            for (int j = 0; j < d; j++) mu[k][j] /= denom;
+
+            w[k] = denom / Math.max(n, 1);
+            w[k] = Math.max(w[k], 1e-12);
+            sumw += w[k];
+        }
+        // normalize weights to sum to one
+        for (int k = 0; k < K; k++) w[k] /= sumw;
+
+        // covariances
+        if (covType == CovarianceType.DIAGONAL) {
+            for (int k = 0; k < K; k++) {
+                for (int j = 0; j < d; j++) S[k][j][0] = 0.0;
+            }
+            for (int i = 0; i < n; i++) {
+                double[] xi = X[i];
+                double[] Ri = R[i];
+                for (int k = 0; k < K; k++) {
+                    double rik = Ri[k];
+                    if (rik == 0.0) continue;
                     for (int j = 0; j < d; j++) {
-                        double z = X[i][j] - mu[k][j];
+                        double z = xi[j] - mu[k][j];
                         S[k][j][0] += rik * z * z;
                     }
                 }
-                for (int j = 0; j < d; j++) S[k][j][0] = S[k][j][0] / rk + ridge;
-            } else {
-                zero(S[k]);
-                double rk = Math.max(w[k] * n, 1e-12);
-                for (int i = 0; i < n; i++) {
-                    double rik = R[i][k];
+            }
+            for (int k = 0; k < K; k++) {
+                double denom = Math.max(rk[k], 1e-12);
+                for (int j = 0; j < d; j++) {
+                    S[k][j][0] = S[k][j][0] / denom + ridge;
+                }
+            }
+        } else { // FULL
+            for (int k = 0; k < K; k++) {
+                for (int a = 0; a < d; a++) Arrays.fill(S[k][a], 0.0);
+            }
+            for (int i = 0; i < n; i++) {
+                double[] xi = X[i];
+                double[] Ri = R[i];
+                for (int k = 0; k < K; k++) {
+                    double rik = Ri[k];
+                    if (rik == 0.0) continue;
                     for (int a = 0; a < d; a++) {
-                        double za = X[i][a] - mu[k][a];
+                        double za = xi[a] - mu[k][a];
                         for (int b = 0; b < d; b++) {
-                            double zb = X[i][b] - mu[k][b];
+                            double zb = xi[b] - mu[k][b];
                             S[k][a][b] += rik * za * zb;
                         }
                     }
                 }
-                for (int a = 0; a < d; a++) for (int b = 0; b < d; b++) S[k][a][b] = S[k][a][b] / rk;
-                for (int j = 0; j < d; j++) S[k][j][j] += ridge;
+            }
+            for (int k = 0; k < K; k++) {
+                double denom = Math.max(rk[k], 1e-12);
+                for (int a = 0; a < d; a++) {
+                    for (int b = 0; b < d; b++) S[k][a][b] /= denom;
+                    S[k][a][a] += ridge; // regularize diagonal
+                }
             }
         }
     }
 
     // ---------- E-step ----------
 
+    // ---------- init moments from hard labels ----------
     private static void hardMoments(double[][] X, int[] z, double[] w, double[][] mu, double[][][] S,
                                     CovarianceType covType, double ridge) {
-        int n = X.length, d = X[0].length, K = w.length;
+        final int n = X.length;
+        final int d = (n == 0) ? 0 : X[0].length;
+        final int K = w.length;
+
+        // counts per cluster
         int[] cnt = new int[K];
-        for (int i = 0; i < n; i++) cnt[z[i]]++;
-        for (int k = 0; k < K; k++) w[k] = Math.max(cnt[k], 1) / (double) n;
+        for (int i = 0; i < n; i++) {
+            int k = z[i];
+            if (k >= 0 && k < K) cnt[k]++;
+        }
+
+        // weights: allow empty clusters but give them tiny mass; then normalize
+        double sumw = 0.0;
+        for (int k = 0; k < K; k++) {
+            w[k] = (cnt[k] > 0) ? (cnt[k] / (double) n) : 1e-12;
+            sumw += w[k];
+        }
+        if (sumw <= 0) sumw = 1.0;
+        for (int k = 0; k < K; k++) w[k] /= sumw;
 
         // means
         for (int k = 0; k < K; k++) Arrays.fill(mu[k], 0.0);
         for (int i = 0; i < n; i++) {
             int k = z[i];
-            for (int j = 0; j < d; j++) mu[k][j] += X[i][j];
+            if (k < 0 || k >= K) continue;
+            double[] xi = X[i];
+            for (int j = 0; j < d; j++) mu[k][j] += xi[j];
         }
-        for (int k = 0; k < K; k++) for (int j = 0; j < d; j++) mu[k][j] /= Math.max(cnt[k], 1);
+        for (int k = 0; k < K; k++) {
+            double denom = Math.max(cnt[k], 1); // avoid div-by-zero
+            for (int j = 0; j < d; j++) mu[k][j] /= denom;
+        }
 
-        // cov
+        // covariances
         if (covType == CovarianceType.DIAGONAL) {
             for (int k = 0; k < K; k++) {
                 for (int j = 0; j < d; j++) {
                     double s2 = 0.0;
-                    for (int i = 0; i < n; i++)
-                        if (z[i] == k) {
-                            double zt = X[i][j] - mu[k][j];
-                            s2 += zt * zt;
-                        }
-                    S[k][j][0] = s2 / Math.max(cnt[k], 1) + ridge;
+                    for (int i = 0; i < n; i++) {
+                        if (z[i] != k) continue;
+                        double diff = X[i][j] - mu[k][j];
+                        s2 += diff * diff;
+                    }
+                    double denom = Math.max(cnt[k], 1);
+                    S[k][j][0] = s2 / denom + ridge;
                 }
             }
-        } else {
+        } else { // FULL
             for (int k = 0; k < K; k++) {
-                for (int a = 0; a < d; a++)
-                    for (int b = 0; b < d; b++) {
-                        double s = 0.0;
-                        for (int i = 0; i < n; i++)
-                            if (z[i] == k) {
-                                double za = X[i][a] - mu[k][a];
-                                double zb = X[i][b] - mu[k][b];
-                                s += za * zb;
-                            }
-                        S[k][a][b] = s / Math.max(cnt[k], 1);
+                // zero S_k
+                for (int a = 0; a < d; a++) Arrays.fill(S[k][a], 0.0);
+
+                for (int i = 0; i < n; i++) {
+                    if (z[i] != k) continue;
+                    for (int a = 0; a < d; a++) {
+                        double za = X[i][a] - mu[k][a];
+                        for (int b = 0; b < d; b++) {
+                            double zb = X[i][b] - mu[k][b];
+                            S[k][a][b] += za * zb;
+                        }
                     }
-                for (int j = 0; j < d; j++) S[k][j][j] += ridge;
+                }
+                double denom = Math.max(cnt[k], 1);
+                for (int a = 0; a < d; a++) {
+                    for (int b = 0; b < d; b++) S[k][a][b] /= denom;
+                    S[k][a][a] += ridge; // regularize diagonal
+                }
             }
         }
     }
@@ -224,28 +292,22 @@ public final class GaussianMixtureEM {
         for (int i = 0; i < d; i++) diff[i] = x[i] - mean[i];
 
         if (covType == CovarianceType.DIAGONAL) {
-            // cov[k][j][0] holds variance for j-th dimension
-            double det = 1.0, quad = 0.0;
+            double logdet = 0.0, quad = 0.0;
             for (int j = 0; j < d; j++) {
-                double var = cov[j][0]; // diagonal stored as cov[j][0]
-                det *= var;
-                quad += (diff[j] * diff[j]) / var;
+                double v = Math.max(cov[j][0], 1e-12);
+                double z = diff[j];
+                quad += (z * z) / v;
+                logdet += Math.log(v);
             }
-            double norm = 1.0 / (Math.pow(2 * Math.PI, d / 2.0) * Math.sqrt(det));
-            return norm * Math.exp(-0.5 * quad);
+            double logp = -0.5 * (d * Math.log(2 * Math.PI) + logdet + quad);
+            return Math.exp(logp);
         } else {
-            // FULL covariance
-            // build matrix objects for inversion/determinant
-            org.ejml.simple.SimpleMatrix Sigma = new org.ejml.simple.SimpleMatrix(cov);
-            double det = Sigma.determinant();
-            if (det <= 0) det = 1e-12; // safeguard
-            org.ejml.simple.SimpleMatrix inv = Sigma.invert();
-
-            org.ejml.simple.SimpleMatrix v = new org.ejml.simple.SimpleMatrix(d, 1, true, diff);
-            double quad = v.transpose().mult(inv).mult(v).get(0);
-
-            double norm = 1.0 / (Math.pow(2 * Math.PI, d / 2.0) * Math.sqrt(det));
-            return norm * Math.exp(-0.5 * quad);
+            Chol ch = Chol.decompose(cov);
+            double[] y = ch.solve(diff);
+            double quad = dot(diff, y);
+            double logdet = 2.0 * ch.logDiagSum;
+            double logp = -0.5 * (d * Math.log(2 * Math.PI) + logdet + quad);
+            return Math.exp(logp);
         }
     }
 
