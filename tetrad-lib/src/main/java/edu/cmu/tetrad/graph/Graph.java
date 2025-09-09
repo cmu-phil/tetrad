@@ -704,6 +704,10 @@ public interface Graph extends TetradSerializable {
     default boolean existsSemidirectedPath(Node node1, Node node2) {
         return paths().existsSemiDirectedPath(node1, node2);
     }
+
+    default Graph copy() {
+        return new EdgeListGraph(this);
+    }
 }
 
 

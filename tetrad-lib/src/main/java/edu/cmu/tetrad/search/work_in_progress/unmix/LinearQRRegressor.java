@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class LinearQRRegressor implements ResidualRegressor {
     // knobs
-    private final double ridgeEps;   // tiny ridge added on ill-conditioning
+    private double ridgeEps;   // tiny ridge added on ill-conditioning
     private final double condWarn;   // condition number threshold to trigger ridge
     private SimpleMatrix B;     // (p+1) x 1 coefficients, intercept first
     private int[] parentCols;   // column indices of parents in the *fitted* dataset schema
@@ -85,17 +85,22 @@ public class LinearQRRegressor implements ResidualRegressor {
             SimpleMatrix XtX = X.transpose().mult(X);
             double cond = conditionNumberSymPD(XtX);
             if (!Double.isFinite(cond) || cond > condWarn) {
-                // add tiny ridge
+                // add tiny ridge (do NOT penalize intercept at (0,0))
                 int d = XtX.numRows();
-                SimpleMatrix I = SimpleMatrix.identity(d);
-                beta = XtX.plus(I.scale(ridgeEps)).solve(X.transpose().mult(y));
+                for (int j = 1; j < d; j++) {
+                    XtX.set(j, j, XtX.get(j, j) + ridgeEps);
+                }
+                beta = XtX.solve(X.transpose().mult(y));
             }
         } catch (RuntimeException ex) {
             // fallback to tiny ridge if QR fails
             SimpleMatrix XtX = X.transpose().mult(X);
             int d = XtX.numRows();
-            SimpleMatrix I = SimpleMatrix.identity(d);
-            beta = XtX.plus(I.scale(ridgeEps)).solve(X.transpose().mult(y));
+            // add tiny ridge (do NOT penalize intercept)
+            for (int j = 1; j < d; j++) {
+                XtX.set(j, j, XtX.get(j, j) + ridgeEps);
+            }
+            beta = XtX.solve(X.transpose().mult(y));
         }
         this.B = beta;
     }
@@ -123,5 +128,11 @@ public class LinearQRRegressor implements ResidualRegressor {
             out[i] = v;
         }
         return out;
+    }
+
+    /** Set L2 ridge strength (applied only when ill-conditioning is detected). */
+    public LinearQRRegressor setRidgeLambda(double v) {
+        this.ridgeEps = Math.max(0.0, v);
+        return this;
     }
 }

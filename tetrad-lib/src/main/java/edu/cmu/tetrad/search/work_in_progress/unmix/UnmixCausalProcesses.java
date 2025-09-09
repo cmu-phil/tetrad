@@ -241,7 +241,7 @@ public class UnmixCausalProcesses {
 
     public static class Config {
         public int K;                 // number of clusters to produce
-        public long seed = 13;
+        public long seed = 13L;
         public int kmeansIters = 50;
         public boolean doOneReassign = true;         // legacy; ensures >=1 pass when true
         public boolean robustScaleResiduals = true;
@@ -250,11 +250,21 @@ public class UnmixCausalProcesses {
         public int reassignMaxPasses = 3;            // a few passes are plenty
         public boolean reassignStopIfNoChange = true;
 
-        // in Config:
-        public boolean useLaplaceReassign = false;  // <-- NEW (default false)
+        // Reassignment likelihood: Laplace for LiNG (non-Gaussian) mixtures
+        public boolean useLaplaceReassign = false;
 
         // Robust initializer (when component graphs differ a lot)
         public boolean useParentSuperset = false;
         public ParentSupersetBuilder.Config supersetCfg = new ParentSupersetBuilder.Config();
+
+        // Clustering & feature engineering
+        public boolean useGmmClustering = true; // use GaussianMixtureEM on residual features instead of KMeans
+        public GaussianMixtureEM.CovarianceType gmmCovType = GaussianMixtureEM.CovarianceType.DIAGONAL;
+
+        public enum FeatureMode { RAW, RAW_PLUS_ABS, RAW_PLUS_ABS_SQ }
+        public enum ScaleMode  { NONE, Z, ROBUST_IQR }
+
+        public FeatureMode featureMode = FeatureMode.RAW;
+        public ScaleMode  featureScale = ScaleMode.NONE;
     }
 }

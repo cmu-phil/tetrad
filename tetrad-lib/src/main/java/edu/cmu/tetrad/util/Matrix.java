@@ -404,7 +404,7 @@ public class Matrix implements TetradSerializable {
         for (int i = 0; i < getData().getNumRows(); i++) {
             for (int j = 0; j < getData().getNumCols(); j++) {
                 if (Double.isNaN(getData().get(i, j))) {
-                    throw new IllegalArgumentException("Cannot invert a matrix with non-NaN values.");
+                    throw new IllegalArgumentException("Cannot invert a matrix with NaN values.");
                 }
             }
         }
