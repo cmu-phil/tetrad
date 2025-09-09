@@ -241,9 +241,9 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.BayesPmEditor
                 </editor-class>
-<!--                <params-editor-class>-->
-<!--                    edu.cmu.tetradapp.editor.BayesPmParamsEditor-->
-<!--                </params-editor-class>-->
+                <!--                <params-editor-class>-->
+                <!--                    edu.cmu.tetradapp.editor.BayesPmParamsEditor-->
+                <!--                </params-editor-class>-->
             </model>
             <model name="SEM Parametric Model" acronym="SEM PM" help="sem_im">
                 <logger>
@@ -263,9 +263,9 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.HybridCgPmEditor
                 </editor-class>
-<!--                <params-editor-class>-->
-<!--                    edu.cmu.tetradapp.editor.BayesPmParamsEditor-->
-<!--                </params-editor-class>-->
+                <!--                <params-editor-class>-->
+                <!--                    edu.cmu.tetradapp.editor.BayesPmParamsEditor-->
+                <!--                </params-editor-class>-->
             </model>
             <model name="Generalized SEM Parametric Model" acronym="Gen. SEM PM" help="sem_im">
                 <logger>
@@ -349,9 +349,9 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.HybridCgImEditor
                 </editor-class>
-<!--                <params-editor-class>-->
-<!--                    edu.cmu.tetradapp.editor.BayesPmParamsEditor-->
-<!--                </params-editor-class>-->
+                <!--                <params-editor-class>-->
+                <!--                    edu.cmu.tetradapp.editor.BayesPmParamsEditor-->
+                <!--                </params-editor-class>-->
             </model>
             <model name="Generalized SEM Instantiated Model" acronym="Gen. SEM IM" help="gen_sem_im">
                 <logger>
@@ -419,6 +419,17 @@
                 </logger>
                 <model-class>
                     edu.cmu.tetradapp.model.datamanip.ConvertNumericalDiscreteToContinuousWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+            </model>
+            <model name="Causal Unmix" acronym="Continuize" help="causalunmix"
+                   category="Manipulation of Data">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>
+                    edu.cmu.tetradapp.model.datamanip.CausalUnmix
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
