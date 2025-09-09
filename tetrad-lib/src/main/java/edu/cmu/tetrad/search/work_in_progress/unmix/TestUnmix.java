@@ -12,6 +12,9 @@ import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.search.unmix.ParentSupersetBuilder;
+import edu.cmu.tetrad.search.unmix.ResidualRegressor;
+import edu.cmu.tetrad.search.unmix.UnmixResult;
 import org.junit.Test;
 
 import java.util.*;

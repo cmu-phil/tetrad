@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search.work_in_progress.unmix;
+package edu.cmu.tetrad.search.unmix;
 
 import java.util.Arrays;
 
@@ -33,6 +33,10 @@ public final class GaussianMixtureEM {
         public long seed = 13L;
         public double ridge = 1e-6;  // covariance regularizer
         public int kmeansRestarts = 5; // for init
+        public double covRidgeRel;
+        public double covShrinkage;
+        public int annealSteps;
+        public double annealStartT;
     }
 
     /** Fit a GMM by EM on X (n x d). Returns the model with responsibilities (soft labels). */

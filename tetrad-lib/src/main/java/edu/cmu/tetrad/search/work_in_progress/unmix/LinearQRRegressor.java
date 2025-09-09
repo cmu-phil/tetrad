@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search.work_in_progress.unmix;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.unmix.ResidualRegressor;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.List;

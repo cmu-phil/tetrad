@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search.work_in_progress.unmix;
+package edu.cmu.tetrad.search.unmix;
 
 import java.util.Arrays;
 import java.util.Random;

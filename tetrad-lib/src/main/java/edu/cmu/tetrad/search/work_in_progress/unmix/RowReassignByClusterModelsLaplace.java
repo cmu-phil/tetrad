@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search.work_in_progress.unmix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.unmix.ResidualRegressor;
 
 import java.util.Arrays;
 import java.util.List;

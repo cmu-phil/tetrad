@@ -1,15 +1,13 @@
 package edu.cmu.tetrad.search.work_in_progress.unmix;
 
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.unmix.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -23,29 +21,365 @@ import java.util.stream.Collectors;
 
 /**
  * RoadmapTest: EM baseline vs Residual-clustering across scenarios.
- *
- * Phase 1 — Controlled synthetic sweep:
- *   (A) params-only mixtures; (B) small topology flips; (C) larger structural shifts.
- *   Noise: Gaussian vs non-Gaussian (Laplace).
- *   K: known, and unknown via EM-BIC.
- *   Metrics: ARI; adjacency/arrowhead F1; SHD (simple implementation); runtime.
- *
- * Phase 2 — Stress & robustness:
- *   Class imbalance, smaller n, larger p, weak separation, mis-specified K; seed repeats.
- *
- * Phase 3 — Semi-synthetic realism:
- *   Real covariance backbone + injected regime shifts; optional interventions knob.
- *
- * Notes:
- *  - This is a practical harness: prints compact tables you can paste in email/docs.
- *  - Uses Boss+PermutationSearch for graphs; swap to your preferred search if needed.
- *  - Keep DIAGONAL covariance for EM unless d is small.
+ * <p>
+ * Phase 1 — Controlled synthetic sweep: (A) params-only mixtures; (B) small topology flips; (C) larger structural
+ * shifts. Noise: Gaussian vs non-Gaussian (Laplace). K: known, and unknown via EM-BIC. Metrics: ARI;
+ * adjacency/arrowhead F1; SHD (simple implementation); runtime.
+ * <p>
+ * Phase 2 — Stress & robustness: Class imbalance, smaller n, larger p, weak separation, mis-specified K; seed repeats.
+ * <p>
+ * Phase 3 — Semi-synthetic realism: Real covariance backbone + injected regime shifts; optional interventions knob.
+ * <p>
+ * Notes: - This is a practical harness: prints compact tables you can paste in email/docs. - Uses
+ * Boss+PermutationSearch for graphs; swap to your preferred search if needed. - Keep DIAGONAL covariance for EM unless
+ * d is small.
  */
 public class RoadmapTest {
 
     // =========================
     // Phase 1 — Controlled sweep
     // =========================
+
+    private static Function<DataSet, Graph> pooled() {
+        return ds -> {
+            if (ds.getNumRows() < 50) {
+                return null;
+            }
+
+            try {
+                IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), 0.01);
+                Pc pc = new Pc(test);
+                pc.setColliderOrientationStyle(Pc.ColliderOrientationStyle.MAX_P);
+                return pc.search();
+//
+//                edu.cmu.tetrad.search.score.SemBicScore score = new edu.cmu.tetrad.search.score.SemBicScore(new CovarianceMatrix(ds));
+//                score.setPenaltyDiscount(2);
+//                return new PermutationSearch(new Boss(score)).search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    // =========================
+    // Phase 2 — Stress & robustness
+    // =========================
+
+    private static Function<DataSet, Graph> perCluster() {
+        return pooled();
+    }
+
+    // =========================
+    // Phase 3 — Semi-synthetic realism
+    // =========================
+
+    /**
+     * Orientation accuracy only among edges that are directed in BOTH truth and estimate.
+     */
+    private static double arrowAccBothOriented(Graph[] truth, java.util.List<Graph> found) {
+        int[][] perms = {{0, 1}, {1, 0}};
+        double best = 0.0;
+        for (int[] pm : perms) {
+            int ok = 0, tot = 0;
+            for (int k = 0; k < Math.min(truth.length, found.size()); k++) {
+                Graph T = truth[k];
+                Graph F = found.get(pm[k]);
+                for (Edge e : T.getEdges()) {
+                    if (!e.isDirected()) continue;
+                    Edge f = F.getEdge(e.getNode1(), e.getNode2());
+                    if (f == null || !f.isDirected()) continue;
+                    tot++;
+                    if (e.getNode1().equals(f.getNode1()) && e.getNode2().equals(f.getNode2())) ok++;
+                }
+            }
+            double acc = tot == 0 ? 0.0 : (double) ok / tot;
+            if (acc > best) best = acc;
+        }
+        return best;
+    }
+
+    /**
+     * Compare discovered cluster graphs to truths with a robust matching that tolerates size mismatches (e.g., only 1
+     * cluster found). Greedy matching by best adj-F1.
+     */
+    private static GraphMetrics graphMetrics(Graph[] truth, List<Graph> found) {
+        if (truth == null || truth.length == 0 || found == null || found.isEmpty()) {
+            return new GraphMetrics(0.0, 0.0, Integer.MAX_VALUE / 4);
+        }
+
+        int F = found.size();
+        boolean[] used = new boolean[F];
+
+        double adjSum = 0.0, arrowSum = 0.0;
+        int shdSum = 0, matches = 0;
+
+        for (Graph Gt : truth) {
+            double bestAdj = -1.0, bestArrow = 0.0;
+            int bestShd = Integer.MAX_VALUE, bestF = -1;
+
+            for (int fi = 0; fi < F; fi++) {
+                if (used[fi]) continue;
+                Graph Gf = found.get(fi);
+                if (Gf == null) continue;
+
+                Metrics m = compareGraphs(Gt, Gf);
+                if (m.adjF1 > bestAdj || (m.adjF1 == bestAdj && m.shd < bestShd)) {
+                    bestAdj = m.adjF1;
+                    bestArrow = m.arrowF1;
+                    bestShd = m.shd;
+                    bestF = fi;
+                }
+            }
+
+            if (bestF >= 0) {
+                used[bestF] = true;
+                adjSum += bestAdj;
+                arrowSum += bestArrow;
+                shdSum += bestShd;
+                matches++;
+            } else {
+                // Nothing to match: penalize by SHD to an empty graph on same nodes.
+                shdSum += structuralHammingDistance(Gt, new EdgeListGraph(Gt.getNodes()));
+            }
+        }
+
+        if (matches == 0) return new GraphMetrics(0.0, 0.0, shdSum);
+        return new GraphMetrics(adjSum / matches, arrowSum / matches, shdSum);
+    }
+
+    /**
+     * Compare two graphs on (i) adjacency F1; (ii) orientation F1 over the shared skeleton; (iii) SHD.
+     */
+    private static Metrics compareGraphs(Graph Gt, Graph Gh) {
+        if (Gt == null || Gh == null) return new Metrics(0, 0, Integer.MAX_VALUE / 4);
+
+        // Evaluate in equivalence-class space: CPDAGs capture only compelled orientations.
+        // Assumes DAG inputs; if an estimator may output non-DAGs, add a DAG check/repair.
+        Gt = GraphTransforms.dagToCpdag(Gt);
+        Gh = GraphTransforms.dagToCpdag(Gh);
+
+        // --- Adjacency (skeleton) F1
+        Set<String> skelT = undirectedEdgeSet(Gt);
+        Set<String> skelH = undirectedEdgeSet(Gh);
+
+        Set<String> inter = new HashSet<>(skelT);
+        inter.retainAll(skelH);
+
+        int tp = inter.size();
+        int fp = Math.max(skelH.size() - tp, 0);
+        int fn = Math.max(skelT.size() - tp, 0);
+
+        double precA = tp == 0 ? 0 : (double) tp / (tp + fp);
+        double recA = tp == 0 ? 0 : (double) tp / (tp + fn);
+        double adjF1 = (precA + recA == 0) ? 0 : 2 * precA * recA / (precA + recA);
+
+        // --- Orientation F1 over shared skeleton
+        // Treat a directed edge as an ordered pair "A>B".
+        Set<String> dirT = directedEdgeSet(Gt);
+        Set<String> dirH = directedEdgeSet(Gh);
+
+        int tpO = 0, fpO = 0, fnO = 0;
+        for (String e : inter) {
+            String[] ab = e.split("--");
+            String a = ab[0], b = ab[1];
+            String abDir = a + ">" + b, baDir = b + ">" + a;
+
+            boolean t_ab = dirT.contains(abDir), t_ba = dirT.contains(baDir);
+            boolean h_ab = dirH.contains(abDir), h_ba = dirH.contains(baDir);
+
+            // Count TP when both are directed the same way.
+            if (t_ab && h_ab) tpO++;
+            if (t_ba && h_ba) tpO++;
+
+            // FN: true is directed but hypothesized is either undirected or opposite.
+            if (t_ab && !h_ab) fnO++;
+            if (t_ba && !h_ba) fnO++;
+
+            // FP: hypothesized is directed but true is either undirected or opposite.
+            if (h_ab && !t_ab) fpO++;
+            if (h_ba && !t_ba) fpO++;
+        }
+
+        double precO = (tpO + fpO) == 0 ? 0 : (double) tpO / (tpO + fpO);
+        double recO = (tpO + fnO) == 0 ? 0 : (double) tpO / (tpO + fnO);
+        double arrowF1 = (precO + recO == 0) ? 0 : 2 * precO * recO / (precO + recO);
+
+        int shd = structuralHammingDistance(Gt, Gh);
+        return new Metrics(adjF1, arrowF1, shd);
+    }
+
+    // =========================
+    // Common plumbing & metrics
+    // =========================
+
+    private static int structuralHammingDistance(Graph A, Graph B) {
+        Set<String> EA = directedEdgeSet(A), EB = directedEdgeSet(B);
+        Set<String> UA = undirectedEdgeSet(A), UB = undirectedEdgeSet(B);
+        // skeleton difference
+        Set<String> SA = new HashSet<>(UA);
+        SA.addAll(stripDirections(EA));
+        Set<String> SB = new HashSet<>(UB);
+        SB.addAll(stripDirections(EB));
+        Set<String> sym = new HashSet<>(SA);
+        sym.removeAll(SB);
+        Set<String> sym2 = new HashSet<>(SB);
+        sym2.removeAll(SA);
+        int skelDiff = sym.size() + sym2.size();
+        // orientation differences on common skeleton
+        Set<String> inter = new HashSet<>(SA);
+        inter.retainAll(SB);
+        int orientDiff = 0;
+        for (String s : inter) {
+            String[] ab = s.split("--");
+            String a = ab[0], b = ab[1];
+            Edge ea = A.getEdge(A.getNode(a), A.getNode(b));
+            Edge eb = B.getEdge(B.getNode(a), B.getNode(b));
+            boolean da = ea != null && ea.isDirected();
+            boolean db = eb != null && eb.isDirected();
+            if (da != db) orientDiff++;
+            else if (da) {
+                if (!(ea.getNode1().getName().equals(eb.getNode1().getName()) &&
+                      ea.getNode2().getName().equals(eb.getNode2().getName()))) {
+                    orientDiff++;
+                }
+            }
+        }
+        return skelDiff + orientDiff;
+    }
+
+    private static Set<String> directedEdgeSet(Graph G) {
+        Set<String> s = new HashSet<>();
+        for (Edge e : G.getEdges()) if (e.isDirected()) s.add(e.getNode1().getName() + ">" + e.getNode2().getName());
+        return s;
+    }
+
+    private static Set<String> undirectedEdgeSet(Graph G) {
+        Set<String> s = new HashSet<>();
+        for (Edge e : G.getEdges()) {
+            String a = e.getNode1().getName(), b = e.getNode2().getName();
+            String key = a.compareTo(b) < 0 ? a + "--" + b : b + "--" + a;
+            s.add(key);
+        }
+        return s;
+    }
+
+    private static Set<String> stripDirections(Set<String> dir) {
+        Set<String> s = new HashSet<>();
+        for (String e : dir) {
+            String[] ab = e.split(">");
+            String key = ab[0].compareTo(ab[1]) < 0 ? ab[0] + "--" + ab[1] : ab[1] + "--" + ab[0];
+            s.add(key);
+        }
+        return s;
+    }
+
+    // ---------- Metrics ----------
+
+    private static MixOut shuffleWithLabels(DataSet concat, int[] labels, long seed) {
+        int n = concat.getNumRows();
+        List<Integer> perm = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) perm.add(i);
+        Collections.shuffle(perm, new Random(seed));
+        DataSet shuffled = concat.subsetRows(perm);
+        int[] y = new int[n];
+        for (int i = 0; i < n; i++) y[i] = labels[perm.get(i)];
+        MixOut out = new MixOut();
+        out.data = shuffled;
+        out.labels = y;
+        return out;
+    }
+
+    private static @NotNull Graph copyWithFlippedDirections(Graph g, int flips, Random rnd) {
+        Graph h = new EdgeListGraph(g);
+        List<Edge> dir = h.getEdges().stream().filter(Edge::isDirected).collect(Collectors.toList());
+        if (dir.isEmpty()) return h;
+        Collections.shuffle(dir, rnd);
+        int done = 0;
+        for (Edge e : dir) {
+            if (done >= flips) break;
+            Node a = e.getNode1(), b = e.getNode2();
+            if (!h.isAdjacentTo(a, b)) continue;
+            h.removeEdge(e);
+            Edge rev = Edges.directedEdge(b, a);
+            if (!h.isAdjacentTo(b, a)) {
+                h.addEdge(rev);
+                done++;
+            } else {
+                h.addEdge(e);
+            }
+        }
+        return h;
+    }
+
+    private static double adjustedRandIndex(int[] a, int[] b) {
+        int n = a.length;
+        int maxA = Arrays.stream(a).max().orElse(0);
+        int maxB = Arrays.stream(b).max().orElse(0);
+        int[][] M = new int[maxA + 1][maxB + 1];
+        int[] row = new int[maxA + 1], col = new int[maxB + 1];
+        for (int i = 0; i < n; i++) {
+            M[a[i]][b[i]]++;
+            row[a[i]]++;
+            col[b[i]]++;
+        }
+        double sumComb = 0, rowComb = 0, colComb = 0;
+        for (int i = 0; i <= maxA; i++) for (int j = 0; j <= maxB; j++) sumComb += comb2(M[i][j]);
+        for (int i = 0; i <= maxA; i++) rowComb += comb2(row[i]);
+        for (int j = 0; j <= maxB; j++) colComb += comb2(col[j]);
+        double totalComb = comb2(n);
+        double exp = rowComb * colComb / totalComb;
+        double max = 0.5 * (rowComb + colComb);
+        return (sumComb - exp) / (max - exp + 1e-12);
+    }
+
+    private static double comb2(int m) {
+        return m < 2 ? 0 : m * (m - 1) / 2.0;
+    }
+
+    private static double median(List<Double> xs) {
+        double[] v = xs.stream().mapToDouble(Double::doubleValue).sorted().toArray();
+        int n = v.length;
+        return (n % 2 == 1) ? v[n / 2] : 0.5 * (v[n / 2 - 1] + v[n / 2]);
+    }
+
+//    /** Simple adjacency & orientation comparison. */
+//    private static Metrics compareGraphs(Graph Gt, Graph Gh) {
+//        if (Gt == null || Gh == null) return new Metrics(0, 0, Integer.MAX_VALUE/4);
+//
+//        Set<String> skelT = undirectedEdgeSet(Gt);
+//        Set<String> skelH = undirectedEdgeSet(Gh);
+//        Set<String> inter = new HashSet<>(skelT); inter.retainAll(skelH);
+//
+//        int tp = inter.size(), fp = Math.max(skelH.size() - tp, 0), fn = Math.max(skelT.size() - tp, 0);
+//        double prec = tp == 0 ? 0 : (double)tp / (tp + fp);
+//        double rec  = tp == 0 ? 0 : (double)tp / (tp + fn);
+//        double adjF1 = (prec + rec == 0) ? 0 : 2 * prec * rec / (prec + rec);
+//
+//        // orientation: count correctly oriented among shared adjacencies
+//        int orientOK = 0, orientTotal = 0;
+//        for (String e : inter) {
+//            String[] ab = e.split("--");
+//            Node a = Gt.getNode(ab[0]), b = Gt.getNode(ab[1]);
+//            Edge et = Gt.getEdge(a, b);
+//            Edge eh = Gh.getEdge(a, b);
+//            if (et == null || eh == null) continue;
+//            if (et.isDirected() || eh.isDirected()) { // only care when at least one is oriented
+//                orientTotal++;
+//                if (isSameOrientation(et, eh)) orientOK++;
+//            }
+//        }
+//        double arrowF1 = orientTotal == 0 ? 0 : (double) orientOK / orientTotal;
+//        int shd = structuralHammingDistance(Gt, Gh);
+//        return new Metrics(adjF1, arrowF1, shd);
+//    }
+
+    private static double iqr(List<Double> xs) {
+        double[] v = xs.stream().mapToDouble(Double::doubleValue).sorted().toArray();
+        int n = v.length;
+        double q1 = v[(int) Math.floor(0.25 * (n - 1))];
+        double q3 = v[(int) Math.floor(0.75 * (n - 1))];
+        return q3 - q1;
+    }
 
     @Test
     public void phase1_controlledSweep() {
@@ -54,7 +388,7 @@ public class RoadmapTest {
         long seed = 11;
 
         // Scenarios: params-only, small flips, large flips
-        Scenario[] scenarios = new Scenario[] {
+        Scenario[] scenarios = new Scenario[]{
                 Scenario.paramsOnly(p, nPer, nPer, /*coefScale*/2.0, /*noiseScale*/2.5, NoiseFamily.LAPLACE, seed),
                 Scenario.smallTopoFlip(p, nPer, nPer, /*flips*/4, NoiseFamily.LAPLACE, seed),
                 Scenario.largeTopoFlip(p, nPer, nPer, /*flips*/10, NoiseFamily.LAPLACE, seed)
@@ -75,15 +409,9 @@ public class RoadmapTest {
 
             // --- NEW: configure clustering & feature options ---
             uc.useGmmClustering = true;
-            if (sc.kind == Scenario.Kind.PARAMS_ONLY) {
-                uc.featureMode = UnmixCausalProcesses.Config.FeatureMode.RAW;
-                uc.featureScale = UnmixCausalProcesses.Config.ScaleMode.ROBUST_IQR;
-                uc.robustScaleResiduals = true;
-            } else {
-                uc.featureMode = UnmixCausalProcesses.Config.FeatureMode.RAW;
-                uc.featureScale = UnmixCausalProcesses.Config.ScaleMode.ROBUST_IQR;
-                uc.robustScaleResiduals = true;
-            }
+            uc.featureMode = UnmixCausalProcesses.Config.FeatureMode.RAW;
+            uc.featureScale = UnmixCausalProcesses.Config.ScaleMode.ROBUST_IQR;
+            uc.robustScaleResiduals = true;
 
             // Use ridge-regularized regressor
             LinearQRRegressor reg = new LinearQRRegressor();
@@ -141,7 +469,10 @@ public class RoadmapTest {
                 double mean = 0, m2 = 0;
                 for (int i = 0; i < X.length; i++) mean += X[i][j];
                 mean /= X.length;
-                for (int i = 0; i < X.length; i++) { double d = X[i][j] - mean; m2 += d*d; }
+                for (int i = 0; i < X.length; i++) {
+                    double d = X[i][j] - mean;
+                    m2 += d * d;
+                }
                 double sd = Math.sqrt(m2 / Math.max(1, X.length - 1));
                 if (sd < 1e-12) sd = 1.0;
                 for (int i = 0; i < X.length; i++) X[i][j] = (X[i][j] - mean) / sd;
@@ -168,10 +499,6 @@ public class RoadmapTest {
         }
     }
 
-    // =========================
-    // Phase 2 — Stress & robustness
-    // =========================
-
     @Test
     public void phase2_robustness() {
         int p = 12;
@@ -185,7 +512,7 @@ public class RoadmapTest {
         System.out.println("\n=== Phase2: robustness curves (mean±IQR over seeds) ===");
         for (int nTot : nTotals) {
             for (double fracA : imbalances) {
-                int n1 = (int)Math.round(nTot * fracA);
+                int n1 = (int) Math.round(nTot * fracA);
                 int n2 = nTot - n1;
                 for (double sig : signalScales) {
                     List<Double> arisUC = new ArrayList<>();
@@ -196,14 +523,22 @@ public class RoadmapTest {
 
                         // configs as in Phase 1 topo-diff
                         UnmixCausalProcesses.Config uc = new UnmixCausalProcesses.Config();
-                        uc.K = 2; uc.useParentSuperset = true; uc.robustScaleResiduals = true;
-                        uc.kmeansIters = 100; uc.reassignMaxPasses = 3; uc.useLaplaceReassign = true;
+                        uc.K = 2;
+                        uc.useParentSuperset = true;
+                        uc.robustScaleResiduals = true;
+                        uc.kmeansIters = 100;
+                        uc.reassignMaxPasses = 3;
+                        uc.useLaplaceReassign = true;
 
                         EmUnmix.Config ec = new EmUnmix.Config();
-                        ec.K = 2; ec.useParentSuperset = true; ec.supersetCfg.topM = 10;
+                        ec.K = 2;
+                        ec.useParentSuperset = true;
+                        ec.supersetCfg.topM = 10;
                         ec.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.SPEARMAN;
-                        ec.robustScaleResiduals = false; ec.covType = GaussianMixtureEM.CovarianceType.FULL;
-                        ec.emMaxIters = 400; ec.kmeansRestarts = 10;
+                        ec.robustScaleResiduals = false;
+                        ec.covType = GaussianMixtureEM.CovarianceType.FULL;
+                        ec.emMaxIters = 400;
+                        ec.kmeansRestarts = 10;
 
                         UnmixResult rUC = UnmixCausalProcesses.run(sc.mixed, uc, new LinearQRRegressor(), pooled(), perCluster());
                         UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor(), pooled(), perCluster());
@@ -220,10 +555,6 @@ public class RoadmapTest {
             }
         }
     }
-
-    // =========================
-    // Phase 3 — Semi-synthetic realism
-    // =========================
 
     @Test
     public void phase3_semisynthetic() {
@@ -255,7 +586,8 @@ public class RoadmapTest {
             try {
                 double b = imB.getEdgeCoef(e);
                 imB.setEdgeCoef(e.getNode1(), e.getNode2(), coefScale * b);
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
         }
         for (Node v : vars) imB.setErrVar(v, noiseScale * imB.getErrVar(v));
 
@@ -269,14 +601,22 @@ public class RoadmapTest {
 
         // Run both methods
         UnmixCausalProcesses.Config uc = new UnmixCausalProcesses.Config();
-        uc.K = 2; uc.useParentSuperset = true; uc.robustScaleResiduals = true;
-        uc.kmeansIters = 100; uc.reassignMaxPasses = 3; uc.useLaplaceReassign = true;
+        uc.K = 2;
+        uc.useParentSuperset = true;
+        uc.robustScaleResiduals = true;
+        uc.kmeansIters = 100;
+        uc.reassignMaxPasses = 3;
+        uc.useLaplaceReassign = true;
 
         EmUnmix.Config ec = new EmUnmix.Config();
-        ec.K = 2; ec.useParentSuperset = true; ec.supersetCfg.topM = 12;
+        ec.K = 2;
+        ec.useParentSuperset = true;
+        ec.supersetCfg.topM = 12;
         ec.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.KENDALL;
-        ec.robustScaleResiduals = true; ec.covType = GaussianMixtureEM.CovarianceType.FULL;
-        ec.emMaxIters = 200; ec.kmeansRestarts = 10;
+        ec.robustScaleResiduals = true;
+        ec.covType = GaussianMixtureEM.CovarianceType.FULL;
+        ec.emMaxIters = 200;
+        ec.kmeansRestarts = 10;
 
         UnmixResult rUC = UnmixCausalProcesses.run(mix.data, uc, new LinearQRRegressor(), pooled(), perCluster());
         UnmixResult rEM = EmUnmix.run(mix.data, ec, new LinearQRRegressor(), pooled(), perCluster());
@@ -304,41 +644,80 @@ public class RoadmapTest {
                 adjustedRandIndex(mix.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
     }
 
-    // =========================
-    // Common plumbing & metrics
-    // =========================
+    //    @Test
+    public EmUnmix.Config makeDefaultEc(DataSet data, int K) {
+        // For residual-EM (your EmUnmix pipeline)
+        EmUnmix.Config ec = new EmUnmix.Config();
+        ec.K = 2;                               // or leave unset and use selectK (below)
+        ec.useParentSuperset = true;            // if you want the superset trick
+        ec.supersetCfg.topM = 10;
+        ec.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.KENDALL;
+        ec.robustScaleResiduals = true;
 
-    private enum NoiseFamily { GAUSSIAN, LAPLACE }
+        // Covariance: FULL if safe, else DIAGONAL
+        int p = data.getNumColumns();
+        int n = data.getNumRows();
+        boolean okFull = (n / Math.max(1, K)) >= (p + 10);
+        ec.covType = okFull ? GaussianMixtureEM.CovarianceType.FULL
+                : GaussianMixtureEM.CovarianceType.DIAGONAL;
 
-    private static Function<DataSet, Graph> pooled() {
-        return ds -> {
-            if (ds.getNumRows() < 50) {
-                return null;
-            }
+        // Stable EM
+        ec.kmeansRestarts = 20;                 // robust init
+        ec.emMaxIters = 300;
+        ec.covRidgeRel = 1e-3;                  // well-conditioned Σ
+        ec.covShrinkage = 0.10;                 // mild shrinkage
+        ec.annealSteps = 15;                   // tempered EM helps in tougher cases
+        ec.annealStartT = 0.8;
 
-            try {
-                IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), 0.01);
-                Pc pc = new Pc(test);
-                pc.setColliderOrientationStyle(Pc.ColliderOrientationStyle.MAX_P);
-                return pc.search();
-//
-//                edu.cmu.tetrad.search.score.SemBicScore score = new edu.cmu.tetrad.search.score.SemBicScore(new CovarianceMatrix(ds));
-//                score.setPenaltyDiscount(2);
-//                return new PermutationSearch(new Boss(score)).search();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        };
+        return ec;
     }
-    private static Function<DataSet, Graph> perCluster() { return pooled(); }
+
+    // ---------- Basic helpers reused from prior tests ----------
+
+    public void defaultsRawXEM(DataSet data) {
+        GaussianMixtureEM.Config gx = new GaussianMixtureEM.Config();
+        gx.K = 2;
+        int p = data.getNumColumns();
+        int n = data.getNumRows();
+        boolean okFull = (n / Math.max(1, gx.K)) >= (p + 10);
+        gx.covType = okFull ? GaussianMixtureEM.CovarianceType.FULL
+                : GaussianMixtureEM.CovarianceType.DIAGONAL;
+        gx.kmeansRestarts = 20;
+        gx.maxIters = 300;
+        gx.covRidgeRel = 1e-3;
+        gx.covShrinkage = 0.10;
+        gx.annealSteps = 15;
+        gx.annealStartT = 0.8;
+        // remember to z-score columns before fit(X, gx)
+    }
+
+    public void unmix(DataSet data, int K) {
+        EmUnmix.Config ec = makeDefaultEc(data, K);  // as above
+
+        if (K == -1) {
+            UnmixResult rBest = EmUnmix.selectK(data, 1, 4, new LinearQRRegressor(), pooled(), perCluster(), ec);
+        } else {
+            UnmixResult rEM = EmUnmix.run(data, ec, new LinearQRRegressor(), pooled(), perCluster());
+        }
+    }
+
+    private enum NoiseFamily {GAUSSIAN, LAPLACE}
 
     private static class Scenario {
-        enum Kind { PARAMS_ONLY, SMALL_FLIP, LARGE_FLIP }
-        final String name; final Kind kind; final NoiseFamily noise;
-        final DataSet mixed; final int[] labels; final Graph[] truthGraphs;
+        final String name;
+        final Kind kind;
+        final NoiseFamily noise;
+        final DataSet mixed;
+        final int[] labels;
+        final Graph[] truthGraphs;
 
         private Scenario(String name, Kind kind, NoiseFamily noise, DataSet mixed, int[] labels, Graph[] truthGraphs) {
-            this.name = name; this.kind = kind; this.noise = noise; this.mixed = mixed; this.labels = labels; this.truthGraphs = truthGraphs;
+            this.name = name;
+            this.kind = kind;
+            this.noise = noise;
+            this.mixed = mixed;
+            this.labels = labels;
+            this.truthGraphs = truthGraphs;
         }
 
         static Scenario paramsOnly(int p, int n1, int n2, double coefScale, double noiseScale, NoiseFamily nf, long seed) {
@@ -354,7 +733,8 @@ public class RoadmapTest {
                 try {
                     double b = imB.getEdgeCoef(e);
                     imB.setEdgeCoef(e.getNode1(), e.getNode2(), coefScale * b);
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
             }
             for (Node v : vars) imB.setErrVar(v, noiseScale * imB.getErrVar(v));
 
@@ -368,9 +748,11 @@ public class RoadmapTest {
         static Scenario smallTopoFlip(int p, int n1, int n2, int flips, NoiseFamily nf, long seed) {
             return topoFlip("SmallFlip", Kind.SMALL_FLIP, p, n1, n2, flips, nf, seed, 1.0);
         }
+
         static Scenario largeTopoFlip(int p, int n1, int n2, int flips, NoiseFamily nf, long seed) {
             return topoFlip("LargeFlip", Kind.LARGE_FLIP, p, n1, n2, flips, nf, seed, 1.0);
         }
+
         static Scenario smallTopoFlipParamScaled(int p, int n1, int n2, int flips, double scale, NoiseFamily nf, long seed) {
             return topoFlip("SmallFlipParamScaled(" + scale + ")", Kind.SMALL_FLIP, p, n1, n2, flips, nf, seed, scale);
         }
@@ -381,7 +763,8 @@ public class RoadmapTest {
             for (int i = 0; i < p; i++) vars.add(new ContinuousVariable("X" + i));
             Graph gA = RandomGraph.randomGraph(vars, 0, 14, 100, 100, 100, false);
             Graph gB = copyWithFlippedDirections(gA, flips, new Random(seed));
-            Parameters par = new Parameters(); setNoise(par, nf);
+            Parameters par = new Parameters();
+            setNoise(par, nf);
             SemIm imA = new SemIm(new SemPm(gA), par);
             SemIm imB = new SemIm(new SemPm(gB), par);
             if (paramScaleB != 1.0) {
@@ -389,7 +772,8 @@ public class RoadmapTest {
                     try {
                         double b = imB.getEdgeCoef(e);
                         imB.setEdgeCoef(e.getNode1(), e.getNode2(), paramScaleB * b);
-                    } catch (Exception ignore) {}
+                    } catch (Exception ignore) {
+                    }
                 }
                 for (Node v : vars) imB.setErrVar(v, paramScaleB * imB.getErrVar(v));
             }
@@ -408,307 +792,41 @@ public class RoadmapTest {
                 par.set(Params.SIMULATION_PARAM1, 1);
             }
         }
+
         private static int[] labelVec(int n1, int n2) {
             int[] lab = new int[n1 + n2];
             Arrays.fill(lab, 0, n1, 0);
             Arrays.fill(lab, n1, n1 + n2, 1);
             return lab;
         }
-    }
 
-    // ---------- Metrics ----------
-
-    /** Orientation accuracy only among edges that are directed in BOTH truth and estimate. */
-    private static double arrowAccBothOriented(Graph[] truth, java.util.List<Graph> found) {
-        int[][] perms = {{0,1},{1,0}};
-        double best = 0.0;
-        for (int[] pm : perms) {
-            int ok = 0, tot = 0;
-            for (int k = 0; k < Math.min(truth.length, found.size()); k++) {
-                Graph T = truth[k];
-                Graph F = found.get(pm[k]);
-                for (Edge e : T.getEdges()) {
-                    if (!e.isDirected()) continue;
-                    Edge f = F.getEdge(e.getNode1(), e.getNode2());
-                    if (f == null || !f.isDirected()) continue;
-                    tot++;
-                    if (e.getNode1().equals(f.getNode1()) && e.getNode2().equals(f.getNode2())) ok++;
-                }
-            }
-            double acc = tot == 0 ? 0.0 : (double) ok / tot;
-            if (acc > best) best = acc;
-        }
-        return best;
+        enum Kind {PARAMS_ONLY, SMALL_FLIP, LARGE_FLIP}
     }
 
     private static class GraphMetrics {
-        final double adjF1, arrowF1; final int shd;
-        GraphMetrics(double adjF1, double arrowF1, int shd) { this.adjF1 = adjF1; this.arrowF1 = arrowF1; this.shd = shd; }
-    }
+        final double adjF1, arrowF1;
+        final int shd;
 
-    /** Compare discovered cluster graphs to truths with a robust matching that tolerates
-     *  size mismatches (e.g., only 1 cluster found). Greedy matching by best adj-F1. */
-    private static GraphMetrics graphMetrics(Graph[] truth, List<Graph> found) {
-        if (truth == null || truth.length == 0 || found == null || found.isEmpty()) {
-            return new GraphMetrics(0.0, 0.0, Integer.MAX_VALUE / 4);
+        GraphMetrics(double adjF1, double arrowF1, int shd) {
+            this.adjF1 = adjF1;
+            this.arrowF1 = arrowF1;
+            this.shd = shd;
         }
+    }
 
-        int T = truth.length, F = found.size();
-        boolean[] used = new boolean[F];
+    private static class Metrics {
+        final double adjF1, arrowF1;
+        final int shd;
 
-        double adjSum = 0.0, arrowSum = 0.0;
-        int shdSum = 0, matches = 0;
-
-        for (int ti = 0; ti < T; ti++) {
-            Graph Gt = truth[ti];
-            double bestAdj = -1.0, bestArrow = 0.0;
-            int bestShd = Integer.MAX_VALUE, bestF = -1;
-
-            for (int fi = 0; fi < F; fi++) {
-                if (used[fi]) continue;
-                Graph Gf = found.get(fi);
-                if (Gf == null) continue;
-
-                Metrics m = compareGraphs(Gt, Gf);
-                if (m.adjF1 > bestAdj || (m.adjF1 == bestAdj && m.shd < bestShd)) {
-                    bestAdj = m.adjF1;
-                    bestArrow = m.arrowF1;
-                    bestShd = m.shd;
-                    bestF = fi;
-                }
-            }
-
-            if (bestF >= 0) {
-                used[bestF] = true;
-                adjSum += bestAdj;
-                arrowSum += bestArrow;
-                shdSum += bestShd;
-                matches++;
-            } else {
-                // Nothing to match: penalize by SHD to an empty graph on same nodes.
-                shdSum += structuralHammingDistance(Gt, new EdgeListGraph(Gt.getNodes()));
-            }
+        Metrics(double a, double b, int s) {
+            adjF1 = a;
+            arrowF1 = b;
+            shd = s;
         }
-
-        if (matches == 0) return new GraphMetrics(0.0, 0.0, shdSum);
-        return new GraphMetrics(adjSum / matches, arrowSum / matches, shdSum);
     }
 
-    /** Compare two graphs on (i) adjacency F1; (ii) orientation F1 over the shared skeleton; (iii) SHD. */
-    private static Metrics compareGraphs(Graph Gt, Graph Gh) {
-        if (Gt == null || Gh == null) return new Metrics(0, 0, Integer.MAX_VALUE / 4);
-
-        // Evaluate in equivalence-class space: CPDAGs capture only compelled orientations.
-        // Assumes DAG inputs; if an estimator may output non-DAGs, add a DAG check/repair.
-        Gt = GraphTransforms.dagToCpdag(Gt);
-        Gh = GraphTransforms.dagToCpdag(Gh);
-
-        // --- Adjacency (skeleton) F1
-        Set<String> skelT = undirectedEdgeSet(Gt);
-        Set<String> skelH = undirectedEdgeSet(Gh);
-
-        Set<String> inter = new HashSet<>(skelT);
-        inter.retainAll(skelH);
-
-        int tp = inter.size();
-        int fp = Math.max(skelH.size() - tp, 0);
-        int fn = Math.max(skelT.size() - tp, 0);
-
-        double precA = tp == 0 ? 0 : (double) tp / (tp + fp);
-        double recA  = tp == 0 ? 0 : (double) tp / (tp + fn);
-        double adjF1 = (precA + recA == 0) ? 0 : 2 * precA * recA / (precA + recA);
-
-        // --- Orientation F1 over shared skeleton
-        // Treat a directed edge as an ordered pair "A>B".
-        Set<String> dirT = directedEdgeSet(Gt);
-        Set<String> dirH = directedEdgeSet(Gh);
-
-        int tpO = 0, fpO = 0, fnO = 0;
-        for (String e : inter) {
-            String[] ab = e.split("--");
-            String a = ab[0], b = ab[1];
-            String abDir = a + ">" + b, baDir = b + ">" + a;
-
-            boolean t_ab = dirT.contains(abDir), t_ba = dirT.contains(baDir);
-            boolean h_ab = dirH.contains(abDir), h_ba = dirH.contains(baDir);
-
-            // Count TP when both are directed the same way.
-            if (t_ab && h_ab) tpO++;
-            if (t_ba && h_ba) tpO++;
-
-            // FN: true is directed but hypothesized is either undirected or opposite.
-            if (t_ab && !h_ab) fnO++;
-            if (t_ba && !h_ba) fnO++;
-
-            // FP: hypothesized is directed but true is either undirected or opposite.
-            if (h_ab && !t_ab) fpO++;
-            if (h_ba && !t_ba) fpO++;
-        }
-
-        double precO = (tpO + fpO) == 0 ? 0 : (double) tpO / (tpO + fpO);
-        double recO  = (tpO + fnO) == 0 ? 0 : (double) tpO / (tpO + fnO);
-        double arrowF1 = (precO + recO == 0) ? 0 : 2 * precO * recO / (precO + recO);
-
-        int shd = structuralHammingDistance(Gt, Gh);
-        return new Metrics(adjF1, arrowF1, shd);
-    }
-
-    private static class Metrics { final double adjF1, arrowF1; final int shd;
-        Metrics(double a, double b, int s) { adjF1 = a; arrowF1 = b; shd = s; } }
-
-//    /** Simple adjacency & orientation comparison. */
-//    private static Metrics compareGraphs(Graph Gt, Graph Gh) {
-//        if (Gt == null || Gh == null) return new Metrics(0, 0, Integer.MAX_VALUE/4);
-//
-//        Set<String> skelT = undirectedEdgeSet(Gt);
-//        Set<String> skelH = undirectedEdgeSet(Gh);
-//        Set<String> inter = new HashSet<>(skelT); inter.retainAll(skelH);
-//
-//        int tp = inter.size(), fp = Math.max(skelH.size() - tp, 0), fn = Math.max(skelT.size() - tp, 0);
-//        double prec = tp == 0 ? 0 : (double)tp / (tp + fp);
-//        double rec  = tp == 0 ? 0 : (double)tp / (tp + fn);
-//        double adjF1 = (prec + rec == 0) ? 0 : 2 * prec * rec / (prec + rec);
-//
-//        // orientation: count correctly oriented among shared adjacencies
-//        int orientOK = 0, orientTotal = 0;
-//        for (String e : inter) {
-//            String[] ab = e.split("--");
-//            Node a = Gt.getNode(ab[0]), b = Gt.getNode(ab[1]);
-//            Edge et = Gt.getEdge(a, b);
-//            Edge eh = Gh.getEdge(a, b);
-//            if (et == null || eh == null) continue;
-//            if (et.isDirected() || eh.isDirected()) { // only care when at least one is oriented
-//                orientTotal++;
-//                if (isSameOrientation(et, eh)) orientOK++;
-//            }
-//        }
-//        double arrowF1 = orientTotal == 0 ? 0 : (double) orientOK / orientTotal;
-//        int shd = structuralHammingDistance(Gt, Gh);
-//        return new Metrics(adjF1, arrowF1, shd);
-//    }
-
-    private static boolean isSameOrientation(Edge e1, Edge e2) {
-        if (e1.isDirected() && e2.isDirected())
-            return e1.getNode1().equals(e2.getNode1()) && e1.getNode2().equals(e2.getNode2());
-        // if both undirected, treat as mismatch for arrow metric
-        return false;
-    }
-
-    private static int structuralHammingDistance(Graph A, Graph B) {
-        Set<String> EA = directedEdgeSet(A), EB = directedEdgeSet(B);
-        Set<String> UA = undirectedEdgeSet(A), UB = undirectedEdgeSet(B);
-        // skeleton difference
-        Set<String> SA = new HashSet<>(UA); SA.addAll(stripDirections(EA));
-        Set<String> SB = new HashSet<>(UB); SB.addAll(stripDirections(EB));
-        Set<String> sym = new HashSet<>(SA); sym.removeAll(SB);
-        Set<String> sym2 = new HashSet<>(SB); sym2.removeAll(SA);
-        int skelDiff = sym.size() + sym2.size();
-        // orientation differences on common skeleton
-        Set<String> inter = new HashSet<>(SA); inter.retainAll(SB);
-        int orientDiff = 0;
-        for (String s : inter) {
-            String[] ab = s.split("--");
-            String a = ab[0], b = ab[1];
-            Edge ea = A.getEdge(A.getNode(a), A.getNode(b));
-            Edge eb = B.getEdge(B.getNode(a), B.getNode(b));
-            boolean da = ea != null && ea.isDirected();
-            boolean db = eb != null && eb.isDirected();
-            if (da != db) orientDiff++;
-            else if (da && db) {
-                if (! (ea.getNode1().getName().equals(eb.getNode1().getName()) &&
-                       ea.getNode2().getName().equals(eb.getNode2().getName())) ) {
-                    orientDiff++;
-                }
-            }
-        }
-        return skelDiff + orientDiff;
-    }
-
-    private static Set<String> directedEdgeSet(Graph G) {
-        Set<String> s = new HashSet<>();
-        for (Edge e : G.getEdges()) if (e.isDirected()) s.add(e.getNode1().getName()+">"+e.getNode2().getName());
-        return s;
-    }
-    private static Set<String> undirectedEdgeSet(Graph G) {
-        Set<String> s = new HashSet<>();
-        for (Edge e : G.getEdges()) {
-            String a = e.getNode1().getName(), b = e.getNode2().getName();
-            String key = a.compareTo(b) < 0 ? a+"--"+b : b+"--"+a;
-            s.add(key);
-        }
-        return s;
-    }
-    private static Set<String> stripDirections(Set<String> dir) {
-        Set<String> s = new HashSet<>();
-        for (String e : dir) {
-            String[] ab = e.split(">");
-            String key = ab[0].compareTo(ab[1]) < 0 ? ab[0]+"--"+ab[1] : ab[1]+"--"+ab[0];
-            s.add(key);
-        }
-        return s;
-    }
-
-    // ---------- Basic helpers reused from prior tests ----------
-
-    private static MixOut shuffleWithLabels(DataSet concat, int[] labels, long seed) {
-        int n = concat.getNumRows();
-        List<Integer> perm = new ArrayList<>(n);
-        for (int i = 0; i < n; i++) perm.add(i);
-        Collections.shuffle(perm, new Random(seed));
-        DataSet shuffled = concat.subsetRows(perm);
-        int[] y = new int[n];
-        for (int i = 0; i < n; i++) y[i] = labels[perm.get(i)];
-        MixOut out = new MixOut();
-        out.data = shuffled;
-        out.labels = y;
-        return out;
-    }
-    private static class MixOut { DataSet data; int[] labels; }
-
-    private static @NotNull Graph copyWithFlippedDirections(Graph g, int flips, Random rnd) {
-        Graph h = new EdgeListGraph(g);
-        List<Edge> dir = h.getEdges().stream().filter(Edge::isDirected).collect(Collectors.toList());
-        if (dir.isEmpty()) return h;
-        Collections.shuffle(dir, rnd);
-        int done = 0;
-        for (Edge e : dir) {
-            if (done >= flips) break;
-            Node a = e.getNode1(), b = e.getNode2();
-            if (!h.isAdjacentTo(a, b)) continue;
-            h.removeEdge(e);
-            Edge rev = Edges.directedEdge(b, a);
-            if (!h.isAdjacentTo(b, a)) { h.addEdge(rev); done++; } else { h.addEdge(e); }
-        }
-        return h;
-    }
-
-    private static double adjustedRandIndex(int[] a, int[] b) {
-        int n = a.length;
-        int maxA = Arrays.stream(a).max().orElse(0);
-        int maxB = Arrays.stream(b).max().orElse(0);
-        int[][] M = new int[maxA + 1][maxB + 1];
-        int[] row = new int[maxA + 1], col = new int[maxB + 1];
-        for (int i = 0; i < n; i++) { M[a[i]][b[i]]++; row[a[i]]++; col[b[i]]++; }
-        double sumComb = 0, rowComb = 0, colComb = 0;
-        for (int i = 0; i <= maxA; i++) for (int j = 0; j <= maxB; j++) sumComb += comb2(M[i][j]);
-        for (int i = 0; i <= maxA; i++) rowComb += comb2(row[i]);
-        for (int j = 0; j <= maxB; j++) colComb += comb2(col[j]);
-        double totalComb = comb2(n);
-        double exp = rowComb * colComb / totalComb;
-        double max = 0.5 * (rowComb + colComb);
-        return (sumComb - exp) / (max - exp + 1e-12);
-    }
-    private static double comb2(int m) { return m < 2 ? 0 : m * (m - 1) / 2.0; }
-
-    private static double median(List<Double> xs) {
-        double[] v = xs.stream().mapToDouble(Double::doubleValue).sorted().toArray();
-        int n = v.length; return (n % 2 == 1) ? v[n/2] : 0.5*(v[n/2-1] + v[n/2]);
-    }
-    private static double iqr(List<Double> xs) {
-        double[] v = xs.stream().mapToDouble(Double::doubleValue).sorted().toArray();
-        int n = v.length;
-        double q1 = v[(int)Math.floor(0.25*(n-1))];
-        double q3 = v[(int)Math.floor(0.75*(n-1))];
-        return q3 - q1;
+    private static class MixOut {
+        DataSet data;
+        int[] labels;
     }
 }

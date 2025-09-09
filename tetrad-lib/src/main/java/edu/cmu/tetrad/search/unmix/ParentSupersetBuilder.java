@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search.work_in_progress.unmix;
+package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;

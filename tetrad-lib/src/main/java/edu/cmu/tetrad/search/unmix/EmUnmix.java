@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search.work_in_progress.unmix;
+package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
@@ -23,6 +23,10 @@ public final class EmUnmix {
         public double ridge = 1e-6;
         public int kmeansRestarts = 5;
         public boolean useMAP = true; // hard-assign by MAP; set false if you plan weighted searches
+        public double covRidgeRel;
+        public double covShrinkage;
+        public int annealSteps;
+        public double annealStartT;
     }
 
     public static UnmixResult run(
