@@ -43,8 +43,8 @@ public final class Fci implements IGraphSearch {
     // -------------------------
     // New: R0 collider-rule options (shared semantics with PC)
     // -------------------------
-    public enum ColliderRule { VANILLA, CPC, MAX_P }
-    private ColliderRule r0ColliderRule = ColliderRule.VANILLA;
+    public enum ColliderRule {SEPSETS, CONSERVATIVE, MAX_P }
+    private ColliderRule r0ColliderRule = ColliderRule.SEPSETS;
 
     // Optional MAX-P extras (same as PC)
     private boolean maxPGlobalOrder = false;     // apply global order when orienting
@@ -81,7 +81,7 @@ public final class Fci implements IGraphSearch {
     // -------------------------
     // Public knobs (existing + new)
     // -------------------------
-    public void setR0ColliderRule(ColliderRule rule) { this.r0ColliderRule = rule == null ? ColliderRule.VANILLA : rule; }
+    public void setR0ColliderRule(ColliderRule rule) { this.r0ColliderRule = rule == null ? ColliderRule.SEPSETS : rule; }
     public void setMaxPGlobalOrder(boolean enabled) { this.maxPGlobalOrder = enabled; }
     public void setMaxPDepthStratified(boolean enabled) { this.maxPDepthStratified = enabled; }
     public void setMaxPMargin(double margin) { this.maxPMargin = Math.max(0.0, margin); }
@@ -221,12 +221,12 @@ public final class Fci implements IGraphSearch {
             if (pag.isParentOf(t.x, t.z) && pag.isParentOf(t.y, t.z)) continue; // collider already
 
             ColliderOutcome out = switch (r0ColliderRule) {
-                case VANILLA -> {
+                case SEPSETS -> {
                     Set<Node> s = fasSepsets.get(t.x, t.y);
                     if (s == null) yield ColliderOutcome.NO_SEPSET;
                     yield s.contains(t.z) ? ColliderOutcome.DEPENDENT : ColliderOutcome.INDEPENDENT;
                 }
-                case CPC   -> judgeConservative(t, pag);
+                case CONSERVATIVE -> judgeConservative(t, pag);
                 case MAX_P -> judgeMaxP(t, pag);
             };
 

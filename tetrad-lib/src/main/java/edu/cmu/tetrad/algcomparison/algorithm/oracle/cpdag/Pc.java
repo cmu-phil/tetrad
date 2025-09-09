@@ -84,8 +84,8 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         boolean allowBidirected = parameters.getBoolean(Params.ALLOW_BIDIRECTED);
 
         edu.cmu.tetrad.search.Pc.ColliderOrientationStyle colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
-            case 1 -> edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.VANILLA;
-            case 2 -> edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.CPC;
+            case 1 -> edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.SEPSETS;
+            case 2 -> edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.CONSERVATIVE;
             case 3 -> edu.cmu.tetrad.search.Pc.ColliderOrientationStyle.MAX_P;
             default -> throw new IllegalArgumentException("Invalid collider orientation style");
         };

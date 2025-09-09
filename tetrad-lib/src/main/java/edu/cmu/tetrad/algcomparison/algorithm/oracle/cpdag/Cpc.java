@@ -99,7 +99,7 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
         search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setColliderOrientationStyle(Pc.ColliderOrientationStyle.CPC);
+        search.setColliderOrientationStyle(Pc.ColliderOrientationStyle.CONSERVATIVE);
         search.setAllowBidirected(allowBidirected ? Pc.AllowBidirected.ALLOW : Pc.AllowBidirected.DISALLOW);
         Graph graph = search.search();
         stampWithBic(graph, dataModel);

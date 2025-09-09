@@ -157,7 +157,7 @@ public class Comparison2 {
                 result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
                 Pc search = new Pc(test);
-                search.setColliderOrientationStyle(Pc.ColliderOrientationStyle.CPC);
+                search.setColliderOrientationStyle(Pc.ColliderOrientationStyle.CONSERVATIVE);
                 result.setResultGraph(search.search());
                 Graph dag = new EdgeListGraph(trueDag);
                 result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
@@ -399,7 +399,7 @@ public class Comparison2 {
                 throw new IllegalArgumentException("Test not set.");
             }
             Pc search = new Pc(test);
-            search.setColliderOrientationStyle(Pc.ColliderOrientationStyle.CPC);
+            search.setColliderOrientationStyle(Pc.ColliderOrientationStyle.CONSERVATIVE);
             result.setResultGraph(search.search());
             Graph dag = new EdgeListGraph(trueDag);
             result.setCorrectResult(GraphTransforms.dagToCpdag(dag));

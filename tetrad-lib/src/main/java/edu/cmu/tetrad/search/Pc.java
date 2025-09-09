@@ -26,7 +26,7 @@ public class Pc implements IGraphSearch {
     private Knowledge knowledge = new Knowledge();
     private int depth = -1;                  // -1 => no cap
     private boolean fasStable = true;        // PC-Stable skeleton
-    private ColliderOrientationStyle colldierOrientationStyle = ColliderOrientationStyle.VANILLA;
+    private ColliderOrientationStyle colldierOrientationStyle = ColliderOrientationStyle.SEPSETS;
     private AllowBidirected allowBidirected = AllowBidirected.DISALLOW;
     private boolean verbose = false;
 
@@ -198,12 +198,12 @@ public class Pc implements IGraphSearch {
             if (g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z)) continue;
 
             ColliderOutcome outcome = switch (colldierOrientationStyle) {
-                case VANILLA -> {
+                case SEPSETS -> {
                     Set<Node> s = fasSepsets.get(t.x, t.y);
                     if (s == null) yield ColliderOutcome.NO_SEPSET;
                     yield s.contains(t.z) ? ColliderOutcome.DEPENDENT : ColliderOutcome.INDEPENDENT;
                 }
-                case CPC   -> judgeConservative(t, g);
+                case CONSERVATIVE -> judgeConservative(t, g);
                 case MAX_P -> judgeMaxP(t, g);
             };
 
@@ -484,7 +484,7 @@ public class Pc implements IGraphSearch {
     // ------------------------------------------------------------
     // Enums & small records
     // ------------------------------------------------------------
-    public enum ColliderOrientationStyle { VANILLA, CPC, MAX_P }
+    public enum ColliderOrientationStyle {SEPSETS, CONSERVATIVE, MAX_P }
     public enum AllowBidirected { ALLOW, DISALLOW }
     private enum ColliderOutcome { INDEPENDENT, DEPENDENT, AMBIGUOUS, NO_SEPSET }
 

@@ -332,7 +332,7 @@ public class TestPc {
                     break;
                 case 1:
                     search = new Pc(test);
-                    ((Pc) search).setColliderOrientationStyle(Pc.ColliderOrientationStyle.CPC);
+                    ((Pc) search).setColliderOrientationStyle(Pc.ColliderOrientationStyle.CONSERVATIVE);
                     break;
                 case 2:
                     search = new Fges(score);
@@ -683,7 +683,7 @@ public class TestPc {
                     break;
                 case 1:
                     search = new Pc(test);
-                    ((Pc) search).setColliderOrientationStyle(Pc.ColliderOrientationStyle.CPC);
+                    ((Pc) search).setColliderOrientationStyle(Pc.ColliderOrientationStyle.CONSERVATIVE);
                     try {
                         out = search.search();
                     } catch (InterruptedException e) {

@@ -266,7 +266,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
 
         if (df < 1) {
             throw new IllegalArgumentException("The degrees of freedom for independence fact " + x + " _||_ " + y +
-                                               " | " + z + " nonpositive.");
+                                               " | " + z + " nonpositive, n = " + n + " df = " + df);
         }
 
         double fisherZ = sqrt(df) * q;

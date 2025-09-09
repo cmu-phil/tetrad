@@ -87,8 +87,8 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         }
 
         edu.cmu.tetrad.search.Fci.ColliderRule colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
-            case 1 -> edu.cmu.tetrad.search.Fci.ColliderRule.VANILLA;
-            case 2 -> edu.cmu.tetrad.search.Fci.ColliderRule.CPC;
+            case 1 -> edu.cmu.tetrad.search.Fci.ColliderRule.SEPSETS;
+            case 2 -> edu.cmu.tetrad.search.Fci.ColliderRule.CONSERVATIVE;
             case 3 -> edu.cmu.tetrad.search.Fci.ColliderRule.MAX_P;
             default -> throw new IllegalArgumentException("Invalid collider orientation style");
         };
