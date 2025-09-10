@@ -300,37 +300,6 @@ public class RoadmapTest {
         return (n % 2 == 1) ? v[n / 2] : 0.5 * (v[n / 2 - 1] + v[n / 2]);
     }
 
-//    /** Simple adjacency & orientation comparison. */
-//    private static Metrics compareGraphs(Graph Gt, Graph Gh) {
-//        if (Gt == null || Gh == null) return new Metrics(0, 0, Integer.MAX_VALUE/4);
-//
-//        Set<String> skelT = undirectedEdgeSet(Gt);
-//        Set<String> skelH = undirectedEdgeSet(Gh);
-//        Set<String> inter = new HashSet<>(skelT); inter.retainAll(skelH);
-//
-//        int tp = inter.size(), fp = Math.max(skelH.size() - tp, 0), fn = Math.max(skelT.size() - tp, 0);
-//        double prec = tp == 0 ? 0 : (double)tp / (tp + fp);
-//        double rec  = tp == 0 ? 0 : (double)tp / (tp + fn);
-//        double adjF1 = (prec + rec == 0) ? 0 : 2 * prec * rec / (prec + rec);
-//
-//        // orientation: count correctly oriented among shared adjacencies
-//        int orientOK = 0, orientTotal = 0;
-//        for (String e : inter) {
-//            String[] ab = e.split("--");
-//            Node a = Gt.getNode(ab[0]), b = Gt.getNode(ab[1]);
-//            Edge et = Gt.getEdge(a, b);
-//            Edge eh = Gh.getEdge(a, b);
-//            if (et == null || eh == null) continue;
-//            if (et.isDirected() || eh.isDirected()) { // only care when at least one is oriented
-//                orientTotal++;
-//                if (isSameOrientation(et, eh)) orientOK++;
-//            }
-//        }
-//        double arrowF1 = orientTotal == 0 ? 0 : (double) orientOK / orientTotal;
-//        int shd = structuralHammingDistance(Gt, Gh);
-//        return new Metrics(adjF1, arrowF1, shd);
-//    }
-
     private static double iqr(List<Double> xs) {
         double[] v = xs.stream().mapToDouble(Double::doubleValue).sorted().toArray();
         int n = v.length;
@@ -398,10 +367,10 @@ public class RoadmapTest {
             // z-score columns
             for (int j = 0; j < X[0].length; j++) {
                 double mean = 0, m2 = 0;
-                for (int i = 0; i < X.length; i++) mean += X[i][j];
+                for (double[] x : X) mean += x[j];
                 mean /= X.length;
-                for (int i = 0; i < X.length; i++) {
-                    double d = X[i][j] - mean;
+                for (double[] x : X) {
+                    double d = x[j] - mean;
                     m2 += d * d;
                 }
                 double sd = Math.sqrt(m2 / Math.max(1, X.length - 1));
