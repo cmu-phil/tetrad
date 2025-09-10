@@ -567,14 +567,17 @@ public class RoadmapTest {
         ec.emMaxIters = 200;
         ec.kmeansRestarts = 10;
 
-        UnmixResult rEM = EmUnmix.run(mix.data, ec, new LinearQRRegressor(), pooled(), perCluster());
+//        UnmixResult rEM = EmUnmix.run(mix.data, ec, new LinearQRRegressor(), pooled(), perCluster());
+        UnmixResult rEM = EmUnmix.selectK(mix.data, 1, 4, new LinearQRRegressor(), pooled(), perCluster(), ec);
+
+        int k = rEM.K;
 
         Graph[] truth = new Graph[]{gA, gB};
         GraphMetrics gmEM = graphMetrics(truth, rEM.clusterGraphs);
 
         System.out.printf("\n=== Phase3 (semi-synth) ===%n");
-        System.out.printf("EM:          ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
-                adjustedRandIndex(mix.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
+        System.out.printf("EM K = %d :          ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
+                rEM.K, adjustedRandIndex(mix.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
     }
 
     //    @Test

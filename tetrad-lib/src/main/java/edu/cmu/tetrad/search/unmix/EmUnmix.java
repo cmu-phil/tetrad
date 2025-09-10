@@ -125,6 +125,8 @@ public final class EmUnmix {
             double bic = m.bic(R.length);  // lower is better
 
             if (bic < bestBIC) {
+                System.out.println("K = " + K + "  bic = " + bic);
+
                 bestBIC = bic;
                 int[] z = EmUtils.mapLabels(m.responsibilities);
                 List<DataSet> parts = splitByLabels(data, z, K);
