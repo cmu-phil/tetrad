@@ -23,12 +23,9 @@ public final class UnmixResult {
 
     // Optional provenance (populate if you have them at call site)
     public final @Nullable EmUnmix.Config emCfg;                   // low-level EM cfg
-    public @Nullable CausalUnmixer.Config uiCfg;                   // high-level facade cfg (set by CausalUnmixer)
-    public final @Nullable Function<DataSet, Graph> pooledSearchFn;
-    public final @Nullable Function<DataSet, Graph> perClusterSearchFn;
 
     public UnmixResult(
-            @NotNull int[] labels,
+            int[] labels,
             int K,
             @NotNull List<DataSet> clusterData,
             @NotNull List<Graph> clusterGraphs,
@@ -38,7 +35,7 @@ public final class UnmixResult {
     }
 
     public UnmixResult(
-            @NotNull int[] labels,
+            int[] labels,
             int K,
             @NotNull List<DataSet> clusterData,
             @NotNull List<Graph> clusterGraphs,
@@ -53,11 +50,5 @@ public final class UnmixResult {
         this.clusterGraphs = clusterGraphs;
         this.gmmModel = gmmModel;
         this.emCfg = emCfg;
-        this.pooledSearchFn = pooledSearchFn;
-        this.perClusterSearchFn = perClusterSearchFn;
     }
-
-    /** Convenience accessors so existing code like r.pooled() keeps working. */
-    public @Nullable Function<DataSet, Graph> pooled()        { return pooledSearchFn; }
-    public @Nullable Function<DataSet, Graph> perCluster()    { return perClusterSearchFn; }
 }

@@ -1,12 +1,9 @@
 package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -15,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -34,43 +30,6 @@ import java.util.stream.Collectors;
  * d is small.
  */
 public class RoadmapTest {
-
-    // =========================
-    // Phase 1 — Controlled sweep
-    // =========================
-
-    private static Function<DataSet, Graph> pooled() {
-        return ds -> {
-            if (ds.getNumRows() < 50) {
-                return null;
-            }
-
-            try {
-                IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), 0.01);
-                Pc pc = new Pc(test);
-                pc.setColliderOrientationStyle(Pc.ColliderOrientationStyle.MAX_P);
-                return pc.search();
-//
-//                edu.cmu.tetrad.search.score.SemBicScore score = new edu.cmu.tetrad.search.score.SemBicScore(new CovarianceMatrix(ds));
-//                score.setPenaltyDiscount(2);
-//                return new PermutationSearch(new Boss(score)).search();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        };
-    }
-
-    // =========================
-    // Phase 2 — Stress & robustness
-    // =========================
-
-    private static Function<DataSet, Graph> perCluster() {
-        return pooled();
-    }
-
-    // =========================
-    // Phase 3 — Semi-synthetic realism
-    // =========================
 
     /**
      * Orientation accuracy only among edges that are directed in BOTH truth and estimate.
@@ -410,11 +369,11 @@ public class RoadmapTest {
             ec.kmeansRestarts = 10;
 
             long s0 = System.currentTimeMillis();
-            UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor(), pooled(), perCluster());
+            UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor(), CausalUnmixer.pooled(), CausalUnmixer.perCluster());
             long s1 = System.currentTimeMillis();
 
             // EM selectK (unknown K one pass)
-            UnmixResult rEMbest = EmUnmix.selectK(sc.mixed, 1, 4, new LinearQRRegressor(), pooled(), perCluster(), ec);
+            UnmixResult rEMbest = EmUnmix.selectK(sc.mixed, 1, 4, new LinearQRRegressor(), CausalUnmixer.pooled(), CausalUnmixer.perCluster(), ec);
 
             // Metrics
             double ariEM = adjustedRandIndex(sc.labels, rEM.labels);
@@ -501,7 +460,7 @@ public class RoadmapTest {
                         ec.emMaxIters = 400;
                         ec.kmeansRestarts = 10;
 
-                        UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor(), pooled(), perCluster());
+                        UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor(), CausalUnmixer.pooled(), CausalUnmixer.perCluster());
 
                         arisEM.add(adjustedRandIndex(sc.labels, rEM.labels));
                     }
@@ -567,7 +526,7 @@ public class RoadmapTest {
         ec.emMaxIters = 200;
         ec.kmeansRestarts = 10;
 
-        UnmixResult rEM = EmUnmix.run(mix.data, ec, new LinearQRRegressor(), pooled(), perCluster());
+        UnmixResult rEM = EmUnmix.run(mix.data, ec, new LinearQRRegressor(), CausalUnmixer.pooled(), CausalUnmixer.perCluster());
 
         Graph[] truth = new Graph[]{gA, gB};
         GraphMetrics gmEM = graphMetrics(truth, rEM.clusterGraphs);
@@ -622,16 +581,6 @@ public class RoadmapTest {
         gx.annealSteps = 15;
         gx.annealStartT = 0.8;
         // remember to z-score columns before fit(X, gx)
-    }
-
-    public void unmix(DataSet data, int K) {
-        EmUnmix.Config ec = makeDefaultEc(data, K);  // as above
-
-        if (K == -1) {
-            UnmixResult rBest = EmUnmix.selectK(data, 1, 4, new LinearQRRegressor(), pooled(), perCluster(), ec);
-        } else {
-            UnmixResult rEM = EmUnmix.run(data, ec, new LinearQRRegressor(), pooled(), perCluster());
-        }
     }
 
     private enum NoiseFamily {GAUSSIAN, LAPLACE}

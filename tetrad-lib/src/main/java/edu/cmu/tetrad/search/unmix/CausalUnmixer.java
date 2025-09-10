@@ -2,11 +2,11 @@ package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.PermutationSearch;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -115,8 +115,8 @@ public class CausalUnmixer {
         c.ridgeLambda = 1e-3;
 
         // Graphers
-        c.pooledGraphFn = CausalUnmixer::pcMaxGrapher;
-        c.perClusterGraphFn = CausalUnmixer::pcMaxGrapher;
+        c.pooledGraphFn = CausalUnmixer::grapher;
+        c.perClusterGraphFn = CausalUnmixer::grapher;
 
         // PC alpha / style
         c.pcAlpha = 0.01;
@@ -128,16 +128,22 @@ public class CausalUnmixer {
     /**
      * Returns a Function<DataSet, Graph> that runs PC-Max with FisherZ on the dataset.
      */
-    private static Function<DataSet, Graph> pcMaxGrapher(Config cfg) {
+    private static Function<DataSet, Graph> grapher(Config cfg) {
         return ds -> {
-            // Avoid NPEs downstream: return empty graph instead of null for tiny datasets.
-            if (ds.getNumRows() < 50) return new EdgeListGraph(ds.getVariables());
+//            if (ds.getNumRows() < 50) {
+//                return null;
+//            }
 
             try {
-                IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), cfg.pcAlpha);
-                Pc pc = new Pc(test);
-                pc.setColliderOrientationStyle(cfg.pcColliderStyle);
-                return pc.search();
+//                IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), 0.01);
+//                Pc pc = new Pc(test);
+//                pc.setColliderOrientationStyle(Pc.ColliderOrientationStyle.MAX_P);
+//                return pc.search();
+
+                edu.cmu.tetrad.search.score.SemBicScore score = new edu.cmu.tetrad.search.score.SemBicScore(new CovarianceMatrix(ds));
+                score.setPenaltyDiscount(2);
+                Graph g = new PermutationSearch(new Boss(score)).search();
+                return GraphTransforms.dagToCpdag(g);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -145,11 +151,11 @@ public class CausalUnmixer {
     }
 
     public static Function<DataSet, Graph> pooled() {
-        return pcMaxGrapher(defaults());
+        return grapher(defaults());
     }
 
     public static Function<DataSet, Graph> perCluster() {
-        return pcMaxGrapher(defaults());
+        return grapher(defaults());
     }
 
     // --------- Config holder ---------

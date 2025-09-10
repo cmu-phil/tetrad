@@ -1,13 +1,9 @@
 package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.PermutationSearch;
-import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -111,8 +107,6 @@ public class TestCausalUnmixer {
         }
         return h;
     }
-
-    // ---------- Tests ----------
 
     private static int structuralHammingDistance(Graph A, Graph B) {
         Set<String> EA = directedEdgeSet(A), EB = directedEdgeSet(B);
@@ -285,76 +279,26 @@ public class TestCausalUnmixer {
         return new GraphMetrics(adjSum / matches, arrowSum / matches, shdSum);
     }
 
-    /**
-     * EM-on-residuals baseline on the same topo-diff mixture; parent-superset + diagonal cov; reports ARI.
-     */
-    @Test
-    public void testEmUnmix() {
-        LabeledData mix = getMixOutTopoDiff();
-        DataSet mixedData = mix.data;
+    // Shuffle helper identical to your earlier version
+    private static LabeledData shuffleWithLabels(DataSet concat, int[] labels, long seed) {
+        int n = concat.getNumRows();
+        List<Integer> perm = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) perm.add(i);
+        Collections.shuffle(perm, new Random(seed));
+        DataSet shuffled = concat.subsetRows(perm);
+        int[] y = new int[n];
+        for (int i = 0; i < n; i++) y[i] = labels[perm.get(i)];
 
-        EmUnmix.Config cfg = new EmUnmix.Config();
-        cfg.K = 2;
-        cfg.useParentSuperset = true;             // topo difference → superset init
-        cfg.supersetCfg.topM = 10;
-        cfg.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.KENDALL;
-        cfg.robustScaleResiduals = true;          // geometry over magnitude
-        cfg.covType = GaussianMixtureEM.CovarianceType.DIAGONAL; // fast & robust
-        cfg.emMaxIters = 200;
-        cfg.kmeansRestarts = 10;                  // stabler init
-
-        ResidualRegressor reg = new LinearQRRegressor();
-
-        UnmixResult res = EmUnmix.run(
-                mixedData,
-                cfg,
-                reg,
-                ds -> { // pooled path unused when useParentSuperset=true, but keep for completeness
-                    try {
-                        return new PermutationSearch(new Boss(new SemBicScore(new CovarianceMatrix(ds)))).search();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
-                ds -> {
-                    try {
-                        return new PermutationSearch(new Boss(new SemBicScore(new CovarianceMatrix(ds)))).search();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-        );
-
-        double ari = adjustedRandIndex(mix.labels, res.labels);
-        System.out.println("EM-on-residuals ARI = " + ari);
-        System.out.println("EM graphs = " + res.clusterGraphs);
-
-        // Optional: pick K by BIC on residuals
-        UnmixResult best = EmUnmix.selectK(
-                mixedData, 1, 5, reg,
-                ds -> {
-                    try {
-                        return new PermutationSearch(new Boss(new SemBicScore(new CovarianceMatrix(ds)))).search();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
-                ds -> {
-                    try {
-                        return new PermutationSearch(new Boss(new SemBicScore(new CovarianceMatrix(ds)))).search();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
-                cfg
-        );
-        System.out.println("EM best-K graphs = " + best.clusterGraphs);
+        LabeledData out = new LabeledData();
+        out.data = shuffled;
+        out.labels = y;
+        return out;
     }
 
     @Test
     public void phase3_semisynthetic() {
         // Use a backbone covariance from a single SEM sample, then inject shifts.
-        int p = 15, n1 = 900, n2 = 900, flips = 5;
+        int p = 15, n1 = 900, n2 = 900, flips = 10;
         long seed = 33;
 
         // Backbone DAG & sample (Laplace errors for heavier tails)
@@ -380,7 +324,8 @@ public class TestCausalUnmixer {
             try {
                 double b = imB.getEdgeCoef(e);
                 imB.setEdgeCoef(e.getNode1(), e.getNode2(), coefScale * b);
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
         }
         for (Node v : vars) imB.setErrVar(v, noiseScale * imB.getErrVar(v));
 
@@ -428,7 +373,7 @@ public class TestCausalUnmixer {
         Function<DataSet, Graph> perClusterSearch = CausalUnmixer.perCluster();
 
         // Rerun EM with K=1 (copy cfg and set K=1)
-        EmUnmix.Config cfgK1 = cfg;
+        EmUnmix.Config cfgK1 = cfg.copy();
         cfgK1.K = 1;
 
         UnmixResult rK1 = EmUnmix.run(mixed.data, cfgK1, reg, pooledSearch, perClusterSearch);
@@ -444,21 +389,6 @@ public class TestCausalUnmixer {
         System.out.printf("ΔBIC (K=2 vs K=1): %.1f (negative favors K=2)%n", deltaBic);
     }
 
-    // Shuffle helper identical to your earlier version
-    private static LabeledData shuffleWithLabels(DataSet concat, int[] labels, long seed) {
-        int n = concat.getNumRows();
-        List<Integer> perm = new ArrayList<>(n);
-        for (int i = 0; i < n; i++) perm.add(i);
-        Collections.shuffle(perm, new Random(seed));
-        DataSet shuffled = concat.subsetRows(perm);
-        int[] y = new int[n];
-        for (int i = 0; i < n; i++) y[i] = labels[perm.get(i)];
-
-        LabeledData out = new LabeledData();
-        out.data = shuffled;
-        out.labels = y;
-        return out;
-    }
     private record GraphMetrics(double adjF1, double arrowF1, int shd) {
     }
 
