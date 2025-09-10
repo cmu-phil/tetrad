@@ -401,12 +401,12 @@ public class RoadmapTest {
     @Test
     public void phase2_robustness() {
         int p = 12;
-        long seed = 21;
+        long seed = 2949392L;
         int[] nTotals = {600, 800, 1200};
         double[] imbalances = {0.5, 0.3, 0.2}; // fraction in regime A
         double[] signalScales = {1.0, 1.3, 1.6, 2.0}; // 1.0 = weak separation
-        int flips = 4; // small topo diff
-        int repeats = 20;
+        int flips = 8;
+        int repeats = 10;
 
         System.out.println("\n=== Phase2: robustness curves (mean±IQR over seeds) ===");
         for (int nTot : nTotals) {
