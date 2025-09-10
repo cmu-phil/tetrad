@@ -430,7 +430,7 @@ public class Matrix implements TetradSerializable {
      */
     public Matrix regularize(double lambda) {
         Matrix identity = Matrix.identity(getNumRows());
-        return this.plus(identity.scale(lambda));
+        return this.plus(identity.scalarMult(lambda));
     }
 
     /**
@@ -566,7 +566,7 @@ public class Matrix implements TetradSerializable {
      * @param scalar a double
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
-    public Matrix scale(double scalar) {
+    public Matrix scalarMult(double scalar) {
         Matrix newMatrix = copy();
         for (int i = 0; i < getNumRows(); i++) {
             for (int j = 0; j < getNumColumns(); j++) {

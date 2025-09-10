@@ -56,6 +56,10 @@ public class CachingIndependenceTest implements IndependenceTest {
         return result;
     }
 
+    public IndependenceTest getBaseTest() {
+        return base;
+    }
+
     // ---------------------------------------------------------------------
     // Internal cache key
     // ---------------------------------------------------------------------

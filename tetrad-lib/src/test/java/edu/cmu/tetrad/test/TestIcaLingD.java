@@ -204,7 +204,7 @@ public class TestIcaLingD {
         Matrix S = result.getS();
         Matrix A = result.getW().inverse();
         Matrix AS = A.times(S);
-        Matrix cov = S.times(S.transpose()).scale(1.0 / S.getNumColumns());
+        Matrix cov = S.times(S.transpose()).scalarMult(1.0 / S.getNumColumns());
         assertTrue(X.equals(AS, 0.001));
         assertTrue(cov.equals(Matrix.identity(p), 0.001));
     }

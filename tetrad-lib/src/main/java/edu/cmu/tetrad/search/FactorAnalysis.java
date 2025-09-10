@@ -119,7 +119,7 @@ public class FactorAnalysis {
      */
     private static Matrix normalizeVector(Matrix vector) {
         double scalar = FastMath.sqrt(vector.transpose().times(vector).get(0, 0));
-        return vector.scale(1.0 / scalar);
+        return vector.scalarMult(1.0 / scalar);
     }
 
     /**
@@ -233,7 +233,7 @@ public class FactorAnalysis {
         Matrix r = residuals.getLast();
 
         Matrix sumCols = r.transpose().times(unitColumn);
-        Matrix wVector = sumCols.scale(1.0 / FastMath.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
+        Matrix wVector = sumCols.scalarMult(1.0 / FastMath.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
         Matrix vVector = r.times(wVector);
 
         for (int k = 0; k < normalizedFactorLoadings.getNumColumns(); k++) {
@@ -265,15 +265,15 @@ public class FactorAnalysis {
             for (int i = 0; i < 200; i++) {
                 Matrix bVector = r.times(hVectors.get(i));
                 double averageSumSquaresBVector = unitColumn.transpose().times(FactorAnalysis.matrixExp(bVector, 2))
-                        .scale(1.0 / (double) bVector.getNumRows()).get(0, 0);
+                        .scalarMult(1.0 / (double) bVector.getNumRows()).get(0, 0);
 
-                Matrix betaVector = FactorAnalysis.matrixExp(bVector, 3).minus(bVector.scale(averageSumSquaresBVector));
+                Matrix betaVector = FactorAnalysis.matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
                 Matrix uVector = r.transpose().times(betaVector);
 
                 double alpha2 = (FastMath.sqrt(uVector.transpose().times(uVector).get(0, 0)));
                 bVectors.add(bVector);
 
-                hVectors.add(uVector.scale(1.0 / alpha2));
+                hVectors.add(uVector.scalarMult(1.0 / alpha2));
 
                 if (!Double.isNaN(alpha1)) {
                     if (abs((alpha2 - alpha1)) < this.threshold) {
@@ -368,7 +368,7 @@ public class FactorAnalysis {
         }
 
         double d = FastMath.sqrt(l0.get(0, 0));
-        Matrix f = residual.times(approximationVector).scale(1.0 / d);
+        Matrix f = residual.times(approximationVector).scalarMult(1.0 / d);
 
         for (int i = 0; i < 100; i++) {
             Matrix ui = residual.times(f);
@@ -380,7 +380,7 @@ public class FactorAnalysis {
             }
 
             d = di;
-            f = ui.scale(1.0 / d);
+            f = ui.scalarMult(1.0 / d);
         }
 
         this.factorLoadingVectors.add(f);

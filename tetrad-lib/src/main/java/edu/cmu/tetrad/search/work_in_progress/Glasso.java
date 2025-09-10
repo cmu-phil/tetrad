@@ -402,7 +402,7 @@ public class Glasso {
     }
 
     private void inv(int n, Matrix ww, Matrix xs, Matrix wwi) {
-        xs = xs.scale(-1);
+        xs = xs.scalarMult(-1);
         int nm1 = n - 1;
 
         double dp3 = 0.0;

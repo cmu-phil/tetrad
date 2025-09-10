@@ -332,7 +332,7 @@ public class DeltaTetradTest {
      */
     private Matrix regularizeAndInvert(Matrix matrix) {
         double regularization = 1e-10;
-        Matrix regularizedMatrix = matrix.plus(Matrix.identity(matrix.getNumRows()).scale(regularization));
+        Matrix regularizedMatrix = matrix.plus(Matrix.identity(matrix.getNumRows()).scalarMult(regularization));
         return regularizedMatrix.inverse();
     }
 

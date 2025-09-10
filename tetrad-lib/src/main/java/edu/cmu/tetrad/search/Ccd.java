@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
@@ -63,6 +64,13 @@ public final class Ccd implements IGraphSearch {
      * Whether the R1 rule should be applied.
      */
     private boolean applyR1;
+    /**
+     * Indicates whether detailed logging or debugging information should be output during
+     * the execution of the CCD algorithm. When set to true, additional information regarding
+     * the algorithm's operations and decisions may be logged, which can be useful for debugging
+     * or understanding its behavior. Otherwise, minimal output is produced.
+     */
+    private boolean verbose;
 
     /**
      * Construct a CCD algorithm with the given independence test.
@@ -72,7 +80,7 @@ public final class Ccd implements IGraphSearch {
      */
     public Ccd(IndependenceTest test) {
         if (test == null) throw new NullPointerException("Test is not provided");
-        this.independenceTest = test;
+        this.independenceTest = new CachingIndependenceTest(test);
         this.nodes = test.getVariables();
     }
 
@@ -88,6 +96,8 @@ public final class Ccd implements IGraphSearch {
      * @return The CCD cyclic PAG for the data.
      */
     public Graph search() throws InterruptedException {
+        this.independenceTest.setVerbose(verbose);
+
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
         // Step A.
@@ -582,6 +592,15 @@ public final class Ccd implements IGraphSearch {
         }
 
         return true;
+    }
+
+    /**
+     * Sets whether verbose output should be logged
+     *
+     * @param verbose true to enable verbose output, false to disable it.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

@@ -416,7 +416,7 @@ public final class MatrixUtils {
      */
     public static double[][] scalarProduct(double scalar, double[][] m) {
         Matrix _m = new Matrix(m);
-        return _m.scale(scalar).toArray();
+        return _m.scalarMult(scalar).toArray();
     }
 
     /**
@@ -1163,6 +1163,6 @@ public final class MatrixUtils {
             throw new IllegalArgumentException("Matrix must be square to symmetrize.");
         }
         // Return (A + A^T)/2 without mutating the original matrix.
-        return sigma.plus(sigma.transpose()).scale(0.5);
+        return sigma.plus(sigma.transpose()).scalarMult(0.5);
     }
 }

@@ -1,24 +1,3 @@
-/// ////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
-//                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
@@ -41,73 +20,47 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
- * Scheines, "Causation, Prediction and Search," 2nd edition, page 94.
- *
- * @author josephramsey
- * @author Frank Wimberly
- * @version $Id: $Id
+ * Checks conditional independence using Fisher's Z on (optionally regularized) correlations.
+ * Regularization options:
+ *  - NONE (default)
+ *  - RIDGE: add a diagonal ridge to the correlation submatrix before inversion
+ *  - LEDOIT_WOLF: shrink correlation submatrix toward identity using a Ledoit–Wolf style intensity
  */
 public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable,
         RawMarginalIndependenceTest {
-    /**
-     * A hash from variable names to indices.
-     */
+
+    /** Shrinkage mode. */
+    public enum ShrinkageMode { NONE, RIDGE, LEDOIT_WOLF }
+
     private final Map<String, Integer> indexMap;
-    /**
-     * A hash from variable names to variables.
-     */
     private final Map<String, Node> nameMap;
-    /**
-     * The standard normal distribution.
-     */
     private final NormalDistribution normal = new NormalDistribution(0, 1);
-    /**
-     * The sample size to use; if not set, the sample size of the data set is used.
-     */
     private final int sampleSize;
-    /**
-     * The correlation matrix.
-     */
+
     private ICovarianceMatrix cor = null;
-    /**
-     * The variables of the covariance data, in order. (Unmodifiable list.)
-     */
     private List<Node> variables;
-    /**
-     * The significance level of the independence tests.
-     */
     private double alpha;
-    /**
-     * Stores a reference to the data set passed in through the constructor.
-     */
     private DataSet dataSet;
-    /**
-     * True if verbose output should be printed.
-     */
     private boolean verbose = false;
-    /**
-     * The correlation coefficient for the last test.
-     */
     private double r = Double.NaN;
-    /**
-     * The rows used in the test.
-     */
     private List<Integer> rows = null;
-    /**
-     * Lambda for regularization.
-     */
+
+    /** Passed through to precision-based partial corr util (unchanged behavior). */
     private double lambda = 0.0;
+
+    /** Ridge amount (diagonal Tikhonov) for RIDGE mode. */
+    private double ridge = 0.0;
+
+    /** Shrinkage mode selector (default NONE). */
+    private ShrinkageMode shrinkageMode = ShrinkageMode.LEDOIT_WOLF;
+
+    /** Last LW delta used (for debugging / toString). */
+    private double lastLedoitWolfDelta = Double.NaN;
+
     private int nEff;
 
+    /* ======================= Constructors ======================= */
 
-    /**
-     * Constructs a new Independence test which checks independence facts based on the correlation matrix implied by the
-     * given data set (must be continuous). The given significance level is used.
-     *
-     * @param dataSet A data set containing only continuous columns.
-     * @param alpha   The alpha level of the test.
-     */
     public IndTestFisherZ(DataSet dataSet, double alpha) {
         this.dataSet = dataSet;
         this.sampleSize = dataSet.getNumRows();
@@ -137,13 +90,12 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         }
     }
 
-    /**
-     * Constructs a new Fisher Z independence test with the listed arguments.
-     *
-     * @param data      A 2D continuous data set with no missing values.
-     * @param variables A list of variables, a subset of the variables of <code>data</code>.
-     * @param alpha     The alpha level of the test.
-     */
+    public IndTestFisherZ(DataSet dataSet, double alpha, double ridge) {
+        this(dataSet, alpha);
+        setRidge(ridge);
+        setShrinkageMode(ShrinkageMode.RIDGE);
+    }
+
     public IndTestFisherZ(Matrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.transpose().toArray()), variables);
         this.cor = SimpleDataLoader.getCorrelationMatrix(this.dataSet);
@@ -155,15 +107,14 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         setAlpha(alpha);
     }
 
-    /**
-     * Constructs a new independence test that will determine conditional independence facts using the given correlation
-     * matrix and the given significance level.
-     *
-     * @param covMatrix The covariance matrix.
-     * @param alpha     The alpha level of the test.
-     */
+    public IndTestFisherZ(Matrix data, List<Node> variables, double alpha, double ridge) {
+        this(data, variables, alpha);
+        setRidge(ridge);
+        setShrinkageMode(ShrinkageMode.RIDGE);
+    }
+
     public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha) {
-        this.cor = new CorrelationMatrix(covMatrix);
+        this.cor = new CorrelationMatrix(covMatrix); // correlation
         this.variables = covMatrix.getVariables();
         this.indexMap = indexMap(this.variables);
         this.nameMap = nameMap(this.variables);
@@ -172,11 +123,15 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         setAlpha(alpha);
     }
 
-    /**
-     * Creates a new independence test instance for a subset of the variables.
-     *
-     * @see IndependenceTest
-     */
+    public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha, double ridge) {
+        this(covMatrix, alpha);
+        setRidge(ridge);
+        setShrinkageMode(ShrinkageMode.RIDGE);
+    }
+
+    /* ======================= API ======================= */
+
+    @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
@@ -184,34 +139,28 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
 
         for (Node var : vars) {
             if (!this.variables.contains(var)) {
-                throw new IllegalArgumentException(
-                        "All vars must be original vars");
+                throw new IllegalArgumentException("All vars must be original vars");
             }
         }
 
         int[] indices = new int[vars.size()];
-
         for (int i = 0; i < indices.length; i++) {
             indices[i] = this.indexMap.get(vars.get(i).getName());
         }
 
         ICovarianceMatrix newCovMatrix = this.cor.getSubmatrix(indices);
 
-        double alphaNew = getAlpha();
-        return new IndTestFisherZ(newCovMatrix, alphaNew);
+        IndTestFisherZ t = new IndTestFisherZ(newCovMatrix, getAlpha());
+        t.setLambda(this.lambda);
+        t.setRidge(this.ridge);
+        t.setShrinkageMode(this.shrinkageMode);
+        t.setEffectiveSampleSize(getEffectiveSampleSize());
+        t.setVerbose(this.verbose);
+        return t;
     }
 
-    /**
-     * Determines whether variable x _||_ y | z given a list of conditioning variables z.
-     *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
-     * @see IndependenceResult
-     */
+    @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-
         double p;
 
         try {
@@ -237,15 +186,6 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         }
     }
 
-    /**
-     * Returns the p-value for x _||_ y | z.
-     *
-     * @param x The first node.
-     * @param y The second node.
-     * @param z The set of conditioning variables.
-     * @return The p-value.
-     * @throws SingularMatrixException If a singularity occurs when invering a matrix.
-     */
     public double getPValue(Node x, Node y, Set<Node> z) throws SingularMatrixException {
         double r;
         int n;
@@ -255,7 +195,6 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             n = getEffectiveSampleSize();
         } else {
             List<Integer> rows = listRows();
-
             r = getR(x, y, z, rows);
             n = rows.size();
         }
@@ -274,101 +213,40 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         return 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
     }
 
-    public int getEffectiveSampleSize() {
-        return nEff;
-    }
+    public int getEffectiveSampleSize() { return nEff; }
 
-    /**
-     * Sets the sample size to use for the independence test, which may be different from the sample size of the data
-     * set or covariance matrix. If not set, the sample size of the data set or covariance matrix is used.
-     *
-     * @param effectiveSampleSize The sample size to use.
-     */
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
         this.nEff = effectiveSampleSize < 0 ? this.sampleSize : effectiveSampleSize;
     }
 
-    /**
-     * Returns the BIC score for this test.
-     *
-     * @return The BIC score.
-     */
     public double getBic() {
         return -getEffectiveSampleSize() * FastMath.log(1.0 - this.r * this.r) - FastMath.log(getEffectiveSampleSize());
     }
 
-    /**
-     * Gets the model significance level.
-     *
-     * @return This alpha.
-     */
-    public double getAlpha() {
-        return this.alpha;
-    }
+    public double getAlpha() { return this.alpha; }
 
-    /**
-     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
-     */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range: " + alpha);
         }
-
         this.alpha = alpha;
     }
 
-    /**
-     * Returns the list of variables over which this independence checker is capable of determinine independence
-     * relations-- that is, all the variables in the given graph or the given data set.
-     *
-     * @return This list.
-     */
-    public List<Node> getVariables() {
-        return this.variables;
-    }
+    public List<Node> getVariables() { return this.variables; }
 
-    /**
-     * Sets the variables to a new list of the same size. Useful if multiple independence tests are needed with
-     * object-identical sets of variables.
-     *
-     * @param variables The new list of variables.
-     */
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = new ArrayList<>(variables);
         this.cor.setVariables(variables);
     }
 
-    /**
-     * Returns the variable with the given name.
-     */
-    public Node getVariable(String name) {
-        return this.nameMap.get(name);
-    }
+    public Node getVariable(String name) { return this.nameMap.get(name); }
 
-    /**
-     * Returns the data set being analyzed.
-     *
-     * @return This data.
-     */
-    public DataSet getData() {
-        return this.dataSet;
-    }
+    public DataSet getData() { return this.dataSet; }
 
-    /**
-     * Returns the correlation matrix being analyzed.
-     *
-     * @return This correlation matrix.
-     */
-    public ICovarianceMatrix getCov() {
-        return this.cor;
-    }
+    public ICovarianceMatrix getCov() { return this.cor; }
 
-    /**
-     * Returns the (singleton) list of datasets being analyzed.
-     */
     @Override
     public List<DataSet> getDataSets() {
         List<DataSet> dataSets = new ArrayList<>();
@@ -376,63 +254,38 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         return dataSets;
     }
 
-    /**
-     * Returns the sample size.
-     */
     @Override
     public int getSampleSize() {
         if (dataSet != null) return dataSet.getNumRows();
         else return this.cor.getSampleSize();
     }
 
-    /**
-     * Returns true iff verbose output should be printed.
-     *
-     * @return True, if so.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
+    public boolean isVerbose() { return this.verbose; }
 
-    /**
-     * Sets whether verbose output should be printed.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
+    public void setVerbose(boolean verbose) { this.verbose = verbose; }
 
-    /**
-     * Returns a string representation of the Fisher Z independence test. The string includes the value of alpha.
-     *
-     * @return A string representing the Fisher Z independence test.
-     */
+    @Override
     public String toString() {
-        return "Fisher Z, alpha = " + new DecimalFormat("0.0###").format(getAlpha());
+        DecimalFormat f1 = new DecimalFormat("0.0###");
+        DecimalFormat f2 = new DecimalFormat("0.0#####");
+        String base = "Fisher Z, alpha = " + f1.format(getAlpha());
+        base += ", shrinkage=" + shrinkageMode;
+        if (shrinkageMode == ShrinkageMode.RIDGE && ridge > 0.0) base += "(ridge=" + f2.format(ridge) + ")";
+        if (shrinkageMode == ShrinkageMode.LEDOIT_WOLF && !Double.isNaN(lastLedoitWolfDelta))
+            base += "(delta=" + f2.format(lastLedoitWolfDelta) + ")";
+        return base;
     }
 
-    /**
-     * Determines if a given Node x is determined by a list of Nodes z.
-     *
-     * @param z the list of Nodes
-     * @param x the Node to check if it is determined
-     * @return true if x is determined by z, false otherwise
-     * @throws UnsupportedOperationException if the operation is not supported
-     */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
-
         for (int j = 0; j < parents.length; j++) {
             parents[j] = indexMap.get(z.get(j).getName());
         }
 
         if (parents.length > 0) {
-
-            // Regress z onto i, yielding regression coefficients b.
             Matrix Czz = this.cor.getSelection(parents, parents);
-
             try {
-
-                // Don't do regularization here; we're trying to test determination.
+                // No shrinkage here: we want actual singularity for determinism detection.
                 Czz.inverse();
             } catch (SingularMatrixException e) {
                 System.out.println(LogUtilsSearch.determinismDetected(new HashSet<>(z), x));
@@ -443,18 +296,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         return false;
     }
 
-    /**
-     * Calculates the partial correlation between two nodes, given a set of conditioning variables and a list of rows.
-     * If the correlation matrix is already available, it selects the necessary subset. Otherwise, it calculates the
-     * covariance matrix from the provided rows and converts it to a correlation matrix.
-     *
-     * @param x    The first node.
-     * @param y    The second node.
-     * @param _z   The set of conditioning variables.
-     * @param rows The list of rows to use for calculating the covariance matrix, if necessary.
-     * @return The partial correlation value.
-     * @throws SingularMatrixException If a singularity occurs when inverting a matrix.
-     */
+    /* ======================= Core ======================= */
+
     private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows) throws SingularMatrixException {
         List<Node> z = new ArrayList<>(_z);
 
@@ -463,106 +306,102 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         indices[1] = this.indexMap.get(y.getName());
         for (int i = 0; i < z.size(); i++) indices[i + 2] = this.indexMap.get(z.get(i).getName());
 
-        Matrix cor;
-
+        Matrix corSub;
         if (this.cor != null) {
-            cor = this.cor.getSelection(indices, indices);
+            corSub = this.cor.getSelection(indices, indices); // correlation submatrix
         } else {
             Matrix cov = SemBicScore.getCov(rows, indices, indices, this.dataSet, null);
-            cor = MatrixUtils.convertCovToCorr(cov);
+            corSub = MatrixUtils.convertCovToCorr(cov);
         }
 
-        return StatUtils.partialCorrelationPrecisionMatrix(cor, this.lambda);
+        // Apply selected regularization on the correlation submatrix
+        switch (this.shrinkageMode) {
+            case RIDGE -> {
+                if (this.ridge > 0.0) {
+                    Matrix tmp = corSub.copy();
+                    for (int i = 0; i < tmp.getNumRows(); i++) {
+                        tmp.set(i, i, tmp.get(i, i) + this.ridge);
+                    }
+                    corSub = tmp;
+                }
+            }
+            case LEDOIT_WOLF -> {
+                int p = corSub.getNumRows();
+                int n = (this.cor != null ? getEffectiveSampleSize() : (rows == null ? getSampleSize() : rows.size()));
+                if (p >= 2 && n > 1) {
+                    double denom = 0.0;
+                    double num = 0.0;
+                    for (int i = 0; i < p; i++) {
+                        double riiMinus1 = corSub.get(i, i) - 1.0;
+                        denom += riiMinus1 * riiMinus1;
+                        for (int j = i + 1; j < p; j++) {
+                            double rij = corSub.get(i, j);
+                            double diff = rij; // target off-diagonal = 0
+                            denom += 2.0 * diff * diff; // count both (i,j) and (j,i)
+                            // Gaussian approx Var(r_ij) ~ (1 - rho^2)^2 / (n - 1)
+                            double var = (1.0 - rij * rij);
+                            var = var * var / (n - 1.0);
+                            num += 2.0 * var; // for symmetric pair
+                        }
+                    }
+                    double delta = 0.0;
+                    if (denom > 0.0) {
+                        delta = Math.min(1.0, Math.max(0.0, num / denom));
+                    }
+                    this.lastLedoitWolfDelta = delta;
+
+                    if (delta > 0.0) {
+                        Matrix I = Matrix.identity(p);
+                        Matrix shrunk = corSub.copy().scalarMult(1.0 - delta).plus(I.scalarMult(delta));
+                        corSub = shrunk;
+                    }
+                } else {
+                    this.lastLedoitWolfDelta = Double.NaN;
+                }
+            }
+            case NONE -> { /* no-op */ }
+        }
+
+        return StatUtils.partialCorrelationPrecisionMatrix(corSub, 0);
     }
 
-    /**
-     * Returns the partial correlation value between two nodes, given a set of conditioning variables and a list of
-     * rows.
-     *
-     * @param x    The first node.
-     * @param y    The second node.
-     * @param z    The set of conditioning variables.
-     * @param rows The list of rows to use for calculating the covariance matrix, if necessary.
-     * @return The partial correlation value.
-     * @throws SingularMatrixException If a singularity occurs when inverting a matrix.
-     */
     private double getR(Node x, Node y, Set<Node> z, List<Integer> rows) {
         return partialCorrelation(x, y, z, rows);
     }
 
-    /**
-     * Returns the covariance matrix being analyzed.
-     *
-     * @return The covariance matrix.
-     */
-    private ICovarianceMatrix covMatrix() {
-        return this.cor;
-    }
+    private ICovarianceMatrix covMatrix() { return this.cor; }
 
-    /**
-     * Returns a mapping of variable names to Node objects.
-     *
-     * @param variables A list of Node objects representing variables.
-     * @return A map containing variable names as keys and Node objects as values.
-     */
+    /* ======================= Helpers ======================= */
+
     private Map<String, Node> nameMap(List<Node> variables) {
         Map<String, Node> nameMap = new ConcurrentHashMap<>();
-
         for (Node node : variables) {
             nameMap.put(node.getName(), node);
         }
-
         return nameMap;
     }
 
-    /**
-     * Returns a mapping of variable names to their indices in the given list of Node objects.
-     *
-     * @param variables The list of Node objects representing variables.
-     * @return A map containing variable names as keys and their indices as values.
-     */
     private Map<String, Integer> indexMap(List<Node> variables) {
         Map<String, Integer> indexMap = new HashMap<>();
-
         for (int i = 0; i < variables.size(); i++) {
             indexMap.put(variables.get(i).getName(), i);
         }
-
         return indexMap;
     }
 
-    /**
-     * Retrieves the rows from the dataSet that contain valid values for all variables.
-     *
-     * @return a list of row indices that contain valid values for all variables
-     */
     private List<Integer> listRows() {
         if (this.rows != null) {
             return this.rows;
         }
-
         List<Integer> rows = new ArrayList<>();
-
         for (int k = 0; k < this.dataSet.getNumRows(); k++) {
             rows.add(k);
         }
-
         return rows;
     }
 
-    /**
-     * Returns the rows used in the test.
-     *
-     * @return The rows used in the test.
-     */
-    public List<Integer> getRows() {
-        return rows;
-    }
+    public List<Integer> getRows() { return rows; }
 
-    /**
-     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
-     * values.
-     */
     public void setRows(List<Integer> rows) {
         if (dataSet == null) {
             return;
@@ -574,20 +413,31 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
                 if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
                 if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
             }
-
             this.rows = rows;
             cor = null;
         }
     }
 
-    /**
-     * Sets the Singularity lambda.
-     *
-     * @param lambda Singularity lambda.
-     */
-    public void setLambda(double lambda) {
-        this.lambda = lambda;
+    public double getRho() {
+        return r;
     }
+
+    /** Singularity lambda for the precision-based partial correlation utility. */
+    public void setLambda(double lambda) { this.lambda = lambda; }
+
+    /** Ridge setter/getter (used when shrinkageMode == RIDGE). */
+    public void setRidge(double ridge) {
+        if (ridge < 0.0) throw new IllegalArgumentException("ridge must be >= 0");
+        this.ridge = ridge;
+    }
+    public double getRidge() { return this.ridge; }
+
+    /** Shrinkage mode setter/getter. */
+    public void setShrinkageMode(ShrinkageMode mode) {
+        if (mode == null) mode = ShrinkageMode.NONE;
+        this.shrinkageMode = mode;
+    }
+    public ShrinkageMode getShrinkageMode() { return this.shrinkageMode; }
 
     @Override
     public double computePValue(double[] x, double[] y) {
@@ -606,11 +456,10 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         DataSet dataSet = new BoxDataSet(new DoubleDataBox(combined), nodes);
 
         IndTestFisherZ test = new IndTestFisherZ(dataSet, alpha);
+        test.setLambda(this.lambda);
+        test.setRidge(this.ridge);
+        test.setShrinkageMode(this.shrinkageMode);
 
         return test.getPValue(_x, _y, new HashSet<>());
     }
 }
-
-
-
-

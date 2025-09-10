@@ -65,6 +65,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
                 test.getTest(dataModel, parameters));
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return search.search();
     }
@@ -111,7 +112,6 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         List<String> parameters = test.getParameters();
         parameters.add(Params.DEPTH);
         parameters.add(Params.APPLY_R1);
-
         parameters.add(Params.VERBOSE);
         return parameters;
     }
