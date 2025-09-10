@@ -64,14 +64,24 @@
             parameters.set(Params.COEF_HIGH, 0.60);
             parameters.set(Params.COEF_SYMMETRIC, false);
 
-            SemPm pm = new SemPm(graph);
-            SemIm im = new SemIm(pm, parameters);
-            DataSet ds = im.simulateData(N, false);
+            // Simulate with exact spectral radius s = 0.6 in the Y↔Z block
+            DataSet ds = CyclicStableUtils.simulateStableFixedRadius(
+                    /*n=*/N, /*s=*/0.6, /*low=*/0.2, /*high=*/1, /*seed=*/RandomUtil.getInstance().nextLong());
+//            DataSet ds = CyclicStableUtils.simulateStableProductCapped(
+//                    /*n=*/N, /*low=*/0.2, /*high=*/1, /*maxProd=*/0.5, /*seed=*/RandomUtil.getInstance().nextLong());
 
-            IndTestFisherZ base = new IndTestFisherZ(ds, ALPHA);
+            IndTestFisherZ base = new IndTestFisherZ(ds, 0.01);
             base.setShrinkageMode(IndTestFisherZ.ShrinkageMode.LEDOIT_WOLF);
-            base.setRidge(1e-3);   // harmless alongside LW; can omit
-            base.setLambda(0.0);
+            base.setRidge(RIDGE);
+
+//            SemPm pm = new SemPm(graph);
+//            SemIm im = new SemIm(pm, parameters);
+//            DataSet ds = im.simulateData(N, false);
+
+//            IndTestFisherZ base = new IndTestFisherZ(ds, ALPHA);
+//            base.setShrinkageMode(IndTestFisherZ.ShrinkageMode.LEDOIT_WOLF);
+//            base.setRidge(1e-3);   // harmless alongside LW; can omit
+//            base.setLambda(0.0);
 
             CachingIndependenceTest test = new CachingIndependenceTest(base);
             test.setVerbose(false);
@@ -114,8 +124,8 @@
                         Node c = nodes.get(k);
                         Set<Node> C1 = Set.of(c);
                         m++;
-                        var r1 = test.checkIndependence(a, b, C1);
-                        Double rho1 = tryGetLastR(base);
+                            var r1 = test.checkIndependence(a, b, C1);
+                            Double rho1 = tryGetLastR(base);
                         if (!isExpectedPair(a, b, x, w) && acceptIndependence(r1.getPValue(), rho1)) {
                             extras.add(new CI(a, b, C1, r1.getPValue(), rho1));
                         }

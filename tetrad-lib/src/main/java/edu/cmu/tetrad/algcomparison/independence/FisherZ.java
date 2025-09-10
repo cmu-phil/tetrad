@@ -6,8 +6,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -60,8 +60,13 @@ public class FisherZ implements IndependenceWrapper {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
 
-        test.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        IndTestFisherZ.ShrinkageMode shrinkageMode
+                = IndTestFisherZ.ShrinkageMode.values()[(parameters.getInt(Params.SHRINKAGE_MODE) - 1)];
+
+        test.setShrinkageMode(shrinkageMode);
+        test.setRidge(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
         test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+
         return test;
     }
 
@@ -94,7 +99,8 @@ public class FisherZ implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
-        params.add(Params.SINGULARITY_LAMBDA);
+        params.add(Params.SHRINKAGE_MODE);
+        params.add(Params.REGULARIZATION_LAMBDA);
         params.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return params;
     }

@@ -8,7 +8,7 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
@@ -20,11 +20,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * Checks conditional independence using Fisher's Z on (optionally regularized) correlations.
- * Regularization options:
- *  - NONE (default)
- *  - RIDGE: add a diagonal ridge to the correlation submatrix before inversion
- *  - LEDOIT_WOLF: shrink correlation submatrix toward identity using a Ledoit–Wolf style intensity
+ * Fisher's Z CI test with shrinkage (RIDGE/Ledoit–Wolf) and optional pseudoinverse fallback.
  */
 public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable,
         RawMarginalIndependenceTest {
@@ -42,20 +38,24 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     private double alpha;
     private DataSet dataSet;
     private boolean verbose = false;
-    private double r = Double.NaN;
+    private double r = Double.NaN;                 // last partial correlation
     private List<Integer> rows = null;
 
-    /** Passed through to precision-based partial corr util (unchanged behavior). */
+    /** Kept for back-compat only (ignored in new path). */
     private double lambda = 0.0;
 
-    /** Ridge amount (diagonal Tikhonov) for RIDGE mode. */
+    /** Ridge amount for RIDGE mode. */
     private double ridge = 0.0;
 
-    /** Shrinkage mode selector (default NONE). */
-    private ShrinkageMode shrinkageMode = ShrinkageMode.LEDOIT_WOLF;
+    /** Ledoit–Wolf / Ridge / None. */
+    private ShrinkageMode shrinkageMode = ShrinkageMode.NONE;
 
-    /** Last LW delta used (for debugging / toString). */
+    /** Last LW delta used (debugging only). */
     private double lastLedoitWolfDelta = Double.NaN;
+
+    /** Pseudoinverse controls (OFF by default). */
+    private boolean usePseudoinverse = false;
+    private double pinvTolerance = 1e-7;
 
     private int nEff;
 
@@ -66,9 +66,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         this.sampleSize = dataSet.getNumRows();
         setEffectiveSampleSize(-1);
 
-        if (!(dataSet.isContinuous())) {
-            throw new IllegalArgumentException("Data set must be continuous.");
-        }
+        if (!(dataSet.isContinuous())) throw new IllegalArgumentException("Data set must be continuous.");
 
         if (!dataSet.existsMissingValue()) {
             this.cor = new CorrelationMatrix(dataSet);
@@ -77,12 +75,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             this.nameMap = nameMap(this.variables);
             setAlpha(alpha);
         } else {
-            if (!(alpha >= 0 && alpha <= 1)) {
-                throw new IllegalArgumentException("Alpha mut be in [0, 1]");
-            }
-
+            if (!(alpha >= 0 && alpha <= 1)) throw new IllegalArgumentException("Alpha must be in [0,1]");
             List<Node> nodes = dataSet.getVariables();
-
             this.variables = Collections.unmodifiableList(nodes);
             this.indexMap = indexMap(this.variables);
             this.nameMap = nameMap(this.variables);
@@ -92,8 +86,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
 
     public IndTestFisherZ(DataSet dataSet, double alpha, double ridge) {
         this(dataSet, alpha);
-        setRidge(ridge);
         setShrinkageMode(ShrinkageMode.RIDGE);
+        setRidge(ridge);
     }
 
     public IndTestFisherZ(Matrix data, List<Node> variables, double alpha) {
@@ -109,12 +103,12 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
 
     public IndTestFisherZ(Matrix data, List<Node> variables, double alpha, double ridge) {
         this(data, variables, alpha);
-        setRidge(ridge);
         setShrinkageMode(ShrinkageMode.RIDGE);
+        setRidge(ridge);
     }
 
     public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha) {
-        this.cor = new CorrelationMatrix(covMatrix); // correlation
+        this.cor = new CorrelationMatrix(covMatrix);
         this.variables = covMatrix.getVariables();
         this.indexMap = indexMap(this.variables);
         this.nameMap = nameMap(this.variables);
@@ -125,35 +119,27 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
 
     public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha, double ridge) {
         this(covMatrix, alpha);
-        setRidge(ridge);
         setShrinkageMode(ShrinkageMode.RIDGE);
+        setRidge(ridge);
     }
 
     /* ======================= API ======================= */
 
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
-        if (vars.isEmpty()) {
-            throw new IllegalArgumentException("Subset may not be empty.");
-        }
-
-        for (Node var : vars) {
-            if (!this.variables.contains(var)) {
-                throw new IllegalArgumentException("All vars must be original vars");
-            }
-        }
+        if (vars.isEmpty()) throw new IllegalArgumentException("Subset may not be empty.");
+        for (Node var : vars) if (!this.variables.contains(var)) throw new IllegalArgumentException("All vars must be original vars");
 
         int[] indices = new int[vars.size()];
-        for (int i = 0; i < indices.length; i++) {
-            indices[i] = this.indexMap.get(vars.get(i).getName());
-        }
-
+        for (int i = 0; i < indices.length; i++) indices[i] = this.indexMap.get(vars.get(i).getName());
         ICovarianceMatrix newCovMatrix = this.cor.getSubmatrix(indices);
 
         IndTestFisherZ t = new IndTestFisherZ(newCovMatrix, getAlpha());
-        t.setLambda(this.lambda);
+        t.setLambda(this.lambda); // legacy no-op
         t.setRidge(this.ridge);
         t.setShrinkageMode(this.shrinkageMode);
+        t.setUsePseudoinverse(this.usePseudoinverse);
+        t.setPinvTolerance(this.pinvTolerance);
         t.setEffectiveSampleSize(getEffectiveSampleSize());
         t.setVerbose(this.verbose);
         return t;
@@ -162,7 +148,6 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double p;
-
         try {
             p = getPValue(x, y, z);
         } catch (SingularMatrixException e) {
@@ -172,16 +157,12 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         boolean independent = p > this.alpha;
 
         if (Double.isNaN(p)) {
-            throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
+            throw new RuntimeException("Undefined p-value for test: " + LogUtilsSearch.independenceFact(x, y, z));
         } else {
             IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
-
-            if (this.verbose) {
-                if (independent) {
-                    TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, z, p));
-                }
+            if (this.verbose && independent) {
+                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, z, p));
             }
-
             return result;
         }
     }
@@ -189,32 +170,26 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     public double getPValue(Node x, Node y, Set<Node> z) throws SingularMatrixException {
         double r;
         int n;
-
         if (covMatrix() != null) {
             r = partialCorrelation(x, y, z, rows);
             n = getEffectiveSampleSize();
         } else {
             List<Integer> rows = listRows();
-            r = getR(x, y, z, rows);
+            r = partialCorrelation(x, y, z, rows);
             n = rows.size();
         }
 
         this.r = r;
         double q = .5 * (log(1.0 + abs(r)) - log(1.0 - abs(r)));
         double df = n - 3. - z.size();
-
         if (df < 1) {
-            throw new IllegalArgumentException("The degrees of freedom for independence fact " + x + " _||_ " + y +
-                                               " | " + z + " nonpositive, n = " + n + " df = " + df);
+            throw new IllegalArgumentException("Nonpositive df for " + x + " _||_ " + y + " | " + z + " (n=" + n + ", df=" + df + ")");
         }
-
         double fisherZ = sqrt(df) * q;
-
         return 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
     }
 
     public int getEffectiveSampleSize() { return nEff; }
-
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
         this.nEff = effectiveSampleSize < 0 ? this.sampleSize : effectiveSampleSize;
@@ -225,16 +200,12 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     public double getAlpha() { return this.alpha; }
-
     public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Significance out of range: " + alpha);
-        }
+        if (alpha < 0.0 || alpha > 1.0) throw new IllegalArgumentException("Significance out of range: " + alpha);
         this.alpha = alpha;
     }
 
     public List<Node> getVariables() { return this.variables; }
-
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = new ArrayList<>(variables);
@@ -242,9 +213,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     public Node getVariable(String name) { return this.nameMap.get(name); }
-
     public DataSet getData() { return this.dataSet; }
-
     public ICovarianceMatrix getCov() { return this.cor; }
 
     @Override
@@ -261,7 +230,6 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     public boolean isVerbose() { return this.verbose; }
-
     public void setVerbose(boolean verbose) { this.verbose = verbose; }
 
     @Override
@@ -273,26 +241,23 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         if (shrinkageMode == ShrinkageMode.RIDGE && ridge > 0.0) base += "(ridge=" + f2.format(ridge) + ")";
         if (shrinkageMode == ShrinkageMode.LEDOIT_WOLF && !Double.isNaN(lastLedoitWolfDelta))
             base += "(delta=" + f2.format(lastLedoitWolfDelta) + ")";
+        if (usePseudoinverse) base += ", pinv tol=" + f2.format(pinvTolerance);
         return base;
     }
 
+    /** Determinism detection unchanged (no shrinkage here; we want true singularity). */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
-        for (int j = 0; j < parents.length; j++) {
-            parents[j] = indexMap.get(z.get(j).getName());
-        }
-
+        for (int j = 0; j < parents.length; j++) parents[j] = indexMap.get(z.get(j).getName());
         if (parents.length > 0) {
             Matrix Czz = this.cor.getSelection(parents, parents);
             try {
-                // No shrinkage here: we want actual singularity for determinism detection.
                 Czz.inverse();
             } catch (SingularMatrixException e) {
                 System.out.println(LogUtilsSearch.determinismDetected(new HashSet<>(z), x));
                 return true;
             }
         }
-
         return false;
     }
 
@@ -311,10 +276,10 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             corSub = this.cor.getSelection(indices, indices); // correlation submatrix
         } else {
             Matrix cov = SemBicScore.getCov(rows, indices, indices, this.dataSet, null);
-            corSub = MatrixUtils.convertCovToCorr(cov);
+            corSub = edu.cmu.tetrad.util.MatrixUtils.convertCovToCorr(cov);
         }
 
-        // Apply selected regularization on the correlation submatrix
+        // Apply shrinkage
         switch (this.shrinkageMode) {
             case RIDGE -> {
                 if (this.ridge > 0.0) {
@@ -329,27 +294,21 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
                 int p = corSub.getNumRows();
                 int n = (this.cor != null ? getEffectiveSampleSize() : (rows == null ? getSampleSize() : rows.size()));
                 if (p >= 2 && n > 1) {
-                    double denom = 0.0;
-                    double num = 0.0;
+                    double denom = 0.0, num = 0.0;
                     for (int i = 0; i < p; i++) {
                         double riiMinus1 = corSub.get(i, i) - 1.0;
                         denom += riiMinus1 * riiMinus1;
                         for (int j = i + 1; j < p; j++) {
                             double rij = corSub.get(i, j);
-                            double diff = rij; // target off-diagonal = 0
-                            denom += 2.0 * diff * diff; // count both (i,j) and (j,i)
-                            // Gaussian approx Var(r_ij) ~ (1 - rho^2)^2 / (n - 1)
+                            denom += 2.0 * rij * rij;
                             double var = (1.0 - rij * rij);
                             var = var * var / (n - 1.0);
-                            num += 2.0 * var; // for symmetric pair
+                            num += 2.0 * var;
                         }
                     }
                     double delta = 0.0;
-                    if (denom > 0.0) {
-                        delta = Math.min(1.0, Math.max(0.0, num / denom));
-                    }
+                    if (denom > 0.0) delta = Math.min(1.0, Math.max(0.0, num / denom));
                     this.lastLedoitWolfDelta = delta;
-
                     if (delta > 0.0) {
                         Matrix I = Matrix.identity(p);
                         Matrix shrunk = corSub.copy().scalarMult(1.0 - delta).plus(I.scalarMult(delta));
@@ -362,50 +321,117 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             case NONE -> { /* no-op */ }
         }
 
-        return StatUtils.partialCorrelationPrecisionMatrix(corSub, 0);
+        // Try standard inversion via Cholesky; fallback to pseudoinverse if requested.
+        try {
+            return partialViaCholesky(corSub);
+        } catch (RuntimeException e) {
+            if (!usePseudoinverse) {
+                // Mirror previous behavior: surface as singular unless pinv allowed
+                throw new SingularMatrixException();
+            }
+            return partialViaEigenPinv(corSub, pinvTolerance);
+        }
     }
 
-    private double getR(Node x, Node y, Set<Node> z, List<Integer> rows) {
-        return partialCorrelation(x, y, z, rows);
+    /** Fast path: Cholesky on SPD correlation; throws if not SPD. */
+    private double partialViaCholesky(Matrix corSub) {
+        RealMatrix A = toReal(corSub);
+        // The small "relativeSymmetryThreshold" & "absolutePositivityThreshold" keep it strict.
+        CholeskyDecomposition chol = new CholeskyDecomposition(A, 1e-10, 1e-12);
+        RealMatrix L = chol.getL();
+        // Precision = (L^{-T} L^{-1})
+        DecompositionSolver solver = chol.getSolver();
+        RealMatrix I = MatrixUtilsCommons.identity(A.getRowDimension());
+        RealMatrix P = solver.solve(I); // this gives A^{-1}
+        return partialFromPrecision(P);
+    }
+
+    /** Robust path: symmetric eigen pinv with relative cutoff. */
+    private double partialViaEigenPinv(Matrix corSub, double tolRel) {
+        RealMatrix A = toReal(corSub);
+        EigenDecomposition eig = new EigenDecomposition(SymmetricMatrixUtils.forceSymmetric(A));
+        double[] vals = eig.getRealEigenvalues();
+        RealMatrix V = eig.getV();
+
+        double maxEig = 0.0;
+        for (double v : vals) maxEig = Math.max(maxEig, Math.abs(v));
+        double cut = tolRel * (maxEig > 0 ? maxEig : 1.0);
+
+        // Build precision = V diag(1/max(eig,cut)) V^T
+        int p = vals.length;
+        double[][] Dinv = new double[p][p];
+        for (int i = 0; i < p; i++) {
+            double v = vals[i];
+            double adj = Math.abs(v) < cut ? cut : v;
+            Dinv[i][i] = 1.0 / adj;
+        }
+        RealMatrix Pinv = V.multiply(new Array2DRowRealMatrix(Dinv)).multiply(V.transpose());
+
+        return partialFromPrecision(Pinv);
+    }
+
+    /** Compute partial corr between index 0 (x) and 1 (y) from precision Ω. */
+    private static double partialFromPrecision(RealMatrix P) {
+        double w11 = P.getEntry(0, 0);
+        double w22 = P.getEntry(1, 1);
+        double w12 = P.getEntry(0, 1);
+        if (w11 <= 0 || w22 <= 0) throw new RuntimeException("Nonpositive diagonal in precision.");
+        return -w12 / Math.sqrt(w11 * w22);
+    }
+
+    private static RealMatrix toReal(Matrix m) {
+        return new Array2DRowRealMatrix(m.toArray(), true);
+    }
+
+    private static class MatrixUtilsCommons {
+        static RealMatrix identity(int n) { return MatrixUtilsCommonsDiag.identity(n); }
+    }
+    private static class MatrixUtilsCommonsDiag {
+        static RealMatrix identity(int n) {
+            double[][] a = new double[n][n];
+            for (int i = 0; i < n; i++) a[i][i] = 1.0;
+            return new Array2DRowRealMatrix(a, false);
+        }
+    }
+    private static class SymmetricMatrixUtils {
+        static RealMatrix forceSymmetric(RealMatrix A) {
+            int n = A.getRowDimension();
+            double[][] s = new double[n][n];
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    s[i][j] = 0.5 * (A.getEntry(i, j) + A.getEntry(j, i));
+                }
+            }
+            return new Array2DRowRealMatrix(s, false);
+        }
     }
 
     private ICovarianceMatrix covMatrix() { return this.cor; }
 
-    /* ======================= Helpers ======================= */
+    /* ======================= Helpers & setters ======================= */
 
     private Map<String, Node> nameMap(List<Node> variables) {
         Map<String, Node> nameMap = new ConcurrentHashMap<>();
-        for (Node node : variables) {
-            nameMap.put(node.getName(), node);
-        }
+        for (Node node : variables) nameMap.put(node.getName(), node);
         return nameMap;
     }
 
     private Map<String, Integer> indexMap(List<Node> variables) {
         Map<String, Integer> indexMap = new HashMap<>();
-        for (int i = 0; i < variables.size(); i++) {
-            indexMap.put(variables.get(i).getName(), i);
-        }
+        for (int i = 0; i < variables.size(); i++) indexMap.put(variables.get(i).getName(), i);
         return indexMap;
     }
 
     private List<Integer> listRows() {
-        if (this.rows != null) {
-            return this.rows;
-        }
+        if (this.rows != null) return this.rows;
         List<Integer> rows = new ArrayList<>();
-        for (int k = 0; k < this.dataSet.getNumRows(); k++) {
-            rows.add(k);
-        }
+        for (int k = 0; k < this.dataSet.getNumRows(); k++) rows.add(k);
         return rows;
     }
 
     public List<Integer> getRows() { return rows; }
-
     public void setRows(List<Integer> rows) {
-        if (dataSet == null) {
-            return;
-        }
+        if (dataSet == null) return;
         if (rows == null) {
             this.rows = null;
         } else {
@@ -414,30 +440,41 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
                 if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
             }
             this.rows = rows;
-            cor = null;
+            cor = null; // recompute from rows
         }
     }
 
-    public double getRho() {
-        return r;
-    }
-
-    /** Singularity lambda for the precision-based partial correlation utility. */
+    /** Back-compat no-op for external code that still calls setLambda. */
     public void setLambda(double lambda) { this.lambda = lambda; }
 
-    /** Ridge setter/getter (used when shrinkageMode == RIDGE). */
     public void setRidge(double ridge) {
         if (ridge < 0.0) throw new IllegalArgumentException("ridge must be >= 0");
         this.ridge = ridge;
     }
     public double getRidge() { return this.ridge; }
 
-    /** Shrinkage mode setter/getter. */
     public void setShrinkageMode(ShrinkageMode mode) {
         if (mode == null) mode = ShrinkageMode.NONE;
         this.shrinkageMode = mode;
     }
     public ShrinkageMode getShrinkageMode() { return this.shrinkageMode; }
+
+    /** NEW: pseudoinverse controls */
+    public void setUsePseudoinverse(boolean use) { this.usePseudoinverse = use; }
+    public boolean isUsePseudoinverse() { return this.usePseudoinverse; }
+
+    public void setPinvTolerance(double tol) {
+        if (tol <= 0) throw new IllegalArgumentException("pinvTolerance must be > 0");
+        this.pinvTolerance = tol;
+    }
+    public double getPinvTolerance() { return this.pinvTolerance; }
+
+    /** Optional: expose last partial correlation for logging. */
+    public double getLastR() { return this.r; }
+
+    public double getRho() {
+        return r;
+    }
 
     @Override
     public double computePValue(double[] x, double[] y) {
@@ -446,19 +483,17 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             combined[i][0] = x[i];
             combined[i][1] = y[i];
         }
-
         Node _x = new ContinuousVariable("X_computePValue");
         Node _y = new ContinuousVariable("Y_computePValue");
         List<Node> nodes = new ArrayList<>();
-        nodes.add(_x);
-        nodes.add(_y);
-
+        nodes.add(_x); nodes.add(_y);
         DataSet dataSet = new BoxDataSet(new DoubleDataBox(combined), nodes);
 
         IndTestFisherZ test = new IndTestFisherZ(dataSet, alpha);
-        test.setLambda(this.lambda);
         test.setRidge(this.ridge);
         test.setShrinkageMode(this.shrinkageMode);
+        test.setUsePseudoinverse(this.usePseudoinverse);
+        test.setPinvTolerance(this.pinvTolerance);
 
         return test.getPValue(_x, _y, new HashSet<>());
     }

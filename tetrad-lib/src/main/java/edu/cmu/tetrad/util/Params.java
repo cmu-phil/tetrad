@@ -908,6 +908,10 @@ public final class Params {
      */
     public static final String SINGULARITY_LAMBDA = "singularityLambda";
     /**
+     * Constant <code>SHRINKAGE_MODE="shrinkageMode"</code>
+     */
+    public static final String SHRINKAGE_MODE = "shrinkageMode";
+    /**
      * Constant <code>REGULARIZATION_LAMBDA="regularizationLambda"</code>
      */
     public static final String REGULARIZATION_LAMBDA = "regularizationLambda";
