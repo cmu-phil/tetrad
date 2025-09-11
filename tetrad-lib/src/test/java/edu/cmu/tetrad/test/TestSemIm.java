@@ -277,9 +277,9 @@ public class TestSemIm {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-//        DataSet data = im.simulateDataCholesky(1000, true);
+//        DataSet data = semIm.simulateDataCholesky(1000, true);
         DataSet data = im.simulateDataReducedForm(1000, true);
-//        DataSet data = im.simulateDataRecursive(1000, true);
+//        DataSet data = semIm.simulateDataRecursive(1000, true);
 
         data.getCovarianceMatrix();
 

@@ -397,7 +397,7 @@ public class LeeHastieSimulation implements Simulation {
         Map<String, Integer> nodeDists = getNodeDists(pm.getGraph());
 
         GeneralizedSemIm im = new GeneralizedSemIm(pm);
-        //System.out.println(im);
+        //System.out.println(semIm);
         List<Node> nodes = pm.getVariableNodes();
 
         //this needs to be changed for cyclic graphs...

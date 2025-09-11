@@ -17,7 +17,7 @@ public final class CyclicStableUtils {
     /* ========================= Public API ========================= */
 
     /** Simulate from an arbitrary graph with SCC-wise fixed spectral radius s. */
-    public static DataSet simulateStableFixedRadius(
+    public static SemIm.CyclicSimResult simulateStableFixedRadius(
             Graph g, int n, double s, double coefLow, double coefHigh,
             long seed, Parameters params) {
 
@@ -27,11 +27,11 @@ public final class CyclicStableUtils {
 
         stabilizeAllSccsFixedRadius(im, g, s, coefLow, coefHigh, new Random(seed + 7));
 
-        return im.simulateData(n, false);
+        return new SemIm.CyclicSimResult(im.simulateData(n, false), im);
     }
 
     /** Simulate from an arbitrary graph with SCC-wise radius capped by sqrt(maxProd). */
-    public static DataSet simulateStableProductCapped(
+    public static SemIm.CyclicSimResult simulateStableProductCapped(
             Graph g, int n, double maxProd, double coefLow, double coefHigh,
             long seed, Parameters params) {
 
@@ -220,7 +220,7 @@ public final class CyclicStableUtils {
     /* ================= Convenience quick-start (optional) ================= */
 
     /** Quick demo: build a graph, stabilize, simulate. */
-    public static DataSet quickDemo() {
+    public static edu.cmu.tetrad.sem.SemIm.CyclicSimResult quickDemo() {
         Node x = new ContinuousVariable("x");
         Node y = new ContinuousVariable("y");
         Node z = new ContinuousVariable("z");

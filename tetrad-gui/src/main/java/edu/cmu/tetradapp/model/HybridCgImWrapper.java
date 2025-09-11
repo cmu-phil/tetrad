@@ -34,7 +34,7 @@ public class HybridCgImWrapper implements SessionModel, Cloneable {
 
     /** Construct from an existing IM. */
     public HybridCgImWrapper(HybridCgIm im) {
-        this.im = Objects.requireNonNull(im, "im");
+        this.im = Objects.requireNonNull(im, "semIm");
     }
 
     /** Convenience: build a new HybridCgIm from a HybridCgPmWrapper. */
@@ -63,7 +63,7 @@ public class HybridCgImWrapper implements SessionModel, Cloneable {
 
     // ---------- Accessors ----------
     public HybridCgIm getIm() { return im; }
-    public void setIm(HybridCgIm im) { this.im = Objects.requireNonNull(im, "im"); }
+    public void setIm(HybridCgIm im) { this.im = Objects.requireNonNull(im, "semIm"); }
 
     public HybridCgPm getPm() { return im != null ? im.getPm() : null; }
 

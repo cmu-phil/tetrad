@@ -1183,7 +1183,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             setSavedTooltipDelay(toolTipManager.getInitialDelay());
 
             // Laborious code that follows is intended to make sure tooltips come
-            // almost immediately within the sem im editor but more slowly outside.
+            // almost immediately within the sem semIm editor but more slowly outside.
             // Ugh.
             workbench().addComponentListener(new ComponentAdapter() {
                 @Override

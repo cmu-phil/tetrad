@@ -1099,9 +1099,9 @@ public class TestDM {
 //
 //
 //        SemPm pm = new SemPm(graph);
-//        SemIm im = new SemIm(pm);
+//        SemIm semIm = new SemIm(pm);
 //
-//        DataSet data = im.simulateData(100000, false);
+//        DataSet data = semIm.simulateData(100000, false);
 //
 //        DMSearch search = new DMSearch();
 //

@@ -77,7 +77,7 @@
             SemIm.Result result = SemIm.simulatePossibleShrinkage(params, g);
 
             // ---- independence test with shrinkage + (optional) pinv ----
-            IndTestFisherZ base = new IndTestFisherZ(result.ds(), 0.01);
+            IndTestFisherZ base = new IndTestFisherZ(result.dataSet(), 0.01);
             base.setShrinkageMode(result.shrinkageMode());
             if (result.shrinkageMode() == ShrinkageMode.RIDGE) base.setRidge(params.getDouble(Params.REGULARIZATION_LAMBDA));
 

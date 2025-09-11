@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.*;
@@ -405,6 +405,14 @@ public final class SemIm implements Im, ISemIm {
         parameters.add(Params.VAR_HIGH);
         parameters.add(Params.COEF_SYMMETRIC);
         parameters.add(Params.COV_SYMMETRIC);
+
+        parameters.add(Params.CYCLIC_COEF_LOW);
+        parameters.add(Params.CYCLIC_COEF_HIGH);
+        parameters.add(Params.CYCLIC_RADIUS);        // for FixedRadius
+        parameters.add(Params.CYCLIC_MAX_PROD);      // for ProductCapped
+        parameters.add(Params.CYCLIC_COEF_STYLE);      // 0=Auto, 1=FixedRadius, 2=MaxProd, 3=Baseline
+
+
         return parameters;
     }
 
@@ -541,7 +549,7 @@ public final class SemIm implements Im, ISemIm {
         }
 
         if (style == 1 || style == 2) {
-            double low  = params.getDouble(Params.CYCLIC_COEF_LOW);
+            double low = params.getDouble(Params.CYCLIC_COEF_LOW);
             double high = params.getDouble(Params.CYCLIC_COEF_HIGH);
             if (!(low > 0 && high > 0 && low <= high)) {
                 throw new IllegalArgumentException("CYCLIC_COEF_[LOW,HIGH] must be >0 and low<=high");
@@ -561,49 +569,61 @@ public final class SemIm implements Im, ISemIm {
         // ---- simulate data per style ----
         DataSet ds;
         int N = params.getInt(Params.SAMPLE_SIZE);
+        SemIm im;
 
         switch (style) {
-            case 1 -> ds = CyclicStableUtils.simulateStableFixedRadius(
-                    g,
-                    N,
-                    params.getDouble(Params.CYCLIC_RADIUS),
-                    params.getDouble(Params.CYCLIC_COEF_LOW),
-                    params.getDouble(Params.CYCLIC_COEF_HIGH),
-                    params.getLong(Params.SEED),
-                    params);
+            case 1 -> {
+                edu.cmu.tetrad.sem.SemIm.CyclicSimResult result
+                        = CyclicStableUtils.simulateStableFixedRadius(
+                        g,
+                        N,
+                        params.getDouble(Params.CYCLIC_RADIUS),
+                        params.getDouble(Params.CYCLIC_COEF_LOW),
+                        params.getDouble(Params.CYCLIC_COEF_HIGH),
+                        params.getLong(Params.SEED),
+                        params);
+                ds = result.dataSet();
+                im = result.semIm();
+            }
 
-            case 2 -> ds = CyclicStableUtils.simulateStableProductCapped(
-                    g,
-                    N,
-                    params.getDouble(Params.CYCLIC_MAX_PROD),
-                    params.getDouble(Params.CYCLIC_COEF_LOW),
-                    params.getDouble(Params.CYCLIC_COEF_HIGH),
-                    params.getLong(Params.SEED),
-                    params);
+            case 2 -> {
+                edu.cmu.tetrad.sem.SemIm.CyclicSimResult result = CyclicStableUtils.simulateStableProductCapped(
+                        g,
+                        N,
+                        params.getDouble(Params.CYCLIC_MAX_PROD),
+                        params.getDouble(Params.CYCLIC_COEF_LOW),
+                        params.getDouble(Params.CYCLIC_COEF_HIGH),
+                        params.getLong(Params.SEED),
+                        params);
+                ds = result.dataSet();
+                im = result.semIm();
+            }
 
             case 3 -> { // Baseline / None
-                SemIm im = new SemIm(new SemPm(g), params);
+                im = new SemIm(new SemPm(g), params);
                 ds = im.simulateData(N, false);
             }
 
             default -> throw new IllegalArgumentException("Invalid cyclic style: " + style);
         }
-        Result result = new Result(shrinkageMode, ds, N);
-        return result;
+
+        return new Result(shrinkageMode, ds, N, im);
     }
 
     private static IndTestFisherZ.ShrinkageMode parseShrinkage(Parameters p) {
         int k;
-        try { k = p.getInt(Params.SHRINKAGE_MODE); } catch (Exception e) { k = 1; }
-        if (k < 1) k = 1; if (k > 3) k = 3;
+        try {
+            k = p.getInt(Params.SHRINKAGE_MODE);
+        } catch (Exception e) {
+            k = 1;
+        }
+        if (k < 1) k = 1;
+        if (k > 3) k = 3;
         return switch (k) {
             case 1 -> IndTestFisherZ.ShrinkageMode.NONE;
             case 2 -> IndTestFisherZ.ShrinkageMode.RIDGE;
             default -> IndTestFisherZ.ShrinkageMode.LEDOIT_WOLF;
         };
-    }
-
-    public record Result(IndTestFisherZ.ShrinkageMode shrinkageMode, DataSet ds, int N) {
     }
 
     /**
@@ -776,7 +796,6 @@ public final class SemIm implements Im, ISemIm {
 //        Mapping mapping = this.fixedMappings.get(index);
 //        mapping.setValue(value);
 //    }
-
     public void setFixedParamValue(Parameter parameter, double value) {
         if (!getFixedParameters().contains(parameter)) {
             throw new IllegalArgumentException("Not a fixed parameter in this model: " + parameter);
@@ -1288,27 +1307,6 @@ public final class SemIm implements Im, ISemIm {
         }
     }
 
-//    private double getFml2() {
-//        Matrix sigma;
-//        try {
-//            sigma = implCovarMeas();
-//        } catch (Exception e) {
-//            return Double.NaN;
-//        }
-//        Matrix s = this.sampleCovarC;
-//        if (s == null) return Double.NaN;
-//
-//        try {
-//            // F_ML = log|Σ| + trace(Σ^{-1} S) - log|S| - p
-//            double logDetSigma = safeLogDetSymPD(sigma);
-//            double logDetS = safeLogDetSymPD(s);
-//            double tr = traceAInvB_SPD(sigma, s);
-//            return logDetSigma + tr - logDetS - getMeasuredNodes().size();
-//        } catch (Exception ex) {
-//            return Double.NaN;
-//        }
-//    }
-
     private double getFml2() {
         Matrix Sigma;
         try {
@@ -1321,12 +1319,12 @@ public final class SemIm implements Im, ISemIm {
 
         // Symmetrize to reduce roundoff asymmetry.
         Sigma = MatrixUtils.symmetrize(Sigma);
-        S     = MatrixUtils.symmetrize(S);
+        S = MatrixUtils.symmetrize(S);
 
         try {
             // log|Σ| and log|S| with Cholesky + tiny jitter fallback
             double logDetSigma = safeLogDetSymPD(Sigma);
-            double logDetS     = safeLogDetSymPD(S);
+            double logDetS = safeLogDetSymPD(S);
 
             // trace(Σ^{-1} S) using Cholesky solve of Σ; if Σ not SPD, jitter its diagonal once.
             double tr;
@@ -1386,6 +1384,27 @@ public final class SemIm implements Im, ISemIm {
         // 0.5 * trace(diff * diff) equals 0.5 * ||diff||_F^2 when diff is symmetric; we use the general form
         return 0.5 * (diff.times(diff)).trace();
     }
+
+//    private double getFml2() {
+//        Matrix sigma;
+//        try {
+//            sigma = implCovarMeas();
+//        } catch (Exception e) {
+//            return Double.NaN;
+//        }
+//        Matrix s = this.sampleCovarC;
+//        if (s == null) return Double.NaN;
+//
+//        try {
+//            // F_ML = log|Σ| + trace(Σ^{-1} S) - log|S| - p
+//            double logDetSigma = safeLogDetSymPD(sigma);
+//            double logDetS = safeLogDetSymPD(s);
+//            double tr = traceAInvB_SPD(sigma, s);
+//            return logDetSigma + tr - logDetS - getMeasuredNodes().size();
+//        } catch (Exception ex) {
+//            return Double.NaN;
+//        }
+//    }
 
     /**
      * The negative of the log likelihood function for the getModel model, with the constant chopped off. (Bollen 134).
@@ -1873,8 +1892,6 @@ public final class SemIm implements Im, ISemIm {
                 this.errorParam2);
     }
 
-    // For testing.
-
     private double getNextExponential() {
         numRandomCalls++;
         return RandomUtil.getInstance().nextExponential(this.errorParam1);
@@ -1884,6 +1901,8 @@ public final class SemIm implements Im, ISemIm {
         numRandomCalls++;
         return RandomUtil.getInstance().nextUniform(this.errorParam1, this.errorParam2);
     }
+
+    // For testing.
 
     /**
      * <p>simulateDataReducedForm.</p>
@@ -2284,7 +2303,7 @@ public final class SemIm implements Im, ISemIm {
 
     private void retainPreviousValues(SemIm oldSemIm) {
         if (oldSemIm == null) {
-            System.out.println("old sem im null");
+            System.out.println("old sem semIm null");
             return;
         }
 
@@ -2486,10 +2505,6 @@ public final class SemIm implements Im, ISemIm {
         return Collections.unmodifiableList(mappings);
     }
 
-//    private double logDet(Matrix matrix2D) {
-//        double det = matrix2D.det();
-//        return FastMath.log(FastMath.abs(det));
-
     private List<Parameter> initFixedParameters() {
         List<Parameter> fixedParameters = new ArrayList<>();
 
@@ -2517,6 +2532,10 @@ public final class SemIm implements Im, ISemIm {
 
         return Collections.unmodifiableList(meanParameters);
     }
+
+//    private double logDet(Matrix matrix2D) {
+//        double det = matrix2D.det();
+//        return FastMath.log(FastMath.abs(det));
 
     /**
      * Computes the implied covariance matrices of the Sem. There are two:
@@ -2711,5 +2730,11 @@ public final class SemIm implements Im, ISemIm {
         }
 
         return totalEffect;
+    }
+
+    public record CyclicSimResult(DataSet dataSet, SemIm semIm) {
+    }
+
+    public record Result(IndTestFisherZ.ShrinkageMode shrinkageMode, DataSet dataSet, int N, SemIm im) {
     }
 }

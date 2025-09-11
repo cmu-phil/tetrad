@@ -130,12 +130,12 @@ public class CausalUnmixer {
      */
     private static Function<DataSet, Graph> grapher(Config cfg) {
         return ds -> {
-//            if (ds.getNumRows() < 50) {
+//            if (dataSet.getNumRows() < 50) {
 //                return null;
 //            }
 
             try {
-//                IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), 0.01);
+//                IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(dataSet), 0.01);
 //                Pc pc = new Pc(test);
 //                pc.setColliderOrientationStyle(Pc.ColliderOrientationStyle.MAX_P);
 //                return pc.search();

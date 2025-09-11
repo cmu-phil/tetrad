@@ -164,7 +164,7 @@ public class SpecialDataClark implements Simulation {
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
-//            System.out.println(im);
+//            System.out.println(semIm);
 
             return im.simulateData(N, false);
         } catch (Exception e) {

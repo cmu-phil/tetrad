@@ -157,18 +157,29 @@ public class SemSimulation implements Simulation {
                 graph = this.randomGraph.createGraph(parameters);
             }
 
-            SemPm pm = this.pm;
+//            SemPm pm = this.pm;
             SemIm im = this.im;
 
-            if (this.pm == null) {
-                pm = new SemPm(graph);
-            }
+//            if (this.pm == null) {
+//                pm = new SemPm(graph);
+//            }
+
+//            if (this.semIm == null) {
+//                semIm = new SemIm(pm, parameters);
+//            }
+
+            SemIm.Result result = SemIm.simulatePossibleShrinkage(parameters, graph);
+
+            DataSet dataSet = result.dataSet();// simulate(semIm, parameters);
 
             if (this.im == null) {
-                im = new SemIm(pm, parameters);
+                im = result.im();
             }
 
-            DataSet dataSet = simulate(im, parameters);
+            if (this.pm == null) {
+                pm = im.getSemPm();
+            }
+
             dataSet = postProcess(parameters, dataSet);
             dataSet.setName("" + (i + 1));
 

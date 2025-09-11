@@ -57,7 +57,7 @@ public class TestOrderedLocalMarkovProperty {
         for (Graph mag : mags) {
             System.out.println("\nmag = " + mag);
             Set<IndependenceFact> im = OrderedLocalMarkovProperty.getModel(mag);
-            System.out.println("im = ");
+            System.out.println("semIm = ");
 
             for (IndependenceFact fact : im) {
                 System.out.println(fact);

@@ -103,7 +103,7 @@ final class SessionEditorToolbar extends JPanel {
                         "<html>Add a node to do a grid search.</html>"),
                 new ButtonInfo("PM", "Parametric Model", "pm",
                         "<html>Add a node for a parametric model.</html>"),
-                new ButtonInfo("IM", "Instantiated Model", "im",
+                new ButtonInfo("IM", "Instantiated Model", "semIm",
                         "<html>Add a node for an instantiated model.</html>"),
                 new ButtonInfo("Estimator", "Estimator", "estimator",
                         "<html>Add a node for an estimator.</html>"),

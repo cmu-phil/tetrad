@@ -85,11 +85,11 @@ public final class HbsmsBeam implements Hbsms {
      */
     private Graph trueModel;
     /**
-     * The original sem im.
+     * The original sem semIm.
      */
     private SemIm originalSemIm;
     /**
-     * The new sem im.
+     * The new sem semIm.
      */
     private SemIm newSemIm;
     /**

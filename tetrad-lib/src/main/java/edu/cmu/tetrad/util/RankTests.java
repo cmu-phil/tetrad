@@ -549,7 +549,7 @@ public class RankTests {
         int p = Sxx.getNumRows(), q = Syy.getNumRows();
         int minpq = Math.min(p, q);
         if (r < 0 || r >= minpq) {
-            throw new IllegalArgumentException("Rank r should be im 0 <= r <= minpq.");
+            throw new IllegalArgumentException("Rank r should be semIm 0 <= r <= minpq.");
         }
 
         // Whitening with PSD inverse sqrt (ridge inside)

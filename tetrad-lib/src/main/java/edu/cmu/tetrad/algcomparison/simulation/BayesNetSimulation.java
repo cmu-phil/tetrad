@@ -193,7 +193,7 @@ public class BayesNetSimulation implements Simulation {
         parameters.addAll(BayesPm.getParameterNames());
 //        }
 
-//        if (this.im == null) {
+//        if (this.semIm == null) {
         parameters.addAll(MlBayesIm.getParameterNames());
 //        }
 
