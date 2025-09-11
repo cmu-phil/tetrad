@@ -87,7 +87,7 @@ public class TestCcdSimpleCycleSanity {
             failures.add(String.format(Locale.US, "[seed=%d] Expected dotted underline triple <X1,X3,X2>",
                     seed));
         }
-//
+
         if (!dottedUnderlines.contains(new Triple(X1, X4, X2))) {
             failures.add(String.format(Locale.US, "[seed=%d] Expected dotted underline triple <X1,X4,X2>",
                     seed));
@@ -97,11 +97,6 @@ public class TestCcdSimpleCycleSanity {
     }
 
     private static boolean isDirected(Graph g, Node from, Node to) {
-        if (g.getDirectedEdge(from, to) == null) {
-            System.out.println(g);
-            g.getDirectedEdge(from, to);
-        }
-
         return g.getDirectedEdge(from, to) != null;
     }
 

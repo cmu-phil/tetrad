@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -101,6 +101,8 @@ public final class Ccd implements IGraphSearch {
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
         // Step A.
+        if (verbose) TetradLogger.getInstance().log("Step A--running FAS");
+
         Fas fas = new Fas(this.independenceTest);
         Graph psi = fas.search();
         psi.reorientAllWith(Endpoint.CIRCLE);
@@ -159,12 +161,11 @@ public final class Ccd implements IGraphSearch {
     /**
      * Perform step B of the CCD algorithm on the given graph.
      *
-     * @param graph The graph on which step B is performed.
+     * @param psi The graph on which step B is performed.
      */
-    // Replace your current stepB + doNodeCollider with this:
-
-    /** Step B: use FAS sepsets to orient colliders (or underline non-colliders). */
     private void stepB(Graph psi, SepsetProducer sepsets) throws InterruptedException {
+        if (verbose) TetradLogger.getInstance().log("Step B - Add underlines and colliders");
+
         // For every node b, inspect unshielded triples a–b–c
         for (Node b : this.nodes) {
             List<Node> adj = new ArrayList<>(psi.getAdjacentNodes(b));
@@ -186,7 +187,7 @@ public final class Ccd implements IGraphSearch {
                 if (S.contains(b)) {
                     // non-collider at b
                     psi.addUnderlineTriple(a, b, c);
-                    if (verbose) System.out.println("StepB: underline (non-collider) " + a + "-" + b + "-" + c +
+                    if (verbose) TetradLogger.getInstance().log("StepB: underline (non-collider) " + a + "-" + b + "-" + c +
                                                     " ; sepset(a,c)=" + S);
                 } else {
                     // collider at b: a -> b <- c
@@ -194,83 +195,9 @@ public final class Ccd implements IGraphSearch {
                     psi.removeEdge(c, b);
                     psi.addDirectedEdge(a, b);
                     psi.addDirectedEdge(c, b);
-                    if (verbose) System.out.println("StepB: collider " + a + "->" + b + "<-" + c +
-                                                    " ; sepset(a,c)=" + S);
+                    if (verbose) TetradLogger.getInstance().log("StepB: collider " + a + "->" + b + "<-" + c +
+                                                                " ; sepset(a,c)=" + S);
                 }
-            }
-        }
-    }
-
-    /**
-     * Performs the node collider algorithm on a given graph.
-     *
-     * @param graph        The graph on which to perform the algorithm.
-     * @param colliders    The map to store the colliders and their scores.
-     * @param noncolliders The map to store the non-colliders and their scores.
-     * @param b            The node to consider as the collider node.
-     */
-    private void doNodeCollider(Graph graph, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) throws InterruptedException {
-        List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
-
-        if (adjacentNodes.size() < 2) {
-            return;
-        }
-
-        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-        int[] combination;
-
-        while ((combination = cg.next()) != null) {
-            Node a = adjacentNodes.get(combination[0]);
-            Node c = adjacentNodes.get(combination[1]);
-
-            // Skip triples that are shielded.
-            if (graph.isAdjacentTo(a, c)) {
-                continue;
-            }
-
-            List<Node> adja = new ArrayList<>(graph.getAdjacentNodes(a));
-            double score = Double.POSITIVE_INFINITY;
-            Set<Node> S = null;
-
-            SublistGenerator cg2 = new SublistGenerator(adja.size(), -1);
-            int[] comb2;
-
-            while ((comb2 = cg2.next()) != null) {
-                Set<Node> s = GraphUtils.asSet(comb2, adja);
-                IndependenceResult result = this.independenceTest.checkIndependence(a, c, s);
-                double _score = result.getScore();
-
-                if (_score < score) {
-                    score = _score;
-                    S = s;
-                }
-            }
-
-            List<Node> adjc = new ArrayList<>(graph.getAdjacentNodes(c));
-
-            SublistGenerator cg3 = new SublistGenerator(adjc.size(), -1);
-            int[] comb3;
-
-            while ((comb3 = cg3.next()) != null) {
-                Set<Node> s = GraphUtils.asSet(comb3, adjc);
-                IndependenceResult result = this.independenceTest.checkIndependence(c, a, s);
-                double _score = result.getScore();
-
-                if (_score < score) {
-                    score = _score;
-                    S = s;
-                }
-            }
-
-            // This could happen if there are undefined values and such.
-            if (S == null) {
-                continue;
-            }
-
-            if (S.contains(b)) {
-                noncolliders.put(new Triple(a, b, c), score);
-            } else {
-                colliders.put(new Triple(a, b, c), score);
             }
         }
     }
@@ -282,7 +209,7 @@ public final class Ccd implements IGraphSearch {
      * @param sepsets The sepsets used for conditional independence tests.
      */
     private void stepC(Graph psi, SepsetProducer sepsets) throws InterruptedException {
-        TetradLogger.getInstance().log("\nStep C");
+        TetradLogger.getInstance().log("\nStep C - Propagating some orientations");
 
         EDGE:
         for (Edge edge : psi.getEdges()) {
@@ -343,6 +270,8 @@ public final class Ccd implements IGraphSearch {
      * @param supSepsets The map of sepsets.
      */
     private void stepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) throws InterruptedException {
+        if (verbose) TetradLogger.getInstance().log("Step D - Adding dotted underline triples");
+
         Map<Node, List<Node>> local = new HashMap<>();
 
         for (Node node : psi.getNodes()) {
@@ -413,7 +342,7 @@ public final class Ccd implements IGraphSearch {
      * @param psi       The graph on which step E is performed.
      */
     private void stepE(Map<Triple, Set<Node>> supSepset, Graph psi) {
-        TetradLogger.getInstance().log("\nStep E");
+        TetradLogger.getInstance().log("\nStep E - Propagating some orientations");
 
         for (Triple triple : psi.getDottedUnderlines()) {
             Node a = triple.getX();
@@ -480,6 +409,8 @@ public final class Ccd implements IGraphSearch {
      * @param supSepsets The map of sepsets.
      */
     private void stepF(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) throws InterruptedException {
+        if (verbose) TetradLogger.getInstance().log("Step F - Propagating more orientations");
+
         for (Triple triple : psi.getDottedUnderlines()) {
             Node a = triple.getX();
             Node b = triple.getY();
