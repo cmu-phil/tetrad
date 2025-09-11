@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.lang.reflect.Method;
@@ -21,11 +22,16 @@ public final class CyclicStableUtils {
             Graph g, int n, double s, double coefLow, double coefHigh,
             long seed, Parameters params) {
 
-        RandomUtil.getInstance().setSeed(seed);
+        if (seed != -1) {
+            RandomUtil.getInstance().setSeed(seed);
+        } else {
+            RandomUtil.getInstance().setSeed(RandomUtil.getInstance().nextLong());
+        }
+
         SemPm pm = new SemPm(g);
         SemIm im = new SemIm(pm, params);
 
-        stabilizeAllSccsFixedRadius(im, g, s, coefLow, coefHigh, new Random(seed + 7));
+        stabilizeAllSccsFixedRadius(im, g, s, coefLow, coefHigh);
 
         return new SemIm.CyclicSimResult(im.simulateData(n, false), im);
     }
@@ -54,15 +60,14 @@ public final class CyclicStableUtils {
 
     /** Stabilize an existing SemIm in-place: enforce per-SCC spectral radius target s. */
     public static void stabilizeAllSccsFixedRadius(
-            SemIm im, Graph g, double s, double coefLow, double coefHigh,
-            Random rng) {
+            SemIm im, Graph g, double s, double coefLow, double coefHigh) {
 
         if (s <= 0.0 || s >= 1.0) throw new IllegalArgumentException("s must be in (0,1)");
         List<List<Node>> sccs = stronglyConnectedComponents(g);
 
         for (List<Node> scc : sccs) {
             if (scc.size() < 2) continue; // skip trivial SCCs
-            initializeInternalEdgesRandom(im, g, scc, coefLow, coefHigh, rng);
+            initializeInternalEdgesRandom(im, g, scc, coefLow, coefHigh);
 
             double rho = spectralRadiusAbs(im, g, scc);
             if (rho > s) {
@@ -76,14 +81,14 @@ public final class CyclicStableUtils {
 
     /** Randomize existing internal edges (that already exist in the graph) within [low, high], positive. */
     public static void initializeInternalEdgesRandom(
-            SemIm im, Graph g, List<Node> scc, double low, double high, Random rng) {
+            SemIm im, Graph g, List<Node> scc, double low, double high) {
 
         if (low <= 0 || high <= 0 || low > high) throw new IllegalArgumentException("Bad coef range");
         for (Node from : scc) {
             for (Node to : scc) {
                 if (from == to) continue;
                 if (g.getDirectedEdge(from, to) != null) {
-                    double val = low + (high - low) * rng.nextDouble();
+                    double val = low + (high - low) * RandomUtil.getInstance().nextDouble();
                     setEdgeCoef(im, from, to, val);
                 }
             }

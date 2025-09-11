@@ -69,7 +69,7 @@
             params.set(Params.CYCLIC_COEF_HIGH, 1.0);
             params.set(Params.CYCLIC_RADIUS, 0.6);        // for FixedRadius
             params.set(Params.CYCLIC_MAX_PROD, 0.5);      // for ProductCapped
-            params.set(Params.CYCLIC_COEF_STYLE, 2);      // 0=Auto, 1=FixedRadius, 2=MaxProd, 3=Baseline
+            params.set(Params.CYCLIC_COEF_STYLE, 0);      // 0=Auto, 1=FixedRadius, 2=MaxProd, 3=Baseline
 
             params.set(Params.SAMPLE_SIZE, 1000);
             params.set(Params.SEED, RandomUtil.getInstance().nextLong());
