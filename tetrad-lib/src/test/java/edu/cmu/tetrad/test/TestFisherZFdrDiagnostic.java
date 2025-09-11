@@ -265,34 +265,6 @@ public class TestFisherZFdrDiagnostic {
         System.out.println(g);
     }
 
-    //    private  static SemIm.CyclicSimResult getCanonicalModelData(int N, double radius) {
-//        // graph: X->Y, W->Z, Y<->Z
-//        Node x = new ContinuousVariable("x");
-//        Node y = new ContinuousVariable("Y");
-//        Node z = new ContinuousVariable("Z");
-//        Node w = new ContinuousVariable("w");
-//
-//        List<Node> nodes = Arrays.asList(x, y, z, w);
-//        Graph g = new EdgeListGraph(nodes);
-//        g.addDirectedEdge(x, y);
-//        g.addDirectedEdge(w, z);
-//        g.addDirectedEdge(y, z);
-//        g.addDirectedEdge(z, y);
-//
-//        // parameters
-//        Parameters pars = new Parameters();
-//        pars.set(Params.COEF_SYMMETRIC, !POSITIVE_ONLY);
-//        pars.set(Params.COEF_LOW, 0.30);
-//        pars.set(Params.COEF_HIGH, 0.60);
-//
-//        // simulate with fixed spectral radius for SCCs
-//        return CyclicStableUtils.simulateStableProductCapped(
-//                g, N, radius, CYCLIC_COEF_LOW, CYCLIC_COEF_HIGH,
-//                RandomUtil.getInstance().nextLong(), pars);
-//    }
-
-    /* ===== tiny data holders ===== */
-
     private record CI(Node a, Node b, Set<Node> cond, double p, Double r) {
     }
 
