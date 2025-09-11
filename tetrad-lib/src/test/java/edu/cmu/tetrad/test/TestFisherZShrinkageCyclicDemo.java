@@ -46,47 +46,45 @@
         }
 
         static void printIndependencies() throws InterruptedException {
+            // ---- graph under test ----
             Node x = new ContinuousVariable("x");
             Node y = new ContinuousVariable("Y");
             Node z = new ContinuousVariable("Z");
             Node w = new ContinuousVariable("w");
             List<Node> nodes = Arrays.asList(x, y, z, w);
 
-            // DCG: X->Y, W->Z, Y<->Z
-            Graph graph = new EdgeListGraph(nodes);
-            graph.addDirectedEdge(x, y);
-            graph.addDirectedEdge(w, z);
-            graph.addDirectedEdge(y, z);
-            graph.addDirectedEdge(z, y);
+            Graph g = new EdgeListGraph(nodes);
+            g.addDirectedEdge(x, y);
+            g.addDirectedEdge(w, z);
+            g.addDirectedEdge(y, z);
+            g.addDirectedEdge(z, y);
 
-            Parameters parameters = new Parameters();
-            parameters.set(Params.COEF_LOW, 0.30);
-            parameters.set(Params.COEF_HIGH, 0.60);
-            parameters.set(Params.COEF_SYMMETRIC, false);
+            // ---- parameters (with sane defaults if unset) ----
+            Parameters params = new Parameters();
+            params.set(Params.COEF_LOW, 0.30);
+            params.set(Params.COEF_HIGH, 0.60);
+            params.set(Params.COEF_SYMMETRIC, false);
 
-            // Simulate with exact spectral radius s = 0.6 in the Y↔Z block
-            DataSet ds = CyclicStableUtils.simulateStableFixedRadius(
-                    /*n=*/N, /*s=*/0.6, /*low=*/0.2, /*high=*/1, /*seed=*/RandomUtil.getInstance().nextLong());
-//            DataSet ds = CyclicStableUtils.simulateStableProductCapped(
-//                    /*n=*/N, /*low=*/0.2, /*high=*/1, /*maxProd=*/0.5, /*seed=*/RandomUtil.getInstance().nextLong());
+            params.set(Params.CYCLIC_COEF_LOW, 0.2);
+            params.set(Params.CYCLIC_COEF_HIGH, 1.0);
+            params.set(Params.CYCLIC_RADIUS, 0.6);        // for FixedRadius
+            params.set(Params.CYCLIC_MAX_PROD, 0.5);      // for ProductCapped
+            params.set(Params.CYCLIC_COEF_STYLE, 2);      // 0=Auto, 1=FixedRadius, 2=MaxProd, 3=Baseline
 
-            IndTestFisherZ base = new IndTestFisherZ(ds, 0.01);
-            base.setShrinkageMode(IndTestFisherZ.ShrinkageMode.LEDOIT_WOLF);
-            base.setRidge(RIDGE);
+            params.set(Params.SAMPLE_SIZE, 1000);
+            params.set(Params.SEED, RandomUtil.getInstance().nextLong());
 
-//            SemPm pm = new SemPm(graph);
-//            SemIm im = new SemIm(pm, parameters);
-//            DataSet ds = im.simulateData(N, false);
+            SemIm.Result result = SemIm.simulatePossibleShrinkage(params, g);
 
-//            IndTestFisherZ base = new IndTestFisherZ(ds, ALPHA);
-//            base.setShrinkageMode(IndTestFisherZ.ShrinkageMode.LEDOIT_WOLF);
-//            base.setRidge(1e-3);   // harmless alongside LW; can omit
-//            base.setLambda(0.0);
+            // ---- independence test with shrinkage + (optional) pinv ----
+            IndTestFisherZ base = new IndTestFisherZ(result.ds(), 0.01);
+            base.setShrinkageMode(result.shrinkageMode());
+            if (result.shrinkageMode() == ShrinkageMode.RIDGE) base.setRidge(params.getDouble(Params.REGULARIZATION_LAMBDA));
 
             CachingIndependenceTest test = new CachingIndependenceTest(base);
             test.setVerbose(false);
 
-            // Expected independencies
+            // ---- expected independencies ----
             Set<Node> yz = new LinkedHashSet<>(Arrays.asList(y, z));
 
             var rExp1 = test.checkIndependence(x, w);
@@ -101,7 +99,7 @@
             System.out.printf(Locale.US, "  X ⟂ W | {Y,Z}  : p = %8.5f%s%n",
                     rExp2.getPValue(), fmtR(rhoExp2));
 
-            // Enumerate all tests up to |Z|<=2; collect “extras” (independence accepted by raw alpha)
+            // ---- enumerate tests up to |C|<=2; collect extras (p > alpha + optional |rho| gate) ----
             List<CI> extras = new ArrayList<>();
             int m = 0;
 
@@ -124,8 +122,8 @@
                         Node c = nodes.get(k);
                         Set<Node> C1 = Set.of(c);
                         m++;
-                            var r1 = test.checkIndependence(a, b, C1);
-                            Double rho1 = tryGetLastR(base);
+                        var r1 = test.checkIndependence(a, b, C1);
+                        Double rho1 = tryGetLastR(base);
                         if (!isExpectedPair(a, b, x, w) && acceptIndependence(r1.getPValue(), rho1)) {
                             extras.add(new CI(a, b, C1, r1.getPValue(), rho1));
                         }
@@ -150,7 +148,7 @@
                 }
             }
 
-            // Sort extras by decreasing p (strongest “independence” first)
+            // ---- reporting ----
             extras.sort(Comparator.comparingDouble((CI ci) -> ci.p).reversed());
 
             System.out.println();
@@ -158,18 +156,21 @@
                     ALPHA, extras.size(), m);
             printCIList(extras, 20);
 
-            // Benjamini–Hochberg on LARGE p's: apply BH to p' = 1 - p (so big p becomes small p')
             List<CI> extrasFdr = benjaminiHochbergOnLargeP(extras, Q_FDR);
-
             System.out.println();
             System.out.printf("Other independencies after FDR (q=%.3g on large p’s): count=%d of %d%n",
                     Q_FDR, extrasFdr.size(), extras.size());
             printCIList(extrasFdr, 20);
 
             System.out.println();
-            System.out.printf("Note: N=%d, shrinkage=LEDOIT_WOLF, ridge=1e-3; coef∈[%.2f, %.2f], α=%.3g, tests m=%d%n",
-                    N, parameters.getDouble(Params.COEF_LOW), parameters.getDouble(Params.COEF_HIGH), ALPHA, m);
+            System.out.printf("Note: N=%d, shrinkage=%s, ridge=%g; coef∈[%.2f, %.2f], α=%.3g, tests m=%d%n",
+                    result.N(), result.shrinkageMode(), params.getDouble(Params.REGULARIZATION_LAMBDA), params.getDouble(Params.COEF_LOW),
+                    params.getDouble(Params.COEF_HIGH), ALPHA, m);
         }
+
+
+
+        /* -------- helpers local to this method (safe getters & shrinkage parser) -------- */
 
         /* ---------- helpers ---------- */
 

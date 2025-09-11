@@ -1109,6 +1109,27 @@ public final class Params {
      * Constant <code>COLLIDER_ORIENTATION_STYLE="colliderOrientationStyle"</code>
      */
     public static final String COLLIDER_ORIENTATION_STYLE = "colliderOrientationStyle";
+    /**
+     * Constant <code>CYCLIC_COEF_LOW="cyclicCoefLow"</code>
+     */
+    public static final String CYCLIC_COEF_LOW = "cyclicCoefLow";
+    /**
+     * Constant <code>CYCLIC_COEF_HIGH="cyclicCoefHigh"</code>
+     */
+    public static final String CYCLIC_COEF_HIGH = "cyclicCoefHigh";
+    /**
+     * Constant <code>CYCLIC_RADIUS="cyclicRadius"</code>
+     */
+    public static final String CYCLIC_RADIUS = "cyclicRadius";
+    /**
+     * Constant <code>CYCLIC_MAX_PROD="cyclicMaxProd"</code>
+     */
+    public static final String CYCLIC_MAX_PROD = "cyclicMaxProd";
+    /**
+     * Constant <code>CYCLIC_COEF_STYLE="cyclicCoefStyle"</code>
+     */
+    public static final String CYCLIC_COEF_STYLE = "cyclicCoefStyle";
+
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

@@ -25,11 +25,13 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import org.apache.commons.math3.util.FastMath;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -518,6 +520,90 @@ public final class SemIm implements Im, ISemIm {
     private static double traceAInvB_SPD(Matrix A, Matrix B) {
         Matrix X = cholSolveSPD(A, B);   // X = A^{-1} B
         return X.trace();
+    }
+
+    public static @NotNull Result simulatePossibleShrinkage(Parameters params, Graph g) {
+        // Shrinkage: 1=None, 2=Ridge, 3=Ledoit–Wolf
+        params.set(Params.SHRINKAGE_MODE, 3);
+        // Optional ridge/pinv knobs (used if present)
+        params.set(Params.REGULARIZATION_LAMBDA, 1e-3);
+
+        IndTestFisherZ.ShrinkageMode shrinkageMode = parseShrinkage(params);
+
+        // ---- validate & resolve style ----
+        int style = params.getInt(Params.CYCLIC_COEF_STYLE); // 0..3
+
+        // Auto: if any SCC of size>=2 exists, use FixedRadius; else Baseline
+        if (style == 0) {
+            boolean hasCycle = CyclicStableUtils.stronglyConnectedComponents(g)
+                    .stream().anyMatch(comp -> comp.size() >= 2);
+            style = hasCycle ? 1 : 3;
+        }
+
+        if (style == 1 || style == 2) {
+            double low  = params.getDouble(Params.CYCLIC_COEF_LOW);
+            double high = params.getDouble(Params.CYCLIC_COEF_HIGH);
+            if (!(low > 0 && high > 0 && low <= high)) {
+                throw new IllegalArgumentException("CYCLIC_COEF_[LOW,HIGH] must be >0 and low<=high");
+            }
+            if (style == 1) {
+                double s = params.getDouble(Params.CYCLIC_RADIUS);
+                if (!(s > 0 && s < 1)) throw new IllegalArgumentException("CYCLIC_RADIUS must be in (0,1)");
+            } else { // style == 2
+                double mp = params.getDouble(Params.CYCLIC_MAX_PROD);
+                if (!(mp > 0 && mp < 1)) throw new IllegalArgumentException("CYCLIC_MAX_PROD must be in (0,1)");
+            }
+        }
+
+        System.out.println("Style = " + style);
+        System.out.println("Shrinkage mode = " + shrinkageMode);
+
+        // ---- simulate data per style ----
+        DataSet ds;
+        int N = params.getInt(Params.SAMPLE_SIZE);
+
+        switch (style) {
+            case 1 -> ds = CyclicStableUtils.simulateStableFixedRadius(
+                    g,
+                    N,
+                    params.getDouble(Params.CYCLIC_RADIUS),
+                    params.getDouble(Params.CYCLIC_COEF_LOW),
+                    params.getDouble(Params.CYCLIC_COEF_HIGH),
+                    params.getLong(Params.SEED),
+                    params);
+
+            case 2 -> ds = CyclicStableUtils.simulateStableProductCapped(
+                    g,
+                    N,
+                    params.getDouble(Params.CYCLIC_MAX_PROD),
+                    params.getDouble(Params.CYCLIC_COEF_LOW),
+                    params.getDouble(Params.CYCLIC_COEF_HIGH),
+                    params.getLong(Params.SEED),
+                    params);
+
+            case 3 -> { // Baseline / None
+                SemIm im = new SemIm(new SemPm(g), params);
+                ds = im.simulateData(N, false);
+            }
+
+            default -> throw new IllegalArgumentException("Invalid cyclic style: " + style);
+        }
+        Result result = new Result(shrinkageMode, ds, N);
+        return result;
+    }
+
+    private static IndTestFisherZ.ShrinkageMode parseShrinkage(Parameters p) {
+        int k;
+        try { k = p.getInt(Params.SHRINKAGE_MODE); } catch (Exception e) { k = 1; }
+        if (k < 1) k = 1; if (k > 3) k = 3;
+        return switch (k) {
+            case 1 -> IndTestFisherZ.ShrinkageMode.NONE;
+            case 2 -> IndTestFisherZ.ShrinkageMode.RIDGE;
+            default -> IndTestFisherZ.ShrinkageMode.LEDOIT_WOLF;
+        };
+    }
+
+    public record Result(IndTestFisherZ.ShrinkageMode shrinkageMode, DataSet ds, int N) {
     }
 
     /**
