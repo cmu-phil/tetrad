@@ -107,7 +107,7 @@ public final class Ccd implements IGraphSearch {
 
         SepsetProducer sepsets = new SepsetsSet(fas.getSepsets(), this.independenceTest);
 
-        stepB(psi);
+        stepB(psi, sepsets);
         stepC(psi, sepsets);
         stepD(psi, sepsets, supSepsets);
         stepE(supSepsets, psi);
@@ -161,34 +161,43 @@ public final class Ccd implements IGraphSearch {
      *
      * @param graph The graph on which step B is performed.
      */
-    private void stepB(Graph graph) throws InterruptedException {
-        Map<Triple, Double> colliders = new HashMap<>();
-        Map<Triple, Double> noncolliders = new HashMap<>();
+    // Replace your current stepB + doNodeCollider with this:
 
-        for (Node node : this.nodes) {
-            doNodeCollider(graph, colliders, noncolliders, node);
-        }
+    /** Step B: use FAS sepsets to orient colliders (or underline non-colliders). */
+    private void stepB(Graph psi, SepsetProducer sepsets) throws InterruptedException {
+        // For every node b, inspect unshielded triples a–b–c
+        for (Node b : this.nodes) {
+            List<Node> adj = new ArrayList<>(psi.getAdjacentNodes(b));
+            if (adj.size() < 2) continue;
 
-        List<Triple> collidersList = new ArrayList<>(colliders.keySet());
-        List<Triple> noncollidersList = new ArrayList<>(noncolliders.keySet());
+            ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
+            int[] idx;
+            while ((idx = cg.next()) != null) {
+                Node a = adj.get(idx[0]);
+                Node c = adj.get(idx[1]);
 
-        for (Triple triple : collidersList) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
+                // Only unshielded triples
+                if (psi.isAdjacentTo(a, c)) continue;
 
-            graph.removeEdge(a, b);
-            graph.removeEdge(c, b);
-            graph.addDirectedEdge(a, b);
-            graph.addDirectedEdge(c, b);
-        }
+                // Use the stored sepset that justified removing a–c in Step A
+                Set<Node> S = sepsets.getSepset(a, c, -1, null);
+                if (S == null) continue; // be defensive
 
-        for (Triple triple : noncollidersList) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            graph.addUnderlineTriple(a, b, c);
+                if (S.contains(b)) {
+                    // non-collider at b
+                    psi.addUnderlineTriple(a, b, c);
+                    if (verbose) System.out.println("StepB: underline (non-collider) " + a + "-" + b + "-" + c +
+                                                    " ; sepset(a,c)=" + S);
+                } else {
+                    // collider at b: a -> b <- c
+                    psi.removeEdge(a, b);
+                    psi.removeEdge(c, b);
+                    psi.addDirectedEdge(a, b);
+                    psi.addDirectedEdge(c, b);
+                    if (verbose) System.out.println("StepB: collider " + a + "->" + b + "<-" + c +
+                                                    " ; sepset(a,c)=" + S);
+                }
+            }
         }
     }
 

@@ -405,7 +405,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             return null;
         }
 
-        if (edges.size() == 0) {
+        if (edges.isEmpty()) {
             return null;
         }
 
