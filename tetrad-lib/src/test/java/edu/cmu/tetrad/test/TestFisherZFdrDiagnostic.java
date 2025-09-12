@@ -239,27 +239,21 @@ public class TestFisherZFdrDiagnostic {
         IndTestFisherZ base = new IndTestFisherZ(result.dataSet(), ALPHA);
         base.setShrinkageMode(LEDOIT_WOLF);
 
-        IndTestFdrWrapper wrap = new IndTestFdrWrapper(base, IndTestFdrWrapper.FdrMode.BH, /*q=*/Q_FDR, IndTestFdrWrapper.Scope.BY_COND_SET);
-        wrap.setVerbose(true);
+        Ccd search = new Ccd(base);
 
-        int maxEpochs = 5, tauChanges = 0;
-        int changes;
+        Graph graph;
+        double fdrQ = 0.01;
 
-        wrap.startRecordingEpoch();
-        Ccd ccd = new Ccd(wrap);
-        ccd.setVerbose(true);
-        Graph g = ccd.search();   // Epoch 0: record p's, baseline decisions (or just cache-only)
-
-        // Freeze FDR cutoffs from observed p's
-        wrap.computeAlphaStar();
-
-        for (int epoch = 1; epoch <= maxEpochs; epoch++) {
-            g = ccd.search();     // decisions now use α* (global or per-|Z|)
-            changes = wrap.countMindChanges();
-            if (changes <= tauChanges) break;
+        if (fdrQ == 0.0) {
+            graph = search.search();
+        } else {
+            boolean negativelyCorrelated = true;
+            boolean verbose = true;
+            double alpha = 0.01;
+            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
         }
 
-        System.out.println(g);
+        System.out.println(graph);
     }
 
     private record CI(Node a, Node b, Set<Node> cond, double p, Double r) {
