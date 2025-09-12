@@ -27,7 +27,7 @@ public final class Fci implements IGraphSearch {
     // Existing fields (unchanged)
     // -------------------------
     private final List<Node> variables = new ArrayList<>();
-    private final IndependenceTest independenceTest;
+    private IndependenceTest test;
     private final TetradLogger logger = TetradLogger.getInstance();
     private SepsetMap sepsets;
     private Knowledge knowledge = new Knowledge();
@@ -56,16 +56,16 @@ public final class Fci implements IGraphSearch {
     // ----------------------------------
     // Constructors (unchanged signatures)
     // ----------------------------------
-    public Fci(IndependenceTest independenceTest) {
-        if (independenceTest == null) throw new NullPointerException();
-        this.independenceTest = new CachingIndependenceTest(independenceTest);
-        this.variables.addAll(independenceTest.getVariables());
+    public Fci(IndependenceTest test) {
+        if (test == null) throw new NullPointerException();
+        this.test = new CachingIndependenceTest(test);
+        this.variables.addAll(test.getVariables());
     }
 
-    public Fci(IndependenceTest independenceTest, List<Node> searchVars) {
-        if (independenceTest == null) throw new NullPointerException();
-        this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
+    public Fci(IndependenceTest test, List<Node> searchVars) {
+        if (test == null) throw new NullPointerException();
+        this.test = test;
+        this.variables.addAll(test.getVariables());
 
         Set<Node> remVars = new HashSet<>();
         for (Node node1 : this.variables) {
@@ -107,7 +107,6 @@ public final class Fci implements IGraphSearch {
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
     public void setVerbose(boolean verbose) { this.verbose = verbose; }
-    public IndependenceTest getIndependenceTest() { return this.independenceTest; }
     public void setStable(boolean stable) { this.stable = stable; }
     public void setGuaranteePag(boolean guaranteePag) { this.guaranteePag = guaranteePag; }
 
@@ -116,7 +115,7 @@ public final class Fci implements IGraphSearch {
     // -------------------------
 
     public Graph search() throws InterruptedException {
-        return search(new Fas(getIndependenceTest()));
+        return search(new Fas(getTest()));
     }
 
     public Graph search(IFas fas) throws InterruptedException {
@@ -126,7 +125,7 @@ public final class Fci implements IGraphSearch {
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting FCI algorithm.");
-            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Independence test = " + getTest() + ".");
         }
 
         fas.setKnowledge(getKnowledge());
@@ -151,7 +150,7 @@ public final class Fci implements IGraphSearch {
 
         // Optional possible-dsep step (unchanged)
         R0R4StrategyTestBased strategy = (R0R4StrategyTestBased)
-                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
+                R0R4StrategyTestBased.specialConfiguration(test, knowledge, verbose);
         strategy.setDepth(-1);
         strategy.setMaxLength(-1);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.GREEDY);
@@ -168,7 +167,7 @@ public final class Fci implements IGraphSearch {
 
                 Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, 3));
                 d.remove(x); d.remove(y);
-                if (independenceTest.checkIndependence(x, y, d).isIndependent()) {
+                if (test.checkIndependence(x, y, d).isIndependent()) {
                     TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
                     pag.removeEdge(x, y);
                 }
@@ -176,7 +175,7 @@ public final class Fci implements IGraphSearch {
                 if (pag.isAdjacentTo(x, y)) {
                     d = new HashSet<>(pag.paths().possibleDsep(y, 3));
                     d.remove(x); d.remove(y);
-                    if (independenceTest.checkIndependence(x, y, d).isIndependent()) {
+                    if (test.checkIndependence(x, y, d).isIndependent()) {
                         TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
                         pag.removeEdge(x, y);
                     }
@@ -204,6 +203,22 @@ public final class Fci implements IGraphSearch {
         long stop = MillisecondTimes.timeMillis();
         this.elapsedTime = stop - start;
         return pag;
+    }
+
+    public IndependenceTest getTest() {
+        return test;
+    }
+
+    public void setTest(IndependenceTest test) {
+        List<Node> nodes = this.test.getVariables();
+        List<Node> _nodes = test.getVariables();
+
+        if (!nodes.equals(_nodes)) {
+            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" +
+                                                             "to the nodes of the existing test."));
+        }
+
+        this.test = test;
     }
 
     // -------------------------
@@ -399,7 +414,7 @@ public final class Fci implements IGraphSearch {
                     String key = setKey(S);
                     if (uniq.containsKey(key)) continue;
 
-                    IndependenceResult r = independenceTest.checkIndependence(x, y, S);
+                    IndependenceResult r = test.checkIndependence(x, y, S);
                     uniq.put(key, new SepCandidate(S, r.isIndependent(), r.getPValue()));
                 }
             }

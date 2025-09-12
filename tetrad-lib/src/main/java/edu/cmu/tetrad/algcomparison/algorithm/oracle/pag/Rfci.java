@@ -13,6 +13,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -95,7 +96,19 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-        return search.search();
+        Graph graph;
+        double fdrQ = parameters.getDouble(Params.FDR_Q);
+
+        if (fdrQ == 0.0) {
+            graph = search.search();
+        } else {
+            boolean negativelyCorrelated = true;
+            boolean verbose = parameters.getBoolean(Params.VERBOSE);
+            double alpha = parameters.getDouble(Params.ALPHA);
+            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
+        }
+
+        return graph;
     }
 
     /**
@@ -136,6 +149,7 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
+        parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);

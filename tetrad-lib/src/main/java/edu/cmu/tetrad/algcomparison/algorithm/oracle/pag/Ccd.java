@@ -9,6 +9,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -67,7 +68,19 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-        return search.search();
+        Graph graph;
+        double fdrQ = parameters.getDouble(Params.FDR_Q);
+
+        if (fdrQ == 0.0) {
+            graph = search.search();
+        } else {
+            boolean negativelyCorrelated = true;
+            boolean verbose = parameters.getBoolean(Params.VERBOSE);
+            double alpha = parameters.getDouble(Params.ALPHA);
+            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
+        }
+
+        return graph;
     }
 
     /**
@@ -112,6 +125,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         List<String> parameters = test.getParameters();
         parameters.add(Params.DEPTH);
         parameters.add(Params.APPLY_R1);
+        parameters.add(Params.FDR_Q);
         parameters.add(Params.VERBOSE);
         return parameters;
     }

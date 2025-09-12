@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.CachingIndependenceTest;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.search.utils.SepsetsSet;
@@ -55,7 +54,7 @@ public final class Ccd implements IGraphSearch {
     /**
      * The independence test to be used.
      */
-    private final IndependenceTest independenceTest;
+    private IndependenceTest test;
     /**
      * The nodes in the graph.
      */
@@ -80,7 +79,7 @@ public final class Ccd implements IGraphSearch {
      */
     public Ccd(IndependenceTest test) {
         if (test == null) throw new NullPointerException("Test is not provided");
-        this.independenceTest = new CachingIndependenceTest(test);
+        this.test = new CachingIndependenceTest(test);
         this.nodes = test.getVariables();
     }
 
@@ -96,18 +95,18 @@ public final class Ccd implements IGraphSearch {
      * @return The CCD cyclic PAG for the data.
      */
     public Graph search() throws InterruptedException {
-        this.independenceTest.setVerbose(verbose);
+        this.test.setVerbose(verbose);
 
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
         // Step A.
         if (verbose) TetradLogger.getInstance().log("Step A--running FAS");
 
-        Fas fas = new Fas(this.independenceTest);
+        Fas fas = new Fas(this.test);
         Graph psi = fas.search();
         psi.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetProducer sepsets = new SepsetsSet(fas.getSepsets(), this.independenceTest);
+        SepsetProducer sepsets = new SepsetsSet(fas.getSepsets(), this.test);
 
         stepB(psi, sepsets);
         stepC(psi, sepsets);
@@ -118,6 +117,22 @@ public final class Ccd implements IGraphSearch {
         orientAwayFromArrow(psi);
 
         return psi;
+    }
+
+    public IndependenceTest getTest() {
+        return test;
+    }
+
+    public void setTest(IndependenceTest test) {
+        List<Node> nodes = this.test.getVariables();
+        List<Node> _nodes = test.getVariables();
+
+        if (!nodes.equals(_nodes)) {
+            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" +
+                                                             "to the nodes of the existing test."));
+        }
+
+        this.test = test;
     }
 
     /**

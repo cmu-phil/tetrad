@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class Pc implements IGraphSearch {
 
-    private final IndependenceTest test;
+    private IndependenceTest test;
     private Knowledge knowledge = new Knowledge();
     private int depth = -1;                  // -1 => no cap
     private boolean fasStable = true;        // PC-Stable skeleton
@@ -44,7 +44,7 @@ public class Pc implements IGraphSearch {
 
     private Fas fas = null; // expose via getFas()
 
-    public Pc(IndependenceTest test) { this.test = new CachingIndependenceTest(test); }
+    public Pc(IndependenceTest test) { this.test = test; }
 
     // ----- Configuration setters -----
     public void setKnowledge(Knowledge knowledge) { this.knowledge = new Knowledge(knowledge); }
@@ -87,6 +87,22 @@ public class Pc implements IGraphSearch {
         applyMeekRules(g);
 
         return g;
+    }
+
+    public IndependenceTest getTest() {
+        return test;
+    }
+
+    public void setTest(IndependenceTest test) {
+        List<Node> nodes = this.test.getVariables();
+        List<Node> _nodes = test.getVariables();
+
+        if (!nodes.equals(_nodes)) {
+            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" +
+                                                             "to the nodes of the existing test."));
+        }
+
+        this.test = test;
     }
 
     // ------------------------------------------------------------------------------------

@@ -49,7 +49,7 @@ public class Fas implements IFas {
      * relationships between variables. This test serves as the foundation for building and refining graphs during the
      * search process.
      */
-    private final IndependenceTest test;
+    private IndependenceTest test;
 
     /**
      * A separation set map used to store the results of conditional independence tests performed during the graph
@@ -224,6 +224,22 @@ public class Fas implements IFas {
         }
 
         return modify;
+    }
+
+    public IndependenceTest getTest() {
+        return test;
+    }
+
+    public void setTest(IndependenceTest test) {
+        List<Node> nodes = this.test.getVariables();
+        List<Node> _nodes = test.getVariables();
+
+        if (!nodes.equals(_nodes)) {
+            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" +
+                                                             "to the nodes of the existing test."));
+        }
+
+        this.test = test;
     }
 
     /**

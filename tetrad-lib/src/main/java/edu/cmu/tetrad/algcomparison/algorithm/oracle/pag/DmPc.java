@@ -12,6 +12,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -95,7 +96,19 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         edu.cmu.tetrad.search.DmPc search = new edu.cmu.tetrad.search.DmPc(test);
         search.setKnowledge(knowledge);
 
-        return search.search();
+        Graph graph;
+        double fdrQ = parameters.getDouble(Params.FDR_Q);
+
+        if (fdrQ == 0.0) {
+            graph = search.search();
+        } else {
+            boolean negativelyCorrelated = true;
+            boolean verbose = parameters.getBoolean(Params.VERBOSE);
+            double alpha = parameters.getDouble(Params.ALPHA);
+            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
+        }
+
+        return graph;
     }
 
     /**
@@ -139,6 +152,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
+        params.add(Params.FDR_Q);
         params.add(Params.VERBOSE);
 
         return params;

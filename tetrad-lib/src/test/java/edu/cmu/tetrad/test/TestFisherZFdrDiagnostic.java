@@ -251,11 +251,11 @@ public class TestFisherZFdrDiagnostic {
         Graph g = ccd.search();   // Epoch 0: record p's, baseline decisions (or just cache-only)
 
         // Freeze FDR cutoffs from observed p's
-        wrap.computeCutoffsFromRecordedPvals();
+        wrap.computeAlphaStar();
 
         for (int epoch = 1; epoch <= maxEpochs; epoch++) {
             g = ccd.search();     // decisions now use α* (global or per-|Z|)
-            changes = wrap.countMindChangesAndSnapshot();
+            changes = wrap.countMindChanges();
             if (changes <= tauChanges) break;
         }
 

@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * @author murraywaters
  * @author josephramsey
  */
-public class DmPc {
+public class DmPc implements IGraphSearch {
 
     /**
      * An instance of {@link IndependenceTest} used to perform conditional independence tests. This variable serves as
@@ -30,7 +30,7 @@ public class DmPc {
      * independence, retrieving variables, and managing the configuration (such as significance level) necessary for the
      * tests.
      */
-    private final IndependenceTest test;
+    private IndependenceTest test;
     /**
      * A list of input nodes used within the algorithm. These nodes represent the variables that are considered as
      * potential causes or predictors within the graph structure.
@@ -110,6 +110,22 @@ public class DmPc {
         finalRefinement(latentGraph);
 
         return latentGraph;
+    }
+
+    public IndependenceTest getTest() {
+        return test;
+    }
+
+    public void setTest(IndependenceTest test) {
+        List<Node> nodes = this.test.getVariables();
+        List<Node> _nodes = test.getVariables();
+
+        if (!nodes.equals(_nodes)) {
+            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" +
+                                                             "to the nodes of the existing test."));
+        }
+
+        this.test = test;
     }
 
     /**

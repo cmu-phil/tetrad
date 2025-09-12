@@ -230,7 +230,9 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     public boolean isVerbose() { return this.verbose; }
-    public void setVerbose(boolean verbose) { this.verbose = verbose; }
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 
     @Override
     public String toString() {
@@ -254,7 +256,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             try {
                 Czz.inverse();
             } catch (SingularMatrixException e) {
-                System.out.println(LogUtilsSearch.determinismDetected(new HashSet<>(z), x));
+                 TetradLogger.getInstance().log(LogUtilsSearch.determinismDetected(new HashSet<>(z), x));
                 return true;
             }
         }
