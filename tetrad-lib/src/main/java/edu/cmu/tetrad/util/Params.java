@@ -1129,6 +1129,10 @@ public final class Params {
      * Constant <code>CYCLIC_COEF_STYLE="cyclicCoefStyle"</code>
      */
     public static final String CYCLIC_COEF_STYLE = "cyclicCoefStyle";
+    /**
+     * Constant <code>FDR_Q="cyclicCoefStyle"</code>
+     */
+    public static final String FDR_Q = "fdrQ";
 
 
     // All parameters that are found in HTML manual documentation

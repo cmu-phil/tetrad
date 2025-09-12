@@ -13,6 +13,11 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.Ccd;
+import edu.cmu.tetrad.search.IGraphSearch;
+import edu.cmu.tetrad.search.test.CachingIndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -90,17 +95,68 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
             default -> throw new IllegalArgumentException("Invalid collider orientation style");
         };
 
-        edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
-        search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setKnowledge(this.knowledge);
-        search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setColliderOrientationStyle(colliderOrientationStyle);
-        search.setAllowBidirected(allowBidirected ? edu.cmu.tetrad.search.Pc.AllowBidirected.ALLOW
-                : edu.cmu.tetrad.search.Pc.AllowBidirected.DISALLOW);
-        Graph graph = search.search();
+        IndependenceTest test = getIndependenceWrapper().getTest(dataModel, parameters);
+        test.setVerbose(true);
+
+
+
+
+
+        Graph graph;
+
+        double fdr_q = parameters.getDouble(Params.FDR_Q);
+
+        if (fdr_q == 0.0) {
+            edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test);
+            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setKnowledge(this.knowledge);
+            search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
+            search.setColliderOrientationStyle(colliderOrientationStyle);
+            search.setAllowBidirected(allowBidirected ? edu.cmu.tetrad.search.Pc.AllowBidirected.ALLOW
+                    : edu.cmu.tetrad.search.Pc.AllowBidirected.DISALLOW);
+
+            graph = search.search();
+        } else {
+            IndTestFdrWrapper wrap = new IndTestFdrWrapper(test, IndTestFdrWrapper.FdrMode.BH,
+                    fdr_q, IndTestFdrWrapper.Scope.BY_COND_SET);
+            wrap.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            wrap.startRecordingEpoch();
+
+            edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(wrap);
+            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setKnowledge(this.knowledge);
+            search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
+            search.setColliderOrientationStyle(colliderOrientationStyle);
+            search.setAllowBidirected(allowBidirected ? edu.cmu.tetrad.search.Pc.AllowBidirected.ALLOW
+                    : edu.cmu.tetrad.search.Pc.AllowBidirected.DISALLOW);
+
+            graph = doFdrLoop(search, wrap);
+        }
+
         stampWithBic(graph, dataModel);
 
+        return graph;
+    }
+
+    private static Graph doFdrLoop(IGraphSearch search, IndTestFdrWrapper wrap) throws InterruptedException {
+        // Epoch 0: record raw p-values under base alpha (or just cache p's)
+        wrap.startRecordingEpoch();
+        Graph graph = search.search();
+
+        // Freeze FDR cutoffs from the recorded p's
+        wrap.computeCutoffsFromRecordedPvals();
+
+        // Decision epochs: now use α* (global or per-|Z|). DO NOT call startRecordingEpoch() here.
+        final int maxEpochs = 5;
+        final int tauChanges = 0; // stop when <= this many flips
+
+        for (int epoch = 1; epoch <= maxEpochs; epoch++) {
+            graph = search.search();                    // uses FDR α* cutoffs
+            int changes = wrap.countMindChangesAndSnapshot();  // counts both true→false and false→true
+            if (changes <= tauChanges) break;
+        }
         return graph;
     }
 
@@ -139,6 +195,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
         parameters.add(Params.ALLOW_BIDIRECTED);
         parameters.add(Params.DEPTH);
+        parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.VERBOSE);
         return parameters;

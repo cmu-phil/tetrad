@@ -250,8 +250,6 @@ public class TestFisherZFdrDiagnostic {
         ccd.setVerbose(true);
         Graph g = ccd.search();   // Epoch 0: record p's, baseline decisions (or just cache-only)
 
-        System.out.println("Initial graph = " + g);
-
         // Freeze FDR cutoffs from observed p's
         wrap.computeCutoffsFromRecordedPvals();
 
@@ -260,7 +258,6 @@ public class TestFisherZFdrDiagnostic {
             changes = wrap.countMindChangesAndSnapshot();
             if (changes <= tauChanges) break;
         }
-        // g is your FDR-consistent output (per this heuristic)
 
         System.out.println(g);
     }

@@ -292,10 +292,10 @@ public class Fas implements IFas {
                         this.sepset.set(r.x, r.y, SSaved);
                         anyRemoved = true;
 
-                        if (verbose) {
-                            TetradLogger.getInstance().log(
-                                    LogUtilsSearch.independenceFactMsg(r.x, r.y, r.S, r.pValue));
-                        }
+//                        if (verbose) {
+//                            TetradLogger.getInstance().log(
+//                                    LogUtilsSearch.independenceFactMsg(r.x, r.y, r.S, r.pValue));
+//                        }
                     }
                 }
             }
@@ -403,10 +403,10 @@ public class Fas implements IFas {
                         Set<Node> sSaved = new LinkedHashSet<>(S);
                         this.sepset.set(x, y, sSaved);
 
-                        if (verbose) {
-                            TetradLogger.getInstance().log(
-                                    LogUtilsSearch.independenceFactMsg(x, y, S, result.getPValue()));
-                        }
+//                        if (verbose) {
+//                            TetradLogger.getInstance().log(
+//                                    LogUtilsSearch.independenceFactMsg(x, y, S, result.getPValue()));
+//                        }
 
                         break;
                     }
