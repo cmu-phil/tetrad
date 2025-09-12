@@ -239,7 +239,7 @@ public class RfciBsc implements IGraphSearch {
         long stop = 0;
         long start = MillisecondTimes.timeMillis();
 
-        IndTestProbabilistic _test = (IndTestProbabilistic) this.rfci.getIndependenceTest();
+        IndTestProbabilistic _test = (IndTestProbabilistic) this.rfci.getTest();
 
         // create empirical data for constraints
         DataSet dataSet = SimpleDataLoader.getDiscreteDataSet(_test.getData());

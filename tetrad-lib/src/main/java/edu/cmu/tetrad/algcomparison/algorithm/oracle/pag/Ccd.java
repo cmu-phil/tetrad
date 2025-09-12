@@ -10,10 +10,12 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -63,8 +65,8 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
-        edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
-                test.getTest(dataModel, parameters));
+        IndependenceTest _test = test.getTest(dataModel, parameters);
+        edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(_test);
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -76,7 +78,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         } else {
             boolean negativelyCorrelated = true;
             boolean verbose = parameters.getBoolean(Params.VERBOSE);
-            double alpha = parameters.getDouble(Params.ALPHA);
+            double alpha = _test.getAlpha();
             graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
         }
 
@@ -122,7 +124,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      */
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.APPLY_R1);
         parameters.add(Params.FDR_Q);

@@ -62,7 +62,7 @@ public final class Rfci implements IGraphSearch {
     /**
      * The independence test to use.
      */
-    private final IndependenceTest independenceTest;
+    private IndependenceTest test;
     /**
      * The RFCI-PAG being constructed.
      */
@@ -95,31 +95,31 @@ public final class Rfci implements IGraphSearch {
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.
      *
-     * @param independenceTest a {@link IndependenceTest} object
+     * @param test a {@link IndependenceTest} object
      */
-    public Rfci(IndependenceTest independenceTest) {
-        if (independenceTest == null) {
+    public Rfci(IndependenceTest test) {
+        if (test == null) {
             throw new NullPointerException();
         }
 
-        this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
+        this.test = test;
+        this.variables.addAll(test.getVariables());
     }
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge and a list of variables to
      * search over.
      *
-     * @param independenceTest a {@link IndependenceTest} object
+     * @param test a {@link IndependenceTest} object
      * @param searchVars       a {@link java.util.List} object
      */
-    public Rfci(IndependenceTest independenceTest, List<Node> searchVars) {
-        if (independenceTest == null) {
+    public Rfci(IndependenceTest test, List<Node> searchVars) {
+        if (test == null) {
             throw new NullPointerException();
         }
 
-        this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
+        this.test = test;
+        this.variables.addAll(test.getVariables());
 
         List<Node> remVars = new ArrayList<>();
         for (Node node1 : this.variables) {
@@ -142,7 +142,7 @@ public final class Rfci implements IGraphSearch {
      * @return This PAG.
      */
     public Graph search() throws InterruptedException {
-        return search(getIndependenceTest().getVariables());
+        return search(getTest().getVariables());
     }
 
     /**
@@ -155,7 +155,7 @@ public final class Rfci implements IGraphSearch {
     public Graph search(List<Node> nodes) throws InterruptedException {
         nodes = new ArrayList<>(nodes);
 
-        return search(new Fas(getIndependenceTest()), nodes);
+        return search(new Fas(getTest()), nodes);
     }
 
     /**
@@ -168,11 +168,11 @@ public final class Rfci implements IGraphSearch {
      */
     public Graph search(Fas fas, List<Node> nodes) throws InterruptedException {
         long beginTime = MillisecondTimes.timeMillis();
-        independenceTest.setVerbose(verbose);
+        test.setVerbose(verbose);
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting RFCI algorithm.");
-            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Independence test = " + getTest() + ".");
         }
 
         setMaxDiscriminatingPathLength(this.maxDiscriminatingPathLength);
@@ -195,7 +195,7 @@ public final class Rfci implements IGraphSearch {
         long stop1 = MillisecondTimes.timeMillis();
         long start2 = MillisecondTimes.timeMillis();
 
-        FciOrient orient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
+        FciOrient orient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(test, new Knowledge()));
 
         // For RFCI always executes R5-10
         orient.setCompleteRuleSetUsed(true);
@@ -217,6 +217,22 @@ public final class Rfci implements IGraphSearch {
         }
 
         return this.graph;
+    }
+
+    public IndependenceTest getTest() {
+        return test;
+    }
+
+    public void setTest(IndependenceTest test) {
+        List<Node> nodes = this.test.getVariables();
+        List<Node> _nodes = test.getVariables();
+
+        if (!nodes.equals(_nodes)) {
+            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" +
+                                                             "to the nodes of the existing test."));
+        }
+
+        this.test = test;
     }
 
     /**
@@ -309,16 +325,6 @@ public final class Rfci implements IGraphSearch {
         this.verbose = verbose;
     }
 
-    /**
-     * Returns the independence test.
-     *
-     * @return This test.
-     */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
-    }
-
-
     private Set<Node> getSepset(Node i, Node k) {
         return this.sepsets.get(i, k);
     }
@@ -350,7 +356,7 @@ public final class Rfci implements IGraphSearch {
             if (this.knowledge.noEdgeRequired(i.getName(), j.getName()))  // if BK allows
             {
                 try {
-                    independent1 = this.independenceTest.checkIndependence(i, j, sepSet).isIndependent();
+                    independent1 = this.test.checkIndependence(i, j, sepSet).isIndependent();
                 } catch (Exception e) {
                     independent1 = true;
                 }
@@ -360,7 +366,7 @@ public final class Rfci implements IGraphSearch {
             if (this.knowledge.noEdgeRequired(j.getName(), k.getName()))  // if BK allows
             {
                 try {
-                    independent2 = this.independenceTest.checkIndependence(j, k, sepSet).isIndependent();
+                    independent2 = this.test.checkIndependence(j, k, sepSet).isIndependent();
                 } catch (Exception e) {
                     independent2 = true;
                 }
@@ -515,7 +521,7 @@ public final class Rfci implements IGraphSearch {
         Collections.sort(sepSet);
 
         try {
-            independent = this.independenceTest.checkIndependence(x, y, empty).isIndependent();
+            independent = this.test.checkIndependence(x, y, empty).isIndependent();
         } catch (Exception e) {
             independent = false;
         }
@@ -533,7 +539,7 @@ public final class Rfci implements IGraphSearch {
             while ((combination = cg.next()) != null) {
                 Set<Node> condSet = GraphUtils.asSet(combination, sepSet);
 
-                independent = this.independenceTest.checkIndependence(x, y, condSet).isIndependent();
+                independent = this.test.checkIndependence(x, y, condSet).isIndependent();
 
                 if (independent) {
                     getSepsets().set(x, y, condSet);
