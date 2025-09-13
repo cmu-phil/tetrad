@@ -115,7 +115,7 @@ public class LogisticRegression implements TetradSerializable {
         double[][] _regressors = new double[regressors.size()][getRows().length];
 
         for (int j = 0; j < regressors.size(); j++) {
-            int col = this.dataSet.getColumnIndex(regressors.get(j));
+            int col = this.dataSet.getColumn(regressors.get(j));
             double[] dataCol = this.dataCols[col];
 
             for (int i = 0; i < getRows().length; i++) {
@@ -124,7 +124,7 @@ public class LogisticRegression implements TetradSerializable {
         }
 
         int[] target = new int[getRows().length];
-        int col = this.dataSet.getColumnIndex(this.dataSet.getVariable(x.getName()));
+        int col = this.dataSet.getColumn(this.dataSet.getVariable(x.getName()));
 
         for (int i = 0; i < getRows().length; i++) {
             target[i] = this.dataSet.getInt(getRows()[i], col);

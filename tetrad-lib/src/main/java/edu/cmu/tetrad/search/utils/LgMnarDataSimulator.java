@@ -9,7 +9,6 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.StatUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -110,7 +109,7 @@ public class LgMnarDataSimulator {
         // Threshold missingness variables to produce binary 0's and 1's
         for (Node node : dataSet.getVariables()) {
             if (node.getName().endsWith("_missing")) {
-                int colIndex = dataSet.getColumnIndex(node);
+                int colIndex = dataSet.getColumn(node);
 
                 // Retrieve the data for the node column as a double[] array.
                 double[] data = new double[dataSet.getNumRows()];
@@ -137,8 +136,8 @@ public class LgMnarDataSimulator {
             if (indicator.getName().endsWith("_missing")) {
                 Node associatedColumn = dataSet.getVariable(indicator.getName().replace("_missing", ""));
                 if (associatedColumn != null) {
-                    int indicatorIndex = dataSet.getColumnIndex(indicator);
-                    int columnIndex = dataSet.getColumnIndex(associatedColumn);
+                    int indicatorIndex = dataSet.getColumn(indicator);
+                    int columnIndex = dataSet.getColumn(associatedColumn);
 
                     IntStream.range(0, dataSet.getNumRows()).parallel().forEach(row -> {
                         if (dataSet.getDouble(row, indicatorIndex) == 0.0) {

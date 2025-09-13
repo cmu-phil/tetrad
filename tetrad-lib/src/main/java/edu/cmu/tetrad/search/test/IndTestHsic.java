@@ -230,14 +230,14 @@ public final class IndTestHsic implements IndependenceTest {
         // shuffle data for approximate the null distribution
         double[] nullapprox = new double[this.perms];
         int[] zind = null;
-        int ycol = this.dataSet.getColumnIndex(y);
+        int ycol = this.dataSet.getColumn(y);
         List<List<Integer>> clusterAssign = null;
         if (!z.isEmpty()) {
             // get clusters for z
             KMeans kmeans = KMeans.randomClusters((m / 3));
             zind = new int[z.size()];
             for (int j = 0; j < z.size(); j++) {
-                zind[j] = this.dataSet.getColumnIndex(z.get(j));
+                zind[j] = this.dataSet.getColumn(z.get(j));
             }
             kmeans.cluster(this.dataSet.subsetColumns(z).getDoubleData());
             clusterAssign = kmeans.getClusters();

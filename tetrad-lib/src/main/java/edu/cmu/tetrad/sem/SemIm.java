@@ -1817,12 +1817,12 @@ public final class SemIm implements Im, ISemIm {
 
                 if (initialValues != null) {
                     initNode = initialValues.getVariable(node1.getName());
-                    initCol = initialValues.getColumnIndex(initNode);
+                    initCol = initialValues.getColumn(initNode);
                 }
 
                 if (_parents[col].length == 0 && initialValues != null
                     && initCol != -1) {
-                    int column = initialValues.getColumnIndex(initNode);
+                    int column = initialValues.getColumn(initNode);
                     value = initialValues.getDouble(row, column);
                 } else {
                     if (distribution == null) {

@@ -97,7 +97,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
         this.method = Method.NONE;
         this.data = new double[dataSet.getNumRows()];
-        int col = dataSet.getColumnIndex(variable);
+        int col = dataSet.getColumn(variable);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             this.data[i] = dataSet.getDouble(i, col);

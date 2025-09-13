@@ -56,8 +56,8 @@ public class Gdistance {
         //calculate distance between two nodes based on their locations
         //simple starter is simply the taxicab distance:
         //calc differences in X, Y, and Z axis, then sum them together.
-        int column1 = locationMap.getColumnIndex(node1);
-        int column2 = locationMap.getColumnIndex(node2);
+        int column1 = locationMap.getColumn(node1);
+        int column2 = locationMap.getColumn(node2);
 
         //System.out.println(column1);
 

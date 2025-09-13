@@ -11,14 +11,13 @@ import java.util.stream.Collectors;
 
 /**
  * CliqueCompletion
- *
- * Post-search utility to (1) complete near-triangles inside dense pockets using
- * small-order conditional tests with a more liberal α (BH-corrected within each pocket),
- * and (2) optionally re-test candidate missing adjacencies restricted to a k-core.
- *
- * It is designed to reduce false negatives that fragment cliques without globally
- * tanking precision.
- *
+ * <p>
+ * Post-search utility to (1) complete near-triangles inside dense pockets using small-order conditional tests with a
+ * more liberal α (BH-corrected within each pocket), and (2) optionally re-test candidate missing adjacencies restricted
+ * to a k-core.
+ * <p>
+ * It is designed to reduce false negatives that fragment cliques without globally tanking precision.
+ * <p>
  * Adds only UNDIRECTED edges. Orientation can be handled by your usual pipeline.
  */
 public final class CliqueCompletion {
@@ -54,7 +53,120 @@ public final class CliqueCompletion {
         return new Builder(tester);
     }
 
-    /** Apply completion in-place to the given graph. */
+    private static Map<Node, Set<Node>> adjacency(Graph g) {
+        Map<Node, Set<Node>> adj = new HashMap<>();
+        for (Node v : g.getNodes()) adj.put(v, new HashSet<>());
+        for (Node a : g.getNodes()) {
+            for (Node b : g.getAdjacentNodes(a)) {
+                adj.get(a).add(b);
+            }
+        }
+        return adj;
+    }
+
+    // ==== Pass 1: Triangle completion (localized, BH within each pocket) ====
+
+    private static Set<Node> neighbors(Graph g, Node x) {
+        return new HashSet<>(g.getAdjacentNodes(x));
+    }
+
+    /**
+     * Simple k-core using degrees within the induced subgraph and iterative peeling.
+     */
+    private static Set<Node> kCoreNodes(Map<Node, Set<Node>> adj, int k) {
+        if (k <= 0) return adj.keySet();
+        Map<Node, Integer> deg = new HashMap<>();
+        for (var e : adj.entrySet()) {
+            deg.put(e.getKey(), (int) e.getValue().stream().filter(adj::containsKey).count());
+        }
+        Deque<Node> q = new ArrayDeque<>();
+        Set<Node> keep = new HashSet<>(adj.keySet());
+        for (var v : keep) {
+            if (deg.getOrDefault(v, 0) < k) q.add(v);
+        }
+        while (!q.isEmpty()) {
+            Node v = q.removeFirst();
+            if (!keep.remove(v)) continue;
+            for (Node u : adj.getOrDefault(v, Collections.emptySet())) {
+                if (!keep.contains(u)) continue;
+                deg.put(u, deg.get(u) - 1);
+                if (deg.get(u) == k - 1) q.add(u);
+            }
+        }
+        return keep;
+    }
+
+    /**
+     * Connected components induced by a given node subset.
+     */
+    private static List<Set<Node>> connectedComponents(Graph g, Set<Node> subset) {
+        Set<Node> unvisited = new HashSet<>(subset);
+        List<Set<Node>> comps = new ArrayList<>();
+        while (!unvisited.isEmpty()) {
+            Node start = unvisited.iterator().next();
+            Set<Node> comp = new HashSet<>();
+            Deque<Node> dq = new ArrayDeque<>();
+            dq.add(start);
+            unvisited.remove(start);
+            while (!dq.isEmpty()) {
+                Node v = dq.removeFirst();
+                comp.add(v);
+                for (Node w : g.getAdjacentNodes(v)) {
+                    if (subset.contains(w) && unvisited.remove(w)) dq.add(w);
+                }
+            }
+            comps.add(comp);
+        }
+        return comps;
+    }
+
+    // ==== Pass 2: Dense-core retest (liberal α, BH within each core) ====
+
+    /**
+     * Default adapter: tries test.getPValue(a,b,S) via reflection; else falls back to boolean.
+     */
+    private static EdgeTester defaultAdapter(IndependenceTest test) {
+        // Try to find a "getPValue(Node,Node,List<Node>)" or "(Set<Node>)" by reflection
+        Method pList = null, pSet = null;
+        try {
+            pList = test.getClass().getMethod("getPValue", Node.class, Node.class, List.class);
+        } catch (Throwable ignore) {
+        }
+        try {
+            pSet = test.getClass().getMethod("getPValue", Node.class, Node.class, Set.class);
+        } catch (Throwable ignore) {
+        }
+
+        Method finalPList = pList;
+        Method finalPSet = pSet;
+
+        return (a, b, S) -> {
+            try {
+                if (finalPSet != null) {
+                    Object out = finalPSet.invoke(test, a, b, S);
+                    if (out instanceof Number) return ((Number) out).doubleValue();
+                }
+                if (finalPList != null) {
+                    Object out = finalPList.invoke(test, a, b, new ArrayList<>(S));
+                    if (out instanceof Number) return ((Number) out).doubleValue();
+                }
+            } catch (Throwable ignore) {
+            }
+            // Fallback: use isIndependent; map to {1.0, 0.0} as a crude signal
+            try {
+                boolean indep = test.checkIndependence(a, b, new HashSet<>(S)).isIndependent();
+                return indep ? 1.0 : 0.0;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    // ==== Utilities ====
+
+    /**
+     * Apply completion in-place to the given graph.
+     */
     public void apply(Graph g) {
         if (triangleCompletion) {
             triangleCompletionPass(g);
@@ -63,8 +175,6 @@ public final class CliqueCompletion {
             denseCoreRetestPass(g);
         }
     }
-
-    // ==== Pass 1: Triangle completion (localized, BH within each pocket) ====
 
     private void triangleCompletionPass(Graph g) {
         // Build adjacency map once
@@ -143,7 +253,8 @@ public final class CliqueCompletion {
             }
         }
 
-        if (log) TetradLogger.getInstance().log("CliqueCompletion: triangle completion added " + edgesAdded + " edges.");
+        if (log)
+            TetradLogger.getInstance().log("CliqueCompletion: triangle completion added " + edgesAdded + " edges.");
     }
 
     // Build small conditioning families: S ∈ {∅, {pivot}, some size-1 from mutual neighbors} up to maxCompletionOrder
@@ -186,7 +297,7 @@ public final class CliqueCompletion {
         return pmin;
     }
 
-    // ==== Pass 2: Dense-core retest (liberal α, BH within each core) ====
+    // ==== Adapters & helpers ====
 
     private void denseCoreRetestPass(Graph g) {
         Map<Node, Set<Node>> adj = adjacency(g);
@@ -261,114 +372,18 @@ public final class CliqueCompletion {
         if (log) TetradLogger.getInstance().log("CliqueCompletion: dense-core retest added " + edgesAdded + " edges.");
     }
 
-    // ==== Utilities ====
-
-    private static Map<Node, Set<Node>> adjacency(Graph g) {
-        Map<Node, Set<Node>> adj = new HashMap<>();
-        for (Node v : g.getNodes()) adj.put(v, new HashSet<>());
-        for (Node a : g.getNodes()) {
-            for (Node b : g.getAdjacentNodes(a)) {
-                adj.get(a).add(b);
-            }
-        }
-        return adj;
-    }
-
-    private static Set<Node> neighbors(Graph g, Node x) {
-        return new HashSet<>(g.getAdjacentNodes(x));
-    }
-
-    /** Simple k-core using degrees within the induced subgraph and iterative peeling. */
-    private static Set<Node> kCoreNodes(Map<Node, Set<Node>> adj, int k) {
-        if (k <= 0) return adj.keySet();
-        Map<Node, Integer> deg = new HashMap<>();
-        for (var e : adj.entrySet()) {
-            deg.put(e.getKey(), (int) e.getValue().stream().filter(adj::containsKey).count());
-        }
-        Deque<Node> q = new ArrayDeque<>();
-        Set<Node> keep = new HashSet<>(adj.keySet());
-        for (var v : keep) {
-            if (deg.getOrDefault(v, 0) < k) q.add(v);
-        }
-        while (!q.isEmpty()) {
-            Node v = q.removeFirst();
-            if (!keep.remove(v)) continue;
-            for (Node u : adj.getOrDefault(v, Collections.emptySet())) {
-                if (!keep.contains(u)) continue;
-                deg.put(u, deg.get(u) - 1);
-                if (deg.get(u) == k - 1) q.add(u);
-            }
-        }
-        return keep;
-    }
-
-    /** Connected components induced by a given node subset. */
-    private static List<Set<Node>> connectedComponents(Graph g, Set<Node> subset) {
-        Set<Node> unvisited = new HashSet<>(subset);
-        List<Set<Node>> comps = new ArrayList<>();
-        while (!unvisited.isEmpty()) {
-            Node start = unvisited.iterator().next();
-            Set<Node> comp = new HashSet<>();
-            Deque<Node> dq = new ArrayDeque<>();
-            dq.add(start);
-            unvisited.remove(start);
-            while (!dq.isEmpty()) {
-                Node v = dq.removeFirst();
-                comp.add(v);
-                for (Node w : g.getAdjacentNodes(v)) {
-                    if (subset.contains(w) && unvisited.remove(w)) dq.add(w);
-                }
-            }
-            comps.add(comp);
-        }
-        return comps;
-    }
-
-    // ==== Adapters & helpers ====
-
-    /** Functional adapter for independence testing with p-values. */
+    /**
+     * Functional adapter for independence testing with p-values.
+     */
     public interface EdgeTester {
-        /** Return p-value for testing a ⫫ b | S (lower = stronger evidence of dependence). */
+        /**
+         * Return p-value for testing a ⫫ b | S (lower = stronger evidence of dependence).
+         */
         double pValue(Node a, Node b, Set<Node> S);
     }
 
-    /** Default adapter: tries test.getPValue(a,b,S) via reflection; else falls back to boolean. */
-    private static EdgeTester defaultAdapter(IndependenceTest test) {
-        // Try to find a "getPValue(Node,Node,List<Node>)" or "(Set<Node>)" by reflection
-        Method pList = null, pSet = null;
-        try {
-            pList = test.getClass().getMethod("getPValue", Node.class, Node.class, List.class);
-        } catch (Throwable ignore) {}
-        try {
-            pSet = test.getClass().getMethod("getPValue", Node.class, Node.class, Set.class);
-        } catch (Throwable ignore) {}
-
-        Method finalPList = pList;
-        Method finalPSet = pSet;
-
-        return (a, b, S) -> {
-            try {
-                if (finalPSet != null) {
-                    Object out = finalPSet.invoke(test, a, b, S);
-                    if (out instanceof Number) return ((Number) out).doubleValue();
-                }
-                if (finalPList != null) {
-                    Object out = finalPList.invoke(test, a, b, new ArrayList<>(S));
-                    if (out instanceof Number) return ((Number) out).doubleValue();
-                }
-            } catch (Throwable ignore) {
-            }
-            // Fallback: use isIndependent; map to {1.0, 0.0} as a crude signal
-            try {
-                boolean indep = test.checkIndependence(a, b, new HashSet<>(S)).isIndependent();
-                return indep ? 1.0 : 0.0;
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        };
+    private record CandidateEdge(Node a, Node b, double p) {
     }
-
-    private record CandidateEdge(Node a, Node b, double p) {}
 
     private record Pair(String a, String b) {
         Pair(Node x, Node y) {
@@ -423,7 +438,9 @@ public final class CliqueCompletion {
             return this;
         }
 
-        /** Require at least this many common neighbors before considering completion. */
+        /**
+         * Require at least this many common neighbors before considering completion.
+         */
         public Builder minCommonNeighbors(int k) {
             this.minCommonNeighbors = Math.max(0, k);
             return this;

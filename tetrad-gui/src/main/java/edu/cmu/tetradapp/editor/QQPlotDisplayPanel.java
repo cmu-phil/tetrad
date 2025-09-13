@@ -163,7 +163,7 @@ class QQPlotDisplayPanel extends JPanel {
         g2d.drawLine(QQPlotDisplayPanel.PADDING - QQPlotDisplayPanel.DASH, height, QQPlotDisplayPanel.PADDING, height);
 
         //draw the data points
-        int dataColumn = this.qqPlot.getDataSet().getColumnIndex(this.qqPlot.getSelectedVariable());
+        int dataColumn = this.qqPlot.getDataSet().getColumn(this.qqPlot.getSelectedVariable());
 
         //set selected variable if there is none
         if (dataColumn == -1) {

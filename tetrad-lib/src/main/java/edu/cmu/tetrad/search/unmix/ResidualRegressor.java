@@ -40,7 +40,7 @@ public interface ResidualRegressor {
      */
     default double[] residuals(DataSet data, Node target, List<Node> parents) {
         double[] yhat = predict(data, target, parents);
-        double[] y = data.getDoubleData().getColumn(data.getColumnIndex(target)).toArray();
+        double[] y = data.getDoubleData().getColumn(data.getColumn(target)).toArray();
         double[] r = new double[y.length];
         for (int i = 0; i < y.length; i++) r[i] = y[i] - yhat[i];
         return r;

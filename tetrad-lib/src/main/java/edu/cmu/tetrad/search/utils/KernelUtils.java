@@ -56,7 +56,7 @@ public class KernelUtils {
         Matrix gram = new Matrix(m, m);
         for (int k = 0; k < nodes.size(); k++) {
             Node node = nodes.get(k);
-            int col = dataset.getColumnIndex(node);
+            int col = dataset.getColumn(node);
             Kernel kernel = kernels.get(k);
             for (int i = 0; i < m; i++) {
                 for (int j = i; j < m; j++) {
@@ -200,10 +200,10 @@ public class KernelUtils {
     // evaluates tensor product for kernels
 
     private static double evaluate(List<Kernel> kernels, DataSet dataset, List<Node> vars, int i, int j) {
-        int col = dataset.getColumnIndex(vars.get(0));
+        int col = dataset.getColumn(vars.get(0));
         double keval = kernels.get(0).eval(dataset.getDouble(i, col), dataset.getDouble(j, col));
         for (int k = 1; k < vars.size(); k++) {
-            col = dataset.getColumnIndex(vars.get(k));
+            col = dataset.getColumn(vars.get(k));
             keval *= kernels.get(k).eval(dataset.getDouble(i, col), dataset.getDouble(j, col));
         }
         return keval;

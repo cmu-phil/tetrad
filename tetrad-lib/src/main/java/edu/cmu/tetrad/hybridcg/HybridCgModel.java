@@ -605,7 +605,7 @@ public final class HybridCgModel {
 
                 // Precompute variable columns and discrete code maps
                 int[] colIndex = new int[nodes.length];
-                for (int j = 0; j < nodes.length; j++) colIndex[j] = data.getColumnIndex(nodes[j]);
+                for (int j = 0; j < nodes.length; j++) colIndex[j] = data.getColumn(nodes[j]);
 
                 for (int y = 0; y < nodes.length; y++) {
                     if (pm.isDiscrete[y]) fitDiscreteChild(pm, im, data, y, colIndex);

@@ -51,7 +51,7 @@ class DescriptiveStats {
                                                   boolean precomputeCovariances) {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        int col = dataSet.getColumnIndex(variable);
+        int col = dataSet.getColumn(variable);
 
         double[] data = new double[dataSet.getNumRows()];
         boolean continuous = false;

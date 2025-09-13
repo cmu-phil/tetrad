@@ -94,7 +94,7 @@ public final class KernelGaussian implements Kernel {
      * @param node    variable used to set bandwidth
      */
     public void setMedianBandwidth(DataSet dataset, Node node) {
-        int col = dataset.getColumnIndex(node);
+        int col = dataset.getColumn(node);
         int m = dataset.getNumRows();
 
         double[] diff = new double[(int) FastMath.pow(m, 2) - m];

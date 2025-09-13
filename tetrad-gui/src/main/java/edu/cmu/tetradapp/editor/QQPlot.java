@@ -241,7 +241,7 @@ class QQPlot {
      * Builds the q-q data if required, otherwise does nothing
      */
     private void buildQQPlotData(Node selectedNode) {
-        int columnIndex = this.dataSet.getColumnIndex(selectedNode);
+        int columnIndex = this.dataSet.getColumn(selectedNode);
 
         double mean = 0.0;
         double sd = 0.0;

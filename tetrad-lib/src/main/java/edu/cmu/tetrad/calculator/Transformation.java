@@ -80,7 +80,7 @@ public class Transformation {
         if (variable == null) {
             throw new IllegalStateException("Unknown variable " + equation.getVariable());
         }
-        int column = data.getColumnIndex(variable);
+        int column = data.getColumn(variable);
         // build the context pairs.
         List<String> contextVars = Transformation.getContextVariables(expression);
         // now do the transformation row by row.
@@ -149,7 +149,7 @@ public class Transformation {
             this.data = data;
             for (String v : vars) {
                 Node n = data.getVariable(v);
-                this.indexes.put(v, data.getColumnIndex(n));
+                this.indexes.put(v, data.getColumn(n));
             }
         }
 

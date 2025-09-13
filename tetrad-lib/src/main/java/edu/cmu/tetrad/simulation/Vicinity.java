@@ -319,17 +319,17 @@ public class Vicinity {
     //this is where the loaded locationMap should be doing the work
     private int getX(Node node, DataSet locationMap) {
         //double output = locationMap.getDouble(0,locationMap.getColumn(node));
-        return (int) locationMap.getDouble(0, locationMap.getColumnIndex(node));
+        return (int) locationMap.getDouble(0, locationMap.getColumn(node));
     }
 
     private int getY(Node node, DataSet locationMap) {
         //double output = locationMap.getDouble(0,locationMap.getColumn(node));
-        return (int) locationMap.getDouble(1, locationMap.getColumnIndex(node));
+        return (int) locationMap.getDouble(1, locationMap.getColumn(node));
     }
 
     private int getZ(Node node, DataSet locationMap) {
         //double output = locationMap.getDouble(0,locationMap.getColumn(node));
-        return (int) locationMap.getDouble(2, locationMap.getColumnIndex(node));
+        return (int) locationMap.getDouble(2, locationMap.getColumn(node));
     }
 
 }

@@ -25,196 +25,184 @@ public class TestCliqueCompletionIntegration {
 
     @Test
     public void testLearnersCliquesAndClusterRecovery() {
-        double penalty = 1.0;
-        double alpha = 0.01;
-        int N = 2000;
+        final int N = 2000;
+        final int R = 10; // number of random seeds
 
-        MimData md = makeMimData(N, 5, 5, RandomUtil.getInstance().nextLong());
-        assertNotNull(md.data());
-        assertFalse("No true clusters found", md.trueClusters().isEmpty());
+        LBMulti multi = new LBMulti();
 
-        // --- 1) Learners (added FGES) ---
-        Map<String, Supplier<Graph>> learners = new LinkedHashMap<>();
+        for (int r = 0; r < R; r++) {
+            long seed = RandomUtil.getInstance().nextLong();
 
-        learners.put("BOSS_SEMBIC_penalty_" + penalty, () -> {
-            SemBicScore score = new SemBicScore(new CorrelationMatrix(md.data()));
-            score.setPenaltyDiscount(penalty);
-            try {
-                return new PermutationSearch(new Boss(score)).search();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+            MimData md = makeMimData(seed);
+            assertNotNull(md.data());
+            assertFalse("No true clusters found", md.trueClusters().isEmpty());
 
-        learners.put("PC_FisherZ_alpha_" + alpha, () -> {
-            IndependenceTest test = new IndTestFisherZ(md.data(), alpha);
-            Pc pc = new Pc(test);
-            try {
-                return pc.search();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
+            // --- Build learners for THIS seed's data ---
+            Map<String, Supplier<Graph>> learners = new LinkedHashMap<>();
 
-        // NEW: FGES (SEM-BIC, penalty 2.0)
-        learners.put("FGES_SEMBIC_penalty_" + penalty, () -> {
-            SemBicScore score = new SemBicScore(new CorrelationMatrix(md.data()));
-            score.setPenaltyDiscount(penalty);
-            try {
-                Fges ges = new Fges(score);
-                return ges.search();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        for (Map.Entry<String, Supplier<Graph>> e : learners.entrySet()) {
-            String name = e.getKey();
-
-            // --- Baseline ---
-            Graph g = e.getValue().get();
-            System.out.println("\n=== " + name + " : raw ===");
-            printComponents(g);
-            List<Set<Node>> cliquesRaw = maximalCliquesMeasured(g, md.data());
-            printCliques(cliquesRaw);
-
-            RecoveryStats base = scoreRecovery(md.trueClusters(), cliquesRaw);
-            System.out.printf(Locale.ROOT,
-                    "[%s] RAW  : macro-Prec=%.3f macro-Rec=%.3f macro-F1=%.3f%n",
-                    name, base.macroPrec, base.macroRec, base.macroF1);
-
-            // --- Clique completion (precision-friendly) ---
-//            CliqueCompletion cc = CliqueCompletion.newBuilder(new IndTestFisherZ(md.data, 0.01))
-//                    .maxCompletionOrder(0)     // unconditional only; fast & precise for large n, positive coeffs
-//                    .intraAlpha(0.015)         // modest; BH within pocket stays conservative
-//                    .kCore(4)                  // only work in dense pockets
-//                    .minCommonNeighbors(2)     // the new precision gate
-//                    .enableTriangleCompletion(true)
-//                    .enableDenseCoreRetest(true)
-//                    .log(true)
-//                    .build();
-
-            CliqueCompletion cc = CliqueCompletion.newBuilder(new IndTestFisherZ(md.data(), 0.01))
-                    .maxCompletionOrder(9)    // add size-1 sets {pivot} or one shared neighbor
-                    .intraAlpha(0.03)         // still BH within pocket
-                    .kCore(2)                 // include more nodes in pockets
-                    .minCommonNeighbors(1)    // allow pairs with at least 1 shared neighbor
-                    .enableTriangleCompletion(true)
-                    .enableDenseCoreRetest(true)
-                    .log(true)
-                    .build();
-
-//            CliqueCompletion cc = CliqueCompletion.newBuilder(new IndTestFisherZ(md.data(), 0.01))
-//                    .maxCompletionOrder(2)    // tries a few size-2 sets (capped)
-//                    .intraAlpha(0.05)         // liberal, but BH keeps it local
-//                    .kCore(2)
-//                    .minCommonNeighbors(1)
-//                    .enableTriangleCompletion(true)
-//                    .enableDenseCoreRetest(true)
-//                    .log(true)
-//                    .build();
-
-            // Track edges before/after to compute clutter diagnostics
-            Set<String> edgesBefore = undirectedEdgeSet(g);
-            cc.apply(g);
-            Set<String> edgesAfter  = undirectedEdgeSet(g);
-            Set<String> added = new LinkedHashSet<>(edgesAfter);
-            added.removeAll(edgesBefore);
-
-            System.out.println("\n=== " + name + " + CliqueCompletion ===");
-            printComponents(g);
-            List<Set<Node>> cliquesCC = maximalCliquesMeasured(g, md.data());
-            printCliques(cliquesCC);
-
-            RecoveryStats after = scoreRecovery(md.trueClusters(), cliquesCC);
-            System.out.printf(Locale.ROOT,
-                    "[%s] CC   : macro-Prec=%.3f macro-Rec=%.3f macro-F1=%.3f%n",
-                    name, after.macroPrec, after.macroRec, after.macroF1);
-
-            // --- Clutter diagnostics (edges added across true clusters) ---
-            ClutterStats clutter = clutterStats(added, md.trueClusters());
-            System.out.printf(Locale.ROOT,
-                    "[%s] CC additions: total=%d  intraCluster=%d  interCluster=%d  interRate=%.2f%n",
-                    name, clutter.total, clutter.intra, clutter.inter, clutter.interRate());
-
-            // Inspect near-equal cliques overlap patterns
-            {
-                int cand = 0, tested = 0;
-                for (int i = 0; i < cliquesRaw.size(); i++) {
-                    Set<Node> A = cliquesRaw.get(i);
-                    for (int j = i + 1; j < cliquesRaw.size(); j++) {
-                        Set<Node> B = cliquesRaw.get(j);
-                        if (A.size() != B.size()) break;
-                        Set<Node> inter = new LinkedHashSet<>(A); inter.retainAll(B);
-                        if (inter.size() == A.size() - 1) {
-                            cand++;
-                            // fringe pair a,b:
-                            Set<Node> diffA = new LinkedHashSet<>(A); diffA.removeAll(B);
-                            Set<Node> diffB = new LinkedHashSet<>(B); diffB.removeAll(A);
-                            Node a = diffA.iterator().next(), b = diffB.iterator().next();
-                            tested++;
-                            System.out.printf("NearClique candidate: |A|=|B|=%d, |∩|=%d, fringe=(%s,%s)%n",
-                                    A.size(), inter.size(), a.getName(), b.getName());
-                        }
+            for (double _penalty : new double[]{0.8, 1.0, 1.5, 2.0}) {
+                learners.put("BOSS_SEMBIC_penalty_" + _penalty, () -> {
+                    SemBicScore score = new SemBicScore(new CorrelationMatrix(md.data()));
+                    score.setPenaltyDiscount(_penalty);
+                    try {
+                        return new PermutationSearch(new Boss(score)).search();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
                     }
-                }
-                System.out.printf("NearClique summary: candidates=%d, tested=%d%n", cand, tested);
+                });
             }
 
-            debugClusterSeeds(g, md.data(), md.trueClusters());
+            for (double _alpha : new double[]{0.01, 0.05, 0.1, 0.2}) {
+                learners.put("PC_FisherZ_alpha_" + _alpha, () -> {
+                    IndependenceTest test = new IndTestFisherZ(md.data(), _alpha);
+                    Pc pc = new Pc(test);
+                    try {
+                        return pc.search();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
 
-//            // --- Assertions ---
-//            assertTrue(name + " macro-F1 should not decrease after CliqueCompletion",
-//                    after.macroF1 + 1e-9 >= base.macroF1 - 1e-9);
-//
-//            // Soft guard on clutter: allow some inter-cluster, but not dominance
-//            assertTrue(name + " inter-cluster additions should not dominate",
-//                    clutter.interRate() <= 0.60 + 1e-9);
+            for (double _penalty : new double[]{0.8, 1.0, 1.5, 2.0}) {
+                learners.put("FGES_SEMBIC_penalty_" + _penalty, () -> {
+                    SemBicScore score = new SemBicScore(new CorrelationMatrix(md.data()));
+                    score.setPenaltyDiscount(_penalty);
+                    try {
+                        Fges ges = new Fges(score);
+                        return ges.search();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+
+            // --- Per-seed leaderboard ---
+            Leaderboard lb = new Leaderboard();
+
+            for (Map.Entry<String, Supplier<Graph>> e : learners.entrySet()) {
+                String name = e.getKey();
+
+                // Baseline
+                Graph g = e.getValue().get();
+                List<Set<Node>> cliquesRaw = maximalCliquesMeasured(g, md.data());
+                RecoveryStats base = scoreRecovery(md.trueClusters(), cliquesRaw);
+                lb.add(name + " (raw)", base);
+
+                // Completion
+                CliqueCompletion cc = CliqueCompletion.newBuilder(new IndTestFisherZ(md.data(), 0.01))
+                        .maxCompletionOrder(2)
+                        .intraAlpha(0.025)
+                        .kCore(3)
+                        .minCommonNeighbors(1)
+                        .enableTriangleCompletion(true)
+                        .enableDenseCoreRetest(true)
+                        .log(false)
+                        .build();
+                cc.apply(g);
+
+                List<Set<Node>> cliquesCC = maximalCliquesMeasured(g, md.data());
+                RecoveryStats after = scoreRecovery(md.trueClusters(), cliquesCC);
+                lb.add(name + " (+CC)", after);
+            }
+
+            // Fold this seed's results into the multi-seed aggregator
+            for (Leaderboard.Row row : lb.rows) {
+                multi.add(row.methodLabel, row.stats);
+            }
         }
+
+        // --- Final multi-seed tables ---
+        multi.printBySumJ();     // mean±sd by SUM Jaccard
+        multi.printByMacroF1();  // optional: mean±sd by Macro F1
+        multi.printDeltas();
     }
 
     // =================== Data & Truth ===================
 
     private record MimData(DataSet data, Graph trueGraph, List<Set<Node>> trueClusters) {}
 
-    private static MimData makeMimData(int nRows, int latentGroups, int childrenPerGroup, long seed) {
-        RandomMim.LatentGroupSpec spec = new RandomMim.LatentGroupSpec(latentGroups, 1, childrenPerGroup);
-        Random rng = new Random(seed);
+        private static MimData makeMimData(long seed) {
+            RandomMim.LatentGroupSpec spec1 = new RandomMim.LatentGroupSpec(5, 1, 5);
+//            RandomMim.LatentGroupSpec spec2 = new RandomMim.LatentGroupSpec(latentGroups, 1, 2  + childrenPerGroup);
+            Random rng = new Random(seed);
 
-        Graph gTrue = RandomMim.constructRandomMim(
-                List.of(spec), 0, 0, 0, 0,
-                RandomMim.LatentLinkMode.CARTESIAN_PRODUCT, rng);
+            Graph gTrue = RandomMim.constructRandomMim(
+                    List.of(spec1), 4,0,
+                    0, 0,
+                    RandomMim.LatentLinkMode.CARTESIAN_PRODUCT, rng);
 
-        Parameters params = new Parameters();
-        params.set("seed", seed);
-        params.set("coefLow", 0.3);
-        params.set("coefHigh", 1.1);
-        params.set("coefSymmetric", false);
+            Parameters params = new Parameters();
+            params.set("seed", seed);
+            params.set("coefLow", 0.3);
+            params.set("coefHigh", 1.1);
+            params.set("coefSymmetric", false);
 
-        SemPm pm = new SemPm(gTrue);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(nRows, false);
+            SemPm pm = new SemPm(gTrue);
+            SemIm im = new SemIm(pm);
+            DataSet data = im.simulateData(1000, false);
 
-        List<Set<Node>> clusters = extractTrueMimClusters(gTrue, data);
-        System.out.println("True clusters (children of each latent): " +
-                           clusters.stream().map(TestCliqueCompletionIntegration::names).collect(Collectors.toList()));
+            List<Set<Node>> clusters = extractTrueMimClusters(gTrue, data);
+            System.out.println("True clusters (children of each latent): " +
+                               clusters.stream().map(TestCliqueCompletionIntegration::names).toList());
 
-        return new MimData(data, gTrue, clusters);
-    }
+            return new MimData(data, gTrue, clusters);
+        }
 
     private static List<Set<Node>> extractTrueMimClusters(Graph gTrue, DataSet measuredData) {
-        Set<String> measuredNames = measuredData.getVariables().stream().map(Node::getName).collect(Collectors.toSet());
-        List<Set<Node>> out = new ArrayList<>();
+        return extractTrueMimClusters(gTrue, measuredData, 3, /*coalesceIdenticalChildSets=*/true);
+    }
+
+    /**
+     * Extract measurement clusters as measured children of latent nodes.
+     * - Uses NodeType.LATENT when available; otherwise falls back to a name heuristic ("L", "Latent").
+     * - Optionally coalesces latents that share the exact same measured-children set (rank>1 groups).
+     * - Filters clusters by minSize.
+     */
+    private static List<Set<Node>> extractTrueMimClusters(Graph gTrue,
+                                                          DataSet measuredData,
+                                                          int minSize,
+                                                          boolean coalesceIdenticalChildSets) {
+        Set<String> measuredNames = measuredData.getVariables().stream()
+                .map(Node::getName).collect(Collectors.toSet());
+
+        // 1) Identify latents robustly
+        List<Node> latents = new ArrayList<>();
         for (Node v : gTrue.getNodes()) {
-            if (!gTrue.getParents(v).isEmpty()) continue;
-            List<Node> kids = gTrue.getChildren(v);
-            if (kids.size() < 3) continue;
-            Set<Node> cluster = kids.stream()
-                    .filter(u -> measuredNames.contains(u.getName()))
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-            if (cluster.size() >= 3) out.add(cluster);
+            boolean isLatentType = false;
+            try {
+                // If NodeType exists in your build:
+                isLatentType = v.getNodeType() != null &&
+                               v.getNodeType().name().equalsIgnoreCase("LATENT");
+            } catch (Throwable ignore) { /* older builds may not expose NodeType */ }
+
+            boolean nameLooksLatent = v.getName().startsWith("L") || v.getName().toLowerCase().contains("latent");
+            if (isLatentType || nameLooksLatent) {
+                latents.add(v);
+            }
         }
-        return dedupSetsByNames(out);
+
+        // 2) For each latent, take its measured children present in the dataset
+        List<Set<Node>> raw = new ArrayList<>();
+        for (Node L : latents) {
+            List<Node> kids = gTrue.getChildren(L);
+            Set<Node> cluster = kids.stream()
+                    .filter(ch -> measuredNames.contains(ch.getName()))
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            if (cluster.size() >= minSize) raw.add(cluster);
+        }
+
+        // 3) Optionally coalesce identical child sets (rank-k groups → one cluster)
+        if (coalesceIdenticalChildSets) {
+            Map<String, Set<Node>> uniq = new LinkedHashMap<>();
+            for (Set<Node> c : raw) {
+                String key = c.stream().map(Node::getName).sorted().collect(Collectors.joining(","));
+                uniq.putIfAbsent(key, c);
+            }
+            return new ArrayList<>(uniq.values());
+        } else {
+            return raw;
+        }
     }
 
     // =================== Clique extraction (measured only) ===================
@@ -243,11 +231,29 @@ public class TestCliqueCompletionIntegration {
 
     // =================== Scoring / Matching ===================
 
+
+
+//    private static class RecoveryStats {
+//        final double macroPrec, macroRec, macroF1;
+//        final List<PerCluster> perCluster;
+//        RecoveryStats(double P, double R, double F1, List<PerCluster> pcs) {
+//            macroPrec = P; macroRec = R; macroF1 = F1; perCluster = pcs;
+//        }
+//    }// =================== Scoring / Matching ===================
+
     private static class RecoveryStats {
         final double macroPrec, macroRec, macroF1;
+        final double macroJaccard, sumJaccard;      // NEW: Jaccard aggregates
+        final double microPrec, microRec, microF1;  // NEW: micro (size-weighted)
         final List<PerCluster> perCluster;
-        RecoveryStats(double P, double R, double F1, List<PerCluster> pcs) {
-            macroPrec = P; macroRec = R; macroF1 = F1; perCluster = pcs;
+        RecoveryStats(double mP, double mR, double mF1,
+                      double mJ, double sJ,
+                      double miP, double miR, double miF1,
+                      List<PerCluster> pcs) {
+            macroPrec = mP; macroRec = mR; macroF1 = mF1;
+            macroJaccard = mJ; sumJaccard = sJ;
+            microPrec = miP; microRec = miR; microF1 = miF1;
+            perCluster = pcs;
         }
     }
     private static class PerCluster {
@@ -268,68 +274,310 @@ public class TestCliqueCompletionIntegration {
         }
     }
 
-    private static RecoveryStats scoreRecovery(List<Set<Node>> trueClusters,
-                                               List<Set<Node>> recoveredCliques) {
-        final double JACCARD_MIN = 0.0; // change to 0.1 or 0.25 if you want stricter matches
+    /** Greedy Jaccard matching of true clusters to recovered cliques; prints per-cluster metrics. */
+    private static RecoveryStats scoreRecovery(List<Set<Node>> trueClusters, List<Set<Node>> recoveredCliques) {
+        final double JACCARD_MIN = 0.0; // keep your current semantics
 
         List<LinkedHashSet<String>> T = trueClusters.stream()
-                .map(s -> s.stream().map(Node::getName)
-                        .collect(Collectors.toCollection(LinkedHashSet::new)))
+                .map(s -> s.stream().map(Node::getName).collect(Collectors.toCollection(LinkedHashSet::new)))
                 .toList();
-
         List<LinkedHashSet<String>> R = recoveredCliques.stream()
-                .map(s -> s.stream().map(Node::getName)
-                        .collect(Collectors.toCollection(LinkedHashSet::new)))
+                .map(s -> s.stream().map(Node::getName).collect(Collectors.toCollection(LinkedHashSet::new)))
                 .toList();
 
         List<Integer> unmatchedR = new ArrayList<>();
         for (int i = 0; i < R.size(); i++) unmatchedR.add(i);
 
         List<PerCluster> pcs = new ArrayList<>();
-        double sumP = 0, sumR = 0, sumF1 = 0;
-        int matchedTrue = 0;
+        double sumP = 0, sumR = 0, sumF1 = 0, sumJ = 0;
+
+        // For micro totals
+        long TP = 0, FP = 0, FN = 0;
 
         for (int ti = 0; ti < T.size(); ti++) {
             Set<String> t = T.get(ti);
             int bestR = -1; double bestJ = -1.0;
-
             for (int rIdx : unmatchedR) {
-                Set<String> r = R.get(rIdx);
-                double j = jaccard(t, r);
+                double j = jaccard(t, R.get(rIdx));
                 if (j > bestJ) { bestJ = j; bestR = rIdx; }
             }
 
             Set<Node> tNodes = namesToNodes(t, trueClusters.get(ti));
             Set<Node> rNodes = null;
-
             if (bestR >= 0 && bestJ > JACCARD_MIN) {
                 rNodes = namesToNodes(R.get(bestR), recoveredCliques.get(bestR));
                 unmatchedR.remove((Integer) bestR);
-                matchedTrue++;
             }
 
             PerCluster pc = new PerCluster(tNodes, rNodes);
             pcs.add(pc);
-            sumP += pc.prec; sumR += pc.recall; sumF1 += pc.f1;
 
-            System.out.printf(Locale.ROOT,
-                    "  Truth {%s}  ↔  Match {%s}  |  P=%.2f R=%.2f F1=%.2f  (J=%.2f)%n",
-                    pc.truth, pc.match, pc.prec, pc.recall, pc.f1, pc.jaccard);
+            sumP += pc.prec; sumR += pc.recall; sumF1 += pc.f1; sumJ += pc.jaccard;
+
+            // micro accumulators
+            TP += pc.inter;
+            FP += Math.max(0, pc.rSize - pc.inter);
+            FN += Math.max(0, pc.tSize - pc.inter);
+
+//            System.out.printf(Locale.ROOT,
+//                    "  Truth {%s}  ↔  Match {%s}  |  P=%.2f R=%.2f F1=%.2f  (J=%.2f)%n",
+//                    pc.truth, pc.match, pc.prec, pc.recall, pc.f1, pc.jaccard);
         }
 
-        double mP = sumP / Math.max(1, pcs.size());
-        double mR = sumR / Math.max(1, pcs.size());
-        double mF1 = sumF1 / Math.max(1, pcs.size());
+        int K = Math.max(1, pcs.size());
+        double mP = sumP / K, mR = sumR / K, mF1 = sumF1 / K;
+        double mJ = sumJ / K;  // mean Jaccard across true clusters
 
-        // Optional diagnostics: coverage and how many recovered cliques went unused
-        int unmatchedRecovered = unmatchedR.size();
-        double coverage = matchedTrue / (double) Math.max(1, T.size());
-        System.out.printf(Locale.ROOT,
-                "Coverage: matched %d/%d true clusters (%.2f), unused recovered cliques: %d%n",
-                matchedTrue, T.size(), coverage, unmatchedRecovered);
+        double miP = (TP + FP) == 0 ? 0.0 : TP / (double) (TP + FP);
+        double miR = (TP + FN) == 0 ? 0.0 : TP / (double) (TP + FN);
+        double miF1 = (miP + miR == 0.0) ? 0.0 : 2 * miP * miR / (miP + miR);
 
-        return new RecoveryStats(mP, mR, mF1, pcs);
+        return new RecoveryStats(mP, mR, mF1, mJ, sumJ, miP, miR, miF1, pcs);
     }
+
+    // =================== Leaderboard ===================
+
+    private static final class Leaderboard {
+        private static final class Row {
+            final String methodLabel;
+            final double sumJaccard, macroJaccard, macroF1, microF1;
+            final RecoveryStats stats;
+            Row(String label, RecoveryStats s) {
+                this.methodLabel = label;
+                this.sumJaccard = s.sumJaccard;
+                this.macroJaccard = s.macroJaccard;
+                this.macroF1 = s.macroF1;
+                this.microF1 = s.microF1;
+                this.stats = s;
+            }
+        }
+//        static final class Row {
+//            final String methodLabel;
+//            final RecoveryStats stats;
+//            Row(String label, RecoveryStats s) { this.methodLabel = label; this.stats = s; }
+//        }
+        final List<Row> rows = new ArrayList<>();
+        void add(String label, RecoveryStats stats) { rows.add(new Row(label, stats)); }
+
+        void printBySumJaccard() {
+            rows.sort((a,b) -> Double.compare(b.sumJaccard, a.sumJaccard));
+            System.out.println("\n=== Leaderboard (by SUM Jaccard; higher is better) ===");
+            for (int i = 0; i < rows.size(); i++) {
+                Row r = rows.get(i);
+                System.out.printf(Locale.ROOT, "%2d) %-28s  sumJ=%.3f  macroJ=%.3f  macroF1=%.3f  microF1=%.3f%n",
+                        i+1, r.methodLabel, r.sumJaccard, r.macroJaccard, r.macroF1, r.microF1);
+            }
+        }
+        void printByMacroF1() {
+            rows.sort((a,b) -> Double.compare(b.macroF1, a.macroF1));
+            System.out.println("\n=== Leaderboard (by MACRO F1; higher is better) ===");
+            for (int i = 0; i < rows.size(); i++) {
+                Row r = rows.get(i);
+                System.out.printf(Locale.ROOT, "%2d) %-28s  macroF1=%.3f  sumJ=%.3f  macroJ=%.3f  microF1=%.3f%n",
+                        i+1, r.methodLabel, r.macroF1, r.sumJaccard, r.macroJaccard, r.microF1);
+            }
+        }
+    }
+
+    // Tiny accumulator
+    private static final class Agg {
+        double n = 0, sum = 0, sum2 = 0;
+
+        void add(double x) { n++; sum += x; sum2 += x * x; }
+
+        double mean() { return n == 0 ? 0.0 : sum / n; }
+
+        /** Population variance (consistent with your sd()); guarded against negatives from FP error. */
+        double var() {
+            if (n <= 1) return 0.0;
+            double m = mean();
+            double v = (sum2 / n) - m * m;
+            return Math.max(0.0, v);
+        }
+
+        double sd() { return Math.sqrt(var()); }
+
+        int count() { return (int) Math.round(n); }
+    }
+
+    // Aggregate leaderboard across seeds
+// Aggregate leaderboard across seeds
+    private static final class LBMulti {
+        private static final class Cell {
+            Agg sumJ=new Agg(), mF1=new Agg(), MJ=new Agg(), micF1=new Agg();
+        }
+        private final Map<String, Cell> map = new LinkedHashMap<>();
+
+        void add(String label, RecoveryStats s){
+            Cell c = map.computeIfAbsent(label, k->new Cell());
+            c.sumJ.add(s.sumJaccard); c.MJ.add(s.macroJaccard);
+            c.mF1.add(s.macroF1);     c.micF1.add(s.microF1);
+        }
+
+        void printBySumJ(){
+            List<Map.Entry<String, Cell>> L = new ArrayList<>(map.entrySet());
+            L.sort((a,b)->Double.compare(b.getValue().sumJ.mean(), a.getValue().sumJ.mean()));
+            System.out.println("\n=== Leaderboard (mean±sd over seeds; by SUM Jaccard) ===");
+            for (int i=0;i<L.size();i++){
+                var e=L.get(i); var c=e.getValue();
+                System.out.printf(Locale.ROOT,
+                        "%2d) %-28s  sumJ=%.3f±%.3f  macroF1=%.3f±%.3f  microF1=%.3f±%.3f%n",
+                        i+1, e.getKey(), c.sumJ.mean(), c.sumJ.sd(), c.mF1.mean(), c.mF1.sd(),
+                        c.micF1.mean(), c.micF1.sd());
+            }
+        }
+
+        void printByMacroF1(){
+            List<Map.Entry<String, Cell>> L = new ArrayList<>(map.entrySet());
+            L.sort((a,b)->Double.compare(b.getValue().mF1.mean(), a.getValue().mF1.mean()));
+            System.out.println("\n=== Leaderboard (mean±sd over seeds; by MACRO F1) ===");
+            for (int i=0;i<L.size();i++){
+                var e=L.get(i); var c=e.getValue();
+                System.out.printf(Locale.ROOT,
+                        "%2d) %-28s  macroF1=%.3f±%.3f  sumJ=%.3f±%.3f  microF1=%.3f±%.3f%n",
+                        i+1, e.getKey(), c.mF1.mean(), c.mF1.sd(), c.sumJ.mean(), c.sumJ.sd(),
+                        c.micF1.mean(), c.micF1.sd());
+            }
+        }
+
+        /** Print mean±sd deltas (CC – raw) for each method prefix. */
+        void printDeltas() {
+            System.out.println("\n=== Δ from CliqueCompletion (mean±sd; CC – raw) ===");
+            for (String label : map.keySet()) {
+                if (!label.endsWith("(raw)")) continue;
+
+                String prefix  = label.substring(0, label.length() - "(raw)".length()).trim();
+                String ccLabel = prefix + " (+CC)";
+                Cell raw = map.get(label);
+                Cell cc  = map.get(ccLabel);
+                if (cc == null) continue; // no +CC partner for this method prefix
+
+                double dSumJ_mean  = cc.sumJ.mean() - raw.sumJ.mean();
+                double dMacroF1_m  = cc.mF1.mean()  - raw.mF1.mean();
+                double dMicroF1_m  = cc.micF1.mean() - raw.micF1.mean();
+
+                // Conservative sd of the difference (no covariance term)
+                double dSumJ_sd   = Math.sqrt(cc.sumJ.var()  + raw.sumJ.var());
+                double dMacroF1_sd= Math.sqrt(cc.mF1.var()   + raw.mF1.var());
+                double dMicroF1_sd= Math.sqrt(cc.micF1.var() + raw.micF1.var());
+
+                System.out.printf(Locale.ROOT,
+                        "%-28s  ΔsumJ=%.3f±%.3f  ΔmacroF1=%.3f±%.3f  ΔmicroF1=%.3f±%.3f%n",
+                        prefix, dSumJ_mean, dSumJ_sd, dMacroF1_m, dMacroF1_sd, dMicroF1_m, dMicroF1_sd);
+            }
+        }
+    }
+
+    // Pair "(raw)" with "(+CC)" and print deltas.
+    private static void printDeltaTable(Leaderboard lb) {
+        Map<String, RecoveryStats> raw = new LinkedHashMap<>();
+        Map<String, RecoveryStats> cc  = new LinkedHashMap<>();
+
+        for (var row : lb.rows) {
+            String label = row.methodLabel;
+            if (label.endsWith(" (raw)")) {
+                raw.put(label.substring(0, label.length() - " (raw)".length()), row.stats);
+            } else if (label.endsWith(" (+CC)")) {
+                cc.put(label.substring(0, label.length() - " (+CC)".length()), row.stats);
+            }
+        }
+
+        System.out.println("\n=== Δ from CliqueCompletion (matched methods) ===");
+        List<String> keys = new ArrayList<>(raw.keySet());
+        keys.retainAll(cc.keySet());
+        keys.sort(String::compareTo);
+
+        for (String k : keys) {
+            RecoveryStats r = raw.get(k), c = cc.get(k);
+            double dSumJ = c.sumJaccard - r.sumJaccard;
+            double dMacF1 = c.macroF1 - r.macroF1;
+            double dMicF1 = c.microF1 - r.microF1;
+            System.out.printf(Locale.ROOT,
+                    "%-26s  ΔsumJ=%.3f  ΔmacroF1=%.3f  ΔmicroF1=%.3f%n",
+                    k, dSumJ, dMacF1, dMicF1);
+        }
+    }
+
+//    private static class PerCluster {
+//        final String truth, match;
+//        final int tSize, rSize, inter;
+//        final double prec, recall, f1, jaccard;
+//        PerCluster(Set<Node> T, Set<Node> R) {
+//            this.truth = names(T);
+//            this.match = (R == null ? "∅" : names(R));
+//            this.tSize = T.size();
+//            this.rSize = (R == null ? 0 : R.size());
+//            this.inter = (R == null ? 0 : intersectSize(T, R));
+//            this.prec = (R == null || rSize == 0) ? 0.0 : inter / (double) rSize;
+//            this.recall = tSize == 0 ? 0.0 : inter / (double) tSize;
+//            this.f1 = (prec + recall == 0.0) ? 0.0 : 2 * prec * recall / (prec + recall);
+//            int union = tSize + rSize - inter;
+//            this.jaccard = union == 0 ? 0.0 : inter / (double) union;
+//        }
+//    }
+
+//    private static RecoveryStats scoreRecovery(List<Set<Node>> trueClusters,
+//                                               List<Set<Node>> recoveredCliques) {
+//        final double JACCARD_MIN = 0.0; // change to 0.1 or 0.25 if you want stricter matches
+//
+//        List<LinkedHashSet<String>> T = trueClusters.stream()
+//                .map(s -> s.stream().map(Node::getName)
+//                        .collect(Collectors.toCollection(LinkedHashSet::new)))
+//                .toList();
+//
+//        List<LinkedHashSet<String>> R = recoveredCliques.stream()
+//                .map(s -> s.stream().map(Node::getName)
+//                        .collect(Collectors.toCollection(LinkedHashSet::new)))
+//                .toList();
+//
+//        List<Integer> unmatchedR = new ArrayList<>();
+//        for (int i = 0; i < R.size(); i++) unmatchedR.add(i);
+//
+//        List<PerCluster> pcs = new ArrayList<>();
+//        double sumP = 0, sumR = 0, sumF1 = 0;
+//        int matchedTrue = 0;
+//
+//        for (int ti = 0; ti < T.size(); ti++) {
+//            Set<String> t = T.get(ti);
+//            int bestR = -1; double bestJ = -1.0;
+//
+//            for (int rIdx : unmatchedR) {
+//                Set<String> r = R.get(rIdx);
+//                double j = jaccard(t, r);
+//                if (j > bestJ) { bestJ = j; bestR = rIdx; }
+//            }
+//
+//            Set<Node> tNodes = namesToNodes(t, trueClusters.get(ti));
+//            Set<Node> rNodes = null;
+//
+//            if (bestR >= 0 && bestJ > JACCARD_MIN) {
+//                rNodes = namesToNodes(R.get(bestR), recoveredCliques.get(bestR));
+//                unmatchedR.remove((Integer) bestR);
+//                matchedTrue++;
+//            }
+//
+//            PerCluster pc = new PerCluster(tNodes, rNodes);
+//            pcs.add(pc);
+//            sumP += pc.prec; sumR += pc.recall; sumF1 += pc.f1;
+//
+//            System.out.printf(Locale.ROOT,
+//                    "  Truth {%s}  ↔  Match {%s}  |  P=%.2f R=%.2f F1=%.2f  (J=%.2f)%n",
+//                    pc.truth, pc.match, pc.prec, pc.recall, pc.f1, pc.jaccard);
+//        }
+//
+//        double mP = sumP / Math.max(1, pcs.size());
+//        double mR = sumR / Math.max(1, pcs.size());
+//        double mF1 = sumF1 / Math.max(1, pcs.size());
+//
+//        // Optional diagnostics: coverage and how many recovered cliques went unused
+//        int unmatchedRecovered = unmatchedR.size();
+//        double coverage = matchedTrue / (double) Math.max(1, T.size());
+//        System.out.printf(Locale.ROOT,
+//                "Coverage: matched %d/%d true clusters (%.2f), unused recovered cliques: %d%n",
+//                matchedTrue, T.size(), coverage, unmatchedRecovered);
+//
+//        return new RecoveryStats(mP, mR, mF1, pcs);
+//    }
 
     // =================== Clutter diagnostics ===================
 
@@ -502,8 +750,8 @@ public class TestCliqueCompletionIntegration {
             // avg |r| within L
             double sumAbsR=0; int cnt=0;
             for (int i=0;i<L.size();i++) for (int j=i+1;j<L.size();j++) {
-                int ia = data.getColumnIndex(data.getVariable(L.get(i).getName()));
-                int ib = data.getColumnIndex(data.getVariable(L.get(j).getName()));
+                int ia = data.getColumn(data.getVariable(L.get(i).getName()));
+                int ib = data.getColumn(data.getVariable(L.get(j).getName()));
                 sumAbsR += Math.abs(corr[ia][ib]); cnt++;
             }
             System.out.printf(Locale.ROOT,

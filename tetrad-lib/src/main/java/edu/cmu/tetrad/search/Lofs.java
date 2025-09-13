@@ -1315,8 +1315,8 @@ public class Lofs {
      * @return A List of double arrays containing the extracted x and y data.
      */
     private List<double[]> extractData(DataSet data, Node _x, Node _y) {
-        int xIndex = data.getColumnIndex(_x);
-        int yIndex = data.getColumnIndex(_y);
+        int xIndex = data.getColumn(_x);
+        int yIndex = data.getColumn(_y);
 
         double[][] _data = data.getDoubleData().transpose().toArray();
 
@@ -1370,8 +1370,8 @@ public class Lofs {
      * @return A list containing the X-values and Y-values as double arrays.
      */
     private List<double[]> prepareData(DataSet concatData, Node _x, Node _y) {
-        int xIndex = concatData.getColumnIndex(_x);
-        int yIndex = concatData.getColumnIndex(_y);
+        int xIndex = concatData.getColumn(_x);
+        int yIndex = concatData.getColumn(_y);
 
         double[] xData = concatData.getDoubleData().getColumn(xIndex).toArray();
         double[] yData = concatData.getDoubleData().getColumn(yIndex).toArray();
@@ -1831,7 +1831,7 @@ public class Lofs {
 
             DataSet dataSet = this.dataSets.get(m);
 
-            int targetCol = dataSet.getColumnIndex(target);
+            int targetCol = dataSet.getColumn(target);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 if (isNaN(dataSet.getDouble(i, targetCol))) {
@@ -1844,7 +1844,7 @@ public class Lofs {
                     break;
                 }
 
-                int regressorCol = dataSet.getColumnIndex(regressor);
+                int regressorCol = dataSet.getColumn(regressor);
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     if (isNaN(dataSet.getDouble(i, regressorCol))) {
@@ -1934,7 +1934,7 @@ public class Lofs {
 
             DataSet dataSet = this.dataSets.get(m);
 
-            int targetCol = dataSet.getColumnIndex(target);
+            int targetCol = dataSet.getColumn(target);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 if (isNaN(dataSet.getDouble(i, targetCol))) {
@@ -1947,7 +1947,7 @@ public class Lofs {
                     break;
                 }
 
-                int regressorCol = dataSet.getColumnIndex(regressor);
+                int regressorCol = dataSet.getColumn(regressor);
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     if (isNaN(dataSet.getDouble(i, regressorCol))) {
@@ -2043,8 +2043,8 @@ public class Lofs {
         if (this._data == null) {
             this._data = DataTransforms.centerData(this.matrices.get(0));
         }
-        int xIndex = this.dataSets.getFirst().getColumnIndex(this.dataSets.getFirst().getVariable(x.getName()));
-        int yIndex = this.dataSets.getFirst().getColumnIndex(this.dataSets.getFirst().getVariable(y.getName()));
+        int xIndex = this.dataSets.getFirst().getColumn(this.dataSets.getFirst().getVariable(x.getName()));
+        int yIndex = this.dataSets.getFirst().getColumn(this.dataSets.getFirst().getVariable(y.getName()));
         double[] xCol = this._data.getColumn(xIndex).toArray();
         double[] yCol = this._data.getColumn(yIndex).toArray();
         int N = xCol.length;

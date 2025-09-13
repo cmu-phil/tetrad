@@ -528,7 +528,7 @@ public final class Fask {
 
             for (int f = 0; f < _adj.size(); f++) {
                 Node _z = _adj.get(f);
-                int column = dataSet.getColumnIndex(_z);
+                int column = dataSet.getColumn(_z);
                 _Z[f] = data[column];
             }
 

@@ -295,11 +295,11 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
                     throw new IllegalArgumentException("Expecting a continuous variable: " + variable);
                 }
 
-                x[j] = data.getDouble(i, data.getColumnIndex(variable));
+                x[j] = data.getDouble(i, data.getColumn(variable));
             }
 
             double yHat = result.getPredictedValue(x);
-            data2.setDouble(i, data2.getColumnIndex(data2.getVariable(predictedVariable)), yHat);
+            data2.setDouble(i, data2.getColumn(data2.getVariable(predictedVariable)), yHat);
         }
 
         DataModelList dataModelList = new DataModelList();

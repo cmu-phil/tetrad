@@ -435,7 +435,7 @@ public class RBExperiments {
             for (IndependenceFact f : HCopy.keySet()) {
                 boolean ind = bsTest.checkIndependence(f.getX(), f.getY(), f.getZ()).isIndependent();
                 int value = ind ? 1 : 0;
-                depData.setInt(b, depData.getColumnIndex(depData.getVariable(f.toString())), value);
+                depData.setInt(b, depData.getColumn(depData.getVariable(f.toString())), value);
             }
         }
         return depData;

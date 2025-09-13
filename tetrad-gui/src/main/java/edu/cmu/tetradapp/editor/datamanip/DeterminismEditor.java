@@ -310,7 +310,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         List<Node> nodeList = new LinkedList<>();
         Map<Node, Integer> origIndexMap = new HashMap<>();
         this.sourceDataSetCopy.getVariables().forEach(node -> {
-            int columnIndex = this.sourceDataSetCopy.getColumnIndex(node);
+            int columnIndex = this.sourceDataSetCopy.getColumn(node);
             // Skip these columns when creating the new dataset
             if (!toBeRemovedColumns.contains(columnIndex)) {
                 nodeList.add(node);
@@ -347,8 +347,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         if ((x instanceof DiscreteVariable) && (y instanceof DiscreteVariable)) {
             Map<Object, Object> map = new HashMap<>();
 
-            int xColumnIndex = this.sourceDataSet.getColumnIndex(x);
-            int yColumnIndex = this.sourceDataSet.getColumnIndex(y);
+            int xColumnIndex = this.sourceDataSet.getColumn(x);
+            int yColumnIndex = this.sourceDataSet.getColumn(y);
             int numRows = this.sourceDataSet.getNumRows();
 
             for (int i = 0; i < numRows; i++) {

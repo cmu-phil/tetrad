@@ -321,7 +321,7 @@ public class Discretizer {
                     String name = variable.getName();
 
                     double[] trimmedData = new double[newDataSet.getNumRows()];
-                    int col = newDataSet.getColumnIndex(variable);
+                    int col = newDataSet.getColumn(variable);
 
                     for (int j = 0; j < this.sourceDataSet.getNumRows(); j++) {
                         trimmedData[j] = this.sourceDataSet.getDouble(j, col);
@@ -329,7 +329,7 @@ public class Discretizer {
                     Discretization discretization = Discretizer.discretize(trimmedData,
                             breakpoints, name, categories);
 
-                    int _col = newDataSet.getColumnIndex(variable);
+                    int _col = newDataSet.getColumn(variable);
                     int[] _data = discretization.getData();
                     for (int j = 0; j < _data.length; j++) {
                         newDataSet.setInt(j, _col, _data[j]);
@@ -340,13 +340,13 @@ public class Discretizer {
                     int[] remap = spec.getRemap();
 
                     int[] trimmedData = new int[newDataSet.getNumRows()];
-                    int col = newDataSet.getColumnIndex(variable);
+                    int col = newDataSet.getColumn(variable);
 
                     for (int j = 0; j < this.sourceDataSet.getNumRows(); j++) {
                         trimmedData[j] = this.sourceDataSet.getInt(j, col);
                     }
 
-                    int _col = newDataSet.getColumnIndex(variable);
+                    int _col = newDataSet.getColumn(variable);
 
                     for (int j = 0; j < trimmedData.length; j++) {
                         try {
