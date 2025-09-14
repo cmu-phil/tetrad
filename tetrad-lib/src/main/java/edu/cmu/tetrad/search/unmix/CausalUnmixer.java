@@ -21,15 +21,15 @@ public class CausalUnmixer {
     /**
      * Convenience: run EM unmixing with sane defaults (K=2).
      */
-    public static @NotNull UnmixResult getUnmixedResult(DataSet data) {
-        return getUnmixedResult(data, null, defaults());
+    public static @NotNull UnmixResult getUnmixedResult(DataSet data, int numComponents) {
+        return getUnmixedResult(data, null, defaults(numComponents));
     }
 
     /**
      * Optional warm start: if labels != null and EM supports it, they’ll be used.
      */
-    public static @NotNull UnmixResult getUnmixedResult(DataSet data, int[] labels) {
-        return getUnmixedResult(data, labels, defaults());
+    public static @NotNull UnmixResult getUnmixedResult(DataSet data, int[] labels, int numComponents) {
+        return getUnmixedResult(data, labels, defaults(numComponents));
     }
 
     public static @NotNull UnmixResult getUnmixedResult(DataSet data, @NotNull Config cfg) {
@@ -93,10 +93,10 @@ public class CausalUnmixer {
 
     // --------- Defaults & Graph builders ---------
 
-    public static @NotNull Config defaults() {
+    public static @NotNull Config defaults(int numComponents) {
         Config c = new Config();
 
-        c.K = 2;                          // set to null to enable selectK
+        c.K = numComponents;                          // set to null to enable selectK
         c.Kmin = 1;
         c.Kmax = 4;
 
@@ -150,12 +150,12 @@ public class CausalUnmixer {
         };
     }
 
-    public static Function<DataSet, Graph> pooled() {
-        return grapher(defaults());
+    public static Function<DataSet, Graph> pooled(int numComponents) {
+        return grapher(defaults(numComponents));
     }
 
     public static Function<DataSet, Graph> perCluster() {
-        return grapher(defaults());
+        return grapher(defaults(2));
     }
 
     // --------- Config holder ---------

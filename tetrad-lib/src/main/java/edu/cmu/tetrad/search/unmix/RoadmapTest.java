@@ -338,11 +338,11 @@ public class RoadmapTest {
             ec.kmeansRestarts = 10;
 
             long s0 = System.currentTimeMillis();
-            UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor(), CausalUnmixer.pooled(), CausalUnmixer.perCluster());
+            UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor(), CausalUnmixer.pooled(2), CausalUnmixer.perCluster());
             long s1 = System.currentTimeMillis();
 
             // EM selectK (unknown K one pass)
-            UnmixResult rEMbest = EmUnmix.selectK(sc.mixed, 1, 4, new LinearQRRegressor(), CausalUnmixer.pooled(), CausalUnmixer.perCluster(), ec);
+            UnmixResult rEMbest = EmUnmix.selectK(sc.mixed, 1, 4, new LinearQRRegressor(), CausalUnmixer.pooled(2), CausalUnmixer.perCluster(), ec);
 
             // Metrics
             double ariEM = adjustedRandIndex(sc.labels, rEM.labels);
@@ -429,7 +429,7 @@ public class RoadmapTest {
                         ec.emMaxIters = 400;
                         ec.kmeansRestarts = 10;
 
-                        UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor(), CausalUnmixer.pooled(), CausalUnmixer.perCluster());
+                        UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor(), CausalUnmixer.pooled(2), CausalUnmixer.perCluster());
 
                         arisEM.add(adjustedRandIndex(sc.labels, rEM.labels));
                     }
@@ -495,7 +495,7 @@ public class RoadmapTest {
         ec.emMaxIters = 200;
         ec.kmeansRestarts = 10;
 
-        UnmixResult rEM = EmUnmix.run(mix.data, ec, new LinearQRRegressor(), CausalUnmixer.pooled(), CausalUnmixer.perCluster());
+        UnmixResult rEM = EmUnmix.run(mix.data, ec, new LinearQRRegressor(), CausalUnmixer.pooled(2), CausalUnmixer.perCluster());
 
         Graph[] truth = new Graph[]{gA, gB};
         GraphMetrics gmEM = graphMetrics(truth, rEM.clusterGraphs);
