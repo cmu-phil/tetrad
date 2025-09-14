@@ -22,42 +22,38 @@ public final class GaussianMixtureEM {
         double[][][] S = allocCov(cfg.K, d, cfg.covType);
         hardMoments(X, z, w, mu, S, cfg.covType, cfg.ridge);
 
-        double prevLL = Double.NEGATIVE_INFINITY;
+        // working responsibilities
         double[][] R = new double[n][cfg.K];
+        double prevLL = Double.NEGATIVE_INFINITY;
 
         for (int it = 0; it < cfg.maxIters; it++) {
-            // --- annealing schedule: beta in (0,1] ---
+            // --- annealing schedule: beta ∈ (0,1], climbs to 1 across annealSteps
             double beta = 1.0;
             if (cfg.annealSteps > 0) {
-                // linearly ramp beta from startT (e.g., 0.8) up to 1.0 across `annealSteps`
                 double t = Math.min(1.0, (it + 1) / (double) cfg.annealSteps);
                 beta = cfg.annealStartT + t * (1.0 - cfg.annealStartT);
                 beta = Math.max(1e-6, Math.min(1.0, beta));
             }
 
-            // E-step (tempered): responsibilities
-            double ll = eStep(X, w, mu, S, cfg.covType, R, beta);
+            // E-step (tempered)
+            double llTemp = eStep(X, w, mu, S, cfg.covType, R, beta);
 
-            // M-step
+            // M-step (with shrinkage / ridge knobs)
             mStep(X, R, w, mu, S, cfg.covType, cfg.ridge, cfg.covShrinkage, cfg.covRidgeRel);
 
-            if (Math.abs(ll - prevLL) < cfg.tol * (1 + Math.abs(prevLL))) {
-                prevLL = ll;
+            // convergence check uses the same objective we just optimized (tempered LL)
+            if (Math.abs(llTemp - prevLL) < cfg.tol * (1 + Math.abs(prevLL))) {
+                prevLL = llTemp;
                 break;
             }
-            prevLL = ll;
+            prevLL = llTemp;
         }
 
-        // Ensure final log-likelihood and responsibilities are for beta=1.0 (true EM)
-        // (in case we converged early during annealing)
+        // --- Finalize: recompute TRUE (untempered) responsibilities & log-likelihood
         double[][] Rfinal = new double[n][cfg.K];
         double trueLL = eStep(X, w, mu, S, cfg.covType, Rfinal, 1.0);
 
-        // overwrite with untempered values for model & BIC
-        R = Rfinal;
-        prevLL = trueLL;
-
-        return new Model(cfg.K, d, cfg.covType, w, mu, S, prevLL, R);
+        return new Model(cfg.K, d, cfg.covType, w, mu, S, trueLL, Rfinal);
     }
 
     private static double eStep(double[][] X, double[] w, double[][] mu, double[][][] S,
