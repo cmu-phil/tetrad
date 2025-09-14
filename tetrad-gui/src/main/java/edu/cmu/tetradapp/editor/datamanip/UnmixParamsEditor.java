@@ -59,9 +59,23 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
         Box v1 = Box.createVerticalBox();
         add(v1, BorderLayout.CENTER);
 
-        Box v2 = Box.createHorizontalBox();
+        Box v2 = Box.createVerticalBox();
+        v1.add(v2);
 
-        v2.add(new JLabel("Number of components:"));
+        Box v2a = Box.createVerticalBox();
+        v2a.add(new JLabel("This component allows you to decompose a dataset into its components in a"));
+        v2a.add(new JLabel("mixture. You need to know the number of components, or else you can ask"));
+        v2a.add(new JLabel("for the algorithm to choose a number between 1 and 4 (enter -1 for this)."));
+
+        Box v2b = Box.createHorizontalBox();
+        v2b.add(v2a);
+        v2b.add(Box.createHorizontalGlue());
+        v2.add(v2b);
+        v2.add(Box.createVerticalStrut(10));
+
+        Box v3 = Box.createHorizontalBox();
+
+        v3.add(new JLabel("Number of components:"));
 
         numComponentsField = new IntTextField(
                 unmixSpec.getNumComponents(), 3);
@@ -79,9 +93,10 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
             }
         });
 
-        v2.add(numComponentsField);
+        v3.add(numComponentsField);
+        v3.add(Box.createHorizontalGlue());
 
-        v1.add(v2);
+        v1.add(v3);
 
     }
 
