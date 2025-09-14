@@ -26,10 +26,20 @@ public final class GaussianMixtureEM {
         double[][] R = new double[n][cfg.K];
 
         for (int it = 0; it < cfg.maxIters; it++) {
-            // E-step: responsibilities
-            double ll = eStep(X, w, mu, S, cfg.covType, R);
-            // M-step: update moments from soft R
-            mStep(X, R, w, mu, S, cfg.covType, cfg.ridge);
+            // --- annealing schedule: beta in (0,1] ---
+            double beta = 1.0;
+            if (cfg.annealSteps > 0) {
+                // linearly ramp beta from startT (e.g., 0.8) up to 1.0 across `annealSteps`
+                double t = Math.min(1.0, (it + 1) / (double) cfg.annealSteps);
+                beta = cfg.annealStartT + t * (1.0 - cfg.annealStartT);
+                beta = Math.max(1e-6, Math.min(1.0, beta));
+            }
+
+            // E-step (tempered): responsibilities
+            double ll = eStep(X, w, mu, S, cfg.covType, R, beta);
+
+            // M-step
+            mStep(X, R, w, mu, S, cfg.covType, cfg.ridge, cfg.covShrinkage, cfg.covRidgeRel);
 
             if (Math.abs(ll - prevLL) < cfg.tol * (1 + Math.abs(prevLL))) {
                 prevLL = ll;
@@ -37,11 +47,21 @@ public final class GaussianMixtureEM {
             }
             prevLL = ll;
         }
+
+        // Ensure final log-likelihood and responsibilities are for beta=1.0 (true EM)
+        // (in case we converged early during annealing)
+        double[][] Rfinal = new double[n][cfg.K];
+        double trueLL = eStep(X, w, mu, S, cfg.covType, Rfinal, 1.0);
+
+        // overwrite with untempered values for model & BIC
+        R = Rfinal;
+        prevLL = trueLL;
+
         return new Model(cfg.K, d, cfg.covType, w, mu, S, prevLL, R);
     }
 
     private static double eStep(double[][] X, double[] w, double[][] mu, double[][][] S,
-                                CovarianceType covType, double[][] R) {
+                                CovarianceType covType, double[][] R, double beta) {
         int n = X.length, d = X[0].length, K = w.length;
         double ll = 0.0;
         double[] logw = new double[K];
@@ -55,10 +75,16 @@ public final class GaussianMixtureEM {
                 logp[k] = logGaussian(xi, mu[k], S[k], covType) + logw[k];
                 if (logp[k] > max) max = logp[k];
             }
+            // temper the posteriors: scale log-likelihoods by beta ∈ (0,1], beta→1 recovers standard EM
+            for (int k = 0; k < K; k++) logp[k] = beta * logp[k];
+
             // log-sum-exp
+            double maxT = Double.NEGATIVE_INFINITY;
+            for (int k = 0; k < K; k++) if (logp[k] > maxT) maxT = logp[k];
             double sum = 0.0;
-            for (int k = 0; k < K; k++) sum += Math.exp(logp[k] - max);
-            double logsum = max + Math.log(sum);
+            for (int k = 0; k < K; k++) sum += Math.exp(logp[k] - maxT);
+            double logsum = maxT + Math.log(sum);
+
             for (int k = 0; k < K; k++) R[i][k] = Math.exp(logp[k] - logsum);
             ll += logsum;
         }
@@ -88,13 +114,25 @@ public final class GaussianMixtureEM {
     }
 
     // ---------- M-step ----------
+    // Backward-compatible wrapper (uses only absolute ridge; no shrinkage / relative ridge)
     private static void mStep(double[][] X, double[][] R, double[] w, double[][] mu, double[][][] S,
-                              CovarianceType covType, double ridge) {
+                              CovarianceType covType, double ridgeAbs) {
+        mStep(X, R, w, mu, S, covType, ridgeAbs, /*shrinkage*/ 0.0, /*ridgeRel*/ 0.0);
+    }
+
+    /**
+     * Full M-step with covariance shrinkage and relative ridge.
+     *  - shrinkage λ in [0,1]: shrinks Σ_k toward spherical target (FULL) or mean variance (DIAGONAL)
+     *  - ridgeAbs ≥ 0: absolute ridge added to diagonal
+     *  - ridgeRel ≥ 0: relative ridge = ridgeRel * τ (τ = avg variance) added to diagonal
+     */
+    private static void mStep(double[][] X, double[][] R, double[] w, double[][] mu, double[][][] S,
+                              CovarianceType covType, double ridgeAbs, double shrinkage, double ridgeRel) {
         final int n = X.length;
         final int d = (n == 0) ? 0 : X[0].length;
         final int K = w.length;
 
-        // r_k (soft counts) and means
+        // --- soft counts and means ---
         double[] rk = new double[K];
         for (int k = 0; k < K; k++) {
             rk[k] = 0.0;
@@ -111,7 +149,6 @@ public final class GaussianMixtureEM {
             }
         }
 
-        // finalize means; update weights
         double sumw = 0.0;
         for (int k = 0; k < K; k++) {
             double denom = Math.max(rk[k], 1e-12);
@@ -121,14 +158,14 @@ public final class GaussianMixtureEM {
             w[k] = Math.max(w[k], 1e-12);
             sumw += w[k];
         }
-        // normalize weights to sum to one
         for (int k = 0; k < K; k++) w[k] /= sumw;
 
-        // covariances
+        // --- covariances (raw ML) ---
         if (covType == CovarianceType.DIAGONAL) {
-            for (int k = 0; k < K; k++) {
-                for (int j = 0; j < d; j++) S[k][j][0] = 0.0;
-            }
+            for (int k = 0; k < K; k++)
+                for (int j = 0; j < d; j++)
+                    S[k][j][0] = 0.0;
+
             for (int i = 0; i < n; i++) {
                 double[] xi = X[i];
                 double[] Ri = R[i];
@@ -141,16 +178,38 @@ public final class GaussianMixtureEM {
                     }
                 }
             }
+
+            // --- shrinkage + ridge ---
+            double lam = Math.min(Math.max(shrinkage, 0.0), 1.0);
+            double rel = Math.max(ridgeRel, 0.0);
             for (int k = 0; k < K; k++) {
                 double denom = Math.max(rk[k], 1e-12);
+
+                // raw variances
+                double meanVar = 0.0;
                 for (int j = 0; j < d; j++) {
-                    S[k][j][0] = S[k][j][0] / denom + ridge;
+                    S[k][j][0] = S[k][j][0] / denom;
+                    meanVar += S[k][j][0];
                 }
+                meanVar /= Math.max(1, d);
+
+                // shrink toward mean variance
+                if (lam > 0.0) {
+                    for (int j = 0; j < d; j++) {
+                        S[k][j][0] = (1.0 - lam) * S[k][j][0] + lam * meanVar;
+                    }
+                }
+
+                // absolute + relative ridge
+                double bump = ridgeAbs + rel * meanVar;
+                for (int j = 0; j < d; j++) S[k][j][0] += bump;
             }
+
         } else { // FULL
-            for (int k = 0; k < K; k++) {
-                for (int a = 0; a < d; a++) Arrays.fill(S[k][a], 0.0);
-            }
+            for (int k = 0; k < K; k++)
+                for (int a = 0; a < d; a++)
+                    Arrays.fill(S[k][a], 0.0);
+
             for (int i = 0; i < n; i++) {
                 double[] xi = X[i];
                 double[] Ri = R[i];
@@ -166,12 +225,33 @@ public final class GaussianMixtureEM {
                     }
                 }
             }
+
+            double lam = Math.min(Math.max(shrinkage, 0.0), 1.0);
+            double rel = Math.max(ridgeRel, 0.0);
             for (int k = 0; k < K; k++) {
                 double denom = Math.max(rk[k], 1e-12);
+
+                // raw ML covariance
+                double trace = 0.0;
                 for (int a = 0; a < d; a++) {
                     for (int b = 0; b < d; b++) S[k][a][b] /= denom;
-                    S[k][a][a] += ridge; // regularize diagonal
+                    trace += S[k][a][a];
                 }
+                double tau = trace / Math.max(1, d); // avg variance
+
+                // shrink toward spherical tau*I
+                if (lam > 0.0) {
+                    for (int a = 0; a < d; a++) {
+                        for (int b = 0; b < d; b++) {
+                            double target = (a == b) ? tau : 0.0;
+                            S[k][a][b] = (1.0 - lam) * S[k][a][b] + lam * target;
+                        }
+                    }
+                }
+
+                // absolute + relative ridge
+                double bump = ridgeAbs + rel * tau;
+                for (int a = 0; a < d; a++) S[k][a][a] += bump;
             }
         }
     }

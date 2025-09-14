@@ -342,7 +342,7 @@ public class TestCausalUnmixer {
         LabeledData mixed = shuffleWithLabels(concat, lab, seed);
 
         // === Run the causal unmixer (EM-based) ===
-        UnmixResult rEM = CausalUnmixer.getUnmixedResult(mixed.data, mixed.labels, 2);
+        UnmixResult rEM = CausalUnmixer.getUnmixedResult(mixed.data, CausalUnmixer.defaults(2));
 
         Graph[] truth = new Graph[]{gA, gB};
         GraphMetrics gmEM = graphMetrics(truth, rEM.clusterGraphs);

@@ -422,7 +422,7 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <model name="Causal Unmix" acronym="Continuize" help="causalunmix"
+            <model name="Causal Unmix" acronym="Unmix" help="causalunmix"
                    category="Manipulation of Data">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -432,6 +432,9 @@
                     edu.cmu.tetradapp.model.datamanip.CausalUnmix
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.datamanip.UnmixParamsEditor
+                </params-editor-class>
             </model>
             <model name="Expand Discrete Columns" acronym="Expand Columns" help="expandColumns"
                    category="Manipulation of Data">

@@ -19,20 +19,6 @@ import java.util.function.Function;
 public class CausalUnmixer {
 
     /**
-     * Convenience: run EM unmixing with sane defaults (K=2).
-     */
-    public static @NotNull UnmixResult getUnmixedResult(DataSet data, int numComponents) {
-        return getUnmixedResult(data, defaults(numComponents));
-    }
-
-    /**
-     * Optional warm start: if labels != null and EM supports it, they’ll be used.
-     */
-    public static @NotNull UnmixResult getUnmixedResult(DataSet data, int[] labels, int numComponents) {
-        return getUnmixedResult(data, defaults(numComponents));
-    }
-
-    /**
      * Full control entry point.
      */
     public static @NotNull UnmixResult getUnmixedResult(

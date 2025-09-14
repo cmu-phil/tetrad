@@ -6,136 +6,331 @@ import edu.cmu.tetrad.data.UnmixSpec;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
-import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.util.Hashtable;
 
-/**
- * Allows the user to specify how a selected list of columns should be discretized.
- *
- * @author Tyler Gibson
- * @author josephramsey
- * @version $Id: $Id
- */
 public class UnmixParamsEditor extends JPanel implements FinalizingParameterEditor {
 
-    private final IntTextField numComponentsField;
-    /**
-     * The parameters that will be returned by this editor.
-     */
     private Parameters parameters;
-    private final UnmixSpec unmixSpec = new UnmixSpec();
+    private final UnmixSpec spec = new UnmixSpec();
 
+    // Basic
+    private JCheckBox autoKCheck;
+    private JSpinner kSpinner, kminSpinner, kmaxSpinner;
+    private JComboBox<UnmixSpec.GraphLearner> graphLearnerBox;
 
-    /**
-     * Constructs a new editor that will allow the user to specify how to discretize each of the columns in the given
-     * list. The editor will return the discretized data set.
-     */
+    // Parent-superset
+    private JCheckBox supersetCheck;
+    private JSpinner topMSpinner;
+    private JComboBox<UnmixSpec.SupersetScore> supersetScoreBox;
+
+    // Residual scaling
+    private JCheckBox robustScaleCheck;
+
+    // Covariance
+    private JRadioButton covAuto, covFull, covDiag;
+    private JSpinner safetyMarginSpinner;
+
+    // EM stability
+    private JSpinner restartsSpinner, itersSpinner, ridgeSpinner, shrinkageSpinner, annealStepsSpinner, annealTSpinner, seedSpinner;
+
+    // Graph-specific panels
+    private JPanel pcPanel, bossPanel;
+    private JSpinner pcAlphaSpinner;
+    private JComboBox<UnmixSpec.ColliderStyle> colliderBox;
+    private JSpinner bossPenaltySpinner;
+
+    // Diagnostics
+    private JCheckBox diagCheck;
+
     public UnmixParamsEditor() {
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
-        Box v1 = Box.createVerticalBox();
-        add(v1, BorderLayout.CENTER);
+        // Header
+        add(buildHeader(), BorderLayout.NORTH);
 
-        Box v2 = Box.createVerticalBox();
-        v1.add(v2);
+        // Center: stacked sections
+        JPanel center = new JPanel();
+        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
+        center.add(buildBasicPanel());
+        center.add(Box.createVerticalStrut(8));
+        center.add(buildParentSupersetPanel());
+        center.add(Box.createVerticalStrut(8));
+        center.add(buildCovariancePanel());
+        center.add(Box.createVerticalStrut(8));
+        center.add(buildEmPanel());
+        center.add(Box.createVerticalStrut(8));
+        center.add(buildGraphPanel());
+        center.add(Box.createVerticalStrut(8));
+        center.add(buildDiagnosticsPanel());
+        add(new JScrollPane(center), BorderLayout.CENTER);
 
-        Box v2a = Box.createVerticalBox();
-        v2a.add(new JLabel("This component allows you to decompose a dataset into its components in a"));
-        v2a.add(new JLabel("mixture. You need to know the number of components, or else you can ask"));
-        v2a.add(new JLabel("for the algorithm to choose a number between 1 and 4 (enter -1 for this)."));
-
-        Box v2b = Box.createHorizontalBox();
-        v2b.add(v2a);
-        v2b.add(Box.createHorizontalGlue());
-        v2.add(v2b);
-        v2.add(Box.createVerticalStrut(10));
-
-        Box v3 = Box.createHorizontalBox();
-
-        v3.add(new JLabel("Number of components:"));
-
-        numComponentsField = new IntTextField(
-                unmixSpec.getNumComponents(), 3);
-        numComponentsField.setFilter((value, oldValue) -> {
-            try {
-                unmixSpec.setNumComponents(value);
-
-                if (parameters != null) {
-                    parameters.set("unmixNumComponents", value);
-                }
-
-                return value;
-            } catch (IllegalArgumentException e) {
-                return oldValue;
-            }
-        });
-
-        v3.add(numComponentsField);
-        v3.add(Box.createHorizontalGlue());
-
-        v1.add(v3);
-
+        // Wire initial enable/disable
+        syncEnableStates();
     }
 
-    //============================= Public Methods ===================================//
+    private JComponent buildHeader() {
+        Box box = Box.createVerticalBox();
+        box.add(new JLabel("Unmix a dataset into latent regimes and learn a structure per regime."));
+        box.add(new JLabel("Choose K explicitly or let the algorithm pick K∈[1,4] by BIC."));
+        return box;
+    }
 
-    /**
-     * Sets up the GUI.
-     */
-    public void setup() {
+    private JPanel buildBasicPanel() {
+        JPanel p = titled("Basic");
+
+        autoKCheck = new JCheckBox("Auto-select K (1–4) by BIC", spec.isAutoSelectK());
+        autoKCheck.addActionListener(e -> {
+            spec.setAutoSelectK(autoKCheck.isSelected());
+            syncEnableStates();
+            pushToParams();
+        });
+
+        kSpinner = intSpinner(spec.getK(), 1, 100, 1, v -> { spec.setK(v); pushToParams(); });
+        kminSpinner = intSpinner(spec.getKmin(), 1, 100, 1, v -> { spec.setKmin(v); pushToParams(); });
+        kmaxSpinner = intSpinner(spec.getKmax(), 1, 100, 1, v -> { spec.setKmax(v); pushToParams(); });
+
+        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        row1.add(autoKCheck);
+        row1.add(new JLabel("K:"));
+        row1.add(kSpinner);
+        row1.add(new JLabel("Kmin:"));
+        row1.add(kminSpinner);
+        row1.add(new JLabel("Kmax:"));
+        row1.add(kmaxSpinner);
+
+        graphLearnerBox = new JComboBox<>(UnmixSpec.GraphLearner.values());
+        graphLearnerBox.setSelectedItem(spec.getGraphLearner());
+        graphLearnerBox.addActionListener(e -> {
+            spec.setGraphLearner((UnmixSpec.GraphLearner) graphLearnerBox.getSelectedItem());
+            syncEnableStates();
+            pushToParams();
+        });
+
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 2));
+        row2.add(new JLabel("Graph learner:"));
+        row2.add(graphLearnerBox);
+
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        p.add(row1);
+        p.add(Box.createVerticalStrut(6));
+        p.add(row2);
+        return p;
+    }
+
+    private JPanel buildParentSupersetPanel() {
+        JPanel p = titled("Parent superset (residualization)");
+
+        supersetCheck = new JCheckBox("Use parent superset", spec.isUseParentSuperset());
+        supersetCheck.addActionListener(e -> { spec.setUseParentSuperset(supersetCheck.isSelected()); syncEnableStates(); pushToParams(); });
+
+        topMSpinner = intSpinner(spec.getSupersetTopM(), 1, 1000, 1, v -> { spec.setSupersetTopM(v); pushToParams(); });
+
+        supersetScoreBox = new JComboBox<>(UnmixSpec.SupersetScore.values());
+        supersetScoreBox.setSelectedItem(spec.getSupersetScore());
+        supersetScoreBox.addActionListener(e -> { spec.setSupersetScore((UnmixSpec.SupersetScore) supersetScoreBox.getSelectedItem()); pushToParams(); });
+
+        robustScaleCheck = new JCheckBox("Robustly scale residuals (median/IQR)", spec.isRobustScaleResiduals());
+        robustScaleCheck.addActionListener(e -> { spec.setRobustScaleResiduals(robustScaleCheck.isSelected()); pushToParams(); });
+
+        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        row1.add(supersetCheck);
+        row1.add(new JLabel("Top-M:"));
+        row1.add(topMSpinner);
+        row1.add(new JLabel("Score:"));
+        row1.add(supersetScoreBox);
+
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        row2.add(robustScaleCheck);
+
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        p.add(row1);
+        p.add(Box.createVerticalStrut(6));
+        p.add(row2);
+        return p;
+    }
+
+    private JPanel buildCovariancePanel() {
+        JPanel p = titled("Covariance policy");
+
+        ButtonGroup g = new ButtonGroup();
+        covAuto = new JRadioButton("Auto", spec.getCovarianceMode() == UnmixSpec.CovarianceMode.AUTO);
+        covFull = new JRadioButton("Full", spec.getCovarianceMode() == UnmixSpec.CovarianceMode.FULL);
+        covDiag = new JRadioButton("Diagonal", spec.getCovarianceMode() == UnmixSpec.CovarianceMode.DIAGONAL);
+        g.add(covAuto); g.add(covFull); g.add(covDiag);
+
+        safetyMarginSpinner = intSpinner(spec.getFullSigmaSafetyMargin(), 0, 1000, 1, v -> { spec.setFullSigmaSafetyMargin(v); pushToParams(); });
+
+        covAuto.addActionListener(e -> { spec.setCovarianceMode(UnmixSpec.CovarianceMode.AUTO); syncEnableStates(); pushToParams(); });
+        covFull.addActionListener(e -> { spec.setCovarianceMode(UnmixSpec.CovarianceMode.FULL); syncEnableStates(); pushToParams(); });
+        covDiag.addActionListener(e -> { spec.setCovarianceMode(UnmixSpec.CovarianceMode.DIAGONAL); syncEnableStates(); pushToParams(); });
+
+        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        row1.add(covAuto);
+        row1.add(covFull);
+        row1.add(covDiag);
+        row1.add(new JLabel("Safety margin (for Auto):"));
+        row1.add(safetyMarginSpinner);
+
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        p.add(row1);
+        return p;
+    }
+
+    private JPanel buildEmPanel() {
+        JPanel p = titled("EM stability");
+
+        restartsSpinner = intSpinner(spec.getKmeansRestarts(), 1, 10_000, 1, v -> { spec.setKmeansRestarts(v); pushToParams(); });
+        itersSpinner    = intSpinner(spec.getEmMaxIters(), 1, 1_000_000, 10, v -> { spec.setEmMaxIters(v); pushToParams(); });
+
+        ridgeSpinner    = dblSpinner(spec.getRidge(), 0.0, 1.0, 1e-3, v -> { spec.setRidge(v); pushToParams(); });
+        shrinkageSpinner= dblSpinner(spec.getShrinkage(), 0.0, 1.0, 0.01, v -> { spec.setShrinkage(v); pushToParams(); });
+
+        annealStepsSpinner = intSpinner(spec.getAnnealSteps(), 0, 10_000, 1, v -> { spec.setAnnealSteps(v); pushToParams(); });
+        annealTSpinner     = dblSpinner(spec.getAnnealStartT(), 0.0, 10.0, 0.05, v -> { spec.setAnnealStartT(v); pushToParams(); });
+
+        seedSpinner = intSpinner((int) spec.getRandomSeed(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1, v -> { spec.setRandomSeed(v); pushToParams(); });
+
+        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        row1.add(new JLabel("K-means restarts:")); row1.add(restartsSpinner);
+        row1.add(new JLabel("EM iters:")); row1.add(itersSpinner);
+        row1.add(new JLabel("Seed:")); row1.add(seedSpinner);
+
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        row2.add(new JLabel("Ridge:")); row2.add(ridgeSpinner);
+        row2.add(new JLabel("Shrinkage:")); row2.add(shrinkageSpinner);
+        row2.add(new JLabel("Anneal steps:")); row2.add(annealStepsSpinner);
+        row2.add(new JLabel("Start T:")); row2.add(annealTSpinner);
+
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        p.add(row1);
+        p.add(Box.createVerticalStrut(6));
+        p.add(row2);
+        return p;
+    }
+
+    private JPanel buildGraphPanel() {
+        JPanel p = titled("Graph learner tuning");
+
+        // PC subpanel
+        pcPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        pcPanel.add(new JLabel("PC α:"));
+        pcAlphaSpinner = dblSpinner(spec.getPcAlpha(), 1e-6, 0.5, 0.001, v -> { spec.setPcAlpha(v); pushToParams(); });
+        pcPanel.add(pcAlphaSpinner);
+        pcPanel.add(new JLabel("Collider:"));
+        colliderBox = new JComboBox<>(UnmixSpec.ColliderStyle.values());
+        colliderBox.setSelectedItem(spec.getPcColliderStyle());
+        colliderBox.addActionListener(e -> { spec.setPcColliderStyle((UnmixSpec.ColliderStyle) colliderBox.getSelectedItem()); pushToParams(); });
+        pcPanel.add(colliderBox);
+
+        // BOSS subpanel
+        bossPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        bossPanel.add(new JLabel("Penalty discount:"));
+        bossPenaltySpinner = dblSpinner(spec.getBossPenaltyDiscount(), 0.0, 100.0, 0.5, v -> { spec.setBossPenaltyDiscount(v); pushToParams(); });
+        bossPanel.add(bossPenaltySpinner);
+
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        p.add(pcPanel);
+        p.add(bossPanel);
+        return p;
+    }
+
+    private JPanel buildDiagnosticsPanel() {
+        JPanel p = titled("Diagnostics");
+        diagCheck = new JCheckBox("Save responsibilities, per-K BIC, and cluster sizes", spec.isSaveDiagnostics());
+        diagCheck.addActionListener(e -> { spec.setSaveDiagnostics(diagCheck.isSelected()); pushToParams(); });
+        p.add(diagCheck);
+        return p;
+    }
+
+    // ---------------- plumbing ----------------
+
+    private void syncEnableStates() {
+        boolean autoK = autoKCheck.isSelected();
+        kSpinner.setEnabled(!autoK);
+        kminSpinner.setEnabled(autoK);
+        kmaxSpinner.setEnabled(autoK);
+
+        boolean superset = supersetCheck.isSelected();
+        topMSpinner.setEnabled(superset);
+        supersetScoreBox.setEnabled(superset);
+
+        boolean autoCov = covAuto.isSelected();
+        safetyMarginSpinner.setEnabled(autoCov);
+
+        UnmixSpec.GraphLearner gl = (UnmixSpec.GraphLearner) graphLearnerBox.getSelectedItem();
+        boolean pc = (gl == UnmixSpec.GraphLearner.PC_MAX);
+        pcPanel.setVisible(pc);
+        bossPanel.setVisible(!pc);
+        revalidate();
+        repaint();
+    }
+
+    private JPanel titled(String title) {
+        JPanel p = new JPanel();
+        p.setBorder(new TitledBorder(title));
+        return p;
+    }
+
+    private JSpinner intSpinner(int value, int min, int max, int step, IntConsumer c) {
+        SpinnerNumberModel m = new SpinnerNumberModel(value, min, max, step);
+        JSpinner s = new JSpinner(m);
+        s.addChangeListener(e -> c.apply((Integer) s.getValue()));
+        ((JSpinner.DefaultEditor) s.getEditor()).getTextField().setColumns(4);
+        return s;
+    }
+
+    private JSpinner dblSpinner(double value, double min, double max, double step, DblConsumer c) {
+        SpinnerNumberModel m = new SpinnerNumberModel(value, min, max, step);
+        JSpinner s = new JSpinner(m);
+        s.addChangeListener(e -> c.apply(((Number) s.getValue()).doubleValue()));
+        JSpinner.NumberEditor ed = new JSpinner.NumberEditor(s, "0.####");
+        s.setEditor(ed);
+        ed.getTextField().setColumns(6);
+        return s;
+    }
+
+    // tiny functional helpers
+    private interface IntConsumer { void apply(int v); }
+    private interface DblConsumer { void apply(double v); }
+
+    // ---------------- FinalizingParameterEditor ----------------
+
+    @Override public void setup() { /* no-op */ }
+
+    @Override public boolean mustBeShown() { return false; }
+
+    @Override
+    public void setParams(Parameters params) {
+        this.parameters = params;
+        // seed defaults into Parameters so downstream can fetch
+        pushToParams();
     }
 
     @Override
-    public boolean mustBeShown() {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the previous params, must be <code>DiscretizationParams</code>.
-     */
-    public void setParams(Parameters params) {
-        this.parameters = params;
-        this.parameters.set("unmixSpec", unmixSpec);
-        this.numComponentsField.setText(Integer.toString(parameters.getInt("unmixNumComponents", 2)));
-    }
-
-    /**
-     * The parant model should be a <code>DataWrapper</code>.
-     *
-     * @param parentModels an array of {@link Object} objects
-     */
     public void setParentModels(Object[] parentModels) {
-        if (parentModels == null || parentModels.length == 0) {
-            throw new IllegalArgumentException("There must be parent model");
-        }
+        if (parentModels == null || parentModels.length == 0)
+            throw new IllegalArgumentException("There must be a parent model");
         DataWrapper data = null;
-        for (Object parent : parentModels) {
-            if (parent instanceof DataWrapper) {
-                data = (DataWrapper) parent;
-            }
-        }
-        if (data == null) {
-            throw new IllegalArgumentException("Should have have a data wrapper as a parent");
-        }
+        for (Object parent : parentModels) if (parent instanceof DataWrapper) data = (DataWrapper) parent;
+        if (data == null) throw new IllegalArgumentException("Should have a DataWrapper parent");
         DataModel model = data.getSelectedDataModel();
-        if (!(model instanceof DataSet)) {
-            throw new IllegalArgumentException("The dataset must be a rectangular dataset");
-        }
+        if (!(model instanceof DataSet)) throw new IllegalArgumentException("The dataset must be rectangular");
     }
 
     @Override
     public boolean finalizeEdit() {
-        parameters.set("unmixSpec", unmixSpec);
+        pushToParams();
         return true;
     }
+
+    private void pushToParams() {
+        if (parameters != null) {
+            parameters.set("unmixSpec", spec);
+        }
+    }
 }
-
-
-
-
-
-

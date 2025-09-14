@@ -422,18 +422,7 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-<!--            <model name="Causal Unmix" acronym="Continuize" help="causalunmix"-->
-<!--                   category="Manipulation of Data">-->
-<!--                <logger>-->
-<!--                    <event id="info" description="Information" default="on"/>-->
-<!--                    <event id="data" description="Data"/>-->
-<!--                </logger>-->
-<!--                <model-class>-->
-<!--                    edu.cmu.tetradapp.model.datamanip.CausalUnmix-->
-<!--                </model-class>-->
-<!--                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
-<!--            </model>-->
-            <model name="Causal Unmix" acronym="Continuize" help="causalunmix"
+            <model name="Causal Unmix" acronym="Causal Unmix" help="causalunmix"
                    category="Manipulation of Data">
                 <logger>
                     <event id="info" description="Information" default="on"/>
