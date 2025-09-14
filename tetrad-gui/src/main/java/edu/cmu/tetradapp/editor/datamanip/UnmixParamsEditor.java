@@ -241,8 +241,12 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
 
     private JPanel buildDiagnosticsPanel() {
         JPanel p = titled("Diagnostics");
-        diagCheck = new JCheckBox("Save responsibilities, per-K BIC, and cluster sizes", spec.isSaveDiagnostics());
-        diagCheck.addActionListener(e -> { spec.setSaveDiagnostics(diagCheck.isSelected()); pushToParams(); });
+        diagCheck = new JCheckBox("Log responsibilities, per-K BIC, and cluster sizes", spec.isSaveDiagnostics());
+        diagCheck.addActionListener(e -> {
+            spec.setSaveDiagnostics(diagCheck.isSelected());
+            spec.setLogIntermediate(diagCheck.isSelected());
+            pushToParams();
+        });
         p.add(diagCheck);
         return p;
     }

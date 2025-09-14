@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.search.unmix;
 
+import edu.cmu.tetrad.util.TetradLogger;
+
 import java.util.Arrays;
 
 /**
@@ -41,6 +43,11 @@ public final class GaussianMixtureEM {
             // M-step (with shrinkage / ridge knobs)
             mStep(X, R, w, mu, S, cfg.covType, cfg.ridge, cfg.covShrinkage, cfg.covRidgeRel);
 
+            // --- logging hook ---
+            if (cfg.isLogIntermediate()) {
+                logState(it, llTemp, w, mu, S, R);
+            }
+
             // convergence check uses the same objective we just optimized (tempered LL)
             if (Math.abs(llTemp - prevLL) < cfg.tol * (1 + Math.abs(prevLL))) {
                 prevLL = llTemp;
@@ -54,6 +61,15 @@ public final class GaussianMixtureEM {
         double trueLL = eStep(X, w, mu, S, cfg.covType, Rfinal, 1.0);
 
         return new Model(cfg.K, d, cfg.covType, w, mu, S, trueLL, Rfinal);
+    }
+
+    private static void logState(int iter, double ll, double[] w, double[][] mu,
+                                 double[][][] S, double[][] R) {
+        TetradLogger.getInstance().log(String.format(
+                "Iter %d  LL=%.4f  Weights=%s  Means=%s",
+                iter, ll, Arrays.toString(w), Arrays.deepToString(mu)
+        ));
+        // You could also dump covariances or a small slice of R if desired
     }
 
     private static double eStep(double[][] X, double[] w, double[][] mu, double[][][] S,
@@ -486,6 +502,7 @@ public final class GaussianMixtureEM {
         public double covShrinkage;
         public int annealSteps;
         public double annealStartT;
+        private boolean logIntermediate = false;
 
         public Config copy() {
             Config copy = new Config();
@@ -501,6 +518,14 @@ public final class GaussianMixtureEM {
             copy.annealStartT = annealStartT;
             return copy;
 
+        }
+
+        public boolean isLogIntermediate() {
+            return logIntermediate;
+        }
+
+        public void setLogIntermediate(boolean logIntermediate) {
+            this.logIntermediate = logIntermediate;
         }
     }
 

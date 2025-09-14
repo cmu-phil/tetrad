@@ -15,6 +15,14 @@ public final class UnmixSpec implements Serializable {
     private int Kmin = 1;
     private int Kmax = 4;
 
+    public boolean isLogIntermediate() {
+        return logIntermediate;
+    }
+
+    public void setLogIntermediate(boolean logIntermediate) {
+        this.logIntermediate = logIntermediate;
+    }
+
     // ---- Graph learner ----
     public enum GraphLearner { BOSS, PC_MAX }
     private GraphLearner graphLearner = GraphLearner.BOSS;
@@ -53,6 +61,7 @@ public final class UnmixSpec implements Serializable {
 
     // ---- Diagnostics ----
     private boolean saveDiagnostics = false;
+    private boolean logIntermediate = false;
 
     // ===== Getters / Setters =====
 
