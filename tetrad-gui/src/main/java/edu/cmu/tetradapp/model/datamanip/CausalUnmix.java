@@ -28,8 +28,13 @@ import edu.cmu.tetrad.data.UnmixSpec;
 import edu.cmu.tetrad.search.unmix.CausalUnmixer;
 import edu.cmu.tetrad.search.unmix.UnmixResult;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.app.SessionEditorNode;
+import edu.cmu.tetradapp.app.SessionEditorWorkbench;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.util.WatchedProcess;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.Serial;
 import java.util.List;
 
@@ -70,17 +75,22 @@ public class CausalUnmix extends DataWrapper {
         UnmixSpec unmixSpec = (UnmixSpec) params.get("unmixSpec");
         int numComponents = unmixSpec.getNumComponents();
 
-        UnmixResult result = CausalUnmixer.getUnmixedResult((DataSet) first, numComponents);
+        new WatchedProcess() {
+            @Override
+            public void watch() {
+                UnmixResult result = CausalUnmixer.getUnmixedResult((DataSet) first, numComponents);
 
-        List<DataSet> _dataSets = result.clusterData;
+                List<DataSet> _dataSets = result.clusterData;
 
-        for (int i = 0; i < _dataSets.size(); i++) {
-            _dataSets.get(i).setName("Component " + (i + 1));
-        }
+                for (int i = 0; i < _dataSets.size(); i++) {
+                    _dataSets.get(i).setName("Component " + (i + 1));
+                }
 
-        DataModelList dataModels = new DataModelList();
-        dataModels.addAll(_dataSets);
+                DataModelList dataModels = new DataModelList();
+                dataModels.addAll(_dataSets);
 
-        setDataModel(dataModels);
+                setDataModel(dataModels);
+            }
+        };
     }
 }

@@ -22,18 +22,14 @@ public class CausalUnmixer {
      * Convenience: run EM unmixing with sane defaults (K=2).
      */
     public static @NotNull UnmixResult getUnmixedResult(DataSet data, int numComponents) {
-        return getUnmixedResult(data, null, defaults(numComponents));
+        return getUnmixedResult(data, defaults(numComponents));
     }
 
     /**
      * Optional warm start: if labels != null and EM supports it, they’ll be used.
      */
     public static @NotNull UnmixResult getUnmixedResult(DataSet data, int[] labels, int numComponents) {
-        return getUnmixedResult(data, labels, defaults(numComponents));
-    }
-
-    public static @NotNull UnmixResult getUnmixedResult(DataSet data, @NotNull Config cfg) {
-        return getUnmixedResult(data, null, cfg);
+        return getUnmixedResult(data, defaults(numComponents));
     }
 
     /**
@@ -41,7 +37,6 @@ public class CausalUnmixer {
      */
     public static @NotNull UnmixResult getUnmixedResult(
             DataSet data,
-            int[] initLabels,
             @NotNull Config cfg
     ) {
         Objects.requireNonNull(data, "data");
@@ -69,12 +64,6 @@ public class CausalUnmixer {
         ec.covShrinkage = cfg.covShrinkage;
         ec.annealSteps = cfg.annealSteps;
         ec.annealStartT = cfg.annealStartT;
-
-//        // Optional warm start: if EmUnmix supports initLabels, set them here.
-//        // (No-op if the field/method doesn’t exist in your EmUnmix.)
-//        try {
-//            ec.initLabels = initLabels; // comment this if your EmUnmix.Config doesn’t have it
-//        } catch (Throwable ignore) { /* compatible with older EmUnmix */ }
 
         LinearQRRegressor reg = new LinearQRRegressor().setRidgeLambda(cfg.ridgeLambda);
 
@@ -130,16 +119,7 @@ public class CausalUnmixer {
      */
     private static Function<DataSet, Graph> grapher(Config cfg) {
         return ds -> {
-//            if (dataSet.getNumRows() < 50) {
-//                return null;
-//            }
-
             try {
-//                IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(dataSet), 0.01);
-//                Pc pc = new Pc(test);
-//                pc.setColliderOrientationStyle(Pc.ColliderOrientationStyle.MAX_P);
-//                return pc.search();
-
                 edu.cmu.tetrad.search.score.SemBicScore score = new edu.cmu.tetrad.search.score.SemBicScore(new CovarianceMatrix(ds));
                 score.setPenaltyDiscount(2);
                 Graph g = new PermutationSearch(new Boss(score)).search();
