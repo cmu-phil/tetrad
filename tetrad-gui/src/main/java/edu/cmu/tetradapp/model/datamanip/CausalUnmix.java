@@ -70,6 +70,10 @@ public class CausalUnmix extends DataWrapper {
 
         List<DataSet> _dataSets = result.clusterData;
 
+        for (int i = 0; i < _dataSets.size(); i++) {
+            _dataSets.get(i).setName("Component " + (i + 1));
+        }
+
         DataModelList dataModels = new DataModelList();
         dataModels.addAll(_dataSets);
 
