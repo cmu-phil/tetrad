@@ -23,6 +23,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TextTable;
 import org.ejml.simple.SimpleMatrix;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.*;
@@ -53,7 +54,8 @@ public class TestCliqueDetection {
         params.set("coefSymmetric", true);
 
         SemPm pm = new SemPm(gTrue);
-        SemIm im = new SemIm(pm);
+        SemIm im = new SemIm(pm, params);
+//        edu.cmu.tetrad.util.RandomUtil.getInstance().setSeed(seed);
         DataSet data = im.simulateData(nRows, false);
 
         List<Set<Node>> clusters = extractTrueMimClusters(gTrue, data);
@@ -134,88 +136,88 @@ public class TestCliqueDetection {
     /**
      * Greedy Jaccard matching of true clusters to recovered cliques.
      */
-    private static RecoveryStats scoreRecovery(List<Set<Node>> trueClusters, List<Set<Node>> recoveredCliques) {
-        final double JACCARD_MIN = 0.0;
-
+    /**
+     * Score recovery of measurement clusters using one-to-one greedy matching.
+     * nodePrec = macro precision over predicted cliques (unmatched predictions = 0)
+     * nodeRec  = macro recall over true clusters     (unmatched truths = 0)
+     * macroJaccard = average Jaccard over truths (zeros for misses)
+     * sumJaccard   = sum of those Jaccards
+     */
+    private static RecoveryStats scoreRecovery(List<Set<Node>> trueClusters,
+                                               List<Set<Node>> recoveredCliques) {
+        // Convert clusters to name-sets for set ops
         List<LinkedHashSet<String>> T = trueClusters.stream()
-                .map(s -> s.stream().map(Node::getName).collect(Collectors.toCollection(LinkedHashSet::new)))
+                .map(s -> s.stream().map(Node::getName)
+                        .collect(Collectors.toCollection(LinkedHashSet::new)))
                 .toList();
         List<LinkedHashSet<String>> R = recoveredCliques.stream()
-                .map(s -> s.stream().map(Node::getName).collect(Collectors.toCollection(LinkedHashSet::new)))
+                .map(s -> s.stream().map(Node::getName)
+                        .collect(Collectors.toCollection(LinkedHashSet::new)))
                 .toList();
 
+        // --- One-to-one greedy matching by Jaccard ---
+        List<Integer> unmatchedT = new ArrayList<>();
+        for (int i = 0; i < T.size(); i++) unmatchedT.add(i);
         List<Integer> unmatchedR = new ArrayList<>();
-        for (int i = 0; i < R.size(); i++) unmatchedR.add(i);
+        for (int j = 0; j < R.size(); j++) unmatchedR.add(j);
 
-        List<PerCluster> pcs = new ArrayList<>();
-        double sumP = 0, sumR = 0, sumF1 = 0, sumJ = 0;
+        List<int[]> matches = new ArrayList<>(); // pairs (ti, rj)
 
-        long TP = 0, FP = 0, FN = 0;
-
-        for (int ti = 0; ti < T.size(); ti++) {
-            Set<String> t = T.get(ti);
-            int bestR = -1;
+        while (!unmatchedT.isEmpty() && !unmatchedR.isEmpty()) {
             double bestJ = -1.0;
-            for (int rIdx : unmatchedR) {
-                double j = jaccard(t, R.get(rIdx));
-                if (j > bestJ) {
-                    bestJ = j;
-                    bestR = rIdx;
+            int bestTi = -1, bestRj = -1;
+            for (int ti : unmatchedT) {
+                for (int rj : unmatchedR) {
+                    double j = jaccard(T.get(ti), R.get(rj));
+                    if (j > bestJ) {
+                        bestJ = j;
+                        bestTi = ti;
+                        bestRj = rj;
+                    }
                 }
             }
+            // stop if no overlap at all
+            if (bestJ <= 0.0) break;
 
-            Set<Node> tNodes = namesToNodes(t, trueClusters.get(ti));
-            Set<Node> rNodes = null;
-            if (bestR >= 0 && bestJ > JACCARD_MIN) {
-                rNodes = namesToNodes(R.get(bestR), recoveredCliques.get(bestR));
-                unmatchedR.remove((Integer) bestR);
-            }
+            matches.add(new int[]{bestTi, bestRj});
+            unmatchedT.remove((Integer) bestTi);
+            unmatchedR.remove((Integer) bestRj);
+        }
+
+        // --- Accumulate per-pair stats (truth-side view) ---
+        List<PerCluster> pcs = new ArrayList<>();
+        double sumRec_T = 0.0;   // sum recall over matched truths
+        double sumJac_T = 0.0;   // sum Jaccard over matched truths
+        double sumPrec_R = 0.0;  // sum precision over matched predictions
+
+        for (int[] pr : matches) {
+            int ti = pr[0], rj = pr[1];
+
+            Set<Node> tNodes = namesToNodes(T.get(ti), trueClusters.get(ti));
+            Set<Node> rNodes = namesToNodes(R.get(rj), recoveredCliques.get(rj));
 
             PerCluster pc = new PerCluster(tNodes, rNodes);
             pcs.add(pc);
 
-            sumP += pc.prec;
-            sumR += pc.recall;
-            sumF1 += pc.f1;
-            sumJ += pc.jaccard;
-
-            TP += pc.inter;
-            FP += Math.max(0, pc.rSize - pc.inter);
-            FN += Math.max(0, pc.tSize - pc.inter);
+            sumRec_T  += pc.recall;  // truth-side recall
+            sumJac_T  += pc.jaccard; // truth-side Jaccard
+            sumPrec_R += pc.prec;    // prediction-side precision
         }
 
-        // ----- existing macro/micro over matched clusters -----
-        int K = Math.max(1, pcs.size());
-        double mP = sumP / K, mR = sumR / K, mF1 = sumF1 / K;
-        double mJ = sumJ / K;
+        // --- Macro aggregates with zeros for misses/unmatched ---
+        int Kt = Math.max(1, T.size()); // avoid /0 when no truths (shouldn't happen)
+        int Kr = Math.max(1, R.size()); // avoid /0 when no predictions
 
-        double miP = (TP + FP) == 0 ? 0.0 : TP / (double) (TP + FP);
-        double miR = (TP + FN) == 0 ? 0.0 : TP / (double) (TP + FN);
-        double miF1 = (miP + miR == 0.0) ? 0.0 : 2 * miP * miR / (miP + miR);
-
-        // ----- NEW: edge-level PRF over all edges implied by cliques vs truth -----
-        Set<String> truthE = truthEdgesFromClusters(trueClusters);
-        Set<String> predE = edgesFromCliques(recoveredCliques);
-
-        long eTP = 0, eFP = 0;
-        for (String e : predE) {
-            if (truthE.contains(e)) eTP++;
-            else eFP++;
-        }
-        long eFN = 0;
-        for (String e : truthE) {
-            if (!predE.contains(e)) eFN++;
-        }
-        double ePrec = (eTP + eFP) == 0 ? 0.0 : eTP / (double) (eTP + eFP);
-        double eRec = (eTP + eFN) == 0 ? 0.0 : eTP / (double) (eTP + eFN);
-        double eF1 = (ePrec + eRec) == 0 ? 0.0 : 2 * ePrec * eRec / (ePrec + eRec);
+        double nodeRec = sumRec_T / Kt;          // unmatched truths contribute 0
+        double nodePrec = sumPrec_R / Kr;        // unmatched predictions contribute 0
+        double macroJ = sumJac_T / Kt;           // unmatched truths contribute 0
+        double sumJ = sumJac_T;                  // sum over truths (zeros for misses not needed)
 
         return new RecoveryStats(
-                mP, mR, mF1,
-                mJ, sumJ,
-                miP, miR, miF1,
-                ePrec, eRec, eF1,
-                eTP, eFP, eFN,
+                nodePrec,
+                nodeRec,
+                macroJ,
+                sumJ,
                 pcs
         );
     }
@@ -286,45 +288,6 @@ public class TestCliqueDetection {
         return nodes.stream().map(Node::getName).sorted().collect(Collectors.joining(","));
     }
 
-    /**
-     * Make canonical undirected key "A--B" with A<B.
-     */
-    private static String undKey(String a, String b) {
-        return (a.compareTo(b) < 0) ? (a + "--" + b) : (b + "--" + a);
-    }
-
-    /**
-     * All undirected edges implied by a list of cliques (pairwise within each).
-     */
-    private static Set<String> edgesFromCliques(List<Set<Node>> cliques) {
-        Set<String> E = new LinkedHashSet<>();
-        for (Set<Node> c : cliques) {
-            List<Node> L = new ArrayList<>(c);
-            for (int i = 0; i < L.size(); i++) {
-                for (int j = i + 1; j < L.size(); j++) {
-                    E.add(undKey(L.get(i).getName(), L.get(j).getName()));
-                }
-            }
-        }
-        return E;
-    }
-
-    /**
-     * All undirected edges within each true cluster (pairwise within each).
-     */
-    private static Set<String> truthEdgesFromClusters(List<Set<Node>> trueClusters) {
-        Set<String> T = new LinkedHashSet<>();
-        for (Set<Node> c : trueClusters) {
-            List<Node> L = new ArrayList<>(c);
-            for (int i = 0; i < L.size(); i++) {
-                for (int j = i + 1; j < L.size(); j++) {
-                    T.add(undKey(L.get(i).getName(), L.get(j).getName()));
-                }
-            }
-        }
-        return T;
-    }
-
     private static String trunc(String s, int max) {
         if (s == null) return "";
         if (s.length() <= max) return s;
@@ -332,18 +295,13 @@ public class TestCliqueDetection {
     }
 
     private static String fmtMSD(double mean, double sd, int wMean, int wSd) {
-        // Example: " 0.812±0.047" with mean width 6 and sd width 6
         return String.format(Locale.ROOT, "%" + wMean + ".3f±%" + wSd + ".3f", mean, sd);
-    }
-
-    private static String fmt(double x, int w) {
-        return String.format(Locale.ROOT, "%" + w + ".3f", x);
     }
 
     @Test
     public void testLearnersCliquesAndClusterRecovery() {
         final int N = 10000;
-        final int R = 1; // number of random seeds
+        final int R = 10; // number of random seeds
 
         LBMulti multi = new LBMulti();
 
@@ -354,9 +312,77 @@ public class TestCliqueDetection {
             assertNotNull(md.data());
             assertFalse("No true clusters found", md.trueClusters().isEmpty());
 
-            // --- Build learners for THIS seed's data ---
-            Map<String, Supplier<Graph>> learners = new LinkedHashMap<>();
+            Map<String, Supplier<Graph>> learners = buildLearners(md);
 
+            SimpleMatrix S = new CorrelationMatrix(md.data()).getMatrix().getSimpleMatrix();
+
+            // --- Per-seed leaderboard ---
+            Leaderboard lb = new Leaderboard();
+
+            for (Map.Entry<String, Supplier<Graph>> e : learners.entrySet()) {
+                String name = e.getKey();
+
+                // Baseline
+                Graph g = e.getValue().get();
+                List<Set<Node>> cliquesRaw = maximalCliquesMeasured(g, md.data());
+
+                System.out.println(name + ": raw cliques = " + cliquesRaw);
+
+                List<Integer> all = new ArrayList<>();
+                for (int i = 0; i < md.data().getVariables().size(); i++) {
+                    all.add(i);
+                }
+
+                List<Set<Node>> filteredCliques = new ArrayList<>();
+
+                for (Set<Node> clique : cliquesRaw) {
+                    List<Integer> indices = new ArrayList<>();
+                    for (Node node : clique) {
+                        indices.add(md.data().getColumn(node));
+                    }
+
+                    List<Integer> remaining = new ArrayList<>(all);
+                    remaining.removeAll(indices);
+
+                    int[] _indices = indices.stream().mapToInt(Integer::intValue).toArray();
+                    int[] _remaining = remaining.stream().mapToInt(Integer::intValue).toArray();
+
+                    double rank = RankTests.estimateWilksRank(S, _indices, _remaining, N, 0.001);
+
+                    if (rank == 1) {
+                        filteredCliques.add(new HashSet<>(clique));
+                    }
+                }
+
+                System.out.println("Rank 1 cliques:");
+
+                for (int i = 0; i < filteredCliques.size(); i++) {
+                    System.out.println("Clique " + (i + 1) + ": " + filteredCliques.get(i));
+                }
+
+                RecoveryStats base = scoreRecovery(md.trueClusters(), cliquesRaw);
+                lb.add(name + " (raw)", base);
+
+                RecoveryStats after = scoreRecovery(md.trueClusters(), filteredCliques);
+                lb.add(name + " (rank 1)", after);
+            }
+
+            // Fold this seed's results into the multi-seed aggregator
+            for (Leaderboard.Row row : lb.rows) {
+                multi.add(row.methodLabel, row.stats);
+            }
+        }
+
+        // --- Final multi-seed tables ---
+        multi.printBySumJ();
+        multi.printByNodes();
+        multi.printDeltas();
+    }
+
+    private static @NotNull Map<String, Supplier<Graph>> buildLearners(MimData md) {
+        Map<String, Supplier<Graph>> learners = new LinkedHashMap<>();
+
+        {
             for (double _penalty : new double[]{1.0, 2.0, 4.0}) {
                 learners.put("BOSS_SEMBIC_penalty_" + _penalty, () -> {
                     SemBicScore score = new SemBicScore(new CorrelationMatrix(md.data()));
@@ -369,10 +395,11 @@ public class TestCliqueDetection {
                 });
             }
 
-            for (double _alpha : new double[]{0.01, 0.05, 0.1, 0.2}) {
+            for (double _alpha : new double[]{0.01, 0.05}) {
                 learners.put("PC_FisherZ_alpha_" + _alpha, () -> {
                     IndependenceTest test = new IndTestFisherZ(md.data(), _alpha);
                     Pc pc = new Pc(test);
+                    pc.setDepth(5);
                     try {
                         return pc.search();
                     } catch (InterruptedException e1) {
@@ -450,111 +477,19 @@ public class TestCliqueDetection {
                     }
                     return out;
                 });
-                ;
-            }
-
-            // --- Per-seed leaderboard ---
-            Leaderboard lb = new Leaderboard();
-
-            for (Map.Entry<String, Supplier<Graph>> e : learners.entrySet()) {
-                String name = e.getKey();
-
-                // Baseline
-                Graph g = e.getValue().get();
-                List<Set<Node>> cliquesRaw = maximalCliquesMeasured(g, md.data());
-
-                System.out.println(name + ": raw cliques = " + cliquesRaw);
-
-                SimpleMatrix S = new CorrelationMatrix(md.data()).getMatrix().getSimpleMatrix();
-
-                List<Integer> all = new ArrayList<>();
-                for (int i = 0; i < md.data().getVariables().size(); i++) {
-                    all.add(i);
-                }
-
-                List<Set<Node>> filteredCliques = new ArrayList<>();
-
-                for (Set<Node> clique : cliquesRaw) {
-                    List<Integer> indices = new ArrayList<>();
-                    for (Node node : clique) {
-                        indices.add(md.data().getColumn(node));
-                    }
-
-                    List<Integer> remaining = new ArrayList<>(all);
-                    remaining.removeAll(indices);
-
-                    int[] _indices = indices.stream().mapToInt(Integer::intValue).toArray();
-                    int[] _remaining = remaining.stream().mapToInt(Integer::intValue).toArray();
-
-                    double rank = RankTests.estimateWilksRank(S, _indices, _remaining, N, 0.001);
-
-                    if (rank == 1) {
-                        filteredCliques.add(new HashSet<>(clique));
-                    }
-                }
-
-                System.out.println("Rank 1 cliques:");
-
-                for (int i = 0; i < filteredCliques.size(); i++) {
-                    System.out.println("Clique " + (i + 1) + ": " + filteredCliques.get(i));
-                }
-
-                RecoveryStats base = scoreRecovery(md.trueClusters(), cliquesRaw);
-                lb.add(name + " (raw)", base);
-
-                RecoveryStats after = scoreRecovery(md.trueClusters(), filteredCliques);
-                lb.add(name + " (rank 1)", after);
-            }
-
-            // Fold this seed's results into the multi-seed aggregator
-            for (Leaderboard.Row row : lb.rows) {
-                multi.add(row.methodLabel, row.stats);
             }
         }
-
-        // --- Final multi-seed tables ---
-        multi.printBySumJ();     // mean±sd by SUM Jaccard
-        multi.printByMacroF1();  // mean±sd by Macro F1
-        multi.printDeltas();     // Δ (CC – raw) per method family
+        return learners;
     }
 
     private record MimData(DataSet data, Graph trueGraph, List<Set<Node>> trueClusters) {
     }
 
-    private static class RecoveryStats {
-        final double macroPrec, macroRec, macroF1;
-        final double macroJaccard, sumJaccard;
-        final double microPrec, microRec, microF1;
-
-        // NEW: edge-level metrics
-        final double edgePrec, edgeRec, edgeF1;
-        final long edgeTP, edgeFP, edgeFN;
-
-        final List<PerCluster> perCluster;
-
-        RecoveryStats(double mP, double mR, double mF1,
-                      double mJ, double sJ,
-                      double miP, double miR, double miF1,
-                      double eP, double eR, double eF1,
-                      long eTP, long eFP, long eFN,
-                      List<PerCluster> pcs) {
-            macroPrec = mP;
-            macroRec = mR;
-            macroF1 = mF1;
-            macroJaccard = mJ;
-            sumJaccard = sJ;
-            microPrec = miP;
-            microRec = miR;
-            microF1 = miF1;
-            edgePrec = eP;
-            edgeRec = eR;
-            edgeF1 = eF1;
-            edgeTP = eTP;
-            edgeFP = eFP;
-            edgeFN = eFN;
-            perCluster = pcs;
-        }
-    }
+    private record RecoveryStats(
+            double nodePrec, double nodeRec,
+            double macroJaccard, double sumJaccard,
+            List<PerCluster> perCluster
+    ) {}
 
     private static class PerCluster {
         final String truth, match;
@@ -584,17 +519,15 @@ public class TestCliqueDetection {
 
         static final class Row {
             final String methodLabel;
-            final double sumJaccard, macroJaccard, macroF1, microF1;
-            final double edgeF1; // NEW
+            final double sumJaccard, macroJaccard, nodePrec, nodeRec;
             final RecoveryStats stats;
 
             Row(String label, RecoveryStats s) {
                 this.methodLabel = label;
                 this.sumJaccard = s.sumJaccard;
                 this.macroJaccard = s.macroJaccard;
-                this.macroF1 = s.macroF1;
-                this.microF1 = s.microF1;
-                this.edgeF1 = s.edgeF1; // NEW
+                this.nodePrec = s.nodePrec;
+                this.nodeRec = s.nodeRec;
                 this.stats = s;
             }
         }
@@ -632,71 +565,27 @@ public class TestCliqueDetection {
 
         void add(String label, RecoveryStats s) {
             Cell c = map.computeIfAbsent(label, k -> new Cell());
-            c.sumJ.add(s.sumJaccard);
-            c.MJ.add(s.macroJaccard);
-            c.mF1.add(s.macroF1);
-            c.micF1.add(s.microF1);
-            c.eF1.add(s.edgeF1);     // NEW
-            c.eP.add(s.edgePrec);    // NEW
-            c.eR.add(s.edgeRec);     // NEW
+            c.sumJ.add(s.sumJaccard());
+            c.MJ.add(s.macroJaccard());
+            c.nodeP.add(s.nodePrec());
+            c.nodeR.add(s.nodeRec());
         }
 
         void printBySumJ() {
             List<Map.Entry<String, Cell>> L = new ArrayList<>(map.entrySet());
             L.sort((a, b) -> Double.compare(b.getValue().sumJ.mean(), a.getValue().sumJ.mean()));
 
-            // Columns: Rank, Method, sumJ, macroF1, microF1, edgeF1
             final int rows = L.size() + 1;
-            final int cols = 7;
-            TextTable tt = new TextTable(rows, cols);
-            tt.setDelimiter(TextTable.Delimiter.JUSTIFIED);
-            tt.setJustification(TextTable.LEFT_JUSTIFIED); // we will left-justify; numbers are fixed-width
-
-            // Header
-            tt.setToken(0, 0, "#");
-            tt.setToken(0, 1, "Method");
-            tt.setToken(0, 2, "sumJ (m±sd)");
-            tt.setToken(0, 3, "macroF1 (m±sd)");
-            tt.setToken(0, 4, "microF1 (m±sd)");
-            tt.setToken(0, 5, "edgeP (m±sd)");
-            tt.setToken(0, 6, "edgeR (m±sd)");
-
-            // pick widths for numeric cells so they line up
-            final int W = 6; // width for mean and sd components
-
-            for (int i = 0; i < L.size(); i++) {
-                var e = L.get(i);
-                var c = e.getValue();
-                tt.setToken(i + 1, 0, Integer.toString(i + 1));
-                tt.setToken(i + 1, 1, trunc(e.getKey(), 40)); // keep label compact
-                tt.setToken(i + 1, 2, fmtMSD(c.sumJ.mean(), c.sumJ.sd(), W, W));
-                tt.setToken(i + 1, 3, fmtMSD(c.mF1.mean(), c.mF1.sd(), W, W));
-                tt.setToken(i + 1, 4, fmtMSD(c.micF1.mean(), c.micF1.sd(), W, W));
-                tt.setToken(i + 1, 5, fmtMSD(c.eP.mean(), c.eP.sd(), W, W));
-                tt.setToken(i + 1, 6, fmtMSD(c.eR.mean(), c.eR.sd(), W, W));
-            }
-
-            System.out.println("\n=== Leaderboard (mean±sd over seeds; by SUM Jaccard) ===");
-            System.out.print(tt.toString());
-        }
-
-        void printByMacroF1() {
-            List<Map.Entry<String, Cell>> L = new ArrayList<>(map.entrySet());
-            L.sort((a, b) -> Double.compare(b.getValue().mF1.mean(), a.getValue().mF1.mean()));
-
-            final int rows = L.size() + 1;
-            final int cols = 7;
+            final int cols = 5;
             TextTable tt = new TextTable(rows, cols);
             tt.setDelimiter(TextTable.Delimiter.JUSTIFIED);
             tt.setJustification(TextTable.LEFT_JUSTIFIED);
 
             tt.setToken(0, 0, "#");
             tt.setToken(0, 1, "Method");
-            tt.setToken(0, 2, "macroF1 (m±sd)");
-            tt.setToken(0, 3, "sumJ (m±sd)");
-            tt.setToken(0, 4, "microF1 (m±sd)");
-            tt.setToken(0, 5, "edgeP (m±sd)");
-            tt.setToken(0, 6, "edgeR (m±sd)");
+            tt.setToken(0, 2, "sumJ (m±sd)");
+            tt.setToken(0, 3, "NodePrec (m±sd)");
+            tt.setToken(0, 4, "NodeRec (m±sd)");
 
             final int W = 6;
 
@@ -705,22 +594,52 @@ public class TestCliqueDetection {
                 var c = e.getValue();
                 tt.setToken(i + 1, 0, Integer.toString(i + 1));
                 tt.setToken(i + 1, 1, trunc(e.getKey(), 40));
-                tt.setToken(i + 1, 2, fmtMSD(c.mF1.mean(), c.mF1.sd(), W, W));
-                tt.setToken(i + 1, 3, fmtMSD(c.sumJ.mean(), c.sumJ.sd(), W, W));
-                tt.setToken(i + 1, 4, fmtMSD(c.micF1.mean(), c.micF1.sd(), W, W));
-                tt.setToken(i + 1, 5, fmtMSD(c.eP.mean(), c.eP.sd(), W, W));
-                tt.setToken(i + 1, 6, fmtMSD(c.eR.mean(), c.eR.sd(), W, W));
+                tt.setToken(i + 1, 2, fmtMSD(c.sumJ.mean(),  c.sumJ.sd(),  W, W));
+                tt.setToken(i + 1, 3, fmtMSD(c.nodeP.mean(), c.nodeP.sd(), W, W));
+                tt.setToken(i + 1, 4, fmtMSD(c.nodeR.mean(), c.nodeR.sd(), W, W));
             }
 
-            System.out.println("\n=== Leaderboard (mean±sd over seeds; by MACRO F1) ===");
-            System.out.print(tt.toString());
+            System.out.println("\n=== Leaderboard (mean±sd over seeds; by SUM Jaccard) ===");
+            System.out.print(tt);
+        }
+
+        void printByNodes() {
+            List<Map.Entry<String, Cell>> L = new ArrayList<>(map.entrySet());
+            L.sort((a, b) -> Double.compare(b.getValue().nodeP.mean(), a.getValue().nodeP.mean()));
+
+            final int rows = L.size() + 1;
+            final int cols = 5;
+            TextTable tt = new TextTable(rows, cols);
+            tt.setDelimiter(TextTable.Delimiter.JUSTIFIED);
+            tt.setJustification(TextTable.LEFT_JUSTIFIED);
+
+            tt.setToken(0, 0, "#");
+            tt.setToken(0, 1, "Method");
+            tt.setToken(0, 2, "NodePrec (m±sd)");
+            tt.setToken(0, 3, "NodeRec (m±sd)");
+            tt.setToken(0, 4, "macroJ (m±sd)");
+
+            final int W = 6;
+
+            for (int i = 0; i < L.size(); i++) {
+                var e = L.get(i);
+                var c = e.getValue();
+                tt.setToken(i + 1, 0, Integer.toString(i + 1));
+                tt.setToken(i + 1, 1, trunc(e.getKey(), 40));
+                tt.setToken(i + 1, 2, fmtMSD(c.nodeP.mean(), c.nodeP.sd(), W, W));
+                tt.setToken(i + 1, 3, fmtMSD(c.nodeR.mean(), c.nodeR.sd(), W, W));
+                tt.setToken(i + 1, 4, fmtMSD(c.sumJ.mean(),  c.sumJ.sd(),  W, W));
+            }
+
+            System.out.println("\n=== Leaderboard (mean±sd over seeds; by NODE precisionᵐ) ===");
+            System.out.print(tt);
         }
 
         void printDeltas() {
             System.out.println("\n=== Δ from Rank-1 filtering (mean±sd; (rank 1) – (raw)) ===");
 
             Map<String, Cell> raw = new LinkedHashMap<>();
-            Map<String, Cell> r1 = new LinkedHashMap<>();
+            Map<String, Cell> r1  = new LinkedHashMap<>();
             for (String label : map.keySet()) {
                 if (label.endsWith("(raw)")) {
                     raw.put(label.substring(0, label.length() - "(raw)".length()).trim(), map.get(label));
@@ -734,53 +653,43 @@ public class TestCliqueDetection {
             Collections.sort(keys);
 
             final int rows = keys.size() + 1;
-            final int cols = 7; // fewer columns to keep width down
+            final int cols = 7;
             TextTable tt = new TextTable(rows, cols);
             tt.setDelimiter(TextTable.Delimiter.JUSTIFIED);
             tt.setJustification(TextTable.LEFT_JUSTIFIED);
-            final int W = 6;
+            final int W = 5;
 
             tt.setToken(0, 0, "#");
             tt.setToken(0, 1, "Method");
             tt.setToken(0, 2, "ΔsumJ");
-            tt.setToken(0, 3, "ΔmacroF1");
-            tt.setToken(0, 4, "ΔmicroF1");
-            tt.setToken(0, 5, "ΔedgeP");
-            tt.setToken(0, 6, "ΔedgeR");
+            tt.setToken(0, 3, "ΔNodePrec");
+            tt.setToken(0, 4, "ΔNodeRec");
 
             for (int i = 0; i < keys.size(); i++) {
                 String k = keys.get(i);
                 Cell a = raw.get(k), b = r1.get(k);
 
                 double dSumJ_m = b.sumJ.mean() - a.sumJ.mean();
-                double dMacroF1_m = b.mF1.mean() - a.mF1.mean();
-                double dMicroF1_m = b.micF1.mean() - a.micF1.mean();
-                double dEdgeF1_m = b.eF1.mean() - a.eF1.mean();
-                double dEdgeP_m = b.eP.mean() - a.eP.mean();
-                double dEdgeR_m = b.eR.mean() - a.eR.mean();
+                double dNodeP_m = b.nodeP.mean() - a.nodeP.mean();
+                double dNodeR_m = b.nodeR.mean() - a.nodeR.mean();
 
                 double dSumJ_sd = Math.sqrt(b.sumJ.var() + a.sumJ.var());
-                double dMacroF1_sd = Math.sqrt(b.mF1.var() + a.mF1.var());
-                double dMicroF1_sd = Math.sqrt(b.micF1.var() + a.micF1.var());
-                double dEdgeF1_sd = Math.sqrt(b.eF1.var() + a.eF1.var());
-                double dEdgeP_sd = Math.sqrt(b.eP.var() + a.eP.var());
-                double dEdgeR_sd = Math.sqrt(b.eR.var() + a.eR.var());
+                double dNodeP_sd = Math.sqrt(b.nodeP.var() + a.nodeP.var());
+                double dNodeR_sd = Math.sqrt(b.nodeR.var() + a.nodeR.var());
 
                 tt.setToken(i + 1, 0, Integer.toString(i + 1));
                 tt.setToken(i + 1, 1, trunc(k, 40));
                 tt.setToken(i + 1, 2, fmtMSD(dSumJ_m, dSumJ_sd, W, W));
-                tt.setToken(i + 1, 3, fmtMSD(dMacroF1_m, dMacroF1_sd, W, W));
-                tt.setToken(i + 1, 4, fmtMSD(dMicroF1_m, dMicroF1_sd, W, W));
-                tt.setToken(i + 1, 5, fmtMSD(dEdgeP_m, dEdgeP_sd, W, W));
-                tt.setToken(i + 1, 6, fmtMSD(dEdgeR_m, dEdgeR_sd, W, W));
+                tt.setToken(i + 1, 3, fmtMSD(dNodeP_m, dNodeP_sd, W, W));
+                tt.setToken(i + 1, 4, fmtMSD(dNodeR_m, dNodeR_sd, W, W));
             }
 
-            System.out.print(tt.toString());
+            System.out.print(tt);
         }
 
         private static final class Cell {
-            Agg sumJ = new Agg(), mF1 = new Agg(), MJ = new Agg(), micF1 = new Agg();
-            Agg eF1 = new Agg(), eP = new Agg(), eR = new Agg();
+            Agg sumJ = new Agg(), MJ = new Agg();
+            Agg nodeP = new Agg(), nodeR = new Agg();
         }
     }
 }
