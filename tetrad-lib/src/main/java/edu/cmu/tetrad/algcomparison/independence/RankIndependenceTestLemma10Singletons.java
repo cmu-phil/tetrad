@@ -6,9 +6,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.test.IndTestBlocksLemma10;
+import edu.cmu.tetrad.search.test.IndTestBlocksWilkes;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -24,13 +24,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "Rank Independence Test Lemma 10",
-        command = "rank-test-lemma-10",
+        name = "Rank Independence Test Lemma 10 Singletons",
+        command = "rank-test-lemma10-singletons",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
+@Deprecated
 @LinearGaussian
-@Deprecated(since = "7.9", forRemoval = false)
-public class RankIndependenceTestLemma10 implements IndependenceWrapper {
+public class RankIndependenceTestLemma10Singletons implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -38,7 +38,7 @@ public class RankIndependenceTestLemma10 implements IndependenceWrapper {
     /**
      * Constructs a new instance of the algorithm.
      */
-    public RankIndependenceTestLemma10() {
+    public RankIndependenceTestLemma10Singletons() {
     }
 
     /**
@@ -61,7 +61,7 @@ public class RankIndependenceTestLemma10 implements IndependenceWrapper {
         }
 
         // If you’re using the Wilks-rank test:
-        IndTestBlocksLemma10 ind = new IndTestBlocksLemma10(new BlockSpec((DataSet) dataModel, blocks, blockVars));
+        IndTestBlocksWilkes ind = new IndTestBlocksWilkes(new BlockSpec((DataSet) dataModel, blocks, blockVars));
         ind.setAlpha(parameters.getDouble(Params.ALPHA));
 
         return ind;
@@ -74,7 +74,7 @@ public class RankIndependenceTestLemma10 implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Rank test Lemma 10";
+        return "Rank test Lemma 10 Singletons";
     }
 
     /**

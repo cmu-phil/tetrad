@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndTestBlocksWilkes;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.test.IndTestBlocksTs;
@@ -25,12 +24,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "Rank Independence Test",
-        command = "rank-test",
+        name = "Rank Independence Test TS Simgletons",
+        command = "rank-test-ts-singletons",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
+@Deprecated
 @LinearGaussian
-public class RankIndependenceTest implements IndependenceWrapper {
+public class RankIndependenceTestTsSingletons implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -38,7 +38,7 @@ public class RankIndependenceTest implements IndependenceWrapper {
     /**
      * Constructs a new instance of the algorithm.
      */
-    public RankIndependenceTest() {
+    public RankIndependenceTestTsSingletons() {
     }
 
     /**
@@ -60,8 +60,7 @@ public class RankIndependenceTest implements IndependenceWrapper {
             blocks.add(Collections.singletonList(i));
         }
 
-        // If you’re using the Wilks-rank test:
-        IndTestBlocksWilkes ind = new IndTestBlocksWilkes(new BlockSpec((DataSet) dataModel, blocks, blockVars));
+        IndTestBlocksTs ind = new IndTestBlocksTs(new BlockSpec((DataSet) dataModel, blocks, blockVars));
         ind.setAlpha(parameters.getDouble(Params.ALPHA));
 
         return ind;
@@ -74,7 +73,7 @@ public class RankIndependenceTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Rank test";
+        return "Rank test TS Singletons";
     }
 
     /**
