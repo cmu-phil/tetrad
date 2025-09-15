@@ -108,7 +108,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * The independence tests.
      */
     private transient List<IndependenceTest> independenceTests;
-    private List<String> resultNames;
+    private List<String> resultNames = new ArrayList<>();
     private final Map<Graph, String> graphSubtitle = new IdentityHashMap<>();
 
     public String getGraphSubtitle(Graph g) {
@@ -573,7 +573,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     public void execute() {
         long start = System.currentTimeMillis();
 
-        this.graphList = new ArrayList<>();
+        this.graphList.clear();
+        this.resultNames.clear();
         this.graphSubtitle.clear();
 
         if (this.independenceTests != null) {
@@ -592,7 +593,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
 
         // ===== CASE 1: No datasets, but a source graph is provided (graph-only search) =====
-        if (getDataModelList().isEmpty() && getSourceGraph() != null) {
+        DataModelList dataModelList = getDataModelList();
+        if (dataModelList.isEmpty() && getSourceGraph() != null) {
             if (algo instanceof TakesScoreWrapper) {
                 // Inject graph into special scores (e.g., MSepScore) and set block spec if present.
                 ScoreWrapper scoreWrapper = ((TakesScoreWrapper) algo).getScoreWrapper();
@@ -631,6 +633,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             try {
                 graph = algo.search(null, this.parameters);
                 graphSubtitle.put(graph, null);
+                resultNames.add("Oracle Result");
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -644,8 +647,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             // ----- 2A) Multi-dataset algorithms: one combined graph from a subset (possibly randomized), possibly repeated -----
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
                 for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
-                    Knowledge knowledge1 = getDataModelList().getFirst().getKnowledge();
-                    List<DataModel> dataSets = new ArrayList<>(getDataModelList());
+                    Knowledge knowledge1 = dataModelList.getFirst().getKnowledge();
+                    List<DataModel> dataSets = new ArrayList<>(dataModelList);
                     for (DataModel dataSet : dataSets) dataSet.setKnowledge(knowledge1);
 
                     int randomSelectionSize = this.parameters.getInt("randomSelectionSize");
@@ -674,6 +677,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     try {
                         graphList.add(((MultiDataSetAlgorithm) algo).search(sub, this.parameters));
                         graphSubtitle.put(graphList.getLast(), noteForAggregate(sub));
+                        resultNames.add("Multi-dataset Algorithm");
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -682,7 +686,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             // ----- 2B) Standard algorithms: NEW — run once PER DATASET and collect graphs -----
             else { // NEW
                 // (Removed the old single-dataset assertion; now we iterate all datasets.)
-                for (DataModel data : getDataModelList()) {
+                for (int i = 0; i < dataModelList.size(); i++) {
+                    DataModel data = dataModelList.get(i);
+
                     // Prefer knowledge embedded in each dataset if present
                     Knowledge knowledgeFromData = data.getKnowledge();
                     if (knowledgeFromData != null && !knowledgeFromData.getVariables().isEmpty()) {
@@ -732,13 +738,16 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     Graph graph;
                     try {
                         graph = algo.search(data, this.parameters);
+                        LayoutUtil.defaultLayout(graph);
+                        graphList.add(graph);
+                        graphSubtitle.put(graph, noteFor(data));
+
+                        // Name = dataset/covariance name, if present
+                        String nm = data.getName() != null ? data.getName() : "Result" + (i + 1);
+                        resultNames.add(nm);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-
-                    LayoutUtil.defaultLayout(graph);
-                    graphList.add(graph);
-                    graphSubtitle.put(graph, noteFor(data));
                 }
             }
 
@@ -759,6 +768,16 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
 
 //        this.graphList = graphList;
+    }
+
+    private static boolean hasText(String s) {
+        return s != null && !s.isBlank();
+    }
+
+    private static String datasetDisplayName(DataModel dm) {
+        // DataSet, CovarianceMatrix, etc. all implement DataModel#getName().
+        String n = (dm == null) ? null : dm.getName();
+        return hasText(n) ? n : null;
     }
 
     public String getGraphSubtitle(Graph g, int indexHint) {
@@ -872,12 +891,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     public List<String> getResultNames() {
         return resultNames;
-    }
-
-    // in GeneralAlgorithmRunner
-
-    public void setResultNames(List<String> names) {
-        this.resultNames = names;
     }
 
     /**

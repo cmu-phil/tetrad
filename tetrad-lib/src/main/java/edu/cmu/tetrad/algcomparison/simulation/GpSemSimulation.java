@@ -190,7 +190,7 @@ public class GpSemSimulation implements Simulation {
                 dataSet = DataTransforms.shuffleColumns(dataSet);
             }
 
-            dataSet.setName(String.valueOf(i + 1));
+            dataSet.setName("Run " + (i + 1));
             this.dataSets.add(dataSet);
         }
     }

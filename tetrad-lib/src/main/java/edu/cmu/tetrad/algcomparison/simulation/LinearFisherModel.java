@@ -172,7 +172,7 @@ public class LinearFisherModel implements Simulation, TakesData {
                 }
             }
 
-            dataSet.setName("" + (i + 1));
+            dataSet.setName("Run " + (i + 1));
 
             if (parameters.getBoolean(Params.STANDARDIZE)) {
                 dataSet = DataTransforms.standardizeData(dataSet);

@@ -181,7 +181,7 @@ public class SemSimulation implements Simulation {
             }
 
             dataSet = postProcess(parameters, dataSet);
-            dataSet.setName("" + (i + 1));
+            dataSet.setName("Run" + (i + 1));
 
             this.graphs.add(graph);
             this.ims.add(im);

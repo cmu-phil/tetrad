@@ -115,7 +115,7 @@ public class SemThenDiscretize implements Simulation {
                 dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
             }
 
-            dataSet.setName("" + (i + 1));
+            dataSet.setName("Run " + (i + 1));
             this.dataSets.add(dataSet);
         }
     }

@@ -99,7 +99,7 @@ public class LeeHastieSimulation implements Simulation {
             this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
-            dataSet.setName("" + (i + 1));
+            dataSet.setName("Run " + (i + 1));
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
                 dataSet = DataTransforms.shuffleColumns(dataSet);

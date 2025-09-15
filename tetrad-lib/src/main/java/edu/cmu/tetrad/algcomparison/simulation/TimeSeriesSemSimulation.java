@@ -143,7 +143,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
                 dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
             }
 
-            dataSet.setName("" + (i + 1));
+            dataSet.setName("Run " + (i + 1));
             dataSet.setKnowledge(this.knowledge.copy());
             this.dataSets.add(dataSet);
 
