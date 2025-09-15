@@ -26,7 +26,7 @@ public class CausalUnmix extends DataWrapper {
 
         DataModelList dataSets = data.getDataModelList();
         if (dataSets.size() != 1) {
-            throw new IllegalArgumentException("For causal unmixing, need exactly one data set.");
+            throw new IllegalArgumentException("For causal unmixing, you need exactly one data set.");
         }
 
         DataModel first = dataSets.getModelList().getFirst();

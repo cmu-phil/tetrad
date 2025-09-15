@@ -90,7 +90,7 @@ public final class AlgorithmModels {
         return (dataType == DataType.All)
                 ? algorithmModels
                 : algorithmModels.stream()
-                .filter(e -> !multiDataSetAlgorithm || algoAnno.takesMultipleDataset(e.getAlgorithm().clazz()))
+//                .filter(e -> !multiDataSetAlgorithm || algoAnno.takesMultipleDataset(e.getAlgorithm().clazz()))
                 .filter(e -> {
                     for (DataType dt : e.getAlgorithm().annotation().dataType()) {
                         if (dt == DataType.All || dt == dataType) {
