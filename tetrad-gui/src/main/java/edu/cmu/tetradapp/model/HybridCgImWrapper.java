@@ -20,6 +20,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
@@ -41,6 +42,7 @@ public class HybridCgImWrapper implements SessionModel, Cloneable {
 
     @Serial
     private static final long serialVersionUID = 1L;
+    private DataSet data;
 
     private HybridCgIm im;
     private String name = "Hybrid CG IM";
@@ -87,48 +89,154 @@ public class HybridCgImWrapper implements SessionModel, Cloneable {
         }
     }
 
-    /**
-     * Ensure cutpoints exist for every DISCRETE child that has >=1 continuous parent.
-     * If none are present, we create equal-interval cutpoints on [low, high].
-     *
-     * @param bins number of bins (>=2). We will create (bins - 1) cutpoints.
-     */
-    private static void ensureDefaultCutpoints(HybridCgPm pm, int bins, double low, double high) {
-        if (bins < 2) bins = 2;
-        if (!(high > low)) { // degenerate range, fall back
-            low = -1.0; high = 1.0;
+    public HybridCgImWrapper(HybridCgPmWrapper pmWrapper, edu.cmu.tetrad.data.DataSet data, edu.cmu.tetrad.util.Parameters params) {
+        Objects.requireNonNull(pmWrapper, "pmWrapper");
+        HybridCgPm pm = pmWrapper.getHybridCgPm();
+
+        // ---- read UI/estimator params with sane defaults ----
+        final String binPolicy = params.getString("hybridcg.binPolicy", "equal_frequency"); // equal_frequency | equal_interval | none
+        final int bins = Math.max(2, params.getInt("hybridcg.bins", 3));
+        final double alpha = params.getDouble("hybridcg.alpha", 1.0);
+        final boolean shareVar = params.getBoolean("hybridcg.shareVariance", false);
+
+        // For "none", or if data is absent, we still must ensure cutpoints exist
+        final int defaultBins = Math.max(2, params.getInt("hybridcg.defaultBins", 3));
+        final double defLo = params.getDouble("hybridcg.defaultRangeLow", -1.0);
+        final double defHi = params.getDouble("hybridcg.defaultRangeHigh",  1.0);
+
+        // ---- ensure cutpoints on the PM ----
+        try {
+            if (data != null) {
+                switch (binPolicy.toLowerCase(Locale.ROOT)) {
+                    case "equal_interval" -> setCutpointsFromData(pm, data, bins, false);
+                    case "equal_frequency" -> setCutpointsFromData(pm, data, bins, true);
+                    case "none" -> ensureDefaultCutpoints(pm, defaultBins, defLo, defHi);
+                    default -> setCutpointsFromData(pm, data, bins, true);
+                }
+            } else {
+                // no data: make sure PM is still usable
+                ensureDefaultCutpoints(pm, defaultBins, defLo, defHi);
+            }
+        } catch (Exception ex) {
+            // As a last resort, keep the PM usable
+            ensureDefaultCutpoints(pm, defaultBins, defLo, defHi);
         }
 
-        final var nodes = pm.getNodes();
-
-        for (int y = 0; y < nodes.length; y++) {
-            if (!pm.isDiscrete(y)) continue;
-
-            int[] cps = pm.getContinuousParents(y);
-            if (cps.length == 0) continue;
-
-            // Already has cutpoints?
-            if (pm.getContParentCutpointsForDiscreteChild(y).isPresent()) continue;
-
-            // Build equal-interval cutpoints for each continuous parent
-            Map<edu.cmu.tetrad.graph.Node, double[]> cpMap = new LinkedHashMap<>();
-            double[] edgesTemplate = new double[bins - 1];
-            double step = (high - low) / bins;
-            for (int i = 0; i < bins - 1; i++) edgesTemplate[i] = low + (i + 1) * step;
-
-            for (int t = 0; t < cps.length; t++) {
-                edu.cmu.tetrad.graph.Node p = nodes[cps[t]];
-                cpMap.put(p, edgesTemplate.clone());
-            }
-
-            try {
-                pm.setContParentCutpointsForDiscreteChild(nodes[y], cpMap);
-            } catch (IllegalArgumentException | IllegalStateException ignored) {
-                // If the PM rejects these (shouldn't), we skip; IM construction may still fail,
-                // but we tried to provide a safe default.
+        // ---- build IM ----
+        if (data != null) {
+            // estimate from data
+            HybridCgIm.HybridEstimator est = new HybridCgIm.HybridEstimator(alpha, shareVar);
+            this.im = est.mle(pm, data);
+        } else {
+            // no data: create empty IM then (optionally) randomize
+            this.im = new HybridCgIm(pm);
+            if (params.getBoolean("hybridcg.randomizeIm", true)) {
+                long seed = params.getLong("hybridcg.randomSeed", edu.cmu.tetrad.util.RandomUtil.getInstance().nextLong());
+                randomize(this.im, seed); // uses your existing randomize(...) helper
             }
         }
     }
+
+    // Ensure PM has uniform cutpoints per continuous parent of each discrete child
+    private static void ensureDefaultCutpoints(HybridCgPm pm, int bins, double lo, double hi) {
+        final double[] cuts = new double[bins - 1];
+        for (int i = 0; i < cuts.length; i++) {
+            cuts[i] = lo + (i + 1) * (hi - lo) / bins;
+        }
+        final edu.cmu.tetrad.graph.Node[] nodes = pm.getNodes();
+        for (int y = 0; y < nodes.length; y++) {
+            if (!pm.isDiscrete(y)) continue;
+            int[] cps = pm.getContinuousParents(y);
+            if (cps.length == 0) continue;
+            java.util.Map<edu.cmu.tetrad.graph.Node, double[]> map = new java.util.LinkedHashMap<>();
+            for (int t = 0; t < cps.length; t++) {
+                map.put(pm.getNodes()[cps[t]], cuts.clone());
+            }
+            pm.setContParentCutpointsForDiscreteChild(nodes[y], map);
+        }
+    }
+
+    // Set cutpoints from data: equal-frequency (quantile-ish) or equal-interval per continuous parent
+    private static void setCutpointsFromData(HybridCgPm pm, edu.cmu.tetrad.data.DataSet data, int bins, boolean equalFrequency) {
+        final edu.cmu.tetrad.graph.Node[] nodes = pm.getNodes();
+        for (int y = 0; y < nodes.length; y++) {
+            if (!pm.isDiscrete(y)) continue;
+            int[] cps = pm.getContinuousParents(y);
+            if (cps.length == 0) continue;
+
+            java.util.Map<edu.cmu.tetrad.graph.Node, double[]> map = new java.util.LinkedHashMap<>();
+
+            for (int t = 0; t < cps.length; t++) {
+                int parentIndex = cps[t];
+                int col = data.getColumn(nodes[parentIndex]);
+                double[] colData = new double[data.getNumRows()];
+                for (int r = 0; r < data.getNumRows(); r++) {
+                    colData[r] = data.getDouble(r, col);
+                }
+
+                double[] cuts;
+                if (equalFrequency) {
+                    // reuse Discretizer helper (returns length = bins-1)
+                    cuts = edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints(colData, bins);
+                } else {
+                    double min = edu.cmu.tetrad.util.StatUtils.min(colData);
+                    double max = edu.cmu.tetrad.util.StatUtils.max(colData);
+                    cuts = new double[bins - 1];
+                    double step = (max - min) / bins;
+                    for (int k = 0; k < cuts.length; k++) cuts[k] = min + (k + 1) * step;
+                }
+                // guard: strictly increasing (nudge duplicates if any)
+                for (int k = 1; k < cuts.length; k++) {
+                    if (!(cuts[k] > cuts[k - 1])) cuts[k] = Math.nextUp(cuts[k - 1]);
+                }
+                map.put(nodes[parentIndex], cuts);
+            }
+            pm.setContParentCutpointsForDiscreteChild(nodes[y], map);
+        }
+    }
+
+//    /**
+//     * Ensure cutpoints exist for every DISCRETE child that has >=1 continuous parent.
+//     * If none are present, we create equal-interval cutpoints on [low, high].
+//     *
+//     * @param bins number of bins (>=2). We will create (bins - 1) cutpoints.
+//     */
+//    private static void ensureDefaultCutpoints(HybridCgPm pm, int bins, double low, double high) {
+//        if (bins < 2) bins = 2;
+//        if (!(high > low)) { // degenerate range, fall back
+//            low = -1.0; high = 1.0;
+//        }
+//
+//        final var nodes = pm.getNodes();
+//
+//        for (int y = 0; y < nodes.length; y++) {
+//            if (!pm.isDiscrete(y)) continue;
+//
+//            int[] cps = pm.getContinuousParents(y);
+//            if (cps.length == 0) continue;
+//
+//            // Already has cutpoints?
+//            if (pm.getContParentCutpointsForDiscreteChild(y).isPresent()) continue;
+//
+//            // Build equal-interval cutpoints for each continuous parent
+//            Map<edu.cmu.tetrad.graph.Node, double[]> cpMap = new LinkedHashMap<>();
+//            double[] edgesTemplate = new double[bins - 1];
+//            double step = (high - low) / bins;
+//            for (int i = 0; i < bins - 1; i++) edgesTemplate[i] = low + (i + 1) * step;
+//
+//            for (int t = 0; t < cps.length; t++) {
+//                edu.cmu.tetrad.graph.Node p = nodes[cps[t]];
+//                cpMap.put(p, edgesTemplate.clone());
+//            }
+//
+//            try {
+//                pm.setContParentCutpointsForDiscreteChild(nodes[y], cpMap);
+//            } catch (IllegalArgumentException | IllegalStateException ignored) {
+//                // If the PM rejects these (shouldn't), we skip; IM construction may still fail,
+//                // but we tried to provide a safe default.
+//            }
+//        }
+//    }
 
     /**
      * Randomize the IM parameters for testing or initialization.

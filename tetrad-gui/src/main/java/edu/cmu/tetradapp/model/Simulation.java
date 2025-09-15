@@ -232,6 +232,24 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    the SemImWrapper object used to initialize the simulation
      * @param parameters the Parameters object used to configure the simulation
      */
+    public Simulation(HybridCgPmWrapper wrapper, Parameters parameters) {
+        this.simulation = new HybridCgSimulation(wrapper.getHybridCgPm());
+        this.parameters = parameters;
+        createSimulation();
+    }
+
+    public Simulation(HybridCgImWrapper wrapper, Parameters parameters) {
+        this.simulation = new HybridCgSimulation(wrapper.getHybridCgIm());
+        this.parameters = parameters;
+        createSimulation();
+    }
+
+    /**
+     * Constructs a Simulation object using the specified SemImWrapper and Parameters.
+     *
+     * @param wrapper    the SemImWrapper object used to initialize the simulation
+     * @param parameters the Parameters object used to configure the simulation
+     */
     public Simulation(SemImWrapper wrapper, Parameters parameters) {
         this.simulation = new SemSimulation(wrapper.getSemIm());
         this.parameters = parameters;

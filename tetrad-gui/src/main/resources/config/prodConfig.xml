@@ -263,9 +263,6 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.HybridCgPmEditor
                 </editor-class>
-                <!--                <params-editor-class>-->
-                <!--                    edu.cmu.tetradapp.editor.BayesPmParamsEditor-->
-                <!--                </params-editor-class>-->
             </model>
             <model name="Generalized SEM Parametric Model" acronym="Gen. SEM PM" help="sem_im">
                 <logger>

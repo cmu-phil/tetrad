@@ -21,7 +21,7 @@ import java.util.*;
  * - Reflection-friendly constructors.
  * - Editor-friendly setter to replace the PM.
  */
-public class HybridCgPmWrapper implements SessionModel, Serializable {
+public class HybridCgPmWrapper implements SessionModel {
 
     @Serial private static final long serialVersionUID = 1L;
 
@@ -31,14 +31,14 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
     private String name = "Hybrid CG PM";
     private String notes = "";
 
-    /** No-arg for reflection/persistence. */
-    public HybridCgPmWrapper() { }
+    public HybridCgPmWrapper(GraphWrapper graph, Parameters parameters) {
+        this(graph.getGraph(), parameters);
+    }
 
     /** Construct from an existing PM. */
     public HybridCgPmWrapper(HybridCgModel.HybridCgPm pm) {
         this.hybridCgPm = Objects.requireNonNull(pm, "hybridCgPm");
     }
-
     /**
      * Reflection-friendly: build a PM from a Graph + Parameters.
      * If no DataSet is available, you can optionally seed simple default cutpoints so an IM can be created.

@@ -392,25 +392,25 @@ public final class HybridCgModel {
          * Convert a sampled matrix into a Tetrad DataSet with the provided node ordering. The node list must be a
          * permutation of the PM's nodes; types (discrete/continuous) are taken from the PM.
          */
-        public DataSet toDataSet(Sample sample, List<Node> nodeOrder) {
+        public DataSet toDataSet(Sample sample) {
+            List<Node> nodes = HybridCgVars.materializeDataVariables(pm);
+
             Objects.requireNonNull(sample, "sample");
-            Objects.requireNonNull(nodeOrder, "nodeOrder");
-            if (nodeOrder.size() != pm.nodes.length) throw new IllegalArgumentException("nodeOrder size mismatch");
 
             int n = sample.rows;
             // Build a MixedDataBox so we can store ints for discrete and doubles for continuous
-            MixedDataBox box = new MixedDataBox(nodeOrder, n);
-            DataSet ds = new BoxDataSet(box, nodeOrder);
+            MixedDataBox box = new MixedDataBox(nodes, n);
+            DataSet ds = new BoxDataSet(box, nodes);
 
             // Map external order to pm indices once
-            int[] pmIndex = new int[nodeOrder.size()];
-            for (int j = 0; j < nodeOrder.size(); j++) {
-                pmIndex[j] = pm.indexOf(nodeOrder.get(j));
-                if (pmIndex[j] < 0) throw new IllegalArgumentException("node not in PM: " + nodeOrder.get(j));
+            int[] pmIndex = new int[nodes.size()];
+            for (int j = 0; j < nodes.size(); j++) {
+                pmIndex[j] = nodes.indexOf(nodes.get(j));
+                if (pmIndex[j] < 0) throw new IllegalArgumentException("node not in PM: " + nodes.get(j));
             }
 
             for (int r = 0; r < n; r++) {
-                for (int j = 0; j < nodeOrder.size(); j++) {
+                for (int j = 0; j < nodes.size(); j++) {
                     int y = pmIndex[j];
                     if (pm.isDiscrete[y]) {
                         int val = sample.discrete[y][r];

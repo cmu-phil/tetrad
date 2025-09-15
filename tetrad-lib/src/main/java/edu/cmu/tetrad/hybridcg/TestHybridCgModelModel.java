@@ -146,7 +146,7 @@ public class TestHybridCgModelModel {
 
         // Convert to a Tetrad DataSet (choose any node order you want in the output)
         List<Node> outOrder = Arrays.asList(pm.getNodes()); // same order as PM
-        DataSet simulated = im.toDataSet(draw, outOrder);
+        DataSet simulated = im.toDataSet(draw);
 
 //        System.out.println(simulated);
 
