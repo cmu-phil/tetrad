@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
@@ -25,14 +45,14 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * within-group dependence. 2) Grow each seed to a local maximal pure group, but DO NOT mark variables as used. 3)
  * Perform global purification/merging passes: - Merge groups when their union remains pure. - Resolve overlaps by
  * globally assigning shared variables to the most compatible group. - Iterate until convergence. 4) Drop groups with
- * fewer than 3 indicators (paper’s Step: remove latents with &lt; 3 children).
+ * fewer than 3 indicators (paperâs Step: remove latents with &lt; 3 children).
  * <p>
  * Notes: - We keep pairwise dependence as a simple Fisher-Z check on correlations. - Purification/overlap resolution
- * uses correlation-based tie-breaking; the paper gives several logically equivalent global rules—this is a practical,
+ * uses correlation-based tie-breaking; the paper gives several logically equivalent global rulesâthis is a practical,
  * deterministic variant.
  */
 public class Bpc {
-    // Minimum indicators per cluster per the JMLR paper (≥3).
+    // Minimum indicators per cluster per the JMLR paper (â¥3).
     private static final int MIN_CLUSTER_SIZE = 3;
     // Alpha cutoff for tetrads and dependence
     private final double alpha;
@@ -46,7 +66,7 @@ public class Bpc {
     private final ConcurrentHashMap<BitKey, Boolean> pureCache = new ConcurrentHashMap<>();
     // Looser pairwise screen than tetrads (paper-faithful; just a pre-prune)
     private final double alphaPairs;
-    // Merge gate: allow union only if avg|r| doesn’t drop more than delta from either group
+    // Merge gate: allow union only if avg|r| doesnât drop more than delta from either group
     private final double deltaMerge;
     // The effective sample size (ESS) which can be set to -1 (indicating sample size) or a positive
     private final int ess;

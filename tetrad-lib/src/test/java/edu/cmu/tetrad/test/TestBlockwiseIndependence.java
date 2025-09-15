@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
@@ -9,17 +29,17 @@ import org.junit.Test;
 import java.util.*;
 
 /**
- * Compares three ways to judge X ⟂ Y | Z using data from a latent chain (L1->L2->L3; L4 disconnected), each latent with
+ * Compares three ways to judge X â Y | Z using data from a latent chain (L1->L2->L3; L4 disconnected), each latent with
  * m observed children. Only within-cluster cases are generated with disjoint clusters cX,cY,cZ.
  * <p>
  * Methods: (1) Pairwise-Rank via blocks: for each (x in X, y in Y), create singleton blocks [x], [y] and one block [Z],
- * then test [x] ⟂ [y] | [Z] using IndTestBlocksLemma10 (rank-based). (2) Blockwise over latent meta-variables:
+ * then test [x] â [y] | [Z] using IndTestBlocksLemma10 (rank-based). (2) Blockwise over latent meta-variables:
  * IndTestBlocks. (3) Blockwise over latent meta-variables: IndTestBlocksLemma10.
  * <p>
  * Truth: pairwise m-separation over full DAG (latents+observeds) with Z (observed) conditioned.
  * <p>
  * The full experiment is run under four noise regimes for both latent and observed errors: - Gaussian(0,1)  (baseline)
- * - Exponential(1) centered (E-1) - Gumbel(0,1) centered (subtract Euler–Mascheroni constant) - Uniform(-1,1)
+ * - Exponential(1) centered (E-1) - Gumbel(0,1) centered (subtract EulerâMascheroni constant) - Uniform(-1,1)
  */
 public class TestBlockwiseIndependence {
 
@@ -388,9 +408,9 @@ public class TestBlockwiseIndependence {
 
             System.out.println("\n[" + name + "]");
             System.out.println("Predicted Independent: " + predIndep + " | Predicted Dependent: " + predDep);
-            System.out.printf("Independence  — Precision: %.3f  Recall: %.3f  (TP=%d, FP=%d, FN=%d)%n",
+            System.out.printf("Independence  â Precision: %.3f  Recall: %.3f  (TP=%d, FP=%d, FN=%d)%n",
                     precInd, recInd, tpInd, fpInd, fnInd);
-            System.out.printf("Dependence    — Precision: %.3f  Recall: %.3f  (TP=%d, FP=%d, FN=%d)%n",
+            System.out.printf("Dependence    â Precision: %.3f  Recall: %.3f  (TP=%d, FP=%d, FN=%d)%n",
                     precDep, recDep, tpDep, fpDep, fnDep);
         }
     }

@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -24,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Diagnostic grid for FDR-on-large-p's as a reporting tool (not used inside algorithms). - Builds the "simple" cyclic
  * graph X->Y, W->Z, and Y<->Z, - Simulates with stable cyclic init (fixed spectral radius), - Runs Fisher-Z
- * (Ledoit–Wolf), - Counts "extras" (accepted independencies not among the two we expect), - Applies BH to 1-p (so large
+ * (LedoitâWolf), - Counts "extras" (accepted independencies not among the two we expect), - Applies BH to 1-p (so large
  * p's become small p's) and reports the reduction.
  */
 public class TestFisherZFdrDiagnostic {
@@ -41,7 +61,7 @@ public class TestFisherZFdrDiagnostic {
 
     // grid
     static final int[] N_GRID = {200, 500, 1000};
-    static final double[] R_GRID = {0.9, 0.7, 0.5}; // spectral radius targets (harder → 0.9)
+    static final double[] R_GRID = {0.9, 0.7, 0.5}; // spectral radius targets (harder â 0.9)
     static final boolean POSITIVE_ONLY = true;         // keep simple & stable for this diagnostic
 
     // 1) Respect N, and pick which stabilizer you want.
@@ -125,7 +145,7 @@ public class TestFisherZFdrDiagnostic {
                 extrasRaw / (double) trials, extrasFdr / (double) trials);
     }
 
-    // 3) Make the generator’s parameter mean what it says.
+    // 3) Make the generatorâs parameter mean what it says.
 //    (A) If you meant FIXED RADIUS:
     private static SemIm.CyclicSimResult getCanonicalModelData(int N, double radius) {
         // graph: X->Y, W->Z, Y<->Z
@@ -210,7 +230,7 @@ public class TestFisherZFdrDiagnostic {
 
     private static void printSummary(int N, double r, CellSummary s) {
         System.out.printf(Locale.US,
-                "N=%4d, radius=%.2f  |  expected-both=%2d/%2d, extras(raw)=%.2f, extras(FDR)=%.2f  (m≈%d tests/run)%n",
+                "N=%4d, radius=%.2f  |  expected-both=%2d/%2d, extras(raw)=%.2f, extras(FDR)=%.2f  (mâ%d tests/run)%n",
                 N, r, s.okExpectedBoth, s.trials, s.extrasRawMean, s.extrasFdrMean, s.testsPerRun);
     }
 

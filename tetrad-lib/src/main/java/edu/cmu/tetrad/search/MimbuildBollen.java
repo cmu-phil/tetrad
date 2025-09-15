@@ -1,7 +1,22 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) ... (unchanged)                                             //
-/// ////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -377,7 +392,7 @@ public class MimbuildBollen {
             // unpack (enforce basic constraints inside)
             unpackParams(params, latentscov, loadings, delta);
 
-            // implied Σ = Λ Φ Λ' + Ψ
+            // implied Î£ = Î Î¦ Î' + Î¨
             Matrix implied = impliedCovariance(indicatorIndices, loadings, latentscov, delta, measurescov.getNumRows());
 
             // objective: 0.5 * || I - implied * S^{-1} ||_F^2  (scale-free)

@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.editor.blocks;
 
 import edu.cmu.tetrad.data.BoxDataSet;
@@ -114,7 +134,7 @@ public class BlockClusteringWizard extends JPanel {
         editorPanel.setOnApply(this::fireBlockSpec);
 
         JPanel resultTop = new JPanel(new BorderLayout());
-        JButton btnBack = new JButton("◀ Back");
+        JButton btnBack = new JButton("â Back");
         resultTop.add(btnBack, BorderLayout.WEST);
 
         JLabel lblResultTitle = new JLabel();
@@ -194,7 +214,7 @@ public class BlockClusteringWizard extends JPanel {
 
         Random rnd = new Random(42);
         double sdLatent = Math.sqrt(latentVar);
-        double sdNoiseIndicator = Math.sqrt(1.0 - loading * loading); // ensure Var(X) ≈ 1
+        double sdNoiseIndicator = Math.sqrt(1.0 - loading * loading); // ensure Var(X) â 1
 
         for (int t = 0; t < n; t++) {
             // Latent disturbances (std normal scaled)
@@ -309,7 +329,7 @@ public class BlockClusteringWizard extends JPanel {
                 }
 
 //                btnSearch.setEnabled(false);
-                status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : "") + " …");
+                status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : "") + " â¦");
 
                 int ess = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
                 ess = ess == -1 ? dataSet.getNumRows() : ess;
@@ -322,7 +342,7 @@ public class BlockClusteringWizard extends JPanel {
                     editorPanel.setDataSet(spec.dataSet());
                     editorPanel.setText(BlockSpecTextCodec.format(spec));
 
-                    // update title…
+                    // update titleâ¦
                     String algRan = (String) cbAlgorithm.getSelectedItem();
 
                     ((JLabel) ((BorderLayout) ((JPanel) pageResult.getComponent(0)).getLayout())

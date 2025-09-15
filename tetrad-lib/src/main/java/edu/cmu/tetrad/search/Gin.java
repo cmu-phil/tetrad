@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
@@ -20,11 +40,11 @@ import static java.lang.Math.sqrt;
 
 /**
  * Minimal GIN: 1) Get clusters from TSC. 2) Add one latent per cluster, connect to its observed children. 3) For each
- * unordered latent pair {i,j}: - Compute smallest-σ projection for i->j (Y=j, Z=i) and for j->i (Y=i, Z=j) - p_ij =
- * p(e(Y|Z) ⟂ Z) via RawMarginalIndependenceTest - If max(p_ij, p_ji) >= alpha, add ONLY the better direction.
+ * unordered latent pair {i,j}: - Compute smallest-Ï projection for i->j (Y=j, Z=i) and for j->i (Y=i, Z=j) - p_ij =
+ * p(e(Y|Z) â Z) via RawMarginalIndependenceTest - If max(p_ij, p_ji) >= alpha, add ONLY the better direction.
  * <p>
- * Notes: • Allows cliques/cycles intentionally (no gates, no acyclicity checks). • Uses covariance (matches centering).
- * • Whitening enabled by default; small ridge helps stability.
+ * Notes: â¢ Allows cliques/cycles intentionally (no gates, no acyclicity checks). â¢ Uses covariance (matches centering).
+ * â¢ Whitening enabled by default; small ridge helps stability.
  */
 public class Gin {
 
@@ -143,7 +163,7 @@ public class Gin {
         return g;
     }
 
-    // ---------------------- Projection e = Yc * ω --------------------
+    // ---------------------- Projection e = Yc * Ï --------------------
 
     // ---------------------- TSC clusters -----------------------------
     private List<List<Integer>> findClustersTSC() {
@@ -159,7 +179,7 @@ public class Gin {
     }
 
     /**
-     * For each unordered {i,j}: p_ij = p(e(Y=j | Z=i) ⟂ Z=i), p_ji = p(e(Y=i | Z=j) ⟂ Z=j). If max(p_ij, p_ji) >=
+     * For each unordered {i,j}: p_ij = p(e(Y=j | Z=i) â Z=i), p_ji = p(e(Y=i | Z=j) â Z=j). If max(p_ij, p_ji) >=
      * alpha, add the larger direction (ties broken toward i->j).
      */
     private void orientBasicGIN(Graph g, List<List<Integer>> clusters, List<Node> latents) {
@@ -184,7 +204,7 @@ public class Gin {
 
                 if (verbose) {
                     TetradLogger.getInstance().log(String.format(
-                            "[GIN] L%d↔L%d  p_ij=%.4g (σmin=%.3g) | p_ji=%.4g (σmin=%.3g)",
+                            "[GIN] L%dâL%d  p_ij=%.4g (Ïmin=%.3g) | p_ji=%.4g (Ïmin=%.3g)",
                             i + 1, j + 1, p_ij, proj_ij.sigmaMin, p_ji, proj_ji.sigmaMin));
                 }
 
@@ -197,8 +217,8 @@ public class Gin {
     }
 
     /**
-     * Compute smallest-σ right singular direction: A = Σ_ZZ^{-1/2} Σ_ZY Σ_YY^{-1/2}   (if whitening), else A = Σ_ZY.
-     * Return e = Yc * ω, where ω = Σ_YY^{-1/2} v_min (or v_min if no whitening).
+     * Compute smallest-Ï right singular direction: A = Î£_ZZ^{-1/2} Î£_ZY Î£_YY^{-1/2}   (if whitening), else A = Î£_ZY.
+     * Return e = Yc * Ï, where Ï = Î£_YY^{-1/2} v_min (or v_min if no whitening).
      */
     private ProjResult computeProjection(List<Integer> Y, List<Integer> Z) {
         final int n = data.getNumRows();
@@ -206,7 +226,7 @@ public class Gin {
             return new ProjResult(new double[n], Double.NaN, false);
         }
 
-        // Σ blocks
+        // Î£ blocks
         SimpleMatrix Syy = subCov(cov, Y, Y);
         SimpleMatrix Szz = subCov(cov, Z, Z);
         SimpleMatrix Szy = subCov(cov, Z, Y);

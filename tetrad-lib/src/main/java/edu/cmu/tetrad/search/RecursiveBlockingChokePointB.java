@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Graph;
@@ -7,8 +27,8 @@ import edu.cmu.tetrad.graph.NodeType;
 import java.util.*;
 
 /**
- * Option B, but – completely ignores the direct edge x *-* y while searching, and – returns {@code null} if it proves
- * impossible to block the remaining x–y paths with eligible non-colliders.
+ * Option B, but â completely ignores the direct edge x *-* y while searching, and â returns {@code null} if it proves
+ * impossible to block the remaining xây paths with eligible non-colliders.
  */
 public final class RecursiveBlockingChokePointB {
 
@@ -50,7 +70,7 @@ public final class RecursiveBlockingChokePointB {
             Set<Node> I = intersectionSkipFirst(G, prefix, y, B,
                     maxPathLength, desc, forbidden);
 
-            if (!I.isEmpty()) {          // ordinary ‘choke-point’ step
+            if (!I.isEmpty()) {          // ordinary âchoke-pointâ step
                 B.addAll(I);
                 continue;
             }
@@ -62,7 +82,7 @@ public final class RecursiveBlockingChokePointB {
                 added = true;
                 break;
             }
-            if (!added) {                       // nothing left to try – fail
+            if (!added) {                       // nothing left to try â fail
                 return null;
             }
         }
@@ -293,3 +313,4 @@ public final class RecursiveBlockingChokePointB {
         }
     }
 }
+

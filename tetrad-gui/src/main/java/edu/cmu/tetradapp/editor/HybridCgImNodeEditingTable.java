@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.editor;
 
 import javax.swing.*;
@@ -100,7 +120,7 @@ public class HybridCgImNodeEditingTable extends AbstractTableModel {
     }
 
     public void addDiscreteConfig() {
-        // TODO: compute next config string based on current target’s discrete parents.
+        // TODO: compute next config string based on current targetâs discrete parents.
         rows.add(new Row("Y", "A=0,B=1", 0.0, 1.0, new double[]{0.0, 0.0}));
         int r = rows.size() - 1;
         fireTableRowsInserted(r, r);
@@ -124,7 +144,7 @@ public class HybridCgImNodeEditingTable extends AbstractTableModel {
 
     // --- API to integrate with estimator/model layer later ---
     public List<Object> toParameterBlocks() {
-        // TODO: convert rows to your engine’s parameter objects (e.g., HybridCgIm blocks).
+        // TODO: convert rows to your engineâs parameter objects (e.g., HybridCgIm blocks).
         return List.of();
     }
 
@@ -133,7 +153,7 @@ public class HybridCgImNodeEditingTable extends AbstractTableModel {
     }
 
     /**
-     * A tiny row holder. In practice you’ll point these at your HybridCgIm param objects.
+     * A tiny row holder. In practice youâll point these at your HybridCgIm param objects.
      */
     static class Row {
         String nodeName;

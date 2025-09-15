@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
@@ -22,7 +42,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * Fisher's Z CI test with shrinkage (RIDGE/Ledoit–Wolf) and optional pseudoinverse fallback.
+ * Fisher's Z CI test with shrinkage (RIDGE/LedoitâWolf) and optional pseudoinverse fallback.
  */
 public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable,
         RawMarginalIndependenceTest {
@@ -47,7 +67,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      */
     private double ridge = 0.0;
     /**
-     * Ledoit–Wolf / Ridge / None.
+     * LedoitâWolf / Ridge / None.
      */
     private ShrinkageMode shrinkageMode = ShrinkageMode.NONE;
     /**
@@ -126,7 +146,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     /**
-     * Compute partial corr between index 0 (x) and 1 (y) from precision Ω.
+     * Compute partial corr between index 0 (x) and 1 (y) from precision Î©.
      */
     private static double partialFromPrecision(RealMatrix P) {
         double w11 = P.getEntry(0, 0);

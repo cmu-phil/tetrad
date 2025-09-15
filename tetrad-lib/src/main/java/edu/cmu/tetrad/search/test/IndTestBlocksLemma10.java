@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
@@ -15,12 +35,12 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Block-level CI test using Dong et al. (2024) Lemma 10:
  * <p>
- * C d-separates A and B  iff  rank( Σ_{A∪C, B∪C} ) = |C|
+ * C d-separates A and B  iff  rank( Î£_{AâªC, BâªC} ) = |C|
  * <p>
- * Finite-sample surrogate: use RankTests.estimateWilksRank(...) on (A∪C, B∪C). Decision can be EQ/LE/GE with integer
+ * Finite-sample surrogate: use RankTests.estimateWilksRank(...) on (AâªC, BâªC). Decision can be EQ/LE/GE with integer
  * tolerance 'tol'.
  * <p>
- * p-value is reported via RankTests.pValueIndepConditioned(S, A∪C, B∪C, ∅, n), so it is at least monotone with the same
+ * p-value is reported via RankTests.pValueIndepConditioned(S, AâªC, BâªC, â, n), so it is at least monotone with the same
  * Wilks machinery you already use.
  * <p>
  * Thread-safe LRU caches (like IndTestBlocks).
@@ -147,7 +167,7 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, Effect
         // Build A,B,C (block indices), concatenate to AC, BC
         Parts parts = buildParts(x, y, z);
 
-        // Estimated rank for Σ_{A∪C, B∪C}
+        // Estimated rank for Î£_{AâªC, BâªC}
         int estRank = getRank(parts.ACcols, parts.BCcols);
 
         // Decision per Lemma 10 with chosen mode/tol
@@ -277,7 +297,7 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, Effect
             zblockCache.put(zkey, Ccols);
         }
 
-        // AC = A ∪ C, BC = B ∪ C
+        // AC = A âª C, BC = B âª C
         int[] AC = unionSorted(Acols, Ccols);
         int[] BC = unionSorted(Bcols, Ccols);
 

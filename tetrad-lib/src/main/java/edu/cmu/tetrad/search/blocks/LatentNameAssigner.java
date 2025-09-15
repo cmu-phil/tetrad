@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -10,10 +30,10 @@ import java.util.*;
 /**
  * Deterministic, collision-safe latent naming for block-based models.
  * <p>
- * Features: - Content-based names using overlaps with provided true clusters - Stable tie-breaking (count ↓, Jaccard ↓,
- * name ↑) - Optional collapsing of legacy single-capital suffixes (e.g., L12C → L12) - Global uniqueness across latents
- * and observed names - Reserved literals (default: {"Noise"}) are never altered or suffixed - Two modes: •
- * LEARNED_SINGLE: one latent per block (preserves ranks if present) • SIMULATION_EXPANDED: expands rank-r block into r
+ * Features: - Content-based names using overlaps with provided true clusters - Stable tie-breaking (count â, Jaccard â,
+ * name â) - Optional collapsing of legacy single-capital suffixes (e.g., L12C â L12) - Global uniqueness across latents
+ * and observed names - Reserved literals (default: {"Noise"}) are never altered or suffixed - Two modes: â¢
+ * LEARNED_SINGLE: one latent per block (preserves ranks if present) â¢ SIMULATION_EXPANDED: expands rank-r block into r
  * rank-1 latents with lettered suffixes
  */
 public final class LatentNameAssigner {
@@ -239,7 +259,7 @@ public final class LatentNameAssigner {
                         // First component of a singleton block: use the observed node directly
                         node = dataVars.get(block.get(0));
                         candidate = sanitizeName(node.getName());
-                        used.add(candidate); // mark its name as taken so later latents don’t collide
+                        used.add(candidate); // mark its name as taken so later latents donât collide
                     } else {
                         // Latent components (including for singleton blocks when j > 0)
                         candidate = (j == 0) ? base : nextLetteredBase(base, j, config);
@@ -384,7 +404,7 @@ public final class LatentNameAssigner {
          * A configuration flag that determines whether trailing capital letters following a digit in mixed alphanumeric
          * strings should be collapsed during processing.
          */
-        public final boolean collapseTrailingCap; // collapse ...<digit><Capital> → ...<digit>
+        public final boolean collapseTrailingCap; // collapse ...<digit><Capital> â ...<digit>
         /**
          * Represents the separator used for numeric disambiguation in configurations. It is commonly utilized to denote
          * a boundary or separation for numeric values, such as the inclusion of a dash ("-") in certain contexts.
@@ -429,7 +449,7 @@ public final class LatentNameAssigner {
         public static Config defaults() {
             return new Config(
                     8, true, "-", "+", "Mixed", true, "-",
-                    Set.of("Noise"),  // reserve “Noise” by default
+                    Set.of("Noise"),  // reserve âNoiseâ by default
                     true              // keep reserved names literal
             );
         }

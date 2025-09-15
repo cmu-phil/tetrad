@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.graph;
 
 import java.util.*;
@@ -11,7 +31,7 @@ import java.util.regex.Pattern;
  * <p>
  * Node naming convention: - Base (lag 0) is "X" - Lagged versions are "X:1", "X:2", ...
  * <p>
- * Examples: add X:1 -> Y  ⇒ also add X:2 -> Y:1, X:3 -> Y:2, ... if nodes exist remove Z:2 --- W:1  ⇒ also remove Z:1
+ * Examples: add X:1 -> Y  â also add X:2 -> Y:1, X:3 -> Y:2, ... if nodes exist remove Z:2 --- W:1  â also remove Z:1
  * --- W, Z:3 --- W:2, ...
  * <p>
  * Only addEdge / removeEdge are overridden; everything else is inherited from EdgeListGraph.

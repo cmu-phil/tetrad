@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.util;
 
 import org.ejml.simple.SimpleMatrix;
@@ -7,14 +27,14 @@ import java.util.Random;
 public final class EssLikePython {
 
     /**
-     * Mirrors your Python: 1) Column-standardize (ddof=0) across ALL rows. 2) Sample m rows without replacement (m ≈
-     * sqrt(2N) typical). 3) Row-standardize those m rows (ddof=0). 4) Compute full row–row correlation matrix and
+     * Mirrors your Python: 1) Column-standardize (ddof=0) across ALL rows. 2) Sample m rows without replacement (m â
+     * sqrt(2N) typical). 3) Row-standardize those m rows (ddof=0). 4) Compute full rowârow correlation matrix and
      * average its off-diagonal. 5) ESS = N / (1 + (N-1)*avgCorr).
      *
      * @param X                N x P data (rows=samples, cols=features)
      * @param sampleSize       desired number of rows to use (e.g., (int)Math.sqrt(2*N))
      * @param clampNonnegative if true, clamp avgCorr to [0, 0.999999] before ESS
-     * @param rng              random (null → default)
+     * @param rng              random (null â default)
      */
     public static Result estimateLikePython(SimpleMatrix X,
                                             int sampleSize,
@@ -101,7 +121,7 @@ public final class EssLikePython {
             for (int j = 0; j < P; j++) Y.set(i, j, (Y.get(i, j) - mi) / si);
         }
 
-        // 4) Full row–row correlation on Y (since each row is mean 0, sd 1 with ddof=0, the corr reduces to dot/P)
+        // 4) Full rowârow correlation on Y (since each row is mean 0, sd 1 with ddof=0, the corr reduces to dot/P)
         double sumOffDiag = 0.0;
         long numPairs = 0L;
         for (int i = 0; i < m; i++) {

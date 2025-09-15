@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Edge;
@@ -12,7 +32,7 @@ import java.util.*;
  * Utility to attach singleton (measured) variables as children of latent blocks using a Wilks rank-drop criterion,
  * analogous to the latent->latent hierarchy test.
  * <p>
- * For each singleton s and each latent L with indicator set C_L, we form D = V \ (C_L ∪ {s}) and compute:
+ * For each singleton s and each latent L with indicator set C_L, we form D = V \ (C_L âª {s}) and compute:
  * <p>
  * drop_L(s) = rank({s}, D) - rank({s}, D | C_L)
  * <p>
@@ -65,7 +85,7 @@ public final class SingletonAttacher {
         final int[] ALL = new int[p];
         for (int i = 0; i < p; i++) ALL[i] = i;
 
-        // BitSets for fast D = V \ (C_L ∪ {s})
+        // BitSets for fast D = V \ (C_L âª {s})
         final List<BitSet> latentCovers = new ArrayList<>(latentBlocks.size());
         for (List<Integer> C : latentBlocks) {
             BitSet bs = new BitSet(p);
@@ -86,7 +106,7 @@ public final class SingletonAttacher {
                 List<Integer> C = latentBlocks.get(L);
                 if (C.isEmpty()) continue; // should not happen (latents are size>1)
 
-                // Build D = V \ (C ∪ {s})
+                // Build D = V \ (C âª {s})
                 BitSet cover = (BitSet) latentCovers.get(L).clone();
                 cover.set(s); // union {s}
                 int[] D = complement(ALL, cover);

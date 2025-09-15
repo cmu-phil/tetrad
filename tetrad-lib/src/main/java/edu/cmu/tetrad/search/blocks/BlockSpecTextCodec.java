@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -127,7 +147,7 @@ public final class BlockSpecTextCodec {
                 else if (bare != null) tokens.add(bare);
             }
             if (lhsRaw == null && tokens.isEmpty() && !s.isEmpty()) {
-                // singleton line with non-empty s but no parsed token → treat s as a bare token
+                // singleton line with non-empty s but no parsed token â treat s as a bare token
                 tokens.add(s);
             }
 
@@ -161,13 +181,13 @@ public final class BlockSpecTextCodec {
                 }
                 if (idx != null) {
                     if (!seenInThisLine.add(idx)) {
-                        // within-line duplicate → warn, but don't add twice
+                        // within-line duplicate â warn, but don't add twice
                         issues.add(new Issue(ln + 1, 1, Severity.WARNING,
                                 "Duplicate variable within block", ds.getVariable(idx).getName()));
                         continue;
                     }
                     if (!usedAcrossBlocks.add(idx)) {
-                        // duplicate across blocks → warn and skip
+                        // duplicate across blocks â warn and skip
                         issues.add(new Issue(ln + 1, 1, Severity.WARNING,
                                 "Duplicate variable (already in another block)", ds.getVariable(idx).getName()));
                         continue;
@@ -186,7 +206,7 @@ public final class BlockSpecTextCodec {
 
             // Determine representative node name & rank
             if (block.size() == 1 && (blockName == null || blockRank == 1)) {
-                // singleton → observed node, rank implicitly 1
+                // singleton â observed node, rank implicitly 1
                 blockVars.add(ds.getVariable(block.get(0)));
                 ranks.add(1);
             } else {

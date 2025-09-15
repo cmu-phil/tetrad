@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.RestrictedBoss;
@@ -21,10 +41,10 @@ import java.util.concurrent.*;
  * orientations of the undirected edges about a variable in the CPDAG to estimate a minimum bound on the effect for a
  * given edge. Some references include the following:
  * <p>
- * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., and Bühlmann, P. (2012). Causal
+ * Stekhoven, D. J., Moraes, I., SveinbjÃ¶rnsson, G., Hennig, L., Maathuis, M. H., and BÃ¼hlmann, P. (2012). Causal
  * stability ranking. Bioinformatics, 28(21), 2819-2823.
  * <p>
- * Meinshausen, N., and Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society: Series B
+ * Meinshausen, N., and BÃ¼hlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society: Series B
  * (Statistical Methodology), 72(4), 417-473.
  * <p>
  * Colombo, D., and Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. The Journal of
@@ -652,7 +672,7 @@ public class Cstar {
 
         String header = "# Potential Causes = " + records.getFirst().getNumCauses() + "\n"
                         + "# Potential Effects = " + records.getFirst().getNumEffects() + "\n" +
-                        "Top Bracket (‘q’) = " + this.topBracket +
+                        "Top Bracket (âqâ) = " + this.topBracket +
                         "\n\n";
 
         int numColumns = 6;
@@ -1089,3 +1109,4 @@ public class Cstar {
         }
     }
 }
+

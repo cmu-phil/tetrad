@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
@@ -59,7 +79,7 @@ public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
 
         preset = Preset.CONSERVATIVE;
 
-//        // Nudge based on “strength” of the marginal test (very rough heuristic)
+//        // Nudge based on âstrengthâ of the marginal test (very rough heuristic)
 //        boolean strong = tname.contains("kci") || tname.contains("hsic");
 //        boolean weak   = tname.contains("fisher") || tname.contains("z") || tname.contains("pearson");
 //
@@ -81,10 +101,10 @@ public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      * Good first try (default).
      */
     private static void applyBalanced(edu.cmu.tetrad.search.Gin g) {
-//        safeCall(() -> g.setAsymmetryDelta(0.08)); // prefer direction by ≥ 0.08
-//        safeCall(() -> g.setAddMargin(0.002));     // require p ≥ alpha + 0.002
-//        safeCall(() -> g.setGapThreshold(0.90));   // σ_min/σ_next ≤ 0.90
-//        safeCall(() -> g.setMaxInDegree(5));       // ≤ 1 parent per latent
+//        safeCall(() -> g.setAsymmetryDelta(0.08)); // prefer direction by â¥ 0.08
+//        safeCall(() -> g.setAddMargin(0.002));     // require p â¥ alpha + 0.002
+//        safeCall(() -> g.setGapThreshold(0.90));   // Ï_min/Ï_next â¤ 0.90
+//        safeCall(() -> g.setMaxInDegree(5));       // â¤ 1 parent per latent
 //        safeCall(() -> g.setRidge(1e-2));
     }
 
@@ -143,7 +163,7 @@ public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
 
         gin.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-        // Always keep these numerics; they’re cheap and robust.
+        // Always keep these numerics; theyâre cheap and robust.
         safeCall(() -> gin.setWhitenBeforeSVD(true));
         safeCall(() -> gin.setRidge(1e-8));
 

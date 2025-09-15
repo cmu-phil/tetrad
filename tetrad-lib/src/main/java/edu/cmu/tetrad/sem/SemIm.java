@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,9 +15,9 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.*;
@@ -452,7 +452,7 @@ public final class SemIm implements Im, ISemIm {
         return new SemIm(SemPm.serializableInstance());
     }
 
-//    /** Robust log|Σ| for SPD Σ via Cholesky; throws if not SPD. */
+//    /** Robust log|Î£| for SPD Î£ via Cholesky; throws if not SPD. */
 //    private static double safeLogDetSymPD(Matrix S) {
 //        Matrix L = MatrixUtils.cholesky(S); // lower-tri; throws if not PD
 //        double sum = 0.0;
@@ -467,7 +467,7 @@ public final class SemIm implements Im, ISemIm {
 //    }
 
     /**
-     * Robust log|Σ| for (near-)SPD Σ via Cholesky with tiny jitter fallback.
+     * Robust log|Î£| for (near-)SPD Î£ via Cholesky with tiny jitter fallback.
      */
     private static double safeLogDetSymPD(Matrix S) {
         try {
@@ -503,7 +503,7 @@ public final class SemIm implements Im, ISemIm {
      * Solve SPD A * X = B using Cholesky(A) without forming A^{-1}.
      */
     private static Matrix cholSolveSPD(Matrix A, Matrix B) {
-        Matrix L = MatrixUtils.cholesky(A);              // A = L Lᵀ
+        Matrix L = MatrixUtils.cholesky(A);              // A = L Láµ
         int n = L.getNumRows();
         int m = B.getNumColumns();
         Matrix Y = new Matrix(n, m);
@@ -517,7 +517,7 @@ public final class SemIm implements Im, ISemIm {
                 Y.set(i, k, s / L.get(i, i));
             }
         }
-        // Back solve: Lᵀ * X = Y
+        // Back solve: Láµ * X = Y
         for (int k = 0; k < m; k++) {
             for (int i = n - 1; i >= 0; i--) {
                 double s = Y.get(i, k);
@@ -537,7 +537,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     public static @NotNull Result simulatePossibleShrinkage(Parameters params, Graph g) {
-        // Shrinkage: 1=None, 2=Ridge, 3=Ledoit–Wolf
+        // Shrinkage: 1=None, 2=Ridge, 3=LedoitâWolf
         params.set(Params.SHRINKAGE_MODE, 3);
         // Optional ridge/pinv knobs (used if present)
         params.set(Params.REGULARIZATION_LAMBDA, 1e-3);
@@ -1329,11 +1329,11 @@ public final class SemIm implements Im, ISemIm {
         S = MatrixUtils.symmetrize(S);
 
         try {
-            // log|Σ| and log|S| with Cholesky + tiny jitter fallback
+            // log|Î£| and log|S| with Cholesky + tiny jitter fallback
             double logDetSigma = safeLogDetSymPD(Sigma);
             double logDetS = safeLogDetSymPD(S);
 
-            // trace(Σ^{-1} S) using Cholesky solve of Σ; if Σ not SPD, jitter its diagonal once.
+            // trace(Î£^{-1} S) using Cholesky solve of Î£; if Î£ not SPD, jitter its diagonal once.
             double tr;
             try {
                 tr = traceAInvB_SPD(Sigma, S);
@@ -1350,7 +1350,7 @@ public final class SemIm implements Im, ISemIm {
                 tr = traceAInvB_SPD(SigmaJ, S);
             }
 
-            // F_ML = log|Σ| + trace(Σ^{-1} S) - log|S| - p
+            // F_ML = log|Î£| + trace(Î£^{-1} S) - log|S| - p
             return logDetSigma + tr - logDetS - getMeasuredNodes().size();
         } catch (Exception ex) {
             return Double.NaN;
@@ -1359,7 +1359,7 @@ public final class SemIm implements Im, ISemIm {
 
     private double getFgls() {
         // Compute FGLS without forming an explicit inverse; use Cholesky solves
-        // F_GLS = 0.5 * || I - Σ S^{-1} ||_F^2, where Σ is implied cov over measured vars and S is sample cov.
+        // F_GLS = 0.5 * || I - Î£ S^{-1} ||_F^2, where Î£ is implied cov over measured vars and S is sample cov.
         Matrix Sigma;
         try {
             Sigma = implCovarMeas();
@@ -1403,7 +1403,7 @@ public final class SemIm implements Im, ISemIm {
 //        if (s == null) return Double.NaN;
 //
 //        try {
-//            // F_ML = log|Σ| + trace(Σ^{-1} S) - log|S| - p
+//            // F_ML = log|Î£| + trace(Î£^{-1} S) - log|S| - p
 //            double logDetSigma = safeLogDetSymPD(sigma);
 //            double logDetS = safeLogDetSymPD(s);
 //            double tr = traceAInvB_SPD(sigma, s);
@@ -1427,7 +1427,7 @@ public final class SemIm implements Im, ISemIm {
         if (S == null || n <= 1) return Double.NaN;
 
         try {
-            // -(n-1)/2 * ( log|Σ| + trace(Σ^{-1} S) )
+            // -(n-1)/2 * ( log|Î£| + trace(Î£^{-1} S) )
             double logDetSigma = safeLogDetSymPD(Sigma);
             double tr = traceAInvB_SPD(Sigma, S);
             return -0.5 * (n - 1) * (logDetSigma + tr);
@@ -1925,7 +1925,7 @@ public final class SemIm implements Im, ISemIm {
 
         int numVars = getVariableNodes().size();
 
-        // Compute A = I - Bᵀ and (optionally) its inverse
+        // Compute A = I - Báµ and (optionally) its inverse
         Matrix B = edgeCoef().transpose();
         Matrix A = Matrix.identity(B.getNumRows()).minus(B);
 
@@ -2745,3 +2745,4 @@ public final class SemIm implements Im, ISemIm {
     public record Result(IndTestFisherZ.ShrinkageMode shrinkageMode, DataSet dataSet, int N, SemIm im) {
     }
 }
+

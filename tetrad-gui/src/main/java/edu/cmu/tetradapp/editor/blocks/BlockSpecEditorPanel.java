@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.editor.blocks;
 
 import edu.cmu.tetrad.data.DataSet;
@@ -42,8 +62,8 @@ public final class BlockSpecEditorPanel extends JPanel {
     private static final Pattern TOKEN = Pattern.compile("\"([^\"]*)\"|#(\\d+)|([^,\\s]+)");
     private final JTextPane textPane = new JTextPane();
     private final JLabel status = new JLabel("Ready");
-    private final JButton btnImport = new JButton("Import…");
-    private final JButton btnExport = new JButton("Export…");
+    private final JButton btnImport = new JButton("Importâ¦");
+    private final JButton btnExport = new JButton("Exportâ¦");
     private final JButton btnVars = new JButton("List Variables");
     private final JButton btnAlphatize = new JButton("Alphabetize");
     private final JButton btnApply = new JButton("Keep Changes");
@@ -336,11 +356,11 @@ public final class BlockSpecEditorPanel extends JPanel {
 //            NumberFormat formatter = new DecimalFormat("0.00");
 
             status.setText("OK: " + currentSpec.blocks().size() + " blocks"// + " p = " +  formatter.format(p)
-                           + (nWarn > 0 ? (" • " + nWarn + " warning(s)") : ""));
+                           + (nWarn > 0 ? (" â¢ " + nWarn + " warning(s)") : ""));
             status.setForeground(new Color(38, 139, 210)); // blue
         } else {
             this.currentSpec = null;
-            status.setText("Errors: " + nErr + (nWarn > 0 ? (" • Warnings: " + nWarn) : ""));
+            status.setText("Errors: " + nErr + (nWarn > 0 ? (" â¢ Warnings: " + nWarn) : ""));
             status.setForeground(new Color(220, 50, 47)); // red
         }
         btnApply.setEnabled(nErr == 0);
@@ -360,7 +380,7 @@ public final class BlockSpecEditorPanel extends JPanel {
                     doc.setCharacterAttributes(line.getStartOffset(),
                             line.getEndOffset() - line.getStartOffset(), COMMENT_STYLE, true);
                 } else {
-                    // reset to default (so non-comments don’t stay gray after edits)
+                    // reset to default (so non-comments donât stay gray after edits)
                     doc.setCharacterAttributes(line.getStartOffset(),
                             line.getEndOffset() - line.getStartOffset(), SimpleAttributeSet.EMPTY, true);
                 }
@@ -403,7 +423,7 @@ public final class BlockSpecEditorPanel extends JPanel {
         if (isClean() && currentSpec != null) {
             try {
                 if (onApply != null) onApply.accept(currentSpec);
-                status.setText("Applied • " + currentSpec.blocks().size() + " blocks");
+                status.setText("Applied â¢ " + currentSpec.blocks().size() + " blocks");
                 status.setForeground(new Color(38, 139, 210));
             } catch (Exception ex) {
                 status.setText("Apply failed: " + ex.getMessage());
@@ -661,7 +681,7 @@ public final class BlockSpecEditorPanel extends JPanel {
 //            }
 //            int colon = s.indexOf(':');
 //            if (colon < 0) {
-//                // singleton line (token) → leave as-is
+//                // singleton line (token) â leave as-is
 //                rewritten.add(raw);
 //                continue;
 //            }
@@ -680,7 +700,7 @@ public final class BlockSpecEditorPanel extends JPanel {
 //                else if (bare != null) tokens.add(bare);
 //            }
 //
-//            // Map tokens to variable names (drop unknowns; we don’t alter them here)
+//            // Map tokens to variable names (drop unknowns; we donât alter them here)
 //            List<String> names = new ArrayList<>();
 //            for (String tok : tokens) {
 //                if (tok.startsWith("#")) {
@@ -707,7 +727,7 @@ public final class BlockSpecEditorPanel extends JPanel {
 //        }
 //
 //        String newText = String.join("\n", rewritten);
-//        setText(newText, false); // don’t replace originalText; keep undo stack cleared
+//        setText(newText, false); // donât replace originalText; keep undo stack cleared
 //    }
 
     private void showCompletion() {
@@ -827,7 +847,7 @@ public final class BlockSpecEditorPanel extends JPanel {
                     Rectangle rEndFirst = new Rectangle(r0.x, r0.y, c.getWidth(), r0.height);
                     drawSquiggle(g2, r0.x, rEndFirst.x + rEndFirst.width - 6, r0.y + r0.height - 2);
 
-                    // (Simple version) we won’t try to paint intermediate lines perfectly; good enough for tokens
+                    // (Simple version) we wonât try to paint intermediate lines perfectly; good enough for tokens
                     drawSquiggle(g2, r1.x - 6, r1.x, r1.y + r1.height - 2);
                 }
                 g2.dispose();

@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
@@ -36,11 +35,11 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * Implements the Direct-LiNGAM algorithm. The reference is here:
  * <p>
- * S. Shimizu, T. Inazumi, Y. Sogawa, A. Hyvärinen, Y. Kawahara, T. Washio, P. O. Hoyer and K. Bollen. DirectLiNGAM: A
+ * S. Shimizu, T. Inazumi, Y. Sogawa, A. HyvÃ¤rinen, Y. Kawahara, T. Washio, P. O. Hoyer and K. Bollen. DirectLiNGAM: A
  * direct method for learning a linear non-Gaussian structural equation model. Journal of Machine Learning Research,
- * 12(Apr): 1225–1248, 2011.
+ * 12(Apr): 1225â1248, 2011.
  * <p>
- * A. Hyvärinen and S. M. Smith. Pairwise likelihood ratios for estimation of non-Gaussian structural evaluation models.
+ * A. HyvÃ¤rinen and S. M. Smith. Pairwise likelihood ratios for estimation of non-Gaussian structural evaluation models.
  * Journal of Machine Learning Research 14:111-152, 2013.
  *
  * @author bryanandrews
@@ -238,3 +237,4 @@ public class DirectLingam {
         return r;
     }
 }
+

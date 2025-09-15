@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -19,7 +39,7 @@ import static edu.cmu.tetrad.search.test.IndTestFisherZ.ShrinkageMode.LEDOIT_WOL
 import static org.junit.Assert.assertTrue;
 
 /**
- * CCD sanity: canonical “simple” cyclic example. Graph (names chosen to match the attached diagram): X1 -> X4,   X2 ->
+ * CCD sanity: canonical âsimpleâ cyclic example. Graph (names chosen to match the attached diagram): X1 -> X4,   X2 ->
  * X3,   X3 <-> X4 (2-cycle)
  * <p>
  * Expected PAG: X1 -> X4 X2 -> X3 X3 o-o X4        (non-oriented between cycle nodes) no other adjacencies (optional
@@ -137,7 +157,7 @@ public class TestCcdSimpleCycleSanity {
 
             DataSet ds = sim.dataSet();
 
-            // Fisher-Z with Ledoit–Wolf shrinkage
+            // Fisher-Z with LedoitâWolf shrinkage
             IndTestFisherZ fz = new IndTestFisherZ(ds, ALPHA);
             fz.setShrinkageMode(LEDOIT_WOLF);
 

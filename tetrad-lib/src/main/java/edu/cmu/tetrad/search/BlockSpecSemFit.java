@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
@@ -26,15 +46,15 @@ import java.util.*;
  * with blocks()), and (iii) a DataSet, this class fits a linear multi-factor-per-block measurement model and returns a
  * chi-square style p-value assessing the goodness-of-fit of that *entire BlockSpec* to the observed covariance.
  * <p>
- * Interpretation: the p-value answers “Are these clusters with these ranks plausible for this data (up to sampling
- * error)?”  This is complementary to structure learning over blocks (e.g., CPC + IndTestBlocksTs), which does not
+ * Interpretation: the p-value answers âAre these clusters with these ranks plausible for this data (up to sampling
+ * error)?â  This is complementary to structure learning over blocks (e.g., CPC + IndTestBlocksTs), which does not
  * require this fit.
  * <p>
  * Per block i: - choose r_i "anchor" indicators (first r_i by the block order), - enforce a lower-triangular r_i x r_i
  * top submatrix of loadings with positive diagonal, - remaining rows free, - unique variances positive, - latent
- * covariance Σ_L (dimension R = sum_i r_i) parameterized via Cholesky to stay PD.
+ * covariance Î£_L (dimension R = sum_i r_i) parameterized via Cholesky to stay PD.
  * <p>
- * Objective (scale-free): 0.5 * || I - (Λ Σ_L Λ' + Ψ) S^{-1} ||_F^2
+ * Objective (scale-free): 0.5 * || I - (Î Î£_L Î' + Î¨) S^{-1} ||_F^2
  * <p>
  * NOTE: Use this for BlockSpec fit diagnostics. For learning a latent graph over blocks from rank constraints, prefer
  * CPC + IndTestBlocksTs directly (no optimization needed).
@@ -148,7 +168,7 @@ public final class BlockSpecSemFit {
     }
 
     /**
-     * Fit (Λ, Ψ, Σ_L) under triangular constraints and return the BlockSpec goodness-of-fit p-value. Also exposes
+     * Fit (Î, Î¨, Î£_L) under triangular constraints and return the BlockSpec goodness-of-fit p-value. Also exposes
      * objective via getObjective() and fitted params via getters below.
      */
     public double fit() {
@@ -224,7 +244,7 @@ public final class BlockSpecSemFit {
     //    - triangular T_i (r_i x r_i) with positive diag: store diag logs + strict-lower entries
     //    - free part B_i ((m_i - r_i) x r_i)
     //  uniques: log-params so psi_j = exp(u_j) > 0
-    //  Sigma_L: upper-Cholesky U (diag via logs), then Σ_L = U^T U
+    //  Sigma_L: upper-Cholesky U (diag via logs), then Î£_L = U^T U
 
     private double[] packAll(Matrix Lambda, double[] psi, Matrix SigmaL) {
         double[] v = new double[countParams()];
@@ -361,7 +381,7 @@ public final class BlockSpecSemFit {
     }
 
     /**
-     * Mapping utilities if you need per-block slices of Λ / Σ_L.
+     * Mapping utilities if you need per-block slices of Î / Î£_L.
      */
     public int blockStartRow(int b) {
         int s = 0;
@@ -376,7 +396,7 @@ public final class BlockSpecSemFit {
     }
 
     /**
-     * Objective: 0.5 * || I - (Λ Σ_L Λ' + Ψ) S^{-1} ||_F^2 (constraints enforced by parameterization).
+     * Objective: 0.5 * || I - (Î Î£_L Î' + Î¨) S^{-1} ||_F^2 (constraints enforced by parameterization).
      */
     private class Obj implements MultivariateFunction {
         @Override

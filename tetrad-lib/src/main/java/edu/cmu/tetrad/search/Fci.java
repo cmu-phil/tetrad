@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
@@ -15,10 +35,10 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * FCI with configurable R0 collider orientation: VANILLA:  use the FAS sepset S(x,y); orient x->z<-y iff z ∉ S. CPC:
- *   enumerate S ⊆ adj(x)\{y} and adj(y)\{x}; orient iff ALL separating sets exclude z; dependent iff ALL include z;
+ * FCI with configurable R0 collider orientation: VANILLA:  use the FAS sepset S(x,y); orient x->z<-y iff z â S. CPC:
+ *   enumerate S â adj(x)\{y} and adj(y)\{x}; orient iff ALL separating sets exclude z; dependent iff ALL include z;
  * otherwise ambiguous (no orientation). MAX_P:    among separating sets, choose S* with max p; orient independent iff z
- * ∉ S*, dependent iff z ∈ S*.
+ * â S*, dependent iff z â S*.
  * <p>
  * All other steps (possible-dsep, R1.., final orientation: Spirtes or Zhang) are unchanged.
  */
@@ -181,7 +201,7 @@ public final class Fci implements IGraphSearch {
         if (verbose) TetradLogger.getInstance().log("Reorienting with o-o.");
         pag.reorientAllWith(Endpoint.CIRCLE);
 
-        // Build unshielded triple set once here (for guaranteePag); we’ll refresh after possible-dsep as well.
+        // Build unshielded triple set once here (for guaranteePag); weâll refresh after possible-dsep as well.
         Set<edu.cmu.tetrad.graph.Triple> unshieldedTriples = collectUnshieldedTriplesAsGraphTriples(pag);
 
         // R0 with selected collider rule (replaces vanilla ruleR0 here)

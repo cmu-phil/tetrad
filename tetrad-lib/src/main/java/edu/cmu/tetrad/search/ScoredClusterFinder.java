@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
@@ -12,14 +32,14 @@ import java.util.stream.LongStream;
 
 /**
  * ScoredClusterFinder ------------------- Given a DataSet and a subset of candidate variables Vsub (by column index),
- * enumerate all clusters C ⊆ Vsub of a fixed size s and keep those for which a BIC-style RCCA score is maximized
+ * enumerate all clusters C â Vsub of a fixed size s and keep those for which a BIC-style RCCA score is maximized
  * exactly at rank k when scored against D = Vsub \ C.
  * <p>
  * Scoring model (same spirit as BlocksBicScore): Fit(r) = -nEff * sum_{i=1..r} log(1 - rho_i^2) Pen(r) = c * [ r * (p +
- * q - r) ] * log(n)  +  2*gamma * [ r * (p + q - r) ] * log(P_pool) where p = |C|, q = |D|, m = min(p,q,n-1), r ∈
+ * q - r) ] * log(n)  +  2*gamma * [ r * (p + q - r) ] * log(P_pool) where p = |C|, q = |D|, m = min(p,q,n-1), r â
  * {0..m}, and nEff = max(1, n - 1 - (p + q + 1)/2). We pick r* that maximizes Fit(r) - Pen(r).
  * <p>
- * A cluster is accepted if r* == targetRank and, optionally, has margins over r*±1.
+ * A cluster is accepted if r* == targetRank and, optionally, has margins over r*Â±1.
  * <p>
  * Thread-safe; uses parallel enumeration and lock-free collections.
  */

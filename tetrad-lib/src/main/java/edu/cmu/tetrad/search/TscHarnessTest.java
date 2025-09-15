@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -57,7 +77,7 @@ public class TscHarnessTest {
     private static final long SEED = 45L;
     private static final int N = 5000;     // carried in CovarianceMatrix as sample size
     private static final double LOADING = 0.80; // indicator loading magnitude (strong = easier)
-    private static final double UNIQUENESS = 0.36; // θ diagonal (so ~ unit variance with LOADING=0.8)
+    private static final double UNIQUENESS = 0.36; // Î¸ diagonal (so ~ unit variance with LOADING=0.8)
     private static final double LATENT_RHO = 0.30; // equicorrelation among latent factors (robust connectivity)
     private static final double IMPURITY_EPS = 0.00; // 0.00 = clean NOLAC; try 0.05 / 0.10 to inject MM residuals
     private static final double ALPHA = 0.001; // Wilks cutoff used inside Tsc
@@ -337,7 +357,7 @@ public class TscHarnessTest {
     }
 
     /**
-     * Bootstrap resampler: rows with replacement → CovarianceMatrix.
+     * Bootstrap resampler: rows with replacement â CovarianceMatrix.
      */
     private static java.util.function.Function<Integer, CovarianceMatrix> bootstrapCovBuilder(DataSet data, long seed) {
         return (Integer b) -> {
@@ -423,11 +443,11 @@ public class TscHarnessTest {
      * set.
      * <p>
      * The method includes: - Validation of cluster rank for each identified cluster. - Assertions to ensure that
-     * clusters with size ≥ 3 are not present in the final stable set. - A secondary condition that at most one cluster
+     * clusters with size â¥ 3 are not present in the final stable set. - A secondary condition that at most one cluster
      * of size 2 is allowed as a tiny artifact. - Summary output with cluster counts and their size distributions for
      * diagnostic purposes.
      * <p>
-     * Assertions: - Asserts that no clusters of size ≥ 3 are inferred in the final stable results. - Asserts that the
+     * Assertions: - Asserts that no clusters of size â¥ 3 are inferred in the final stable results. - Asserts that the
      * number of size-2 clusters (tiny artifacts) does not exceed one.
      * <p>
      * Preconditions: - RandomUtil must be properly seeded. - The DAG must conform to the specified constraints with no
@@ -470,7 +490,7 @@ public class TscHarnessTest {
                 minRedundancy);
         dual.retainAll(dualTight);
 
-        // ---- Bootstrap stability (B=10, keep ≥70%) ----
+        // ---- Bootstrap stability (B=10, keep â¥70%) ----
         Set<Set<Integer>> boot = new HashSet<>();
         {
             final int B = 10;
@@ -486,7 +506,7 @@ public class TscHarnessTest {
             for (var e : counts.entrySet()) if (e.getValue() >= thresh) boot.add(e.getKey());
         }
 
-        // ---- Final stable set = dual-alpha ∩ bootstrap ----
+        // ---- Final stable set = dual-alpha â© bootstrap ----
         Set<Set<Integer>> cl = new HashSet<>(dual);
         cl.retainAll(boot);
 
@@ -505,15 +525,15 @@ public class TscHarnessTest {
             System.out.println("Rank(" + C + ") = " + rank);
         }
 
-        System.out.println("Stable clusters (dual-alpha ∩ bootstrap): " + cl);
+        System.out.println("Stable clusters (dual-alpha â© bootstrap): " + cl);
 
         long big = cl.stream().filter(C -> C.size() >= 3).count();
         long tiny2 = cl.stream().filter(C -> C.size() == 2).count();
 
-        System.out.printf("No-latent DAG (stable): clusters=%d  (#size≥3=%d, #size=2=%d)%n",
+        System.out.printf("No-latent DAG (stable): clusters=%d  (#sizeâ¥3=%d, #size=2=%d)%n",
                 cl.size(), big, tiny2);
 
-        assertEquals("Should not see size≥3 clusters in a pure observed DAG (generic parameters).", 0, big);
+        assertEquals("Should not see sizeâ¥3 clusters in a pure observed DAG (generic parameters).", 0, big);
         assertTrue("At most one tiny size-2 artifact expected.", tiny2 <= 1);
     }
 
@@ -551,13 +571,13 @@ public class TscHarnessTest {
             latentCol += r;
         }
 
-        // Latent covariance Ψ (R x R): equicorrelated SPD
+        // Latent covariance Î¨ (R x R): equicorrelated SPD
         double[][] psi = equicorrelatedSPD(R, LATENT_RHO);
-        // Θ (P x P) uniqueness diagonal
+        // Î (P x P) uniqueness diagonal
         double[][] theta = new double[P][P];
         for (int i = 0; i < P; i++) theta[i][i] = UNIQUENESS;
 
-        // Σ = L Ψ Lᵀ + Θ + impuritiesWithinBlocks
+        // Î£ = L Î¨ Láµ + Î + impuritiesWithinBlocks
         double[][] Sigma = add(add(mmul(mmul(L, psi), transpose(L)), theta),
                 impuritiesWithinBlocks(trueBlocks, rs.seed, P, IMPURITY_EPS));
 

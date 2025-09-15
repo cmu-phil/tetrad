@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -105,7 +125,7 @@ public final class RandomMim {
         List<Node> allLatents = new ArrayList<>();
         List<Node> allMeasured = new ArrayList<>();
 
-        // Create groups’ latents + measureds
+        // Create groupsâ latents + measureds
         for (int g = 0; g < G; g++) {
             Group grp = groups.get(g);
 
@@ -179,7 +199,7 @@ public final class RandomMim {
 
                 if (!candidates.isEmpty()) {
                     Collections.shuffle(candidates, rng);
-                    // “Patchy” = pick about half of the possible connections, but at least one.
+                    // âPatchyâ = pick about half of the possible connections, but at least one.
                     final int k = Math.max(1, candidates.size() / 2);
                     for (int i = 0; i < k; i++) {
                         Node Lfrom = candidates.get(i)[0];
@@ -198,10 +218,10 @@ public final class RandomMim {
         // 5a) extra latent -> measured cross-loadings (avoid duplicating existing parent edges)
         addLatentMeasuredImpurities(graph, allLatents, allMeasured, numLatentMeasuredImpureParents, rng);
 
-        // 5b) measured -> measured directed impurities (avoid cycles as much as possible by preferring “forward” indices)
+        // 5b) measured -> measured directed impurities (avoid cycles as much as possible by preferring âforwardâ indices)
         addMeasuredMeasuredParents(graph, allMeasured, numMeasuredMeasuredImpureParents, rng);
 
-        // 5c) measured <-> measured bidirected “error correlations”
+        // 5c) measured <-> measured bidirected âerror correlationsâ
         addMeasuredMeasuredAssociations(graph, allMeasured, numMeasuredMeasuredImpureAssociations, rng);
 
         // layout (nice to have)

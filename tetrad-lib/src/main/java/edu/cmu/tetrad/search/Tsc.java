@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
@@ -22,26 +42,26 @@ import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
  * variables. This class manages significance levels, caching mechanisms, and structures to efficiently handle clusters
  * and their associated ranks.
  *
- * <p><b>Theory (NOLAC) — soundness sketch.</b>
+ * <p><b>Theory (NOLAC) â soundness sketch.</b>
  * We assume a linear-Gaussian SEM with a latent DAG and pure measurement (each observed loads on exactly one latent),
  * independent unique errors across distinct clusters, and generic parameters (no exact cancellations). Under the NOLAC
  * (no overlapping clusters) assumption, the indicator sets for distinct latents are disjoint. With a consistent rank
- * test (e.g., Wilks LRT with a diminishing α), the following properties hold generically:
+ * test (e.g., Wilks LRT with a diminishing Î±), the following properties hold generically:
  *
  * <ul>
  *   <li><b>Seed soundness.</b> If G is a true cluster with latent-boundary dimension r (typically r=1), then every
- *       (r+1)-subset S⊂G satisfies rank(S, V\S)=r. If S contains any nonmember, generically rank(S, V\S)&gt;r.</li>
+ *       (r+1)-subset SâG satisfies rank(S, V\S)=r. If S contains any nonmember, generically rank(S, V\S)&gt;r.</li>
  *   <li><b>Union/extension correctness.</b> Growing a seed by unions that preserve rank r expands exactly to the
  *       maximal G; adding a nonmember raises the rank and is rejected.</li>
  *   <li><b>Non-overlap.</b> Because each observed belongs to at most one true G, any attempt to reuse a committed
  *       variable either raises the rank earlier or is blocked by bookkeeping; accepted clusters are pairwise disjoint.</li>
- *   <li><b>Conditional-rank refinement (Rule 3).</b> For any Z⊂C with |Z|≥r, if rank(C\Z, V\(C) | Z)=0 then Z acts
+ *   <li><b>Conditional-rank refinement (Rule 3).</b> For any ZâC with |Z|â¥r, if rank(C\Z, V\(C) | Z)=0 then Z acts
  *       as an observed bottleneck in a pure DAG-without-latents scenario; removing Z collapses spurious clusters.
  *       In a true latent cluster with noisy indicators, conditioning on any small Z cannot annihilate the latent
  *       contribution, so the refinement leaves true clusters intact generically.</li>
  * </ul>
  *
- * <p><b>Practical guidance.</b> Use α that decreases slowly with n (e.g., α=1/log n) or an information-criterion cutoff
+ * <p><b>Practical guidance.</b> Use Î± that decreases slowly with n (e.g., Î±=1/log n) or an information-criterion cutoff
  * to reduce Type-I rank errors with sample size. Ensure {@code expectedSampleSize} reflects the covariance sample size.
  *
  * @author josephramsey
@@ -265,7 +285,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                 if (clusterRank == rank && cluster.size() >= minSize) {
 
                     // --- Rule 3-lite (observed-mediator guard).
-                    // If ∃ z ∈ C such that rank(C\{z}, D | z) = 0, the cross-block dependence collapses when conditioning
+                    // If â z â C such that rank(C\{z}, D | z) = 0, the cross-block dependence collapses when conditioning
                     // on z. This is typical for pure DAGs without latents where z is a mediator/bottleneck. In true latent
                     // clusters with noisy indicators, conditioning on a single indicator cannot remove the latent effect
                     // generically, so this check is asymptotically safe under NOLAC.
@@ -357,7 +377,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                         used.addAll(C2);
 
                         log("Augmenting cluster " + toNamesCluster(C1) + " to " + toNamesCluster(C2)
-                            + " (rank drop " + rank + "→" + newRank + " — bifactor signature).");
+                            + " (rank drop " + rank + "â" + newRank + " â bifactor signature).");
                         didAugment = true;
                         break;
                     }
@@ -409,13 +429,13 @@ public class Tsc implements EffectiveSampleSizeSettable {
             if (refined.size() < minSize2) {
                 clusterToRank.remove(cluster);
                 changedAny = true;
-                log("Refined cluster " + toNamesCluster(cluster) + " → " + toNamesCluster(refined)
+                log("Refined cluster " + toNamesCluster(cluster) + " â " + toNamesCluster(refined)
                     + " rejected: |C| < r+1+minRedundancy (" + refined.size() + " < " + minSize2 + ").");
                 continue;
             }
             clusterToRank.put(refined, newRank);
             changedAny = true;
-            log("Refined cluster " + toNamesCluster(cluster) + " → " + toNamesCluster(refined)
+            log("Refined cluster " + toNamesCluster(cluster) + " â " + toNamesCluster(refined)
                 + " (rank now " + newRank + ").");
         }
         if (!changedAny) log("No cluster refinement was needed.");
@@ -468,7 +488,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
     /**
      * Refine a cluster via conditional-rank trimming.
      *
-     * <p><b>Rule 3 (implemented).</b> Remove a subset Z ⊆ C with |Z| ≥ r_C if rank(C\Z, D | Z) = 0. Interpretation:
+     * <p><b>Rule 3 (implemented).</b> Remove a subset Z â C with |Z| â¥ r_C if rank(C\Z, D | Z) = 0. Interpretation:
      * Z acts as an observed bottleneck that d-separates C\Z from D in a pure DAG without latents. In true latent
      * clusters (with noisy indicators), conditioning on small Z cannot annihilate the latent contribution generically,
      * so genuine clusters survive this trimming asymptotically.
@@ -477,7 +497,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
      * r_C which matches the latent boundary dimension and is both theoretically natural and computationally efficient.
      *
      * @param original the candidate cluster (not mutated)
-     * @param rC       intended rank of the cluster (≥0)
+     * @param rC       intended rank of the cluster (â¥0)
      * @return refined cluster (possibly smaller); empty set if eliminated
      */
     private Set<Integer> refineClustersByConditionalRanks(Set<Integer> original, int rC) {
@@ -496,7 +516,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
             List<Integer> D = allVariables();
             D.removeAll(Cset);
 
-            // --- Rule 3: find Z with |Z| ≥ rC and rank(C\Z, D | Z) = 0, remove Z
+            // --- Rule 3: find Z with |Z| â¥ rC and rank(C\Z, D | Z) = 0, remove Z
             if (!Cset.isEmpty() && rC > 0) {
                 List<Integer> Cnow = new ArrayList<>(Cset);
                 List<Integer> Dnow = allVariables();
@@ -521,7 +541,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
                     int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, nEff, alpha);
                     if (rZ == 0) {
-                        // offending subset is Z → remove Z from the cluster
+                        // offending subset is Z â remove Z from the cluster
                         Z.forEach(Cset::remove);
                         log("Rule 3 fired: removing offending subset Z="
                             + toNamesCluster(new HashSet<>(Z))

@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
@@ -187,7 +207,7 @@ public class Pc implements IGraphSearch {
 
     /**
      * Returns unshielded triples that are neither definite colliders nor definite noncolliders under the current graph
-     * marks—i.e., mixed or unresolved at z.
+     * marksâi.e., mixed or unresolved at z.
      */
     public List<Triple> getAmbiguousTriples(Graph g) {
         List<Triple> result = new ArrayList<>();
@@ -239,7 +259,7 @@ public class Pc implements IGraphSearch {
     }
 
     private boolean isUndirected(Graph g, Node a, Node b) {
-        // Adjacent and neither is a parent of the other → undirected edge
+        // Adjacent and neither is a parent of the other â undirected edge
         return g.isAdjacentTo(a, b) && !g.isParentOf(a, b) && !g.isParentOf(b, a);
     }
 
@@ -303,7 +323,7 @@ public class Pc implements IGraphSearch {
     // ----- CPC/MAX-P decisions -----------------------------------------------------------
 
     /**
-     * Global, order-independent MAX-P collider orientation (optionally depth-stratified; avoids ↔).
+     * Global, order-independent MAX-P collider orientation (optionally depth-stratified; avoids â).
      */
     private void orientMaxPGlobal(Graph g, List<Triple> triples) throws InterruptedException {
         List<MaxPDecision> winners = new ArrayList<>();

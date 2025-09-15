@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.DataUtils;
@@ -294,7 +314,7 @@ public class SemOptimizerEm implements SemOptimizer {
         this.numObserved = o;
         this.numLatent = l;
 
-        // Fill expectedCov’s observed block using yCov in measured order:
+        // Fill expectedCovâs observed block using yCov in measured order:
         this.expectedCov = new Matrix(this.numObserved + this.numLatent, this.numObserved + this.numLatent);
         for (int i = 0; i < this.numObserved; i++) {
             for (int j = i; j < this.numObserved; j++) {
@@ -390,7 +410,7 @@ public class SemOptimizerEm implements SemOptimizer {
             double variance = this.expectedCov.get(idx, idx);
 
             // If the node has structural parents, estimate regression coefficients via
-            // (regularized) normal equations: coefs = (X'X + λI)^{-1} X'y.
+            // (regularized) normal equations: coefs = (X'X + Î»I)^{-1} X'y.
             if (this.parents[idx] != null && this.parents[idx].length > 0) {
                 int k = this.parents[idx].length;
 
@@ -407,7 +427,7 @@ public class SemOptimizerEm implements SemOptimizer {
                 }
 
                 // Ridge regularization to stabilize in case of near-singular parent covariance.
-                // We keep λ tiny so estimates remain close to OLS when well-conditioned.
+                // We keep Î» tiny so estimates remain close to OLS when well-conditioned.
                 final double ridge = 1e-8;
                 Matrix M = new Matrix(this.parentsCov[idx]);         // k x k
                 for (int d = 0; d < k; d++) {
@@ -443,7 +463,7 @@ public class SemOptimizerEm implements SemOptimizer {
                     }
                 }
 
-                // Residual variance = Var(y) - cov(y,parents)·beta
+                // Residual variance = Var(y) - cov(y,parents)Â·beta
                 double explained = new Vector(this.nodeParentsCov[idx]).dotProduct(coefs);
                 variance -= explained;
 
@@ -486,6 +506,7 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
 }
+
 
 
 

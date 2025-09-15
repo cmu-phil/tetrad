@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.util.TetradLogger;
@@ -29,7 +49,7 @@ public final class GaussianMixtureEM {
         double prevLL = Double.NEGATIVE_INFINITY;
 
         for (int it = 0; it < cfg.maxIters; it++) {
-            // --- annealing schedule: beta ∈ (0,1], climbs to 1 across annealSteps
+            // --- annealing schedule: beta â (0,1], climbs to 1 across annealSteps
             double beta = 1.0;
             if (cfg.annealSteps > 0) {
                 double t = Math.min(1.0, (it + 1) / (double) cfg.annealSteps);
@@ -87,7 +107,7 @@ public final class GaussianMixtureEM {
                 logp[k] = logGaussian(xi, mu[k], S[k], covType) + logw[k];
                 if (logp[k] > max) max = logp[k];
             }
-            // temper the posteriors: scale log-likelihoods by beta ∈ (0,1], beta→1 recovers standard EM
+            // temper the posteriors: scale log-likelihoods by beta â (0,1], betaâ1 recovers standard EM
             for (int k = 0; k < K; k++) logp[k] = beta * logp[k];
 
             // log-sum-exp
@@ -133,9 +153,9 @@ public final class GaussianMixtureEM {
     }
 
     /**
-     * Full M-step with covariance shrinkage and relative ridge. - shrinkage λ in [0,1]: shrinks Σ_k toward spherical
-     * target (FULL) or mean variance (DIAGONAL) - ridgeAbs ≥ 0: absolute ridge added to diagonal - ridgeRel ≥ 0:
-     * relative ridge = ridgeRel * τ (τ = avg variance) added to diagonal
+     * Full M-step with covariance shrinkage and relative ridge. - shrinkage Î» in [0,1]: shrinks Î£_k toward spherical
+     * target (FULL) or mean variance (DIAGONAL) - ridgeAbs â¥ 0: absolute ridge added to diagonal - ridgeRel â¥ 0:
+     * relative ridge = ridgeRel * Ï (Ï = avg variance) added to diagonal
      */
     private static void mStep(double[][] X, double[][] R, double[] w, double[][] mu, double[][][] S,
                               CovarianceType covType, double ridgeAbs, double shrinkage, double ridgeRel) {

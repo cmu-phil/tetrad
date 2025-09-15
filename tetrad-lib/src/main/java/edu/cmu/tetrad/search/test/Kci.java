@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
@@ -17,13 +37,13 @@ import java.util.*;
 /**
  * Fast KCI (Kernel-based Conditional Independence) scaffold tuned for EJML 0.44.0.
  * <p>
- * Key optimizations: - O(n^2) centering (no H K H multiplies) - Fast Gaussian kernel via one X·Xᵀ GEMM + vectorized exp
+ * Key optimizations: - O(n^2) centering (no H K H multiplies) - Fast Gaussian kernel via one XÂ·Xáµ GEMM + vectorized exp
  * - Cache of RZ = eps * (KZ + eps I)^{-1} per (Z, rows, eps) key
  * <p>
- * Null:  X ⟂ Y | Z Test:  S = (1/n) * tr(RZ*K_[X,Z]*RZ * RZ*K_Y*RZ) with Gamma tail approx or permutation fallback.
+ * Null:  X â Y | Z Test:  S = (1/n) * tr(RZ*K_[X,Z]*RZ * RZ*K_Y*RZ) with Gamma tail approx or permutation fallback.
  * <p>
  * Notes: - This is a focused class; integrate/rename fields/methods as needed for your codebase. - For large n,
- * consider Nyström downsampling before forming kernels.
+ * consider NystrÃ¶m downsampling before forming kernels.
  */
 public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     /**
@@ -185,7 +205,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     // ---------------------- ctor ----------------------
 
     /**
-     * Simple numeric symmetrization: (A + Aᵀ)/2.
+     * Simple numeric symmetrization: (A + Aáµ)/2.
      */
     private static SimpleMatrix symmetrize(SimpleMatrix A) {
         return A.plus(A.transpose()).scale(0.5);
@@ -211,7 +231,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     private static int[] uniformSample(int n, int m, Random rng) {
         int[] idx = new int[n];
         for (int i = 0; i < n; i++) idx[i] = i;
-        // Partial Fisher–Yates
+        // Partial FisherâYates
         for (int i = 0; i < m; i++) {
             int j = i + rng.nextInt(n - i);
             int t = idx[i];
@@ -236,7 +256,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         final double[] ry = RY.getDDRM().data;
 
         // --- 1) Estimate null mean and variance via a small number of permutations
-        final int Bmom = 200;               // 128–512 is a good range
+        final int Bmom = 200;               // 128â512 is a good range
         final Random rng = new Random(7);   // fixed seed for stability in tests
 
         double mean = 0.0, m2 = 0.0;
@@ -244,7 +264,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         for (int i = 0; i < N; i++) idx[i] = i;
 
         for (int b = 0; b < Bmom; b++) {
-            // Fisher–Yates shuffle of idx
+            // FisherâYates shuffle of idx
             for (int i = N - 1; i > 0; i--) {
                 int j = rng.nextInt(i + 1);
                 int t = idx[i];
@@ -289,7 +309,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 
     /**
      * Permutation p-value for conditional KCI. Permute Y (equivalently, conjugate RY by P) and recompute S_perm = (1/n)
-     * tr(RX * P RY Pᵀ).
+     * tr(RX * P RY Páµ).
      */
     private static double permutationPValueConditional(SimpleMatrix RX,
                                                        SimpleMatrix RY,
@@ -631,7 +651,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 //                Ky = linearKernel1D(y);
 //            }
 //            case POLYNOMIAL -> {
-//                // Use polyGamma if >0, else default to 1/d with d=1 ⇒ 1.0
+//                // Use polyGamma if >0, else default to 1/d with d=1 â 1.0
 //                double gamma = (this.getPolyGamma() > 0.0) ? this.getPolyGamma() : 1.0;
 //                Kx = polynomialKernel1D(x, gamma, this.getPolyCoef0(), this.getPolyDegree());
 //                Ky = polynomialKernel1D(y, gamma, this.getPolyCoef0(), this.getPolyDegree());
@@ -680,7 +700,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         final int n = rows.size();
         final int d = varRows.size();
 
-        // Edge case: no variables → constant kernel (all ones).
+        // Edge case: no variables â constant kernel (all ones).
         if (d == 0) {
             DMatrixRMaj K = new DMatrixRMaj(n, n);
             Arrays.fill(K.data, 1.0);
@@ -720,18 +740,18 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     }
 
     /**
-     * Linear kernel (X Xᵀ) with same layout as the Gaussian helper.
+     * Linear kernel (X Xáµ) with same layout as the Gaussian helper.
      */
     private SimpleMatrix linearKernelMatrix(List<Integer> varRows) {
         final int n = rows.size();
         final int d = varRows.size();
 
-        // Edge case: no variables → linear kernel is identically 0
+        // Edge case: no variables â linear kernel is identically 0
         if (d == 0) {
             return SimpleMatrix.wrap(new DMatrixRMaj(n, n)); // all zeros
         }
 
-        // Build X (n × d)
+        // Build X (n Ã d)
         DMatrixRMaj X = new DMatrixRMaj(n, d);
         for (int c = 0; c < d; c++) {
             int vr = varRows.get(c);
@@ -740,7 +760,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
             }
         }
 
-        // K = X Xᵀ  (n × n)
+        // K = X Xáµ  (n Ã n)
         DMatrixRMaj K = new DMatrixRMaj(n, n);
         CommonOps_DDRM.multTransB(X, X, K);  // <-- correct call for X * X^T
 
@@ -750,21 +770,21 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 // === 1-D kernel builders (fast and allocation-light) ===
 
     /**
-     * Polynomial kernel: K = (gamma * (X Xᵀ) + coef0) ^ degree, with X built as (n × d).
+     * Polynomial kernel: K = (gamma * (X Xáµ) + coef0) ^ degree, with X built as (n Ã d).
      */
     private SimpleMatrix polynomialKernelMatrix(List<Integer> varRows,
                                                 double gamma, double coef0, int degree) {
         final int n = rows.size();
         final int d = varRows.size();
 
-        // Edge case: no variables → constant kernel (coef0^degree) * 1
+        // Edge case: no variables â constant kernel (coef0^degree) * 1
         if (d == 0) {
             DMatrixRMaj K = new DMatrixRMaj(n, n);
             Arrays.fill(K.data, Math.pow(coef0, degree));
             return SimpleMatrix.wrap(K);
         }
 
-        // Build X (n × d)
+        // Build X (n Ã d)
         DMatrixRMaj X = new DMatrixRMaj(n, d);
         for (int c = 0; c < d; c++) {
             int vr = varRows.get(c);
@@ -773,7 +793,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
             }
         }
 
-        // G = X Xᵀ (n × n)
+        // G = X Xáµ (n Ã n)
         DMatrixRMaj G = new DMatrixRMaj(n, n);
         CommonOps_DDRM.multTransB(X, X, G);
 
@@ -883,7 +903,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                                                    SimpleMatrix centeredKy) {
         int n = centeredKx.getNumRows();
         if (n != centeredKx.getNumCols() || n != centeredKy.getNumRows() || n != centeredKy.getNumCols())
-            throw new IllegalArgumentException("Centered kernels must be n×n");
+            throw new IllegalArgumentException("Centered kernels must be nÃn");
         double stat = centeredKx.elementMult(centeredKy).elementSum() / n;
         if (isApproximate()) {
             return pValueGammaConditional(centeredKx, centeredKy, stat, n);
@@ -893,7 +913,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     }
 
     /**
-     * Polynomial kernel params: k(u,v) = (polyGamma * u·v + polyCoef0)^polyDegree
+     * Polynomial kernel params: k(u,v) = (polyGamma * uÂ·v + polyCoef0)^polyDegree
      */
     public int getPolyDegree() {
         return polyDegree;
@@ -904,7 +924,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     }
 
     /**
-     * Polynomial kernel params: k(u,v) = (polyGamma * u·v + polyCoef0)^polyDegree
+     * Polynomial kernel params: k(u,v) = (polyGamma * uÂ·v + polyCoef0)^polyDegree
      */
     public double getPolyCoef0() {
         return polyCoef0;
@@ -915,7 +935,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     }
 
     /**
-     * Polynomial kernel params: k(u,v) = (polyGamma * u·v + polyCoef0)^polyDegree
+     * Polynomial kernel params: k(u,v) = (polyGamma * uÂ·v + polyCoef0)^polyDegree
      */
     public double getPolyGamma() {
         return polyGamma;

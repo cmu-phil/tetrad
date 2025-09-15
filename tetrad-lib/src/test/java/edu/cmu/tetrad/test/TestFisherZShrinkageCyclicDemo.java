@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -85,9 +105,9 @@ public class TestFisherZShrinkageCyclicDemo {
         Double rhoExp2 = tryGetLastR(base);
 
         System.out.println("Expected independencies:");
-        System.out.printf(Locale.US, "  X ⟂ W          : p = %8.5f%s%n",
+        System.out.printf(Locale.US, "  X â W          : p = %8.5f%s%n",
                 rExp1.getPValue(), fmtR(rhoExp1));
-        System.out.printf(Locale.US, "  X ⟂ W | {Y,Z}  : p = %8.5f%s%n",
+        System.out.printf(Locale.US, "  X â W | {Y,Z}  : p = %8.5f%s%n",
                 rExp2.getPValue(), fmtR(rhoExp2));
 
         // ---- enumerate tests up to |C|<=2; collect extras (p > alpha + optional |rho| gate) ----
@@ -143,18 +163,18 @@ public class TestFisherZShrinkageCyclicDemo {
         extras.sort(Comparator.comparingDouble((CI ci) -> ci.p).reversed());
 
         System.out.println();
-        System.out.printf("Other independencies passing raw α=%.3g (count=%d of %d tests):%n",
+        System.out.printf("Other independencies passing raw Î±=%.3g (count=%d of %d tests):%n",
                 ALPHA, extras.size(), m);
         printCIList(extras, 20);
 
         List<CI> extrasFdr = benjaminiHochbergOnLargeP(extras, Q_FDR);
         System.out.println();
-        System.out.printf("Other independencies after FDR (q=%.3g on large p’s): count=%d of %d%n",
+        System.out.printf("Other independencies after FDR (q=%.3g on large pâs): count=%d of %d%n",
                 Q_FDR, extrasFdr.size(), extras.size());
         printCIList(extrasFdr, 20);
 
         System.out.println();
-        System.out.printf("Note: N=%d, shrinkage=%s, ridge=%g; coef∈[%.2f, %.2f], α=%.3g, tests m=%d%n",
+        System.out.printf("Note: N=%d, shrinkage=%s, ridge=%g; coefâ[%.2f, %.2f], Î±=%.3g, tests m=%d%n",
                 result.N(), result.shrinkageMode(), params.getDouble(Params.REGULARIZATION_LAMBDA), params.getDouble(Params.COEF_LOW),
                 params.getDouble(Params.COEF_HIGH), ALPHA, m);
     }
@@ -183,13 +203,13 @@ public class TestFisherZShrinkageCyclicDemo {
         int shown = 0;
         for (Object o : items) {
             if (shown++ >= maxShow) {
-                System.out.println("  …");
+                System.out.println("  â¦");
                 break;
             }
             var ci = (CI) o;
-            String cond = ci.cond.isEmpty() ? "∅" : prettySet(ci.cond);
-            String rho = (ci.r == null) ? "" : String.format(Locale.US, "  |ρ|=%7.4f", Math.abs(ci.r));
-            System.out.printf(Locale.US, "  %s ⟂ %s | %s : p=%8.5f%s%n",
+            String cond = ci.cond.isEmpty() ? "â" : prettySet(ci.cond);
+            String rho = (ci.r == null) ? "" : String.format(Locale.US, "  |Ï|=%7.4f", Math.abs(ci.r));
+            System.out.printf(Locale.US, "  %s â %s | %s : p=%8.5f%s%n",
                     ci.a.getName(), ci.b.getName(), cond, ci.p, rho);
         }
     }
@@ -208,10 +228,10 @@ public class TestFisherZShrinkageCyclicDemo {
 
     private static String fmtR(Double r) {
         if (r == null) return "";
-        return String.format(Locale.US, "   |ρ| = %7.4f", Math.abs(r));
+        return String.format(Locale.US, "   |Ï| = %7.4f", Math.abs(r));
     }
 
-    // “FDR on large p’s”: apply BH to p' = 1 - p, i.e., prefer *larger* p-values.
+    // âFDR on large pâsâ: apply BH to p' = 1 - p, i.e., prefer *larger* p-values.
 // This is a pragmatic filter for accepted-independence lists.
     private static <CI> List<CI> benjaminiHochbergOnLargeP(List<CI> items, double q) {
         if (items.isEmpty()) return items;
@@ -227,7 +247,7 @@ public class TestFisherZShrinkageCyclicDemo {
         List<Pair> arr = new ArrayList<>(items.size());
         for (int i = 0; i < items.size(); i++) {
             @SuppressWarnings("unchecked") var ci = (TestFisherZShrinkageCyclicDemo.CI) items.get(i);
-            double pPrime = 1.0 - ci.p();                // big p ⇒ small p'
+            double pPrime = 1.0 - ci.p();                // big p â small p'
             arr.add(new Pair(i, pPrime));
         }
         arr.sort(Comparator.comparingDouble(a -> a.pPrime)); // ascending p'
@@ -301,7 +321,7 @@ public class TestFisherZShrinkageCyclicDemo {
         final Node w = new ContinuousVariable("w");
 
         // Accumulators
-        int successBoth = 0; // X ⟂ W  AND  X ⟂ W | {Y,Z}
+        int successBoth = 0; // X â W  AND  X â W | {Y,Z}
         double sumAbsR_xw = 0.0, sumP_xw = 0.0;
         double sumAbsR_xw_yz = 0.0, sumP_xw_yz = 0.0;
 
@@ -342,10 +362,10 @@ public class TestFisherZShrinkageCyclicDemo {
             CachingIndependenceTest test = new CachingIndependenceTest(base);
 
             // Two population truths to check:
-            // 1) X ⟂ W
+            // 1) X â W
             boolean indep_xw = test.checkIndependence(x, w).isIndependent();
 
-            // 2) X ⟂ W | {Y, Z}
+            // 2) X â W | {Y, Z}
             Set<Node> yz = new LinkedHashSet<>(Arrays.asList(y, z));
             boolean indep_xw_yz = test.checkIndependence(x, w, yz).isIndependent();
 
@@ -366,32 +386,32 @@ public class TestFisherZShrinkageCyclicDemo {
 
             if (t < K) {
                 sampleRows.add(String.format(Locale.US,
-                        " trial=%2d  X⟂W: p=%8.5f |ρ|=%7.4f   X⟂W|{Y,Z}: p=%8.5f |ρ|=%7.4f",
+                        " trial=%2d  XâW: p=%8.5f |Ï|=%7.4f   XâW|{Y,Z}: p=%8.5f |Ï|=%7.4f",
                         t + 1, p_xw, abs(r_xw), p_xw_yz, abs(r_xw_yz)));
             }
         }
 
         // Print summary
-        System.out.println("┌──────────────────────────────────────────────────────────────────────────────┐");
-        System.out.printf("│ Mode: %-12s  (Shrinkage=%-12s)%37s│%n", label, mode, "");
+        System.out.println("ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ");
+        System.out.printf("â Mode: %-12s  (Shrinkage=%-12s)%37sâ%n", label, mode, "");
         if (mode == ShrinkageMode.RIDGE) {
-            System.out.printf("│   ridge = %.0e%64s│%n", ridge, "");
+            System.out.printf("â   ridge = %.0e%64sâ%n", ridge, "");
         }
-        System.out.println("├──────────────────────────────────────────────────────────────────────────────┤");
-        System.out.printf("│ Success rate (both independences true): %3d / %3d = %6.2f%%%21s│%n",
+        System.out.println("ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ¤");
+        System.out.printf("â Success rate (both independences true): %3d / %3d = %6.2f%%%21sâ%n",
                 successBoth, N_TRIALS, 100.0 * successBoth / N_TRIALS, "");
-        System.out.println("├──────────────────────────────────────────────────────────────────────────────┤");
-        System.out.printf("│ Averages over trials:%57s│%n", "");
-        System.out.printf("│   X ⟂ W         :  mean |ρ| = %7.4f   mean p = %8.5f%17s│%n",
+        System.out.println("ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ¤");
+        System.out.printf("â Averages over trials:%57sâ%n", "");
+        System.out.printf("â   X â W         :  mean |Ï| = %7.4f   mean p = %8.5f%17sâ%n",
                 sumAbsR_xw / N_TRIALS, sumP_xw / N_TRIALS, "");
-        System.out.printf("│   X ⟂ W | {Y,Z} :  mean |ρ| = %7.4f   mean p = %8.5f%17s│%n",
+        System.out.printf("â   X â W | {Y,Z} :  mean |Ï| = %7.4f   mean p = %8.5f%17sâ%n",
                 sumAbsR_xw_yz / N_TRIALS, sumP_xw_yz / N_TRIALS, "");
-        System.out.println("├──────────────────────────────────────────────────────────────────────────────┤");
-        System.out.printf("│ Example trials:%62s│%n", "");
+        System.out.println("ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ¤");
+        System.out.printf("â Example trials:%62sâ%n", "");
         for (String row : sampleRows) {
-            System.out.printf("│ %s %s│%n", row, padRight("", 74 - row.length()));
+            System.out.printf("â %s %sâ%n", row, padRight("", 74 - row.length()));
         }
-        System.out.println("└──────────────────────────────────────────────────────────────────────────────┘");
+        System.out.println("ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ");
         System.out.println();
     }
 

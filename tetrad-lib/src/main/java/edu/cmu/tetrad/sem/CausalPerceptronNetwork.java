@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.BoxDataSet;
@@ -40,17 +60,17 @@ import java.util.stream.IntStream;
  * causal models with generative neural networks. Explainable and interpretable models in computer vision and machine
  * learning, 39-80.
  * <p>
- * Zhang, K., Wang, Z., Zhang, J., &amp; Schölkopf, B. (2015). On estimation of functional causal models: general
+ * Zhang, K., Wang, Z., Zhang, J., &amp; SchÃ¶lkopf, B. (2015). On estimation of functional causal models: general
  * results and application to the post-nonlinear causal model. ACM Transactions on Intelligent Systems and Technology
  * (TIST), 7(2), 1-22.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
  * <p>
- * Bühlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
+ * BÃ¼hlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
  * penalized regression". The Annals of Statistics.
  * <p>
- * Peters, J., Mooij, J. M., Janzing, D., &amp; Schölkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
+ * Peters, J., Mooij, J. M., Janzing, D., &amp; SchÃ¶lkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
  * Models". Journal of Machine Learning Research.
  * <p>
  * Zhang, K., &amp; Hyvarinen, A. (2012). On the identifiability of the post-nonlinear causal model. arXiv preprint
@@ -218,3 +238,4 @@ public class CausalPerceptronNetwork {
         return data;
     }
 }
+

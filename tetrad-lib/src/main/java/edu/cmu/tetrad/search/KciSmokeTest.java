@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.GraphNode;
@@ -76,9 +96,9 @@ public class KciSmokeTest {
     public void nonApprox_independent_vs_dependent() {
         double alpha = 0.01;
 
-        // independent: Y = e  (Y ⟂ X | Z)
+        // independent: Y = e  (Y â X | Z)
         Kci kInd = makeKci(makeDataVxN(600, Double.POSITIVE_INFINITY), /*approximate=*/false);
-        kInd.setNumPermutations(4000);    // min p ≈ 1/4001 ≈ 2.5e-4
+        kInd.setNumPermutations(4000);    // min p â 1/4001 â 2.5e-4
         kInd.rng = new Random(123);     // determinism
         double pInd = kInd.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
                 List.of(new GraphNode("Z")), alpha);

@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import java.util.Random;
@@ -32,7 +52,7 @@ public class RandomRBF {
     /**
      * The entry point of the application. Demonstrates the usage of the RandomRBF class by creating an instance with
      * specified parameters and printing computed outputs for a range of input values. Also includes a verification step
-     * to ensure that the adjusted RBF function satisfies f(0) ≈ 0.
+     * to ensure that the adjusted RBF function satisfies f(0) â 0.
      *
      * @param args command-line arguments passed to the program. Not used in this implementation.
      */
@@ -82,4 +102,5 @@ public class RandomRBF {
         return compute(x) - fAtZero; // Subtract f(0) to adjust the function
     }
 }
+
 

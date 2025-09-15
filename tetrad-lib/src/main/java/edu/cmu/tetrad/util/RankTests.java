@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -62,7 +82,7 @@ public class RankTests {
      * threshold, which could lead to numerical instability or inaccuracies.
      */
     private static final double MIN_EIG = 1e-12;
-    // --- Fast Chi-square critical via Wilson–Hilferty with cached normal z ---
+    // --- Fast Chi-square critical via WilsonâHilferty with cached normal z ---
     private static final Map<Long, Double> CHI2_CRIT_CACHE = new ConcurrentHashMap<>();
     /**
      * A small constant value added as a ridge term during regularization to improve numerical stability. This helps
@@ -105,7 +125,7 @@ public class RankTests {
         EigenSym ESx = eigSym(Cxx);
         EigenSym ESy = eigSym(Cyy);
 
-        // T = Λx^{-1/2} * (Qx^T Cxy Qy) * Λy^{-1/2}
+        // T = Îx^{-1/2} * (Qx^T Cxy Qy) * Îy^{-1/2}
         DMatrixRMaj temp = new DMatrixRMaj(ESx.Q.numCols, Cxy.numCols);
         CommonOps_DDRM.multTransA(ESx.Q, Cxy, temp);
         DMatrixRMaj T = new DMatrixRMaj(temp.numRows, ESy.Q.numCols);
@@ -312,7 +332,7 @@ public class RankTests {
 //            }
 //            double stat = -c * sum;
 //            int nu = (p - r) * (q - r);
-//            if (nu <= 0) return r; // at this point, tail has zero dof → accept
+//            if (nu <= 0) return r; // at this point, tail has zero dof â accept
 //
 //            double crit = chi2CriticalWH(nu, alpha);
 //            if (stat <= crit) return r; // first non-rejection
@@ -351,7 +371,7 @@ public class RankTests {
     }
 
     /**
-     * Estimates the rank of a matrix using the Wilks test and a Bartlett χ² approximation. This method employs an
+     * Estimates the rank of a matrix using the Wilks test and a Bartlett ÏÂ² approximation. This method employs an
      * optimization for fast computation.
      *
      * @param S     Covariance or scatter matrix (SimpleMatrix) of size (p + q) x (p + q).
@@ -402,9 +422,9 @@ public class RankTests {
         int L = Math.min(evals.length, m);
         double[] rho2 = Arrays.copyOf(evals, L);
 
-        // For r = 0..m-1, test H0: rank ≤ r using Bartlett χ² approx
+        // For r = 0..m-1, test H0: rank â¤ r using Bartlett ÏÂ² approx
         // stat_r = - (n - 1 - (p+q+1)/2) * sum_{i=r+1..m} ln(1 - rho_i^2)
-        // ν_r = (p - r)(q - r)
+        // Î½_r = (p - r)(q - r)
         double c = (n - 1 - (p + q + 1) / 2.0);
         int hat = 0;
 
@@ -417,7 +437,7 @@ public class RankTests {
             }
             double stat = -c * sum;
             int nu = (p - r) * (q - r);
-            if (nu <= 0) return r; // at this point, tail has zero dof → accept
+            if (nu <= 0) return r; // at this point, tail has zero dof â accept
 
             double crit = chi2CriticalWH(nu, alpha);
             if (stat <= crit) return r; // first non-rejection
@@ -438,9 +458,9 @@ public class RankTests {
 //
 //            double crit = chi2CriticalWH(nu, alpha);
 //            if (stat <= crit) {
-//                hat = Math.max(hat, r); // fail to reject ⇒ rank ≤ r plausible
+//                hat = Math.max(hat, r); // fail to reject â rank â¤ r plausible
 //            } else {
-//                // reject H0(rank ≤ r); continue increasing r won’t help acceptance
+//                // reject H0(rank â¤ r); continue increasing r wonât help acceptance
 //                // (stat decreases with larger r), but we still compute loop to keep it simple
 //            }
 //        }
@@ -470,7 +490,7 @@ public class RankTests {
         // z_{1-alpha} using a very good rational approximation (AS241 style)
         double z = invNormal1mAlpha(alpha);
 
-        // Wilson–Hilferty: Q_{1-a,ν} ≈ ν * [1 - 2/(9ν) + z * sqrt(2/(9ν))]^3
+        // WilsonâHilferty: Q_{1-a,Î½} â Î½ * [1 - 2/(9Î½) + z * sqrt(2/(9Î½))]^3
         double n = nu;
         double a = 2.0 / (9.0 * n);
         double q = n * Math.pow(1.0 - a + z * Math.sqrt(a), 3.0);
@@ -521,7 +541,7 @@ public class RankTests {
         }
 
         // One Newton step for polish
-        // Φ(x) via erf
+        // Î¦(x) via erf
         double err = 0.5 * (1.0 + erf(x / Math.sqrt(2.0))) - p;
         double pdf = Math.exp(-0.5 * x * x) / Math.sqrt(2.0 * Math.PI);
         x -= err / pdf;
@@ -565,14 +585,14 @@ public class RankTests {
         }
 
         // Defensive clamp + ensure we only use the first minpq values
-        double sumLog = 0.0; // log Λ = Σ log(1 - ρ_i^2) over i = r..k-1
+        double sumLog = 0.0; // log Î = Î£ log(1 - Ï_i^2) over i = r..k-1
         for (int i = r; i < minpq; i++) {
             double rho = Math.max(0.0, Math.min(1.0, s[i]));
             double oneMinus = Math.max(1e-16, 1.0 - rho * rho);
             sumLog += Math.log(oneMinus);
         }
 
-        // Bartlett’s approx: -c * log Λ  ~  χ²_df
+        // Bartlettâs approx: -c * log Î  ~  ÏÂ²_df
         double c = (n - 1) - 0.5 * (p + q + 1);
         if (c < 1) c = 1; // pragmatic floor; alternatively, treat as inconclusive
         double stat = -c * sumLog;
@@ -662,7 +682,7 @@ public class RankTests {
         SimpleMatrix Syy_c = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
         SimpleMatrix Sxy_c = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
 
-        // Reassemble a (|X|+|Y|)×(|X|+|Y|) covariance conditioned on Z:
+        // Reassemble a (|X|+|Y|)Ã(|X|+|Y|) covariance conditioned on Z:
         int p = X.length, q = Y.length;
         SimpleMatrix Scond = new SimpleMatrix(p + q, p + q);
         Scond.insertIntoThis(0, 0, Sxx_c);
@@ -766,7 +786,7 @@ public class RankTests {
     }
 
     /**
-     * p-value for H0: rank(X ⟂ Y | Z) ≤ 0 using Wilks/Bartlett on partial CCA.
+     * p-value for H0: rank(X â Y | Z) â¤ 0 using Wilks/Bartlett on partial CCA.
      *
      * @param S The covariance matrix of all variables.
      * @param X An array of indices representing the first subset of variables.
@@ -959,7 +979,7 @@ public class RankTests {
             svals[i] = Math.sqrt(rho2.get(i));
         }
 
-        // Build suffix logs: suffixLogs[i] = Σ_{j=i}^{end} log(1 - s_j^2)
+        // Build suffix logs: suffixLogs[i] = Î£_{j=i}^{end} log(1 - s_j^2)
         double[] suffixLogs = new double[svals.length + 1];
         suffixLogs[svals.length] = 0.0; // last element is 0
         for (int i = svals.length - 1; i >= 0; i--) {
@@ -1097,7 +1117,7 @@ public class RankTests {
         /**
          * An array where each element at index `i` represents the cumulative sum of the logarithms of (1 - squared
          * singular values) from index `i` to the end of the corresponding singular values array. Specifically,
-         * `suffixLogs[i]` = Σ log(1 - s<sub>j</sub>²) for all `j` from `i` to the end. This array is precomputed for
+         * `suffixLogs[i]` = Î£ log(1 - s<sub>j</sub>Â²) for all `j` from `i` to the end. This array is precomputed for
          * efficiency in mathematical or analytical operations related to matrix decomposition or canonical correlation
          * analysis.
          */

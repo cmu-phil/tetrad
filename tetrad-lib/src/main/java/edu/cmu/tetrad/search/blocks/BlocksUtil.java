@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -140,7 +160,7 @@ public final class BlocksUtil {
      * @return a list of disjoint blocks, where each block is a sorted and unmodifiable list of indices
      */
     public static List<List<Integer>> makeDisjointBySize(List<List<Integer>> blocks) {
-        // Sort by descending size; work on copies so we don’t mutate inputs
+        // Sort by descending size; work on copies so we donât mutate inputs
         List<ArrayList<Integer>> sorted = blocks.stream()
                 .sorted((a, b) -> Integer.compare(b.size(), a.size()))
                 .map(ArrayList::new)
@@ -310,11 +330,11 @@ public final class BlocksUtil {
 
     // ---------- helpers ----------
 
-    // Safe rank: if others empty → unconditioned fallback; singleton → 1.
+    // Safe rank: if others empty â unconditioned fallback; singleton â 1.
     private static int estimateRankSafe(
             org.ejml.simple.SimpleMatrix S, int nRows,
             List<Integer> block, int[] others, double alpha) {
-        if (block == null || block.isEmpty()) return 0; // empty → 0
+        if (block == null || block.isEmpty()) return 0; // empty â 0
         int[] blk = toIndexArray(block);
 
         if (others != null && others.length > 0) {

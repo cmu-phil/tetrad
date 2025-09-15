@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
@@ -22,9 +42,9 @@ import java.util.*;
  * block. - 'blockVariables' is exactly the list of Nodes to score over, one per block, same order (size B). -
  * getVariables() returns exactly 'blockVariables'.
  * <p>
- * This is Wilks' Lambda test statistic for canonical correlations: 2ℓ = -(n_eff) * Σ log(1 - rho_i^2) (see Mardia, Kent
+ * This is Wilks' Lambda test statistic for canonical correlations: 2â = -(n_eff) * Î£ log(1 - rho_i^2) (see Mardia, Kent
  * &amp; Bibby 1979, section 12.6; Anderson 2003, section 12.3.2) This is already in 2 log-likelihood units, so the BIC
- * penalty can be applied directly as 2ℓ - c k log n.
+ * penalty can be applied directly as 2â - c k log n.
  */
 public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSettable {
     // --- Caches ---
@@ -343,7 +363,7 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
     }
 
     /**
-     * Concatenate embedded columns for all parents (block Node list) — unused helper.
+     * Concatenate embedded columns for all parents (block Node list) â unused helper.
      */
     @SuppressWarnings("unused")
     private int[] concatBlocks(List<Node> parents) {

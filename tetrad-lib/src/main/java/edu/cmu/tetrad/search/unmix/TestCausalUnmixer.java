@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -310,7 +330,7 @@ public class TestCausalUnmixer {
         params.set(Params.SIMULATION_PARAM1, 1);
 
         SemIm imBack = new SemIm(new SemPm(gBackbone), params);
-        DataSet Dreal = imBack.simulateData(n1 + n2, false); // “realistic” marginal structure
+        DataSet Dreal = imBack.simulateData(n1 + n2, false); // ârealisticâ marginal structure
 
         // Two regimes: (A) keep backbone; (B) flip edges & scale some parameters
         Graph gA = gBackbone.copy();
@@ -354,7 +374,7 @@ public class TestCausalUnmixer {
                     adjustedRandIndex(mixed.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
         }
 
-        // === Optional: K=1 baseline for diagnostics (ΔBIC etc.) ===
+        // === Optional: K=1 baseline for diagnostics (ÎBIC etc.) ===
         // Build a Config aligned with your Unmix default (or copy what Unmix uses)
         EmUnmix.Config cfg = new EmUnmix.Config();
         cfg.K = 2;
@@ -375,7 +395,7 @@ public class TestCausalUnmixer {
 
         UnmixResult rK1 = EmUnmix.run(mixed.data, cfgK1, reg);
 
-        // Compute ΔBIC = BIC(K=2) - BIC(K=1); negative favors K=2
+        // Compute ÎBIC = BIC(K=2) - BIC(K=1); negative favors K=2
         GaussianMixtureEM.Model m2 = rEM.gmmModel;
         GaussianMixtureEM.Model m1 = rK1.gmmModel;
         int n = mixed.data.getNumRows();
@@ -383,7 +403,7 @@ public class TestCausalUnmixer {
         double bic1 = m1.bic(n);
         double deltaBic = bic2 - bic1;
 
-        System.out.printf("ΔBIC (K=2 vs K=1): %.1f (negative favors K=2)%n", deltaBic);
+        System.out.printf("ÎBIC (K=2 vs K=1): %.1f (negative favors K=2)%n", deltaBic);
     }
 
     private record GraphMetrics(double adjF1, double arrowF1, int shd) {

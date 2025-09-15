@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -23,13 +43,13 @@ import java.util.stream.Collectors;
 /**
  * RoadmapTest: EM baseline vs Residual-clustering across scenarios.
  * <p>
- * Phase 1 — Controlled synthetic sweep: (A) params-only mixtures; (B) small topology flips; (C) larger structural
+ * Phase 1 â Controlled synthetic sweep: (A) params-only mixtures; (B) small topology flips; (C) larger structural
  * shifts. Noise: Gaussian vs non-Gaussian (Laplace). K: known, and unknown via EM-BIC. Metrics: ARI;
  * adjacency/arrowhead F1; SHD (simple implementation); runtime.
  * <p>
- * Phase 2 — Stress & robustness: Class imbalance, smaller n, larger p, weak separation, mis-specified K; seed repeats.
+ * Phase 2 â Stress & robustness: Class imbalance, smaller n, larger p, weak separation, mis-specified K; seed repeats.
  * <p>
- * Phase 3 — Semi-synthetic realism: Real covariance backbone + injected regime shifts; optional interventions knob.
+ * Phase 3 â Semi-synthetic realism: Real covariance backbone + injected regime shifts; optional interventions knob.
  * <p>
  * Notes: - This is a practical harness: prints compact tables you can paste in email/docs. - Uses
  * Boss+PermutationSearch for graphs; swap to your preferred search if needed. - Keep DIAGONAL covariance for EM unless
@@ -484,7 +504,7 @@ public class RoadmapTest {
         int flips = 8;
         int repeats = 10;
 
-        System.out.println("\n=== Phase2: robustness curves (mean±IQR over seeds) ===");
+        System.out.println("\n=== Phase2: robustness curves (meanÂ±IQR over seeds) ===");
         for (int nTot : nTotals) {
             for (double fracA : imbalances) {
                 int n1 = (int) Math.round(nTot * fracA);
@@ -533,10 +553,10 @@ public class RoadmapTest {
         params.set(Params.SIMULATION_PARAM1, 1);
 
         SemIm imBack = new SemIm(new SemPm(gBackbone), params);
-        DataSet Dreal = imBack.simulateData(n1 + n2, false); // “realistic” marginal structure
+        DataSet Dreal = imBack.simulateData(n1 + n2, false); // ârealisticâ marginal structure
 
-        // Now create two regimes by injecting controlled shifts on top of Dreal’s covariance:
-        // (A) keep backbone; (B) flip edges & scale some parameters — simulate from shifted SEMs.
+        // Now create two regimes by injecting controlled shifts on top of Drealâs covariance:
+        // (A) keep backbone; (B) flip edges & scale some parameters â simulate from shifted SEMs.
         Graph gA = gBackbone.copy();
         Graph gB = copyWithFlippedDirections(gBackbone, flips, new Random(seed));
         SemIm imA = new SemIm(new SemPm(gA), params);
@@ -627,7 +647,7 @@ public class RoadmapTest {
         // Stable EM
         ec.kmeansRestarts = 20;                 // robust init
         ec.emMaxIters = 300;
-        ec.covRidgeRel = 1e-3;                  // well-conditioned Σ
+        ec.covRidgeRel = 1e-3;                  // well-conditioned Î£
         ec.covShrinkage = 0.10;                 // mild shrinkage
         ec.annealSteps = 15;                   // tempered EM helps in tougher cases
         ec.annealStartT = 0.8;

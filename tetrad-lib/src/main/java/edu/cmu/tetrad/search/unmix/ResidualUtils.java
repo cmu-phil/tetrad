@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.DataSet;
@@ -19,7 +39,7 @@ public final class ResidualUtils {
     }
 
     /**
-     * Build an n × p residual matrix for all measured nodes in the dataset, using parents from the given graph.
+     * Build an n Ã p residual matrix for all measured nodes in the dataset, using parents from the given graph.
      */
     public static double[][] residualMatrix(DataSet data,
                                             Graph g,
@@ -39,7 +59,7 @@ public final class ResidualUtils {
     }
 
     /**
-     * Build an n × p residual matrix using a custom parent map (e.g., from ParentSupersetBuilder).
+     * Build an n Ã p residual matrix using a custom parent map (e.g., from ParentSupersetBuilder).
      */
     public static double[][] residualMatrix(DataSet data,
                                             Map<Node, List<Node>> parentsMap,

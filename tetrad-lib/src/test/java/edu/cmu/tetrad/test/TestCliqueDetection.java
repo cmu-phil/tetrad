@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
@@ -289,11 +309,11 @@ public class TestCliqueDetection {
     private static String trunc(String s, int max) {
         if (s == null) return "";
         if (s.length() <= max) return s;
-        return s.substring(0, Math.max(0, max - 1)) + "…";
+        return s.substring(0, Math.max(0, max - 1)) + "â¦";
     }
 
     private static String fmtMSD(double mean, double sd, int wMean, int wSd) {
-        return String.format(Locale.ROOT, "%" + wMean + ".3f±%" + wSd + ".3f", mean, sd);
+        return String.format(Locale.ROOT, "%" + wMean + ".3fÂ±%" + wSd + ".3f", mean, sd);
     }
 
     private static @NotNull Map<String, Supplier<Graph>> buildLearners(MimData md) {
@@ -497,7 +517,7 @@ public class TestCliqueDetection {
 
         PerCluster(Set<Node> T, Set<Node> R) {
             this.truth = names(T);
-            this.match = (R == null ? "∅" : names(R));
+            this.match = (R == null ? "â" : names(R));
             this.tSize = T.size();
             this.rSize = (R == null ? 0 : R.size());
             this.inter = (R == null ? 0 : intersectSize(T, R));
@@ -582,9 +602,9 @@ public class TestCliqueDetection {
 
             tt.setToken(0, 0, "#");
             tt.setToken(0, 1, "Method");
-            tt.setToken(0, 2, "sumJ (m±sd)");
-            tt.setToken(0, 3, "NodePrec (m±sd)");
-            tt.setToken(0, 4, "NodeRec (m±sd)");
+            tt.setToken(0, 2, "sumJ (mÂ±sd)");
+            tt.setToken(0, 3, "NodePrec (mÂ±sd)");
+            tt.setToken(0, 4, "NodeRec (mÂ±sd)");
 
             final int W = 6;
 
@@ -598,7 +618,7 @@ public class TestCliqueDetection {
                 tt.setToken(i + 1, 4, fmtMSD(c.nodeR.mean(), c.nodeR.sd(), W, W));
             }
 
-            System.out.println("\n=== Leaderboard (mean±sd over seeds; by SUM Jaccard) ===");
+            System.out.println("\n=== Leaderboard (meanÂ±sd over seeds; by SUM Jaccard) ===");
             System.out.print(tt);
         }
 
@@ -614,9 +634,9 @@ public class TestCliqueDetection {
 
             tt.setToken(0, 0, "#");
             tt.setToken(0, 1, "Method");
-            tt.setToken(0, 2, "NodePrec (m±sd)");
-            tt.setToken(0, 3, "NodeRec (m±sd)");
-            tt.setToken(0, 4, "macroJ (m±sd)");
+            tt.setToken(0, 2, "NodePrec (mÂ±sd)");
+            tt.setToken(0, 3, "NodeRec (mÂ±sd)");
+            tt.setToken(0, 4, "macroJ (mÂ±sd)");
 
             final int W = 6;
 
@@ -630,12 +650,12 @@ public class TestCliqueDetection {
                 tt.setToken(i + 1, 4, fmtMSD(c.sumJ.mean(), c.sumJ.sd(), W, W));
             }
 
-            System.out.println("\n=== Leaderboard (mean±sd over seeds; by NODE precisionᵐ) ===");
+            System.out.println("\n=== Leaderboard (meanÂ±sd over seeds; by NODE precisionáµ) ===");
             System.out.print(tt);
         }
 
         void printDeltas() {
-            System.out.println("\n=== Δ from Rank-1 filtering (mean±sd; (rank 1) – (raw)) ===");
+            System.out.println("\n=== Î from Rank-1 filtering (meanÂ±sd; (rank 1) â (raw)) ===");
 
             Map<String, Cell> raw = new LinkedHashMap<>();
             Map<String, Cell> r1 = new LinkedHashMap<>();
@@ -660,9 +680,9 @@ public class TestCliqueDetection {
 
             tt.setToken(0, 0, "#");
             tt.setToken(0, 1, "Method");
-            tt.setToken(0, 2, "ΔsumJ");
-            tt.setToken(0, 3, "ΔNodePrec");
-            tt.setToken(0, 4, "ΔNodeRec");
+            tt.setToken(0, 2, "ÎsumJ");
+            tt.setToken(0, 3, "ÎNodePrec");
+            tt.setToken(0, 4, "ÎNodeRec");
 
             for (int i = 0; i < keys.size(); i++) {
                 String k = keys.get(i);

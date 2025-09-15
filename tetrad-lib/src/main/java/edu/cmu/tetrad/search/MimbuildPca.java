@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
@@ -18,7 +38,7 @@ import java.util.Set;
 
 /**
  * Mimbuild over the first principal components of (pure) clusters, driven by a BlockSpec. Each cluster's latent is PC1
- * of its standardized indicators; latent scores are re-scaled to unit variance. A latent–latent covariance is built
+ * of its standardized indicators; latent scores are re-scaled to unit variance. A latentâlatent covariance is built
  * using (n-1) and a tiny ridge, then BOSS (+PermutationSearch) learns a structure over the latents using SEM-BIC.
  */
 public class MimbuildPca {

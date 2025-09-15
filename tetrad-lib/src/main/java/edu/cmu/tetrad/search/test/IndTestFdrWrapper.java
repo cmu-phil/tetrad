@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataModel;
@@ -63,16 +83,16 @@ public final class IndTestFdrWrapper implements IndependenceTest {
         search.setTest(wrap);
 
         final int maxEpochs = 5;
-        final int tauChanges = 0;      // stop when ≤ this many changes
+        final int tauChanges = 0;      // stop when â¤ this many changes
 
         Graph g = null;
 
         for (int epoch = 1; epoch <= maxEpochs; epoch++) {
-            // Epoch 0: alphaStar is NaN ⇒ wrapper uses base alpha
-            // Epoch ≥1: wrapper uses the alphaStar computed in the previous iteration
+            // Epoch 0: alphaStar is NaN â wrapper uses base alpha
+            // Epoch â¥1: wrapper uses the alphaStar computed in the previous iteration
             g = search.search();
 
-            // Recompute α* from ALL p-values gathered so far
+            // Recompute Î±* from ALL p-values gathered so far
             wrap.computeAlphaStar();
 
             // Count changes vs. last epoch (new facts or flips both count)
@@ -175,10 +195,10 @@ public final class IndTestFdrWrapper implements IndependenceTest {
         return p >= (Double.isNaN(alphaStar) ? alpha : alphaStar);
     }
 
-    // pretty-print the current α* cutoffs
+    // pretty-print the current Î±* cutoffs
     public String cutoffsSummary() {
         int m = pvals.size();
-        return String.format(Locale.US, "FDR[%s] q=%.3g  m=%d  ⇒  α* = %.6f",
+        return String.format(Locale.US, "FDR[%s] q=%.3g  m=%d  â  Î±* = %.6f",
                 negativelyCorrelated ? "negatively correlated" : "positively correlated",
                 fdrQ, m, alphaStar);
     }

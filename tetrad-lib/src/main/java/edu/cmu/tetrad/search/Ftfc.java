@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
@@ -242,18 +262,18 @@ public class Ftfc {
                 subsets.add(sub);
             }
         } else {
-            // If k == 0, the only subset is empty; we’ll just test {o} with nothing else (still handled below)
+            // If k == 0, the only subset is empty; weâll just test {o} with nothing else (still handled below)
             subsets.add(Collections.emptyList());
         }
 
-        // For each candidate o, test all size-(k+1) tads = subset ∪ {o}
+        // For each candidate o, test all size-(k+1) tads = subset âª {o}
         O:
         for (int o : unclustered) {
             if (Thread.currentThread().isInterrupted()) return;
 
             for (List<Integer> sub : subsets) {
 
-                // Make tad = sub ∪ {o}
+                // Make tad = sub âª {o}
                 List<Integer> tad = new ArrayList<>(sub.size() + 1);
                 tad.addAll(sub);
                 tad.add(o);
@@ -441,6 +461,7 @@ public class Ftfc {
 
     private enum Purity {PURE, IMPURE}
 }
+
 
 
 

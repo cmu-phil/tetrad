@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.DataSet;
@@ -65,7 +85,7 @@ public class TestClusterFinder {
         finder.setPenaltyDiscount(1.0);     // like BlocksBicScore 'c'
         finder.setEbicGamma(0.0);           // EBIC extra penalty (0 to disable)
         finder.setRidge(1e-8);              // RCCA regularization
-        finder.setMargins(0.0, 0.0);        // optional: require separation from k±1
+        finder.setMargins(0.0, 0.0);        // optional: require separation from kÂ±1
         finder.setVerbose(true);
 
         List<ScoredClusterFinder.ClusterHit> hits = finder.findClusters(/*size=*/2, /*targetRank=*/1);
@@ -86,3 +106,4 @@ public class TestClusterFinder {
         return _sb;
     }
 }
+

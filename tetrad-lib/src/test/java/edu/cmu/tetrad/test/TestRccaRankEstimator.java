@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.test;
 
 // File: RccaRankEstimatorTest.java
@@ -65,8 +85,8 @@ public class TestRccaRankEstimator {
      * canonical correlation (used when d>=1); - illCondScale: if >0, multiplies the j-th X feature by illCondScale^j
      * (makes Sxx ill-conditioned).
      * <p>
-     * Construction (simple, robust): X = sum_{k=1..d} a_k L_k + σ * E_x,   Y = sum_{k=1..d} b_k L_k + σ * E_y, with
-     * a_k, b_k random unit vectors; choose σ so that corr ≈ rho when d=1.
+     * Construction (simple, robust): X = sum_{k=1..d} a_k L_k + Ï * E_x,   Y = sum_{k=1..d} b_k L_k + Ï * E_y, with
+     * a_k, b_k random unit vectors; choose Ï so that corr â rho when d=1.
      */
     private static double[][] simulateXY(int p, int q, int n, int d, double rho,
                                          double illCondScale, long seed) {
@@ -82,7 +102,7 @@ public class TestRccaRankEstimator {
             B[k] = randUnitVec(q, rng);
         }
 
-        // Noise scale: for d=1 and unit signal, rho = 1/(1+σ^2) => σ^2 = 1/rho - 1
+        // Noise scale: for d=1 and unit signal, rho = 1/(1+Ï^2) => Ï^2 = 1/rho - 1
         double sigma = (d >= 1 && rho > 0 && rho < 1) ? Math.sqrt(1.0 / rho - 1.0) : 1.0;
 
         for (int i = 0; i < n; i++) {
@@ -277,3 +297,4 @@ public class TestRccaRankEstimator {
                      int n, double alpha, double regLambda, double condThreshold);
     }
 }
+
