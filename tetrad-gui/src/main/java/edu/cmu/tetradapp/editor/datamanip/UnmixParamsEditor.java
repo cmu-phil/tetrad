@@ -10,7 +10,6 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.util.Hashtable;
 
 public class UnmixParamsEditor extends JPanel implements FinalizingParameterEditor {
 
@@ -20,7 +19,6 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
     // Basic
     private JCheckBox autoKCheck;
     private JSpinner kSpinner, kminSpinner, kmaxSpinner;
-    private JComboBox<UnmixSpec.GraphLearner> graphLearnerBox;
 
     // Parent-superset
     private JCheckBox supersetCheck;
@@ -35,13 +33,8 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
     private JSpinner safetyMarginSpinner;
 
     // EM stability
-    private JSpinner restartsSpinner, itersSpinner, ridgeSpinner, shrinkageSpinner, annealStepsSpinner, annealTSpinner, seedSpinner;
-
-    // Graph-specific panels
-    private JPanel pcPanel, bossPanel;
-    private JSpinner pcAlphaSpinner;
-    private JComboBox<UnmixSpec.ColliderStyle> colliderBox;
-    private JSpinner bossPenaltySpinner;
+    private JSpinner restartsSpinner, itersSpinner, ridgeSpinner, shrinkageSpinner,
+            annealStepsSpinner, annealTSpinner, seedSpinner;
 
     // Diagnostics
     private JCheckBox diagCheck;
@@ -64,9 +57,8 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
         center.add(Box.createVerticalStrut(8));
         center.add(buildEmPanel());
         center.add(Box.createVerticalStrut(8));
-        center.add(buildGraphPanel());
-        center.add(Box.createVerticalStrut(8));
         center.add(buildDiagnosticsPanel());
+
         add(new JScrollPane(center), BorderLayout.CENTER);
 
         // Wire initial enable/disable
@@ -75,24 +67,24 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
 
     private JComponent buildHeader() {
         Box box = Box.createVerticalBox();
-        box.add(new JLabel("Unmix a dataset into latent regimes and learn a structure per regime."));
-        box.add(new JLabel("Choose K explicitly or let the algorithm pick K∈[1,4] by BIC."));
+        box.add(new JLabel("Unmix a dataset into latent components (clusters) based on residual signatures."));
+        box.add(new JLabel("Choose K explicitly or let the algorithm pick K ∈ [Kmin, Kmax] via BIC."));
         return box;
     }
 
     private JPanel buildBasicPanel() {
         JPanel p = titled("Basic");
 
-        autoKCheck = new JCheckBox("Auto-select K (1–4) by BIC", spec.isAutoSelectK());
+        autoKCheck = new JCheckBox("Auto-select K by BIC", spec.isAutoSelectK());
         autoKCheck.addActionListener(e -> {
             spec.setAutoSelectK(autoKCheck.isSelected());
             syncEnableStates();
             pushToParams();
         });
 
-        kSpinner = intSpinner(spec.getK(), 1, 100, 1, v -> { spec.setK(v); pushToParams(); });
-        kminSpinner = intSpinner(spec.getKmin(), 1, 100, 1, v -> { spec.setKmin(v); pushToParams(); });
-        kmaxSpinner = intSpinner(spec.getKmax(), 1, 100, 1, v -> { spec.setKmax(v); pushToParams(); });
+        kSpinner     = intSpinner(spec.getK(), 1, 100, 1, v -> { spec.setK(v); pushToParams(); });
+        kminSpinner  = intSpinner(spec.getKmin(), 1, 100, 1, v -> { spec.setKmin(v); pushToParams(); });
+        kmaxSpinner  = intSpinner(spec.getKmax(), 1, 100, 1, v -> { spec.setKmax(v); pushToParams(); });
 
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         row1.add(autoKCheck);
@@ -103,22 +95,8 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
         row1.add(new JLabel("Kmax:"));
         row1.add(kmaxSpinner);
 
-        graphLearnerBox = new JComboBox<>(UnmixSpec.GraphLearner.values());
-        graphLearnerBox.setSelectedItem(spec.getGraphLearner());
-        graphLearnerBox.addActionListener(e -> {
-            spec.setGraphLearner((UnmixSpec.GraphLearner) graphLearnerBox.getSelectedItem());
-            syncEnableStates();
-            pushToParams();
-        });
-
-        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 2));
-        row2.add(new JLabel("Graph learner:"));
-        row2.add(graphLearnerBox);
-
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
         p.add(row1);
-        p.add(Box.createVerticalStrut(6));
-        p.add(row2);
         return p;
     }
 
@@ -173,7 +151,7 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
         row1.add(covAuto);
         row1.add(covFull);
         row1.add(covDiag);
-        row1.add(new JLabel("Safety margin (for Auto):"));
+        row1.add(new JLabel("Safety margin (Auto):"));
         row1.add(safetyMarginSpinner);
 
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
@@ -184,16 +162,16 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
     private JPanel buildEmPanel() {
         JPanel p = titled("EM stability");
 
-        restartsSpinner = intSpinner(spec.getKmeansRestarts(), 1, 10_000, 1, v -> { spec.setKmeansRestarts(v); pushToParams(); });
-        itersSpinner    = intSpinner(spec.getEmMaxIters(), 1, 1_000_000, 10, v -> { spec.setEmMaxIters(v); pushToParams(); });
+        restartsSpinner   = intSpinner(spec.getKmeansRestarts(), 1, 10_000, 1, v -> { spec.setKmeansRestarts(v); pushToParams(); });
+        itersSpinner      = intSpinner(spec.getEmMaxIters(), 1, 1_000_000, 10, v -> { spec.setEmMaxIters(v); pushToParams(); });
 
-        ridgeSpinner    = dblSpinner(spec.getRidge(), 0.0, 1.0, 1e-3, v -> { spec.setRidge(v); pushToParams(); });
-        shrinkageSpinner= dblSpinner(spec.getShrinkage(), 0.0, 1.0, 0.01, v -> { spec.setShrinkage(v); pushToParams(); });
+        ridgeSpinner      = dblSpinner(spec.getRidge(), 0.0, 1.0, 1e-3, v -> { spec.setRidge(v); pushToParams(); });
+        shrinkageSpinner  = dblSpinner(spec.getShrinkage(), 0.0, 1.0, 0.01, v -> { spec.setShrinkage(v); pushToParams(); });
 
-        annealStepsSpinner = intSpinner(spec.getAnnealSteps(), 0, 10_000, 1, v -> { spec.setAnnealSteps(v); pushToParams(); });
-        annealTSpinner     = dblSpinner(spec.getAnnealStartT(), 0.0, 10.0, 0.05, v -> { spec.setAnnealStartT(v); pushToParams(); });
+        annealStepsSpinner= intSpinner(spec.getAnnealSteps(), 0, 10_000, 1, v -> { spec.setAnnealSteps(v); pushToParams(); });
+        annealTSpinner    = dblSpinner(spec.getAnnealStartT(), 0.0, 10.0, 0.05, v -> { spec.setAnnealStartT(v); pushToParams(); });
 
-        seedSpinner = intSpinner((int) spec.getRandomSeed(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1, v -> { spec.setRandomSeed(v); pushToParams(); });
+        seedSpinner       = intSpinner((int) spec.getRandomSeed(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1, v -> { spec.setRandomSeed(v); pushToParams(); });
 
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         row1.add(new JLabel("K-means restarts:")); row1.add(restartsSpinner);
@@ -210,32 +188,6 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
         p.add(row1);
         p.add(Box.createVerticalStrut(6));
         p.add(row2);
-        return p;
-    }
-
-    private JPanel buildGraphPanel() {
-        JPanel p = titled("Graph learner tuning");
-
-        // PC subpanel
-        pcPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
-        pcPanel.add(new JLabel("PC α:"));
-        pcAlphaSpinner = dblSpinner(spec.getPcAlpha(), 1e-6, 0.5, 0.001, v -> { spec.setPcAlpha(v); pushToParams(); });
-        pcPanel.add(pcAlphaSpinner);
-        pcPanel.add(new JLabel("Collider:"));
-        colliderBox = new JComboBox<>(UnmixSpec.ColliderStyle.values());
-        colliderBox.setSelectedItem(spec.getPcColliderStyle());
-        colliderBox.addActionListener(e -> { spec.setPcColliderStyle((UnmixSpec.ColliderStyle) colliderBox.getSelectedItem()); pushToParams(); });
-        pcPanel.add(colliderBox);
-
-        // BOSS subpanel
-        bossPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
-        bossPanel.add(new JLabel("Penalty discount:"));
-        bossPenaltySpinner = dblSpinner(spec.getBossPenaltyDiscount(), 0.0, 100.0, 0.5, v -> { spec.setBossPenaltyDiscount(v); pushToParams(); });
-        bossPanel.add(bossPenaltySpinner);
-
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.add(pcPanel);
-        p.add(bossPanel);
         return p;
     }
 
@@ -266,10 +218,6 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
         boolean autoCov = covAuto.isSelected();
         safetyMarginSpinner.setEnabled(autoCov);
 
-        UnmixSpec.GraphLearner gl = (UnmixSpec.GraphLearner) graphLearnerBox.getSelectedItem();
-        boolean pc = (gl == UnmixSpec.GraphLearner.PC_MAX);
-        pcPanel.setVisible(pc);
-        bossPanel.setVisible(!pc);
         revalidate();
         repaint();
     }

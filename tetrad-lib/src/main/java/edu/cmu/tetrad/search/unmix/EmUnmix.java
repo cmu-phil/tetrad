@@ -10,50 +10,35 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-/**
- * The EmUnmix class provides utility methods to perform Gaussian Mixture Models (GMM)-based clustering and approximate
- * inference on residuals. The methods within this class support various configurations and allow for flexible modeling
- * via Expectation-Maximization (EM) and Bayesian Information Criterion (BIC)-based model selection. This class is
- * particularly designed for clustering datasets into subpopulations based on residual signatures, and subsequently
- * applying per-cluster search logic.
- * <p>
- * This class includes: - A nested static `Config` class for configuring various model parameters. - Methods to
- * automatically determine the number of clusters (via BIC). - Core functionality for applying EM on residuals and
- * dividing data into sub-clusters.
- * <p>
- * All methods in the EmUnmix class treat the input configuration and data carefully, ensuring appropriate preprocessing
- * of residuals and enabling splitting into clusters with per-cluster analysis.
- * <p>
- * The class is final and cannot be subclassed.
- */
 public final class EmUnmix {
 
-    /**
-     * Executes the process of unmixing a dataset into clusters, building residual signatures,
-     * performing expectation-maximization (EM) on the residuals, and conducting per-cluster
-     * graph search. Returns an {@code UnmixResult} containing the outcomes of this process.
-     *
-     * @param data             the input dataset to be unmixed
-     * @param cfg              the configuration settings for the unmixing process
-     * @param regressor        the residual regressor to generate residual signatures
-     * @param pooledSearch     an optional function for pooled graph search across the dataset,
-     *                         can be null if {@code useParentSuperset} is enabled
-     * @param perClusterSearch the function to perform graph search on each individual cluster's dataset
-     * @return an {@code UnmixResult} containing the cluster assignments, cluster-specific datasets, and graphs
-     * @throws NullPointerException if {@code data}, {@code regressor}, or {@code perClusterSearch} is null
-     */
+    /* ======= GRAPH-LESS OVERLOADS ======= */
+
+    public static UnmixResult run(DataSet data, Config cfg, ResidualRegressor regressor) {
+        return run(data, cfg, regressor, /*pooledSearch*/ null, /*perClusterSearch*/ null);
+    }
+
+    public static UnmixResult selectK(
+            DataSet data, int Kmin, int Kmax,
+            ResidualRegressor regressor,
+            Config base
+    ) {
+        return selectK(data, Kmin, Kmax, regressor, /*pooledSearch*/ null, /*perClusterSearch*/ null, base);
+    }
+
+    /* ======= FULL API (graph functions optional now) ======= */
+
     public static UnmixResult run(
             DataSet data,
             Config cfg,
             ResidualRegressor regressor,
-            Function<DataSet, Graph> pooledSearch,   // may be null if useParentSuperset=true
-            Function<DataSet, Graph> perClusterSearch
+            Function<DataSet, Graph> pooledSearch,   // may be null
+            Function<DataSet, Graph> perClusterSearch // may be null
     ) {
         Objects.requireNonNull(data);
         Objects.requireNonNull(regressor);
-        Objects.requireNonNull(perClusterSearch);
 
-        // 1) Build residual signatures (same initializer options as your pipeline)
+        // 1) Residual signatures
         double[][] R = buildResiduals(data, cfg, regressor, pooledSearch);
         if (cfg.robustScaleResiduals) ResidualUtils.robustStandardizeInPlace(R);
 
@@ -66,32 +51,25 @@ public final class EmUnmix {
         emc.seed = cfg.seed;
         emc.ridge = cfg.ridge;
         emc.kmeansRestarts = cfg.kmeansRestarts;
+        emc.covShrinkage = cfg.covShrinkage;
+        emc.covRidgeRel = cfg.covRidgeRel;
+        emc.annealSteps = cfg.annealSteps;
+        emc.annealStartT = cfg.annealStartT;
 
         GaussianMixtureEM.Model model = GaussianMixtureEM.fit(R, emc);
         int[] z = EmUtils.mapLabels(model.responsibilities);
 
         List<DataSet> parts = splitByLabels(data, z, cfg.K);
-        List<Graph> graphs = searchPerCluster(parts, perClusterSearch);
 
-        return new UnmixResult(z, cfg.K, parts, graphs, model);
+        // 3) Optional per-cluster graphs
+        if (perClusterSearch == null) {
+            return new UnmixResult(z, cfg.K, parts, model);
+        } else {
+            List<Graph> graphs = searchPerCluster(parts, perClusterSearch);
+            return new UnmixResult(z, cfg.K, parts, graphs, model);
+        }
     }
 
-    /**
-     * Identifies the optimal number of clusters (K) within a specified range by maximizing
-     * the Bayesian Information Criterion (BIC). This method performs an iterative process
-     * to evaluate different values of K, and for each value, it builds residuals, fits a
-     * Gaussian mixture model, evaluates the BIC, and performs per-cluster graph searches.
-     * Returns an {@code UnmixResult} containing the best clustering result and associated graphs.
-     *
-     * @param data             the input dataset to be analyzed
-     * @param Kmin             the minimum number of clusters to consider
-     * @param Kmax             the maximum number of clusters to consider
-     * @param regressor        the residual regressor for building residual signatures
-     * @param pooledSearch     a function to perform an optional pooled graph search across the dataset
-     * @param perClusterSearch a function to perform graph search individually for each cluster's dataset
-     * @param base             the base configuration used for the clustering and model fitting
-     * @return an {@code UnmixResult} containing the optimal cluster assignments, per-cluster datasets, and graphs
-     */
     public static UnmixResult selectK(
             DataSet data, int Kmin, int Kmax,
             ResidualRegressor regressor,
@@ -99,7 +77,7 @@ public final class EmUnmix {
             Function<DataSet, Graph> perClusterSearch,
             Config base
     ) {
-        double bestBIC = Double.POSITIVE_INFINITY;  // minimize BIC
+        double bestBIC = Double.POSITIVE_INFINITY;
         UnmixResult best = null;
 
         for (int K = Kmin; K <= Kmax; K++) {
@@ -120,18 +98,24 @@ public final class EmUnmix {
             emc.seed = cfg.seed;
             emc.ridge = cfg.ridge;
             emc.kmeansRestarts = cfg.kmeansRestarts;
+            emc.covShrinkage = cfg.covShrinkage;
+            emc.covRidgeRel = cfg.covRidgeRel;
+            emc.annealSteps = cfg.annealSteps;
+            emc.annealStartT = cfg.annealStartT;
 
             GaussianMixtureEM.Model m = GaussianMixtureEM.fit(R, emc);
-            double bic = m.bic(R.length);  // lower is better
+            double bic = m.bic(R.length);
 
             if (bic < bestBIC) {
-                System.out.println("K = " + K + "  bic = " + bic);
-
                 bestBIC = bic;
                 int[] z = EmUtils.mapLabels(m.responsibilities);
                 List<DataSet> parts = splitByLabels(data, z, K);
-                List<Graph> graphs = searchPerCluster(parts, perClusterSearch);
-                best = new UnmixResult(z, K, parts, graphs, m);
+
+                if (perClusterSearch == null) {
+                    best = new UnmixResult(z, K, parts, m);
+                } else {
+                    best = new UnmixResult(z, K, parts, searchPerCluster(parts, perClusterSearch), m);
+                }
             }
         }
         return best;
@@ -139,17 +123,22 @@ public final class EmUnmix {
 
     private static double[][] buildResiduals(
             DataSet data, Config cfg, ResidualRegressor regressor, Function<DataSet, Graph> pooledSearch) {
+
         if (cfg.useParentSuperset) {
             var pa = ParentSupersetBuilder.build(data, cfg.supersetCfg);
             return ResidualUtils.residualMatrix(data, pa, regressor);
         } else {
-            Objects.requireNonNull(pooledSearch, "pooledSearch must be provided when useParentSuperset=false");
-            Graph gPool = pooledSearch.apply(data);
-            return ResidualUtils.residualMatrix(data, gPool, regressor);
+            // If graphs are removed, pooledSearch is likely null—force parent superset mode instead.
+            if (pooledSearch == null) {
+                // Fallback: use parent-superset automatically
+                var pa = ParentSupersetBuilder.build(data, cfg.supersetCfg);
+                return ResidualUtils.residualMatrix(data, pa, regressor);
+            } else {
+                Graph gPool = pooledSearch.apply(data);
+                return ResidualUtils.residualMatrix(data, gPool, regressor);
+            }
         }
     }
-
-    // ----- helpers (mirror your existing ones) -----
 
     private static List<Graph> searchPerCluster(List<DataSet> parts, Function<DataSet, Graph> perClusterSearch) {
         List<Graph> graphs = new ArrayList<>(parts.size());
@@ -195,22 +184,17 @@ public final class EmUnmix {
         d.ridge = c.ridge;
         d.kmeansRestarts = c.kmeansRestarts;
         d.useMAP = c.useMAP;
+        d.covRidgeRel = c.covRidgeRel;
+        d.covShrinkage = c.covShrinkage;
+        d.annealSteps = c.annealSteps;
+        d.annealStartT = c.annealStartT;
+        d.randomSeed = c.randomSeed;
         return d;
     }
 
-    /**
-     * Configuration class for the EM unmixing process. This class contains a set of
-     * parameters used to control the behavior of Gaussian Mixture Models (GMM),
-     * clustering, and residual processing during the unmixing process.
-     *
-     * Fields in this class allow tuning of aspects such as the number of clusters (K),
-     * EM algorithm settings, covariance type, regularization, and annealing parameters.
-     * It also supports the use of a parent superset for pooled searches, along with
-     * robust scaling of residuals.
-     */
     public static final class Config {
         public int K;
-        public boolean useParentSuperset = false;
+        public boolean useParentSuperset = true;
         public ParentSupersetBuilder.Config supersetCfg = new ParentSupersetBuilder.Config();
         public boolean robustScaleResiduals = true;
 
@@ -220,38 +204,16 @@ public final class EmUnmix {
         public long seed = 13L;
         public double ridge = 1e-6;
         public int kmeansRestarts = 5;
-        public boolean useMAP = true; // hard-assign by MAP; set false if you plan weighted searches
-        public double covRidgeRel;
-        public double covShrinkage;
-        public int annealSteps;
-        public double annealStartT;
+        public boolean useMAP = true;
+        public double covRidgeRel = 0.0;
+        public double covShrinkage = 0.0;
+        public int annealSteps = 0;
+        public double annealStartT = 1.0;
         public long randomSeed = 35L;
 
-        public Config copy() {
-            Config copy = new Config();
-            copy.K = K;
-            copy.useParentSuperset = useParentSuperset;
-            copy.supersetCfg = ParentSupersetBuilderCopy.copy(supersetCfg);
-            copy.robustScaleResiduals = robustScaleResiduals;
-            copy.covType = covType;
-            copy.emMaxIters = emMaxIters;
-            copy.emTol = emTol;
-            copy.seed = seed;
-            copy.ridge = ridge;
-            copy.kmeansRestarts = kmeansRestarts;
-            copy.useMAP = useMAP;
-            copy.covRidgeRel = covRidgeRel;
-            copy.covShrinkage = covShrinkage;
-            copy.annealSteps = annealSteps;
-            copy.annealStartT = annealStartT;
-
-            return copy;
-        }
+        public Config copy() { return EmUnmix.copy(this); }
     }
 
-    /**
-     * small internal copier to avoid sharing superset config across trials
-     */
     private static final class ParentSupersetBuilderCopy {
         static ParentSupersetBuilder.Config copy(ParentSupersetBuilder.Config c) {
             ParentSupersetBuilder.Config d = new ParentSupersetBuilder.Config();

@@ -10,6 +10,12 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.search.Pc;
+import edu.cmu.tetrad.search.PermutationSearch;
+import edu.cmu.tetrad.search.Boss;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -231,6 +237,40 @@ public class RoadmapTest {
         return s;
     }
 
+    private static List<Graph> searchPerCluster(List<DataSet> parts, java.util.function.Function<DataSet, Graph> perClusterSearch) {
+        List<Graph> graphs = new ArrayList<>(parts.size());
+        for (DataSet dk : parts) {
+            if (dk == null || dk.getNumRows() == 0) graphs.add(null);
+            else graphs.add(perClusterSearch.apply(dk));
+        }
+        return graphs;
+    }
+
+    private static java.util.function.Function<DataSet, Graph> makePcMax(double alpha, Pc.ColliderOrientationStyle style) {
+        return ds -> {
+            try {
+                IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), alpha);
+                Pc pc = new Pc(test);
+                pc.setColliderOrientationStyle(style);
+                return pc.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    private static java.util.function.Function<DataSet, Graph> makeBoss(double penaltyDiscount) {
+        return ds -> {
+            try {
+                SemBicScore score = new SemBicScore(new CovarianceMatrix(ds));
+                score.setPenaltyDiscount(penaltyDiscount);
+                return new PermutationSearch(new Boss(score)).search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
     // ---------- Metrics ----------
 
     private static MixOut shuffleWithLabels(DataSet concat, int[] labels, long seed) {
@@ -324,7 +364,7 @@ public class RoadmapTest {
         for (Scenario sc : scenarios) {
             System.out.println("\n=== Phase1: " + sc.name + " | noise=" + sc.noise + " ===");
 
-            // EM-on-residuals baseline (known K)
+            // --- EmUnmix config (no graphers inside EmUnmix) ---
             EmUnmix.Config ec = new EmUnmix.Config();
             ec.K = 2;
             ec.useParentSuperset = true;
@@ -337,27 +377,63 @@ public class RoadmapTest {
             ec.emMaxIters = 200;
             ec.kmeansRestarts = 10;
 
+            // --- Unmix (K fixed = 2) ---
             long s0 = System.currentTimeMillis();
-            UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor(), CausalUnmixer.pooled(2), CausalUnmixer.perCluster());
+            UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor());
             long s1 = System.currentTimeMillis();
 
-            // EM selectK (unknown K one pass)
-            UnmixResult rEMbest = EmUnmix.selectK(sc.mixed, 1, 4, new LinearQRRegressor(), CausalUnmixer.pooled(2), CausalUnmixer.perCluster(), ec);
+            // --- Unmix with selectK outside (unknown K, 1..4) ---
+            UnmixResult rEMbest = EmUnmix.selectK(sc.mixed, 1, 4, new LinearQRRegressor(), ec);
 
-            // Metrics
+            // === External per-cluster graph learning ===
+            // Default: BOSS (+ PermutationSearch) per component
+            java.util.function.Function<DataSet, Graph> perCluster = ds -> {
+                try {
+                    SemBicScore score = new SemBicScore(new CovarianceMatrix(ds));
+                    score.setPenaltyDiscount(2.0); // tweak if desired
+                    return new PermutationSearch(new Boss(score)).search();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+            // If you prefer PC-Max instead, swap the lambda above for this:
+            // java.util.function.Function<DataSet, Graph> perCluster = ds -> {
+            //     try {
+            //         IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), 0.01);
+            //         Pc pc = new Pc(test);
+            //         pc.setColliderOrientationStyle(Pc.ColliderOrientationStyle.MAX_P);
+            //         return pc.search();
+            //     } catch (InterruptedException e) {
+            //         throw new RuntimeException(e);
+            //     }
+            // };
+
+            // Build graphs for each cluster externally
+            List<Graph> gEM = new ArrayList<>();
+            for (DataSet dk : rEM.clusterData) {
+                if (dk == null || dk.getNumRows() == 0) gEM.add(null);
+                else gEM.add(perCluster.apply(dk));
+            }
+            List<Graph> gEMbest = new ArrayList<>();
+            for (DataSet dk : rEMbest.clusterData) {
+                if (dk == null || dk.getNumRows() == 0) gEMbest.add(null);
+                else gEMbest.add(perCluster.apply(dk));
+            }
+
+            // --- Metrics (clustering) ---
             double ariEM = adjustedRandIndex(sc.labels, rEM.labels);
             double ariEMbest = adjustedRandIndex(sc.labels, rEMbest.labels);
 
-            // Graph metrics per regime (compare discovered vs true)
-            GraphMetrics gmEM = graphMetrics(sc.truthGraphs, rEM.clusterGraphs);
-            GraphMetrics gmEMbest = graphMetrics(sc.truthGraphs, rEMbest.clusterGraphs);
+            // --- Graph metrics per regime (vs. truth) ---
+            GraphMetrics gmEM = graphMetrics(sc.truthGraphs, gEM);
+            GraphMetrics gmEMbest = graphMetrics(sc.truthGraphs, gEMbest);
 
             System.out.printf("EM (K=2):             ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d  time=%dms%n",
                     ariEM, gmEM.adjF1, gmEM.arrowF1, gmEM.shd, (s1 - s0));
             System.out.printf("EM (selectK):         ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
                     ariEMbest, gmEMbest.adjF1, gmEMbest.arrowF1, gmEMbest.shd);
 
-            // --- EM directly on raw X (z-scored columns) as a params-only friendly baseline ---
+            // --- Raw-X EM baseline (z-score columns), unchanged ---
             double[][] X = new double[sc.mixed.getNumRows()][sc.mixed.getNumColumns()];
             for (int i = 0; i < sc.mixed.getNumRows(); i++) {
                 for (int j = 0; j < sc.mixed.getNumColumns(); j++) {
@@ -392,8 +468,8 @@ public class RoadmapTest {
             double ariRaw = adjustedRandIndex(sc.labels, zRaw);
             System.out.printf("EM (raw X, K=2):      ARI=%.3f  time=%dms%n", ariRaw, (rx1 - rx0));
 
-            double arrBothEM = arrowAccBothOriented(sc.truthGraphs, rEM.clusterGraphs);
-            double arrBothEMbest = arrowAccBothOriented(sc.truthGraphs, rEMbest.clusterGraphs);
+            double arrBothEM = arrowAccBothOriented(sc.truthGraphs, gEM);
+            double arrBothEMbest = arrowAccBothOriented(sc.truthGraphs, gEMbest);
             System.out.printf("ArrowOK(both oriented): EM=%.3f  EM(bestK)=%.3f%n", arrBothEM, arrBothEMbest);
         }
     }
@@ -429,8 +505,7 @@ public class RoadmapTest {
                         ec.emMaxIters = 400;
                         ec.kmeansRestarts = 10;
 
-                        UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor(), CausalUnmixer.pooled(2), CausalUnmixer.perCluster());
-
+                        UnmixResult rEM = EmUnmix.run(sc.mixed, ec, new LinearQRRegressor());
                         arisEM.add(adjustedRandIndex(sc.labels, rEM.labels));
                     }
                     String tag = String.format("n=%d  fracA=%.2f  signal=%.1f", nTot, fracA, sig);
@@ -495,10 +570,37 @@ public class RoadmapTest {
         ec.emMaxIters = 200;
         ec.kmeansRestarts = 10;
 
-        UnmixResult rEM = EmUnmix.run(mix.data, ec, new LinearQRRegressor(), CausalUnmixer.pooled(2), CausalUnmixer.perCluster());
+        UnmixResult rEM = EmUnmix.run(mix.data, ec, new LinearQRRegressor());
+
+// --- external per-cluster graph learning (same pattern as Phase 1) ---
+        java.util.function.Function<DataSet, Graph> perCluster = ds -> {
+            try {
+                SemBicScore score = new SemBicScore(new CovarianceMatrix(ds));
+                score.setPenaltyDiscount(2.0); // tweak if desired
+                return new PermutationSearch(new Boss(score)).search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        // If you prefer PC-Max instead, swap for:
+        // java.util.function.Function<DataSet, Graph> perCluster = ds -> {
+        //     try {
+        //         IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(ds), 0.01);
+        //         Pc pc = new Pc(test);
+        //         pc.setColliderOrientationStyle(Pc.ColliderOrientationStyle.MAX_P);
+        //         return pc.search();
+        //     } catch (InterruptedException e) { throw new RuntimeException(e); }
+        // };
+
+        // Build graphs for each cluster externally
+        List<Graph> gEM = new ArrayList<>();
+        for (DataSet dk : rEM.clusterData) {
+            if (dk == null || dk.getNumRows() == 0) gEM.add(null);
+            else gEM.add(perCluster.apply(dk));
+        }
 
         Graph[] truth = new Graph[]{gA, gB};
-        GraphMetrics gmEM = graphMetrics(truth, rEM.clusterGraphs);
+        GraphMetrics gmEM = graphMetrics(truth, gEM);
 
         System.out.printf("\n=== Phase3 (semi-synth) ===%n");
         System.out.printf("EM:          ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",

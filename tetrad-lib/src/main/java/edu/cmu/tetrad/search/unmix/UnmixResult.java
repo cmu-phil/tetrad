@@ -2,53 +2,34 @@ package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
 /**
- * Container for the outcome of unmixing: labels, per-cluster datasets, graphs,
- * and (optionally) the configs + graph functions used to produce them.
+ * Container for unmixing output (labels, per-cluster datasets, optional graphs).
  */
-public final class UnmixResult {
-
-    // Core outputs
-    public final int[] labels;                   // length n
+public class UnmixResult {
+    public final int[] labels;            // length n
     public final int K;
-    public final List<DataSet> clusterData;      // size K
-    public final List<Graph> clusterGraphs;      // size K
+    public final List<DataSet> clusterData;
+    public final List<Graph> clusterGraphs;  // may be null or empty
     public final GaussianMixtureEM.Model gmmModel;
 
-    // Optional provenance (populate if you have them at call site)
-    public final @Nullable EmUnmix.Config emCfg;                   // low-level EM cfg
-
-    public UnmixResult(
-            int[] labels,
-            int K,
-            @NotNull List<DataSet> clusterData,
-            @NotNull List<Graph> clusterGraphs,
-            @NotNull GaussianMixtureEM.Model gmmModel
-    ) {
-        this(labels, K, clusterData, clusterGraphs, gmmModel, null, null, null);
-    }
-
-    public UnmixResult(
-            int[] labels,
-            int K,
-            @NotNull List<DataSet> clusterData,
-            @NotNull List<Graph> clusterGraphs,
-            @NotNull GaussianMixtureEM.Model gmmModel,
-            @Nullable EmUnmix.Config emCfg,
-            @Nullable Function<DataSet, Graph> pooledSearchFn,
-            @Nullable Function<DataSet, Graph> perClusterSearchFn
-    ) {
+    /** Full constructor (graphs may be null). */
+    public UnmixResult(int[] labels, int K, List<DataSet> clusterData,
+                       List<Graph> clusterGraphs, GaussianMixtureEM.Model gmmModel) {
         this.labels = labels;
         this.K = K;
         this.clusterData = clusterData;
         this.clusterGraphs = clusterGraphs;
         this.gmmModel = gmmModel;
-        this.emCfg = emCfg;
+    }
+
+    /** Convenience: no graphs. */
+    public UnmixResult(int[] labels, int K, List<DataSet> clusterData,
+                       GaussianMixtureEM.Model gmmModel) {
+        this(labels, K, clusterData, Collections.emptyList(), gmmModel);
     }
 }

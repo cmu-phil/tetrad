@@ -342,7 +342,7 @@ public class TestCausalUnmixer {
         LabeledData mixed = shuffleWithLabels(concat, lab, seed);
 
         // === Run the causal unmixer (EM-based) ===
-        UnmixResult rEM = CausalUnmixer.getUnmixedResult(mixed.data, CausalUnmixer.defaults(2));
+        UnmixResult rEM = CausalUnmixer.getUnmixedResult(mixed.data, CausalUnmixer.defaults());
 
         Graph[] truth = new Graph[]{gA, gB};
         GraphMetrics gmEM = graphMetrics(truth, rEM.clusterGraphs);
@@ -369,14 +369,12 @@ public class TestCausalUnmixer {
 
         // Define a regressor + searches compatible with your Unmix pipe
         LinearQRRegressor reg = new LinearQRRegressor().setRidgeLambda(1e-3);
-        Function<DataSet, Graph> pooledSearch = CausalUnmixer.pooled(2);
-        Function<DataSet, Graph> perClusterSearch = CausalUnmixer.perCluster();
 
         // Rerun EM with K=1 (copy cfg and set K=1)
         EmUnmix.Config cfgK1 = cfg.copy();
         cfgK1.K = 1;
 
-        UnmixResult rK1 = EmUnmix.run(mixed.data, cfgK1, reg, pooledSearch, perClusterSearch);
+        UnmixResult rK1 = EmUnmix.run(mixed.data, cfgK1, reg);
 
         // Compute ΔBIC = BIC(K=2) - BIC(K=1); negative favors K=2
         GaussianMixtureEM.Model m2 = rEM.gmmModel;
