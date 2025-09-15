@@ -31,17 +31,16 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     private final List<List<Integer>> blocks;        // mapping original var -> embedded column indices
     private final IndTestBlocksWilkes blocksTest;          // delegate
     private final int degree;
-
+    private final int sampleSize;
     // ---- Knobs ----
     private double alpha = 0.01;
     private int nEff;
-    private final int sampleSize;
 
     /**
-     * Constructs an instance of {@code IndTestBasisFunctionBlocks} to perform block-based
-     * conditional independence testing using basis function embedding from a given dataset.
+     * Constructs an instance of {@code IndTestBasisFunctionBlocks} to perform block-based conditional independence
+     * testing using basis function embedding from a given dataset.
      *
-     * @param raw the input dataset, where each variable (node) is represented as a column
+     * @param raw    the input dataset, where each variable (node) is represented as a column
      * @param degree the degree of the basis function embedding; must be non-negative
      * @throws IllegalArgumentException if {@code raw} is null or {@code degree} is negative
      */
@@ -82,16 +81,32 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
     // ====== IndependenceTest API ======
 
+    private static DataSet twoColumnDataSet(String nameX, double[] x,
+                                            String nameY, double[] y) {
+        int n = x.length;
+        double[][] m = new double[n][2];
+        for (int i = 0; i < n; i++) {
+            m[i][0] = x[i];
+            m[i][1] = y[i];
+        }
+        List<Node> vars = new ArrayList<>(2);
+        vars.add(new ContinuousVariable(nameX));
+        vars.add(new ContinuousVariable(nameY));
+
+        DoubleDataBox dataBox = new DoubleDataBox(m);
+
+        return new BoxDataSet(dataBox, vars);
+    }
+
     /**
-     * Checks for statistical independence between two given variables (nodes),
-     * conditioned on a set of other variables.
+     * Checks for statistical independence between two given variables (nodes), conditioned on a set of other
+     * variables.
      *
      * @param x the first variable (node) to test for independence
      * @param y the second variable (node) to test for independence
      * @param z the set of conditioning variables (nodes) for the independence test
-     * @return an IndependenceResult containing details about the test result,
-     *         including whether the variables are independent, the p-value,
-     *         and the significance level used
+     * @return an IndependenceResult containing details about the test result, including whether the variables are
+     * independent, the p-value, and the significance level used
      */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
@@ -103,9 +118,8 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     }
 
     /**
-     * Retrieves the list of nodes (variables) associated with this instance.
-     * The nodes returned are exactly the ones used internally by the delegate,
-     * ensuring identity consistency and preventing "unknown node" issues.
+     * Retrieves the list of nodes (variables) associated with this instance. The nodes returned are exactly the ones
+     * used internally by the delegate, ensuring identity consistency and preventing "unknown node" issues.
      *
      * @return a list of nodes representing the variables
      */
@@ -126,8 +140,8 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     }
 
     /**
-     * Indicates whether this instance is operating in verbose mode.
-     * Verbose mode allows for detailed output or logging to assist in debugging or monitoring execution.
+     * Indicates whether this instance is operating in verbose mode. Verbose mode allows for detailed output or logging
+     * to assist in debugging or monitoring execution.
      *
      * @return true if verbose mode is enabled; false otherwise
      */
@@ -137,8 +151,8 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     }
 
     /**
-     * Sets the verbosity mode for this instance. Enabling verbosity
-     * allows for more detailed output or logging during execution.
+     * Sets the verbosity mode for this instance. Enabling verbosity allows for more detailed output or logging during
+     * execution.
      *
      * @param verbose true to enable verbose output, false to disable it
      */
@@ -146,7 +160,6 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     public void setVerbose(boolean verbose) {
         this.blocksTest.setVerbose(verbose);
     }
-
 
     @Override
     public double computePValue(double[] x, double[] y) throws InterruptedException {
@@ -158,7 +171,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         DataSet ds = twoColumnDataSet("X", x, "Y", y);
 
         // Build the BFIT test bound to this dataset
-        IndTestBasisFunctionBlocks test =  new IndTestBasisFunctionBlocks(ds, degree);
+        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(ds, degree);
 
         // Resolve nodes and run the marginal test
         Node X = ds.getVariable("X");
@@ -172,9 +185,11 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         return Math.max(0.0, Math.min(p, 1.0));
     }
 
+    // --- helper: build a 2-column continuous DataSet (rows = samples) ---
+
     /**
-     * Default multivariate fallback: run BFIT on each column of Y and combine with Fisher.
-     * If you later add a true multivariate BFIT, override this to call it directly.
+     * Default multivariate fallback: run BFIT on each column of Y and combine with Fisher. If you later add a true
+     * multivariate BFIT, override this to call it directly.
      */
     @Override
     public double computePValue(double[] x, double[][] Y) throws InterruptedException {
@@ -209,28 +224,9 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         return p;
     }
 
-    // --- helper: build a 2-column continuous DataSet (rows = samples) ---
-
-    private static DataSet twoColumnDataSet(String nameX, double[] x,
-                                            String nameY, double[] y) {
-        int n = x.length;
-        double[][] m = new double[n][2];
-        for (int i = 0; i < n; i++) {
-            m[i][0] = x[i];
-            m[i][1] = y[i];
-        }
-        List<Node> vars = new ArrayList<>(2);
-        vars.add(new ContinuousVariable(nameX));
-        vars.add(new ContinuousVariable(nameY));
-
-        DoubleDataBox dataBox = new DoubleDataBox(m);
-
-        return new BoxDataSet(dataBox, vars);
-    }
-
     /**
-     * Retrieves the alpha value currently set for this instance. The alpha value
-     * is typically used as a threshold or parameter in statistical tests or computations.
+     * Retrieves the alpha value currently set for this instance. The alpha value is typically used as a threshold or
+     * parameter in statistical tests or computations.
      *
      * @return the alpha value, which is a double strictly between 0 and 1
      */
@@ -239,8 +235,8 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     }
 
     /**
-     * Sets the alpha value used as a threshold or parameter for statistical tests or computations.
-     * The alpha value must be within the range (0, 1), exclusive.
+     * Sets the alpha value used as a threshold or parameter for statistical tests or computations. The alpha value must
+     * be within the range (0, 1), exclusive.
      *
      * @param alpha the desired alpha value, strictly between 0 and 1
      * @throws IllegalArgumentException if alpha is less than or equal to 0 or greater than or equal to 1
@@ -251,8 +247,8 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     }
 
     /**
-     * Retrieves the list of blocks, where each block is represented as a list of integers.
-     * These blocks may correspond to partitions or groupings derived from the data or configuration.
+     * Retrieves the list of blocks, where each block is represented as a list of integers. These blocks may correspond
+     * to partitions or groupings derived from the data or configuration.
      *
      * @return a list of blocks, with each block being a list of integers
      */
@@ -261,8 +257,8 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     }
 
     /**
-     * Retrieves the embedded data matrix corresponding to the transformed or processed data
-     * based on the configuration of this instance.
+     * Retrieves the embedded data matrix corresponding to the transformed or processed data based on the configuration
+     * of this instance.
      *
      * @return the embedded data matrix as a SimpleMatrix object
      */
@@ -271,12 +267,12 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     }
 
     @Override
-    public void setEffectiveSampleSize(int nEff) {
-        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+    public int getEffectiveSampleSize() {
+        return this.nEff;
     }
 
     @Override
-    public int getEffectiveSampleSize() {
-        return this.nEff;
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
     }
 }

@@ -161,19 +161,22 @@ public class NonlinearFunctionOfLinear {
     private DistortionType distortionType = DistortionType.POST_NONLINEAR;
 
     /**
-     * Constructs a NonlinearFunctionOfLinear instance, which generates synthetic data based on a directed acyclic
-     * graph (DAG) using post-nonlinear causal relationships and associated modeling parameters.
+     * Constructs a NonlinearFunctionOfLinear instance, which generates synthetic data based on a directed acyclic graph
+     * (DAG) using post-nonlinear causal relationships and associated modeling parameters.
      *
-     * @param graph The directed acyclic graph defining causal relationships between variables. Must not contain cycles.
-     * @param numSamples The number of samples to be generated. Must be a positive integer.
+     * @param graph             The directed acyclic graph defining causal relationships between variables. Must not
+     *                          contain cycles.
+     * @param numSamples        The number of samples to be generated. Must be a positive integer.
      * @param noiseDistribution The distribution from which the random noise will be sampled.
-     * @param rescaleMin The minimum value for rescaling the generated data. Must be less than or equal to rescaleMax.
-     * @param rescaleMax The maximum value for rescaling the generated data. Must be greater than or equal to rescaleMin.
-     * @param coefLow The lower bound for the uniform sampling of coefficients.
-     * @param coefHigh The upper bound for the uniform sampling of coefficients.
-     * @param coefSymmetric Indicates whether coefficient sampling should be symmetric around zero.
-     * @param hiddenDimension The dimensionality of hidden variables in the model.
-     * @param inputScale A scaling factor applied to the inputs of the nonlinear functions.
+     * @param rescaleMin        The minimum value for rescaling the generated data. Must be less than or equal to
+     *                          rescaleMax.
+     * @param rescaleMax        The maximum value for rescaling the generated data. Must be greater than or equal to
+     *                          rescaleMin.
+     * @param coefLow           The lower bound for the uniform sampling of coefficients.
+     * @param coefHigh          The upper bound for the uniform sampling of coefficients.
+     * @param coefSymmetric     Indicates whether coefficient sampling should be symmetric around zero.
+     * @param hiddenDimension   The dimensionality of hidden variables in the model.
+     * @param inputScale        A scaling factor applied to the inputs of the nonlinear functions.
      */
     public NonlinearFunctionOfLinear(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                      double rescaleMin, double rescaleMax, double coefLow, double coefHigh, boolean coefSymmetric,

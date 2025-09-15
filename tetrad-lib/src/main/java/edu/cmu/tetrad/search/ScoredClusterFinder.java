@@ -39,15 +39,15 @@ public final class ScoredClusterFinder {
     private boolean verbose = false;
 
     /**
-     * Constructs a ScoredClusterFinder instance using the provided dataset and a collection
-     * of candidate variable indices. This process initializes a correlation matrix, ensures
-     * the validity of variable indices, and organizes the indices in a deterministic order.
+     * Constructs a ScoredClusterFinder instance using the provided dataset and a collection of candidate variable
+     * indices. This process initializes a correlation matrix, ensures the validity of variable indices, and organizes
+     * the indices in a deterministic order.
      *
-     * @param dataSet the dataset from which the correlation matrix is derived; must not be null
-     * @param candidateVarIndices a collection of candidate variable indices; must be non-empty
-     *                             and contain valid indices within the bounds of the dataset
+     * @param dataSet             the dataset from which the correlation matrix is derived; must not be null
+     * @param candidateVarIndices a collection of candidate variable indices; must be non-empty and contain valid
+     *                            indices within the bounds of the dataset
      * @throws IllegalArgumentException if candidateVarIndices is empty or contains out-of-bound indices
-     * @throws NullPointerException if candidateVarIndices is null
+     * @throws NullPointerException     if candidateVarIndices is null
      */
     public ScoredClusterFinder(DataSet dataSet, Collection<Integer> candidateVarIndices) {
         this.S = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
@@ -136,36 +136,32 @@ public final class ScoredClusterFinder {
     }
 
     /**
-     * Sets the penalty discount value to the given value. The penalty discount
-     * is used internally to adjust the scoring criteria within the ScoredClusterFinder
-     * instance. This value plays a role in regulating how penalties are applied
+     * Sets the penalty discount value to the given value. The penalty discount is used internally to adjust the scoring
+     * criteria within the ScoredClusterFinder instance. This value plays a role in regulating how penalties are applied
      * during the cluster finding process.
      *
-     * @param c the penalty discount value to set; must be a valid double
-     *          representing the desired penalty adjustment factor
+     * @param c the penalty discount value to set; must be a valid double representing the desired penalty adjustment
+     *          factor
      */
     public void setPenaltyDiscount(double c) {
         this.penaltyDiscount = c;
     }
 
     /**
-     * Sets the EBIC gamma parameter to the specified value. The gamma parameter
-     * is used in the extended Bayesian information criterion (EBIC) calculation
-     * to control the trade-off between goodness-of-fit and model complexity.
-     * Adjusting this value influences the selection of clusters by penalizing
-     * more complex models.
+     * Sets the EBIC gamma parameter to the specified value. The gamma parameter is used in the extended Bayesian
+     * information criterion (EBIC) calculation to control the trade-off between goodness-of-fit and model complexity.
+     * Adjusting this value influences the selection of clusters by penalizing more complex models.
      *
-     * @param gamma the EBIC gamma parameter value to set; must be a valid
-     *              double representing the penalty adjustment factor
+     * @param gamma the EBIC gamma parameter value to set; must be a valid double representing the penalty adjustment
+     *              factor
      */
     public void setEbicGamma(double gamma) {
         this.ebicGamma = gamma;
     }
 
     /**
-     * Sets the ridge parameter to the given value. Ridge is typically used
-     * as a regularization term in optimization or statistical methods to
-     * control overfitting and enhance numerical stability.
+     * Sets the ridge parameter to the given value. Ridge is typically used as a regularization term in optimization or
+     * statistical methods to control overfitting and enhance numerical stability.
      *
      * @param ridge the ridge parameter value to set; must be a non-negative double
      */
@@ -174,14 +170,11 @@ public final class ScoredClusterFinder {
     }
 
     /**
-     * Sets the margin values for the preceding and succeeding clusters.
-     * The margin values are constrained to be non-negative, and if a negative
-     * value is provided, it will be clamped to 0.0.
+     * Sets the margin values for the preceding and succeeding clusters. The margin values are constrained to be
+     * non-negative, and if a negative value is provided, it will be clamped to 0.0.
      *
-     * @param marginKm1 the margin value for the preceding cluster;
-     *                  must be a non-negative double
-     * @param marginKp1 the margin value for the succeeding cluster;
-     *                  must be a non-negative double
+     * @param marginKm1 the margin value for the preceding cluster; must be a non-negative double
+     * @param marginKp1 the margin value for the succeeding cluster; must be a non-negative double
      */
     public void setMargins(double marginKm1, double marginKp1) {
         this.marginKm1 = Math.max(0.0, marginKm1);
@@ -189,12 +182,10 @@ public final class ScoredClusterFinder {
     }
 
     /**
-     * Enables or disables verbose mode for this instance.
-     * When verbose mode is enabled, additional details or outputs may be
-     * provided to aid debugging or provide more information about the process.
+     * Enables or disables verbose mode for this instance. When verbose mode is enabled, additional details or outputs
+     * may be provided to aid debugging or provide more information about the process.
      *
-     * @param verbose a boolean value indicating whether verbose mode should be
-     *                enabled (true) or disabled (false)
+     * @param verbose a boolean value indicating whether verbose mode should be enabled (true) or disabled (false)
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -204,7 +195,7 @@ public final class ScoredClusterFinder {
      * Find all clusters of size 'size' inside Vsub whose RCCA-BIC score is maximized at rank 'targetRank' when
      * contrasted with D = Vsub \ C. Returns hits sorted by (bestScore desc, lexicographic variable order).@
      *
-     * @param size The size of the clusters.
+     * @param size       The size of the clusters.
      * @param targetRank The rank of the clusters.
      * @return The list of clusters found.
      */
@@ -362,11 +353,11 @@ public final class ScoredClusterFinder {
         /**
          * Constructs a ClusterHit instance with the specified parameters.
          *
-         * @param members the set of indices in the dataset columns that form the cluster
-         * @param bestScore the score at the chosen rank
+         * @param members    the set of indices in the dataset columns that form the cluster
+         * @param bestScore  the score at the chosen rank
          * @param chosenRank the rank at which the score is maximized
-         * @param scoreKm1 the score at rank k-1 (NaN if k-1 &lt; 0)
-         * @param scoreKp1 the score at rank k+1 (NaN if k+1 &gt; the maximum rank)
+         * @param scoreKm1   the score at rank k-1 (NaN if k-1 &lt; 0)
+         * @param scoreKp1   the score at rank k+1 (NaN if k+1 &gt; the maximum rank)
          */
         ClusterHit(Set<Integer> members, double bestScore, int chosenRank, double scoreKm1, double scoreKp1) {
             this.members = members;
@@ -377,9 +368,8 @@ public final class ScoredClusterFinder {
         }
 
         /**
-         * Returns a string representation of the ClusterHit instance.
-         * The string includes the sorted list of members, the best score,
-         * and the chosen rank.
+         * Returns a string representation of the ClusterHit instance. The string includes the sorted list of members,
+         * the best score, and the chosen rank.
          *
          * @return a string representing the ClusterHit instance
          */

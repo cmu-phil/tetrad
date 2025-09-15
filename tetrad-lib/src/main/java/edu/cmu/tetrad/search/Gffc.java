@@ -159,7 +159,7 @@ public class Gffc {
         findMixedClusters(rank, clustersToRanks);
 
         log("clusters rank " + rank + " = "
-                                           + ClusterSignificance.variablesForIndices(clustersToRanks.keySet(), this.variables));
+            + ClusterSignificance.variablesForIndices(clustersToRanks.keySet(), this.variables));
     }
 
     private void findPureClustersTsc(int rank, Set<Set<Integer>> tscClusters,

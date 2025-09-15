@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Represents the NumberEdgesEst statistic, which calculates the number of edges in unshielded colliders in the estimated graph.
+ * Represents the NumberEdgesEst statistic, which calculates the number of edges in unshielded colliders in the
+ * estimated graph.
  */
 public class NumberEdgesInUnshieldedCollidersEst implements Statistic {
     @Serial

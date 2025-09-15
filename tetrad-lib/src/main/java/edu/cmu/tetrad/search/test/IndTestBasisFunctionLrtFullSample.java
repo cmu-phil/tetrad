@@ -78,6 +78,12 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      */
     private final List<Integer> allRows;
     /**
+     * The sample size used in computations within the class. This variable may represent an effective sample size that
+     * differs from the original dataset size, depending on configurations or preprocessing steps. It is particularly
+     * relevant to statistical and independence testing procedures where the sample size influences the results.
+     */
+    private final int sampleSize;
+    /**
      * Represents the significance level (alpha) used for statistical tests in the IndTestBasisFunctionLrt class. This
      * value determines the threshold for rejecting the null hypothesis in conditional independence testing, where lower
      * values indicate stricter criteria for rejecting the null hypothesis.
@@ -99,12 +105,6 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      * verbose output is suppressed.
      */
     private boolean verbose = false;
-    /**
-     * The sample size used in computations within the class. This variable may represent an effective sample size that
-     * differs from the original dataset size, depending on configurations or preprocessing steps. It is particularly
-     * relevant to statistical and independence testing procedures where the sample size influences the results.
-     */
-    private final int sampleSize;
     private int nEff;
     /**
      * Represents the specific rows being utilized during the independence test. This field holds a list of integers
@@ -389,6 +389,11 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
         this.lambda = lambda;
     }
 
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
+    }
+
     /**
      * Sets the sample size to use for the independence test, which may be different from the sample size of the data
      * set or covariance matrix. If not set, the sample size of the data set or covariance matrix is used.
@@ -398,11 +403,6 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
         this.nEff = effectiveSampleSize < 0 ? this.sampleSize : effectiveSampleSize;
-    }
-
-    @Override
-    public int getEffectiveSampleSize() {
-        return nEff;
     }
 
     /**

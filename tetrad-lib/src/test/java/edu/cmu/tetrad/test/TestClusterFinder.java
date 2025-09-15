@@ -1,9 +1,9 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.RandomMim;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomMim;
 import edu.cmu.tetrad.search.ScoredClusterFinder;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;

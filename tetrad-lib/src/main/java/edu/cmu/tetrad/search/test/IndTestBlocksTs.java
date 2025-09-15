@@ -25,11 +25,11 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>
  * This class is an elaboration of the IndTestTrekSep class of Adam Brodie and Peter Spirtes.
  *
- * @see edu.cmu.tetrad.search.test.IndTestTrekSep
  * @author Adam Brodie
  * @author josephramsey
+ * @see edu.cmu.tetrad.search.test.IndTestTrekSep
  */
-public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSettable,  BlockTest {
+public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSettable, BlockTest {
 
     // ---- Cache sizes (tune) ----
     private static final int RANK_CACHE_MAX = 400_000; // (L,R,n,alpha,splitSeed,randomize,numTrials)->rank
@@ -182,13 +182,13 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
     }
 
     @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.nEff =  effectiveSampleSize < 0 ? this.n : effectiveSampleSize;
+    public int getEffectiveSampleSize() {
+        return this.nEff;
     }
 
     @Override
-    public int getEffectiveSampleSize() {
-        return this.nEff;
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.nEff = effectiveSampleSize < 0 ? this.n : effectiveSampleSize;
     }
 
     /**

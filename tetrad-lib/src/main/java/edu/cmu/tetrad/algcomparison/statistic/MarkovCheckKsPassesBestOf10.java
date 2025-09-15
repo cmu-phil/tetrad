@@ -11,8 +11,8 @@ import java.io.Serial;
 
 /**
  * Represents a markov check statistic that calculates the Kolmogorov-Smirnoff P value for whether the p-values for the
- * estimated graph are distributed as U(0, 1). This version reports whether the p-value is greater than 0.05 and
- * reports the best of 10 repetitions.
+ * estimated graph are distributed as U(0, 1). This version reports whether the p-value is greater than 0.05 and reports
+ * the best of 10 repetitions.
  *
  * @author josephramsey
  */
@@ -20,18 +20,17 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
     @Serial
     private static final long serialVersionUID = 23L;
     /**
-     * An instance of {@link IndependenceWrapper} used to encapsulate and perform independence
-     * tests on the dataset with specific configurations. This variable is intended to facilitate
-     * independence testing within the context of Markov check calculations and other statistical
-     * operations in the enclosing class.
+     * An instance of {@link IndependenceWrapper} used to encapsulate and perform independence tests on the dataset with
+     * specific configurations. This variable is intended to facilitate independence testing within the context of
+     * Markov check calculations and other statistical operations in the enclosing class.
      */
     private final IndependenceWrapper independenceWrapper;
     /**
      * Represents the type of conditioning set used during the Markov checks in the context of statistical dependence
      * testing. It specifies how variables are conditioned upon during independence tests and directly influences the
      * results of the Markov checks. The type is defined by the {@link ConditioningSetType} enumeration, which includes
-     * various strategies for defining the conditioning set, such as GLOBAL_MARKOV, LOCAL_MARKOV, or MARKOV_BLANKET among
-     * others. This field is immutable and must be set during the initialization of the object.
+     * various strategies for defining the conditioning set, such as GLOBAL_MARKOV, LOCAL_MARKOV, or MARKOV_BLANKET
+     * among others. This field is immutable and must be set during the initialization of the object.
      */
     private final ConditioningSetType conditioningSetType;
 
@@ -76,7 +75,7 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
-     * @param parameters  The parameters.
+     * @param parameters The parameters.
      * @return 1 if p > 0.05, 0 if not.
      * @throws IllegalArgumentException if the data model is null.
      */

@@ -24,7 +24,7 @@ public class TestAlgorithmModel {
         GridSearchModel gridSearchModel = new GridSearchModel(new Parameters());
 
         List<String> simulations = gridSearchModel.getSimulationName();
-        List<String> algorithms =  gridSearchModel.getAlgorithmsName();
+        List<String> algorithms = gridSearchModel.getAlgorithmsName();
         List<String> statistics = gridSearchModel.getStatisticsNames();
 
         System.out.println("Simulations: ");

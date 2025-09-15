@@ -1266,7 +1266,7 @@ public class DataTransforms {
      * For each continuous column, the method computes the maximum of the absolute values of the minimum and maximum of
      * the column, and divides all values in that column by this maximum value. Discrete columns are not affected.
      *
-     * @param dataSet The DataSet containing variables to be scaled.
+     * @param dataSet  The DataSet containing variables to be scaled.
      * @param scaleMin The minimum value to scale to.
      * @param scaleMax The maximum value to scale to.
      * @return A new DataSet with scaled continuous variables, while discrete variables remain unchanged.
@@ -1285,13 +1285,13 @@ public class DataTransforms {
     }
 
     /**
-     * Scales the values of a specified node in the given dataset to a specified range [scaleMin, scaleMax].
-     * This method only processes nodes that are instances of ContinuousVariable.
+     * Scales the values of a specified node in the given dataset to a specified range [scaleMin, scaleMax]. This method
+     * only processes nodes that are instances of ContinuousVariable.
      *
-     * @param dataSet the dataset containing the values to be scaled
+     * @param dataSet  the dataset containing the values to be scaled
      * @param scaleMin the minimum value of the target range
      * @param scaleMax the maximum value of the target range
-     * @param node the node corresponding to the column in the dataset to be scaled
+     * @param node     the node corresponding to the column in the dataset to be scaled
      */
     public static void scale(DataSet dataSet, double scaleMin, double scaleMax, Node node) {
         if (node instanceof ContinuousVariable) {
@@ -1327,12 +1327,12 @@ public class DataTransforms {
     /**
      * Scales a value from one range to another.
      *
-     * @param value     The value to scale
-     * @param dataMin   The minimum value of the data range
-     * @param dataMax   The maximum value of the data range
-     * @param scaleMin  The minimum value of the scale range
-     * @param scaleMax  The maximum value of the scale range
-     * @return          The scaled value
+     * @param value    The value to scale
+     * @param dataMin  The minimum value of the data range
+     * @param dataMax  The maximum value of the data range
+     * @param scaleMin The minimum value of the scale range
+     * @param scaleMax The maximum value of the scale range
+     * @return The scaled value
      * @throws IllegalArgumentException if dataMin is equal to dataMax
      */
     public static double scale(double value, double dataMin, double dataMax, double scaleMin, double scaleMax) {

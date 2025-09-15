@@ -2,7 +2,6 @@ package edu.cmu.tetradapp.editor.blocks;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.BlockSpecSemFit;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlockSpecTextCodec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
@@ -22,8 +21,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
@@ -484,11 +481,9 @@ public final class BlockSpecEditorPanel extends JPanel {
     // ---------------- Autocomplete ----------------
 
     /**
-     * Canonicalize RHS in-place and reorder latent lines:
-     * - Keep comments & blank lines as-is, but attach them to the following latent line
-     * - For "lhs: rhs" lines: rewrite rhs as sorted, de-duplicated member names
-     * - Then sort the latent lines by lhs (alphabetical)
-     * - Singleton lines (no ":") are left in place as orphans
+     * Canonicalize RHS in-place and reorder latent lines: - Keep comments & blank lines as-is, but attach them to the
+     * following latent line - For "lhs: rhs" lines: rewrite rhs as sorted, de-duplicated member names - Then sort the
+     * latent lines by lhs (alphabetical) - Singleton lines (no ":") are left in place as orphans
      */
     private void canonicalizePreservingComments() {
         Element root = textPane.getDocument().getDefaultRootElement();
@@ -547,7 +542,8 @@ public final class BlockSpecEditorPanel extends JPanel {
                         int k = Integer.parseInt(tok.substring(1));
                         String nm = idxToName.get(k);
                         if (nm != null) names.add(nm);
-                    } catch (NumberFormatException ignored) {}
+                    } catch (NumberFormatException ignored) {
+                    }
                 } else if (nameToIdx.containsKey(tok)) {
                     names.add(tok);
                 }
@@ -596,12 +592,13 @@ public final class BlockSpecEditorPanel extends JPanel {
 
         // Separate blocks
         List<Block> leadingOrphans = new ArrayList<>();
-        List<Block> latentBlocks   = new ArrayList<>();
-        List<Block> trailingOrphans= new ArrayList<>();
+        List<Block> latentBlocks = new ArrayList<>();
+        List<Block> trailingOrphans = new ArrayList<>();
         boolean seenLatent = false;
         for (Block b : blocks) {
             if (b.lhs == null) {
-                if (!seenLatent) leadingOrphans.add(b); else trailingOrphans.add(b);
+                if (!seenLatent) leadingOrphans.add(b);
+                else trailingOrphans.add(b);
             } else {
                 seenLatent = true;
                 latentBlocks.add(b);
@@ -613,9 +610,18 @@ public final class BlockSpecEditorPanel extends JPanel {
 
         // Rebuild
         List<String> rewritten = new ArrayList<>(lines.size());
-        for (Block b : leadingOrphans) { rewritten.addAll(b.header); if (b.line != null) rewritten.add(b.line); }
-        for (Block b : latentBlocks)   { rewritten.addAll(b.header); rewritten.add(b.line); }
-        for (Block b : trailingOrphans){ rewritten.addAll(b.header); if (b.line != null) rewritten.add(b.line); }
+        for (Block b : leadingOrphans) {
+            rewritten.addAll(b.header);
+            if (b.line != null) rewritten.add(b.line);
+        }
+        for (Block b : latentBlocks) {
+            rewritten.addAll(b.header);
+            rewritten.add(b.line);
+        }
+        for (Block b : trailingOrphans) {
+            rewritten.addAll(b.header);
+            if (b.line != null) rewritten.add(b.line);
+        }
 
         String newText = String.join("\n", rewritten);
         setText(newText, false);

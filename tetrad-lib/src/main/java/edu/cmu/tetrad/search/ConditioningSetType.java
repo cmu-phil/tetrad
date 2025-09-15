@@ -58,8 +58,8 @@ public enum ConditioningSetType {
     ORDERED_LOCAL_MARKOV,
 
     /**
-     * Generates a set of independence facts that implies Global Markov for MAG.
-     * Taking a MAG in the given PAG in the calling method.
+     * Generates a set of independence facts that implies Global Markov for MAG. Taking a MAG in the given PAG in the
+     * calling method.
      *
      * @see OrderedLocalMarkovProperty
      */

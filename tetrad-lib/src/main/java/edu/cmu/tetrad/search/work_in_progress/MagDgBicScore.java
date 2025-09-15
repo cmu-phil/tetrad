@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
@@ -21,11 +21,8 @@
 
 package edu.cmu.tetrad.search.work_in_progress;
 
-import edu.cmu.tetrad.algcomparison.score.DegenerateGaussianBicScore;
 import edu.cmu.tetrad.annotation.Experimental;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
@@ -33,8 +30,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.DegenerateGaussianScore;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.util.Parameters;
 
 import java.util.*;
 

@@ -4,8 +4,8 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -20,18 +20,16 @@ public class McGetNumTestsH1 implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
     /**
-     * An instance of the IndependenceWrapper interface used to perform independence tests
-     * in the context of statistical computations and graph evaluations. It provides the
-     * necessary methods to retrieve and configure independence tests, as well as to
-     * obtain a description of the specific independence testing algorithm being employed.
+     * An instance of the IndependenceWrapper interface used to perform independence tests in the context of statistical
+     * computations and graph evaluations. It provides the necessary methods to retrieve and configure independence
+     * tests, as well as to obtain a description of the specific independence testing algorithm being employed.
      */
     private final IndependenceWrapper independenceWrapper;
     /**
      * Specifies the type of conditioning set used in the Markov check for evaluating independence or dependence
-     * relationships. This variable is associated with the configuration of the independence tests and determines
-     * how the conditioning set is constructed based on the selected type from the {@link ConditioningSetType} enum.
-     * The conditioning set influences the statistical properties of the independence tests performed during
-     * Markov checks.
+     * relationships. This variable is associated with the configuration of the independence tests and determines how
+     * the conditioning set is constructed based on the selected type from the {@link ConditioningSetType} enum. The
+     * conditioning set influences the statistical properties of the independence tests performed during Markov checks.
      */
     private final ConditioningSetType conditioningSetType;
 

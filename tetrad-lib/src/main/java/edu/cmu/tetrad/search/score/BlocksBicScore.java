@@ -408,15 +408,15 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
     }
 
     @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
+    }
+
+    @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? this.n : nEff;
         scoreCache.clear();
         xblockCache.clear();
-    }
-
-    @Override
-    public int getEffectiveSampleSize() {
-        return nEff;
     }
 
     // ----- Key types for caches -----

@@ -148,11 +148,11 @@
             <artifactId>ejml-all</artifactId>
             <version>0.44.0</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.pytorch</groupId>-->
-<!--            <artifactId>pytorch_android</artifactId> &lt;!&ndash; Works on desktops too &ndash;&gt;-->
-<!--            <version>1.10.0</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.pytorch</groupId>-->
+        <!--            <artifactId>pytorch_android</artifactId> &lt;!&ndash; Works on desktops too &ndash;&gt;-->
+        <!--            <version>1.10.0</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>api</artifactId>
@@ -163,25 +163,24 @@
             <artifactId>pytorch-engine</artifactId>
             <version>0.33.0</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>ai.djl.pytorch</groupId>-->
-<!--            <artifactId>pytorch-engine</artifactId>-->
-<!--            <version>0.24.0</version> &lt;!&ndash; Use the latest version &ndash;&gt;-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>ai.djl.pytorch</groupId>-->
-<!--            <artifactId>pytorch-native-auto</artifactId>-->
-<!--            <version>2.0.0</version> &lt;!&ndash; Metal support &ndash;&gt;-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>ai.djl.pytorch</groupId>-->
+        <!--            <artifactId>pytorch-engine</artifactId>-->
+        <!--            <version>0.24.0</version> &lt;!&ndash; Use the latest version &ndash;&gt;-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>ai.djl.pytorch</groupId>-->
+        <!--            <artifactId>pytorch-native-auto</artifactId>-->
+        <!--            <version>2.0.0</version> &lt;!&ndash; Metal support &ndash;&gt;-->
+        <!--        </dependency>-->
 
 
-
-<!--        &lt;!&ndash; Optional: If using PyTorch native bindings for macOS &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>ai.djl.pytorch</groupId>-->
-<!--            <artifactId>pytorch-native-auto</artifactId>-->
-<!--            <version>2.0.0</version>-->
-<!--        </dependency>-->
+        <!--        &lt;!&ndash; Optional: If using PyTorch native bindings for macOS &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>ai.djl.pytorch</groupId>-->
+        <!--            <artifactId>pytorch-native-auto</artifactId>-->
+        <!--            <version>2.0.0</version>-->
+        <!--        </dependency>-->
 
         <!-- JUnit 5 API (compile/test compile) -->
         <dependency>

@@ -6,11 +6,8 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.LinearFunctionND;
 import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunction1D;
 import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionND;
-import edu.cmu.tetrad.search.utils.RandomMonotonicPiecewiseLinear;
-import edu.cmu.tetrad.util.RandomPiecewiseLinearBijective;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -111,26 +108,26 @@ public class PostnonlinearCausalModel {
     private boolean coefSymmetric = false;
 
     /**
-     * Constructs a PostnonlinearCausalModel object. This model generates synthetic data based on a directed
-     * acyclic graph (DAG) with causal relationships, utilizing post-nonlinear causal mechanisms. The model
-     * allows for various parameter configurations to control noise, rescaling, dimensionality, and coefficient
-     * properties.
+     * Constructs a PostnonlinearCausalModel object. This model generates synthetic data based on a directed acyclic
+     * graph (DAG) with causal relationships, utilizing post-nonlinear causal mechanisms. The model allows for various
+     * parameter configurations to control noise, rescaling, dimensionality, and coefficient properties.
      *
-     * @param graph The directed acyclic graph (DAG) containing the causal structure for the model.
-     *              Must be acyclic; otherwise, an exception will be thrown.
-     * @param numSamples The number of samples to generate for the synthetic data. Must be positive.
-     * @param noiseDistribution The distribution from which noise values are generated. Often a standard
-     *                          distribution, such as Gaussian, but can be user-defined.
-     * @param rescaleMin The minimum value for rescaling the data. Must be less than or equal to rescaleMax.
-     * @param rescaleMax The maximum value for rescaling the data. Must be greater than or equal to rescaleMin.
-     * @param hiddenDimension The dimensionality of the hidden variables affecting the model's behavior.
-     * @param inputScale A scaling factor applied to the input variables before applying post-nonlinear operations.
-     * @param coefLow The lower bound for randomly selected coefficients used in the model.
-     * @param coefHigh The upper bound for randomly selected coefficients used in the model.
-     * @param coefSymmetric A boolean flag indicating whether the randomly selected coefficients should be symmetric
-     *                      around zero.
-     * @throws IllegalArgumentException If the provided graph is not acyclic, the number of samples is less than one,
-     *                                  or rescaleMin is greater than rescaleMax.
+     * @param graph             The directed acyclic graph (DAG) containing the causal structure for the model. Must be
+     *                          acyclic; otherwise, an exception will be thrown.
+     * @param numSamples        The number of samples to generate for the synthetic data. Must be positive.
+     * @param noiseDistribution The distribution from which noise values are generated. Often a standard distribution,
+     *                          such as Gaussian, but can be user-defined.
+     * @param rescaleMin        The minimum value for rescaling the data. Must be less than or equal to rescaleMax.
+     * @param rescaleMax        The maximum value for rescaling the data. Must be greater than or equal to rescaleMin.
+     * @param hiddenDimension   The dimensionality of the hidden variables affecting the model's behavior.
+     * @param inputScale        A scaling factor applied to the input variables before applying post-nonlinear
+     *                          operations.
+     * @param coefLow           The lower bound for randomly selected coefficients used in the model.
+     * @param coefHigh          The upper bound for randomly selected coefficients used in the model.
+     * @param coefSymmetric     A boolean flag indicating whether the randomly selected coefficients should be symmetric
+     *                          around zero.
+     * @throws IllegalArgumentException If the provided graph is not acyclic, the number of samples is less than one, or
+     *                                  rescaleMin is greater than rescaleMax.
      */
     public PostnonlinearCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                     double rescaleMin, double rescaleMax,

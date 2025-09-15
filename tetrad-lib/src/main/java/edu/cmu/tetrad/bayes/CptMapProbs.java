@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.bayes;
 
-import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.Vector;
 
 import java.io.Serial;

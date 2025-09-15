@@ -15,8 +15,8 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -28,9 +28,9 @@ import java.util.List;
 
 
 /**
- * This class represents the FCI Targeted Testing (FCIT) algorithm, which is variant of the *-FCI algorithm for
- * learning causal structures from observational data using the BOSS algorithm as an initial CPDAG and using all
- * score-based steps afterward.
+ * This class represents the FCI Targeted Testing (FCIT) algorithm, which is variant of the *-FCI algorithm for learning
+ * causal structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based
+ * steps afterward.
  *
  * @author josephramsey
  */

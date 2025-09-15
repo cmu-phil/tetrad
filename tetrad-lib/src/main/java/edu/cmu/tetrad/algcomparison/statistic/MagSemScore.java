@@ -50,7 +50,8 @@ public class MagSemScore implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet)) throw new IllegalArgumentException("Expecting a dataset for MAG DG Score.");
+        if (!(dataModel instanceof DataSet))
+            throw new IllegalArgumentException("Expecting a dataset for MAG DG Score.");
 
         Graph mag = GraphTransforms.zhangMagFromPag(estGraph);
         MagSemBicScore magDgScore = new MagSemBicScore(new CovarianceMatrix((DataSet) dataModel));

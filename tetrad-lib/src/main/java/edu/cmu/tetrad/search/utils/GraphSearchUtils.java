@@ -26,8 +26,8 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.MultiKeyMap;
@@ -1013,8 +1013,8 @@ public final class GraphSearchUtils {
      * Originally, Tsamardinos, I., Brown, L. E., and Aliferis, C. F. (2006). The max-min hill-climbing Bayesian network
      * structure learning algorithm. Machine learning, 65(1), 31-78.
      * <p>
-     * But using the formulation in Peters, J., &amp; Bühlmann, P. (2015). Structural intervention distance for evaluating
-     * causal graphs. Neural computation, 27(3), 771-799.
+     * But using the formulation in Peters, J., &amp; Bühlmann, P. (2015). Structural intervention distance for
+     * evaluating causal graphs. Neural computation, 27(3), 771-799.
      * <p>
      * Converts each graph (DAG or CPDAG) into its CPDAG before scoring.
      *

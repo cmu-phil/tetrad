@@ -35,6 +35,10 @@ import java.util.concurrent.*;
 public final class ISFges implements IGraphSearch {
 
     final int[] count = new int[1];
+    /**
+     * The logger for this class. The config needs to be set.
+     */
+    private final TetradLogger logger = TetradLogger.getInstance();
     // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
     // The ordering doesn't matter; it just has to be transitive.
     int arrowIndex = 0;
@@ -67,10 +71,6 @@ public final class ISFges implements IGraphSearch {
      * The totalScore for discrete searches.
      */
     private ISScore score;
-    /**
-     * The logger for this class. The config needs to be set.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
     /**
      * True if verbose output should be printed.
      */
@@ -229,8 +229,8 @@ public final class ISFges implements IGraphSearch {
     }
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges till the model is significant. Then start deleting
-     * edges till a minimum is achieved.
+     * Greedy equivalence search: Start from the empty graph, add edges till the model is significant. Then start
+     * deleting edges till a minimum is achieved.
      *
      * @return the resulting Pattern.
      */
@@ -338,11 +338,9 @@ public final class ISFges implements IGraphSearch {
     /**
      * Sets the initial graph, ensuring the graph's nodes match the expected variables.
      *
-     * @param initialGraph the initial graph to set. If null, does nothing. The method
-     *                     replaces the nodes of the graph with the expected variables
-     *                     and checks if they match.
-     * @throws IllegalArgumentException if the nodes of the initialGraph do not
-     *                                  match the expected variables.
+     * @param initialGraph the initial graph to set. If null, does nothing. The method replaces the nodes of the graph
+     *                     with the expected variables and checks if they match.
+     * @throws IllegalArgumentException if the nodes of the initialGraph do not match the expected variables.
      */
     public void setInitialGraph(Graph initialGraph) {
         if (initialGraph != null) {
@@ -362,13 +360,11 @@ public final class ISFges implements IGraphSearch {
     }
 
     /**
-     * Sets the population graph for the current instance. The provided graph will replace the
-     * current population graph if it is not null. The method ensures that the nodes of the
-     * provided graph match the expected variables.
+     * Sets the population graph for the current instance. The provided graph will replace the current population graph
+     * if it is not null. The method ensures that the nodes of the provided graph match the expected variables.
      *
      * @param populationGraph the graph to set as the population graph
-     * @throws IllegalArgumentException if the variables of the provided graph do not match the
-     *                                  expected variables
+     * @throws IllegalArgumentException if the variables of the provided graph do not match the expected variables
      */
     public void setPopulationGraph(Graph populationGraph) {
         if (populationGraph != null) {
@@ -433,8 +429,7 @@ public final class ISFges implements IGraphSearch {
     }
 
     /**
-     * Sets the level of parallelism for the ForkJoinPool by specifying the number
-     * of processors to be used.
+     * Sets the level of parallelism for the ForkJoinPool by specifying the number of processors to be used.
      *
      * @param numProcessors the number of processors to be used for parallel computations
      */
@@ -482,8 +477,7 @@ public final class ISFges implements IGraphSearch {
     }
 
     /**
-     * Sets the total score, initializes the list of measured variables, builds indexing,
-     * and sets the maximum degree.
+     * Sets the total score, initializes the list of measured variables, builds indexing, and sets the maximum degree.
      *
      * @param totalScore The ISScore object containing the total score and variables.
      */
@@ -507,21 +501,20 @@ public final class ISFges implements IGraphSearch {
      * Calculates the minimum chunk size for parallel processing.
      *
      * @param n the total number of tasks to be distributed
-     * @return the minimum chunk size which is either the result of dividing
-     *         the total number of tasks by the parallelism of the pool or 100,
-     *         whichever is larger
+     * @return the minimum chunk size which is either the result of dividing the total number of tasks by the
+     * parallelism of the pool or 100, whichever is larger
      */
     public int getMinChunk(int n) {
         return Math.max(n / pool.getParallelism(), 100);
     }
 
     /**
-     * Initializes the forward edges for the graph starting from an empty state.
-     * This method constructs an edge list graph based on the provided list of nodes
-     * and distributes the initialization tasks over multiple parallel tasks for efficiency.
+     * Initializes the forward edges for the graph starting from an empty state. This method constructs an edge list
+     * graph based on the provided list of nodes and distributes the initialization tasks over multiple parallel tasks
+     * for efficiency.
      *
-     * @param nodes The list of nodes from which the graph will be initialized.
-     *              Each node will be part of the resulting edge list graph.
+     * @param nodes The list of nodes from which the graph will be initialized. Each node will be part of the resulting
+     *              edge list graph.
      */
     private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
 //        if (verbose) {
@@ -1800,9 +1793,8 @@ public final class ISFges implements IGraphSearch {
     //===========================SCORING METHODS===================//
 
     /**
-     * Computes the score of a Directed Acyclic Graph (DAG) based on a given population graph.
-     * This method evaluates each node in the DAG, considering its parents and the corresponding nodes
-     * and structure in the population graph.
+     * Computes the score of a Directed Acyclic Graph (DAG) based on a given population graph. This method evaluates
+     * each node in the DAG, considering its parents and the corresponding nodes and structure in the population graph.
      *
      * @param dag The directed acyclic graph whose score is to be calculated.
      * @param pop The population graph used as a reference for scoring the DAG.
@@ -1913,9 +1905,9 @@ public final class ISFges implements IGraphSearch {
         private final Node a;
         private final Node b;
         private final Set<Node> hOrT;
-        private Set<Node> TNeighbors;
         private final Set<Node> naYX;
         private final int index;
+        private Set<Node> TNeighbors;
 
         Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> capTorH, Set<Node> naYX, int index) {
             this.bump = bump;

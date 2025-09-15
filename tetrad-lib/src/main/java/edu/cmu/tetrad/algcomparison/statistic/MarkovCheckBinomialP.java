@@ -4,8 +4,8 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -21,16 +21,16 @@ public class MarkovCheckBinomialP implements Statistic, MarkovCheckerStatistic {
     private static final long serialVersionUID = 23L;
     /**
      * Encapsulates an instance of an IndependenceWrapper, which provides methods to perform independence tests,
-     * retrieve test descriptions, manage data type requirements, and obtain associated parameters. This variable
-     * is central in conducting independence testing within the context of statistical evaluation for algorithms.
+     * retrieve test descriptions, manage data type requirements, and obtain associated parameters. This variable is
+     * central in conducting independence testing within the context of statistical evaluation for algorithms.
      */
     private final IndependenceWrapper independenceWrapper;
     /**
      * Specifies the type of conditioning set used for the Markov check in statistical evaluations. The conditioning set
-     * determines which variables are conditioned on when testing for independence or dependence among variables in a graph.
-     * It impacts the way independence facts are tested and interpreted, particularly in the context of causal modeling.
-     * Different types of conditioning sets correspond to distinct independence testing strategies, such as global or local
-     * tests.
+     * determines which variables are conditioned on when testing for independence or dependence among variables in a
+     * graph. It impacts the way independence facts are tested and interpreted, particularly in the context of causal
+     * modeling. Different types of conditioning sets correspond to distinct independence testing strategies, such as
+     * global or local tests.
      */
     private final ConditioningSetType conditioningSetType;
 

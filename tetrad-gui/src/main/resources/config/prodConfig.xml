@@ -1130,7 +1130,8 @@
     </session-node>
     <session-node id="Latent_Clusters">
         <models>
-            <model name="Algorithms that Generate Clusters" acronym="Latent_Clusters" help="latent_clusters" category="General">
+            <model name="Algorithms that Generate Clusters" acronym="Latent_Clusters" help="latent_clusters"
+                   category="General">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                 </logger>
@@ -1155,7 +1156,8 @@
     </session-node>
     <session-node id="Latent_Structure">
         <models>
-            <model name="Algorithms that Generate Graphs" acronym="Latent Structure" help="latent_structure" category="General">
+            <model name="Algorithms that Generate Graphs" acronym="Latent Structure" help="latent_structure"
+                   category="General">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                 </logger>

@@ -4,10 +4,9 @@ import java.util.Random;
 import java.util.function.Function;
 
 /**
- * This class implements a 1-dimensional Multi-Layer Perceptron (MLP) function. It consists of
- * a single hidden layer and scales the input to introduce variability or "bumpiness" as needed.
- * The activation function for the hidden layer and weights/biases for the neural network
- * are initialized during construction.
+ * This class implements a 1-dimensional Multi-Layer Perceptron (MLP) function. It consists of a single hidden layer and
+ * scales the input to introduce variability or "bumpiness" as needed. The activation function for the hidden layer and
+ * weights/biases for the neural network are initialized during construction.
  */
 public class MultiLayerPerceptronFunction1D {
     private final double[][] W1; // Weights for input to hidden layer
@@ -20,10 +19,10 @@ public class MultiLayerPerceptronFunction1D {
     /**
      * Constructor to initialize a random function.
      *
-     * @param hiddenDimension  Number of neurons in the hidden layer.
-     * @param inputScale Scaling factor for the input to create bumpiness.
-     * @param activation Activation function (e.g., Math::sin or Math::tanh).
-     * @param seed       Random seed for reproducibility.
+     * @param hiddenDimension Number of neurons in the hidden layer.
+     * @param inputScale      Scaling factor for the input to create bumpiness.
+     * @param activation      Activation function (e.g., Math::sin or Math::tanh).
+     * @param seed            Random seed for reproducibility.
      */
     public MultiLayerPerceptronFunction1D(int hiddenDimension, double inputScale, Function<Double, Double> activation, long seed) {
         Random random;
@@ -50,9 +49,8 @@ public class MultiLayerPerceptronFunction1D {
     }
 
     /**
-     * The entry point of the application that demonstrates the usage of the
-     * MultiLayerPerceptronFunction1D class by defining a random function with specific
-     * parameters and evaluating it over a range of inputs.
+     * The entry point of the application that demonstrates the usage of the MultiLayerPerceptronFunction1D class by
+     * defining a random function with specific parameters and evaluating it over a range of inputs.
      *
      * @param args Command-line arguments passed to the program.
      */

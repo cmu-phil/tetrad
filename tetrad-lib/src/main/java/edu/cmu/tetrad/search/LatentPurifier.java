@@ -111,13 +111,14 @@ public class LatentPurifier {
     }
 
     /**
-     * Retrieves the latent parents of a given measured node from a specified graph.
-     * A latent parent is defined as a parent of the measured node that is also within the
-     * set of latent variables.
+     * Retrieves the latent parents of a given measured node from a specified graph. A latent parent is defined as a
+     * parent of the measured node that is also within the set of latent variables.
      *
      * @param graph    the graph from which the latent parents are to be identified; cannot be null.
-     * @param measured the node representing the measured variable whose latent parents are to be retrieved; cannot be null.
-     * @return a list of nodes representing the latent parents of the specified measured node. If no latent parents are found, returns an empty list.
+     * @param measured the node representing the measured variable whose latent parents are to be retrieved; cannot be
+     *                 null.
+     * @return a list of nodes representing the latent parents of the specified measured node. If no latent parents are
+     * found, returns an empty list.
      */
     private List<Node> getLatentParents(Graph graph, Node measured) {
         List<Node> parents = graph.getParents(measured);

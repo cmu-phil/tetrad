@@ -7,17 +7,14 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.Serial;
-import java.io.Serializable;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
 
 /**
- * GUI wrapper for a {@link HybridCgIm}.
- * Mirrors BayesImWrapper responsibilities:
- *  - Holds the instantiated parameters for the HybridCgPm (CPDs / CG params).
- *  - Provides cloning & light metadata for GUI editors.
- *
+ * GUI wrapper for a {@link HybridCgIm}. Mirrors BayesImWrapper responsibilities: - Holds the instantiated parameters
+ * for the HybridCgPm (CPDs / CG params). - Provides cloning & light metadata for GUI editors.
+ * <p>
  * NOTE: This wrapper does not modify the core HybridCgModel classes.
  */
 public class HybridCgImWrapper implements SessionModel, Cloneable {
@@ -32,22 +29,25 @@ public class HybridCgImWrapper implements SessionModel, Cloneable {
 //    /** No-arg for reflection/persistence. Caller must set the IM before use. */
 //    public HybridCgImWrapper() { }
 
-    /** Construct from an existing IM. */
+    /**
+     * Construct from an existing IM.
+     */
     public HybridCgImWrapper(HybridCgIm im) {
         this.im = Objects.requireNonNull(im, "semIm");
     }
 
-    /** Convenience: build a new HybridCgIm from a HybridCgPmWrapper. */
+    /**
+     * Convenience: build a new HybridCgIm from a HybridCgPmWrapper.
+     */
     public HybridCgImWrapper(HybridCgPmWrapper pmWrapper) {
         this(pmWrapper, new Parameters());
     }
 
     /**
      * Construct from a HybridCgPmWrapper and Parameters.
-     *
-     * Supported optional keys:
-     *  - "hybridcg.randomizeIm" : boolean, if true initializes IM with random parameters
-     *  - "hybridcg.randomSeed"  : long seed used when randomizing (default 123)
+     * <p>
+     * Supported optional keys: - "hybridcg.randomizeIm" : boolean, if true initializes IM with random parameters -
+     * "hybridcg.randomSeed"  : long seed used when randomizing (default 123)
      */
     public HybridCgImWrapper(HybridCgPmWrapper pmWrapper, Parameters params) {
         Objects.requireNonNull(pmWrapper, "pmWrapper");
@@ -61,53 +61,9 @@ public class HybridCgImWrapper implements SessionModel, Cloneable {
         }
     }
 
-    // ---------- Accessors ----------
-    public HybridCgIm getIm() { return im; }
-    public void setIm(HybridCgIm im) { this.im = Objects.requireNonNull(im, "semIm"); }
-
-    public HybridCgPm getPm() { return im != null ? im.getPm() : null; }
-
-    public Graph getGraph() {
-        HybridCgPm pm = getPm();
-        return pm != null ? pm.getGraph() : null;
-    }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = (name == null || name.isBlank()) ? "Hybrid CG IM" : name; }
-
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = (notes == null) ? "" : notes; }
-
     /**
-     * Deep-ish copy: allocates a fresh IM bound to the same PM.
-     * (Parameter tensors are not copied here — extend if needed.)
-     */
-    public HybridCgImWrapper deepCopy() {
-        HybridCgPm pm = getPm();
-        HybridCgIm newIm = new HybridCgIm(pm);
-        HybridCgImWrapper w = new HybridCgImWrapper(newIm);
-        w.name = this.name;
-        w.notes = this.notes;
-        return w;
-    }
-
-    @Override
-    public HybridCgImWrapper clone() {
-        return deepCopy();
-    }
-
-    @Override
-    public String toString() {
-        Graph g = getGraph();
-        String gname = (g == null ? "null" : g.toString());
-        return String.format(Locale.US, "HybridCgImWrapper{name='%s', graph=%s}", name, gname);
-    }
-
-    // ---------- Utilities ----------
-    /**
-     * Randomize the IM parameters for testing or initialization.
-     * Discrete CPT rows get Dirichlet(1) draws; continuous rows get small random coefficients
-     * and positive variance.
+     * Randomize the IM parameters for testing or initialization. Discrete CPT rows get Dirichlet(1) draws; continuous
+     * rows get small random coefficients and positive variance.
      */
     private static void randomize(HybridCgIm im, long seed) {
         Random rng = new Random(seed);
@@ -143,6 +99,67 @@ public class HybridCgImWrapper implements SessionModel, Cloneable {
                 }
             }
         }
+    }
+
+    // ---------- Accessors ----------
+    public HybridCgIm getIm() {
+        return im;
+    }
+
+    public void setIm(HybridCgIm im) {
+        this.im = Objects.requireNonNull(im, "semIm");
+    }
+
+    public HybridCgPm getPm() {
+        return im != null ? im.getPm() : null;
+    }
+
+    public Graph getGraph() {
+        HybridCgPm pm = getPm();
+        return pm != null ? pm.getGraph() : null;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = (name == null || name.isBlank()) ? "Hybrid CG IM" : name;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = (notes == null) ? "" : notes;
+    }
+
+    /**
+     * Deep-ish copy: allocates a fresh IM bound to the same PM. (Parameter tensors are not copied here — extend if
+     * needed.)
+     */
+    public HybridCgImWrapper deepCopy() {
+        HybridCgPm pm = getPm();
+        HybridCgIm newIm = new HybridCgIm(pm);
+        HybridCgImWrapper w = new HybridCgImWrapper(newIm);
+        w.name = this.name;
+        w.notes = this.notes;
+        return w;
+    }
+
+    @Override
+    public HybridCgImWrapper clone() {
+        return deepCopy();
+    }
+
+    // ---------- Utilities ----------
+
+    @Override
+    public String toString() {
+        Graph g = getGraph();
+        String gname = (g == null ? "null" : g.toString());
+        return String.format(Locale.US, "HybridCgImWrapper{name='%s', graph=%s}", name, gname);
     }
 
     public HybridCgIm getHybridCgIm() {

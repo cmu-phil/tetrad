@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -9,8 +12,8 @@ import java.io.Serial;
 import java.util.List;
 
 /**
- * Represents a statistic that calculates the number of correct visible ancestors in the true graph
- * that are also visible ancestors in the estimated graph.
+ * Represents a statistic that calculates the number of correct visible ancestors in the true graph that are also
+ * visible ancestors in the estimated graph.
  */
 public class NumCorrectVisibleEdges implements Statistic {
     @Serial

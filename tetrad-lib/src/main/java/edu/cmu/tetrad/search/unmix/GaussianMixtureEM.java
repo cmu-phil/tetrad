@@ -133,10 +133,9 @@ public final class GaussianMixtureEM {
     }
 
     /**
-     * Full M-step with covariance shrinkage and relative ridge.
-     *  - shrinkage λ in [0,1]: shrinks Σ_k toward spherical target (FULL) or mean variance (DIAGONAL)
-     *  - ridgeAbs ≥ 0: absolute ridge added to diagonal
-     *  - ridgeRel ≥ 0: relative ridge = ridgeRel * τ (τ = avg variance) added to diagonal
+     * Full M-step with covariance shrinkage and relative ridge. - shrinkage λ in [0,1]: shrinks Σ_k toward spherical
+     * target (FULL) or mean variance (DIAGONAL) - ridgeAbs ≥ 0: absolute ridge added to diagonal - ridgeRel ≥ 0:
+     * relative ridge = ridgeRel * τ (τ = avg variance) added to diagonal
      */
     private static void mStep(double[][] X, double[][] R, double[] w, double[][] mu, double[][][] S,
                               CovarianceType covType, double ridgeAbs, double shrinkage, double ridgeRel) {
@@ -404,52 +403,48 @@ public final class GaussianMixtureEM {
     }
 
     /**
-     * Specifies the type of covariance matrix used in the Gaussian Mixture Model (GMM)
-     * implemented by the GaussianMixtureEM class.
-     *
-     * The covariance type determines the complexity and flexibility of the model:
-     * - FULL: Each component in the GMM has its own full covariance matrix.
-     * - DIAGONAL: Each component in the GMM has a diagonal covariance matrix.
-     *
-     * The choice of covariance type affects the computational cost and the type
-     * of relationships that can be modeled by the GMM.
+     * Specifies the type of covariance matrix used in the Gaussian Mixture Model (GMM) implemented by the
+     * GaussianMixtureEM class.
+     * <p>
+     * The covariance type determines the complexity and flexibility of the model: - FULL: Each component in the GMM has
+     * its own full covariance matrix. - DIAGONAL: Each component in the GMM has a diagonal covariance matrix.
+     * <p>
+     * The choice of covariance type affects the computational cost and the type of relationships that can be modeled by
+     * the GMM.
      */
     public enum CovarianceType {
 
         /**
          * Represents the FULL covariance type for the Gaussian Mixture Model (GMM).
-         *
-         * The FULL covariance type specifies that each component in the GMM has its own
-         * full covariance matrix. This allows for the modeling of complex relationships
-         * between features but increases computational cost compared to simpler covariance
-         * types, such as DIAGONAL.
+         * <p>
+         * The FULL covariance type specifies that each component in the GMM has its own full covariance matrix. This
+         * allows for the modeling of complex relationships between features but increases computational cost compared
+         * to simpler covariance types, such as DIAGONAL.
          */
         FULL,
 
         /**
          * Represents the DIAGONAL covariance type for the Gaussian Mixture Model (GMM).
-         *
-         * The DIAGONAL covariance type specifies that each component in the GMM has
-         * a diagonal covariance matrix. This type of covariance matrix assumes that
-         * the features of the data are uncorrelated and have different variances.
-         *
-         * Using a diagonal covariance matrix reduces the complexity and computational
-         * cost of the model compared to a FULL covariance matrix. However, it imposes
-         * stronger assumptions on the data and may not capture correlations between
-         * features effectively.
+         * <p>
+         * The DIAGONAL covariance type specifies that each component in the GMM has a diagonal covariance matrix. This
+         * type of covariance matrix assumes that the features of the data are uncorrelated and have different
+         * variances.
+         * <p>
+         * Using a diagonal covariance matrix reduces the complexity and computational cost of the model compared to a
+         * FULL covariance matrix. However, it imposes stronger assumptions on the data and may not capture correlations
+         * between features effectively.
          */
-        DIAGONAL}
+        DIAGONAL
+    }
 
     /**
-     * Represents the Gaussian Mixture Model (GMM) computed and used in the
-     * GaussianMixtureEM class. This class encapsulates the parameters of
-     * the GMM, as well as related information such as soft cluster assignments
+     * Represents the Gaussian Mixture Model (GMM) computed and used in the GaussianMixtureEM class. This class
+     * encapsulates the parameters of the GMM, as well as related information such as soft cluster assignments
      * (responsibilities) and the model's overall log-likelihood.
-     *
-     * The parameters of the GMM include the number of components (K), the
-     * dimensionality of the data, the component weights, the mean vectors,
-     * and the covariance matrices. The type of covariance matrices is
-     * also specified (e.g., full or diagonal).
+     * <p>
+     * The parameters of the GMM include the number of components (K), the dimensionality of the data, the component
+     * weights, the mean vectors, and the covariance matrices. The type of covariance matrices is also specified (e.g.,
+     * full or diagonal).
      */
     public static final class Model {
         public final int K, d;

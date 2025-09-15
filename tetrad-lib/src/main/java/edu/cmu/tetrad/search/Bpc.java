@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -55,26 +54,23 @@ public class Bpc {
     private final int sampleSize;
     // The nodes of the dataset.
     private final List<Node> nodes;
-    // set in buildPatternLite()
-    private boolean[][] canLink;
-    // True if verbose logging is enabled
-    private boolean verbose;
-
-    // ----------------------------- instrumentation -----------------------------
-
-    // Timings (ns)
-    private long tPatternNs = 0L, tSeedsNs = 0L, tMergeNs = 0L, tResolveNs = 0L;
-
     // Thread-safe counters (parallel sections)
     private final LongAdder tetradTests = new LongAdder();
     private final LongAdder purityCacheHits = new LongAdder();
+
+    // ----------------------------- instrumentation -----------------------------
     private final LongAdder purityCacheMisses = new LongAdder();
     private final LongAdder seedsEnumerated = new LongAdder();
     private final LongAdder seedsPure = new LongAdder();
     private final LongAdder mergesConsidered = new LongAdder();
     private final LongAdder mergesAccepted = new LongAdder();
     private final LongAdder reassignments = new LongAdder();
-
+    // set in buildPatternLite()
+    private boolean[][] canLink;
+    // True if verbose logging is enabled
+    private boolean verbose;
+    // Timings (ns)
+    private long tPatternNs = 0L, tSeedsNs = 0L, tMergeNs = 0L, tResolveNs = 0L;
     // Non-parallel summary (computed serially)
     private int grownDistinct = 0;
 
@@ -526,10 +522,11 @@ public class Bpc {
             List<Integer> gs = e.getValue();
             if (gs.size() <= 1) continue;
             int keep = bestOwner.get(v);
-            for (int gi : gs) if (gi != keep) {
-                boolean removed = work.get(gi).remove(v);
-                if (removed) reassignments.increment();
-            }
+            for (int gi : gs)
+                if (gi != keep) {
+                    boolean removed = work.get(gi).remove(v);
+                    if (removed) reassignments.increment();
+                }
         }
 
         // Rebuild list and drop groups that became too small or impure after removals

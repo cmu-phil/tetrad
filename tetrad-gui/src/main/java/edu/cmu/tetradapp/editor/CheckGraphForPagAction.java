@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -42,6 +42,10 @@ public class CheckGraphForPagAction extends AbstractAction {
      * The desktop containing the target session editor.
      */
     private final GraphWorkbench workbench;
+    /**
+     * The legal PAG result.
+     */
+    private volatile GraphSearchUtils.LegalPagRet legalPag = null;
 
     /**
      * Highlights all latent variables in the given display graph.
@@ -57,11 +61,6 @@ public class CheckGraphForPagAction extends AbstractAction {
 
         this.workbench = workbench;
     }
-
-    /**
-     * The legal PAG result.
-     */
-    private volatile GraphSearchUtils.LegalPagRet legalPag = null;
 
     /**
      * This method is used to perform an action when an event is triggered, specifically when the user clicks on a

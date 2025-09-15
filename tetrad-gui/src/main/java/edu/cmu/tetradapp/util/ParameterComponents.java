@@ -85,7 +85,6 @@ public final class ParameterComponents {
     }
 
 
-
     /**
      * <p>getDoubleField.</p>
      *

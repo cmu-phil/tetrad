@@ -161,9 +161,8 @@ public class LgMnarDataSimulator {
     }
 
     /**
-     * The entry point for the application. This method generates a random graph,
-     * applies a Missing Not At Random (MNAR) mechanism to introduce missing data
-     * into a dataset, and displays the dataset along with the associated graph.
+     * The entry point for the application. This method generates a random graph, applies a Missing Not At Random (MNAR)
+     * mechanism to introduce missing data into a dataset, and displays the dataset along with the associated graph.
      *
      * @param args Command-line arguments (not used for this program).
      */

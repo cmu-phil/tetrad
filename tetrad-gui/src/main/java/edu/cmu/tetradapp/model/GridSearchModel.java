@@ -183,8 +183,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
      */
     private ConditioningSetType markovCheckerConditioningSetType = ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG;
     /**
-     * Stores the selected independendence test model for the GridSearchEditor. It needs to be stored here in case
-     * the user closes the editor and re-opens it.
+     * Stores the selected independendence test model for the GridSearchEditor. It needs to be stored here in case the
+     * user closes the editor and re-opens it.
      */
     private IndependenceTestModel selectedIndependenceTestModel = null;
 

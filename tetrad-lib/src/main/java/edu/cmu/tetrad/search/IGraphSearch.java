@@ -51,13 +51,13 @@ public interface IGraphSearch {
     }
 
     /**
-     * Sets the test to be used by the search. The list of variables of the new proposed test must be equal
-     * to the list of variables of the existing test.
+     * Sets the test to be used by the search. The list of variables of the new proposed test must be equal to the list
+     * of variables of the existing test.
      *
      * @param test The test to be used by the search.
      * @throws IllegalArgumentException if the list of variables of the new proposed test is not equal to the list of
-     * variables of the existing test.
-     * @throws IllegalStateException if the search does not support setting the test.
+     *                                  variables of the existing test.
+     * @throws IllegalStateException    if the search does not support setting the test.
      */
     default void setTest(IndependenceTest test) {
         throw new IllegalStateException("This algorithm does not support setting the test.");

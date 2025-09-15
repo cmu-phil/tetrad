@@ -2,9 +2,12 @@ package edu.cmu.tetrad.search.unmix;
 
 public final class EmUtils {
 
-    private EmUtils() {}
+    private EmUtils() {
+    }
 
-    /** Hard labels by MAP over responsibilities (n x K). */
+    /**
+     * Hard labels by MAP over responsibilities (n x K).
+     */
     public static int[] mapLabels(double[][] responsibilities) {
         int n = responsibilities.length;
         if (n == 0) return new int[0];
@@ -15,19 +18,26 @@ public final class EmUtils {
             double best = responsibilities[i][0];
             for (int k = 1; k < K; k++) {
                 double v = responsibilities[i][k];
-                if (v > best) { best = v; arg = k; }
+                if (v > best) {
+                    best = v;
+                    arg = k;
+                }
             }
             z[i] = arg;
         }
         return z;
     }
 
-    /** Backward-compatible convenience: delegate to the model’s own BIC. */
+    /**
+     * Backward-compatible convenience: delegate to the model’s own BIC.
+     */
     public static double bic(GaussianMixtureEM.Model model, int n) {
         return model.bic(n);
     }
 
-    /** Numerically safe log-sum-exp for a vector. */
+    /**
+     * Numerically safe log-sum-exp for a vector.
+     */
     public static double logSumExp(double[] a) {
         double m = Double.NEGATIVE_INFINITY;
         for (double v : a) if (v > m) m = v;
@@ -36,7 +46,9 @@ public final class EmUtils {
         return m + Math.log(s);
     }
 
-    /** Normalize in-place a length-K vector to sum to 1; returns the sum before normalization. */
+    /**
+     * Normalize in-place a length-K vector to sum to 1; returns the sum before normalization.
+     */
     public static double normalizeInPlace(double[] p) {
         double s = 0.0;
         for (double v : p) s += v;

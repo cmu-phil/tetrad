@@ -26,8 +26,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.SublistGenerator;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -366,7 +366,7 @@ public class TestSepsetMethods {
                                     allOK = false;
                                 }
                             } else {
-                                System.out.print( ", OK to remove... ");
+                                System.out.print(", OK to remove... ");
                             }
 
                             System.out.println();

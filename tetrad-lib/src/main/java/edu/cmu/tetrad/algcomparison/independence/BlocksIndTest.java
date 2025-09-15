@@ -3,9 +3,9 @@ package edu.cmu.tetrad.algcomparison.independence;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.test.IndTestBlocksWilkes;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -57,8 +57,8 @@ public class BlocksIndTest implements BlockIndependenceWrapper {
     }
 
     /**
-     * Creates and returns an instance of the {@link IndTestBlocksWilkes} initialized with a specific block specification and
-     * a significance level extracted from the provided parameters.
+     * Creates and returns an instance of the {@link IndTestBlocksWilkes} initialized with a specific block
+     * specification and a significance level extracted from the provided parameters.
      *
      * @param dataSet    A {@link DataModel} object representing the dataset to be used for the independence test.
      * @param parameters A {@link Parameters} object containing the configuration and attributes, including the alpha

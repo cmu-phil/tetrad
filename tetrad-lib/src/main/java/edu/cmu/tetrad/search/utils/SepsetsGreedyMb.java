@@ -24,9 +24,9 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 
 import java.util.HashSet;
@@ -68,16 +68,14 @@ public class SepsetsGreedyMb implements SepsetProducer {
     }
 
     /**
-     * Retrieves the separating set (sepset) between two nodes in the graph.
-     * This method finds a subset of adjacent nodes that separate the specified nodes
-     * based on the provided parameters.
+     * Retrieves the separating set (sepset) between two nodes in the graph. This method finds a subset of adjacent
+     * nodes that separate the specified nodes based on the provided parameters.
      *
      * @param i     the first node
      * @param k     the second node
      * @param depth the maximum depth of the search
      * @param order the list representing the order in which nodes are processed
-     * @return a set of nodes representing the separating set, or an empty set if no such
-     *         separating set is found
+     * @return a set of nodes representing the separating set, or an empty set if no such separating set is found
      */
     public Set<Node> getSepset(Node i, Node k, int depth, List<Node> order) {
         return SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, i, k, new HashSet<>(), this.independenceTest, depth);

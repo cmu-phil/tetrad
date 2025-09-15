@@ -8,8 +8,8 @@ import edu.cmu.tetrad.util.Parameters;
 import java.io.Serial;
 
 /**
- * Implements the CircleRecall statistic, which calculates the circle recall value for a given true graph, estimated graph,
- * and data model.
+ * Implements the CircleRecall statistic, which calculates the circle recall value for a given true graph, estimated
+ * graph, and data model.
  */
 public class CircleRecall implements Statistic {
     @Serial

@@ -1,15 +1,18 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
 /**
- * The BidirectedLatentPrecision class implements the Statistic interface and represents a statistic that calculates
- * the percentage of bidirected edges in an estimated graph for which a latent confounder exists in the true graph.
+ * The BidirectedLatentPrecision class implements the Statistic interface and represents a statistic that calculates the
+ * percentage of bidirected edges in an estimated graph for which a latent confounder exists in the true graph.
  */
 public class BidirectedLatentPrecision implements Statistic {
     @Serial
@@ -23,8 +26,8 @@ public class BidirectedLatentPrecision implements Statistic {
     }
 
     /**
-     * Returns the abbreviation for the statistic. The abbreviation is a short string that represents the statistic.
-     * For this statistic, the abbreviation is "&lt;-&gt;-Lat-Prec".
+     * Returns the abbreviation for the statistic. The abbreviation is a short string that represents the statistic. For
+     * this statistic, the abbreviation is "&lt;-&gt;-Lat-Prec".
      *
      * @return The abbreviation for the statistic.
      */
@@ -34,7 +37,8 @@ public class BidirectedLatentPrecision implements Statistic {
     }
 
     /**
-     * Returns a short description of the statistic, which is the percentage of bidirected edges for which a latent confounder exists.
+     * Returns a short description of the statistic, which is the percentage of bidirected edges for which a latent
+     * confounder exists.
      *
      * @return The description of the statistic.
      */

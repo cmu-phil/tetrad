@@ -185,8 +185,8 @@ public final class IndependenceResult implements TetradSerializable {
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.

@@ -21,7 +21,6 @@ package edu.cmu.tetradapp.editor.simulation;
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.BooleanGlassSimulation;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -80,12 +79,9 @@ public class ParameterTab extends JPanel {
 //                            SimulationTypes.LEE_AND_HASTIE,
 //                            SimulationTypes.CONDITIONAL_GAUSSIAN,
 //                            SimulationTypes.TIME_SERIES
-
-
+    public static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
     @Serial
     private static final long serialVersionUID = 7074205549192562786L;
-    public static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
-
     /**
      * The graph type dropdown.
      */

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -30,7 +30,10 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
 
@@ -399,6 +402,15 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
     }
 
     /**
+     * Sets the threshold for making judgments of determination.
+     *
+     * @param determinationP This threshold.
+     */
+    public void setDeterminationP(double determinationP) {
+        this.determinationP = determinationP;
+    }
+
+    /**
      * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
      * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
      * chi-square distribution will not be a good approximation to the distribution of the test statistic.
@@ -439,13 +451,13 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
     }
 
     @Override
-    public void setEffectiveSampleSize(int nEff) {
-        this.nEff = nEff < 0 ? sampleSize : nEff;
+    public int getEffectiveSampleSize() {
+        return this.nEff;
     }
 
     @Override
-    public int getEffectiveSampleSize() {
-        return this.nEff;
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? sampleSize : nEff;
     }
 
     /**
@@ -455,15 +467,6 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
      */
     public void setCellTableType(ChiSquareTest.CellTableType cellTableType) {
         this.chiSquareTest.setCellTableType(cellTableType);
-    }
-
-    /**
-     * Sets the threshold for making judgments of determination.
-     *
-     * @param determinationP This threshold.
-     */
-    public void setDeterminationP(double determinationP) {
-        this.determinationP = determinationP;
     }
 
     /**

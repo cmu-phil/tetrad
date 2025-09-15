@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -407,6 +407,11 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
         }
     }
 
+    @Override
+    public int getEffectiveSampleSize() {
+        return this.nEff;
+    }
+
     /**
      * Sets the effective sample size for the test. If the provided sample size is -1, it sets it directly;
      * otherwise, it sets the sample size to the default sample size for the dataset.
@@ -417,11 +422,6 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? nEff : this.sampleSize;
-    }
-
-    @Override
-    public int getEffectiveSampleSize() {
-        return this.nEff;
     }
 
     /**

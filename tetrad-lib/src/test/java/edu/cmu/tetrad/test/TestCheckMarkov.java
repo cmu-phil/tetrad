@@ -1,7 +1,8 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
@@ -135,7 +136,7 @@ public class TestCheckMarkov {
         DataSet data = im.simulateData(10000, false);
 
         IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(data), 0.01);
-        SemBicScore score  = new SemBicScore(data, 1, true);
+        SemBicScore score = new SemBicScore(data, 1, true);
 
         Fcit fcit = new Fcit(test, score);
         fcit.setVerbose(true);
@@ -228,7 +229,7 @@ public class TestCheckMarkov {
         double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
         double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
         System.out.println("whole_ap: " + whole_ap);
-        System.out.println("whole_ar: " + whole_ar );
+        System.out.println("whole_ar: " + whole_ar);
         System.out.println("whole_ahp: " + whole_ahp);
         System.out.println("whole_ahr: " + whole_ahr);
         System.out.println("whole_lgp: " + whole_lgp);
@@ -293,7 +294,7 @@ public class TestCheckMarkov {
         System.out.println("Rejects size: " + rejects.size());
     }
 
-//    @Test
+    //    @Test
     public void testNonGaussianDAGPrecisionRecallForLocalOnMarkovBlanket() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
@@ -330,7 +331,7 @@ public class TestCheckMarkov {
         System.out.println("Rejects size: " + rejects.size());
     }
 
-//    @Test
+    //    @Test
     public void testNonGaussianCPDAGPrecisionRecallForLocalOnMarkovBlanket() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         // The completed partially directed acyclic graph (CPDAG) for the given DAG.
@@ -370,8 +371,7 @@ public class TestCheckMarkov {
     }
 
 
-
-//    @Test
+    //    @Test
     public void testGaussianDAGPrecisionRecallForLocalOnParents() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
@@ -402,20 +402,20 @@ public class TestCheckMarkov {
         System.out.println("Accepts size: " + accepts.size());
         System.out.println("Rejects size: " + rejects.size());
 
-        for(Node a: accepts) {
+        for (Node a : accepts) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
             System.out.println("=====================");
 
         }
-        for (Node a: rejects) {
+        for (Node a : rejects) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
             System.out.println("=====================");
         }
     }
 
-//    @Test
+    //    @Test
     public void testGaussianCPDAGPrecisionRecallForLocalOnParents() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         // The completed partially directed acyclic graph (CPDAG) for the given DAG.
@@ -448,20 +448,20 @@ public class TestCheckMarkov {
         System.out.println("Rejects size: " + rejects.size());
 
         // Compare the Est CPDAG with True graph's CPDAG.
-        for(Node a: accepts) {
+        for (Node a : accepts) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
             System.out.println("=====================");
 
         }
-        for (Node a: rejects) {
+        for (Node a : rejects) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
             System.out.println("=====================");
         }
     }
 
-//    @Test
+    //    @Test
     public void testNonGaussianDAGPrecisionRecallForLocalOnParents() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
@@ -496,20 +496,20 @@ public class TestCheckMarkov {
         System.out.println("Accepts size: " + accepts.size());
         System.out.println("Rejects size: " + rejects.size());
 
-        for(Node a: accepts) {
+        for (Node a : accepts) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
             System.out.println("=====================");
 
         }
-        for (Node a: rejects) {
+        for (Node a : rejects) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
             System.out.println("=====================");
         }
     }
 
-//    @Test
+    //    @Test
     public void testNonGaussianCPDAGPrecisionRecallForLocalOnParents() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         // The completed partially directed acyclic graph (CPDAG) for the given DAG.
@@ -547,13 +547,13 @@ public class TestCheckMarkov {
         System.out.println("Rejects size: " + rejects.size());
 
         // Compare the Est CPDAG with True graph's CPDAG.
-        for(Node a: accepts) {
+        for (Node a : accepts) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
             System.out.println("=====================");
 
         }
-        for (Node a: rejects) {
+        for (Node a : rejects) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
             System.out.println("=====================");
@@ -561,7 +561,7 @@ public class TestCheckMarkov {
     }
 
 
-//    @Test
+    //    @Test
     public void testGaussianCPDAGPrecisionRecallForLocalOnMarkovBlanket2() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         // The completed partially directed acyclic graph (CPDAG) for the given DAG.
@@ -596,7 +596,7 @@ public class TestCheckMarkov {
         System.out.println("Rejects size: " + rejects.size());
     }
 
-//    @Test
+    //    @Test
     public void testNonGaussianDAGPrecisionRecallForLocalOnMarkovBlanket2() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         System.out.println("Test True Graph: " + trueGraph);
@@ -633,7 +633,7 @@ public class TestCheckMarkov {
         System.out.println("Rejects size: " + rejects.size());
     }
 
-//    @Test
+    //    @Test
     public void testNonGaussianCPDAGPrecisionRecallForLocalOnMarkovBlanket2() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         // The completed partially directed acyclic graph (CPDAG) for the given DAG.

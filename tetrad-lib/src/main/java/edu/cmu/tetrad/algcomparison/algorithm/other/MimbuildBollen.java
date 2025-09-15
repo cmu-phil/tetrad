@@ -2,15 +2,16 @@ package edu.cmu.tetrad.algcomparison.algorithm.other;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ExtraLatentStructureAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -33,9 +34,9 @@ public class MimbuildBollen implements Algorithm, ExtraLatentStructureAlgorithm 
     private static final long serialVersionUID = 23L;
 
     /**
-     * Represents a specification for blocks used in the Mimbuild Bollen algorithm.
-     * This variable manages the configuration of block-related information, such as
-     * the grouping of variables into blocks or other related structural considerations.
+     * Represents a specification for blocks used in the Mimbuild Bollen algorithm. This variable manages the
+     * configuration of block-related information, such as the grouping of variables into blocks or other related
+     * structural considerations.
      */
     private BlockSpec blockSpec;
 

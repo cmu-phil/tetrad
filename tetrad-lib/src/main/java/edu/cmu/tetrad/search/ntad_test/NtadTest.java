@@ -31,14 +31,14 @@ public abstract class NtadTest {
      *
      * @param df           the input data matrix represented as a SimpleMatrix object, where each row is an observation
      *                     and each column is a variable.
-     * @param correlations a boolean flag indicating whether the provided data matrix should be interpreted directly
-     *                     as a correlation matrix. If false, correlations are computed from the data matrix.
-     * @param ess          the effective sample size, which must be -1 (to use the sample size from the data matrix)
-     *                     or greater than 1.
+     * @param correlations a boolean flag indicating whether the provided data matrix should be interpreted directly as
+     *                     a correlation matrix. If false, correlations are computed from the data matrix.
+     * @param ess          the effective sample size, which must be -1 (to use the sample size from the data matrix) or
+     *                     greater than 1.
      * @throws IllegalArgumentException if ess is not -1 and not greater than 1.
      */
     public NtadTest(SimpleMatrix df, boolean correlations, int ess) {
-        if (!(ess == -1  || ess > 1)) {
+        if (!(ess == -1 || ess > 1)) {
             throw new IllegalArgumentException("Ess should be -1 or > 0: " + ess);
         }
 
@@ -65,11 +65,11 @@ public abstract class NtadTest {
     }
 
     /**
-     * Computes the value of a statistical test based on the given ntad configuration, with optional resampling. An
-     * ntad is a set of indices representing structural relationships among variables. This method evaluates the
-     * statistical consistency of such configurations.
+     * Computes the value of a statistical test based on the given ntad configuration, with optional resampling. An ntad
+     * is a set of indices representing structural relationships among variables. This method evaluates the statistical
+     * consistency of such configurations.
      *
-     * @param ntad      a 2D integer array where each inner array defines a ntad configuration. Each configuration
+     * @param ntad     a 2D integer array where each inner array defines a ntad configuration. Each configuration
      *                 specifies indices representing structural relationships among variables.
      * @param resample a boolean indicating whether resampling should be applied to the data matrix for the
      *                 computation.
@@ -123,7 +123,7 @@ public abstract class NtadTest {
      * sets of indices representing structural relationships among variables. This method evaluates and combines results
      * for all provided configurations, with optional resampling.
      *
-     * @param ntads     a list of 2D integer arrays where each array contains multiple ntad configurations. Each
+     * @param ntads    a list of 2D integer arrays where each array contains multiple ntad configurations. Each
      *                 configuration defines sets of indices representing structural relationships among variables.
      * @param resample a boolean indicating whether resampling should be applied to the data matrix for the
      *                 computation.

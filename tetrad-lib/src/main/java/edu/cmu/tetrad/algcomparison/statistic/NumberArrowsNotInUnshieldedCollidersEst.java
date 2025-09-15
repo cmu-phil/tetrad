@@ -8,7 +8,8 @@ import org.apache.commons.math3.util.FastMath;
 import java.io.Serial;
 
 /**
- * Represents the NumberEdgesEst statistic, which calculates the number of arrows not in unshielded colliders in the estimated graph.
+ * Represents the NumberEdgesEst statistic, which calculates the number of arrows not in unshielded colliders in the
+ * estimated graph.
  */
 public class NumberArrowsNotInUnshieldedCollidersEst implements Statistic {
     @Serial

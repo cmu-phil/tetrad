@@ -57,11 +57,6 @@ public class RankTests {
      */
     private static final double EIG_FLOOR = 1e-12;
     /**
-     * A small constant value added as a ridge term during regularization to improve numerical stability. This helps
-     * prevent issues such as singular matrices or poor conditioning in mathematical computations.
-     */
-    public static double RIDGE = 1e-6;
-    /**
      * A constant representing the minimum allowable eigenvalue threshold for numerical computations. It is used to
      * prevent operations like matrix inversion or decomposition on matrices with eigenvalues smaller than this
      * threshold, which could lead to numerical instability or inaccuracies.
@@ -69,6 +64,11 @@ public class RankTests {
     private static final double MIN_EIG = 1e-12;
     // --- Fast Chi-square critical via Wilson–Hilferty with cached normal z ---
     private static final Map<Long, Double> CHI2_CRIT_CACHE = new ConcurrentHashMap<>();
+    /**
+     * A small constant value added as a ridge term during regularization to improve numerical stability. This helps
+     * prevent issues such as singular matrices or poor conditioning in mathematical computations.
+     */
+    public static double RIDGE = 1e-6;
 
     /**
      * The RankTests class provides utility methods for ranking-related evaluations. This class is not meant to be
@@ -351,13 +351,13 @@ public class RankTests {
     }
 
     /**
-     * Estimates the rank of a matrix using the Wilks test and a Bartlett χ² approximation.
-     * This method employs an optimization for fast computation.
+     * Estimates the rank of a matrix using the Wilks test and a Bartlett χ² approximation. This method employs an
+     * optimization for fast computation.
      *
-     * @param S Covariance or scatter matrix (SimpleMatrix) of size (p + q) x (p + q).
-     * @param xIdx Indices for the x variables, representing the first group of variables.
-     * @param yIdx Indices for the y variables, representing the second group of variables.
-     * @param n Sample size used for the computation and statistical testing.
+     * @param S     Covariance or scatter matrix (SimpleMatrix) of size (p + q) x (p + q).
+     * @param xIdx  Indices for the x variables, representing the first group of variables.
+     * @param yIdx  Indices for the y variables, representing the second group of variables.
+     * @param n     Sample size used for the computation and statistical testing.
      * @param alpha Significance level for hypothesis testing (e.g., 0.05 for 5%).
      * @return Estimated rank of the matrix, computed based on the Wilks test criteria.
      */

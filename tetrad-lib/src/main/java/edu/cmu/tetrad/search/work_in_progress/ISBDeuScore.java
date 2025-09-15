@@ -29,7 +29,7 @@ public class ISBDeuScore implements ISScore {
     /**
      * Initializes the ISBDeuScore with the given dataset and test case.
      *
-     * @param dataSet the dataset to be used for scoring. Must not be null.
+     * @param dataSet  the dataset to be used for scoring. Must not be null.
      * @param testCase the test case to evaluate. Must not be null.
      * @throws NullPointerException if either dataSet or testCase is null.
      */

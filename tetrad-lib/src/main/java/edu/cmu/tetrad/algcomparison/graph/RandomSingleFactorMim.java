@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
-import edu.cmu.tetrad.graph.RandomMim;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.RandomMim;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;

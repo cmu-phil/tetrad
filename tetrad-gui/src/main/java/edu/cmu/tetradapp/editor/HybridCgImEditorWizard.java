@@ -5,7 +5,8 @@ import java.awt.*;
 
 public final class HybridCgImEditorWizard {
 
-    private HybridCgImEditorWizard() {}
+    private HybridCgImEditorWizard() {
+    }
 
     public static JDialog create(Window owner, HybridCgImEditor editor) {
         JDialog dlg = new JDialog(owner, "Mixed IM Wizard", Dialog.ModalityType.MODELESS);

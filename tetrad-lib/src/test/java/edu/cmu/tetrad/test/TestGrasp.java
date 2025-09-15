@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -43,15 +43,11 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.score.DegenerateGaussianScore;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestDegenerateGaussianLrt;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.GraphoidAxioms;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -1925,7 +1921,8 @@ public final class TestGrasp {
 //
 //        params.set(Params.PENALTY_DISCOUNT, 2.0);
 //        params.set(Params.ALPHA, 0.001);
-////
+
+    ////
 //        Algorithms algorithms = new Algorithms();
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(new FisherZ()));

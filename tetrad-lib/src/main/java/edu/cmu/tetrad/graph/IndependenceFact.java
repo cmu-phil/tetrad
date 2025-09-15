@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -23,7 +23,6 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
-import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -200,8 +199,10 @@ public final class IndependenceFact implements TetradSerializable, Comparable<In
         String b1 = (bx.compareTo(by) <= 0) ? bx : by;
         String b2 = (bx.compareTo(by) <= 0) ? by : bx;
 
-        int c = a1.compareTo(b1); if (c != 0) return c;
-        c = a2.compareTo(b2);     if (c != 0) return c;
+        int c = a1.compareTo(b1);
+        if (c != 0) return c;
+        c = a2.compareTo(b2);
+        if (c != 0) return c;
 
         // Compare |Z|
         c = Integer.compare(this._z.size(), other._z.size());

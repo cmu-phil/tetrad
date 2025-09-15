@@ -105,15 +105,15 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
-     * Constructs an Edge by specifying two nodes, their corresponding endpoints, and whether
-     * to flip the direction of the edge if it is pointing backwards.
+     * Constructs an Edge by specifying two nodes, their corresponding endpoints, and whether to flip the direction of
+     * the edge if it is pointing backwards.
      *
-     * @param node1             the first node of the edge; must not be null
-     * @param node2             the second node of the edge; must not be null
-     * @param endpoint1         the endpoint type for the first node; must not be null
-     * @param endpoint2         the endpoint type for the second node; must not be null
-     * @param flipIfBackwards   a boolean indicating whether to flip the nodes and endpoints if the
-     *                          edge is considered to be pointing backwards
+     * @param node1           the first node of the edge; must not be null
+     * @param node2           the second node of the edge; must not be null
+     * @param endpoint1       the endpoint type for the first node; must not be null
+     * @param endpoint2       the endpoint type for the second node; must not be null
+     * @param flipIfBackwards a boolean indicating whether to flip the nodes and endpoints if the edge is considered to
+     *                        be pointing backwards
      * @throws NullPointerException if any of the nodes or endpoints are null
      */
     public Edge(Node node1, Node node2, Endpoint endpoint1, Endpoint endpoint2, boolean flipIfBackwards) {

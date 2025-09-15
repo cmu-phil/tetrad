@@ -375,8 +375,8 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.
@@ -385,7 +385,7 @@ public class Parameters implements TetradSerializable {
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {
-            in. defaultReadObject();
+            in.defaultReadObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
                                            + ", " + e.getMessage());

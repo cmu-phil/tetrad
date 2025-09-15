@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -21,8 +21,8 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
@@ -42,8 +42,8 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
@@ -1436,14 +1436,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 all causal paths unblocked. In particular, all confounders of the source and target will be
                 blocked. By conditioning on an adjustment set (if one exists) one can estimate the total 
                 effect of a source on a target.
-                                
+                
                 To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
                 into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
                 dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are 
                 blocked, the set is not an adjustment set. Also select "Backdoor paths" from the dropdown. 
                 All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
                 set is not an adjustment set.
-                                
+                
                 In the below perhaps not all adjustment sets are listed. Rather, the algorithm is designed to
                 find up to a maximum number of adjustment sets that are no more than a certain distance from
                 either the source or the target node, or either. Also, while all amenable paths are taken

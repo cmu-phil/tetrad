@@ -401,7 +401,7 @@ public class Bes {
     }
 
     private void calculateArrowsBackward(Node a, Node b, Graph
-            graph, Map<Edge, ArrowConfigBackward> arrowsMapBackward, Map<Node, Integer> hashIndices,
+                                                 graph, Map<Edge, ArrowConfigBackward> arrowsMapBackward, Map<Node, Integer> hashIndices,
                                          int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) throws InterruptedException {
         if (existsKnowledge()) {
             if (!getKnowledge().noEdgeRequired(a.getName(), b.getName())) {

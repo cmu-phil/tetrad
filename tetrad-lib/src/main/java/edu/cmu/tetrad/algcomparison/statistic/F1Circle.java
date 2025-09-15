@@ -10,15 +10,13 @@ import java.io.Serial;
 /**
  * Calculates the F1 statistic for circles.
  * <p>
- *  <a href="https://en.wikipedia.org/wiki/F1_score">...</a>
- *  <p>
- *  We use what's on this page called the "traditional" F1 statistic.
- *  If the true contains X*-oY and estimated graph
- *  either does not contain an edge from X to Y or else does not contain a tail at X for an edge from X to Y, one
- *  false positive is counted. Similarly for false negatives
- *  *
+ * <a href="https://en.wikipedia.org/wiki/F1_score">...</a>
+ * <p>
+ * We use what's on this page called the "traditional" F1 statistic. If the true contains X*-oY and estimated graph
+ * either does not contain an edge from X to Y or else does not contain a tail at X for an edge from X to Y, one false
+ * positive is counted. Similarly for false negatives *
  */
-public class F1Circle implements Statistic{
+public class F1Circle implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 

@@ -1,10 +1,12 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -45,18 +47,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class Fas implements IFas {
 
     /**
+     * A separation set map used to store the results of conditional independence tests performed during the graph
+     * search process. It holds information about the sets of variables that separate pairs of nodes in the graph.
+     */
+    private final SepsetMap sepset = new SepsetMap();
+    /**
      * Represents the core independence test utilized in the FAS algorithm to determine conditional independence
      * relationships between variables. This test serves as the foundation for building and refining graphs during the
      * search process.
      */
     private IndependenceTest test;
-
-    /**
-     * A separation set map used to store the results of conditional independence tests performed during the graph
-     * search process. It holds information about the sets of variables that separate pairs of nodes in the graph.
-     */
-    private final SepsetMap sepset = new SepsetMap();
-
     /**
      * A Knowledge object used to define constraints, such as forbidden or required edges, and other background
      * information necessary for the conditional independence search process.
@@ -246,13 +246,15 @@ public class Fas implements IFas {
      * Searches for conditional independence relationships in a checkAdj up to a given depth d. If the checkAdj's nodes
      * meet the conditions specified, the edges may be removed based on the provided knowledge.
      *
-     * <p>Stable semantics: parallel decision on frozen adjacency (checkAdj), then sequential application to modify.</p>
+     * <p>Stable semantics: parallel decision on frozen adjacency (checkAdj), then sequential application to
+     * modify.</p>
      * <p>Unstable semantics: sequential mutate-as-you-go on modify.</p>
      *
      * @param checkAdj The checkAdj on which the search is performed.
      * @param modify   A copy of the checkAdj where changes are applied during the search process.
      * @param d        The maximum depth to consider for conditional independence tests.
-     * @param stable   If true, performs the search using a parallel decision strategy; otherwise, a sequential strategy.
+     * @param stable   If true, performs the search using a parallel decision strategy; otherwise, a sequential
+     *                 strategy.
      * @return True iff any edge was removed at this depth.
      */
     private boolean searchAtDepth(Graph checkAdj, Graph modify, int d, boolean stable) {
@@ -330,9 +332,9 @@ public class Fas implements IFas {
     }
 
     /**
-     * Decide-only for a single (x, y) pair on the frozen graph (used in stable/parallel decision phase).
-     * Adds a proposed removal to 'out' if an S of size d separates x and y.
-     * Tests subsets from adj(x)\{y} and adj(y)\{x} (both sides).
+     * Decide-only for a single (x, y) pair on the frozen graph (used in stable/parallel decision phase). Adds a
+     * proposed removal to 'out' if an S of size d separates x and y. Tests subsets from adj(x)\{y} and adj(y)\{x} (both
+     * sides).
      */
     private void decideOnePair(Graph checkAdj, int d, Node x, Node y,
                                ConcurrentLinkedQueue<EdgeRemoval> out) {
@@ -434,8 +436,8 @@ public class Fas implements IFas {
     }
 
     /**
-     * Calculates the maximum free degree among the nodes in the given graph.
-     * For any node n, the maximum conditioning-set size needed about n is deg(n) - 1.
+     * Calculates the maximum free degree among the nodes in the given graph. For any node n, the maximum
+     * conditioning-set size needed about n is deg(n) - 1.
      *
      * @param graph The graph.
      * @return The maximum free degree among the nodes.

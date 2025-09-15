@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
-import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;

@@ -3,9 +3,8 @@ package edu.cmu.tetrad.search.utils;
 import java.util.Random;
 
 /**
- * Represents a linear function in an n-dimensional space (R^n -> R).
- * The function is defined as f(x) = c1*x1 + c2*x2 + ... + cn*xn + intercept,
- * where c1, c2, ..., cn are the coefficients, and intercept is a constant.
+ * Represents a linear function in an n-dimensional space (R^n -> R). The function is defined as f(x) = c1*x1 + c2*x2 +
+ * ... + cn*xn + intercept, where c1, c2, ..., cn are the coefficients, and intercept is a constant.
  */
 public class LinearFunctionND {
 
@@ -48,8 +47,8 @@ public class LinearFunctionND {
     }
 
     /**
-     * The main method demonstrates the creation of a linear function with specified parameters,
-     * prints its coefficients and intercept, and evaluates the function for a set of sample inputs.
+     * The main method demonstrates the creation of a linear function with specified parameters, prints its coefficients
+     * and intercept, and evaluates the function for a set of sample inputs.
      *
      * @param args Command-line arguments (not used in this demonstration).
      */

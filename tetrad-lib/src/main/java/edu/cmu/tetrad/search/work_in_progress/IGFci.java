@@ -1,12 +1,15 @@
 package edu.cmu.tetrad.search.work_in_progress;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
@@ -19,36 +22,26 @@ import java.util.Set;
  */
 public final class IGFci implements IGraphSearch {
 
-    // The PAG being constructed.
-    private Graph graph;
-
-    // The background knowledge.
-    private Knowledge knowledge = new Knowledge();
-
-    // The conditional independence test.
-    private IndependenceTest independenceTest;
-
-    // Flag for complete rule set, true if should use complete rule set, false otherwise.
-    private boolean completeRuleSetUsed = false;
-
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-    private int maxPathLength = -1;
-
-    // The maxDegree for the fast adjacency search.
-    private int maxDegree = -1;
-
-    // The logger to use.
-    private TetradLogger logger = TetradLogger.getInstance();
-
-    // True iff verbose output should be printed.
-    private boolean verbose = false;
-
     // The covariance matrix beign searched over. Assumes continuous data.
     ICovarianceMatrix covarianceMatrix;
-
     // The sample size.
     int sampleSize;
-
+    // The PAG being constructed.
+    private Graph graph;
+    // The background knowledge.
+    private Knowledge knowledge = new Knowledge();
+    // The conditional independence test.
+    private IndependenceTest independenceTest;
+    // Flag for complete rule set, true if should use complete rule set, false otherwise.
+    private boolean completeRuleSetUsed = false;
+    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    private int maxPathLength = -1;
+    // The maxDegree for the fast adjacency search.
+    private int maxDegree = -1;
+    // The logger to use.
+    private TetradLogger logger = TetradLogger.getInstance();
+    // True iff verbose output should be printed.
+    private boolean verbose = false;
     // The print stream that output is directed to.
     private PrintStream out = System.out;
 
@@ -69,7 +62,7 @@ public final class IGFci implements IGraphSearch {
     /**
      * Constructs an instance of IGFci with the provided independence test and score.
      *
-     * @param test the IndependenceTest instance to be used; must not be null.
+     * @param test  the IndependenceTest instance to be used; must not be null.
      * @param score the ISScore instance to be used; must not be null.
      * @throws NullPointerException if the provided score is null.
      */
@@ -83,11 +76,10 @@ public final class IGFci implements IGraphSearch {
     }
 
     /**
-     * Constructs an instance of IGFci with the provided independence test,
-     * score, and population graph.
+     * Constructs an instance of IGFci with the provided independence test, score, and population graph.
      *
-     * @param test the IndependenceTest instance to be used; must not be null.
-     * @param score the ISScore instance to be used; must not be null.
+     * @param test            the IndependenceTest instance to be used; must not be null.
+     * @param score           the ISScore instance to be used; must not be null.
      * @param populationGraph the Graph representing the population.
      * @throws NullPointerException if the provided score is null.
      */
@@ -104,11 +96,10 @@ public final class IGFci implements IGraphSearch {
     //========================PUBLIC METHODS==========================//
 
     /**
-     * Executes the FCI algorithm using the provided independence test, score, and population graph,
-     * and returns the resulting graph with edges oriented according to the algorithm's rules.
-     * The algorithm first constructs an initial graph, prunes it based on separation sets,
-     * and further refines it using multiple phases of orientation rules.
-     * The time taken to complete the search is recorded and stored in the elapsedTime field.
+     * Executes the FCI algorithm using the provided independence test, score, and population graph, and returns the
+     * resulting graph with edges oriented according to the algorithm's rules. The algorithm first constructs an initial
+     * graph, prunes it based on separation sets, and further refines it using multiple phases of orientation rules. The
+     * time taken to complete the search is recorded and stored in the elapsedTime field.
      *
      * @return the final oriented graph obtained after applying the FCI algorithm.
      */
@@ -182,6 +173,15 @@ public final class IGFci implements IGraphSearch {
     }
 
     /**
+     * Retrieves the maximum degree for the graph.
+     *
+     * @return the maximum degree, or -1 if it is unlimited.
+     */
+    public int getMaxDegree() {
+        return maxDegree;
+    }
+
+    /**
      * Sets the maximum degree for the graph.
      *
      * @param maxDegree the maximum degree, where -1 indicates unlimited. Must be -1 or a non-negative integer.
@@ -196,20 +196,11 @@ public final class IGFci implements IGraphSearch {
         this.maxDegree = maxDegree;
     }
 
-    /**
-     * Retrieves the maximum degree for the graph.
-     *
-     * @return the maximum degree, or -1 if it is unlimited.
-     */
-    public int getMaxDegree() {
-        return maxDegree;
-    }
-
     // Due to Spirtes.
 
     /**
-     * Modifies the given FGES graph based on the FCI algorithm rules, reorienting edges and
-     * potentially identifying and orienting definite colliders.
+     * Modifies the given FGES graph based on the FCI algorithm rules, reorienting edges and potentially identifying and
+     * orienting definite colliders.
      *
      * @param fgesGraph the FGES Graph to be processed; must not be null.
      * @throws InterruptedException if the search is interrupted.
@@ -300,11 +291,11 @@ public final class IGFci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum length for any path in the graph. The value must be -1 to indicate
-     * unlimited length or a non-negative integer to specify the maximum path length.
+     * Sets the maximum length for any path in the graph. The value must be -1 to indicate unlimited length or a
+     * non-negative integer to specify the maximum path length.
      *
-     * @param maxPathLength the maximum path length to be set, where -1 indicates unlimited.
-     *                      Must be -1 or a non-negative integer.
+     * @param maxPathLength the maximum path length to be set, where -1 indicates unlimited. Must be -1 or a
+     *                      non-negative integer.
      * @throws IllegalArgumentException if maxPathLength is less than -1.
      */
     public void setMaxPathLength(int maxPathLength) {
@@ -340,6 +331,15 @@ public final class IGFci implements IGraphSearch {
      */
     public IndependenceTest getIndependenceTest() {
         return independenceTest;
+    }
+
+    /**
+     * Sets the independence test for the IGFci algorithm.
+     *
+     * @param independenceTest the IndependenceTest object to be set; must not be null.
+     */
+    public void setIndependenceTest(IndependenceTest independenceTest) {
+        this.independenceTest = independenceTest;
     }
 
     /**
@@ -388,15 +388,6 @@ public final class IGFci implements IGraphSearch {
     }
 
     /**
-     * Sets the independence test for the IGFci algorithm.
-     *
-     * @param independenceTest the IndependenceTest object to be set; must not be null.
-     */
-    public void setIndependenceTest(IndependenceTest independenceTest) {
-        this.independenceTest = independenceTest;
-    }
-
-    /**
      * Sets whether faithfulness is assumed in the IGFci algorithm.
      *
      * @param faithfulnessAssumed true if faithfulness is assumed, false otherwise
@@ -406,13 +397,14 @@ public final class IGFci implements IGraphSearch {
     }
 
     //===========================================PRIVATE METHODS=======================================//
+
     /**
      * Orients according to background knowledge
      */
     private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         logger.log("Starting BK Orientation.");
 
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext();) {
+        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
@@ -433,7 +425,7 @@ public final class IGFci implements IGraphSearch {
             logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext();) {
+        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph

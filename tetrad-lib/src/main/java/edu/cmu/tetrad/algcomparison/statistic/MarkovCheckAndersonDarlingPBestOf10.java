@@ -4,8 +4,8 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -21,15 +21,15 @@ public class MarkovCheckAndersonDarlingPBestOf10 implements Statistic, MarkovChe
     private static final long serialVersionUID = 23L;
     /**
      * An instance of the IndependenceWrapper interface, which provides methods to assess statistical independence
-     * relationships in datasets. This wrapper is used in conjunction with various tests to evaluate dependencies
-     * and supports the execution of algorithms that rely on independence test results. Its specific implementation
+     * relationships in datasets. This wrapper is used in conjunction with various tests to evaluate dependencies and
+     * supports the execution of algorithms that rely on independence test results. Its specific implementation
      * determines the behavior of the test and the parameters required for its execution.
      */
     private final IndependenceWrapper independenceWrapper;
     /**
-     * Specifies the type of conditioning set used for Markov checks in statistical tests. This variable determines
-     * how the independence tests are conducted, influencing the set of variables considered to condition on when
-     * evaluating independence relationships in a graph.
+     * Specifies the type of conditioning set used for Markov checks in statistical tests. This variable determines how
+     * the independence tests are conducted, influencing the set of variables considered to condition on when evaluating
+     * independence relationships in a graph.
      */
     private final ConditioningSetType conditioningSetType;
 

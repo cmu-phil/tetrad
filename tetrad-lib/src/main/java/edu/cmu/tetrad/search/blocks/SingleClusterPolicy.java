@@ -6,8 +6,8 @@ package edu.cmu.tetrad.search.blocks;
 public enum SingleClusterPolicy {
 
     /**
-     * Represents the policy to exclude single variables.
-     * This is typically used to disregard the specified cluster from further analysis or processing.
+     * Represents the policy to exclude single variables. This is typically used to disregard the specified cluster from
+     * further analysis or processing.
      */
     EXCLUDE,
 

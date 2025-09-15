@@ -3,21 +3,27 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.blocks.*;
+import edu.cmu.tetrad.search.blocks.BlockDiscoverers;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.blocks.BlocksUtil;
+import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
 import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import org.junit.Test;
+
 import java.util.List;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 
 public class BlocksInvariantTest {
     @Test
     public void testBpcAdapterSpec() {
         DataSet ds = getData();
 //        NtadTest ntad = new Cca(dataSet.getDoubleData().getSimpleMatrix(), false, -1);
-        BlockSpec spec = BlockDiscoverers.bpc(ds,0.05, -1, SingleClusterPolicy.EXCLUDE,
+        BlockSpec spec = BlockDiscoverers.bpc(ds, 0.05, -1, SingleClusterPolicy.EXCLUDE,
                 false).discover();
         assertSame(ds, spec.dataSet());
         assertEquals(spec.blocks().size(), spec.blockVariables().size());

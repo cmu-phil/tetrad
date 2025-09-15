@@ -1,23 +1,26 @@
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.lang.reflect.Method;
 import java.util.*;
 
-/** Utilities to stabilize arbitrary directed graphs with cycles. */
+/**
+ * Utilities to stabilize arbitrary directed graphs with cycles.
+ */
 public final class CyclicStableUtils {
 
-    private CyclicStableUtils() {}
+    private CyclicStableUtils() {
+    }
 
     /* ========================= Public API ========================= */
 
-    /** Simulate from an arbitrary graph with SCC-wise fixed spectral radius s. */
+    /**
+     * Simulate from an arbitrary graph with SCC-wise fixed spectral radius s.
+     */
     public static SemIm.CyclicSimResult simulateStableFixedRadius(
             Graph g, int n, double s, double coefLow, double coefHigh,
             long seed, Parameters params) {
@@ -36,7 +39,9 @@ public final class CyclicStableUtils {
         return new SemIm.CyclicSimResult(im.simulateData(n, false), im);
     }
 
-    /** Simulate from an arbitrary graph with SCC-wise radius capped by sqrt(maxProd). */
+    /**
+     * Simulate from an arbitrary graph with SCC-wise radius capped by sqrt(maxProd).
+     */
     public static SemIm.CyclicSimResult simulateStableProductCapped(
             Graph g, int n, double maxProd, double coefLow, double coefHigh,
             long seed, Parameters params) {
@@ -58,7 +63,9 @@ public final class CyclicStableUtils {
         }
     }
 
-    /** Stabilize an existing SemIm in-place: enforce per-SCC spectral radius target s. */
+    /**
+     * Stabilize an existing SemIm in-place: enforce per-SCC spectral radius target s.
+     */
     public static void stabilizeAllSccsFixedRadius(
             SemIm im, Graph g, double s, double coefLow, double coefHigh) {
 
@@ -79,7 +86,9 @@ public final class CyclicStableUtils {
 
     /* ====================== Core operations ======================= */
 
-    /** Randomize existing internal edges (that already exist in the graph) within [low, high], positive. */
+    /**
+     * Randomize existing internal edges (that already exist in the graph) within [low, high], positive.
+     */
     public static void initializeInternalEdgesRandom(
             SemIm im, Graph g, List<Node> scc, double low, double high) {
 
@@ -95,12 +104,14 @@ public final class CyclicStableUtils {
         }
     }
 
-    /** Scale all internal edges of an SCC by a factor. */
+    /**
+     * Scale all internal edges of an SCC by a factor.
+     */
     public static void scaleInternalEdges(SemIm im, Graph g, List<Node> scc, double factor) {
         for (Node from : scc) {
             for (Node to : scc) {
                 if (from == to) continue;
-                if (g.getDirectedEdge(from, to)  != null) {
+                if (g.getDirectedEdge(from, to) != null) {
                     double cur = getEdgeCoef(im, from, to);
                     setEdgeCoef(im, from, to, cur * factor);
                 }
@@ -108,7 +119,9 @@ public final class CyclicStableUtils {
         }
     }
 
-    /** Spectral radius estimate of |B| (absolute coefficient matrix) for the SCC using power iteration. */
+    /**
+     * Spectral radius estimate of |B| (absolute coefficient matrix) for the SCC using power iteration.
+     */
     public static double spectralRadiusAbs(SemIm im, Graph g, List<Node> scc) {
         int k = scc.size();
         if (k == 0) return 0.0;
@@ -224,7 +237,9 @@ public final class CyclicStableUtils {
 
     /* ================= Convenience quick-start (optional) ================= */
 
-    /** Quick demo: build a graph, stabilize, simulate. */
+    /**
+     * Quick demo: build a graph, stabilize, simulate.
+     */
     public static edu.cmu.tetrad.sem.SemIm.CyclicSimResult quickDemo() {
         Node x = new ContinuousVariable("x");
         Node y = new ContinuousVariable("y");

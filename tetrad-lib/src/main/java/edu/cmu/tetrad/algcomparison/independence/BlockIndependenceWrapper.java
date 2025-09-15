@@ -8,15 +8,15 @@ import java.io.Serial;
 import java.util.List;
 
 /**
- * An interface that extends functionality of the {@link IndependenceWrapper} and {@link HasParameters}
- * interfaces by adding support for block-specific configuration in independence testing.
+ * An interface that extends functionality of the {@link IndependenceWrapper} and {@link HasParameters} interfaces by
+ * adding support for block-specific configuration in independence testing.
  *
  * <p>Implementations of this interface provide the ability to configure block structures,
- * perform independence tests based on these structures, and retrieve descriptions, data types,
- * and parameter requirements of the respective tests.</p>
- *
- * Defines methods for configuring block-specific independence tests and retrieving meta-details
- * about the test such as its description, required data type, and associated parameters.
+ * perform independence tests based on these structures, and retrieve descriptions, data types, and parameter
+ * requirements of the respective tests.</p>
+ * <p>
+ * Defines methods for configuring block-specific independence tests and retrieving meta-details about the test such as
+ * its description, required data type, and associated parameters.
  */
 public interface BlockIndependenceWrapper extends IndependenceWrapper, HasParameters {
     /**
@@ -26,14 +26,11 @@ public interface BlockIndependenceWrapper extends IndependenceWrapper, HasParame
     long serialVersionUID = 23L;
 
     /**
-     * Configures the block specification for the independence test.
-     * The block specification describes the structure and attributes
-     * of the blocks relevant for performing a block-specific
-     * independence test.
+     * Configures the block specification for the independence test. The block specification describes the structure and
+     * attributes of the blocks relevant for performing a block-specific independence test.
      *
-     * @param blockSpec the block specification to be applied, which
-     *                  defines the dataset, block structure, and
-     *                  block variables.
+     * @param blockSpec the block specification to be applied, which defines the dataset, block structure, and block
+     *                  variables.
      */
     void setBlockSpec(BlockSpec blockSpec);
 

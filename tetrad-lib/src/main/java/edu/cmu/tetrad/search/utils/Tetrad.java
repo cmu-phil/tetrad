@@ -124,7 +124,7 @@ public class Tetrad implements TetradSerializable {
                              || (this.i == sextad.j && this.j == sextad.i);
 
         boolean rightEquals = (this.k == sextad.k && this.l == sextad.k)
-                             || (this.k == sextad.l && this.l == sextad.j);
+                              || (this.k == sextad.l && this.l == sextad.j);
 
         return leftEquals && rightEquals;
     }
@@ -184,8 +184,8 @@ public class Tetrad implements TetradSerializable {
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.

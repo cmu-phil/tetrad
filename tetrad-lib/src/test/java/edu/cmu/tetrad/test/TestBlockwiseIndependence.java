@@ -2,33 +2,24 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.test.IndTestBlocksWilkes;
-import edu.cmu.tetrad.search.test.IndTestBlocksLemma10;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.test.*;
 import org.junit.Test;
 
 import java.util.*;
 
 /**
- * Compares three ways to judge X ⟂ Y | Z using data from a latent chain (L1->L2->L3; L4 disconnected),
- * each latent with m observed children. Only within-cluster cases are generated with disjoint clusters cX,cY,cZ.
- *
- * Methods:
- *   (1) Pairwise-Rank via blocks: for each (x in X, y in Y), create singleton blocks [x], [y] and one block [Z],
- *       then test [x] ⟂ [y] | [Z] using IndTestBlocksLemma10 (rank-based).
- *   (2) Blockwise over latent meta-variables: IndTestBlocks.
- *   (3) Blockwise over latent meta-variables: IndTestBlocksLemma10.
- *
+ * Compares three ways to judge X ⟂ Y | Z using data from a latent chain (L1->L2->L3; L4 disconnected), each latent with
+ * m observed children. Only within-cluster cases are generated with disjoint clusters cX,cY,cZ.
+ * <p>
+ * Methods: (1) Pairwise-Rank via blocks: for each (x in X, y in Y), create singleton blocks [x], [y] and one block [Z],
+ * then test [x] ⟂ [y] | [Z] using IndTestBlocksLemma10 (rank-based). (2) Blockwise over latent meta-variables:
+ * IndTestBlocks. (3) Blockwise over latent meta-variables: IndTestBlocksLemma10.
+ * <p>
  * Truth: pairwise m-separation over full DAG (latents+observeds) with Z (observed) conditioned.
- *
- * The full experiment is run under four noise regimes for both latent and observed errors:
- *   - Gaussian(0,1)  (baseline)
- *   - Exponential(1) centered (E-1)
- *   - Gumbel(0,1) centered (subtract Euler–Mascheroni constant)
- *   - Uniform(-1,1)
+ * <p>
+ * The full experiment is run under four noise regimes for both latent and observed errors: - Gaussian(0,1)  (baseline)
+ * - Exponential(1) centered (E-1) - Gumbel(0,1) centered (subtract Euler–Mascheroni constant) - Uniform(-1,1)
  */
 public class TestBlockwiseIndependence {
 
@@ -42,25 +33,8 @@ public class TestBlockwiseIndependence {
     // ----------------------------------
 
     private static final Random rng = new Random(SEED);
-
-    enum NoiseType { GAUSSIAN, EXPONENTIAL, GUMBEL, UNIFORM }
-
-    // ===================== Main test =====================
-    @Test
-    public void test0() {
-        System.out.println("=== TestBlockwiseIndependence (within-cluster; pairwise=rank over singleton blocks) ===");
-        System.out.println("alpha=" + alpha + ", n=" + nSamples
-                           + ", m=" + numObservedPerLatent + ", clusterSize=" + clusterSize);
-
-        // Build latent model structure (DAG + cluster map)
-        LatentModel lm = buildLatentChainModel(numObservedPerLatent);
-
-        // Run four regimes
-        runOnce(lm, NoiseType.GAUSSIAN, "Gaussian(0,1)");
-        runOnce(lm, NoiseType.EXPONENTIAL, "Exponential(1) centered");
-        runOnce(lm, NoiseType.GUMBEL, "Gumbel(0,1) centered");
-        runOnce(lm, NoiseType.UNIFORM, "Uniform(-1,1)");
-    }
+    // ===================== Noise samplers (centered where needed) =====================
+    private static final double EULER_GAMMA = 0.5772156649015329;
 
     // --- helper: build random incoherent blocks from all observed variables ---
     private static List<BlockCase> buildRandomIncoherentCases(List<Node> observed, int n, int blockSize) {
@@ -77,44 +51,6 @@ public class TestBlockwiseIndependence {
             out.add(new BlockCase(X, Y, Z, "INC_X", "INC_Y", "INC_Z")); // cluster labels unused here
         }
         return out;
-    }
-
-    private void runOnce(LatentModel lm, NoiseType noise, String label) {
-        // Simulate data with the requested noise type (both latent and observed errors use same distribution)
-        SimResult sim = simulateLatentData(lm, nSamples, noise);
-
-        System.out.println("\n--- " + label + " ---");
-
-        // Pairwise Fisher-Z kept (optional baseline), but we will use rank-based pairwise below
-        CovarianceMatrix cov = new CovarianceMatrix(sim.data);
-        IndependenceTest fisherZ = new IndTestFisherZ(cov, alpha);
-
-        // Latent meta-blocks (for blockwise methods)
-        List<List<Integer>> blocks = new ArrayList<>();
-        List<Node> metaVars = new ArrayList<>();
-        List<Node> nodes = sim.observedNodes;
-
-        List<String> latentKeys = new ArrayList<>(lm.latentToObserved.keySet());
-        for (String l : latentKeys) {
-            List<Node> cluster = lm.latentToObserved.get(l);
-            List<Integer> idxs = new ArrayList<>();
-            for (Node n : cluster) idxs.add(nodes.indexOf(n));
-            blocks.add(idxs);
-            ContinuousVariable mv = new ContinuousVariable(l);
-            mv.setNodeType(NodeType.LATENT);
-            metaVars.add(mv);
-        }
-
-        IndTestBlocksWilkes blocksTest = new IndTestBlocksWilkes(new BlockSpec(sim.data, blocks, metaVars));
-        blocksTest.setAlpha(alpha);
-        IndTestBlocksLemma10 lemma10Test = new IndTestBlocksLemma10(new BlockSpec(sim.data, blocks, metaVars));
-        lemma10Test.setAlpha(alpha);
-
-        // Build within-cluster cases with distinct cX, cY, cZ
-        List<BlockCase> cases = buildWithinClusterCases(sim.observedNodes, lm.latentToObserved, latentKeys, nCases);
-
-        // Evaluate metrics: (A) pairwise-rank via singleton blocks, (B) blockwise (Blocks), (C) blockwise (Lemma10)
-        evaluateAndPrintBlockwise(lm.fullGraph, fisherZ, blocksTest, lemma10Test, cases, metaVars, latentKeys);
     }
 
     // ===================== Case builder =====================
@@ -149,7 +85,10 @@ public class TestBlockwiseIndependence {
                 Y = sampleWithoutReplacement(latentToObserved.get(cY), clusterSize);
                 Z = sampleWithoutReplacement(latentToObserved.get(cZ), clusterSize);
             }
-            if (!areDisjoint(X, Y, Z)) { i--; continue; }
+            if (!areDisjoint(X, Y, Z)) {
+                i--;
+                continue;
+            }
 
             out.add(new BlockCase(X, Y, Z, cX, cY, cZ));
         }
@@ -158,7 +97,8 @@ public class TestBlockwiseIndependence {
 
     private static boolean areDisjoint(List<Node> A, List<Node> B, List<Node> C) {
         Set<Node> s = new HashSet<>(A);
-        s.addAll(B); s.addAll(C);
+        s.addAll(B);
+        s.addAll(C);
         return s.size() == (A.size() + B.size() + C.size());
     }
 
@@ -216,8 +156,9 @@ public class TestBlockwiseIndependence {
     // ===================== Truth via m-separation =====================
     private static boolean allPairsMSep(MsepTest dsep, List<Node> X, List<Node> Y, List<Node> Z) {
         Set<Node> Zset = new HashSet<>(Z);
-        for (Node x : X) for (Node y : Y)
-            if (!dsep.checkIndependence(x, y, Zset).isIndependent()) return false;
+        for (Node x : X)
+            for (Node y : Y)
+                if (!dsep.checkIndependence(x, y, Zset).isIndependent()) return false;
         return true;
     }
 
@@ -311,9 +252,6 @@ public class TestBlockwiseIndependence {
         return new SimResult(ds, lm.observedNodes);
     }
 
-    // ===================== Noise samplers (centered where needed) =====================
-    private static final double EULER_GAMMA = 0.5772156649015329;
-
     private static double sampleNoise(NoiseType t, Random r) {
         switch (t) {
             case GAUSSIAN:
@@ -337,15 +275,75 @@ public class TestBlockwiseIndependence {
         }
     }
 
+    // ===================== Main test =====================
+    @Test
+    public void test0() {
+        System.out.println("=== TestBlockwiseIndependence (within-cluster; pairwise=rank over singleton blocks) ===");
+        System.out.println("alpha=" + alpha + ", n=" + nSamples
+                           + ", m=" + numObservedPerLatent + ", clusterSize=" + clusterSize);
+
+        // Build latent model structure (DAG + cluster map)
+        LatentModel lm = buildLatentChainModel(numObservedPerLatent);
+
+        // Run four regimes
+        runOnce(lm, NoiseType.GAUSSIAN, "Gaussian(0,1)");
+        runOnce(lm, NoiseType.EXPONENTIAL, "Exponential(1) centered");
+        runOnce(lm, NoiseType.GUMBEL, "Gumbel(0,1) centered");
+        runOnce(lm, NoiseType.UNIFORM, "Uniform(-1,1)");
+    }
+
+    private void runOnce(LatentModel lm, NoiseType noise, String label) {
+        // Simulate data with the requested noise type (both latent and observed errors use same distribution)
+        SimResult sim = simulateLatentData(lm, nSamples, noise);
+
+        System.out.println("\n--- " + label + " ---");
+
+        // Pairwise Fisher-Z kept (optional baseline), but we will use rank-based pairwise below
+        CovarianceMatrix cov = new CovarianceMatrix(sim.data);
+        IndependenceTest fisherZ = new IndTestFisherZ(cov, alpha);
+
+        // Latent meta-blocks (for blockwise methods)
+        List<List<Integer>> blocks = new ArrayList<>();
+        List<Node> metaVars = new ArrayList<>();
+        List<Node> nodes = sim.observedNodes;
+
+        List<String> latentKeys = new ArrayList<>(lm.latentToObserved.keySet());
+        for (String l : latentKeys) {
+            List<Node> cluster = lm.latentToObserved.get(l);
+            List<Integer> idxs = new ArrayList<>();
+            for (Node n : cluster) idxs.add(nodes.indexOf(n));
+            blocks.add(idxs);
+            ContinuousVariable mv = new ContinuousVariable(l);
+            mv.setNodeType(NodeType.LATENT);
+            metaVars.add(mv);
+        }
+
+        IndTestBlocksWilkes blocksTest = new IndTestBlocksWilkes(new BlockSpec(sim.data, blocks, metaVars));
+        blocksTest.setAlpha(alpha);
+        IndTestBlocksLemma10 lemma10Test = new IndTestBlocksLemma10(new BlockSpec(sim.data, blocks, metaVars));
+        lemma10Test.setAlpha(alpha);
+
+        // Build within-cluster cases with distinct cX, cY, cZ
+        List<BlockCase> cases = buildWithinClusterCases(sim.observedNodes, lm.latentToObserved, latentKeys, nCases);
+
+        // Evaluate metrics: (A) pairwise-rank via singleton blocks, (B) blockwise (Blocks), (C) blockwise (Lemma10)
+        evaluateAndPrintBlockwise(lm.fullGraph, fisherZ, blocksTest, lemma10Test, cases, metaVars, latentKeys);
+    }
+
+    enum NoiseType {GAUSSIAN, EXPONENTIAL, GUMBEL, UNIFORM}
+
     // ===================== Records & metrics =====================
     private record LatentModel(Graph fullGraph, List<Node> latentNodes, List<Node> observedNodes,
                                Map<String, List<Node>> latentToObserved, double a21, double a32,
-                               Map<Node, Double> loadings) {}
+                               Map<Node, Double> loadings) {
+    }
 
-    private record SimResult(DataSet data, List<Node> observedNodes) {}
+    private record SimResult(DataSet data, List<Node> observedNodes) {
+    }
 
     private record BlockCase(List<Node> X, List<Node> Y, List<Node> Z,
-                             String clusterX, String clusterY, String clusterZ) {}
+                             String clusterX, String clusterY, String clusterZ) {
+    }
 
     private static class Metrics {
         final String name;
@@ -353,31 +351,40 @@ public class TestBlockwiseIndependence {
         int tpInd = 0, fpInd = 0, fnInd = 0;
         int tpDep = 0, fpDep = 0, fnDep = 0;
 
-        Metrics(String name) { this.name = name; }
+        Metrics(String name) {
+            this.name = name;
+        }
+
+        private static double safeDiv(int a, int b) {
+            return b == 0 ? Double.NaN : (double) a / b;
+        }
 
         void addCase(boolean truthIndep, boolean predIndepFlag) {
-            if (predIndepFlag) predIndep++; else predDep++;
+            if (predIndepFlag) predIndep++;
+            else predDep++;
 
             if (truthIndep) {
-                if (predIndepFlag) tpInd++; else fnInd++;
+                if (predIndepFlag) tpInd++;
+                else fnInd++;
             } else {
-                if (predIndepFlag) fpInd++; else tpDep++;
+                if (predIndepFlag) fpInd++;
+                else tpDep++;
             }
 
             if (!truthIndep) {
-                if (!predIndepFlag) { /* TP already */ } else { fpDep++; }
+                if (!predIndepFlag) { /* TP already */ } else {
+                    fpDep++;
+                }
             } else {
                 if (!predIndepFlag) fnDep++;
             }
         }
 
-        private static double safeDiv(int a, int b) { return b == 0 ? Double.NaN : (double) a / b; }
-
         void print() {
             double precInd = safeDiv(tpInd, tpInd + fpInd);
-            double recInd  = safeDiv(tpInd, tpInd + fnInd);
+            double recInd = safeDiv(tpInd, tpInd + fnInd);
             double precDep = safeDiv(tpDep, tpDep + fpDep);
-            double recDep  = safeDiv(tpDep, tpDep + fnDep);
+            double recDep = safeDiv(tpDep, tpDep + fnDep);
 
             System.out.println("\n[" + name + "]");
             System.out.println("Predicted Independent: " + predIndep + " | Predicted Dependent: " + predDep);

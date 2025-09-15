@@ -3,16 +3,16 @@ package edu.cmu.tetrad.search;
 /**
  * Functional interface for performing a raw marginal independence test.
  * <p>
- * This interface provides a method to compute the p-value for the statistical test
- * of marginal independence between two variables, represented as double arrays. The test
- * evaluates the null hypothesis that the two variables are statistically independent.
+ * This interface provides a method to compute the p-value for the statistical test of marginal independence between two
+ * variables, represented as double arrays. The test evaluates the null hypothesis that the two variables are
+ * statistically independent.
  */
 @FunctionalInterface
 public interface RawMarginalIndependenceTest {
 
     /**
-     * Computes the p-value for the statistical test of marginal independence between
-     * the two given variables represented by the input arrays.
+     * Computes the p-value for the statistical test of marginal independence between the two given variables
+     * represented by the input arrays.
      *
      * @param x the first variable, represented as an array of doubles
      * @param y the second variable, represented as an array of doubles
@@ -22,13 +22,12 @@ public interface RawMarginalIndependenceTest {
     double computePValue(double[] x, double[] y) throws InterruptedException;
 
     /**
-     * Computes the p-value for the statistical test of marginal independence between
-     * a single variable and a multivariate set of variables.
+     * Computes the p-value for the statistical test of marginal independence between a single variable and a
+     * multivariate set of variables.
      * <p>
-     * Default implementation: fall back to pairwise tests of (x, y_j) for each column y_j in Y,
-     * and combine the resulting p-values with Fisher’s method.
-     * Implementations that support true multivariate tests (e.g. HSIC, KCI with vector Y)
-     * should override this method.
+     * Default implementation: fall back to pairwise tests of (x, y_j) for each column y_j in Y, and combine the
+     * resulting p-values with Fisher’s method. Implementations that support true multivariate tests (e.g. HSIC, KCI
+     * with vector Y) should override this method.
      *
      * @param x the first variable (scalar), represented as an array of doubles of length n
      * @param Y the multivariate variable, represented as a 2D array of shape [n][m] (n samples, m variables)

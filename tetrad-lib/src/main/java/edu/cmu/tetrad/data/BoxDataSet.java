@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -167,6 +167,30 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
+     * Attempts to translate <code>element</code> into a double value, returning it if successful, otherwise throwing an
+     * exception. To be successful, the object must be either a Number or a String.
+     *
+     * @throws IllegalArgumentException if the translation cannot be made. The reason is in the message.
+     */
+    private static double getValueFromObjectContinuous(Object element) {
+        if ("*".equals(element) || "".equals(element)) {
+            return ContinuousVariable.getDoubleMissingValue();
+        } else if (element instanceof Number) {
+            return ((Number) element).doubleValue();
+        } else if (element instanceof String) {
+            try {
+                return Double.parseDouble((String) element);
+            } catch (NumberFormatException e) {
+                return ContinuousVariable.getDoubleMissingValue();
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "The argument 'element' must be "
+                    + "either a Number or a String.");
+        }
+    }
+
+    /**
      * Writes the object to the specified ObjectOutputStream.
      *
      * @param out The ObjectOutputStream to write the object to.
@@ -199,30 +223,6 @@ public final class BoxDataSet implements DataSet {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
                                            + ", " + e.getMessage());
             throw e;
-        }
-    }
-
-    /**
-     * Attempts to translate <code>element</code> into a double value, returning it if successful, otherwise throwing an
-     * exception. To be successful, the object must be either a Number or a String.
-     *
-     * @throws IllegalArgumentException if the translation cannot be made. The reason is in the message.
-     */
-    private static double getValueFromObjectContinuous(Object element) {
-        if ("*".equals(element) || "".equals(element)) {
-            return ContinuousVariable.getDoubleMissingValue();
-        } else if (element instanceof Number) {
-            return ((Number) element).doubleValue();
-        } else if (element instanceof String) {
-            try {
-                return Double.parseDouble((String) element);
-            } catch (NumberFormatException e) {
-                return ContinuousVariable.getDoubleMissingValue();
-            }
-        } else {
-            throw new IllegalArgumentException(
-                    "The argument 'element' must be "
-                    + "either a Number or a String.");
         }
     }
 

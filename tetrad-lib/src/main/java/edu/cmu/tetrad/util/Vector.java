@@ -65,8 +65,8 @@ public class Vector implements TetradSerializable {
     /**
      * Constructs a new Vector object using a SimpleMatrix instance.
      *
-     * @param v the SimpleMatrix instance used to initialize the Vector object;
-     *          it must contain exactly one column, otherwise an IllegalArgumentException is thrown
+     * @param v the SimpleMatrix instance used to initialize the Vector object; it must contain exactly one column,
+     *          otherwise an IllegalArgumentException is thrown
      * @throws IllegalArgumentException if the number of columns in the provided SimpleMatrix is not equal to one
      */
     public Vector(SimpleMatrix v) {
@@ -97,9 +97,8 @@ public class Vector implements TetradSerializable {
     }
 
     /**
-     * Generates a diagonal matrix using the elements of the given vector. The vector's
-     * elements will populate the diagonal entries of the resulting square matrix, with
-     * all other entries set to zero.
+     * Generates a diagonal matrix using the elements of the given vector. The vector's elements will populate the
+     * diagonal entries of the resulting square matrix, with all other entries set to zero.
      *
      * @param diag the {@code Vector} containing the diagonal elements of the matrix
      * @return a square {@code Matrix} with the specified diagonal elements
@@ -320,8 +319,8 @@ public class Vector implements TetradSerializable {
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.
@@ -365,10 +364,12 @@ public class Vector implements TetradSerializable {
     /**
      * Extracts a subvector from the current vector from specified indices.
      *
-     * @param from the starting index (inclusive) of the range; must be non-negative and less than or equal to {@code to}
-     * @param to the ending index (exclusive) of the range; must be less than or equal to the size of the vector
+     * @param from the starting index (inclusive) of the range; must be non-negative and less than or equal to
+     *             {@code to}
+     * @param to   the ending index (exclusive) of the range; must be less than or equal to the size of the vector
      * @return a new {@code Vector} object containing the elements from the specified range
-     * @throws IllegalArgumentException if {@code from} is negative, {@code to} exceeds the vector size, or {@code from} is greater than {@code to}
+     * @throws IllegalArgumentException if {@code from} is negative, {@code to} exceeds the vector size, or {@code from}
+     *                                  is greater than {@code to}
      */
     public Vector getPart(int from, int to) {
         if (from < 0 || to > size() || from > to) {
@@ -385,8 +386,8 @@ public class Vector implements TetradSerializable {
     }
 
     /**
-     * Calculates the Euclidean norm (magnitude) of the vector. The Euclidean norm
-     * is computed as the square root of the sum of the squares of all elements in the vector.
+     * Calculates the Euclidean norm (magnitude) of the vector. The Euclidean norm is computed as the square root of the
+     * sum of the squares of all elements in the vector.
      *
      * @return the Euclidean norm of the vector as a double
      */
@@ -405,7 +406,7 @@ public class Vector implements TetradSerializable {
      * Updates the specified elements of a data structure with values from the given vector.
      *
      * @param range1 an array of indices specifying the positions in the data structure to be updated
-     * @param from a Vector containing the values to be added to the elements at the specified indices
+     * @param from   a Vector containing the values to be added to the elements at the specified indices
      */
     public void assignPart(int[] range1, Vector from) {
         for (int j = 0; j < range1.length; j++) {

@@ -1,21 +1,21 @@
 package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Boss;
+import edu.cmu.tetrad.search.Pc;
+import edu.cmu.tetrad.search.PermutationSearch;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.PermutationSearch;
-import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 
 import java.util.*;
 import java.util.stream.Collectors;

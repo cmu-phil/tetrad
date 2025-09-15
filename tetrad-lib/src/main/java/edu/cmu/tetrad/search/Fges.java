@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
@@ -110,6 +110,12 @@ public final class Fges implements IGraphSearch, DagScorer {
      */
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
     /**
+     * Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows. The ordering
+     * doesn't matter; it just has to be transitive.
+     */
+    // private int arrowIndex = 0;
+    private final AtomicInteger arrowIndex = new AtomicInteger(0);
+    /**
      * The fork join pool.
      */
     private ForkJoinPool pool;
@@ -161,12 +167,6 @@ public final class Fges implements IGraphSearch, DagScorer {
      * The graph being constructed.
      */
     private Graph graph;
-    /**
-     * Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows. The ordering
-     * doesn't matter; it just has to be transitive.
-     */
-    // private int arrowIndex = 0;
-    private final AtomicInteger arrowIndex = new AtomicInteger(0);
     /**
      * The score of the model.
      */
@@ -266,7 +266,6 @@ public final class Fges implements IGraphSearch, DagScorer {
             fes();
             bes();
         }
-
 
 
         long endTime = MillisecondTimes.timeMillis();

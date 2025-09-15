@@ -133,7 +133,7 @@ class RandomMimParamsEditor extends JPanel {
         // --- Latent meta-edge connection type (combo) ---
         {
             // Display labels for the three implemented modes:
-            final String[] META_EDGE_CONNECTION_CHOICES = new String[] {
+            final String[] META_EDGE_CONNECTION_CHOICES = new String[]{
                     "Latents: Cartesian product",
                     "Latents: Corresponding",
                     "Latents: Patchy connections"
@@ -143,7 +143,8 @@ class RandomMimParamsEditor extends JPanel {
             int stored = 1;
             try {
                 stored = parameters.getInt(Params.META_EDGE_CONNECTION_TYPE);
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
             final int initialIndex = Math.max(0, Math.min(META_EDGE_CONNECTION_CHOICES.length - 1, stored - 1));
 
             final JLabel label = new JLabel("Latent connection pattern");

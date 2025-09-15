@@ -12,8 +12,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Edits the conditions used for the Plot Matrix.

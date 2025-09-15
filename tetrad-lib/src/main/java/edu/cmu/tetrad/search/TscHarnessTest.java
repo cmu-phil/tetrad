@@ -312,16 +312,16 @@ public class TscHarnessTest {
     }
 
     /**
-     * Executes the time series clustering (TSC) algorithm once with the given parameters and
-     * returns canonicalized clusters as a set of sets of integers.
+     * Executes the time series clustering (TSC) algorithm once with the given parameters and returns canonicalized
+     * clusters as a set of sets of integers.
      *
      * @param vars          the list of nodes (variables) to be clustered
      * @param cov           the covariance matrix used for clustering
      * @param alpha         the significance level for statistical tests within the clustering algorithm
      * @param ess           the expected sample size, influencing the stability of clustering results
      * @param minRedundancy the minimum redundancy threshold applied during clustering
-     * @return a set of canonicalized clusters, where each cluster is represented as an unmodifiable
-     *         and sorted set of integers
+     * @return a set of canonicalized clusters, where each cluster is represented as an unmodifiable and sorted set of
+     * integers
      */
     public static Set<Set<Integer>> runOnce(List<Node> vars, CovarianceMatrix cov, double alpha, int ess,
                                             int minRedundancy) {

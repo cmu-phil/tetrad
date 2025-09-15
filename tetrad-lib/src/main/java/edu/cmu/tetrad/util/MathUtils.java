@@ -52,9 +52,8 @@ public class MathUtils {
     }
 
     /**
-     * Calculates the factorial of a non-negative integer n.
-     * The factorial of n (denoted as n!) is the product of all positive integers
-     * less than or equal to n. By definition, the factorial of 0 is 1.
+     * Calculates the factorial of a non-negative integer n. The factorial of n (denoted as n!) is the product of all
+     * positive integers less than or equal to n. By definition, the factorial of 0 is 1.
      *
      * @param n the non-negative integer for which the factorial is to be calculated
      * @return the factorial of the given integer n as a long value

@@ -1,23 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
-//                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.DefaultTetradLoggerConfig;
@@ -389,7 +369,8 @@ public class TetradApplicationConfig {
                 try {
                     chooser = (ModelChooser) this.chooserClass.getDeclaredConstructor().newInstance();
                     chooser.setSessionNode(sessionNode);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                         NoSuchMethodException e) {
                     throw new IllegalStateException("Model chooser must have empty constructor", e);
                 }
             }
@@ -452,10 +433,10 @@ public class TetradApplicationConfig {
     }
 
     /**
-         * THe default implementation of the model config.
-         */
-        private record DefaultModelConfig(Class<?> model, Class<?> paramsEditor, Class<?> editor, String name,
-                                          String acronym, String help, String category) implements SessionNodeModelConfig {
+     * THe default implementation of the model config.
+     */
+    private record DefaultModelConfig(Class<?> model, Class<?> paramsEditor, Class<?> editor, String name,
+                                      String acronym, String help, String category) implements SessionNodeModelConfig {
 
         private DefaultModelConfig {
             if (model == null || editor == null || name == null || acronym == null) {
@@ -463,61 +444,61 @@ public class TetradApplicationConfig {
             }
         }
 
-            public String getHelpIdentifier() {
-                return this.help;
-            }
-
-            public JPanel getEditorInstance(Object[] arguments) {
-                Class<?>[] parameters = new Class[arguments.length];
-
-                for (int i = 0; i < arguments.length; i++) {
-                    parameters[i] = arguments[i].getClass();
-                }
-
-                Constructor<?> constructor = null;
-
-                try {
-                    constructor = this.editor.getConstructor(parameters);
-                } catch (Exception ex) {
-                    // do nothing, try to find a constructor below.
-                }
-
-                if (constructor == null) {
-                    // try to find object-compatable constructor.
-                    Constructor<?>[] constructors = this.editor.getConstructors();
-                    for (Constructor<?> _constructor : constructors) {
-                        Class<?>[] params = _constructor.getParameterTypes();
-                        if (TetradApplicationConfig.matches(params, arguments)) {
-                            constructor = _constructor;
-                            break;
-                        }
-                    }
-                }
-
-                if (constructor == null) {
-                    throw new NullPointerException("Could not find constructor in " + this.editor + " for model: " + this.model);
-                }
-
-                try {
-                    return (JPanel) constructor.newInstance(arguments);
-                } catch (Exception ex) {
-                    throw new IllegalStateException("Could not construct editor", ex);
-                }
-            }
-
-            public ParameterEditor getParameterEditorInstance() {
-                if (this.paramsEditor != null) {
-                    try {
-                        return (ParameterEditor) this.paramsEditor.getDeclaredConstructor().newInstance();
-                    } catch (ClassCastException e) {
-                        throw new IllegalStateException("Parameters editor must implement ParameterEditor", e);
-                    } catch (Exception e) {
-                        throw new IllegalStateException("Error intatiating params editor, must have empty constructor", e);
-                    }
-                }
-                return null;
-            }
-
+        public String getHelpIdentifier() {
+            return this.help;
         }
+
+        public JPanel getEditorInstance(Object[] arguments) {
+            Class<?>[] parameters = new Class[arguments.length];
+
+            for (int i = 0; i < arguments.length; i++) {
+                parameters[i] = arguments[i].getClass();
+            }
+
+            Constructor<?> constructor = null;
+
+            try {
+                constructor = this.editor.getConstructor(parameters);
+            } catch (Exception ex) {
+                // do nothing, try to find a constructor below.
+            }
+
+            if (constructor == null) {
+                // try to find object-compatable constructor.
+                Constructor<?>[] constructors = this.editor.getConstructors();
+                for (Constructor<?> _constructor : constructors) {
+                    Class<?>[] params = _constructor.getParameterTypes();
+                    if (TetradApplicationConfig.matches(params, arguments)) {
+                        constructor = _constructor;
+                        break;
+                    }
+                }
+            }
+
+            if (constructor == null) {
+                throw new NullPointerException("Could not find constructor in " + this.editor + " for model: " + this.model);
+            }
+
+            try {
+                return (JPanel) constructor.newInstance(arguments);
+            } catch (Exception ex) {
+                throw new IllegalStateException("Could not construct editor", ex);
+            }
+        }
+
+        public ParameterEditor getParameterEditorInstance() {
+            if (this.paramsEditor != null) {
+                try {
+                    return (ParameterEditor) this.paramsEditor.getDeclaredConstructor().newInstance();
+                } catch (ClassCastException e) {
+                    throw new IllegalStateException("Parameters editor must implement ParameterEditor", e);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Error intatiating params editor, must have empty constructor", e);
+                }
+            }
+            return null;
+        }
+
+    }
 
 }

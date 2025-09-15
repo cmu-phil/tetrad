@@ -42,8 +42,8 @@ public class CirclePrecision implements Statistic {
     }
 
     /**
-     * Calculates the circle precision, which is the ratio of true positive arrows to the sum of true positive arrows and
-     * false positive arrows.
+     * Calculates the circle precision, which is the ratio of true positive arrows to the sum of true positive arrows
+     * and false positive arrows.
      *
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).

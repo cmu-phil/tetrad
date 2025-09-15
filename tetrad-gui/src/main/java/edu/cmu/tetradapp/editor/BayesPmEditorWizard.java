@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesPm;
@@ -26,10 +26,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.editor.simulation.ParameterTab;
-import edu.cmu.tetradapp.ui.PaddingPanel;
-import edu.cmu.tetradapp.util.ParameterComponents;
 import edu.cmu.tetradapp.util.StringTextField;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 

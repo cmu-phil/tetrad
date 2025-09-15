@@ -124,16 +124,17 @@ public class CausalPerceptronNetwork {
     private Function<Double, Double> activationFunction = Math::tanh;
 
     /**
-     * Constructs a CausalPerceptronNetwork that operates on a directed acyclic graph (DAG)
-     * to model causal relationships with post-nonlinear causal mechanisms and custom activation functions.
+     * Constructs a CausalPerceptronNetwork that operates on a directed acyclic graph (DAG) to model causal
+     * relationships with post-nonlinear causal mechanisms and custom activation functions.
      *
-     * @param graph The directed acyclic graph (DAG) representing the causal structure.
-     * @param numSamples The number of synthetic data samples to generate.
-     * @param noiseDistribution The noise distribution used for simulating random noise in the causal relationships.
-     * @param rescaleMin The minimum value for rescaling the generated data.
-     * @param rescaleMax The maximum value for rescaling the generated data.
-     * @param hiddenDimensions An array specifying the number of units in each hidden layer of the perceptron network.
-     * @param inputScale A scaling factor to adjust the input to the network.
+     * @param graph              The directed acyclic graph (DAG) representing the causal structure.
+     * @param numSamples         The number of synthetic data samples to generate.
+     * @param noiseDistribution  The noise distribution used for simulating random noise in the causal relationships.
+     * @param rescaleMin         The minimum value for rescaling the generated data.
+     * @param rescaleMax         The maximum value for rescaling the generated data.
+     * @param hiddenDimensions   An array specifying the number of units in each hidden layer of the perceptron
+     *                           network.
+     * @param inputScale         A scaling factor to adjust the input to the network.
      * @param activationFunction The activation function applied within the perceptron network for nonlinearity.
      * @throws IllegalArgumentException If the graph contains cycles, numSamples is less than 1, rescaleMin is greater
      *                                  than rescaleMax, or any value in hiddenDimensions is less than 1.
@@ -194,7 +195,7 @@ public class CausalPerceptronNetwork {
 
             MultiLayerPerceptron randomFunction = new MultiLayerPerceptron(
                     parents.size() + 1, // Input dimension (R^3 -> R)
-                     hiddenDimensions, // Number of hidden neurons
+                    hiddenDimensions, // Number of hidden neurons
                     this.activationFunction, // Activation function
                     this.inputScale, // Input scale for bumpiness
                     -1 // Random seed

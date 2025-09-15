@@ -5,40 +5,54 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * A Graph implementation (via EdgeListGraph) that enforces SVAR-style lag mirroring:
- * whenever an edge between A@lag_a and B@lag_b is added (or removed), the same edge
- * type is added (or removed) for all lag-aligned pairs A@t and B@(t + (lag_b - lag_a))
- * that exist in the node set.
- *
- * Node naming convention:
- *   - Base (lag 0) is "X"
- *   - Lagged versions are "X:1", "X:2", ...
- *
- * Examples:
- *   add X:1 -> Y  ⇒ also add X:2 -> Y:1, X:3 -> Y:2, ... if nodes exist
- *   remove Z:2 --- W:1  ⇒ also remove Z:1 --- W, Z:3 --- W:2, ...
- *
+ * A Graph implementation (via EdgeListGraph) that enforces SVAR-style lag mirroring: whenever an edge between A@lag_a
+ * and B@lag_b is added (or removed), the same edge type is added (or removed) for all lag-aligned pairs A@t and B@(t +
+ * (lag_b - lag_a)) that exist in the node set.
+ * <p>
+ * Node naming convention: - Base (lag 0) is "X" - Lagged versions are "X:1", "X:2", ...
+ * <p>
+ * Examples: add X:1 -> Y  ⇒ also add X:2 -> Y:1, X:3 -> Y:2, ... if nodes exist remove Z:2 --- W:1  ⇒ also remove Z:1
+ * --- W, Z:3 --- W:2, ...
+ * <p>
  * Only addEdge / removeEdge are overridden; everything else is inherited from EdgeListGraph.
  */
 public class SvarEdgeListGraph extends EdgeListGraph {
 
-    /** Prevent recursive mirroring during internal add/remove operations. */
+    /**
+     * Prevent recursive mirroring during internal add/remove operations.
+     */
     private static final ThreadLocal<Boolean> IN_REPLICATION =
             ThreadLocal.withInitial(() -> Boolean.FALSE);
+    private static final Pattern LAG_PATTERN = Pattern.compile("^(.*?)(?::(\\d+))?$");
 
     public SvarEdgeListGraph() {
         super();
     }
 
-    /** Copy constructor: builds an EdgeListGraph copy first, then augments with SVAR behavior. */
+    /**
+     * Copy constructor: builds an EdgeListGraph copy first, then augments with SVAR behavior.
+     */
     public SvarEdgeListGraph(Graph g) {
         super(g);
     }
 
-    /** Construct from a collection of nodes. */
+    /**
+     * Construct from a collection of nodes.
+     */
     public SvarEdgeListGraph(List<Node> nodes) {
         super(nodes);
     }
+
+    private static Lagged parseLagged(String name) {
+        Matcher m = LAG_PATTERN.matcher(name);
+        if (!m.matches()) return null;
+        String base = m.group(1);
+        String lagStr = m.group(2);
+        int lag = (lagStr == null || lagStr.isEmpty()) ? 0 : Integer.parseInt(lagStr);
+        return new Lagged(base, lag);
+    }
+
+    /* ======================= Helpers ======================= */
 
     @Override
     public synchronized boolean addEdge(Edge e) throws IllegalArgumentException {
@@ -90,19 +104,6 @@ public class SvarEdgeListGraph extends EdgeListGraph {
         return changed;
     }
 
-    /* ======================= Helpers ======================= */
-
-    private static final Pattern LAG_PATTERN = Pattern.compile("^(.*?)(?::(\\d+))?$");
-
-    private static Lagged parseLagged(String name) {
-        Matcher m = LAG_PATTERN.matcher(name);
-        if (!m.matches()) return null;
-        String base = m.group(1);
-        String lagStr = m.group(2);
-        int lag = (lagStr == null || lagStr.isEmpty()) ? 0 : Integer.parseInt(lagStr);
-        return new Lagged(base, lag);
-    }
-
     private Map<String, Map<Integer, Node>> indexByBaseAndLag() {
         Map<String, Map<Integer, Node>> map = new HashMap<>();
         for (Node n : getNodes()) {
@@ -114,8 +115,8 @@ public class SvarEdgeListGraph extends EdgeListGraph {
     }
 
     /**
-     * Build the full set of mirrored edges corresponding to {@code e}, including {@code e} itself
-     * if lag parsing succeeds. If parsing fails, returns a singleton set {e}.
+     * Build the full set of mirrored edges corresponding to {@code e}, including {@code e} itself if lag parsing
+     * succeeds. If parsing fails, returns a singleton set {e}.
      */
     private Set<Edge> buildMirroredEdges(Edge e) {
         Node a = e.getNode1();
@@ -160,6 +161,9 @@ public class SvarEdgeListGraph extends EdgeListGraph {
         return out;
     }
 
-    /** Simple record to hold parsed base name and lag. */
-    private record Lagged(String base, int lag) {}
+    /**
+     * Simple record to hold parsed base name and lag.
+     */
+    private record Lagged(String base, int lag) {
+    }
 }

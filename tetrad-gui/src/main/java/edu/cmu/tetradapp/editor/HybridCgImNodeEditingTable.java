@@ -1,42 +1,23 @@
 package edu.cmu.tetradapp.editor;
 
-import javax.swing.table.AbstractTableModel;
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Minimal hybrid CG editor table:
- * Each row corresponds to a (discrete-parent configuration) for one target node.
+ * Minimal hybrid CG editor table: Each row corresponds to a (discrete-parent configuration) for one target node.
  * Columns: [Node, DiscreteConfig, Mean, Variance, Betas]
  */
 public class HybridCgImNodeEditingTable extends AbstractTableModel {
 
     public static final int COL_NODE = 0;
-    public static final int COL_CFG  = 1;
+    public static final int COL_CFG = 1;
     public static final int COL_MEAN = 2;
-    public static final int COL_VAR  = 3;
+    public static final int COL_VAR = 3;
     public static final int COL_BETA = 4;
 
     private final String[] columns = {"Node", "Config", "Mean", "Variance", "Betas (comma-separated)"};
-
-    /** A tiny row holder. In practice you’ll point these at your HybridCgIm param objects. */
-    static class Row {
-        String nodeName;
-        String discreteConfig; // e.g. "A=0,B=1"
-        double mean;
-        double variance;
-        double[] betas; // regression coefficients for continuous parents, in a fixed order
-
-        Row(String nodeName, String cfg, double mean, double variance, double[] betas) {
-            this.nodeName = nodeName;
-            this.discreteConfig = cfg;
-            this.mean = mean;
-            this.variance = variance;
-            this.betas = (betas == null ? new double[0] : betas.clone());
-        }
-    }
-
     private final List<Row> rows = new ArrayList<>();
 
     public HybridCgImNodeEditingTable() {
@@ -45,19 +26,53 @@ public class HybridCgImNodeEditingTable extends AbstractTableModel {
         rows.add(new Row("Y", "A=0,B=0", 0.0, 1.0, new double[]{0.0, 0.0}));
     }
 
-    @Override public int getRowCount() { return rows.size(); }
-    @Override public int getColumnCount() { return columns.length; }
-    @Override public String getColumnName(int c) { return columns[c]; }
-    @Override public boolean isCellEditable(int r, int c) { return c != COL_NODE; }
+    // --- small helpers ---
+    private static String betasToString(double[] b) {
+        if (b == null || b.length == 0) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < b.length; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(b[i]);
+        }
+        return sb.toString();
+    }
+
+    private static double[] parseBetas(String s) {
+        if (s.isEmpty()) return new double[0];
+        String[] parts = s.split(",");
+        double[] out = new double[parts.length];
+        for (int i = 0; i < parts.length; i++) out[i] = Double.parseDouble(parts[i].trim());
+        return out;
+    }
+
+    @Override
+    public int getRowCount() {
+        return rows.size();
+    }
+
+    @Override
+    public int getColumnCount() {
+        return columns.length;
+    }
+
+    @Override
+    public String getColumnName(int c) {
+        return columns[c];
+    }
+
+    @Override
+    public boolean isCellEditable(int r, int c) {
+        return c != COL_NODE;
+    }
 
     @Override
     public Object getValueAt(int r, int c) {
         Row row = rows.get(r);
         return switch (c) {
             case COL_NODE -> row.nodeName;
-            case COL_CFG  -> row.discreteConfig;
+            case COL_CFG -> row.discreteConfig;
             case COL_MEAN -> row.mean;
-            case COL_VAR  -> row.variance;
+            case COL_VAR -> row.variance;
             case COL_BETA -> betasToString(row.betas);
             default -> "";
         };
@@ -82,25 +97,6 @@ public class HybridCgImNodeEditingTable extends AbstractTableModel {
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, ex.getMessage(), "Edit Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    // --- small helpers ---
-    private static String betasToString(double[] b) {
-        if (b == null || b.length == 0) return "";
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < b.length; i++) {
-            if (i > 0) sb.append(", ");
-            sb.append(b[i]);
-        }
-        return sb.toString();
-    }
-
-    private static double[] parseBetas(String s) {
-        if (s.isEmpty()) return new double[0];
-        String[] parts = s.split(",");
-        double[] out = new double[parts.length];
-        for (int i = 0; i < parts.length; i++) out[i] = Double.parseDouble(parts[i].trim());
-        return out;
     }
 
     public void addDiscreteConfig() {
@@ -134,5 +130,24 @@ public class HybridCgImNodeEditingTable extends AbstractTableModel {
 
     public void fromParameterBlocks(List<Object> blocks) {
         // TODO: populate rows from a fitted HybridCgIm model (SEM or MLE layer).
+    }
+
+    /**
+     * A tiny row holder. In practice you’ll point these at your HybridCgIm param objects.
+     */
+    static class Row {
+        String nodeName;
+        String discreteConfig; // e.g. "A=0,B=1"
+        double mean;
+        double variance;
+        double[] betas; // regression coefficients for continuous parents, in a fixed order
+
+        Row(String nodeName, String cfg, double mean, double variance, double[] betas) {
+            this.nodeName = nodeName;
+            this.discreteConfig = cfg;
+            this.mean = mean;
+            this.variance = variance;
+            this.betas = (betas == null ? new double[0] : betas.clone());
+        }
     }
 }

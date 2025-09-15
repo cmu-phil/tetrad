@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -26,8 +26,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.score.BdeuScore;
-import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;

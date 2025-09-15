@@ -1,7 +1,9 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
@@ -20,7 +22,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
-
 
 
 public class TestCheckNodewiseMarkov {
@@ -46,7 +47,7 @@ public class TestCheckNodewiseMarkov {
         }
         for (int run = 0; run < 10; run++) {
             try {
-                testGaussianDAGPrecisionRecallForLatentVariableOnLocalOrderedMarkov(run,5, 0,
+                testGaussianDAGPrecisionRecallForLatentVariableOnLocalOrderedMarkov(run, 5, 0,
                         10, 30, 40, 5, false, 0.5,
                         1.0, 0.8);
             } catch (Exception e) {
@@ -97,7 +98,7 @@ public class TestCheckNodewiseMarkov {
         double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
         double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
         System.out.println("whole_ap: " + whole_ap);
-        System.out.println("whole_ar: " + whole_ar );
+        System.out.println("whole_ar: " + whole_ar);
         System.out.println("whole_ahp: " + whole_ahp);
         System.out.println("whole_ahr: " + whole_ahr);
         System.out.println("whole_lgp: " + whole_lgp);
@@ -147,7 +148,7 @@ public class TestCheckNodewiseMarkov {
         double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
         double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
         System.out.println("whole_ap: " + whole_ap);
-        System.out.println("whole_ar: " + whole_ar );
+        System.out.println("whole_ar: " + whole_ar);
         System.out.println("whole_ahp: " + whole_ahp);
         System.out.println("whole_ahr: " + whole_ahr);
         System.out.println("whole_lgp: " + whole_lgp);
@@ -182,7 +183,7 @@ public class TestCheckNodewiseMarkov {
                                                                                            int maxOutdegree, boolean connected,
                                                                                            double threshold, double shuffleThreshold, double lowRecallBound) {
         // Create simulation directory per run
-        File simulationDir = new File("markovCheckSimulation/simulation"+runID+"/");
+        File simulationDir = new File("markovCheckSimulation/simulation" + runID + "/");
         if (!simulationDir.exists()) {
             boolean created = simulationDir.mkdirs();
             if (!created) {
@@ -218,19 +219,19 @@ public class TestCheckNodewiseMarkov {
         double latentConfoundersPercentage = (double) numLatentConfounders / numNodes;
         try (Writer out = new FileWriter(descriptionFile)) {
             out.write("Simulated Gaussian DAG with the following RandomGraph.randomDag(...) parameters:\n");
-            out.write("numNodes: " + numNodes + "\n" );
-            out.write("numLatentConfounders: " + numLatentConfounders + "\n" );
-            out.write("latentConfoundersPercentage: " + latentConfoundersPercentage + "\n" );
-            out.write("maxNumEdges: " + maxNumEdges + "\n" );
-            out.write("maxDegree: " + maxDegree + "\n" );
-            out.write("maxIndegree: " + maxIndegree + "\n" );
-            out.write("maxOutdegree: " + maxOutdegree + "\n" );
-            out.write("connected: " + connected + "\n" );
+            out.write("numNodes: " + numNodes + "\n");
+            out.write("numLatentConfounders: " + numLatentConfounders + "\n");
+            out.write("latentConfoundersPercentage: " + latentConfoundersPercentage + "\n");
+            out.write("maxNumEdges: " + maxNumEdges + "\n");
+            out.write("maxDegree: " + maxDegree + "\n");
+            out.write("maxIndegree: " + maxIndegree + "\n");
+            out.write("maxOutdegree: " + maxOutdegree + "\n");
+            out.write("connected: " + connected + "\n");
             out.write("\n");
             out.write("Other Simulation Settings:\n");
-            out.write("threshold: " + threshold + "\n" );
-            out.write("shuffleThreshold: " + shuffleThreshold + "\n" );
-            out.write("lowRecallBound: " + lowRecallBound + "\n" );
+            out.write("threshold: " + threshold + "\n");
+            out.write("shuffleThreshold: " + shuffleThreshold + "\n");
+            out.write("lowRecallBound: " + lowRecallBound + "\n");
         } catch (IOException e) {
             TetradLogger.getInstance().log("IO Exception while saving description: " + e.getMessage());
         }
@@ -315,16 +316,16 @@ public class TestCheckNodewiseMarkov {
                 double whole_lgr = new LocalGraphRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
                 // Save statistical data in the simulation directory
                 try (Writer out = new FileWriter(statsFile, true)) {
-                    out.write("whole_ap: " + whole_ap + "\n" );
-                    out.write("whole_ar: " + whole_ar + "\n" );
-                    out.write("whole_ahp: " + whole_ahp + "\n" );
-                    out.write("whole_ahr: " + whole_ahr + "\n" );
-                    out.write("whole_lgp: " + whole_lgp + "\n" );
-                    out.write("whole_lgr: " + whole_lgr + "\n" );
+                    out.write("whole_ap: " + whole_ap + "\n");
+                    out.write("whole_ar: " + whole_ar + "\n");
+                    out.write("whole_ahp: " + whole_ahp + "\n");
+                    out.write("whole_ahr: " + whole_ahr + "\n");
+                    out.write("whole_lgp: " + whole_lgp + "\n");
+                    out.write("whole_lgr: " + whole_lgr + "\n");
                 } catch (IOException e) {
                     TetradLogger.getInstance().log("IO Exception while saving statistics: " + e.getMessage());
                 }
-                System.out.println("-----------------------Graph Simulation " + runID +" for : "+ methodName + "-----------------------");
+                System.out.println("-----------------------Graph Simulation " + runID + " for : " + methodName + "-----------------------");
             } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
             }
@@ -334,6 +335,7 @@ public class TestCheckNodewiseMarkov {
 
     /**
      * For LV-light paper's usage under ORDERED_LOCAL_MARKOV_MAG conditioning set type
+     *
      * @see OrderedLocalMarkovProperty
      * @see ConditioningSetType
      */
@@ -350,12 +352,12 @@ public class TestCheckNodewiseMarkov {
 
         // Save further statistical data in the simulation stats
         try (Writer out = new FileWriter(statsFile)) {
-            out.write("andersonDarlingA2: " + andersonDarlingA2 + "\n" );
-            out.write("andersonDarlingP: " + andersonDarlingP + "\n" );
-            out.write("finsherCombinedP: " + finsherCombinedP + "\n" );
-            out.write("kSPvalue: " + kSPvalue + "\n" );
-            out.write("fractionDep: " + fractionDep + "\n" );
-            out.write("numTests: " + numTests + "\n" );
+            out.write("andersonDarlingA2: " + andersonDarlingA2 + "\n");
+            out.write("andersonDarlingP: " + andersonDarlingP + "\n");
+            out.write("finsherCombinedP: " + finsherCombinedP + "\n");
+            out.write("kSPvalue: " + kSPvalue + "\n");
+            out.write("fractionDep: " + fractionDep + "\n");
+            out.write("numTests: " + numTests + "\n");
         } catch (IOException e) {
             TetradLogger.getInstance().log("IO Exception while saving statistics: " + e.getMessage());
         }
@@ -403,7 +405,7 @@ public class TestCheckNodewiseMarkov {
         double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
         double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
         System.out.println("whole_ap: " + whole_ap);
-        System.out.println("whole_ar: " + whole_ar );
+        System.out.println("whole_ar: " + whole_ar);
         System.out.println("whole_ahp: " + whole_ahp);
         System.out.println("whole_ahr: " + whole_ahr);
         System.out.println("whole_lgp: " + whole_lgp);
@@ -578,7 +580,6 @@ public class TestCheckNodewiseMarkov {
     }
 
 
-
     @Test
     public void testGaussianDAGPrecisionRecallForLocalOnParents() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
@@ -621,13 +622,13 @@ public class TestCheckNodewiseMarkov {
         System.out.println("Accepts size: " + accepts.size());
         System.out.println("Rejects size: " + rejects.size());
 
-        for(Node a: accepts) {
+        for (Node a : accepts) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
             System.out.println("=====================");
 
         }
-        for (Node a: rejects) {
+        for (Node a : rejects) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
             System.out.println("=====================");
@@ -678,13 +679,13 @@ public class TestCheckNodewiseMarkov {
         System.out.println("Rejects size: " + rejects.size());
 
         // Compare the Est CPDAG with True graph's CPDAG.
-        for(Node a: accepts) {
+        for (Node a : accepts) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
             System.out.println("=====================");
 
         }
-        for (Node a: rejects) {
+        for (Node a : rejects) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
             System.out.println("=====================");
@@ -737,13 +738,13 @@ public class TestCheckNodewiseMarkov {
         System.out.println("Accepts size: " + accepts.size());
         System.out.println("Rejects size: " + rejects.size());
 
-        for(Node a: accepts) {
+        for (Node a : accepts) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
             System.out.println("=====================");
 
         }
-        for (Node a: rejects) {
+        for (Node a : rejects) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraph);
             System.out.println("=====================");
@@ -799,13 +800,13 @@ public class TestCheckNodewiseMarkov {
         System.out.println("Rejects size: " + rejects.size());
 
         // Compare the Est CPDAG with True graph's CPDAG.
-        for(Node a: accepts) {
+        for (Node a : accepts) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
             System.out.println("=====================");
 
         }
-        for (Node a: rejects) {
+        for (Node a : rejects) {
             System.out.println("=====================");
             markovCheck.getPrecisionAndRecallOnMarkovBlanketGraph(a, estimatedCpdag, trueGraphCPDAG);
             System.out.println("=====================");

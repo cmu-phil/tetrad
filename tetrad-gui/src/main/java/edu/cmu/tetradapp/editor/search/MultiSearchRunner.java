@@ -12,11 +12,6 @@ import edu.cmu.tetradapp.util.WatchedProcess;
 
 public final class MultiSearchRunner {
 
-    public interface Callback {
-        void onSuccess(GraphResultList results);
-        void onError(Exception ex);
-    }
-
     public static void run(DataWrapper dataWrapper, Algorithm algo, Parameters params, Callback cb) {
         new WatchedProcess() {
             @Override
@@ -52,5 +47,11 @@ public final class MultiSearchRunner {
                 }
             }
         };
+    }
+
+    public interface Callback {
+        void onSuccess(GraphResultList results);
+
+        void onError(Exception ex);
     }
 }

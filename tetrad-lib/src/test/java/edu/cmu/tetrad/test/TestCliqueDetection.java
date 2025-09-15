@@ -137,11 +137,9 @@ public class TestCliqueDetection {
      * Greedy Jaccard matching of true clusters to recovered cliques.
      */
     /**
-     * Score recovery of measurement clusters using one-to-one greedy matching.
-     * nodePrec = macro precision over predicted cliques (unmatched predictions = 0)
-     * nodeRec  = macro recall over true clusters     (unmatched truths = 0)
-     * macroJaccard = average Jaccard over truths (zeros for misses)
-     * sumJaccard   = sum of those Jaccards
+     * Score recovery of measurement clusters using one-to-one greedy matching. nodePrec = macro precision over
+     * predicted cliques (unmatched predictions = 0) nodeRec  = macro recall over true clusters     (unmatched truths =
+     * 0) macroJaccard = average Jaccard over truths (zeros for misses) sumJaccard   = sum of those Jaccards
      */
     private static RecoveryStats scoreRecovery(List<Set<Node>> trueClusters,
                                                List<Set<Node>> recoveredCliques) {
@@ -199,8 +197,8 @@ public class TestCliqueDetection {
             PerCluster pc = new PerCluster(tNodes, rNodes);
             pcs.add(pc);
 
-            sumRec_T  += pc.recall;  // truth-side recall
-            sumJac_T  += pc.jaccard; // truth-side Jaccard
+            sumRec_T += pc.recall;  // truth-side recall
+            sumJac_T += pc.jaccard; // truth-side Jaccard
             sumPrec_R += pc.prec;    // prediction-side precision
         }
 
@@ -296,87 +294,6 @@ public class TestCliqueDetection {
 
     private static String fmtMSD(double mean, double sd, int wMean, int wSd) {
         return String.format(Locale.ROOT, "%" + wMean + ".3f±%" + wSd + ".3f", mean, sd);
-    }
-
-    @Test
-    public void testLearnersCliquesAndClusterRecovery() {
-        final int N = 10000;
-        final int R = 10; // number of random seeds
-
-        LBMulti multi = new LBMulti();
-
-        for (int r = 0; r < R; r++) {
-            long seed = RandomUtil.getInstance().nextLong();
-
-            MimData md = makeMimData(N, seed);
-            assertNotNull(md.data());
-            assertFalse("No true clusters found", md.trueClusters().isEmpty());
-
-            Map<String, Supplier<Graph>> learners = buildLearners(md);
-
-            SimpleMatrix S = new CorrelationMatrix(md.data()).getMatrix().getSimpleMatrix();
-
-            // --- Per-seed leaderboard ---
-            Leaderboard lb = new Leaderboard();
-
-            for (Map.Entry<String, Supplier<Graph>> e : learners.entrySet()) {
-                String name = e.getKey();
-
-                // Baseline
-                Graph g = e.getValue().get();
-                List<Set<Node>> cliquesRaw = maximalCliquesMeasured(g, md.data());
-
-                System.out.println(name + ": raw cliques = " + cliquesRaw);
-
-                List<Integer> all = new ArrayList<>();
-                for (int i = 0; i < md.data().getVariables().size(); i++) {
-                    all.add(i);
-                }
-
-                List<Set<Node>> filteredCliques = new ArrayList<>();
-
-                for (Set<Node> clique : cliquesRaw) {
-                    List<Integer> indices = new ArrayList<>();
-                    for (Node node : clique) {
-                        indices.add(md.data().getColumn(node));
-                    }
-
-                    List<Integer> remaining = new ArrayList<>(all);
-                    remaining.removeAll(indices);
-
-                    int[] _indices = indices.stream().mapToInt(Integer::intValue).toArray();
-                    int[] _remaining = remaining.stream().mapToInt(Integer::intValue).toArray();
-
-                    double rank = RankTests.estimateWilksRank(S, _indices, _remaining, N, 0.001);
-
-                    if (rank == 1) {
-                        filteredCliques.add(new HashSet<>(clique));
-                    }
-                }
-
-                System.out.println("Rank 1 cliques:");
-
-                for (int i = 0; i < filteredCliques.size(); i++) {
-                    System.out.println("Clique " + (i + 1) + ": " + filteredCliques.get(i));
-                }
-
-                RecoveryStats base = scoreRecovery(md.trueClusters(), cliquesRaw);
-                lb.add(name + " (raw)", base);
-
-                RecoveryStats after = scoreRecovery(md.trueClusters(), filteredCliques);
-                lb.add(name + " (rank 1)", after);
-            }
-
-            // Fold this seed's results into the multi-seed aggregator
-            for (Leaderboard.Row row : lb.rows) {
-                multi.add(row.methodLabel, row.stats);
-            }
-        }
-
-        // --- Final multi-seed tables ---
-        multi.printBySumJ();
-        multi.printByNodes();
-        multi.printDeltas();
     }
 
     private static @NotNull Map<String, Supplier<Graph>> buildLearners(MimData md) {
@@ -482,6 +399,87 @@ public class TestCliqueDetection {
         return learners;
     }
 
+    @Test
+    public void testLearnersCliquesAndClusterRecovery() {
+        final int N = 10000;
+        final int R = 10; // number of random seeds
+
+        LBMulti multi = new LBMulti();
+
+        for (int r = 0; r < R; r++) {
+            long seed = RandomUtil.getInstance().nextLong();
+
+            MimData md = makeMimData(N, seed);
+            assertNotNull(md.data());
+            assertFalse("No true clusters found", md.trueClusters().isEmpty());
+
+            Map<String, Supplier<Graph>> learners = buildLearners(md);
+
+            SimpleMatrix S = new CorrelationMatrix(md.data()).getMatrix().getSimpleMatrix();
+
+            // --- Per-seed leaderboard ---
+            Leaderboard lb = new Leaderboard();
+
+            for (Map.Entry<String, Supplier<Graph>> e : learners.entrySet()) {
+                String name = e.getKey();
+
+                // Baseline
+                Graph g = e.getValue().get();
+                List<Set<Node>> cliquesRaw = maximalCliquesMeasured(g, md.data());
+
+                System.out.println(name + ": raw cliques = " + cliquesRaw);
+
+                List<Integer> all = new ArrayList<>();
+                for (int i = 0; i < md.data().getVariables().size(); i++) {
+                    all.add(i);
+                }
+
+                List<Set<Node>> filteredCliques = new ArrayList<>();
+
+                for (Set<Node> clique : cliquesRaw) {
+                    List<Integer> indices = new ArrayList<>();
+                    for (Node node : clique) {
+                        indices.add(md.data().getColumn(node));
+                    }
+
+                    List<Integer> remaining = new ArrayList<>(all);
+                    remaining.removeAll(indices);
+
+                    int[] _indices = indices.stream().mapToInt(Integer::intValue).toArray();
+                    int[] _remaining = remaining.stream().mapToInt(Integer::intValue).toArray();
+
+                    double rank = RankTests.estimateWilksRank(S, _indices, _remaining, N, 0.001);
+
+                    if (rank == 1) {
+                        filteredCliques.add(new HashSet<>(clique));
+                    }
+                }
+
+                System.out.println("Rank 1 cliques:");
+
+                for (int i = 0; i < filteredCliques.size(); i++) {
+                    System.out.println("Clique " + (i + 1) + ": " + filteredCliques.get(i));
+                }
+
+                RecoveryStats base = scoreRecovery(md.trueClusters(), cliquesRaw);
+                lb.add(name + " (raw)", base);
+
+                RecoveryStats after = scoreRecovery(md.trueClusters(), filteredCliques);
+                lb.add(name + " (rank 1)", after);
+            }
+
+            // Fold this seed's results into the multi-seed aggregator
+            for (Leaderboard.Row row : lb.rows) {
+                multi.add(row.methodLabel, row.stats);
+            }
+        }
+
+        // --- Final multi-seed tables ---
+        multi.printBySumJ();
+        multi.printByNodes();
+        multi.printDeltas();
+    }
+
     private record MimData(DataSet data, Graph trueGraph, List<Set<Node>> trueClusters) {
     }
 
@@ -489,7 +487,8 @@ public class TestCliqueDetection {
             double nodePrec, double nodeRec,
             double macroJaccard, double sumJaccard,
             List<PerCluster> perCluster
-    ) {}
+    ) {
+    }
 
     private static class PerCluster {
         final String truth, match;
@@ -594,7 +593,7 @@ public class TestCliqueDetection {
                 var c = e.getValue();
                 tt.setToken(i + 1, 0, Integer.toString(i + 1));
                 tt.setToken(i + 1, 1, trunc(e.getKey(), 40));
-                tt.setToken(i + 1, 2, fmtMSD(c.sumJ.mean(),  c.sumJ.sd(),  W, W));
+                tt.setToken(i + 1, 2, fmtMSD(c.sumJ.mean(), c.sumJ.sd(), W, W));
                 tt.setToken(i + 1, 3, fmtMSD(c.nodeP.mean(), c.nodeP.sd(), W, W));
                 tt.setToken(i + 1, 4, fmtMSD(c.nodeR.mean(), c.nodeR.sd(), W, W));
             }
@@ -628,7 +627,7 @@ public class TestCliqueDetection {
                 tt.setToken(i + 1, 1, trunc(e.getKey(), 40));
                 tt.setToken(i + 1, 2, fmtMSD(c.nodeP.mean(), c.nodeP.sd(), W, W));
                 tt.setToken(i + 1, 3, fmtMSD(c.nodeR.mean(), c.nodeR.sd(), W, W));
-                tt.setToken(i + 1, 4, fmtMSD(c.sumJ.mean(),  c.sumJ.sd(),  W, W));
+                tt.setToken(i + 1, 4, fmtMSD(c.sumJ.mean(), c.sumJ.sd(), W, W));
             }
 
             System.out.println("\n=== Leaderboard (mean±sd over seeds; by NODE precisionᵐ) ===");
@@ -639,7 +638,7 @@ public class TestCliqueDetection {
             System.out.println("\n=== Δ from Rank-1 filtering (mean±sd; (rank 1) – (raw)) ===");
 
             Map<String, Cell> raw = new LinkedHashMap<>();
-            Map<String, Cell> r1  = new LinkedHashMap<>();
+            Map<String, Cell> r1 = new LinkedHashMap<>();
             for (String label : map.keySet()) {
                 if (label.endsWith("(raw)")) {
                     raw.put(label.substring(0, label.length() - "(raw)".length()).trim(), map.get(label));

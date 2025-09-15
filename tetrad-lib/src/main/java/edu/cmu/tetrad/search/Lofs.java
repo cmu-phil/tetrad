@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -27,8 +27,8 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.utils.TsUtils;
-import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.commons.math3.util.FastMath;
 
@@ -37,8 +37,8 @@ import java.util.*;
 import static edu.cmu.tetrad.util.MatrixUtils.transpose;
 import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Double.isNaN;
-import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.*;
+import static org.apache.commons.math3.util.FastMath.pow;
 
 /**
  * Implements a number of methods which take a fixed graph as input and use linear, non-Gaussian methods to orient the

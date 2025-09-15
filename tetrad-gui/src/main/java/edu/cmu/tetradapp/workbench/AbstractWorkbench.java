@@ -1778,7 +1778,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * WILL GET OUT OF SYNC.
      */
     private void removeEdge(Edge modelEdge) {
-            if (modelEdge == null) {
+        if (modelEdge == null) {
             return;
         }
 

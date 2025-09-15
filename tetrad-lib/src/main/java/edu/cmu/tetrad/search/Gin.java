@@ -10,41 +10,36 @@ import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.sqrt;
 
 /**
- * Minimal GIN:
- *   1) Get clusters from TSC.
- *   2) Add one latent per cluster, connect to its observed children.
- *   3) For each unordered latent pair {i,j}:
- *        - Compute smallest-σ projection for i->j (Y=j, Z=i) and for j->i (Y=i, Z=j)
- *        - p_ij = p(e(Y|Z) ⟂ Z) via RawMarginalIndependenceTest
- *        - If max(p_ij, p_ji) >= alpha, add ONLY the better direction.
- *
- * Notes:
- *   • Allows cliques/cycles intentionally (no gates, no acyclicity checks).
- *   • Uses covariance (matches centering).
- *   • Whitening enabled by default; small ridge helps stability.
+ * Minimal GIN: 1) Get clusters from TSC. 2) Add one latent per cluster, connect to its observed children. 3) For each
+ * unordered latent pair {i,j}: - Compute smallest-σ projection for i->j (Y=j, Z=i) and for j->i (Y=i, Z=j) - p_ij =
+ * p(e(Y|Z) ⟂ Z) via RawMarginalIndependenceTest - If max(p_ij, p_ji) >= alpha, add ONLY the better direction.
+ * <p>
+ * Notes: • Allows cliques/cycles intentionally (no gates, no acyclicity checks). • Uses covariance (matches centering).
+ * • Whitening enabled by default; small ridge helps stability.
  */
 public class Gin {
 
     // ----------------------------- Params -----------------------------
     private final double alpha;
     private final RawMarginalIndependenceTest test;
-
+    private final List<Node> nodes;           // for pretty logging names
     private boolean verbose = false;
     private boolean whitenBeforeSVD = true;   // numerical guard (default ON)
     private double ridge = 3e-8;              // tiny ridge for whitening
-
     // ----------------------------- State -----------------------------
     private DataSet data;
     private SimpleMatrix cov;                 // covariance of observed
     private List<Node> vars;                  // observed nodes
     private List<List<Integer>> clusters;     // TSC clusters (indices into vars)
-    private final List<Node> nodes;           // for pretty logging names
 
     // ----------------------------- Ctors -----------------------------
     public Gin(double alpha, RawMarginalIndependenceTest test) {
@@ -53,16 +48,70 @@ public class Gin {
         this.nodes = ((IndependenceTest) test).getVariables();
     }
 
+    private static boolean hasVariance(double[] e) {
+        int n = e.length;
+        if (n <= 1) return false;
+        double m = 0.0;
+        for (double v : e) m += v;
+        m /= n;
+        double s2 = 0.0;
+        for (double v : e) {
+            double d = v - m;
+            s2 += d * d;
+        }
+        return s2 > 0.0;
+    }
+
+    /**
+     * Symmetric inverse square-root via EVD with ridge.
+     */
+    private static SimpleMatrix invSqrtSym(SimpleMatrix A, double ridge) {
+        SimpleMatrix Ar = A.copy();
+        if (ridge > 0) {
+            DMatrixRMaj d = Ar.getDDRM();
+            int n = d.getNumRows();
+            for (int i = 0; i < n; i++) d.add(i, i, ridge);
+        }
+        SimpleEVD<SimpleMatrix> evd = Ar.eig();
+        int n = Ar.getNumRows();
+        SimpleMatrix U = new SimpleMatrix(n, n);
+        SimpleMatrix Dm = new SimpleMatrix(n, n);
+        for (int i = 0; i < n; i++) {
+            double ev = evd.getEigenvalue(i).getReal();
+            SimpleMatrix ui = evd.getEigenVector(i);
+            if (ui == null) {
+                ui = new SimpleMatrix(n, 1);
+                ui.set(i, 0, 1.0);
+            }
+            double norm = ui.normF();
+            if (norm > 0) ui = ui.divide(norm);
+            U.insertIntoThis(0, i, ui);
+            double v = (ev > 1e-12) ? 1.0 / sqrt(ev) : 0.0;
+            Dm.set(i, i, v);
+        }
+        return U.mult(Dm).mult(U.transpose());
+    }
+
     // ----------------------------- Options ---------------------------
-    public void setVerbose(boolean v)          { this.verbose = v; }
-    public void setWhitenBeforeSVD(boolean w)  { this.whitenBeforeSVD = w; }
-    public void setRidge(double r)             { this.ridge = Math.max(0.0, r); }
+    public void setVerbose(boolean v) {
+        this.verbose = v;
+    }
+
+    public void setWhitenBeforeSVD(boolean w) {
+        this.whitenBeforeSVD = w;
+    }
+
+    public void setRidge(double r) {
+        this.ridge = Math.max(0.0, r);
+    }
+
+    // ---------------------- Orientation (basic) ----------------------
 
     // ----------------------------- API -------------------------------
     public Graph search(DataSet data) {
         this.data = data;
         // Use covariance (not correlation) to match the centered Y used to form e
-        this.cov  = new SimpleMatrix(data.getCovarianceMatrix().getSimpleMatrix());
+        this.cov = new SimpleMatrix(data.getCovarianceMatrix().getSimpleMatrix());
         this.vars = data.getVariables();
 
         // 1) TSC clusters
@@ -94,6 +143,8 @@ public class Gin {
         return g;
     }
 
+    // ---------------------- Projection e = Yc * ω --------------------
+
     // ---------------------- TSC clusters -----------------------------
     private List<List<Integer>> findClustersTSC() {
         Tsc tsc = new Tsc(data.getVariables(), new CorrelationMatrix(data));
@@ -107,11 +158,9 @@ public class Gin {
         return out;
     }
 
-    // ---------------------- Orientation (basic) ----------------------
     /**
-     * For each unordered {i,j}:
-     *   p_ij = p(e(Y=j | Z=i) ⟂ Z=i), p_ji = p(e(Y=i | Z=j) ⟂ Z=j).
-     *   If max(p_ij, p_ji) >= alpha, add the larger direction (ties broken toward i->j).
+     * For each unordered {i,j}: p_ij = p(e(Y=j | Z=i) ⟂ Z=i), p_ji = p(e(Y=i | Z=j) ⟂ Z=j). If max(p_ij, p_ji) >=
+     * alpha, add the larger direction (ties broken toward i->j).
      */
     private void orientBasicGIN(Graph g, List<List<Integer>> clusters, List<Node> latents) {
         final int m = clusters.size();
@@ -141,16 +190,14 @@ public class Gin {
 
                 if (p_ij >= alpha || p_ji >= alpha) {
                     if (p_ij >= p_ji) g.addDirectedEdge(latents.get(i), latents.get(j));
-                    else              g.addDirectedEdge(latents.get(j), latents.get(i));
+                    else g.addDirectedEdge(latents.get(j), latents.get(i));
                 }
             }
         }
     }
 
-    // ---------------------- Projection e = Yc * ω --------------------
     /**
-     * Compute smallest-σ right singular direction:
-     *    A = Σ_ZZ^{-1/2} Σ_ZY Σ_YY^{-1/2}   (if whitening), else A = Σ_ZY.
+     * Compute smallest-σ right singular direction: A = Σ_ZZ^{-1/2} Σ_ZY Σ_YY^{-1/2}   (if whitening), else A = Σ_ZY.
      * Return e = Yc * ω, where ω = Σ_YY^{-1/2} v_min (or v_min if no whitening).
      */
     private ProjResult computeProjection(List<Integer> Y, List<Integer> Z) {
@@ -198,24 +245,19 @@ public class Gin {
         double sigmaMin = W.get(0, 0);
         for (int k = 1; k < r; k++) {
             double sv = W.get(k, k);
-            if (sv < sigmaMin) { sigmaMin = sv; minIdx = k; }
+            if (sv < sigmaMin) {
+                sigmaMin = sv;
+                minIdx = k;
+            }
         }
 
-        SimpleMatrix vmin  = V.extractVector(false, minIdx);
+        SimpleMatrix vmin = V.extractVector(false, minIdx);
         SimpleMatrix omega = mapBack.mult(vmin);
         double[] e = Yc.mult(omega).getDDRM().getData();
 
         // Minimal sanity: require some variance (avoid all-zero e)
         boolean ok = hasVariance(e);
         return new ProjResult(e, sigmaMin, ok);
-    }
-
-    private static boolean hasVariance(double[] e) {
-        int n = e.length;
-        if (n <= 1) return false;
-        double m = 0.0; for (double v : e) m += v; m /= n;
-        double s2 = 0.0; for (double v : e) { double d = v - m; s2 += d*d; }
-        return s2 > 0.0;
     }
 
     private double pValueEvsZ(double[] e, List<Integer> Z) {
@@ -256,41 +298,16 @@ public class Gin {
                 .collect(Collectors.joining(" | "));
     }
 
-    /** Symmetric inverse square-root via EVD with ridge. */
-    private static SimpleMatrix invSqrtSym(SimpleMatrix A, double ridge) {
-        SimpleMatrix Ar = A.copy();
-        if (ridge > 0) {
-            DMatrixRMaj d = Ar.getDDRM();
-            int n = d.getNumRows();
-            for (int i = 0; i < n; i++) d.add(i, i, ridge);
-        }
-        SimpleEVD<SimpleMatrix> evd = Ar.eig();
-        int n = Ar.getNumRows();
-        SimpleMatrix U = new SimpleMatrix(n, n);
-        SimpleMatrix Dm = new SimpleMatrix(n, n);
-        for (int i = 0; i < n; i++) {
-            double ev = evd.getEigenvalue(i).getReal();
-            SimpleMatrix ui = evd.getEigenVector(i);
-            if (ui == null) {
-                ui = new SimpleMatrix(n, 1);
-                ui.set(i, 0, 1.0);
-            }
-            double norm = ui.normF();
-            if (norm > 0) ui = ui.divide(norm);
-            U.insertIntoThis(0, i, ui);
-            double v = (ev > 1e-12) ? 1.0 / sqrt(ev) : 0.0;
-            Dm.set(i, i, v);
-        }
-        return U.mult(Dm).mult(U.transpose());
-    }
-
     // --------------------------- Helper types -----------------------
     private static final class ProjResult {
         final double[] e;
         final double sigmaMin;
         final boolean ok;
+
         ProjResult(double[] e, double sigmaMin, boolean ok) {
-            this.e = e; this.sigmaMin = sigmaMin; this.ok = ok;
+            this.e = e;
+            this.sigmaMin = sigmaMin;
+            this.ok = ok;
         }
     }
 }

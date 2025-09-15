@@ -312,13 +312,13 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
         return new KeyParts(a, b, zVars, xCols, yCols, zCols);
     }
 
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        this.effN = effectiveSampleSize < 0 ? this.n : effectiveSampleSize;
-    }
-
     @Override
     public int getEffectiveSampleSize() {
         return effN;
+    }
+
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.effN = effectiveSampleSize < 0 ? this.n : effectiveSampleSize;
     }
 
     private record XY(int[] xAdj, int[] yAdj) {

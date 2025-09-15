@@ -17,11 +17,11 @@ public class MultiLayerPerceptronFunctionND {
     /**
      * Constructor to initialize a random function.
      *
-     * @param inputDim   Number of input dimensions (R^n).
-     * @param hiddenDimension  Number of neurons in the hidden layer.
-     * @param activation Activation function (e.g., Math::sin or Math::tanh).
-     * @param inputScale Scaling factor for the input to create bumpiness.
-     * @param seed       Random seed for reproducibility.
+     * @param inputDim        Number of input dimensions (R^n).
+     * @param hiddenDimension Number of neurons in the hidden layer.
+     * @param activation      Activation function (e.g., Math::sin or Math::tanh).
+     * @param inputScale      Scaling factor for the input to create bumpiness.
+     * @param seed            Random seed for reproducibility.
      */
     public MultiLayerPerceptronFunctionND(int inputDim, int hiddenDimension, Function<Double, Double> activation, double inputScale, long seed) {
         Random random = new Random(seed);
@@ -44,10 +44,9 @@ public class MultiLayerPerceptronFunctionND {
     }
 
     /**
-     * The main method demonstrating the creation and evaluation of a multi-layer perceptron
-     * function with random initialization and specific parameters.
-     * It defines the function, evaluates the function on given sample inputs, and
-     * prints the results to the console.
+     * The main method demonstrating the creation and evaluation of a multi-layer perceptron function with random
+     * initialization and specific parameters. It defines the function, evaluates the function on given sample inputs,
+     * and prints the results to the console.
      *
      * @param args Command-line arguments passed to the program.
      */
@@ -112,12 +111,12 @@ public class MultiLayerPerceptronFunctionND {
     }
 
     /**
-     * Evaluates the adjusted output of the function for a given input vector.
-     * The adjustment involves subtracting the output when the input is a zero-filled vector.
+     * Evaluates the adjusted output of the function for a given input vector. The adjustment involves subtracting the
+     * output when the input is a zero-filled vector.
      *
      * @param doubles Input vector in R^n.
-     * @return The adjusted output value in R, calculated by subtracting the output of the zero-filled vector from
-     *         the output of the provided input vector.
+     * @return The adjusted output value in R, calculated by subtracting the output of the zero-filled vector from the
+     * output of the provided input vector.
      */
     public Double evaluateAdjusted(double[] doubles) {
         double zero = evaluate(new double[doubles.length]);

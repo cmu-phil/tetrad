@@ -26,25 +26,22 @@ import java.util.List;
 public class LgMnarSimulation implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
-
-    private LgMnarSimulation() {
-        throw new IllegalArgumentException("Utility class");
-    }
-
     /**
      * The random graph generator.
      */
     private final RandomGraph randomGraph;
-
     /**
      * The data sets.
      */
     private List<DataSet> dataSets = new ArrayList<>();
-
     /**
      * The graphs.
      */
     private List<Graph> graphs = new ArrayList<>();
+
+    private LgMnarSimulation() {
+        throw new IllegalArgumentException("Utility class");
+    }
 
     /**
      * Constructs a SemSimulation object with the given RandomGraph object.

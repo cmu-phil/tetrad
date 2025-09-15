@@ -206,13 +206,13 @@ public class Gdistance {
     }
 
 
-    //////======***PRIVATE METHODS BELOW *****=====/////
+    /// ///======***PRIVATE METHODS BELOW *****=====/////
 
     private synchronized void add(Double value) {
         this.leastList.add(value);
     }
 
-    //////+++++******* Method used in multithread task
+    /// ///+++++******* Method used in multithread task
     class FindLeastDistanceTask {
         Vicinity vicinity;
 

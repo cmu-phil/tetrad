@@ -25,9 +25,7 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
-import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
-import org.ejml.simple.SimpleSVD;
 
 import java.util.ArrayList;
 import java.util.Arrays;

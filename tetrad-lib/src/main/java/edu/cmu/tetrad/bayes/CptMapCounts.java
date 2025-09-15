@@ -9,9 +9,9 @@ import java.util.Map;
 /**
  * Represents a conditional probability table (CPT) in a Bayes net. This represents the CPT as a map from a unique
  * integer index for a particular node to the cell count for that node, where 0's are not stored. Row counts are also
- * stored, so that the probability of a cell can be calculated. A prior cell count of 0 is assumed for all cells,
- * but this may be set by the user to any non-negative count. (A prior count of 0 is equivalent to a maximum
- * likelihood estimate.)
+ * stored, so that the probability of a cell can be calculated. A prior cell count of 0 is assumed for all cells, but
+ * this may be set by the user to any non-negative count. (A prior count of 0 is equivalent to a maximum likelihood
+ * estimate.)
  *
  * @author josephramsey
  */
@@ -183,8 +183,8 @@ public class CptMapCounts implements CptMap {
     }
 
     /**
-     * Sets the prior count for all cells in the CptMapCounts.
-     * The prior count is used in parameter estimation for Bayesian networks.
+     * Sets the prior count for all cells in the CptMapCounts. The prior count is used in parameter estimation for
+     * Bayesian networks.
      *
      * @param priorCount the value to set as the prior count.
      */

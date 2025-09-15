@@ -10,7 +10,6 @@ import nu.xom.*;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.regex.Matcher;

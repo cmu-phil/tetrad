@@ -292,7 +292,7 @@ public abstract class StarFci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting *-FCI extra edge removal step.");
         }
 
-        List<Edge> edges =  new ArrayList<>(pag.getEdges());
+        List<Edge> edges = new ArrayList<>(pag.getEdges());
         shuffle(edges);
 
         for (Edge edge : edges) {

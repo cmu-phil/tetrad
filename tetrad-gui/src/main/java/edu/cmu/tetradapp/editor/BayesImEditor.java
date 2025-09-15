@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.BayesImWrapper;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -28,7 +27,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serial;
-import java.util.ArrayList;
 
 /**
  * An editor for Bayes net instantiated models. Assumes that the workbench and parameterized model have been established
@@ -44,17 +42,14 @@ public class BayesImEditor extends JPanel {
 
     @Serial
     private static final long serialVersionUID = 1L;
-
-    /**
-     * The panel that contains the workbench and the wizard.
-     */
-    private JPanel targetPanel;
-
     /**
      * The wrapper for the Bayes IM.
      */
     private final BayesImWrapper wrapper;
-
+    /**
+     * The panel that contains the workbench and the wizard.
+     */
+    private JPanel targetPanel;
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */

@@ -121,6 +121,15 @@ public class AdTree {
         this.nodesHash = buildNodesHash(dataSet);
     }
 
+    // Utility method for getting all rows (assumes existence of this method or similar)
+    private static List<Integer> getAllRows(int numRows) {
+        List<Integer> rows = new ArrayList<>(numRows);
+        for (int i = 0; i < numRows; i++) {
+            rows.add(i);
+        }
+        return rows;
+    }
+
     /**
      * Builds the contingency table based on the given list of discrete variables.
      *
@@ -267,16 +276,6 @@ public class AdTree {
             throw new IllegalArgumentException("Cache depth limit must be at least 0.");
         }
         this.cacheDepthLimit = cacheDepthLimit;
-    }
-
-
-    // Utility method for getting all rows (assumes existence of this method or similar)
-    private static List<Integer> getAllRows(int numRows) {
-        List<Integer> rows = new ArrayList<>(numRows);
-        for (int i = 0; i < numRows; i++) {
-            rows.add(i);
-        }
-        return rows;
     }
 
     private void validateDataSet(DataSet dataSet) {

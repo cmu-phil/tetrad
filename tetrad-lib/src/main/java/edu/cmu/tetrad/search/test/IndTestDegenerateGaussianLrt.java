@@ -322,12 +322,12 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
     }
 
     @Override
-    public void setEffectiveSampleSize(int nEff) {
-        this.nEff = nEff < 0 ? sampleSize : nEff;
+    public int getEffectiveSampleSize() {
+        return this.nEff;
     }
 
     @Override
-    public int getEffectiveSampleSize() {
-        return this.nEff;
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? sampleSize : nEff;
     }
 }

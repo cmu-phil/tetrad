@@ -4,9 +4,9 @@ import java.util.Random;
 import java.util.function.Function;
 
 /**
- * The MultiLayerPerceptron class represents a simple feedforward neural network
- * with one output and support for multiple hidden layers. The network uses
- * configurable activation functions and random initialization of weights and biases.
+ * The MultiLayerPerceptron class represents a simple feedforward neural network with one output and support for
+ * multiple hidden layers. The network uses configurable activation functions and random initialization of weights and
+ * biases.
  */
 public class MultiLayerPerceptron {
     private final double[][][] weights; // Weights for all layers
@@ -17,11 +17,11 @@ public class MultiLayerPerceptron {
     /**
      * Constructor to initialize a random multi-layer perceptron.
      *
-     * @param inputDim   Number of input dimensions (R^n).
+     * @param inputDim     Number of input dimensions (R^n).
      * @param hiddenLayers Array specifying the number of neurons in each hidden layer.
-     * @param activation Activation function (e.g., Math::tanh or Math::sin).
-     * @param inputScale Scaling factor for the input to create bumpiness.
-     * @param seed       Random seed for reproducibility.
+     * @param activation   Activation function (e.g., Math::tanh or Math::sin).
+     * @param inputScale   Scaling factor for the input to create bumpiness.
+     * @param seed         Random seed for reproducibility.
      */
     public MultiLayerPerceptron(int inputDim, int[] hiddenLayers, Function<Double, Double> activation, double inputScale, long seed) {
         Random random = new Random(seed);
@@ -54,6 +54,36 @@ public class MultiLayerPerceptron {
             weights[numLayers][0][j] = random.nextGaussian();
         }
         biases[numLayers][0] = random.nextGaussian();
+    }
+
+    /**
+     * The main method serves as the entry point of the application. It demonstrates the usage of the
+     * MultiLayerPerceptron class by initializing a perceptron with specific parameters, processing sample input data,
+     * and outputting the computed results.
+     *
+     * @param args Command-line arguments provided to the application (not used in this implementation).
+     */
+    public static void main(String[] args) {
+        // Example usage
+        MultiLayerPerceptron mlp = new MultiLayerPerceptron(
+                3, // Input dimension (R^3 -> R)
+                new int[]{10, 15, 5}, // Three hidden layers with specified neurons
+                Math::tanh, // Activation function
+                10.0, // Input scale for bumpiness
+                42 // Random seed
+        );
+
+        double[][] sampleInputs = {
+                {1.0, 0.5, -1.2},
+                {0.2, -0.3, 0.8},
+                {-1.0, 1.5, 0.0},
+                {0.0, 0.0, 0.0}
+        };
+
+        for (double[] input : sampleInputs) {
+            double output = mlp.evaluate(input);
+            System.out.printf("f(%s) = %.5f%n", java.util.Arrays.toString(input), output);
+        }
     }
 
     /**
@@ -92,35 +122,5 @@ public class MultiLayerPerceptron {
             scaledInput[i] = x[i] * inputScale;
         }
         return scaledInput;
-    }
-
-    /**
-     * The main method serves as the entry point of the application. It demonstrates
-     * the usage of the MultiLayerPerceptron class by initializing a perceptron with specific
-     * parameters, processing sample input data, and outputting the computed results.
-     *
-     * @param args Command-line arguments provided to the application (not used in this implementation).
-     */
-    public static void main(String[] args) {
-        // Example usage
-        MultiLayerPerceptron mlp = new MultiLayerPerceptron(
-                3, // Input dimension (R^3 -> R)
-                new int[]{10, 15, 5}, // Three hidden layers with specified neurons
-                Math::tanh, // Activation function
-                10.0, // Input scale for bumpiness
-                42 // Random seed
-        );
-
-        double[][] sampleInputs = {
-                {1.0, 0.5, -1.2},
-                {0.2, -0.3, 0.8},
-                {-1.0, 1.5, 0.0},
-                {0.0, 0.0, 0.0}
-        };
-
-        for (double[] input : sampleInputs) {
-            double output = mlp.evaluate(input);
-            System.out.printf("f(%s) = %.5f%n", java.util.Arrays.toString(input), output);
-        }
     }
 }

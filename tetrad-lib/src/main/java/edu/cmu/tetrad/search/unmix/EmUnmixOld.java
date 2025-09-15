@@ -29,15 +29,15 @@ import java.util.function.Function;
 public final class EmUnmixOld {
 
     /**
-     * Executes the process of unmixing a dataset into clusters, building residual signatures,
-     * performing expectation-maximization (EM) on the residuals, and conducting per-cluster
-     * graph search. Returns an {@code UnmixResult} containing the outcomes of this process.
+     * Executes the process of unmixing a dataset into clusters, building residual signatures, performing
+     * expectation-maximization (EM) on the residuals, and conducting per-cluster graph search. Returns an
+     * {@code UnmixResult} containing the outcomes of this process.
      *
      * @param data             the input dataset to be unmixed
      * @param cfg              the configuration settings for the unmixing process
      * @param regressor        the residual regressor to generate residual signatures
-     * @param pooledSearch     an optional function for pooled graph search across the dataset,
-     *                         can be null if {@code useParentSuperset} is enabled
+     * @param pooledSearch     an optional function for pooled graph search across the dataset, can be null if
+     *                         {@code useParentSuperset} is enabled
      * @param perClusterSearch the function to perform graph search on each individual cluster's dataset
      * @return an {@code UnmixResult} containing the cluster assignments, cluster-specific datasets, and graphs
      * @throws NullPointerException if {@code data}, {@code regressor}, or {@code perClusterSearch} is null
@@ -77,10 +77,9 @@ public final class EmUnmixOld {
     }
 
     /**
-     * Identifies the optimal number of clusters (K) within a specified range by maximizing
-     * the Bayesian Information Criterion (BIC). This method performs an iterative process
-     * to evaluate different values of K, and for each value, it builds residuals, fits a
-     * Gaussian mixture model, evaluates the BIC, and performs per-cluster graph searches.
+     * Identifies the optimal number of clusters (K) within a specified range by maximizing the Bayesian Information
+     * Criterion (BIC). This method performs an iterative process to evaluate different values of K, and for each value,
+     * it builds residuals, fits a Gaussian mixture model, evaluates the BIC, and performs per-cluster graph searches.
      * Returns an {@code UnmixResult} containing the best clustering result and associated graphs.
      *
      * @param data             the input dataset to be analyzed
@@ -199,14 +198,12 @@ public final class EmUnmixOld {
     }
 
     /**
-     * Configuration class for the EM unmixing process. This class contains a set of
-     * parameters used to control the behavior of Gaussian Mixture Models (GMM),
-     * clustering, and residual processing during the unmixing process.
-     *
-     * Fields in this class allow tuning of aspects such as the number of clusters (K),
-     * EM algorithm settings, covariance type, regularization, and annealing parameters.
-     * It also supports the use of a parent superset for pooled searches, along with
-     * robust scaling of residuals.
+     * Configuration class for the EM unmixing process. This class contains a set of parameters used to control the
+     * behavior of Gaussian Mixture Models (GMM), clustering, and residual processing during the unmixing process.
+     * <p>
+     * Fields in this class allow tuning of aspects such as the number of clusters (K), EM algorithm settings,
+     * covariance type, regularization, and annealing parameters. It also supports the use of a parent superset for
+     * pooled searches, along with robust scaling of residuals.
      */
     public static final class Config {
         public int K;

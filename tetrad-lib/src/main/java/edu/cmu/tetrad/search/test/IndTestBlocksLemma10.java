@@ -46,11 +46,10 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, Effect
     private final LruMap<PKey, Double> pvalCache = new LruMap<>(PV_CACHE_MAX);
     private final LruMap<ZKey, int[]> zblockCache = new LruMap<>(ZBLOCK_CACHE_MAX);
     private final BlockSpec blockSpec;
-
+    private final EqualityMode mode = EqualityMode.LE; // robust default: accept rank <= |C|
     // knobs
     private double alpha = 0.01;
     private boolean verbose = false;
-    private final EqualityMode mode = EqualityMode.LE; // robust default: accept rank <= |C|
     private int tol = 0;                         // integer tolerance on the equality (0 = strict)
     private int nEff;
 
@@ -291,13 +290,13 @@ public class IndTestBlocksLemma10 implements IndependenceTest, BlockTest, Effect
     }
 
     @Override
-    public void setEffectiveSampleSize(int nEff) {
-        this.nEff = nEff < 0 ? this.n : nEff;
+    public int getEffectiveSampleSize() {
+        return nEff;
     }
 
     @Override
-    public int getEffectiveSampleSize() {
-        return nEff;
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.n : nEff;
     }
 
     // === Key bits ===

@@ -172,7 +172,7 @@ public final class RandomMim {
                 for (Node Lfrom : from.latents) {
                     for (Node Lto : to.latents) {
                         if (!graph.isAdjacentTo(Lfrom, Lto)) {
-                            candidates.add(new Node[] { Lfrom, Lto });
+                            candidates.add(new Node[]{Lfrom, Lto});
                         }
                     }
                 }
@@ -183,7 +183,7 @@ public final class RandomMim {
                     final int k = Math.max(1, candidates.size() / 2);
                     for (int i = 0; i < k; i++) {
                         Node Lfrom = candidates.get(i)[0];
-                        Node Lto   = candidates.get(i)[1];
+                        Node Lto = candidates.get(i)[1];
                         // Acyclicity is guaranteed by the meta-DAG (i<j), so just add the edge.
                         graph.addDirectedEdge(Lfrom, Lto);
                     }

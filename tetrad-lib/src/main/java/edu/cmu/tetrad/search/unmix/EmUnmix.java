@@ -211,7 +211,9 @@ public final class EmUnmix {
         public double annealStartT = 1.0;
         public long randomSeed = 35L;
 
-        public Config copy() { return EmUnmix.copy(this); }
+        public Config copy() {
+            return EmUnmix.copy(this);
+        }
     }
 
     private static final class ParentSupersetBuilderCopy {

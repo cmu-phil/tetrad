@@ -5,9 +5,12 @@ import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 
 public final class AlgorithmFilters {
-    private AlgorithmFilters() {}
+    private AlgorithmFilters() {
+    }
 
-    /** Block-capable if it can accept a wrapper for a block-based test and/or a block-based score. */
+    /**
+     * Block-capable if it can accept a wrapper for a block-based test and/or a block-based score.
+     */
     public static boolean supportsBlocks(AlgorithmModel model) {
         var algo = model.getAlgorithm();
 

@@ -54,9 +54,9 @@ public class SvarSetEndpointStrategy implements SetEndpointStrategy {
     /**
      * Sets the endpoint of a graph given the two nodes and the desired endpoint.
      *
-     * @param graph the graph in which the endpoint is being set
-     * @param a the starting node of the endpoint
-     * @param b the ending node of the endpoint
+     * @param graph    the graph in which the endpoint is being set
+     * @param a        the starting node of the endpoint
+     * @param b        the ending node of the endpoint
      * @param endpoint the desired endpoint value
      */
     @Override
@@ -68,11 +68,11 @@ public class SvarSetEndpointStrategy implements SetEndpointStrategy {
     /**
      * Orients similar pairs of nodes in a graph based on knowledge about their tier structure.
      *
-     * @param graph the graph in which the pairs are being oriented
-     * @param knowledge the knowledge used for causal discovery
-     * @param x the first node in the pair
-     * @param y the second node in the pair
-     * @param mark the desired endpoint value
+     * @param graph            the graph in which the pairs are being oriented
+     * @param knowledge        the knowledge used for causal discovery
+     * @param x                the first node in the pair
+     * @param y                the second node in the pair
+     * @param mark             the desired endpoint value
      * @param independenceTest the independence test used for conditional independence testing
      */
     private void orientSimilarPairs(Graph graph, Knowledge knowledge, Node x, Node y, Endpoint mark, IndependenceTest independenceTest) {

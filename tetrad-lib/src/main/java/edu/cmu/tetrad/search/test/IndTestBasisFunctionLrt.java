@@ -127,6 +127,36 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
     }
 
     /**
+     * Computes the variance of residuals given the indices of predictors.
+     */
+    private static double computeResidualVariance(int[] xIndices, int[] predictorIndices,
+                                                  SimpleMatrix covarianceMatrix, double lambda) {
+        if (predictorIndices.length == 0) {
+            return StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices).trace() / xIndices.length;
+        }
+
+        SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
+        SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
+        SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
+//        Sigma_PP = StatUtils.chooseMatrix(Sigma_PP, lambda);
+
+        // Compute OLS estimate of X given predictors P
+        SimpleMatrix beta = new Matrix(Sigma_PP).chooseInverse(lambda).getData().mult(Sigma_XP.transpose());
+
+        // Compute residual variance
+        return Sigma_XX.minus(Sigma_XP.mult(beta)).trace() / xIndices.length;
+    }
+
+    /**
+     * Concatenates two integer arrays.
+     */
+    private static int[] concatArrays(int[] first, int[] second) {
+        int[] result = Arrays.copyOf(first, first.length + second.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        return result;
+    }
+
+    /**
      * Computes the p-value for the null hypothesis that two variables, represented as nodes, are conditionally
      * independent given a set of conditioning variables.
      * <p>
@@ -144,8 +174,8 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
     }
 
     private double getPValue(Node x, Node y, Set<Node> z, Map<Node, Integer> nodeHash,
-                                    Map<Integer, List<Integer>> embedding, boolean doOneEquationOnly,
-                                    double lambda, SimpleMatrix covarianceMatrix, int sampleSize) {
+                             Map<Integer, List<Integer>> embedding, boolean doOneEquationOnly,
+                             double lambda, SimpleMatrix covarianceMatrix, int sampleSize) {
         List<Node> zList = new ArrayList<>(z);
         Collections.sort(zList);
 
@@ -215,36 +245,6 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
 
         return test.getPValue(_x, _y, new HashSet<>(), test.nodeHash, test.embedding, test.doOneEquationOnly,
                 test.lambda, test.covarianceMatrix, test.sampleSize);
-    }
-
-    /**
-     * Computes the variance of residuals given the indices of predictors.
-     */
-    private static double computeResidualVariance(int[] xIndices, int[] predictorIndices,
-                                                  SimpleMatrix covarianceMatrix, double lambda) {
-        if (predictorIndices.length == 0) {
-            return StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices).trace() / xIndices.length;
-        }
-
-        SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
-        SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
-        SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
-//        Sigma_PP = StatUtils.chooseMatrix(Sigma_PP, lambda);
-
-        // Compute OLS estimate of X given predictors P
-        SimpleMatrix beta = new Matrix(Sigma_PP).chooseInverse(lambda).getData().mult(Sigma_XP.transpose());
-
-        // Compute residual variance
-        return Sigma_XX.minus(Sigma_XP.mult(beta)).trace() / xIndices.length;
-    }
-
-    /**
-     * Concatenates two integer arrays.
-     */
-    private static int[] concatArrays(int[] first, int[] second) {
-        int[] result = Arrays.copyOf(first, first.length + second.length);
-        System.arraycopy(second, 0, result, first.length, second.length);
-        return result;
     }
 
     /**

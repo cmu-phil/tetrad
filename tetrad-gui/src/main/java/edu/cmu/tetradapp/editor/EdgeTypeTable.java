@@ -47,11 +47,11 @@ public class EdgeTypeTable extends JPanel {
     };
 
     private static final String[] EDGES_WITH_PROPERTIES = {
-        "",
-        "Node 1",
-        "Interaction",
-        "Node 2",
-        "Property"
+            "",
+            "Node 1",
+            "Interaction",
+            "Node 2",
+            "Property"
     };
 
     private static final String[] EDGES_AND_EDGE_TYPES = {
@@ -144,7 +144,7 @@ public class EdgeTypeTable extends JPanel {
             edges.forEach(edge -> {
                 String[] rowData = new String[EdgeTypeTable.EDGES_AND_EDGE_TYPES.length];
                 addEdgeData(edge, rowData);
-                 addEdgeProbabilityData(edge, rowData);
+                addEdgeProbabilityData(edge, rowData);
 
                 tableModel.addRow(rowData);
             });
@@ -262,24 +262,16 @@ public class EdgeTypeTable extends JPanel {
 
         // These should not be flipped.
         String endpoint1Str = switch (endpoint1) {
-            case TAIL ->
-                "-";
-            case ARROW ->
-                "<";
-            case CIRCLE ->
-                "o";
-            default ->
-                "";
+            case TAIL -> "-";
+            case ARROW -> "<";
+            case CIRCLE -> "o";
+            default -> "";
         };
         String endpoint2Str = switch (endpoint2) {
-            case TAIL ->
-                "-";
-            case ARROW ->
-                ">";
-            case CIRCLE ->
-                "o";
-            default ->
-                "";
+            case TAIL -> "-";
+            case ARROW -> ">";
+            case CIRCLE -> "o";
+            default -> "";
         };
         String edgeType = endpoint1Str + "-" + endpoint2Str;
 

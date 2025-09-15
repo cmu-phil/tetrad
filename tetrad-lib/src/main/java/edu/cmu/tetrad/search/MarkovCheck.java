@@ -673,12 +673,12 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     }
 
     /**
-     * Calculates and prints precision and recall metrics for the whole graph, comparing an estimated graph
-     * to the true graph. Metrics include adjacency precision and recall, arrowhead precision and recall,
-     * tail precision and recall, and circle precision and recall.
+     * Calculates and prints precision and recall metrics for the whole graph, comparing an estimated graph to the true
+     * graph. Metrics include adjacency precision and recall, arrowhead precision and recall, tail precision and recall,
+     * and circle precision and recall.
      *
      * @param estimatedGraph the graph generated through estimation or inference methods
-     * @param trueGraph the ground truth graph to which the estimated graph is compared
+     * @param trueGraph      the ground truth graph to which the estimated graph is compared
      */
     public void getPrecisionAndRecallWholeGraph(Graph estimatedGraph, Graph trueGraph) {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
@@ -702,13 +702,13 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     }
 
     /**
-     * Calculates the F1 statistics for the entire graph by comparing an estimated graph
-     * to the true graph. The method computes F1 scores for different graph components,
-     * including adjacency, arrows, circles, and tails.
+     * Calculates the F1 statistics for the entire graph by comparing an estimated graph to the true graph. The method
+     * computes F1 scores for different graph components, including adjacency, arrows, circles, and tails.
      *
      * @param estimatedGraph the graph that represents the estimated structure
-     * @param trueGraph the graph that represents the true structure
-     * @return a list of F1 statistics in the following order: adjacency F1 score, arrow F1 score, circle F1 score, and tail F1 score
+     * @param trueGraph      the graph that represents the true structure
+     * @return a list of F1 statistics in the following order: adjacency F1 score, arrow F1 score, circle F1 score, and
+     * tail F1 score
      */
     public List<Double> getF1StatsForWholeGraph(Graph estimatedGraph, Graph trueGraph) {
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
@@ -721,14 +721,14 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     }
 
     /**
-     * Computes the F1 statistics for the Markov blanket subgraph with the target node in the given estimated graph
-     * and true graph. The F1 statistics include F1 scores for adjacency, arrow, circle, and tail relationships.
+     * Computes the F1 statistics for the Markov blanket subgraph with the target node in the given estimated graph and
+     * true graph. The F1 statistics include F1 scores for adjacency, arrow, circle, and tail relationships.
      *
-     * @param x the target node for which the Markov blanket subgraph will be evaluated.
+     * @param x              the target node for which the Markov blanket subgraph will be evaluated.
      * @param estimatedGraph the graph that represents the estimated structure.
-     * @param trueGraph the graph that represents the true structure of the data.
-     * @return a list of F1 statistics, where the elements are, in order:
-     *         F1 score for adjacency, F1 score for arrow, F1 score for circle, and F1 score for tail relationships.
+     * @param trueGraph      the graph that represents the true structure of the data.
+     * @return a list of F1 statistics, where the elements are, in order: F1 score for adjacency, F1 score for arrow, F1
+     * score for circle, and F1 score for tail relationships.
      */
     public List<Double> getF1StatsForTargetNodeMBSubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
@@ -744,12 +744,12 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     }
 
     /**
-     * Computes the F1 statistics (F1-Adjacency, F1-Arrow, F1-Circle, F1-Tail) between the parents subgraph
-     * of a given target node in the estimated graph and the corresponding parents subgraph in the true graph.
+     * Computes the F1 statistics (F1-Adjacency, F1-Arrow, F1-Circle, F1-Tail) between the parents subgraph of a given
+     * target node in the estimated graph and the corresponding parents subgraph in the true graph.
      *
-     * @param x the target node for which the parents subgraph is analyzed
+     * @param x              the target node for which the parents subgraph is analyzed
      * @param estimatedGraph the graph containing the estimated structure
-     * @param trueGraph the graph containing the true structure
+     * @param trueGraph      the graph containing the true structure
      * @return a list of F1 statistics where the elements are, in order: F1-Adjacency, F1-Arrow, F1-Circle, and F1-Tail
      */
     public List<Double> getF1StatsForTargetNodeParentsSubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
@@ -766,15 +766,15 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     }
 
     /**
-     * Calculates F1 statistics for a target node's adjacency subgraph in terms of adjacency, arrow types,
-     * circle types, and tail types. This is done by comparing the adjacency subgraph of the target node
-     * in the estimated graph against the corresponding adjacency subgraph in the reference (true) graph.
+     * Calculates F1 statistics for a target node's adjacency subgraph in terms of adjacency, arrow types, circle types,
+     * and tail types. This is done by comparing the adjacency subgraph of the target node in the estimated graph
+     * against the corresponding adjacency subgraph in the reference (true) graph.
      *
-     * @param x The target node for which the adjacency subgraph's F1 statistics are calculated.
+     * @param x              The target node for which the adjacency subgraph's F1 statistics are calculated.
      * @param estimatedGraph The estimated graph whose adjacency subgraph will be evaluated.
-     * @param trueGraph The reference (true) graph used for comparison.
-     * @return A list of F1 scores, where the elements represent F1 statistics in the order:
-     *         adjacency (f1Adj), arrow type (f1Arrow), circle type (f1Circle), and tail type (f1Tail).
+     * @param trueGraph      The reference (true) graph used for comparison.
+     * @return A list of F1 scores, where the elements represent F1 statistics in the order: adjacency (f1Adj), arrow
+     * type (f1Arrow), circle type (f1Circle), and tail type (f1Tail).
      */
     public List<Double> getF1StatsForTargetNodeAdjacencySubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
@@ -853,21 +853,18 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 //     */
 
     /**
-     * Computes the precision and recall values for a specified subgraph structure
-     * between an estimated graph and a true graph. The method supports various
-     * subgraph features such as Markov Blanket, parent relationships, and adjacency.
+     * Computes the precision and recall values for a specified subgraph structure between an estimated graph and a true
+     * graph. The method supports various subgraph features such as Markov Blanket, parent relationships, and
+     * adjacency.
      *
-     * @param x                            The target node for which the precision and recall are calculated.
-     * @param estimatedGraph               The estimated graph being evaluated.
-     * @param trueGraph                    The true graph used as ground truth for evaluation.
-     * @param conditioningSetType          The type of conditioning set used in the evaluation process.
-     * @param subgraphFeature              The specific subgraph feature to evaluate precision and recall on,
-     *                                     e.g., "MB" (Markov Blanket), "parents", or "adjacency".
-     * @return A list containing the following four values in order:
-     *                                     1. Adjacency Precision
-     *                                     2. Adjacency Recall
-     *                                     3. Arrowhead Precision
-     *                                     4. Arrowhead Recall
+     * @param x                   The target node for which the precision and recall are calculated.
+     * @param estimatedGraph      The estimated graph being evaluated.
+     * @param trueGraph           The true graph used as ground truth for evaluation.
+     * @param conditioningSetType The type of conditioning set used in the evaluation process.
+     * @param subgraphFeature     The specific subgraph feature to evaluate precision and recall on, e.g., "MB" (Markov
+     *                            Blanket), "parents", or "adjacency".
+     * @return A list containing the following four values in order: 1. Adjacency Precision 2. Adjacency Recall 3.
+     * Arrowhead Precision 4. Arrowhead Recall
      */
     public List<Double> getPrecisionAndRecallGraphPlotData(Node x, Graph estimatedGraph, Graph trueGraph, ConditioningSetType conditioningSetType, String subgraphFeature) {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
@@ -2028,6 +2025,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         this.findSmallestSubset = findSmallestSubset;
     }
 
+    public int getEffectiveSampleSize() {
+        return ((EffectiveSampleSizeSettable) independenceTest).getEffectiveSampleSize();
+    }
+
     @Override
     public void setEffectiveSampleSize(int sampleSize) {
         if (!(independenceTest instanceof EffectiveSampleSizeSettable)) {
@@ -2035,10 +2036,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         }
 
         ((EffectiveSampleSizeSettable) independenceTest).setEffectiveSampleSize(sampleSize);
-    }
-
-    public int getEffectiveSampleSize() {
-        return((EffectiveSampleSizeSettable) independenceTest).getEffectiveSampleSize();
     }
 
     /**

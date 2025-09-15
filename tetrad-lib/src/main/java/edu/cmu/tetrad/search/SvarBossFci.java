@@ -13,17 +13,18 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
- * SVAR-*GFCI* variant that uses BOSS to obtain the CPDAG (BOSS-FCI),
- * then runs the FCI orientation phase on a SvarEdgeListGraph so that
- * all edge mutations mirror across time lags automatically.
- *
- * - Stage 1 (score): BOSS (PermutationSearch over Boss(score))
- * - Stage 2 (test):  R0 + FCI orientation rules (test-based)
- * - SVAR: all orientations/removals/additions happen on SvarEdgeListGraph
- *
+ * SVAR-*GFCI* variant that uses BOSS to obtain the CPDAG (BOSS-FCI), then runs the FCI orientation phase on a
+ * SvarEdgeListGraph so that all edge mutations mirror across time lags automatically.
+ * <p>
+ * - Stage 1 (score): BOSS (PermutationSearch over Boss(score)) - Stage 2 (test):  R0 + FCI orientation rules
+ * (test-based) - SVAR: all orientations/removals/additions happen on SvarEdgeListGraph
+ * <p>
  * Background knowledge (including temporal tiers) is respected.
  */
 public final class SvarBossFci implements IGraphSearch {
@@ -149,15 +150,21 @@ public final class SvarBossFci implements IGraphSearch {
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
-    public void setVerbose(boolean verbose) { this.verbose = verbose; }
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 
     public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
         this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 
-    public void setNumStarts(int numStarts) { this.numStarts = numStarts; }
+    public void setNumStarts(int numStarts) {
+        this.numStarts = numStarts;
+    }
 
-    public void setBossUseBes(boolean useBes) { this.bossUseBes = useBes; }
+    public void setBossUseBes(boolean useBes) {
+        this.bossUseBes = useBes;
+    }
 
     public void setNumThreads(int numThreads) {
         if (numThreads < 1) throw new IllegalArgumentException("numThreads must be >= 1");
@@ -201,8 +208,8 @@ public final class SvarBossFci implements IGraphSearch {
     }
 
     /**
-     * Bootstrap orientations (R0-style) using BK and Min-P structure, matching the pattern used in SvarGfci.
-     * All setEndpoint calls operate on {@link SvarEdgeListGraph}, so orientations mirror across lags.
+     * Bootstrap orientations (R0-style) using BK and Min-P structure, matching the pattern used in SvarGfci. All
+     * setEndpoint calls operate on {@link SvarEdgeListGraph}, so orientations mirror across lags.
      */
     private void modifiedR0(Graph bossGraph) throws InterruptedException {
         this.graph.reorientAllWith(Endpoint.CIRCLE);
@@ -306,17 +313,23 @@ public final class SvarBossFci implements IGraphSearch {
 
         int ix = -1, iy = -1;
         for (int i = 0; i < tierX.size(); ++i) {
-            if (getNameNoLag(x.getName()).equals(getNameNoLag(tierX.get(i)))) { ix = i; break; }
+            if (getNameNoLag(x.getName()).equals(getNameNoLag(tierX.get(i)))) {
+                ix = i;
+                break;
+            }
         }
         for (int i = 0; i < tierY.size(); ++i) {
-            if (getNameNoLag(y.getName()).equals(getNameNoLag(tierY.get(i)))) { iy = i; break; }
+            if (getNameNoLag(y.getName()).equals(getNameNoLag(tierY.get(i)))) {
+                iy = i;
+                break;
+            }
         }
 
         for (int i = 0; i < ntiers - diff; ++i) {
             if (knowledge.getTier(i).size() == 1) continue;
 
             List<String> t1 = (tx >= ty) ? knowledge.getTier(i + diff) : knowledge.getTier(i);
-            List<String> t2 = (tx >= ty) ? knowledge.getTier(i)       : knowledge.getTier(i + diff);
+            List<String> t2 = (tx >= ty) ? knowledge.getTier(i) : knowledge.getTier(i + diff);
 
             String A = t1.get(ix);
             String B = t2.get(iy);
@@ -352,10 +365,16 @@ public final class SvarBossFci implements IGraphSearch {
 
         int ix = -1, iy = -1;
         for (int i = 0; i < tierX.size(); ++i) {
-            if (getNameNoLag(x.getName()).equals(getNameNoLag(tierX.get(i)))) { ix = i; break; }
+            if (getNameNoLag(x.getName()).equals(getNameNoLag(tierX.get(i)))) {
+                ix = i;
+                break;
+            }
         }
         for (int i = 0; i < tierY.size(); ++i) {
-            if (getNameNoLag(y.getName()).equals(getNameNoLag(tierY.get(i)))) { iy = i; break; }
+            if (getNameNoLag(y.getName()).equals(getNameNoLag(tierY.get(i)))) {
+                iy = i;
+                break;
+            }
         }
 
         List<Node> simX = new ArrayList<>();

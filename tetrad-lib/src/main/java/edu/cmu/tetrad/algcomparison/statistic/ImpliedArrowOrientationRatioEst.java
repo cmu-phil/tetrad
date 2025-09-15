@@ -7,9 +7,10 @@ import edu.cmu.tetrad.util.Parameters;
 import java.io.Serial;
 
 /**
- * The Implied Arrow Orientation Ratio Est statistic calculates the ratio of the number of implied arrows to the number of arrows in unshielded colliders in the estimated graph.
- * Implied Arrow Orientation Ratio in the Estimated Graph = (numImpliedArrows - numArrowsInUnshieldedColliders) / numArrowsInUnshieldedColliders.
- * It implements the Statistic interface.
+ * The Implied Arrow Orientation Ratio Est statistic calculates the ratio of the number of implied arrows to the number
+ * of arrows in unshielded colliders in the estimated graph. Implied Arrow Orientation Ratio in the Estimated Graph =
+ * (numImpliedArrows - numArrowsInUnshieldedColliders) / numArrowsInUnshieldedColliders. It implements the Statistic
+ * interface.
  */
 public class ImpliedArrowOrientationRatioEst implements Statistic {
     @Serial
@@ -30,8 +31,8 @@ public class ImpliedArrowOrientationRatioEst implements Statistic {
         return "IAOR";
     }
 
-    /**A
-     * {@inheritDoc}
+    /**
+     * A {@inheritDoc}
      */
     @Override
     public String getDescription() {

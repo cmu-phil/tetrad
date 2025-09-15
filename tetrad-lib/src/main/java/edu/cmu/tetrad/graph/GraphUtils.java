@@ -24,8 +24,8 @@ import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -147,9 +147,9 @@ public final class GraphUtils {
     }
 
     /**
-     * Calculates the subgraph over the parents of a target node for a DAG, CPDAG, MAG, or PAG. This is not
-     * necessarily minimal (i.e. not necessarily a Markov Boundary). Target Node is included in the result graph's nodes
-     * list. Edges including the target node is included in the result graph's edges list.
+     * Calculates the subgraph over the parents of a target node for a DAG, CPDAG, MAG, or PAG. This is not necessarily
+     * minimal (i.e. not necessarily a Markov Boundary). Target Node is included in the result graph's nodes list. Edges
+     * including the target node is included in the result graph's edges list.
      *
      * @param target a node in the given graph.
      * @param graph  a DAG, CPDAG, MAG, or PAG.
@@ -505,6 +505,7 @@ public final class GraphUtils {
 
         return convertedGraph;
     }
+
     /**
      * Removes all latent nodes from the graph and returns the modified graph.
      *
@@ -3337,13 +3338,11 @@ public final class GraphUtils {
     }
 
     /**
-     * Processes the given graph by fixing the directions of edges to ensure
-     * consistency, flipping edges where necessary, and optionally preserving
-     * ancillary graph information.
+     * Processes the given graph by fixing the directions of edges to ensure consistency, flipping edges where
+     * necessary, and optionally preserving ancillary graph information.
      *
      * @param graph the input graph whose edge directions are to be fixed
-     * @return a new graph with corrected edge directions, preserving ancillary
-     *         graph information if present
+     * @return a new graph with corrected edge directions, preserving ancillary graph information if present
      */
     public static @NotNull Graph fixDirections(Graph graph) {
         List<Edge> edges = new ArrayList<>(graph.getEdges());

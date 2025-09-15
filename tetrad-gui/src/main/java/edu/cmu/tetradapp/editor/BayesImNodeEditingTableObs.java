@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -269,6 +269,7 @@ class BayesImNodeEditingTableObs extends JTable {
 
     //////////////////////////////////////////
     // The abstract table model of the jpd
+
     //////////////////////////////////////////
 
     static final class Model extends AbstractTableModel {

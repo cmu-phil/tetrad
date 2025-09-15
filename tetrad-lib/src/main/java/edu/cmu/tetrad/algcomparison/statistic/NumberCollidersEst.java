@@ -56,7 +56,7 @@ public class NumberCollidersEst implements Statistic {
                     Node y = adj.get(j);
                     Node z = adj.get(k);
 
-                    if (estGraph.isDefCollider(y, x, z) ) {
+                    if (estGraph.isDefCollider(y, x, z)) {
                         count++;
                     }
                 }

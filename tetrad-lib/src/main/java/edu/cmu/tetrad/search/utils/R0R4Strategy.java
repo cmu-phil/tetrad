@@ -3,10 +3,8 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.Triple;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -44,8 +42,8 @@ public interface R0R4Strategy {
      * @param vNodes             the set of nodes that are v-structures in the graph.
      * @return a pair of the discriminating path construct and a boolean indicating whether the orientation was
      * determined.
-     * @see DiscriminatingPath
      * @throws InterruptedException if the operation is interrupted
+     * @see DiscriminatingPath
      */
     Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) throws InterruptedException;
 

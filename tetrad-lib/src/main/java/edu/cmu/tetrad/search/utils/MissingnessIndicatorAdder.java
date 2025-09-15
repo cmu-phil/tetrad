@@ -21,10 +21,10 @@ public class MissingnessIndicatorAdder {
 
     /**
      * Utility class for handling operations related to adding missingness indicators to datasets.
-     *
-     * This class cannot be instantiated and is designed to group all related static methods
-     * for handling missingness indicator functionality. The constructor throws an
-     * {@link IllegalStateException} to enforce the utility class pattern.
+     * <p>
+     * This class cannot be instantiated and is designed to group all related static methods for handling missingness
+     * indicator functionality. The constructor throws an {@link IllegalStateException} to enforce the utility class
+     * pattern.
      */
     private MissingnessIndicatorAdder() {
         throw new IllegalStateException("Utility class");
@@ -93,9 +93,8 @@ public class MissingnessIndicatorAdder {
     }
 
     /**
-     * The main method demonstrating the process of adding missingness indicators to a dataset.
-     * This example uses a mock dataset, defines variables, and invokes the method to expand
-     * the dataset with missingness indicators.
+     * The main method demonstrating the process of adding missingness indicators to a dataset. This example uses a mock
+     * dataset, defines variables, and invokes the method to expand the dataset with missingness indicators.
      *
      * @param args Command-line arguments provided during the execution of the program.
      */

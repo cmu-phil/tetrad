@@ -707,7 +707,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      * @return The negative log-likelihood score for the specified variable and its parent variables.
      * @throws SingularMatrixException if the covariance matrix is singular and cannot be inverted.
      */
-    public double   getLikelihood(int i, int[] parents) throws SingularMatrixException {
+    public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
         double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets, lambda);
         return -0.5 * this.nEff * (Math.log(2 * Math.PI * sigmaSquared) + 1);
 //        return -(double) (this.nEff / 2.0) * log(sigmaSquared);
@@ -986,13 +986,13 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     @Override
-    public void setEffectiveSampleSize(int nEff) {
-        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+    public int getEffectiveSampleSize() {
+        return nEff;
     }
 
     @Override
-    public int getEffectiveSampleSize() {
-        return nEff;
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
     }
 
     /**

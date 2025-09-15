@@ -86,10 +86,10 @@ public class MimbuildPca {
     }
 
     /**
-     * Executes a search algorithm to identify a structural dependency graph based on block-specific
-     * data and principal components analysis (PCA). This method standardizes the blocks of data, computes
-     * principal components, constructs the covariances over latent variables, and learns the structure
-     * using a Permutation Search combined with Bayesian Information Criterion scoring and BOSS optimization.
+     * Executes a search algorithm to identify a structural dependency graph based on block-specific data and principal
+     * components analysis (PCA). This method standardizes the blocks of data, computes principal components, constructs
+     * the covariances over latent variables, and learns the structure using a Permutation Search combined with Bayesian
+     * Information Criterion scoring and BOSS optimization.
      *
      * @return A graph representing the structural dependencies learned through the search process.
      * @throws InterruptedException If the search process is interrupted.

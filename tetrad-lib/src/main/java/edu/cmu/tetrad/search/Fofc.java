@@ -48,6 +48,7 @@ public class Fofc {
     private final int n;
     private final Map<List<Integer>, Boolean> vanishCache = new HashMap<>();
     private final Tsc tsc;
+    private final int sampleSize;
     /**
      * Whether verbose output is desired.
      */
@@ -61,7 +62,6 @@ public class Fofc {
      */
     private Set<Set<Integer>> impureTets;
     private int rMax = 2;
-    private final int sampleSize;
     private int ess;
 
     /**

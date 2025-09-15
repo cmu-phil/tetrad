@@ -143,8 +143,10 @@ public class ISBicScore implements ISScore {
     /**
      * Calculates the composite row index based on the provided dimensions and values.
      *
-     * @param dim    An array of integers representing the dimensions. Each element in the array corresponds to the size of a specific dimension.
-     * @param values An array of integers representing the values. Each element in the array corresponds to a value in the respective dimension specified in the dim array.
+     * @param dim    An array of integers representing the dimensions. Each element in the array corresponds to the size
+     *               of a specific dimension.
+     * @param values An array of integers representing the values. Each element in the array corresponds to a value in
+     *               the respective dimension specified in the dim array.
      * @return The computed row index based on the provided dimensions and values.
      */
     private static int getRowIndex(int[] dim, int[] values) {
@@ -321,7 +323,8 @@ public class ISBicScore implements ISScore {
     }
 
     /**
-     * Calculates the difference in local scores for a given variable when it is added to or removed from a set of parent variables.
+     * Calculates the difference in local scores for a given variable when it is added to or removed from a set of
+     * parent variables.
      *
      * @param x         The variable to be added or removed.
      * @param y         The target variable whose score is being calculated.
@@ -340,10 +343,11 @@ public class ISBicScore implements ISScore {
     /**
      * Computes the row prior based on the given parents, parent values, and row priors map.
      *
-     * @param parents      An array of indices representing the parent nodes.
+     * @param parents       An array of indices representing the parent nodes.
      * @param parent_values An array of values corresponding to each parent node.
-     * @param parents_all  An array of all possible parent nodes.
-     * @param row_priors   A map where the key is a list of integers representing parent values and the value is the corresponding row prior.
+     * @param parents_all   An array of all possible parent nodes.
+     * @param row_priors    A map where the key is a list of integers representing parent values and the value is the
+     *                      corresponding row prior.
      * @return The computed row prior for the given parent values.
      */
     private double computeRowPrior(int[] parents, int[] parent_values, int[] parents_all, Map<List<Integer>, Double> row_priors) {
@@ -369,9 +373,10 @@ public class ISBicScore implements ISScore {
     /**
      * Finds the indices of the elements in the `parents` array within the `parents_all` array.
      *
-     * @param parents An array of integers representing a subset of parent nodes.
+     * @param parents     An array of integers representing a subset of parent nodes.
      * @param parents_all An array of integers representing all possible parent nodes.
-     * @return An array of integers where each value is the index in `parents_all` that corresponds to each element in `parents`.
+     * @return An array of integers where each value is the index in `parents_all` that corresponds to each element in
+     * `parents`.
      */
     private int[] findIndex(int[] parents, int[] parents_all) {
         int[] index = new int[parents.length];
@@ -391,7 +396,6 @@ public class ISBicScore implements ISScore {
      *
      * @param parents An array of integers representing the indices of the parent nodes.
      * @param dims    An array of integers representing the dimension sizes of each parent node.
-     *
      * @return The total number of possible parent states, calculated as the product of the dimensions.
      */
     private int computeAllParentStates(int[] parents, int[] dims) {
@@ -403,12 +407,12 @@ public class ISBicScore implements ISScore {
     }
 
     /**
-     * Calculates the dimensions array based on the parent indices.
-     * Each dimension corresponds to the number of categories of the respective parent node.
+     * Calculates the dimensions array based on the parent indices. Each dimension corresponds to the number of
+     * categories of the respective parent node.
      *
      * @param parents An array of indices representing the parent nodes.
-     * @return An array of integers where each value corresponds to the number
-     *         of categories for each respective parent node.
+     * @return An array of integers where each value corresponds to the number of categories for each respective parent
+     * node.
      */
     private int[] getDimentions(int[] parents) {
         int[] dims = new int[parents.length];
@@ -420,17 +424,16 @@ public class ISBicScore implements ISScore {
     }
 
     /**
-     * Calculates the prior probability for the given structure of a node.
-     * This calculation involves analyzing the additions, deletions, and reorientations
-     * of parent nodes between the current structure and a given population structure.
+     * Calculates the prior probability for the given structure of a node. This calculation involves analyzing the
+     * additions, deletions, and reorientations of parent nodes between the current structure and a given population
+     * structure.
      *
-     * @param nodeIndex     The index of the node for which the prior is being calculated.
-     * @param parents       An array representing the parent nodes of the current structure.
-     * @param parents_pop   An array representing the parent nodes in the population structure.
-     * @param children_pop  An array representing the children nodes in the population structure.
-     *
-     * @return The prior probability for the given structure based on additions, deletions,
-     *         and reorientations of parent nodes.
+     * @param nodeIndex    The index of the node for which the prior is being calculated.
+     * @param parents      An array representing the parent nodes of the current structure.
+     * @param parents_pop  An array representing the parent nodes in the population structure.
+     * @param children_pop An array representing the children nodes in the population structure.
+     * @return The prior probability for the given structure based on additions, deletions, and reorientations of parent
+     * nodes.
      */
     private double getPriorForStructure(int nodeIndex, int[] parents, int[] parents_pop, int[] children_pop) {
         List<Integer> added = new ArrayList<Integer>();
@@ -462,8 +465,8 @@ public class ISBicScore implements ISScore {
      * Calculates the parent values at given node and row indices based on the provided dimensions.
      *
      * @param nodeIndex The index of the node for which parent values are being calculated.
-     * @param rowIndex The row index that needs to be converted to parent values.
-     * @param dims An array representing the dimensions of the parents.
+     * @param rowIndex  The row index that needs to be converted to parent values.
+     * @param dims      An array representing the dimensions of the parents.
      * @return An array of integers where each value corresponds to a parent value at the given row index.
      */
     public int[] getParentValues(int nodeIndex, int rowIndex, int[] dims) {
@@ -481,7 +484,7 @@ public class ISBicScore implements ISScore {
      * Calculates the parent values for a given row index based on the provided dimensions.
      *
      * @param rowIndex The row index that needs to be converted to parent values.
-     * @param dims An array representing the dimensions of the parents.
+     * @param dims     An array representing the dimensions of the parents.
      * @return An array of integers where each value corresponds to a parent value at the given row index.
      */
     public int[] getParentValuesForCombination(int rowIndex, int[] dims) {
@@ -559,12 +562,12 @@ public class ISBicScore implements ISScore {
     }
 
     /**
-     * Sets the list of variables for the instance. All nodes in the new list must
-     * have the same names as the corresponding nodes in the existing list.
+     * Sets the list of variables for the instance. All nodes in the new list must have the same names as the
+     * corresponding nodes in the existing list.
      *
      * @param variables the new list of variables to set
-     * @throws IllegalArgumentException if any variable in the new list has a different
-     *                                  name from the corresponding variable in the existing list
+     * @throws IllegalArgumentException if any variable in the new list has a different name from the corresponding
+     *                                  variable in the existing list
      */
     public void setVariables(List<Node> variables) {
         for (int i = 0; i < variables.size(); i++) {
@@ -707,9 +710,9 @@ public class ISBicScore implements ISScore {
     /**
      * Computes a local score based on the given node, its parents, and its children's populations.
      *
-     * @param node an integer representing the current node for which the score is being computed
-     * @param parents_is an array of integers representing the indices of a node's parents
-     * @param parents_pop an array of integers representing the population of each parent
+     * @param node         an integer representing the current node for which the score is being computed
+     * @param parents_is   an array of integers representing the indices of a node's parents
+     * @param parents_pop  an array of integers representing the population of each parent
      * @param children_pop an array of integers representing the population of each child
      * @return a double representing the computed local score
      */

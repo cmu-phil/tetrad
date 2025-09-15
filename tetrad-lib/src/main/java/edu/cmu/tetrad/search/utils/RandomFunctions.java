@@ -9,10 +9,9 @@ import java.util.Arrays;
 import java.util.Random;
 
 /**
- * A utility class for generating and evaluating random mathematical functions,
- * including polynomials, Fourier series, piecewise linear functions, radial basis functions,
- * and sampled Gaussian processes. Provides control over specific properties such as
- * scaling and ensuring the function passes through the origin.
+ * A utility class for generating and evaluating random mathematical functions, including polynomials, Fourier series,
+ * piecewise linear functions, radial basis functions, and sampled Gaussian processes. Provides control over specific
+ * properties such as scaling and ensuring the function passes through the origin.
  */
 public class RandomFunctions {
 
@@ -23,14 +22,15 @@ public class RandomFunctions {
     }
 
     /**
-     * Generates a random polynomial function and evaluates it at a specified input value.
-     * The polynomial is constructed using random coefficients for each term, up to the specified degree.
-     * Optionally ensures that the polynomial passes through the origin.
+     * Generates a random polynomial function and evaluates it at a specified input value. The polynomial is constructed
+     * using random coefficients for each term, up to the specified degree. Optionally ensures that the polynomial
+     * passes through the origin.
      *
-     * @param x the input value at which the polynomial is evaluated.
-     * @param degree the degree of the polynomial.
-     * @param scale a scaling factor for the random coefficients.
-     * @param passThroughOrigin a boolean indicating whether the polynomial should be adjusted to pass through the origin.
+     * @param x                 the input value at which the polynomial is evaluated.
+     * @param degree            the degree of the polynomial.
+     * @param scale             a scaling factor for the random coefficients.
+     * @param passThroughOrigin a boolean indicating whether the polynomial should be adjusted to pass through the
+     *                          origin.
      * @return the evaluated value of the random polynomial at the given input x.
      */
     public static double randomPolynomial(double x, int degree, double scale, boolean passThroughOrigin) {
@@ -46,13 +46,15 @@ public class RandomFunctions {
     }
 
     /**
-     * Generates a random Fourier series and evaluates it at a given input value x. The series is composed of a specified number
-     * of terms, with random coefficients for sine and cosine components. Optionally ensures that the resulted function passes through the origin.
+     * Generates a random Fourier series and evaluates it at a given input value x. The series is composed of a
+     * specified number of terms, with random coefficients for sine and cosine components. Optionally ensures that the
+     * resulted function passes through the origin.
      *
-     * @param x the input value at which the Fourier series is evaluated.
-     * @param numTerms the number of terms in the Fourier series.
-     * @param scale a scaling factor for the random coefficients.
-     * @param passThroughOrigin a boolean indicating whether the Fourier series should be adjusted to pass through (0, 0).
+     * @param x                 the input value at which the Fourier series is evaluated.
+     * @param numTerms          the number of terms in the Fourier series.
+     * @param scale             a scaling factor for the random coefficients.
+     * @param passThroughOrigin a boolean indicating whether the Fourier series should be adjusted to pass through (0,
+     *                          0).
      * @return the evaluated value of the random Fourier series at the given input x.
      */
     public static double randomFourier(double x, int numTerms, double scale, boolean passThroughOrigin) {
@@ -73,15 +75,15 @@ public class RandomFunctions {
     }
 
     /**
-     * Generates a random piecewise linear function and evaluates it at a specified input value x.
-     * The function is constructed using random points within a defined range and optionally passes
-     * through the origin.
+     * Generates a random piecewise linear function and evaluates it at a specified input value x. The function is
+     * constructed using random points within a defined range and optionally passes through the origin.
      *
-     * @param x the input value at which the piecewise linear function is evaluated.
-     * @param min the minimum value for the range of x-coordinates of the random points.
-     * @param max the maximum value for the range of x-coordinates of the random points.
-     * @param numPoints the number of random points used to construct the piecewise linear function.
-     * @param passThroughOrigin a boolean indicating whether the piecewise linear function should be adjusted to pass through (0, 0).
+     * @param x                 the input value at which the piecewise linear function is evaluated.
+     * @param min               the minimum value for the range of x-coordinates of the random points.
+     * @param max               the maximum value for the range of x-coordinates of the random points.
+     * @param numPoints         the number of random points used to construct the piecewise linear function.
+     * @param passThroughOrigin a boolean indicating whether the piecewise linear function should be adjusted to pass
+     *                          through (0, 0).
      * @return the evaluated value of the piecewise linear function at the given input x.
      */
     public static double randomPiecewiseLinear(double x, double min, double max, int numPoints, boolean passThroughOrigin) {
@@ -112,15 +114,15 @@ public class RandomFunctions {
     }
 
     /**
-     * Generates a random Radial Basis Function (RBF) and evaluates it at a given input value x.
-     * The RBF is constructed using a specified number of centers, with each center assigned a
-     * random position and amplitude. Optionally adjusts the function to pass through the origin.
+     * Generates a random Radial Basis Function (RBF) and evaluates it at a given input value x. The RBF is constructed
+     * using a specified number of centers, with each center assigned a random position and amplitude. Optionally
+     * adjusts the function to pass through the origin.
      *
-     * @param x the point at which the RBF is evaluated.
-     * @param min the minimum value for the range of the RBF centers.
-     * @param max the maximum value for the range of the RBF centers.
-     * @param numCenters the number of RBF centers to generate.
-     * @param sigma the standard deviation parameter defining the width of each RBF (Gaussian).
+     * @param x                 the point at which the RBF is evaluated.
+     * @param min               the minimum value for the range of the RBF centers.
+     * @param max               the maximum value for the range of the RBF centers.
+     * @param numCenters        the number of RBF centers to generate.
+     * @param sigma             the standard deviation parameter defining the width of each RBF (Gaussian).
      * @param passThroughOrigin a boolean indicating whether the RBF should be adjusted to pass through the origin.
      * @return the evaluated value of the RBF at the given input point x.
      */
@@ -151,14 +153,13 @@ public class RandomFunctions {
     }
 
     /**
-     * Computes the Radial Basis Function (RBF) kernel for two input values.
-     * The RBF kernel measures the similarity between the inputs based on
-     * the distance and the specified length scale.
+     * Computes the Radial Basis Function (RBF) kernel for two input values. The RBF kernel measures the similarity
+     * between the inputs based on the distance and the specified length scale.
      *
-     * @param x1 the first input value.
-     * @param x2 the second input value.
-     * @param lengthScale the length scale parameter which controls the smoothness
-     *                    and extent of the similarity measure.
+     * @param x1          the first input value.
+     * @param x2          the second input value.
+     * @param lengthScale the length scale parameter which controls the smoothness and extent of the similarity
+     *                    measure.
      * @return the computed RBF kernel value as a double.
      */
     private static double rbfKernel(double x1, double x2, double lengthScale) {
@@ -166,16 +167,14 @@ public class RandomFunctions {
     }
 
     /**
-     * Computes the covariance matrix for a given set of input values using the
-     * Radial Basis Function (RBF) kernel. The computed covariance matrix defines
-     * the correlations between points based on the RBF kernel.
+     * Computes the covariance matrix for a given set of input values using the Radial Basis Function (RBF) kernel. The
+     * computed covariance matrix defines the correlations between points based on the RBF kernel.
      *
-     * @param x an array of input values representing the points at which the covariance
-     *          is computed.
-     * @param lengthScale the length scale parameter of the RBF kernel, which controls
-     *                    the smoothness and correlation between points.
-     * @return a covariance matrix represented as a RealMatrix object, where each
-     *         element corresponds to the kernel value between two points.
+     * @param x           an array of input values representing the points at which the covariance is computed.
+     * @param lengthScale the length scale parameter of the RBF kernel, which controls the smoothness and correlation
+     *                    between points.
+     * @return a covariance matrix represented as a RealMatrix object, where each element corresponds to the kernel
+     * value between two points.
      */
     private static RealMatrix computeCovarianceMatrix(double[] x, double lengthScale) {
         int n = x.length;
@@ -190,11 +189,12 @@ public class RandomFunctions {
 
     /**
      * Computes the covariance matrix using the Radial Basis Function (RBF) kernel for a given set of input values.
-     * Optionally adds a small positive jitter value to the diagonal elements of the matrix to ensure numerical stability.
+     * Optionally adds a small positive jitter value to the diagonal elements of the matrix to ensure numerical
+     * stability.
      *
-     * @param x an array of input values representing the points at which the covariance is computed.
+     * @param x           an array of input values representing the points at which the covariance is computed.
      * @param lengthScale the length scale parameter of the RBF kernel, controlling the correlation between points.
-     * @param jitter a small positive value added to the diagonal to improve numerical stability.
+     * @param jitter      a small positive value added to the diagonal to improve numerical stability.
      * @return a covariance matrix represented as a RealMatrix object.
      */
     private static RealMatrix computeCovarianceMatrix(double[] x, double lengthScale, double jitter) {
@@ -217,11 +217,16 @@ public class RandomFunctions {
     /**
      * Samples values from a Gaussian Process defined by an RBF kernel with the given parameters.
      *
-     * @param x an array of input values representing the points at which to sample the Gaussian Process.
-     * @param lengthScale the length scale parameter of the RBF kernel, controlling the smoothness of the function.
-     * @param jitter a small positive value added to the diagonal of the covariance matrix to ensure numerical stability.
-     * @param passThroughOrigin a boolean indicating whether the sampled values should be adjusted to pass through (0, 0).
-     * @return an array of sampled values corresponding to the input points, representing the Gaussian Process realization.
+     * @param x                 an array of input values representing the points at which to sample the Gaussian
+     *                          Process.
+     * @param lengthScale       the length scale parameter of the RBF kernel, controlling the smoothness of the
+     *                          function.
+     * @param jitter            a small positive value added to the diagonal of the covariance matrix to ensure
+     *                          numerical stability.
+     * @param passThroughOrigin a boolean indicating whether the sampled values should be adjusted to pass through (0,
+     *                          0).
+     * @return an array of sampled values corresponding to the input points, representing the Gaussian Process
+     * realization.
      */
     public static double[] sampleGaussianProcess(double[] x, double lengthScale, double jitter, boolean passThroughOrigin) {
         int n = x.length;
@@ -259,10 +264,9 @@ public class RandomFunctions {
     }
 
     /**
-     * Executes a series of demonstrations of random mathematical function generators.
-     * The program generates and evaluates random polynomial, Fourier series, piecewise linear,
-     * and radial basis function (RBF) at specific points. It also samples a Gaussian Process
-     * function and outputs the results.
+     * Executes a series of demonstrations of random mathematical function generators. The program generates and
+     * evaluates random polynomial, Fourier series, piecewise linear, and radial basis function (RBF) at specific
+     * points. It also samples a Gaussian Process function and outputs the results.
      *
      * @param args the command-line arguments (not used in this implementation).
      */

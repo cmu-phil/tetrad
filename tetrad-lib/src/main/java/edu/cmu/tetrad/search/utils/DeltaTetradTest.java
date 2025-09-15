@@ -66,7 +66,7 @@ public class DeltaTetradTest {
      * @param tetrads List of tetrads.
      * @return The p-value.
      */
-    public double computePValue(TetradInt...tetrads) {
+    public double computePValue(TetradInt... tetrads) {
         return computePValue(Arrays.asList(tetrads));
     }
 

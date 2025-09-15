@@ -1899,6 +1899,10 @@ public class TimeoutComparison {
             return this.simulation.getParameters();
         }
 
+        public void setParameters(Parameters parameters) {
+            this.parameters = new Parameters(parameters);
+        }
+
         @Override
         public Class<? extends RandomGraph> getRandomGraphClass() {
             return simulation.getRandomGraphClass();
@@ -1907,10 +1911,6 @@ public class TimeoutComparison {
         @Override
         public Class<? extends Simulation> getSimulationClass() {
             return simulation.getSimulationClass();
-        }
-
-        public void setParameters(Parameters parameters) {
-            this.parameters = new Parameters(parameters);
         }
 
         public void setValue(String name, Object value) {

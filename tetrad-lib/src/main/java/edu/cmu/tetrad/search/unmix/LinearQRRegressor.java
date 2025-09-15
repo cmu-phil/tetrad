@@ -11,9 +11,9 @@ import java.util.List;
  * ill-conditioned, applies a tiny ridge to stabilize.
  */
 public class LinearQRRegressor implements ResidualRegressor {
+    private final double condWarn;   // condition number threshold to trigger ridge
     // knobs
     private double ridgeEps;   // tiny ridge added on ill-conditioning
-    private final double condWarn;   // condition number threshold to trigger ridge
     private SimpleMatrix B;     // (p+1) x 1 coefficients, intercept first
     private int[] parentCols;   // column indices of parents in the *fitted* dataset schema
     private int yCol;
@@ -130,7 +130,9 @@ public class LinearQRRegressor implements ResidualRegressor {
         return out;
     }
 
-    /** Set L2 ridge strength (applied only when ill-conditioning is detected). */
+    /**
+     * Set L2 ridge strength (applied only when ill-conditioning is detected).
+     */
     public LinearQRRegressor setRidgeLambda(double v) {
         this.ridgeEps = Math.max(0.0, v);
         return this;

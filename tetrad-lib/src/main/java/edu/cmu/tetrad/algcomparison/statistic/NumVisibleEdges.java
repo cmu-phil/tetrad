@@ -9,8 +9,8 @@ import edu.cmu.tetrad.util.Parameters;
 import java.io.Serial;
 
 /**
- * Represents a statistic that calculates the number of correct visible ancestors in the true graph
- * that are also visible ancestors in the estimated graph.
+ * Represents a statistic that calculates the number of correct visible ancestors in the true graph that are also
+ * visible ancestors in the estimated graph.
  */
 public class NumVisibleEdges implements Statistic {
     @Serial

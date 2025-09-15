@@ -5,7 +5,9 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -13,12 +15,11 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * FCI with configurable R0 collider orientation:
- *   VANILLA:  use the FAS sepset S(x,y); orient x->z<-y iff z ∉ S.
- *   CPC:      enumerate S ⊆ adj(x)\{y} and adj(y)\{x}; orient iff ALL separating sets exclude z;
- *             dependent iff ALL include z; otherwise ambiguous (no orientation).
- *   MAX_P:    among separating sets, choose S* with max p; orient independent iff z ∉ S*, dependent iff z ∈ S*.
- *
+ * FCI with configurable R0 collider orientation: VANILLA:  use the FAS sepset S(x,y); orient x->z<-y iff z ∉ S. CPC:
+ *   enumerate S ⊆ adj(x)\{y} and adj(y)\{x}; orient iff ALL separating sets exclude z; dependent iff ALL include z;
+ * otherwise ambiguous (no orientation). MAX_P:    among separating sets, choose S* with max p; orient independent iff z
+ * ∉ S*, dependent iff z ∈ S*.
+ * <p>
  * All other steps (possible-dsep, R1.., final orientation: Spirtes or Zhang) are unchanged.
  */
 public final class Fci implements IGraphSearch {
@@ -27,8 +28,8 @@ public final class Fci implements IGraphSearch {
     // Existing fields (unchanged)
     // -------------------------
     private final List<Node> variables = new ArrayList<>();
-    private IndependenceTest test;
     private final TetradLogger logger = TetradLogger.getInstance();
+    private IndependenceTest test;
     private SepsetMap sepsets;
     private Knowledge knowledge = new Knowledge();
     private boolean completeRuleSetUsed = true;
@@ -39,20 +40,13 @@ public final class Fci implements IGraphSearch {
     private boolean verbose;
     private boolean stable = true;
     private boolean guaranteePag;
-
-    // -------------------------
-    // New: R0 collider-rule options (shared semantics with PC)
-    // -------------------------
-    public enum ColliderRule {SEPSETS, CONSERVATIVE, MAX_P }
     private ColliderRule r0ColliderRule = ColliderRule.SEPSETS;
-
     // Optional MAX-P extras (same as PC)
     private boolean maxPGlobalOrder = false;     // apply global order when orienting
     private boolean maxPDepthStratified = true;  // if global, apply by increasing |S|
-    private double  maxPMargin = 0.0;            // margin to resolve near-ties (0 => off)
+    private double maxPMargin = 0.0;            // margin to resolve near-ties (0 => off)
     private boolean logMaxPTies = false;
     private java.io.PrintStream logStream = System.out;
-
     // ----------------------------------
     // Constructors (unchanged signatures)
     // ----------------------------------
@@ -71,7 +65,10 @@ public final class Fci implements IGraphSearch {
         for (Node node1 : this.variables) {
             boolean search = false;
             for (Node node2 : searchVars) {
-                if (node1.getName().equals(node2.getName())) { search = true; break; }
+                if (node1.getName().equals(node2.getName())) {
+                    search = true;
+                    break;
+                }
             }
             if (!search) remVars.add(node1);
         }
@@ -81,42 +78,85 @@ public final class Fci implements IGraphSearch {
     // -------------------------
     // Public knobs (existing + new)
     // -------------------------
-    public void setR0ColliderRule(ColliderRule rule) { this.r0ColliderRule = rule == null ? ColliderRule.SEPSETS : rule; }
-    public void setMaxPGlobalOrder(boolean enabled) { this.maxPGlobalOrder = enabled; }
-    public void setMaxPDepthStratified(boolean enabled) { this.maxPDepthStratified = enabled; }
-    public void setMaxPMargin(double margin) { this.maxPMargin = Math.max(0.0, margin); }
-    public void setLogMaxPTies(boolean enabled) { this.logMaxPTies = enabled; }
-    public void setLogStream(java.io.PrintStream out) { this.logStream = out; }
+    public void setR0ColliderRule(ColliderRule rule) {
+        this.r0ColliderRule = rule == null ? ColliderRule.SEPSETS : rule;
+    }
+
+    public void setMaxPGlobalOrder(boolean enabled) {
+        this.maxPGlobalOrder = enabled;
+    }
+
+    public void setMaxPDepthStratified(boolean enabled) {
+        this.maxPDepthStratified = enabled;
+    }
+
+    public void setMaxPMargin(double margin) {
+        this.maxPMargin = Math.max(0.0, margin);
+    }
+
+    public void setLogMaxPTies(boolean enabled) {
+        this.logMaxPTies = enabled;
+    }
+
+    public void setLogStream(java.io.PrintStream out) {
+        this.logStream = out;
+    }
 
     public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0: " + depth);
         this.depth = depth;
     }
-    public long getElapsedTime() { return this.elapsedTime; }
-    public SepsetMap getSepsets() { return this.sepsets; }
-    public Knowledge getKnowledge() { return this.knowledge; }
+
+    public long getElapsedTime() {
+        return this.elapsedTime;
+    }
+
+    public SepsetMap getSepsets() {
+        return this.sepsets;
+    }
+
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) throw new NullPointerException();
         this.knowledge = knowledge;
     }
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) { this.completeRuleSetUsed = completeRuleSetUsed; }
-    public void setDoPossibleDsep(boolean doPossibleDsep) { this.doPossibleDsep = doPossibleDsep; }
+
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
+    }
+
+    public void setDoPossibleDsep(boolean doPossibleDsep) {
+        this.doPossibleDsep = doPossibleDsep;
+    }
+
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         if (maxDiscriminatingPathLength < -1)
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
-    public void setVerbose(boolean verbose) { this.verbose = verbose; }
-    public void setStable(boolean stable) { this.stable = stable; }
-    public void setGuaranteePag(boolean guaranteePag) { this.guaranteePag = guaranteePag; }
 
-    // -------------------------
-    // Search
-    // -------------------------
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public void setStable(boolean stable) {
+        this.stable = stable;
+    }
+
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
+    }
 
     public Graph search() throws InterruptedException {
         return search(new Fas(getTest()));
     }
+
+    // -------------------------
+    // Search
+    // -------------------------
 
     public Graph search(IFas fas) throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
@@ -166,7 +206,8 @@ public final class Fci implements IGraphSearch {
                 Node y = edge.getNode2();
 
                 Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, 3));
-                d.remove(x); d.remove(y);
+                d.remove(x);
+                d.remove(y);
                 if (test.checkIndependence(x, y, d).isIndependent()) {
                     TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
                     pag.removeEdge(x, y);
@@ -174,7 +215,8 @@ public final class Fci implements IGraphSearch {
 
                 if (pag.isAdjacentTo(x, y)) {
                     d = new HashSet<>(pag.paths().possibleDsep(y, 3));
-                    d.remove(x); d.remove(y);
+                    d.remove(x);
+                    d.remove(y);
                     if (test.checkIndependence(x, y, d).isIndependent()) {
                         TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
                         pag.removeEdge(x, y);
@@ -254,7 +296,9 @@ public final class Fci implements IGraphSearch {
         }
     }
 
-    /** Global MAX-P order to avoid order dependence; same semantics as in PC. */
+    /**
+     * Global MAX-P order to avoid order dependence; same semantics as in PC.
+     */
     private void orientR0MaxPGlobal(Graph pag, List<TripleLocal> triples) throws InterruptedException {
         List<MaxPDecision> winners = new ArrayList<>();
 
@@ -304,20 +348,20 @@ public final class Fci implements IGraphSearch {
         }
     }
 
-    // -------------------------
-    // CPC / MAX-P decisions (shared semantics with PC)
-    // -------------------------
-    private enum ColliderOutcome { INDEPENDENT, DEPENDENT, AMBIGUOUS, NO_SEPSET }
-
     private ColliderOutcome judgeConservative(TripleLocal t, Graph g) throws InterruptedException {
         Node x = t.x, y = t.y;
-        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
+        if (x.getName().compareTo(y.getName()) > 0) {
+            Node tmp = x;
+            x = y;
+            y = tmp;
+        }
 
         boolean sawIncl = false, sawExcl = false, sawAny = false;
         for (SepCandidate cand : enumerateSepsetsWithPvals(x, y, g)) {
             if (!cand.independent) continue;
             sawAny = true;
-            if (cand.S.contains(t.z)) sawIncl = true; else sawExcl = true;
+            if (cand.S.contains(t.z)) sawIncl = true;
+            else sawExcl = true;
             if (sawIncl && sawExcl) return ColliderOutcome.AMBIGUOUS;
         }
         if (!sawAny) return ColliderOutcome.NO_SEPSET;
@@ -332,7 +376,11 @@ public final class Fci implements IGraphSearch {
 
     private MaxPDecision decideMaxPDetail(TripleLocal t, Graph g) throws InterruptedException {
         Node x = t.x, y = t.y;
-        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
+        if (x.getName().compareTo(y.getName()) > 0) {
+            Node tmp = x;
+            x = y;
+            y = tmp;
+        }
 
         List<SepCandidate> indep = new ArrayList<>();
         for (SepCandidate cand : enumerateSepsetsWithPvals(x, y, g)) {
@@ -389,7 +437,11 @@ public final class Fci implements IGraphSearch {
     // Enumeration of S (unique across both sides), depth-capped
     // -------------------------
     private Iterable<SepCandidate> enumerateSepsetsWithPvals(Node x, Node y, Graph g) throws InterruptedException {
-        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
+        if (x.getName().compareTo(y.getName()) > 0) {
+            Node tmp = x;
+            x = y;
+            y = tmp;
+        }
 
         Map<String, SepCandidate> uniq = new LinkedHashMap<>();
 
@@ -427,7 +479,8 @@ public final class Fci implements IGraphSearch {
     // -------------------------
     private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
         if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
-        if (!FciOrient.isArrowheadAllowed(x, z, g, knowledge) || !FciOrient.isArrowheadAllowed(y, z, g, knowledge)) return false;
+        if (!FciOrient.isArrowheadAllowed(x, z, g, knowledge) || !FciOrient.isArrowheadAllowed(y, z, g, knowledge))
+            return false;
         // In PAGs we typically avoid creating arrowheads conflicting with existing tails at z->x / z->y
         if (g.isParentOf(z, x) || g.isParentOf(z, y)) return false;
         return true;
@@ -453,7 +506,11 @@ public final class Fci implements IGraphSearch {
     private void debugPrintMaxPTies(TripleLocal t, double bestP, List<SepCandidate> ties) {
         if (logStream == null) return;
         Node x = t.x, y = t.y;
-        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
+        if (x.getName().compareTo(y.getName()) > 0) {
+            Node tmp = x;
+            x = y;
+            y = tmp;
+        }
         String header = "[R0-MAXP tie] pair=(" + x.getName() + "," + y.getName() + "), z=" + t.z.getName()
                         + ", bestP=" + bestP + ", #ties=" + ties.size();
         logStream.println(header);
@@ -479,7 +536,11 @@ public final class Fci implements IGraphSearch {
                     Node yj = adj.get(j);
                     if (!g.isAdjacentTo(xi, yj)) {
                         Node x = xi, y = yj;
-                        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
+                        if (x.getName().compareTo(y.getName()) > 0) {
+                            Node tmp = x;
+                            x = y;
+                            y = tmp;
+                        }
                         triples.add(new TripleLocal(x, z, y));
                     }
                 }
@@ -501,15 +562,31 @@ public final class Fci implements IGraphSearch {
         return set;
     }
 
+    // -------------------------
+    // New: R0 collider-rule options (shared semantics with PC)
+    // -------------------------
+    public enum ColliderRule {SEPSETS, CONSERVATIVE, MAX_P}
+
+    // -------------------------
+    // CPC / MAX-P decisions (shared semantics with PC)
+    // -------------------------
+    private enum ColliderOutcome {INDEPENDENT, DEPENDENT, AMBIGUOUS, NO_SEPSET}
+
     private static final class TripleLocal {
         final Node x, z, y;
-        TripleLocal(Node x, Node z, Node y) { this.x = x; this.z = z; this.y = y; }
+
+        TripleLocal(Node x, Node z, Node y) {
+            this.x = x;
+            this.z = z;
+            this.y = y;
+        }
     }
 
     private static final class SepCandidate {
         final Set<Node> S;
         final boolean independent;
         final double p;
+
         SepCandidate(Set<Node> S, boolean independent, double p) {
             List<Node> sorted = new ArrayList<>(S);
             sorted.sort(Comparator.comparing(Node::getName));
@@ -524,8 +601,12 @@ public final class Fci implements IGraphSearch {
         final ColliderOutcome outcome;
         final double bestP;
         final Set<Node> bestS;
+
         MaxPDecision(TripleLocal t, ColliderOutcome outcome, double bestP, Set<Node> bestS) {
-            this.t = t; this.outcome = outcome; this.bestP = bestP; this.bestS = bestS;
+            this.t = t;
+            this.outcome = outcome;
+            this.bestP = bestP;
+            this.bestS = bestS;
         }
     }
 }

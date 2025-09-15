@@ -4,8 +4,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -59,8 +59,7 @@ public class PreserveMarkov {
     }
 
     /**
-     * Creates a new instance of the PreserveMarkov class by copying the fields
-     * from another PreserveMarkov object.
+     * Creates a new instance of the PreserveMarkov class by copying the fields from another PreserveMarkov object.
      *
      * @param preserveMarkov The PreserveMarkov object to be copied. Must not be null.
      */
@@ -74,12 +73,12 @@ public class PreserveMarkov {
      * Adjusts the p-values for a local Markov condition in a given constraint-based partially directed acyclic graph
      * (CPDAG).
      *
-     * @param graph        the constraint-based partially directed acyclic graph (CPDAG) to adjust p-values for
+     * @param graph          the constraint-based partially directed acyclic graph (CPDAG) to adjust p-values for
      * @param preserveMarkov a boolean flag indicating if the Markov condition should be preserved; should be true
-     * @param test         the independence test to be used; must not be null and not an instance of MsepTest
-     * @param pValues      a map of node pairs to sets of p-values used for adjustment
-     * @param withoutPair  a pair of nodes for which adjustments are calculated without considering the edge between
-     *                     them
+     * @param test           the independence test to be used; must not be null and not an instance of MsepTest
+     * @param pValues        a map of node pairs to sets of p-values used for adjustment
+     * @param withoutPair    a pair of nodes for which adjustments are calculated without considering the edge between
+     *                       them
      * @return a map of node pairs to sets of adjusted p-values
      * @throws IllegalArgumentException if preserveMarkov is false or if the test is null or an instance of MsepTest
      * @throws InterruptedException     if any

@@ -8,7 +8,8 @@ import java.util.function.Function;
 
 public final class UnmixDiagnostics {
 
-    private UnmixDiagnostics() {}
+    private UnmixDiagnostics() {
+    }
 
     // ---------- A. BIC(K=1) vs BIC(K=2) ----------
 
@@ -20,8 +21,10 @@ public final class UnmixDiagnostics {
             Function<DataSet, Graph> perCluster) {
 
         // Clone config to keep everything identical except K
-        EmUnmix.Config c1 = baseCfg.copy(); c1.K = 1;
-        EmUnmix.Config c2 = baseCfg.copy(); c2.K = 2;
+        EmUnmix.Config c1 = baseCfg.copy();
+        c1.K = 1;
+        EmUnmix.Config c2 = baseCfg.copy();
+        c2.K = 2;
 
         UnmixResult r1 = EmUnmix.run(data, c1, regressor, pooled, perCluster);
         UnmixResult r2 = EmUnmix.run(data, c2, regressor, pooled, perCluster);
@@ -31,15 +34,6 @@ public final class UnmixDiagnostics {
         double bic2 = r2.gmmModel.bic(n);
         return new BicDelta(bic1, bic2, bic1 - bic2);
     }
-
-    public static final class BicDelta {
-        public final double bicK1, bicK2, delta; // delta = BIC(1) - BIC(2)
-        public BicDelta(double bicK1, double bicK2, double delta) {
-            this.bicK1 = bicK1; this.bicK2 = bicK2; this.delta = delta;
-        }
-    }
-
-    // ---------- B. Soft-assignment entropy & confident fraction ----------
 
     public static EntropyStats computeEntropyStats(double[][] responsibilities) {
         int n = responsibilities.length;
@@ -68,18 +62,7 @@ public final class UnmixDiagnostics {
         );
     }
 
-    public static final class EntropyStats {
-        public final double meanEntropy;   // 0 = crisp, 1 = uniform
-        public final double fracConf90;    // fraction with max r_ik >= 0.90
-        public final double fracConf80;    // fraction with max r_ik >= 0.80
-        public EntropyStats(double meanEntropy, double fracConf90, double fracConf80) {
-            this.meanEntropy = meanEntropy;
-            this.fracConf90 = fracConf90;
-            this.fracConf80 = fracConf80;
-        }
-    }
-
-    // ---------- C. Stability across restarts (mean ARI) ----------
+    // ---------- B. Soft-assignment entropy & confident fraction ----------
 
     public static StabilityResult stabilityAcrossRestarts(
             DataSet data,
@@ -113,26 +96,16 @@ public final class UnmixDiagnostics {
         return new StabilityResult(mean, sd, aris.size());
     }
 
-    public static final class StabilityResult {
-        public final double meanARI, sdARI;
-        public final int numPairs;
-        public StabilityResult(double meanARI, double sdARI, int numPairs) {
-            this.meanARI = meanARI; this.sdARI = sdARI; this.numPairs = numPairs;
-        }
-    }
-
-    // ---------- D. Held-out log-likelihood gain (K=2 vs K=1) ----------
-    // This version expects you to expose the EM feature matrix builder used inside EmUnmix.
-    // If you can supply trainFeatures/testFeatures, this will score the GMMs on held-out.
-
     public static double heldoutPerSampleLoglikGain(
             double[][] trainFeatures,
             double[][] testFeatures,
             GaussianMixtureEM.Config baseGmmCfg) {
 
         // Fit K=1 and K=2 on TRAIN
-        GaussianMixtureEM.Config c1 = baseGmmCfg.copy(); c1.K = 1;
-        GaussianMixtureEM.Config c2 = baseGmmCfg.copy(); c2.K = 2;
+        GaussianMixtureEM.Config c1 = baseGmmCfg.copy();
+        c1.K = 1;
+        GaussianMixtureEM.Config c2 = baseGmmCfg.copy();
+        c2.K = 2;
 
         GaussianMixtureEM.Model m1 = GaussianMixtureEM.fit(trainFeatures, c1);
         GaussianMixtureEM.Model m2 = GaussianMixtureEM.fit(trainFeatures, c2);
@@ -142,7 +115,7 @@ public final class UnmixDiagnostics {
         return ll2 - ll1; // >0 means K=2 generalizes better
     }
 
-    // ---------- E. Graph divergence between clusters (CPDAG-aware) ----------
+    // ---------- C. Stability across restarts (mean ARI) ----------
 
     public static GraphDiff compareClusterGraphsCpdag(Graph g1, Graph g2) {
         if (g1 == null || g2 == null) {
@@ -154,10 +127,11 @@ public final class UnmixDiagnostics {
         Set<String> skelT = undirectedEdgeSet(Gt);
         Set<String> skelH = undirectedEdgeSet(Gh);
 
-        Set<String> inter = new HashSet<>(skelT); inter.retainAll(skelH);
+        Set<String> inter = new HashSet<>(skelT);
+        inter.retainAll(skelH);
         int tp = inter.size(), fp = Math.max(skelH.size() - tp, 0), fn = Math.max(skelT.size() - tp, 0);
-        double precA = tp == 0 ? 0 : tp / (double)(tp + fp);
-        double recA  = tp == 0 ? 0 : tp / (double)(tp + fn);
+        double precA = tp == 0 ? 0 : tp / (double) (tp + fp);
+        double recA = tp == 0 ? 0 : tp / (double) (tp + fn);
         double adjF1 = (precA + recA == 0) ? 0.0 : 2 * precA * recA / (precA + recA);
 
         // Orientation F1 over shared skeleton (directed arcs in CPDAGs)
@@ -179,23 +153,13 @@ public final class UnmixDiagnostics {
             if (h_ab && !t_ab) fpO++;
             if (h_ba && !t_ba) fpO++;
         }
-        double precO = (tpO + fpO) == 0 ? 0 : tpO / (double)(tpO + fpO);
-        double recO  = (tpO + fnO) == 0 ? 0 : tpO / (double)(tpO + fnO);
+        double precO = (tpO + fpO) == 0 ? 0 : tpO / (double) (tpO + fpO);
+        double recO = (tpO + fnO) == 0 ? 0 : tpO / (double) (tpO + fnO);
         double arrowF1 = (precO + recO == 0) ? 0.0 : 2 * precO * recO / (precO + recO);
 
         int shd = structuralHammingDistance(Gt, Gh);
         return new GraphDiff(adjF1, arrowF1, shd);
     }
-
-    public static final class GraphDiff {
-        public final double adjacencyF1, arrowF1;
-        public final int shd;
-        public GraphDiff(double adjacencyF1, double arrowF1, int shd) {
-            this.adjacencyF1 = adjacencyF1; this.arrowF1 = arrowF1; this.shd = shd;
-        }
-    }
-
-    // ---------- F. Helper: average log-likelihood of a GMM on features ----------
 
     public static double averageLogLikelihood(double[][] X, GaussianMixtureEM.Model m) {
         int n = X.length, d = X[0].length, K = m.weights.length;
@@ -210,7 +174,9 @@ public final class UnmixDiagnostics {
         return sum / n;
     }
 
-    // ---------- G. Helper: ARI (copy local to avoid deps) ----------
+    // ---------- D. Held-out log-likelihood gain (K=2 vs K=1) ----------
+    // This version expects you to expose the EM feature matrix builder used inside EmUnmix.
+    // If you can supply trainFeatures/testFeatures, this will score the GMMs on held-out.
 
     public static double adjustedRandIndex(int[] a, int[] b) {
         int n = a.length;
@@ -219,7 +185,11 @@ public final class UnmixDiagnostics {
         for (int v : b) if (v > maxB) maxB = v;
         int[][] M = new int[maxA + 1][maxB + 1];
         int[] row = new int[maxA + 1], col = new int[maxB + 1];
-        for (int i = 0; i < n; i++) { M[a[i]][b[i]]++; row[a[i]]++; col[b[i]]++; }
+        for (int i = 0; i < n; i++) {
+            M[a[i]][b[i]]++;
+            row[a[i]]++;
+            col[b[i]]++;
+        }
         double sumComb = 0, rowComb = 0, colComb = 0;
         for (int i = 0; i <= maxA; i++) for (int j = 0; j <= maxB; j++) sumComb += comb2(M[i][j]);
         for (int i = 0; i <= maxA; i++) rowComb += comb2(row[i]);
@@ -230,9 +200,11 @@ public final class UnmixDiagnostics {
         return (sumComb - exp) / (max - exp + 1e-12);
     }
 
-    private static double comb2(int m) { return m < 2 ? 0 : m * (m - 1) / 2.0; }
+    // ---------- E. Graph divergence between clusters (CPDAG-aware) ----------
 
-    // ---------- H. Tiny graph set helpers (CPDAG comparison uses these) ----------
+    private static double comb2(int m) {
+        return m < 2 ? 0 : m * (m - 1) / 2.0;
+    }
 
     private static Set<String> directedEdgeSet(Graph G) {
         Set<String> s = new HashSet<>();
@@ -241,6 +213,8 @@ public final class UnmixDiagnostics {
                 s.add(e.getNode1().getName() + ">" + e.getNode2().getName());
         return s;
     }
+
+    // ---------- F. Helper: average log-likelihood of a GMM on features ----------
 
     private static Set<String> undirectedEdgeSet(Graph G) {
         Set<String> s = new HashSet<>();
@@ -252,15 +226,22 @@ public final class UnmixDiagnostics {
         return s;
     }
 
+    // ---------- G. Helper: ARI (copy local to avoid deps) ----------
+
     private static int structuralHammingDistance(Graph A, Graph B) {
         Set<String> EA = directedEdgeSet(A), EB = directedEdgeSet(B);
         Set<String> UA = undirectedEdgeSet(A), UB = undirectedEdgeSet(B);
-        Set<String> SA = new HashSet<>(UA); SA.addAll(stripDirections(EA));
-        Set<String> SB = new HashSet<>(UB); SB.addAll(stripDirections(EB));
-        Set<String> sym = new HashSet<>(SA); sym.removeAll(SB);
-        Set<String> sym2 = new HashSet<>(SB); sym2.removeAll(SA);
+        Set<String> SA = new HashSet<>(UA);
+        SA.addAll(stripDirections(EA));
+        Set<String> SB = new HashSet<>(UB);
+        SB.addAll(stripDirections(EB));
+        Set<String> sym = new HashSet<>(SA);
+        sym.removeAll(SB);
+        Set<String> sym2 = new HashSet<>(SB);
+        sym2.removeAll(SA);
         int skelDiff = sym.size() + sym2.size();
-        Set<String> inter = new HashSet<>(SA); inter.retainAll(SB);
+        Set<String> inter = new HashSet<>(SA);
+        inter.retainAll(SB);
         int orientDiff = 0;
         for (String s : inter) {
             String[] ab = s.split("--");
@@ -288,5 +269,51 @@ public final class UnmixDiagnostics {
             s.add(key);
         }
         return s;
+    }
+
+    // ---------- H. Tiny graph set helpers (CPDAG comparison uses these) ----------
+
+    public static final class BicDelta {
+        public final double bicK1, bicK2, delta; // delta = BIC(1) - BIC(2)
+
+        public BicDelta(double bicK1, double bicK2, double delta) {
+            this.bicK1 = bicK1;
+            this.bicK2 = bicK2;
+            this.delta = delta;
+        }
+    }
+
+    public static final class EntropyStats {
+        public final double meanEntropy;   // 0 = crisp, 1 = uniform
+        public final double fracConf90;    // fraction with max r_ik >= 0.90
+        public final double fracConf80;    // fraction with max r_ik >= 0.80
+
+        public EntropyStats(double meanEntropy, double fracConf90, double fracConf80) {
+            this.meanEntropy = meanEntropy;
+            this.fracConf90 = fracConf90;
+            this.fracConf80 = fracConf80;
+        }
+    }
+
+    public static final class StabilityResult {
+        public final double meanARI, sdARI;
+        public final int numPairs;
+
+        public StabilityResult(double meanARI, double sdARI, int numPairs) {
+            this.meanARI = meanARI;
+            this.sdARI = sdARI;
+            this.numPairs = numPairs;
+        }
+    }
+
+    public static final class GraphDiff {
+        public final double adjacencyF1, arrowF1;
+        public final int shd;
+
+        public GraphDiff(double adjacencyF1, double arrowF1, int shd) {
+            this.adjacencyF1 = adjacencyF1;
+            this.arrowF1 = arrowF1;
+            this.shd = shd;
+        }
     }
 }

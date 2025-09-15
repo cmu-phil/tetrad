@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -22,11 +22,10 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.search.BlockSpecSemFit;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.editor.blocks.BlockClusteringWizard;
 import edu.cmu.tetradapp.app.TetradDesktop;
+import edu.cmu.tetradapp.editor.blocks.BlockClusteringWizard;
 import edu.cmu.tetradapp.model.LatentClustersRunner;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
@@ -82,7 +81,7 @@ public class LatentClustersEditor extends JPanel implements PropertyChangeListen
 
         wizard = new BlockClusteringWizard(data, alg, test, blockText, runner.getTrueNamedClusters(), parameters);
         wizard.setPreferredSize(new Dimension(800, 400));
-        setLayout( new BorderLayout());
+        setLayout(new BorderLayout());
         add(wizard, BorderLayout.CENTER);
 
         // 1) Register to receive specs from BOTH Search and Apply

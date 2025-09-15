@@ -23,10 +23,10 @@ public class OrderedLocalMarkovProperty {
      * Computes the ordered local Markov property for a maximal ancestral graph (MAG). The method generates a set of
      * independence facts representing the conditional independencies implied by the MAG.
      *
-     * @param mag The input maximal ancestral graph (MAG) represented as a graph object.
-     *            Must be a valid legal MAG; otherwise, an {@code IllegalArgumentException} is thrown.
-     * @return A set of {@code IndependenceFact} objects that represent the conditional independencies
-     *         for the given input MAG based on the ordered local Markov property.
+     * @param mag The input maximal ancestral graph (MAG) represented as a graph object. Must be a valid legal MAG;
+     *            otherwise, an {@code IllegalArgumentException} is thrown.
+     * @return A set of {@code IndependenceFact} objects that represent the conditional independencies for the given
+     * input MAG based on the ordered local Markov property.
      * @throws IllegalArgumentException if the graph is not a legal MAG.
      */
     public static Set<IndependenceFact> getModel(Graph mag) {

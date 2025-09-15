@@ -1,8 +1,8 @@
 package edu.cmu.tetrad.data;
 
 /**
- * Represents a cell table that stores the values of the cells in a table of arbitrary dimension, for use, e.g.,
- * in the context of a contingency table--e.g. for chi-square or g-square tests.
+ * Represents a cell table that stores the values of the cells in a table of arbitrary dimension, for use, e.g., in the
+ * context of a contingency table--e.g. for chi-square or g-square tests.
  *
  * @author josephramsey
  */
@@ -27,7 +27,8 @@ public interface CellTable {
     /**
      * Calculates the marginal sum for the cell table based on the given coordinates and margin variables.
      *
-     * @param coords the array of coordinates where -1 indicates the variables over which marginal sums should be taken.
+     * @param coords     the array of coordinates where -1 indicates the variables over which marginal sums should be
+     *                   taken.
      * @param marginVars the array of indices of the margin variables.
      * @return the marginal sum specified.
      */

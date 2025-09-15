@@ -6,7 +6,10 @@ import edu.cmu.tetrad.search.test.Kci;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import static org.ejml.UtilEjml.assertTrue;
 
@@ -15,20 +18,28 @@ public class KciSmokeTest {
     private static SimpleMatrix makeDataVxN(int n, double depNoise) {
         Random r = new Random(42);
         double[] x = new double[n], z = new double[n], e = new double[n], y = new double[n];
-        for (int i = 0; i < n; i++) { x[i] = r.nextGaussian(); z[i] = r.nextGaussian(); e[i] = r.nextGaussian(); }
+        for (int i = 0; i < n; i++) {
+            x[i] = r.nextGaussian();
+            z[i] = r.nextGaussian();
+            e[i] = r.nextGaussian();
+        }
         // independent case uses depNoise = +Inf sentinel (we'll overwrite y below)
         if (Double.isInfinite(depNoise)) System.arraycopy(e, 0, y, 0, n);
         else for (int i = 0; i < n; i++) y[i] = x[i] + depNoise * e[i];  // strong dependence if depNoise is small
 
         // rows = variables (X,Y,Z), cols = samples
         SimpleMatrix M = new SimpleMatrix(3, n);
-        for (int j = 0; j < n; j++) { M.set(0, j, x[j]); M.set(1, j, y[j]); M.set(2, j, z[j]); }
+        for (int j = 0; j < n; j++) {
+            M.set(0, j, x[j]);
+            M.set(1, j, y[j]);
+            M.set(2, j, z[j]);
+        }
         return M;
     }
 
     private static Kci makeKci(SimpleMatrix data, boolean approximate) {
         Node X = new GraphNode("X"), Y = new GraphNode("Y"), Z = new GraphNode("Z");
-        Map<Node,Integer> map = Map.of(X,0, Y,1, Z,2);
+        Map<Node, Integer> map = Map.of(X, 0, Y, 1, Z, 2);
         List<Integer> rows = new ArrayList<>();
         for (int i = 0; i < data.getNumCols(); i++) rows.add(i);
         Kci k = new Kci(data, map, null, rows);
@@ -49,7 +60,6 @@ public class KciSmokeTest {
                 List.of(new GraphNode("Z")), alpha);
         assertTrue(0.0 <= pInd && pInd <= 1.0, "p in [0,1]");
         assertTrue(pInd > alpha, "independent should fail to reject (p > alpha)");
-
 
 
         // dependent: Y = X + 0.05*e (strong)

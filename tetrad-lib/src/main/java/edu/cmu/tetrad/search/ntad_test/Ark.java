@@ -25,14 +25,14 @@ public class Ark extends NtadTest {
     private final double sp;
 
     /**
-     * Constructs an Ark object using the provided data matrix, split proportion, and effective sample size.
-     * The data matrix is divided into two subsets based on the specified split proportion. Correlation matrices
-     * are computed for each subset.
+     * Constructs an Ark object using the provided data matrix, split proportion, and effective sample size. The data
+     * matrix is divided into two subsets based on the specified split proportion. Correlation matrices are computed for
+     * each subset.
      *
-     * @param df  the input data matrix as a SimpleMatrix object, where each row represents an observation
-     *            and each column represents a variable
-     * @param sp  the split proportion for dividing the data matrix into two subsets; values greater than 0
-     *            are used as-is, while negative values are transformed to 1 - sp
+     * @param df  the input data matrix as a SimpleMatrix object, where each row represents an observation and each
+     *            column represents a variable
+     * @param sp  the split proportion for dividing the data matrix into two subsets; values greater than 0 are used
+     *            as-is, while negative values are transformed to 1 - sp
      * @param ess the effective sample size, which must be -1 or greater than 1
      */
     public Ark(SimpleMatrix df, double sp, int ess) {
@@ -45,17 +45,17 @@ public class Ark extends NtadTest {
     }
 
     /**
-     * Computes a statistical measure based on the specified indices and correlation matrices.
-     * Depending on the resampling flag, the method either operates on precomputed matrices
-     * or recalculates them using a sampled subset of the data matrix. This method is designed
-     * to compute a p-value reflecting the statistical significance of a correlation pattern.
+     * Computes a statistical measure based on the specified indices and correlation matrices. Depending on the
+     * resampling flag, the method either operates on precomputed matrices or recalculates them using a sampled subset
+     * of the data matrix. This method is designed to compute a p-value reflecting the statistical significance of a
+     * correlation pattern.
      *
-     * @param ntad      a 2D integer array where ntad[0] contains indices for the first group of variables,
-     *                  and ntad[1] contains indices for the second group
-     * @param resample  a boolean indicating whether to resample the data matrix for correlation calculation;
-     *                  if true, a subset of rows is selected based on the specified fraction
-     * @param frac      a double representing the fraction of rows to sample if resampling is enabled,
-     *                  where 0.0 &lt;= frac &lt;= 1.0
+     * @param ntad     a 2D integer array where ntad[0] contains indices for the first group of variables, and ntad[1]
+     *                 contains indices for the second group
+     * @param resample a boolean indicating whether to resample the data matrix for correlation calculation; if true, a
+     *                 subset of rows is selected based on the specified fraction
+     * @param frac     a double representing the fraction of rows to sample if resampling is enabled, where 0.0 &lt;=
+     *                 frac &lt;= 1.0
      * @return a double representing the p-value for the computed correlation statistics
      */
     @Override
@@ -127,12 +127,11 @@ public class Ark extends NtadTest {
     }
 
     /**
-     * Computes a statistical measure using the specified indices and correlation matrices.
-     * This method internally delegates to another overloaded version of the function
-     * with additional parameters set to default values.
+     * Computes a statistical measure using the specified indices and correlation matrices. This method internally
+     * delegates to another overloaded version of the function with additional parameters set to default values.
      *
-     * @param ntad a 2D integer array where ntad[0] contains indices for the first group of variables,
-     *             and ntad[1] contains indices for the second group
+     * @param ntad a 2D integer array where ntad[0] contains indices for the first group of variables, and ntad[1]
+     *             contains indices for the second group
      * @return a double representing the p-value for the computed correlation statistics
      */
     @Override
@@ -141,13 +140,12 @@ public class Ark extends NtadTest {
     }
 
     /**
-     * Computes a statistical measure based on a variable number of 2D integer arrays, where each array
-     * contains tetrad configurations. This method internally delegates to another overloaded version
-     * of the function which accepts a list of tetrad configurations.
+     * Computes a statistical measure based on a variable number of 2D integer arrays, where each array contains tetrad
+     * configurations. This method internally delegates to another overloaded version of the function which accepts a
+     * list of tetrad configurations.
      *
-     * @param ntads a variable-length array of 2D integer arrays, where each element represents a tetrad
-     *              configuration. Each 2D array is expected to contain two subarrays, each defining a group
-     *              of node indices.
+     * @param ntads a variable-length array of 2D integer arrays, where each element represents a tetrad configuration.
+     *              Each 2D array is expected to contain two subarrays, each defining a group of node indices.
      * @return a double value representing the computed statistical measure for the provided tetrads.
      */
     @Override
@@ -158,18 +156,16 @@ public class Ark extends NtadTest {
     }
 
     /**
-     * Computes a statistical measure based on a list of tetrad configurations.
-     * Each tetrad configuration is represented as a 2D integer array with two subarrays, where
-     * each subarray defines a group of node indices. The method calculates a combined
-     * p-value through logarithmic transformations and chi-squared distribution.
+     * Computes a statistical measure based on a list of tetrad configurations. Each tetrad configuration is represented
+     * as a 2D integer array with two subarrays, where each subarray defines a group of node indices. The method
+     * calculates a combined p-value through logarithmic transformations and chi-squared distribution.
      *
-     * @param ntads a list of 2D integer arrays, where each array represents a tetrad configuration.
-     *              Each 2D array must contain exactly two subarrays with matching lengths,
-     *              representing two groups of node indices.
-     * @return a double value representing the computed statistical measure for the provided tetrads.
-     *         The result is a p-value reflecting the statistical significance of the configurations.
-     * @throws IllegalArgumentException if any tetrad does not contain exactly two subarrays
-     *                                  or if the subarrays do not have the same length.
+     * @param ntads a list of 2D integer arrays, where each array represents a tetrad configuration. Each 2D array must
+     *              contain exactly two subarrays with matching lengths, representing two groups of node indices.
+     * @return a double value representing the computed statistical measure for the provided tetrads. The result is a
+     * p-value reflecting the statistical significance of the configurations.
+     * @throws IllegalArgumentException if any tetrad does not contain exactly two subarrays or if the subarrays do not
+     *                                  have the same length.
      */
     @Override
     public double ntads(List<int[][]> ntads) {

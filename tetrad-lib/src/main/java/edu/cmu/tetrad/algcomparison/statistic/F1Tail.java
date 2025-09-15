@@ -10,13 +10,10 @@ import java.io.Serial;
 /**
  * Calculates the F1 statistic for tails.
  * <p>
- *  <a href="https://en.wikipedia.org/wiki/F1_score">...</a>
- *  <p>
- *  We use what's on this page called the "traditional" F1 statistic.
- *  A true positive arrow is counted for
- *  X*-&gt;Y in the estimated graph if X is not adjacent to Y or X--Y or X&lt;--Y.
- *  Similarly for false negatives.
- *  *
+ * <a href="https://en.wikipedia.org/wiki/F1_score">...</a>
+ * <p>
+ * We use what's on this page called the "traditional" F1 statistic. A true positive arrow is counted for X*-&gt;Y in
+ * the estimated graph if X is not adjacent to Y or X--Y or X&lt;--Y. Similarly for false negatives. *
  */
 public class F1Tail implements Statistic {
     @Serial

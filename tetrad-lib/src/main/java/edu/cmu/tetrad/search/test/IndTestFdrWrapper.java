@@ -110,7 +110,7 @@ public final class IndTestFdrWrapper implements IndependenceTest {
         Map<IndependenceFact, Boolean> current = new HashMap<>();
 
         for (var e : pvals.entrySet()) {
-            var fact  = e.getKey();
+            var fact = e.getKey();
             boolean indep = decideIndependenceFromCutoff(e.getValue());
             current.put(fact, indep);
 

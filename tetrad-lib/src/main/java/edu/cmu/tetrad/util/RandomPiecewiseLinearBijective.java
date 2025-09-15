@@ -16,25 +16,25 @@ public class RandomPiecewiseLinearBijective {
      */
     private final List<double[]> controlPoints;
     /**
-     * Represents the minimum value for the x-axis in the piecewise linear bijective function.
-     * This value defines the lower bound for scaling and evaluating the function and serves
-     * as a reference point for determining the input range.
+     * Represents the minimum value for the x-axis in the piecewise linear bijective function. This value defines the
+     * lower bound for scaling and evaluating the function and serves as a reference point for determining the input
+     * range.
      */
     private double xMin = 0;
     /**
-     * Represents the maximum value for the x-axis in the range for scaling and evaluating the
-     * piecewise linear bijective function. This value defines the upper limit of the x-domain
-     * within which inputs are valid when evaluating or transforming the function.
+     * Represents the maximum value for the x-axis in the range for scaling and evaluating the piecewise linear
+     * bijective function. This value defines the upper limit of the x-domain within which inputs are valid when
+     * evaluating or transforming the function.
      */
     private double xMax = 1;
     /**
-     * Represents the minimum value for the y-axis in the context of scaling a piecewise linear bijective function.
-     * This value defines the lower bound of the function's output range after scaling.
+     * Represents the minimum value for the y-axis in the context of scaling a piecewise linear bijective function. This
+     * value defines the lower bound of the function's output range after scaling.
      */
     private double yMin = 0;
     /**
-     * Represents the maximum value for the y-axis in the piecewise linear bijective function.
-     * This value determines the upper bound of the output range for the function after scaling.
+     * Represents the maximum value for the y-axis in the piecewise linear bijective function. This value determines the
+     * upper bound of the output range for the function after scaling.
      */
     private double yMax = 1;
 

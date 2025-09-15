@@ -3,9 +3,8 @@ package edu.cmu.tetrad.search.utils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 /**
- * A class that generates and evaluates a monotonic piecewise linear function
- * defined over a specified domain and range. The y-values of the function are
- * randomly generated while ensuring monotonicity. The function supports both
+ * A class that generates and evaluates a monotonic piecewise linear function defined over a specified domain and range.
+ * The y-values of the function are randomly generated while ensuring monotonicity. The function supports both
  * interpolation within the range and extrapolation outside the range.
  */
 public class RandomMonotonicPiecewiseLinear {
@@ -55,9 +54,8 @@ public class RandomMonotonicPiecewiseLinear {
     }
 
     /**
-     * The main method serves as the entry point for testing the functionality
-     * of the RandomMonotonicPiecewiseLinear class. It initializes parameters for
-     * creating an instance of the class, generates a monotonic piecewise linear
+     * The main method serves as the entry point for testing the functionality of the RandomMonotonicPiecewiseLinear
+     * class. It initializes parameters for creating an instance of the class, generates a monotonic piecewise linear
      * function, and evaluates the function over a specified range of x-values.
      *
      * @param args Command-line arguments passed to the program. Not used in this method.

@@ -26,8 +26,8 @@ public class NumVisibleEdgeTrue implements Statistic {
     }
 
     /**
-     * Retrieves the abbreviation for the statistic. This will be printed at the top of each column.
-     * The abbreviation format is "#X->Y visible (T)".
+     * Retrieves the abbreviation for the statistic. This will be printed at the top of each column. The abbreviation
+     * format is "#X->Y visible (T)".
      *
      * @return The abbreviation string.
      */
@@ -37,7 +37,8 @@ public class NumVisibleEdgeTrue implements Statistic {
     }
 
     /**
-     * Retrieves the description of the statistic. This method returns the number of X-->Y edges for which X-->Y is visible in the true PAG.
+     * Retrieves the description of the statistic. This method returns the number of X-->Y edges for which X-->Y is
+     * visible in the true PAG.
      *
      * @return The description of the statistic.
      */

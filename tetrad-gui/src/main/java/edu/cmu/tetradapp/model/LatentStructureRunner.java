@@ -20,13 +20,14 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
     private final LatentClustersRunner runner;
 
     /**
-     * Constructs a LatentStructureRunner instance, which requires a data wrapper, a latent clusters runner,
-     * and search parameters. The latent clusters runner must provide an upstream BlockSpec, which is
-     * necessary for running this class.
+     * Constructs a LatentStructureRunner instance, which requires a data wrapper, a latent clusters runner, and search
+     * parameters. The latent clusters runner must provide an upstream BlockSpec, which is necessary for running this
+     * class.
      *
-     * @param data the data wrapper containing the dataset to be used
-     * @param latentClustersRunner the instance of LatentClustersRunner providing the upstream BlockSpec; must not be null
-     * @param parameters parameters for the block search session node
+     * @param data                 the data wrapper containing the dataset to be used
+     * @param latentClustersRunner the instance of LatentClustersRunner providing the upstream BlockSpec; must not be
+     *                             null
+     * @param parameters           parameters for the block search session node
      * @throws NullPointerException if the latentClustersRunner argument is null
      */
     public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner, Parameters parameters) {
@@ -48,7 +49,7 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
         super.blockSpec = latentClustersRunner.getBlockSpec();
     }
 
-    public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner, LatentStructureRunner latentStructureRunner,  KnowledgeBoxModel knowledge, Parameters parameters) {
+    public LatentStructureRunner(DataWrapper data, LatentClustersRunner latentClustersRunner, LatentStructureRunner latentStructureRunner, KnowledgeBoxModel knowledge, Parameters parameters) {
         super(data, knowledge, parameters);
         this.runner = Objects.requireNonNull(latentClustersRunner, "ClusterRunner required");
         super.blockSpec = latentClustersRunner.getBlockSpec();

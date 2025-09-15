@@ -466,7 +466,9 @@ public final class SemIm implements Im, ISemIm {
 //        return 2.0 * sum;
 //    }
 
-    /** Robust log|Σ| for (near-)SPD Σ via Cholesky with tiny jitter fallback. */
+    /**
+     * Robust log|Σ| for (near-)SPD Σ via Cholesky with tiny jitter fallback.
+     */
     private static double safeLogDetSymPD(Matrix S) {
         try {
             Matrix L = MatrixUtils.cholesky(S);
@@ -497,7 +499,9 @@ public final class SemIm implements Im, ISemIm {
         }
     }
 
-    /** Solve SPD A * X = B using Cholesky(A) without forming A^{-1}. */
+    /**
+     * Solve SPD A * X = B using Cholesky(A) without forming A^{-1}.
+     */
     private static Matrix cholSolveSPD(Matrix A, Matrix B) {
         Matrix L = MatrixUtils.cholesky(A);              // A = L Lᵀ
         int n = L.getNumRows();
@@ -524,7 +528,9 @@ public final class SemIm implements Im, ISemIm {
         return X;
     }
 
-    /** Compute trace(A^{-1} B) for SPD A using Cholesky solves. */
+    /**
+     * Compute trace(A^{-1} B) for SPD A using Cholesky solves.
+     */
     private static double traceAInvB_SPD(Matrix A, Matrix B) {
         Matrix X = cholSolveSPD(A, B);   // X = A^{-1} B
         return X.trace();
@@ -895,7 +901,8 @@ public final class SemIm implements Im, ISemIm {
 
     /**
      * @deprecated Use setErrVar(x, value) for variances, or setErrCovar(x, y, value) for covariances.
-     * */
+     *
+     */
     @Deprecated
     public void setErrCovar(Node x, double value) {
         SemGraph graph = getSemPm().getGraph();
@@ -929,7 +936,7 @@ public final class SemIm implements Im, ISemIm {
     /**
      * Sets the standard deviation value for the specified node.
      *
-     * @param node The node for which the standard deviation is being set.
+     * @param node   The node for which the standard deviation is being set.
      * @param stdDev The standard deviation value to be assigned to the provided node.
      */
     public void setMeanStandardDeviation(Node node, double stdDev) {
@@ -2552,7 +2559,7 @@ public final class SemIm implements Im, ISemIm {
 
     }
 
-    ////        return det > 0 ? FastMath.log(det) : 0;
+    /// /        return det > 0 ? FastMath.log(det) : 0;
 //    }
     private double logDet(Matrix matrix2D) {
         // Keep signature but route to robust SPD log-det.
@@ -2599,8 +2606,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.

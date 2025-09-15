@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -34,8 +34,6 @@ import java.util.Random;
 import static org.junit.Assert.assertEquals;
 
 public final class TestCellTable {
-    Random random = new Random();
-
     private final int[][] data = {{1, 1, 1, 0}, {0, 0, 1, 0},
             {1, 1, 1, 0}, {0, 0, 1, 0}, {0, 0, 0, 0}, {1, 1, 1, 0},
             {1, 1, 1, 0}, {0, 1, 0, 1}, {0, 1, 1, 0}, {0, 0, 0, 1},
@@ -287,6 +285,7 @@ public final class TestCellTable {
             {0, 1, 0, 0}, {0, 0, 0, 1}, {0, 0, 0, 1}, {1, 1, 1, 0},
             {0, 0, 1, 0}, {0, 1, 0, 1}, {1, 1, 1, 0}, {0, 1, 0, 1},
             {0, 1, 0, 1}, {0, 0, 0, 1}};
+    Random random = new Random();
     private CellTable table1, table2;
 
 
@@ -329,7 +328,7 @@ public final class TestCellTable {
 
         // Pick 2 random cells, count those cells, test the counts in
         // the cell count.
-        CombinationGenerator generator =new CombinationGenerator(new int[]{2, 2, 2, 2});
+        CombinationGenerator generator = new CombinationGenerator(new int[]{2, 2, 2, 2});
         int[] testCell;
 
         while ((testCell = generator.next()) != null) {

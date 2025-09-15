@@ -54,16 +54,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                     return size() > 64;
                 }
             };
-    private int polyDegree = 2;
-    private double polyCoef0 = 1.0;
-    private double polyGamma = 1.0;   // set yourself (e.g., 1.0/d) if you want automatic scaling
-    private KernelType kernelType = KernelType.GAUSSIAN;
-    private double epsilon = 1e-3;
-
-    // ---------------------- configuration hooks ----------------------
-    private double scalingFactor = 1.0;
-    private boolean approximate = true;
-    private int numPermutations = 1000;
     /**
      * RNG for permutations; can be null (seeded later).
      */
@@ -72,26 +62,32 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      * Optional: last computed p-value.
      */
     public double lastPValue = Double.NaN;
+    private int polyDegree = 2;
+    private double polyCoef0 = 1.0;
+    private double polyGamma = 1.0;   // set yourself (e.g., 1.0/d) if you want automatic scaling
+    private KernelType kernelType = KernelType.GAUSSIAN;
+    private double epsilon = 1e-3;
+    // ---------------------- configuration hooks ----------------------
+    private double scalingFactor = 1.0;
+    private boolean approximate = true;
+    private int numPermutations = 1000;
     /**
-     * Represents the dataset used for analysis within the Kci class.
-     * It contains the data matrix and associated information required
-     * to perform conditional independence tests, build kernel matrices,
-     * and compute statistical measures. The `dataSet` field is a core
-     * data structure that drives the computations and algorithms
-     * implemented in the Kci class.
+     * Represents the dataset used for analysis within the Kci class. It contains the data matrix and associated
+     * information required to perform conditional independence tests, build kernel matrices, and compute statistical
+     * measures. The `dataSet` field is a core data structure that drives the computations and algorithms implemented in
+     * the Kci class.
      */
     private DataSet dataSet;
     /**
-     * A list of Node objects representing variables in the context of the Kci class.
-     * These variables are used in various kernel computation tasks,
-     * independence testing, and other statistical analysis procedures within the KCI framework.
+     * A list of Node objects representing variables in the context of the Kci class. These variables are used in
+     * various kernel computation tasks, independence testing, and other statistical analysis procedures within the KCI
+     * framework.
      */
     private List<Node> variables;
     /**
-     * Indicates whether verbose output is enabled for the Kci class.
-     * When set to true, additional debugging or informational messages
-     * may be logged or displayed to provide more detailed insights
-     * into the computations and processes within the class.
+     * Indicates whether verbose output is enabled for the Kci class. When set to true, additional debugging or
+     * informational messages may be logged or displayed to provide more detailed insights into the computations and
+     * processes within the class.
      */
     private boolean verbose = false;
 
@@ -109,8 +105,8 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     /**
      * Constructs a Kci instance with the given DataSet.
      *
-     * @param dataSet the dataset containing the data to be analyzed. It is used to
-     *                initialize the data matrix, variable list, and other attributes.
+     * @param dataSet the dataset containing the data to be analyzed. It is used to initialize the data matrix, variable
+     *                list, and other attributes.
      */
     public Kci(DataSet dataSet) {
         this.dataSet = dataSet;
@@ -339,6 +335,125 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         return (geCount + 1.0) / (numPermutations + 1.0); // +1 smoothing
     }
 
+    private static DataSet twoColumnDataSet(String nameX, double[] x,
+                                            String nameY, double[] y) {
+        int n = x.length;
+        double[][] m = new double[n][2];
+        for (int i = 0; i < n; i++) {
+            m[i][0] = x[i];
+            m[i][1] = y[i];
+        }
+        List<Node> vars = new ArrayList<>(2);
+        vars.add(new ContinuousVariable(nameX));
+        vars.add(new ContinuousVariable(nameY));
+
+        DoubleDataBox dataBox = new DoubleDataBox(m);
+
+        return new BoxDataSet(dataBox, vars);
+    }
+
+    // Gaussian (RBF) kernel for a single vector
+    private static SimpleMatrix gaussianKernel1D(double[] v, double sigma) {
+        int n = v.length;
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        double[] kd = K.data;
+        double inv2s2 = 1.0 / Math.max(2.0 * sigma * sigma, 1e-24);
+        int p = 0;
+        for (int i = 0; i < n; i++) {
+            double vi = v[i];
+            for (int j = 0; j < n; j++, p++) {
+                double d = vi - v[j];
+                kd[p] = Math.exp(-(d * d) * inv2s2);
+            }
+        }
+        return SimpleMatrix.wrap(K);
+    }
+
+    // ---------------------- public API ----------------------
+
+    // Linear kernel for a single vector: K = v v^T
+    private static SimpleMatrix linearKernel1D(double[] v) {
+        int n = v.length;
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        double[] kd = K.data;
+        int p = 0;
+        for (int i = 0; i < n; i++) {
+            double vi = v[i];
+            for (int j = 0; j < n; j++, p++) {
+                kd[p] = vi * v[j];
+            }
+        }
+        return SimpleMatrix.wrap(K);
+    }
+
+    // ---------------------- kernels & helpers ----------------------
+
+    // Polynomial kernel for a single vector: K = (gamma * (v v^T) + coef0)^degree
+    private static SimpleMatrix polynomialKernel1D(double[] v, double gamma, double coef0, int degree) {
+        int n = v.length;
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        double[] kd = K.data;
+        int p = 0;
+        if (degree == 1) {
+            for (int i = 0; i < n; i++) {
+                double vi = v[i];
+                for (int j = 0; j < n; j++, p++) {
+                    kd[p] = gamma * (vi * v[j]) + coef0;
+                }
+            }
+        } else if (degree == 2) {
+            for (int i = 0; i < n; i++) {
+                double vi = v[i];
+                for (int j = 0; j < n; j++, p++) {
+                    double base = gamma * (vi * v[j]) + coef0;
+                    kd[p] = base * base;
+                }
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                double vi = v[i];
+                for (int j = 0; j < n; j++, p++) {
+                    kd[p] = Math.pow(gamma * (vi * v[j]) + coef0, degree);
+                }
+            }
+        }
+        return SimpleMatrix.wrap(K);
+    }
+
+    // Median-distance bandwidth for 1-D vectors (Silverman-ish but robust)
+    private static double bandwidth1D(double[] v) {
+        int n = v.length;
+        if (n < 2) return 1.0;
+        // Collect pairwise squared distances (can sample for large n)
+        // For simplicity, subsample up to 512 points to keep O(n^2) modest
+        int m = Math.min(n, 512);
+        // uniform sub-sample without replacement
+        int[] idx = new int[n];
+        for (int i = 0; i < n; i++) idx[i] = i;
+        Random r = new Random(7);
+        for (int i = 0; i < m; i++) {
+            int j = i + r.nextInt(n - i);
+            int t = idx[i];
+            idx[i] = idx[j];
+            idx[j] = t;
+        }
+        List<Double> d2 = new ArrayList<>(m * (m - 1) / 2);
+        for (int a = 0; a < m; a++) {
+            int i = idx[a];
+            for (int b = a + 1; b < m; b++) {
+                int j = idx[b];
+                double d = v[i] - v[j];
+                d2.add(d * d);
+            }
+        }
+        if (d2.isEmpty()) return 1.0;
+        Collections.sort(d2);
+        double med2 = d2.get(d2.size() / 2);
+        double sigma = Math.sqrt(med2 / 2.0);
+        if (!(sigma > 0.0) || !Double.isFinite(sigma)) sigma = 1.0;
+        return sigma;
+    }
+
     @Override
     public double getAlpha() {
         return alpha;
@@ -348,8 +463,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
-
-    // ---------------------- public API ----------------------
 
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
@@ -361,8 +474,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
             throw new RuntimeException(e);
         }
     }
-
-    // ---------------------- kernels & helpers ----------------------
 
     @Override
     public List<Node> getVariables() {
@@ -383,6 +494,8 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    // ---------------------- bandwidth heuristic ----------------------
 
     /**
      * Conditional KCI test: returns true iff we fail to reject independence at alpha.
@@ -471,6 +584,8 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         return ky;
     }
 
+    // ---------------------- p-values ----------------------
+
     /**
      * Build K for [x]+z (if x==null, it's just Kz).
      */
@@ -493,6 +608,51 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
             default -> throw new IllegalStateException("Unknown kernel: " + getKernelType());
         }
     }
+
+//    @Override
+//    // === Public API: marginal (unconditional) HSIC p-value for two 1-D arrays ===
+//    public double computePValue(double[] x, double[] y) {
+//        if (x == null || y == null) throw new IllegalArgumentException("null input");
+//        int n = x.length;
+//        if (y.length != n) throw new IllegalArgumentException("Length mismatch");
+//        if (n <= 1) return 1.0;
+//
+//        // 1) Build kernels per your selected kernelType
+//        SimpleMatrix Kx, Ky;
+//        switch (getKernelType()) {
+//            case GAUSSIAN -> {
+//                double sigmaX = bandwidth1D(x) * getScalingFactor();
+//                double sigmaY = bandwidth1D(y) * getScalingFactor();
+//                Kx = gaussianKernel1D(x, sigmaX);
+//                Ky = gaussianKernel1D(y, sigmaY);
+//            }
+//            case LINEAR -> {
+//                Kx = linearKernel1D(x);
+//                Ky = linearKernel1D(y);
+//            }
+//            case POLYNOMIAL -> {
+//                // Use polyGamma if >0, else default to 1/d with d=1 ⇒ 1.0
+//                double gamma = (this.getPolyGamma() > 0.0) ? this.getPolyGamma() : 1.0;
+//                Kx = polynomialKernel1D(x, gamma, this.getPolyCoef0(), this.getPolyDegree());
+//                Ky = polynomialKernel1D(y, gamma, this.getPolyCoef0(), this.getPolyDegree());
+//            }
+//            default -> throw new IllegalStateException("Unknown kernel type: " + getKernelType());
+//        }
+//
+//        // 2) Center the kernels (same centering you use elsewhere)
+//        SimpleMatrix Kxc = centerKernel(Kx);
+//        SimpleMatrix Kyc = centerKernel(Ky);
+//
+//        // 3) HSIC statistic (unconditional): S = (1/n) * tr(Kxc * Kyc)
+//        double stat = Kxc.elementMult(Kyc).elementSum() / n;
+//
+//        // 4) p-value using the same paths as conditional (RZ = I here)
+//        if (isApproximate()) {
+//            return pValueGammaConditional(Kxc, Kyc, stat, n);
+//        } else {
+//            return permutationPValueConditional(Kxc, Kyc, stat, n, getNumPermutations(), rng);
+//        }
+//    }
 
     /**
      * Build K for a single variable row index (fast path for Ky).
@@ -559,8 +719,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         return SimpleMatrix.wrap(K);
     }
 
-    // ---------------------- bandwidth heuristic ----------------------
-
     /**
      * Linear kernel (X Xᵀ) with same layout as the Gaussian helper.
      */
@@ -588,6 +746,8 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 
         return SimpleMatrix.wrap(K);
     }
+
+// === 1-D kernel builders (fast and allocation-light) ===
 
     /**
      * Polynomial kernel: K = (gamma * (X Xᵀ) + coef0) ^ degree, with X built as (n × d).
@@ -638,8 +798,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         return SimpleMatrix.wrap(K);
     }
 
-    // ---------------------- p-values ----------------------
-
     /**
      * Median pairwise distance heuristic for Gaussian sigma, scaled by scalingFactor. Uses a light subsample for speed
      * when n is large.
@@ -687,51 +845,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         return sigma;
     }
 
-//    @Override
-//    // === Public API: marginal (unconditional) HSIC p-value for two 1-D arrays ===
-//    public double computePValue(double[] x, double[] y) {
-//        if (x == null || y == null) throw new IllegalArgumentException("null input");
-//        int n = x.length;
-//        if (y.length != n) throw new IllegalArgumentException("Length mismatch");
-//        if (n <= 1) return 1.0;
-//
-//        // 1) Build kernels per your selected kernelType
-//        SimpleMatrix Kx, Ky;
-//        switch (getKernelType()) {
-//            case GAUSSIAN -> {
-//                double sigmaX = bandwidth1D(x) * getScalingFactor();
-//                double sigmaY = bandwidth1D(y) * getScalingFactor();
-//                Kx = gaussianKernel1D(x, sigmaX);
-//                Ky = gaussianKernel1D(y, sigmaY);
-//            }
-//            case LINEAR -> {
-//                Kx = linearKernel1D(x);
-//                Ky = linearKernel1D(y);
-//            }
-//            case POLYNOMIAL -> {
-//                // Use polyGamma if >0, else default to 1/d with d=1 ⇒ 1.0
-//                double gamma = (this.getPolyGamma() > 0.0) ? this.getPolyGamma() : 1.0;
-//                Kx = polynomialKernel1D(x, gamma, this.getPolyCoef0(), this.getPolyDegree());
-//                Ky = polynomialKernel1D(y, gamma, this.getPolyCoef0(), this.getPolyDegree());
-//            }
-//            default -> throw new IllegalStateException("Unknown kernel type: " + getKernelType());
-//        }
-//
-//        // 2) Center the kernels (same centering you use elsewhere)
-//        SimpleMatrix Kxc = centerKernel(Kx);
-//        SimpleMatrix Kyc = centerKernel(Ky);
-//
-//        // 3) HSIC statistic (unconditional): S = (1/n) * tr(Kxc * Kyc)
-//        double stat = Kxc.elementMult(Kyc).elementSum() / n;
-//
-//        // 4) p-value using the same paths as conditional (RZ = I here)
-//        if (isApproximate()) {
-//            return pValueGammaConditional(Kxc, Kyc, stat, n);
-//        } else {
-//            return permutationPValueConditional(Kxc, Kyc, stat, n, getNumPermutations(), rng);
-//        }
-//    }
-
     public double computePValue(double[] x, double[] y) {
         if (x == null || y == null) return 1.0;
         int n = x.length;
@@ -741,7 +854,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         DataSet ds = twoColumnDataSet("X", x, "Y", y);
 
         // Build the BFIT test bound to this dataset
-        Kci test =  new Kci(ds);
+        Kci test = new Kci(ds);
         test.setAlpha(alpha);
         test.setVerbose(verbose);
 
@@ -765,23 +878,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 //                "Use checkIndependence(Node,Node,Set) with the dataset; array version is unsupported for block tests.");
     }
 
-    private static DataSet twoColumnDataSet(String nameX, double[] x,
-                                            String nameY, double[] y) {
-        int n = x.length;
-        double[][] m = new double[n][2];
-        for (int i = 0; i < n; i++) {
-            m[i][0] = x[i];
-            m[i][1] = y[i];
-        }
-        List<Node> vars = new ArrayList<>(2);
-        vars.add(new ContinuousVariable(nameX));
-        vars.add(new ContinuousVariable(nameY));
-
-        DoubleDataBox dataBox = new DoubleDataBox(m);
-
-        return new BoxDataSet(dataBox, vars);
-    }
-
     // === Optional: if you like your previous factoring ===
     public double computePValueFromCenteredKernels(SimpleMatrix centeredKx,
                                                    SimpleMatrix centeredKy) {
@@ -794,104 +890,6 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         } else {
             return permutationPValueConditional(centeredKx, centeredKy, stat, n, getNumPermutations(), rng);
         }
-    }
-
-// === 1-D kernel builders (fast and allocation-light) ===
-
-    // Gaussian (RBF) kernel for a single vector
-    private static SimpleMatrix gaussianKernel1D(double[] v, double sigma) {
-        int n = v.length;
-        DMatrixRMaj K = new DMatrixRMaj(n, n);
-        double[] kd = K.data;
-        double inv2s2 = 1.0 / Math.max(2.0 * sigma * sigma, 1e-24);
-        int p = 0;
-        for (int i = 0; i < n; i++) {
-            double vi = v[i];
-            for (int j = 0; j < n; j++, p++) {
-                double d = vi - v[j];
-                kd[p] = Math.exp(-(d * d) * inv2s2);
-            }
-        }
-        return SimpleMatrix.wrap(K);
-    }
-
-    // Linear kernel for a single vector: K = v v^T
-    private static SimpleMatrix linearKernel1D(double[] v) {
-        int n = v.length;
-        DMatrixRMaj K = new DMatrixRMaj(n, n);
-        double[] kd = K.data;
-        int p = 0;
-        for (int i = 0; i < n; i++) {
-            double vi = v[i];
-            for (int j = 0; j < n; j++, p++) {
-                kd[p] = vi * v[j];
-            }
-        }
-        return SimpleMatrix.wrap(K);
-    }
-
-    // Polynomial kernel for a single vector: K = (gamma * (v v^T) + coef0)^degree
-    private static SimpleMatrix polynomialKernel1D(double[] v, double gamma, double coef0, int degree) {
-        int n = v.length;
-        DMatrixRMaj K = new DMatrixRMaj(n, n);
-        double[] kd = K.data;
-        int p = 0;
-        if (degree == 1) {
-            for (int i = 0; i < n; i++) {
-                double vi = v[i];
-                for (int j = 0; j < n; j++, p++) {
-                    kd[p] = gamma * (vi * v[j]) + coef0;
-                }
-            }
-        } else if (degree == 2) {
-            for (int i = 0; i < n; i++) {
-                double vi = v[i];
-                for (int j = 0; j < n; j++, p++) {
-                    double base = gamma * (vi * v[j]) + coef0;
-                    kd[p] = base * base;
-                }
-            }
-        } else {
-            for (int i = 0; i < n; i++) {
-                double vi = v[i];
-                for (int j = 0; j < n; j++, p++) {
-                    kd[p] = Math.pow(gamma * (vi * v[j]) + coef0, degree);
-                }
-            }
-        }
-        return SimpleMatrix.wrap(K);
-    }
-
-    // Median-distance bandwidth for 1-D vectors (Silverman-ish but robust)
-    private static double bandwidth1D(double[] v) {
-        int n = v.length;
-        if (n < 2) return 1.0;
-        // Collect pairwise squared distances (can sample for large n)
-        // For simplicity, subsample up to 512 points to keep O(n^2) modest
-        int m = Math.min(n, 512);
-        // uniform sub-sample without replacement
-        int[] idx = new int[n];
-        for (int i = 0; i < n; i++) idx[i] = i;
-        Random r = new Random(7);
-        for (int i = 0; i < m; i++) {
-            int j = i + r.nextInt(n - i);
-            int t = idx[i]; idx[i] = idx[j]; idx[j] = t;
-        }
-        List<Double> d2 = new ArrayList<>(m * (m - 1) / 2);
-        for (int a = 0; a < m; a++) {
-            int i = idx[a];
-            for (int b = a + 1; b < m; b++) {
-                int j = idx[b];
-                double d = v[i] - v[j];
-                d2.add(d * d);
-            }
-        }
-        if (d2.isEmpty()) return 1.0;
-        Collections.sort(d2);
-        double med2 = d2.get(d2.size() / 2);
-        double sigma = Math.sqrt(med2 / 2.0);
-        if (!(sigma > 0.0) || !Double.isFinite(sigma)) sigma = 1.0;
-        return sigma;
     }
 
     /**

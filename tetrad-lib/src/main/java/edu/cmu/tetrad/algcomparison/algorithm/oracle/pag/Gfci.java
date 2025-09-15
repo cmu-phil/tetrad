@@ -119,8 +119,8 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Returns a description of the GFCI algorithm using the description of the independence test and score
-     * associated with it.
+     * Returns a description of the GFCI algorithm using the description of the independence test and score associated
+     * with it.
      *
      * @return The description of the algorithm.
      */

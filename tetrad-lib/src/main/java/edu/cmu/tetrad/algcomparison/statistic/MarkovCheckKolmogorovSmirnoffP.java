@@ -4,8 +4,8 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -20,20 +20,19 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic, MarkovCheckerS
     @Serial
     private static final long serialVersionUID = 23L;
     /**
-     * An instance of the IndependenceWrapper interface that encapsulates the independence test logic.
-     * Used for generating and applying independence tests within the context of statistical calculations.
-     * The independenceWrapper field supplies a way to determine whether variables in data are independent,
-     * conditional on a provided conditioning set, and produces relevant test results.
+     * An instance of the IndependenceWrapper interface that encapsulates the independence test logic. Used for
+     * generating and applying independence tests within the context of statistical calculations. The
+     * independenceWrapper field supplies a way to determine whether variables in data are independent, conditional on a
+     * provided conditioning set, and produces relevant test results.
      */
     private final IndependenceWrapper independenceWrapper;
     /**
-     * Specifies the type of conditioning set used in the Markov check.
-     * Determines how independence tests are conducted based on the graph structure
-     * by conditioning on a specific set of variables. The choice of the conditioning
-     * set type impacts the assessment of conditional independence and derived dependencies.
-     *
-     * This field is immutable and initialized during the instantiation of the
-     * {@code MarkovCheckKolmogorovSmirnoffP} class.
+     * Specifies the type of conditioning set used in the Markov check. Determines how independence tests are conducted
+     * based on the graph structure by conditioning on a specific set of variables. The choice of the conditioning set
+     * type impacts the assessment of conditional independence and derived dependencies.
+     * <p>
+     * This field is immutable and initialized during the instantiation of the {@code MarkovCheckKolmogorovSmirnoffP}
+     * class.
      */
     private final ConditioningSetType conditioningSetType;
 

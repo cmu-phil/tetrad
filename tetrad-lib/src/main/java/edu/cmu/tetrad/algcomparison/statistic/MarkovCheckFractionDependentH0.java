@@ -4,8 +4,8 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -20,15 +20,15 @@ public class MarkovCheckFractionDependentH0 implements Statistic, MarkovCheckerS
     @Serial
     private static final long serialVersionUID = 23L;
     /**
-     * An instance of IndependenceWrapper that provides access to independence tests and related functionality
-     * for evaluating statistical independence in a dataset. Used as part of the Markov check process to
-     * determine if the p-values for an estimated graph are uniformly distributed.
+     * An instance of IndependenceWrapper that provides access to independence tests and related functionality for
+     * evaluating statistical independence in a dataset. Used as part of the Markov check process to determine if the
+     * p-values for an estimated graph are uniformly distributed.
      */
     private final IndependenceWrapper independenceWrapper;
     /**
      * The type of conditioning set used within the MarkovCheckFractionDependentH0 class to specify the approach for
-     * determining conditioning sets in statistical independence tests during Markov checks. This variable defines
-     * the strategy applied for selecting the conditioning sets, impacting how independence facts are tested and inferred.
+     * determining conditioning sets in statistical independence tests during Markov checks. This variable defines the
+     * strategy applied for selecting the conditioning sets, impacting how independence facts are tested and inferred.
      * The selected ConditioningSetType determines how the contextual dependencies or independencies in a graph model
      * are analyzed, as described by the available options in the ConditioningSetType enumeration.
      */

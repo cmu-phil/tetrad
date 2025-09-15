@@ -26,17 +26,18 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
     private final int minRedundancy;
 
     /**
-     * Constructs a TscTestBlockDiscoverer instance with the specified parameters for discovering and analyzing
-     * blocks of variables in a dataset using the TSC algorithm.
+     * Constructs a TscTestBlockDiscoverer instance with the specified parameters for discovering and analyzing blocks
+     * of variables in a dataset using the TSC algorithm.
      *
-     * @param dataSet The dataset to process for discovering variable relationships.
-     * @param alpha A significance level parameter used for hypothesis testing, must be in the range (0, 1).
-     * @param ess The equivalent sample size used in certain scoring or prior adjustments.
-     * @param ridge A regularization parameter for ridge regression; must be greater than or equal to 0.
-     * @param rMax The maximum number of iterations or search radius used in the discovery process.
-     * @param policy The single cluster policy dictating the criteria for canonicalizing discovered clusters.
+     * @param dataSet       The dataset to process for discovering variable relationships.
+     * @param alpha         A significance level parameter used for hypothesis testing, must be in the range (0, 1).
+     * @param ess           The equivalent sample size used in certain scoring or prior adjustments.
+     * @param ridge         A regularization parameter for ridge regression; must be greater than or equal to 0.
+     * @param rMax          The maximum number of iterations or search radius used in the discovery process.
+     * @param policy        The single cluster policy dictating the criteria for canonicalizing discovered clusters.
      * @param minRedundancy The minimum allowed redundancy level among variables in discovered clusters.
-     * @param verbose A flag indicating whether to output detailed logging or debugging information during processing.
+     * @param verbose       A flag indicating whether to output detailed logging or debugging information during
+     *                      processing.
      * @throws IllegalArgumentException If the ridge parameter is less than 0.
      */
     public TscTestBlockDiscoverer(DataSet dataSet, double alpha, int ess, double ridge, int rMax,

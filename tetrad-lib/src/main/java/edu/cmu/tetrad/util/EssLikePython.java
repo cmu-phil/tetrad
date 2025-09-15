@@ -6,30 +6,15 @@ import java.util.Random;
 
 public final class EssLikePython {
 
-    public static final class Result {
-        public final double avgRowCorr; // same definition as Python function
-        public final double ess;        // N / (1 + (N-1)*avgRowCorr) (optionally clamped)
-        public final int mRowsUsed;
-        Result(double avgRowCorr, double ess, int mRowsUsed) {
-            this.avgRowCorr = avgRowCorr; this.ess = ess; this.mRowsUsed = mRowsUsed;
-        }
-        @Override public String toString() {
-            return String.format("avgRowCorr=%.6f, ESS=%.2f, m=%d", avgRowCorr, ess, mRowsUsed);
-        }
-    }
-
     /**
-     * Mirrors your Python:
-     *  1) Column-standardize (ddof=0) across ALL rows.
-     *  2) Sample m rows without replacement (m ≈ sqrt(2N) typical).
-     *  3) Row-standardize those m rows (ddof=0).
-     *  4) Compute full row–row correlation matrix and average its off-diagonal.
-     *  5) ESS = N / (1 + (N-1)*avgCorr).
+     * Mirrors your Python: 1) Column-standardize (ddof=0) across ALL rows. 2) Sample m rows without replacement (m ≈
+     * sqrt(2N) typical). 3) Row-standardize those m rows (ddof=0). 4) Compute full row–row correlation matrix and
+     * average its off-diagonal. 5) ESS = N / (1 + (N-1)*avgCorr).
      *
-     * @param X N x P data (rows=samples, cols=features)
-     * @param sampleSize desired number of rows to use (e.g., (int)Math.sqrt(2*N))
+     * @param X                N x P data (rows=samples, cols=features)
+     * @param sampleSize       desired number of rows to use (e.g., (int)Math.sqrt(2*N))
      * @param clampNonnegative if true, clamp avgCorr to [0, 0.999999] before ESS
-     * @param rng random (null → default)
+     * @param rng              random (null → default)
      */
     public static Result estimateLikePython(SimpleMatrix X,
                                             int sampleSize,
@@ -95,7 +80,7 @@ public final class EssLikePython {
         }
 
         double[] rMean = new double[m];
-        double[] rStd  = new double[m];
+        double[] rStd = new double[m];
         for (int i = 0; i < m; i++) {
             double mean = 0.0;
             for (int j = 0; j < P; j++) mean += Y.get(i, j);
@@ -118,7 +103,7 @@ public final class EssLikePython {
 
         // 4) Full row–row correlation on Y (since each row is mean 0, sd 1 with ddof=0, the corr reduces to dot/P)
         double sumOffDiag = 0.0;
-        long   numPairs   = 0L;
+        long numPairs = 0L;
         for (int i = 0; i < m; i++) {
             for (int j = i + 1; j < m; j++) {
                 double dot = 0.0;
@@ -140,15 +125,34 @@ public final class EssLikePython {
         return new Result(avgCorr, ess, m);
     }
 
-    // ----- helpers -----
-
     private static int[] shuffledRange(int n, Random rng) {
         int[] idx = new int[n];
         for (int i = 0; i < n; i++) idx[i] = i;
         for (int i = n - 1; i > 0; i--) {
             int j = rng.nextInt(i + 1);
-            int tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp;
+            int tmp = idx[i];
+            idx[i] = idx[j];
+            idx[j] = tmp;
         }
         return idx;
+    }
+
+    // ----- helpers -----
+
+    public static final class Result {
+        public final double avgRowCorr; // same definition as Python function
+        public final double ess;        // N / (1 + (N-1)*avgRowCorr) (optionally clamped)
+        public final int mRowsUsed;
+
+        Result(double avgRowCorr, double ess, int mRowsUsed) {
+            this.avgRowCorr = avgRowCorr;
+            this.ess = ess;
+            this.mRowsUsed = mRowsUsed;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("avgRowCorr=%.6f, ESS=%.2f, m=%d", avgRowCorr, ess, mRowsUsed);
+        }
     }
 }

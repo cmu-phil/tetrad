@@ -19,20 +19,19 @@ public class MarkovCheckAdPasses implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
     /**
-     * Provides an interface to independence tests for evaluating conditional independence relationships
-     * in a data set. It is used as a dependency for statistical computations and Markov checks
-     * within the containing class.
+     * Provides an interface to independence tests for evaluating conditional independence relationships in a data set.
+     * It is used as a dependency for statistical computations and Markov checks within the containing class.
      */
     private final IndependenceWrapper independenceWrapper;
     /**
-     * Represents the type of conditioning set to be used in Markov checks for evaluating independence
-     * relationships in a graph or data set. The conditioning set determines which variables are conditioned
-     * on during independence tests, influencing the nature and scope of the independence facts being tested.
-     *
-     * This variable works in conjunction with {@link IndependenceWrapper} to perform statistical evaluations
-     * related to Markov property testing. Its specific type is defined by the {@link ConditioningSetType} enum,
-     * which provides various options such as GLOBAL_MARKOV, LOCAL_MARKOV, and others, each corresponding to
-     * a particular approach to selecting the conditioning set.
+     * Represents the type of conditioning set to be used in Markov checks for evaluating independence relationships in
+     * a graph or data set. The conditioning set determines which variables are conditioned on during independence
+     * tests, influencing the nature and scope of the independence facts being tested.
+     * <p>
+     * This variable works in conjunction with {@link IndependenceWrapper} to perform statistical evaluations related to
+     * Markov property testing. Its specific type is defined by the {@link ConditioningSetType} enum, which provides
+     * various options such as GLOBAL_MARKOV, LOCAL_MARKOV, and others, each corresponding to a particular approach to
+     * selecting the conditioning set.
      */
     private final ConditioningSetType conditioningSetType;
 
@@ -46,7 +45,7 @@ public class MarkovCheckAdPasses implements Statistic, MarkovCheckerStatistic {
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
      */
-    public MarkovCheckAdPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType   ) {
+    public MarkovCheckAdPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
     }

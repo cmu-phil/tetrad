@@ -6,9 +6,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
- * LocalGraphRecall implements the Statistic interface and represents the local graph recall statistic.
- * It calculates the recall of the estimated graph with respect to the true graph. The recall is defined as the ratio
- * of true positives (TP) to the sum of true positives and false negatives (TP + FN).
+ * LocalGraphRecall implements the Statistic interface and represents the local graph recall statistic. It calculates
+ * the recall of the estimated graph with respect to the true graph. The recall is defined as the ratio of true
+ * positives (TP) to the sum of true positives and false negatives (TP + FN).
  */
 public class LocalGraphRecall implements Statistic {
 

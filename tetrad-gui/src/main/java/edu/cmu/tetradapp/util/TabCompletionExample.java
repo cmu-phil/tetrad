@@ -3,8 +3,8 @@ package edu.cmu.tetradapp.util;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import javax.swing.*;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The TabCompletionExample class demonstrates the usage of tab completion in a JTextField.
@@ -12,10 +12,10 @@ import java.util.ArrayList;
 public class TabCompletionExample {
 
     /**
-     * The main method is the entry point of the TabCompletionExample program.
-     * It creates a JFrame window with a JTextField and adds tab completion logic to the text field.
-     * The list of words used for tab completion is provided as an argument to the EditorUtils.addTabCompleteLogic method.
-     * Finally, the JFrame is set visible and the program starts running.
+     * The main method is the entry point of the TabCompletionExample program. It creates a JFrame window with a
+     * JTextField and adds tab completion logic to the text field. The list of words used for tab completion is provided
+     * as an argument to the EditorUtils.addTabCompleteLogic method. Finally, the JFrame is set visible and the program
+     * starts running.
      *
      * @param args the command-line arguments
      */

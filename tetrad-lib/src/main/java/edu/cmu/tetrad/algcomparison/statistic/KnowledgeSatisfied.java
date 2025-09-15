@@ -9,8 +9,8 @@ import edu.cmu.tetrad.util.Parameters;
 import java.io.Serial;
 
 /**
- * Implementation of the KnowledgeSatisfied class.
- * This class represents a statistic that measures whether the provided knowledge is satisfied for the estimated graph.
+ * Implementation of the KnowledgeSatisfied class. This class represents a statistic that measures whether the provided
+ * knowledge is satisfied for the estimated graph.
  */
 public class KnowledgeSatisfied implements Statistic, HasKnowledge {
     @Serial
@@ -18,10 +18,11 @@ public class KnowledgeSatisfied implements Statistic, HasKnowledge {
 
     /**
      * The `knowledge` variable represents a knowledge object.
-     *
-     * This variable is a private member of the `KnowledgeSatisfied` class, which implements the `Statistic` and `HasKnowledge` interfaces.
-     * It is used to measure whether the provided knowledge is satisfied for the estimated graph.
-     *
+     * <p>
+     * This variable is a private member of the `KnowledgeSatisfied` class, which implements the `Statistic` and
+     * `HasKnowledge` interfaces. It is used to measure whether the provided knowledge is satisfied for the estimated
+     * graph.
+     * <p>
      * It is initially set to `null`.
      *
      * @see KnowledgeSatisfied

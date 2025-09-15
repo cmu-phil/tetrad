@@ -4,7 +4,6 @@ import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 
@@ -93,8 +92,8 @@ public interface Simulation extends HasParameters, TetradSerializable {
     Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> getRandomGraphClass();
 
     /**
-     * Returns the class of the simulation. This method is used to retrieve the class
-     * of a simulation based on the selected simulations in the model.
+     * Returns the class of the simulation. This method is used to retrieve the class of a simulation based on the
+     * selected simulations in the model.
      *
      * @return The class of the simulation.
      */

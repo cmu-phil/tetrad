@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.KnowledgeTransferable;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -128,9 +127,9 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         for (KnowledgeBoxInput input : inputs) {
             for (Node node : input.getVariables()) {
 //                if (node.getNodeType() == NodeType.MEASURED) { // TODO Why was this here?
-                    variableNodes.add(node);
-                    variableNames.add(node.getName());
-                    this.knowledge.addVariable(node.getName());
+                variableNodes.add(node);
+                variableNames.add(node.getName());
+                this.knowledge.addVariable(node.getName());
 //                }
             }
         }

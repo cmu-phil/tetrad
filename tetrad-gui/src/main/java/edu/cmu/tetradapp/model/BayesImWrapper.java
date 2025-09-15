@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -90,33 +90,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
      */
     public BayesImWrapper(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
         setup(bayesPmWrapper, oldBayesImwrapper, params);
-    }
-
-    private void setup(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
-        if (bayesPmWrapper == null) {
-            throw new NullPointerException("BayesPmWrapper must not be null.");
-        }
-
-        if (params == null) {
-            throw new NullPointerException("Parameters must not be null.");
-        }
-
-        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
-
-        if (bayesIms == null) {
-            setBayesIm(new MlBayesIm(bayesPm));
-            return;
-        }
-
-        BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
-
-        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
-            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.MANUAL);
-        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
-            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.RANDOM);
-        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
-        }
     }
 
     /**
@@ -241,6 +214,33 @@ public class BayesImWrapper implements SessionModel, Memorable {
     public static BayesImWrapper serializableInstance() {
         return new BayesImWrapper(BayesPmWrapper.serializableInstance(),
                 new Parameters());
+    }
+
+    private void setup(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
+        if (bayesPmWrapper == null) {
+            throw new NullPointerException("BayesPmWrapper must not be null.");
+        }
+
+        if (params == null) {
+            throw new NullPointerException("Parameters must not be null.");
+        }
+
+        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
+
+        if (bayesIms == null) {
+            setBayesIm(new MlBayesIm(bayesPm));
+            return;
+        }
+
+        BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
+
+        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
+            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.MANUAL);
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
+            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.RANDOM);
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
+            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
+        }
     }
 
     /**

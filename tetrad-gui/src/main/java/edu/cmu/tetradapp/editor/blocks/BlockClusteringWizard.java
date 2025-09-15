@@ -31,7 +31,7 @@ public class BlockClusteringWizard extends JPanel {
     private static final String TEST_CCA = "CCA";
     private static final String TEST_BT = "Bollen-Ting";
     private static final String TEST_WIS = "Wishart";
-//    private static final List<String> TESTS_FOFC = List.of(TEST_CCA, TEST_BT, TEST_WIS);
+    //    private static final List<String> TESTS_FOFC = List.of(TEST_CCA, TEST_BT, TEST_WIS);
 //    private static final List<String> TESTS_BPC = List.of(TEST_CCA, TEST_BT, TEST_WIS);
 //    private static final List<String> TESTS_FTFC = List.of(TEST_CCA, TEST_BT);      // no Wishart
     private static final List<String> TESTS_NONE = List.of();                       // TSC
@@ -62,7 +62,6 @@ public class BlockClusteringWizard extends JPanel {
      * operations.
      *
      * @param dataSet      The dataset to be used for block clustering analysis. Cannot be null.
-     *
      * @param alg          The name of the selected algorithm for clustering.
      * @param test         The name of the selected dependency test.
      * @param blockText    The text representing the initial block structure or specification.

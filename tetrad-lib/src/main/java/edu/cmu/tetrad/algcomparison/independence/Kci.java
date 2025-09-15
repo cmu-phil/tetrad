@@ -35,7 +35,7 @@ public class Kci implements IndependenceWrapper {
      */
     public Kci() {
 
-        }
+    }
 
     /**
      * {@inheritDoc}

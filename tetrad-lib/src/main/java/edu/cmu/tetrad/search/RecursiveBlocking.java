@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -45,9 +44,9 @@ public class RecursiveBlocking {
     }
 
     /**
-     * Identifies and returns a subset of nodes that blocks all blockable paths between two given nodes (x and y)
-     * within a graph under specified constraints. This method considers the inclusion of certain nodes,
-     * avoidance of specific nodes, and limits on path lengths while performing the analysis.
+     * Identifies and returns a subset of nodes that blocks all blockable paths between two given nodes (x and y) within
+     * a graph under specified constraints. This method considers the inclusion of certain nodes, avoidance of specific
+     * nodes, and limits on path lengths while performing the analysis.
      *
      * @param graph         the graph to analyze
      * @param x             the starting node
@@ -56,8 +55,8 @@ public class RecursiveBlocking {
      * @param notFollowed   the set of nodes that should not be traversed along the path
      * @param maxPathLength the maximum allowable length for a path between x and y
      * @param knowledge     additional knowledge constraints that inform the path blocking process
-     * @return a set of nodes that blocks the paths between x and y based on the specified conditions, or null if
-     * no blocking subset can be determined
+     * @return a set of nodes that blocks the paths between x and y based on the specified conditions, or null if no
+     * blocking subset can be determined
      * @throws InterruptedException if the operation is interrupted during execution
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,

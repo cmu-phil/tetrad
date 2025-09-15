@@ -29,6 +29,51 @@ public class TestJoeMarkovCheckExploration {
         new TestJoeMarkovCheckExploration().test1();
     }
 
+    private static @NotNull Pair<List<Pair<IndependenceFact, Double>>, Graph> getPValues(Graph cpdag, DataSet dataSet) {
+        IndTestFisherZ test = new IndTestFisherZ(dataSet, 0.05);
+        List<Pair<IndependenceFact, Double>> pValues = new ArrayList<>();
+
+        List<Integer> all = new ArrayList<>();
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            all.add(i);
+        }
+
+        test.setRows(all);
+
+        Set<IndependenceFact> facts = new HashSet<>();
+
+        MsepTest msepTest = new MsepTest(cpdag);
+
+        for (Node x : cpdag.getNodes()) {
+            for (Node y : cpdag.getNodes()) {
+                if (x.equals(y)) {
+                    continue;
+                }
+
+                IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(cpdag.getParents(x)));
+
+                if (!facts.contains(fact)) {
+                    boolean msep = msepTest.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent();
+
+                    if (msep) {
+                        Collections.shuffle(all);
+
+                        List<Integer> rows = all.subList(0, (int) (dataSet.getNumRows() * 0.8));
+                        test.setRows(rows);
+
+                        double pValue = test.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).getPValue();
+                        pValues.add(Pair.of(fact, pValue));
+                    }
+                }
+
+                facts.add(fact);
+            }
+        }
+
+        return Pair.of(pValues, cpdag);
+    }
+
     public void test1() {
         Graph trueGraph = RandomGraph.randomGraph(15, 0, 30, 100,
                 100, 100, false);
@@ -39,8 +84,8 @@ public class TestJoeMarkovCheckExploration {
         DataSet dataSet = im.simulateData(1000, false);
 
 //        for (double penalty = 0.01; penalty <= .2; penalty += 0.1) {
-            for (double penalty = 0.5; penalty <= 10; penalty += 0.1) {
-                penalty = Math.round(penalty * 10) / 10.0;
+        for (double penalty = 0.5; penalty <= 10; penalty += 0.1) {
+            penalty = Math.round(penalty * 10) / 10.0;
             SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
             score.setPenaltyDiscount(penalty);
 
@@ -104,51 +149,6 @@ public class TestJoeMarkovCheckExploration {
                            + " FDR = " + fdr + " AD = " + nf.format(ad) + " KS = "
                            + nf.format(ks) + " # tests = " + pValues.size() + " # edges = "
                            + cpdag.getNumEdges() + " bicDiff = " + nf.format(bicDiffValue));
-    }
-
-    private static @NotNull Pair<List<Pair<IndependenceFact, Double>>, Graph> getPValues(Graph cpdag, DataSet dataSet) {
-        IndTestFisherZ test = new IndTestFisherZ(dataSet, 0.05);
-        List<Pair<IndependenceFact, Double>> pValues = new ArrayList<>();
-
-        List<Integer> all = new ArrayList<>();
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            all.add(i);
-        }
-
-        test.setRows(all);
-
-        Set<IndependenceFact> facts = new HashSet<>();
-
-        MsepTest msepTest = new MsepTest(cpdag);
-
-        for (Node x : cpdag.getNodes()) {
-            for (Node y : cpdag.getNodes()) {
-                if (x.equals(y)) {
-                    continue;
-                }
-
-                IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(cpdag.getParents(x)));
-
-                if (!facts.contains(fact)) {
-                    boolean msep = msepTest.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent();
-
-                    if (msep) {
-                        Collections.shuffle(all);
-
-                        List<Integer> rows = all.subList(0, (int) (dataSet.getNumRows() * 0.8));
-                        test.setRows(rows);
-
-                        double pValue = test.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).getPValue();
-                        pValues.add(Pair.of(fact, pValue));
-                    }
-                }
-
-                facts.add(fact);
-            }
-        }
-
-        return Pair.of(pValues, cpdag);
     }
 
     public Double checkAgainstAndersonDarlingTest(List<Double> pValues) {

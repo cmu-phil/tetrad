@@ -1,28 +1,29 @@
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.model.HybridCgImWrapper;
+
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
-import edu.cmu.tetradapp.model.HybridCgImWrapper;
-
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Method;
 
 public class HybridCgImEditor extends JPanel {
 
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private JPanel editorPanel;
     private JTable table;
     private HybridCgImNodeEditingTable model; // TableModel
     private String name = "Hybrid CG IM Editor";
-
     private HybridCgImWrapper imWrapper; // backing model wrapper (nullable until set)
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     public HybridCgImEditor() {
         setupEditor();
     }
 
-    /** Convenience ctor that binds an existing IM wrapper. */
+    /**
+     * Convenience ctor that binds an existing IM wrapper.
+     */
     public HybridCgImEditor(HybridCgImWrapper wrapper) {
         this();
         setImWrapper(wrapper);
@@ -40,7 +41,16 @@ public class HybridCgImEditor extends JPanel {
         return editorPanel;
     }
 
-    /** Bind/replace the current IM wrapper used by this editor. */
+    /**
+     * Current wrapper (may be null).
+     */
+    public HybridCgImWrapper getImWrapper() {
+        return imWrapper;
+    }
+
+    /**
+     * Bind/replace the current IM wrapper used by this editor.
+     */
     public void setImWrapper(HybridCgImWrapper wrapper) {
         HybridCgImWrapper old = this.imWrapper;
         this.imWrapper = wrapper;
@@ -48,17 +58,16 @@ public class HybridCgImEditor extends JPanel {
         pcs.firePropertyChange("imWrapper", old, this.imWrapper);
     }
 
-    /** Current wrapper (may be null). */
-    public HybridCgImWrapper getImWrapper() {
-        return imWrapper;
-    }
-
-    /** Hook a wizard (see MixedImEditorWizard) */
+    /**
+     * Hook a wizard (see MixedImEditorWizard)
+     */
     public JDialog getWizard(Window owner) {
         return HybridCgImEditorWizard.create(owner, this);
     }
 
-    /** Returns whatever parameter container you adopt later (MLE/SEM results etc.). */
+    /**
+     * Returns whatever parameter container you adopt later (MLE/SEM results etc.).
+     */
     public Object retrieveHybridCgIm() {
         if (imWrapper == null) return null;
         // Prefer the concrete type for callers that know about it.
@@ -132,7 +141,9 @@ public class HybridCgImEditor extends JPanel {
         add(editorPanel, BorderLayout.CENTER);
     }
 
-    /** Bind the current wrapper into the table model (via well-known or reflective hooks). */
+    /**
+     * Bind the current wrapper into the table model (via well-known or reflective hooks).
+     */
     private void configureModelBinding() {
         if (model == null) return;
         if (imWrapper == null) return;
@@ -144,7 +155,9 @@ public class HybridCgImEditor extends JPanel {
         }
     }
 
-    /** Reflectively invoke a no-arg or single-arg method if present. Returns true if invoked. */
+    /**
+     * Reflectively invoke a no-arg or single-arg method if present. Returns true if invoked.
+     */
     private boolean safeInvoke(Object target, String methodName, Class<?> paramType, Object arg) {
         try {
             Method m = target.getClass().getMethod(methodName, paramType);

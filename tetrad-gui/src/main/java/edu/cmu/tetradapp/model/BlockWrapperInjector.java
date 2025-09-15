@@ -20,11 +20,12 @@ import java.util.function.Consumer;
  */
 final class BlockWrapperInjector {
 
-    private BlockWrapperInjector() {}
+    private BlockWrapperInjector() {
+    }
 
     /**
-     * Core injector for a concrete algorithm instance. Call this anywhere you have
-     * the actual object (e.g., right after instantiation in a runner).
+     * Core injector for a concrete algorithm instance. Call this anywhere you have the actual object (e.g., right after
+     * instantiation in a runner).
      */
     static void applyToInstance(Object algo, DataModel data, Parameters params, BlockSpec spec) {
         Objects.requireNonNull(algo, "algorithm instance is null");
@@ -40,9 +41,8 @@ final class BlockWrapperInjector {
     }
 
     /**
-     * Model-level injector. If the model carries a live instance, inject now.
-     * If it carries a class/descriptor, attach a post-instantiation hook so the
-     * runner can inject when it creates the instance.
+     * Model-level injector. If the model carries a live instance, inject now. If it carries a class/descriptor, attach
+     * a post-instantiation hook so the runner can inject when it creates the instance.
      */
     static void apply(List<AlgorithmModel> models, DataModel data, Parameters params, BlockSpec spec) {
         for (AlgorithmModel m : models) {
@@ -80,8 +80,7 @@ final class BlockWrapperInjector {
     }
 
     /**
-     * Try to get a Class<?> from a descriptor via a no-arg method named 'clazz'.
-     * Returns null if not available.
+     * Try to get a Class<?> from a descriptor via a no-arg method named 'clazz'. Returns null if not available.
      */
     private static Class<?> extractClazzSafely(Object descriptor) {
         try {

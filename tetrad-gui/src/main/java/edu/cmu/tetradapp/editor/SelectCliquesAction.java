@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -32,11 +31,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-
-import static edu.cmu.tetrad.graph.GraphUtils.maximalCliques;
 
 /**
  * An action to highlight edges in node cliques in the GraphWorkbench of a certain minimum size (input by the user).
@@ -77,7 +72,7 @@ public class SelectCliquesAction extends AbstractAction implements ClipboardOwne
 
         String s = JOptionPane.showInputDialog("Enter the minimum size of the (maximal) clique: ");
 
-        int minSize ;
+        int minSize;
 
         while (true) {
             if (s == null) {

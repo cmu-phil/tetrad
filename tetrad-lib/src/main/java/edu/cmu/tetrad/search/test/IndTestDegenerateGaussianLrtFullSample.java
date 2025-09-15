@@ -115,8 +115,8 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      * input dataset to create the necessary embeddings and initializes key components such as the BIC score for later
      * use in independence testing.
      *
-     * @param dataSet         the input data set to be used for the analysis. It must not be null. May contain a mixture
-     *                        of continuous and discrete variables.
+     * @param dataSet the input data set to be used for the analysis. It must not be null. May contain a mixture of
+     *                continuous and discrete variables.
      * @throws NullPointerException if the provided dataSet is null.
      */
     public IndTestDegenerateGaussianLrtFullSample(DataSet dataSet) {
@@ -155,12 +155,11 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      * singular. Regularization is controlled by the lambda parameter, which adds a scaled identity matrix to the design
      * matrix's normal equation.
      *
-     * @param B                    the design matrix, where rows correspond to observations and columns correspond to
-     *                             features.
-     * @param X                    the response matrix, where rows correspond to observations and columns to dependent
-     *                             variable outputs.
-     * @param lambda               the regularization parameter used to stabilize the solution. Larger values result in
-     *                             stronger regularization.
+     * @param B      the design matrix, where rows correspond to observations and columns correspond to features.
+     * @param X      the response matrix, where rows correspond to observations and columns to dependent variable
+     *               outputs.
+     * @param lambda the regularization parameter used to stabilize the solution. Larger values result in stronger
+     *               regularization.
      * @return the computed OLS solution as a SimpleMatrix object.
      */
     public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
@@ -368,6 +367,11 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
         return p_value;
     }
 
+    @Override
+    public int getEffectiveSampleSize() {
+        return this.nEff;
+    }
+
     /**
      * Sets the sample size to use for the independence test, which may be different from the sample size of the data
      * set or covariance matrix. If not set, the sample size of the data set or covariance matrix is used.
@@ -377,11 +381,6 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
         this.nEff = effectiveSampleSize < 0 ? this.sampleSize : effectiveSampleSize;
-    }
-
-    @Override
-    public int getEffectiveSampleSize() {
-        return this.nEff;
     }
 
     /**
@@ -432,12 +431,11 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
     }
 
     /**
-     * Sets the regularization parameter lambda used in statistical computations or tests.
-     * The lambda parameter often helps to stabilize computations, particularly in the
-     * presence of ill-conditioned problems.
+     * Sets the regularization parameter lambda used in statistical computations or tests. The lambda parameter often
+     * helps to stabilize computations, particularly in the presence of ill-conditioned problems.
      *
-     * @param lambda the regularization parameter to be set. Larger values typically result in
-     *               stronger regularization. Must be a non-negative value.
+     * @param lambda the regularization parameter to be set. Larger values typically result in stronger regularization.
+     *               Must be a non-negative value.
      */
     public void setLambda(double lambda) {
         this.lambda = lambda;

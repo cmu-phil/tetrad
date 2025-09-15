@@ -13,9 +13,8 @@ import java.awt.*;
 
 public class UnmixParamsEditor extends JPanel implements FinalizingParameterEditor {
 
-    private Parameters parameters;
     private final UnmixSpec spec = new UnmixSpec();
-
+    private Parameters parameters;
     // Basic
     private JCheckBox autoKCheck;
     private JSpinner kSpinner, kminSpinner, kmaxSpinner;
@@ -41,7 +40,7 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
 
     public UnmixParamsEditor() {
         setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Header
         add(buildHeader(), BorderLayout.NORTH);
@@ -82,9 +81,18 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
             pushToParams();
         });
 
-        kSpinner     = intSpinner(spec.getK(), 1, 100, 1, v -> { spec.setK(v); pushToParams(); });
-        kminSpinner  = intSpinner(spec.getKmin(), 1, 100, 1, v -> { spec.setKmin(v); pushToParams(); });
-        kmaxSpinner  = intSpinner(spec.getKmax(), 1, 100, 1, v -> { spec.setKmax(v); pushToParams(); });
+        kSpinner = intSpinner(spec.getK(), 1, 100, 1, v -> {
+            spec.setK(v);
+            pushToParams();
+        });
+        kminSpinner = intSpinner(spec.getKmin(), 1, 100, 1, v -> {
+            spec.setKmin(v);
+            pushToParams();
+        });
+        kmaxSpinner = intSpinner(spec.getKmax(), 1, 100, 1, v -> {
+            spec.setKmax(v);
+            pushToParams();
+        });
 
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         row1.add(autoKCheck);
@@ -104,16 +112,29 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
         JPanel p = titled("Parent superset (residualization)");
 
         supersetCheck = new JCheckBox("Use parent superset", spec.isUseParentSuperset());
-        supersetCheck.addActionListener(e -> { spec.setUseParentSuperset(supersetCheck.isSelected()); syncEnableStates(); pushToParams(); });
+        supersetCheck.addActionListener(e -> {
+            spec.setUseParentSuperset(supersetCheck.isSelected());
+            syncEnableStates();
+            pushToParams();
+        });
 
-        topMSpinner = intSpinner(spec.getSupersetTopM(), 1, 1000, 1, v -> { spec.setSupersetTopM(v); pushToParams(); });
+        topMSpinner = intSpinner(spec.getSupersetTopM(), 1, 1000, 1, v -> {
+            spec.setSupersetTopM(v);
+            pushToParams();
+        });
 
         supersetScoreBox = new JComboBox<>(UnmixSpec.SupersetScore.values());
         supersetScoreBox.setSelectedItem(spec.getSupersetScore());
-        supersetScoreBox.addActionListener(e -> { spec.setSupersetScore((UnmixSpec.SupersetScore) supersetScoreBox.getSelectedItem()); pushToParams(); });
+        supersetScoreBox.addActionListener(e -> {
+            spec.setSupersetScore((UnmixSpec.SupersetScore) supersetScoreBox.getSelectedItem());
+            pushToParams();
+        });
 
         robustScaleCheck = new JCheckBox("Robustly scale residuals (median/IQR)", spec.isRobustScaleResiduals());
-        robustScaleCheck.addActionListener(e -> { spec.setRobustScaleResiduals(robustScaleCheck.isSelected()); pushToParams(); });
+        robustScaleCheck.addActionListener(e -> {
+            spec.setRobustScaleResiduals(robustScaleCheck.isSelected());
+            pushToParams();
+        });
 
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         row1.add(supersetCheck);
@@ -139,13 +160,30 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
         covAuto = new JRadioButton("Auto", spec.getCovarianceMode() == UnmixSpec.CovarianceMode.AUTO);
         covFull = new JRadioButton("Full", spec.getCovarianceMode() == UnmixSpec.CovarianceMode.FULL);
         covDiag = new JRadioButton("Diagonal", spec.getCovarianceMode() == UnmixSpec.CovarianceMode.DIAGONAL);
-        g.add(covAuto); g.add(covFull); g.add(covDiag);
+        g.add(covAuto);
+        g.add(covFull);
+        g.add(covDiag);
 
-        safetyMarginSpinner = intSpinner(spec.getFullSigmaSafetyMargin(), 0, 1000, 1, v -> { spec.setFullSigmaSafetyMargin(v); pushToParams(); });
+        safetyMarginSpinner = intSpinner(spec.getFullSigmaSafetyMargin(), 0, 1000, 1, v -> {
+            spec.setFullSigmaSafetyMargin(v);
+            pushToParams();
+        });
 
-        covAuto.addActionListener(e -> { spec.setCovarianceMode(UnmixSpec.CovarianceMode.AUTO); syncEnableStates(); pushToParams(); });
-        covFull.addActionListener(e -> { spec.setCovarianceMode(UnmixSpec.CovarianceMode.FULL); syncEnableStates(); pushToParams(); });
-        covDiag.addActionListener(e -> { spec.setCovarianceMode(UnmixSpec.CovarianceMode.DIAGONAL); syncEnableStates(); pushToParams(); });
+        covAuto.addActionListener(e -> {
+            spec.setCovarianceMode(UnmixSpec.CovarianceMode.AUTO);
+            syncEnableStates();
+            pushToParams();
+        });
+        covFull.addActionListener(e -> {
+            spec.setCovarianceMode(UnmixSpec.CovarianceMode.FULL);
+            syncEnableStates();
+            pushToParams();
+        });
+        covDiag.addActionListener(e -> {
+            spec.setCovarianceMode(UnmixSpec.CovarianceMode.DIAGONAL);
+            syncEnableStates();
+            pushToParams();
+        });
 
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         row1.add(covAuto);
@@ -162,27 +200,55 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
     private JPanel buildEmPanel() {
         JPanel p = titled("EM stability");
 
-        restartsSpinner   = intSpinner(spec.getKmeansRestarts(), 1, 10_000, 1, v -> { spec.setKmeansRestarts(v); pushToParams(); });
-        itersSpinner      = intSpinner(spec.getEmMaxIters(), 1, 1_000_000, 10, v -> { spec.setEmMaxIters(v); pushToParams(); });
+        restartsSpinner = intSpinner(spec.getKmeansRestarts(), 1, 10_000, 1, v -> {
+            spec.setKmeansRestarts(v);
+            pushToParams();
+        });
+        itersSpinner = intSpinner(spec.getEmMaxIters(), 1, 1_000_000, 10, v -> {
+            spec.setEmMaxIters(v);
+            pushToParams();
+        });
 
-        ridgeSpinner      = dblSpinner(spec.getRidge(), 0.0, 1.0, 1e-3, v -> { spec.setRidge(v); pushToParams(); });
-        shrinkageSpinner  = dblSpinner(spec.getShrinkage(), 0.0, 1.0, 0.01, v -> { spec.setShrinkage(v); pushToParams(); });
+        ridgeSpinner = dblSpinner(spec.getRidge(), 0.0, 1.0, 1e-3, v -> {
+            spec.setRidge(v);
+            pushToParams();
+        });
+        shrinkageSpinner = dblSpinner(spec.getShrinkage(), 0.0, 1.0, 0.01, v -> {
+            spec.setShrinkage(v);
+            pushToParams();
+        });
 
-        annealStepsSpinner= intSpinner(spec.getAnnealSteps(), 0, 10_000, 1, v -> { spec.setAnnealSteps(v); pushToParams(); });
-        annealTSpinner    = dblSpinner(spec.getAnnealStartT(), 0.0, 10.0, 0.05, v -> { spec.setAnnealStartT(v); pushToParams(); });
+        annealStepsSpinner = intSpinner(spec.getAnnealSteps(), 0, 10_000, 1, v -> {
+            spec.setAnnealSteps(v);
+            pushToParams();
+        });
+        annealTSpinner = dblSpinner(spec.getAnnealStartT(), 0.0, 10.0, 0.05, v -> {
+            spec.setAnnealStartT(v);
+            pushToParams();
+        });
 
-        seedSpinner       = intSpinner((int) spec.getRandomSeed(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1, v -> { spec.setRandomSeed(v); pushToParams(); });
+        seedSpinner = intSpinner((int) spec.getRandomSeed(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1, v -> {
+            spec.setRandomSeed(v);
+            pushToParams();
+        });
 
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
-        row1.add(new JLabel("K-means restarts:")); row1.add(restartsSpinner);
-        row1.add(new JLabel("EM iters:")); row1.add(itersSpinner);
-        row1.add(new JLabel("Seed:")); row1.add(seedSpinner);
+        row1.add(new JLabel("K-means restarts:"));
+        row1.add(restartsSpinner);
+        row1.add(new JLabel("EM iters:"));
+        row1.add(itersSpinner);
+        row1.add(new JLabel("Seed:"));
+        row1.add(seedSpinner);
 
         JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
-        row2.add(new JLabel("Ridge:")); row2.add(ridgeSpinner);
-        row2.add(new JLabel("Shrinkage:")); row2.add(shrinkageSpinner);
-        row2.add(new JLabel("Anneal steps:")); row2.add(annealStepsSpinner);
-        row2.add(new JLabel("Start T:")); row2.add(annealTSpinner);
+        row2.add(new JLabel("Ridge:"));
+        row2.add(ridgeSpinner);
+        row2.add(new JLabel("Shrinkage:"));
+        row2.add(shrinkageSpinner);
+        row2.add(new JLabel("Anneal steps:"));
+        row2.add(annealStepsSpinner);
+        row2.add(new JLabel("Start T:"));
+        row2.add(annealTSpinner);
 
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
         p.add(row1);
@@ -246,15 +312,15 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
         return s;
     }
 
-    // tiny functional helpers
-    private interface IntConsumer { void apply(int v); }
-    private interface DblConsumer { void apply(double v); }
+    @Override
+    public void setup() { /* no-op */ }
+
+    @Override
+    public boolean mustBeShown() {
+        return false;
+    }
 
     // ---------------- FinalizingParameterEditor ----------------
-
-    @Override public void setup() { /* no-op */ }
-
-    @Override public boolean mustBeShown() { return false; }
 
     @Override
     public void setParams(Parameters params) {
@@ -284,5 +350,14 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
         if (parameters != null) {
             parameters.set("unmixSpec", spec);
         }
+    }
+
+    // tiny functional helpers
+    private interface IntConsumer {
+        void apply(int v);
+    }
+
+    private interface DblConsumer {
+        void apply(double v);
     }
 }

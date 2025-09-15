@@ -21,9 +21,8 @@ import ai.djl.translate.Translator;
 import java.util.List;
 
 /**
- * The MultiLayerPerceptronDjl class provides a customizable implementation of a
- * Multi-Layer Perceptron (MLP) for tasks like regression or classification using
- * the Deep Java Library (DJL). This class allows the user to define the network
+ * The MultiLayerPerceptronDjl class provides a customizable implementation of a Multi-Layer Perceptron (MLP) for tasks
+ * like regression or classification using the Deep Java Library (DJL). This class allows the user to define the network
  * architecture, including the input dimension, hidden layers, and type of output.
  */
 public class MultiLayerPerceptronDjl {
@@ -33,17 +32,16 @@ public class MultiLayerPerceptronDjl {
     private final NDManager manager;
 
     /**
-     * Constructs a MultiLayerPerceptronDjl object with the specified input dimension, hidden layers,
-     * variable type, and input scaling factor. This builds the architecture of a neural network based
-     * on provided configurations such as the number of input features, hidden layer specifications,
-     * and the output type (e.g., continuous, multinomial, or binary).
+     * Constructs a MultiLayerPerceptronDjl object with the specified input dimension, hidden layers, variable type, and
+     * input scaling factor. This builds the architecture of a neural network based on provided configurations such as
+     * the number of input features, hidden layer specifications, and the output type (e.g., continuous, multinomial, or
+     * binary).
      *
-     * @param inputDim    the number of input features or dimensions.
+     * @param inputDim     the number of input features or dimensions.
      * @param hiddenLayers a list of integers defining the number of neurons in each hidden layer.
-     * @param variableType the type of prediction target, such as "continuous", "binary",
-     *                     or "multinomial". For multinomial, it should specify the number
-     *                     of categories as "multinomial,numCategories".
-     * @param inputScale  a scaling factor applied to the input data.
+     * @param variableType the type of prediction target, such as "continuous", "binary", or "multinomial". For
+     *                     multinomial, it should specify the number of categories as "multinomial,numCategories".
+     * @param inputScale   a scaling factor applied to the input data.
      */
     public MultiLayerPerceptronDjl(int inputDim, List<Integer> hiddenLayers,
                                    String variableType, float inputScale) {

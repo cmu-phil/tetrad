@@ -1,14 +1,17 @@
 /// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) ... (unchanged)                                             //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
@@ -144,21 +147,27 @@ public class MimbuildBollen {
      *
      * @return the minimum value as a double.
      */
-    public double getMinimum() { return minimum; }
+    public double getMinimum() {
+        return minimum;
+    }
 
     /**
      * Retrieves the p-value associated with the MimbuildBollen class.
      *
      * @return the p-value as a double
      */
-    public double getPValue() { return pValue; }
+    public double getPValue() {
+        return pValue;
+    }
 
     /**
      * Sets the penalty discount value associated with the MimbuildBollen class.
      *
      * @param penaltyDiscount the penalty discount value to set, represented as a double
      */
-    public void setPenaltyDiscount(double penaltyDiscount) { this.penaltyDiscount = penaltyDiscount; }
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
 
     // -----------------------------------------------------------------------------------------
     // Estimation: given measures covariance, indicators, and their indices in that covariance,

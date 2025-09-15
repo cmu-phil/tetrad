@@ -18,6 +18,40 @@ import java.util.*;
 
 public class TestHybridCgModelModel {
 
+    public static HybridCgModel.HybridCgIm randomIm(HybridCgModel.HybridCgPm pm, Random rng) {
+        HybridCgModel.HybridCgIm im = new HybridCgModel.HybridCgIm(pm);
+        int n = pm.getNodes().length;
+
+        for (int y = 0; y < n; y++) {
+            int rows = pm.getNumRows(y);
+
+            if (pm.isDiscrete(y)) {
+                int K = pm.getCardinality(y);
+                for (int r = 0; r < rows; r++) {
+                    double[] probs = new double[K];
+                    double sum = 0.0;
+                    for (int k = 0; k < K; k++) {
+                        probs[k] = rng.nextDouble();
+                        sum += probs[k];
+                    }
+                    for (int k = 0; k < K; k++) {
+                        im.setProbability(y, r, k, probs[k] / sum);
+                    }
+                }
+            } else {
+                int m = pm.getContinuousParents(y).length;
+                for (int r = 0; r < rows; r++) {
+                    im.setIntercept(y, r, rng.nextGaussian()); // random mean offset
+                    for (int j = 0; j < m; j++) {
+                        im.setCoefficient(y, r, j, rng.nextGaussian() * 0.5); // random slope
+                    }
+                    im.setVariance(y, r, 1.0 + rng.nextDouble()); // variance > 0
+                }
+            }
+        }
+        return im;
+    }
+
     @Test
     public void test() {
 
@@ -39,7 +73,7 @@ public class TestHybridCgModelModel {
 
         // Tell the PM which variables are discrete and their categories (order matters!)
         Map<Node, Boolean> isDisc = new HashMap<>();
-        Map<Node, List<String>> cats  = new HashMap<>();
+        Map<Node, List<String>> cats = new HashMap<>();
 
         for (Node v : nodeOrder) {
             boolean discrete = v instanceof DiscreteVariable;
@@ -114,39 +148,5 @@ public class TestHybridCgModelModel {
             throw new RuntimeException(e);
         }
 
-    }
-
-    public static HybridCgModel.HybridCgIm randomIm(HybridCgModel.HybridCgPm pm, Random rng) {
-        HybridCgModel.HybridCgIm im = new HybridCgModel.HybridCgIm(pm);
-        int n = pm.getNodes().length;
-
-        for (int y = 0; y < n; y++) {
-            int rows = pm.getNumRows(y);
-
-            if (pm.isDiscrete(y)) {
-                int K = pm.getCardinality(y);
-                for (int r = 0; r < rows; r++) {
-                    double[] probs = new double[K];
-                    double sum = 0.0;
-                    for (int k = 0; k < K; k++) {
-                        probs[k] = rng.nextDouble();
-                        sum += probs[k];
-                    }
-                    for (int k = 0; k < K; k++) {
-                        im.setProbability(y, r, k, probs[k] / sum);
-                    }
-                }
-            } else {
-                int m = pm.getContinuousParents(y).length;
-                for (int r = 0; r < rows; r++) {
-                    im.setIntercept(y, r, rng.nextGaussian()); // random mean offset
-                    for (int j = 0; j < m; j++) {
-                        im.setCoefficient(y, r, j, rng.nextGaussian() * 0.5); // random slope
-                    }
-                    im.setVariance(y, r, 1.0 + rng.nextDouble()); // variance > 0
-                }
-            }
-        }
-        return im;
     }
 }

@@ -27,8 +27,6 @@ import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BlockScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
-import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.*;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
@@ -46,8 +44,8 @@ import java.awt.*;
 import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Apr 15, 2019 11:31:10 AM
@@ -596,7 +594,8 @@ public class AlgorithmCard extends JPanel {
                     msg = "";
                 }
 
-            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException exception) {
+            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException |
+                     InvocationTargetException exception) {
                 TetradLogger.getInstance().log(exception.toString());
                 msg = "";
             }
@@ -618,7 +617,8 @@ public class AlgorithmCard extends JPanel {
                             firePropertyChange("algoFwdBtn", null, false);
                             JOptionPane.showMessageDialog(this.desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
                         }
-                    } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException exception) {
+                    } catch (IllegalAccessException | InstantiationException | NoSuchMethodException |
+                             InvocationTargetException exception) {
                         TetradLogger.getInstance().log(exception.toString());
                     }
                 }
@@ -763,7 +763,10 @@ public class AlgorithmCard extends JPanel {
                 // If the default isn’t present after filtering, fall back to first item.
                 boolean present = false;
                 for (int i = 0; i < this.indTestComboBox.getItemCount(); i++) {
-                    if (this.indTestComboBox.getItemAt(i).equals(testModel)) { present = true; break; }
+                    if (this.indTestComboBox.getItemAt(i).equals(testModel)) {
+                        present = true;
+                        break;
+                    }
                 }
                 if (!present) testModel = this.indTestComboBox.getItemAt(0);
             }
@@ -849,7 +852,10 @@ public class AlgorithmCard extends JPanel {
                 // If filtered out, fall back to first item
                 boolean present = false;
                 for (int i = 0; i < this.scoreComboBox.getItemCount(); i++) {
-                    if (this.scoreComboBox.getItemAt(i).equals(scoreModel)) { present = true; break; }
+                    if (this.scoreComboBox.getItemAt(i).equals(scoreModel)) {
+                        present = true;
+                        break;
+                    }
                 }
                 if (!present) scoreModel = this.scoreComboBox.getItemAt(0);
             }

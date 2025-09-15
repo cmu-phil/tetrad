@@ -64,11 +64,12 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     /**
      * Initializes a new instance of the ConditionalCorrelationIndependence class using the provided DataSet.
      *
-     * @param dataSet    The dataset to be used for the analysis. This dataset must not be null and will be
-     *                   standardized.
-     * @param basisType  The type of basis function to be used in the analysis. This value must be a positive integer.
-     * @param basisScale The scaling factor used to adjust the bandwidth for the analysis, or 0.0 if the data should be
-     *                   standardized.
+     * @param dataSet      The dataset to be used for the analysis. This dataset must not be null and will be
+     *                     standardized.
+     * @param basisType    The type of basis function to be used in the analysis. This value must be a positive
+     *                     integer.
+     * @param basisScale   The scaling factor used to adjust the bandwidth for the analysis, or 0.0 if the data should
+     *                     be standardized.
      * @param numFunctions The number of functions to be used in the analysis. This value must be a positive integer.
      * @throws NullPointerException if the provided dataset is null.
      */

@@ -123,6 +123,7 @@ public class AlmostCycleRemover implements TetradSerializable {
 
     /**
      * Removes cycles from the Graph. A cycle is a path x ~~&gt; x.
+     *
      * @param pag The Graph to be reoriented.
      * @return true if cycles were removed; false otherwise
      */

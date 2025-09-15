@@ -198,16 +198,16 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
     }
 
     @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
+    }
+
+    @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? this.sampleSize : nEff;
         if (bic == null) {
             throw new IllegalStateException("bic is null");
         }
         this.bic.setEffectiveSampleSize(this.nEff);
-    }
-
-    @Override
-    public int getEffectiveSampleSize() {
-        return nEff;
     }
 }

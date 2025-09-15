@@ -10,8 +10,8 @@ import java.io.Serial;
 import static java.lang.Math.tanh;
 
 /**
- * The number of genuine adjacencies in an estimated PAG compared to the true PAG. These are edges that are not induced edges
- * or covering colliders or non-colliders.
+ * The number of genuine adjacencies in an estimated PAG compared to the true PAG. These are edges that are not induced
+ * edges or covering colliders or non-colliders.
  *
  * @author josephramsey
  * @version $Id: $Id

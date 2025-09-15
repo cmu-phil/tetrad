@@ -2,7 +2,10 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.work_in_progress.MagCgBicScore;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -46,7 +49,8 @@ public class MagCgScore implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet)) throw new IllegalArgumentException("Expecting a dataset for MAG DG Score.");
+        if (!(dataModel instanceof DataSet))
+            throw new IllegalArgumentException("Expecting a dataset for MAG DG Score.");
 
         Graph mag = GraphTransforms.zhangMagFromPag(estGraph);
         MagCgBicScore magDgScore = new MagCgBicScore((DataSet) dataModel);

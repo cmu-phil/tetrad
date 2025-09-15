@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -52,13 +52,13 @@ import java.util.*;
  */
 public final class Ccd implements IGraphSearch {
     /**
-     * The independence test to be used.
-     */
-    private IndependenceTest test;
-    /**
      * The nodes in the graph.
      */
     private final List<Node> nodes;
+    /**
+     * The independence test to be used.
+     */
+    private IndependenceTest test;
     /**
      * Whether the R1 rule should be applied.
      */
@@ -202,8 +202,9 @@ public final class Ccd implements IGraphSearch {
                 if (S.contains(b)) {
                     // non-collider at b
                     psi.addUnderlineTriple(a, b, c);
-                    if (verbose) TetradLogger.getInstance().log("StepB: underline (non-collider) " + a + "-" + b + "-" + c +
-                                                    " ; sepset(a,c)=" + S);
+                    if (verbose)
+                        TetradLogger.getInstance().log("StepB: underline (non-collider) " + a + "-" + b + "-" + c +
+                                                       " ; sepset(a,c)=" + S);
                 } else {
                     // collider at b: a -> b <- c
                     psi.removeEdge(a, b);

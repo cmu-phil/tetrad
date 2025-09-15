@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
@@ -77,19 +77,19 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     }
 
     /**
-     * Returns the display name.
-     */
-    default String getDisplayName() {
-        boolean displayRank = !(getRank() == -1); // || getRank() == 1);
-        return getName() + (displayRank ? "(" + getRank() + ")" : "");
-    }
-
-    /**
      * Sets the rank, or -1 if no rank is set.
      * @throws UnsupportedOperationException if the node type does not support setting a rank.
      */
     default void setRank(int rank) {
         throw new UnsupportedOperationException("Rank is not supported for this node type.");
+    }
+
+    /**
+     * Returns the display name.
+     */
+    default String getDisplayName() {
+        boolean displayRank = !(getRank() == -1); // || getRank() == 1);
+        return getName() + (displayRank ? "(" + getRank() + ")" : "");
     }
 
     /**

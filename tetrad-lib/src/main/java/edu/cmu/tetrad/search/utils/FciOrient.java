@@ -136,14 +136,14 @@ public class FciOrient {
     }
 
     /**
-     * Determines if an arrowhead can be placed at node Y in the given graph, based on the adjacency
-     * relationships, endpoint types, and any provided prior knowledge constraints.
+     * Determines if an arrowhead can be placed at node Y in the given graph, based on the adjacency relationships,
+     * endpoint types, and any provided prior knowledge constraints.
      *
-     * @param x      The first node under consideration in the graph.
-     * @param y      The second node under consideration in the graph, where the arrowhead placement is evaluated.
-     * @param graph  The graph object containing nodes and their relationships.
-     * @param K      An object representing prior knowledge that may impose requirements or restrictions on edges.
-     * @return       true if an arrowhead is allowed at node Y under the given conditions; false otherwise.
+     * @param x     The first node under consideration in the graph.
+     * @param y     The second node under consideration in the graph, where the arrowhead placement is evaluated.
+     * @param graph The graph object containing nodes and their relationships.
+     * @param K     An object representing prior knowledge that may impose requirements or restrictions on edges.
+     * @return true if an arrowhead is allowed at node Y under the given conditions; false otherwise.
      */
     public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge K) {
         if (!graph.isAdjacentTo(x, y)) return false;

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -23,7 +23,6 @@ package edu.cmu.tetrad.study.examples.conditions;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Fask;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.FaskOrig;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.IcaLingam;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fas;

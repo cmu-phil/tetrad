@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.test;
 
 // File: RccaRankEstimatorTest.java
+
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.jupiter.api.Test;
@@ -12,17 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestRccaRankEstimator {
 
-    // ==== Plug your estimator here ====
-    interface RankEstimator {
-        int estimate(SimpleMatrix Scond, int[] xIdx, int[] yIdx,
-                     int n, double alpha, double regLambda, double condThreshold);
-    }
-
     private static final RankEstimator ESTIMATOR = (scond, xIdxLocal, yIdxLocal, n, alpha, regLambda, condThreshold) -> RankTests.estimateWilksRank(scond, xIdxLocal, yIdxLocal, n, alpha);
 
-    // ==== Utilities ====
-
-    /** Build sample covariance from data matrix (n x (p+q)), columns mean-centered. */
+    /**
+     * Build sample covariance from data matrix (n x (p+q)), columns mean-centered.
+     */
     private static SimpleMatrix sampleCov(double[][] data) {
         int n = data.length;
         int d = data[0].length;
@@ -40,32 +35,38 @@ public class TestRccaRankEstimator {
         return S;
     }
 
-    /** Draw a random unit vector of length dim. */
+    // ==== Utilities ====
+
+    /**
+     * Draw a random unit vector of length dim.
+     */
     private static double[] randUnitVec(int dim, Random rng) {
         double[] v = new double[dim];
         double norm2 = 0.0;
-        for (int i = 0; i < dim; i++) { double z = rng.nextGaussian(); v[i] = z; norm2 += z*z; }
+        for (int i = 0; i < dim; i++) {
+            double z = rng.nextGaussian();
+            v[i] = z;
+            norm2 += z * z;
+        }
         double inv = 1.0 / Math.sqrt(norm2);
         for (int i = 0; i < dim; i++) v[i] *= inv;
         return v;
     }
 
-    /** Adds scaled vector (scale * L) along direction u into row vector out. */
+    /**
+     * Adds scaled vector (scale * L) along direction u into row vector out.
+     */
     private static void addSignal(double[] out, double[] u, double L, double scale) {
         for (int j = 0; j < u.length; j++) out[j] += scale * u[j] * L;
     }
 
     /**
-     * Simulate (X, Y) with:
-     *  - p, q: dimensions;
-     *  - n: samples;
-     *  - d: latent rank (0..min(p,q));
-     *  - rho: per-latent target canonical correlation (used when d>=1);
-     *  - illCondScale: if >0, multiplies the j-th X feature by illCondScale^j (makes Sxx ill-conditioned).
-     *
-     * Construction (simple, robust):
-     *  X = sum_{k=1..d} a_k L_k + σ * E_x,   Y = sum_{k=1..d} b_k L_k + σ * E_y,
-     *  with a_k, b_k random unit vectors; choose σ so that corr ≈ rho when d=1.
+     * Simulate (X, Y) with: - p, q: dimensions; - n: samples; - d: latent rank (0..min(p,q)); - rho: per-latent target
+     * canonical correlation (used when d>=1); - illCondScale: if >0, multiplies the j-th X feature by illCondScale^j
+     * (makes Sxx ill-conditioned).
+     * <p>
+     * Construction (simple, robust): X = sum_{k=1..d} a_k L_k + σ * E_x,   Y = sum_{k=1..d} b_k L_k + σ * E_y, with
+     * a_k, b_k random unit vectors; choose σ so that corr ≈ rho when d=1.
      */
     private static double[][] simulateXY(int p, int q, int n, int d, double rho,
                                          double illCondScale, long seed) {
@@ -130,8 +131,6 @@ public class TestRccaRankEstimator {
         return IntStream.range(startInclusive, endExclusive).toArray();
     }
 
-    // ==== Scenarios ====
-
     @Test
     public void typeI_rank0_smallN() {
         int p = 8, q = 6;
@@ -154,6 +153,8 @@ public class TestRccaRankEstimator {
         // Loose bound to avoid flaky tests; tighten as desired.
         assertTrue(typeI < 0.12, "Type-I inflated: " + typeI);
     }
+
+    // ==== Scenarios ====
 
     @Test
     public void power_rank1_weakSignal() {
@@ -229,7 +230,10 @@ public class TestRccaRankEstimator {
             for (int v : ests) mean += v;
             mean /= trials;
             double var = 0.0;
-            for (int v : ests) { double dlt = v - mean; var += dlt * dlt; }
+            for (int v : ests) {
+                double dlt = v - mean;
+                var += dlt * dlt;
+            }
             double sd = Math.sqrt(var / Math.max(1, trials - 1));
             double frac2 = exact2 / (double) trials;
 
@@ -265,5 +269,11 @@ public class TestRccaRankEstimator {
         // Be generous to avoid flakiness across environments:
         assertTrue(meanLarge >= 1.8, "Mean rank at large n should be close to 2, got " + meanLarge);
         assertTrue(frac2Large >= 0.65, "Too few exact-2 recoveries at large n: " + frac2Large);
+    }
+
+    // ==== Plug your estimator here ====
+    interface RankEstimator {
+        int estimate(SimpleMatrix Scond, int[] xIdx, int[] yIdx,
+                     int n, double alpha, double regLambda, double condThreshold);
     }
 }

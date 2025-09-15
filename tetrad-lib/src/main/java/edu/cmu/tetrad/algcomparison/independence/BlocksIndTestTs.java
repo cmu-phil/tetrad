@@ -4,9 +4,9 @@ import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.test.IndTestBlocksTs;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -32,10 +32,9 @@ public class BlocksIndTestTs implements BlockIndependenceWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
     /**
-     * Represents the specification for block structures required in the
-     * "Blocks Test Lemma 10" independence test implementation. This variable
-     * holds the configuration or details defining the nature of the blocks to be
-     * used in the test.
+     * Represents the specification for block structures required in the "Blocks Test Lemma 10" independence test
+     * implementation. This variable holds the configuration or details defining the nature of the blocks to be used in
+     * the test.
      */
     private BlockSpec blockSpec;
 
@@ -46,9 +45,9 @@ public class BlocksIndTestTs implements BlockIndependenceWrapper {
     }
 
     /**
-     * Sets the specification for block structures required in the "Blocks Test Lemma 10"
-     * independence test implementation. This method updates the configuration or details
-     * defining the nature of the blocks to be used in the test.
+     * Sets the specification for block structures required in the "Blocks Test Lemma 10" independence test
+     * implementation. This method updates the configuration or details defining the nature of the blocks to be used in
+     * the test.
      *
      * @param blockSpec the specification for the block structure to be set
      */
@@ -57,12 +56,13 @@ public class BlocksIndTestTs implements BlockIndependenceWrapper {
     }
 
     /**
-     * Creates and returns an instance of an independence test based on the specified block structure
-     * and parameters provided.
+     * Creates and returns an instance of an independence test based on the specified block structure and parameters
+     * provided.
      *
-     * @param dataModel The data model which contains the dataset for performing the test.
+     * @param dataModel  The data model which contains the dataset for performing the test.
      * @param parameters A collection of parameters including test-specific configuration such as the alpha value.
-     * @return An instance of the {@link IndependenceTest} configured with the provided block specification and parameters.
+     * @return An instance of the {@link IndependenceTest} configured with the provided block specification and
+     * parameters.
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
@@ -93,8 +93,8 @@ public class BlocksIndTestTs implements BlockIndependenceWrapper {
     }
 
     /**
-     * Retrieves a list of parameter names required for the "Blocks Test Lemma 10" independence test.
-     * These parameters define the test's configuration and behavior.
+     * Retrieves a list of parameter names required for the "Blocks Test Lemma 10" independence test. These parameters
+     * define the test's configuration and behavior.
      *
      * @return a list of parameter names as strings.
      */

@@ -23,15 +23,6 @@ import java.util.stream.Collectors;
 public class DmPc implements IGraphSearch {
 
     /**
-     * An instance of {@link IndependenceTest} used to perform conditional independence tests. This variable serves as
-     * the primary testing mechanism within the constraint-based search algorithms of the containing class.
-     * <p>
-     * It is initialized through constructor dependency injection and is expected to implement methods for testing
-     * independence, retrieving variables, and managing the configuration (such as significance level) necessary for the
-     * tests.
-     */
-    private IndependenceTest test;
-    /**
      * A list of input nodes used within the algorithm. These nodes represent the variables that are considered as
      * potential causes or predictors within the graph structure.
      * <p>
@@ -45,6 +36,15 @@ public class DmPc implements IGraphSearch {
      * procedures.
      */
     private final List<Node> outputs = new ArrayList<>();
+    /**
+     * An instance of {@link IndependenceTest} used to perform conditional independence tests. This variable serves as
+     * the primary testing mechanism within the constraint-based search algorithms of the containing class.
+     * <p>
+     * It is initialized through constructor dependency injection and is expected to implement methods for testing
+     * independence, retrieving variables, and managing the configuration (such as significance level) necessary for the
+     * tests.
+     */
+    private IndependenceTest test;
     /**
      * Represents domain-specific knowledge used during the causal discovery process in the DmPc class. This variable is
      * utilized to impose background knowledge and constraints on the structural search process, such as required or

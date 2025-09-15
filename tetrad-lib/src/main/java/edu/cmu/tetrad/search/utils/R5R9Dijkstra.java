@@ -92,7 +92,7 @@ public class R5R9Dijkstra {
 
                 // For both R5 and R9 we need to check ~adj(beta, gamma) where gamma = y and beta is the second
                 // node on the path.
-                if (currentVertex == x  && x != y) {
+                if (currentVertex == x && x != y) {
                     Node beta = dijkstraEdge.getToNode();
                     if (adjacent(dijkstraGraph, beta, y)) continue;
                 }
@@ -100,9 +100,11 @@ public class R5R9Dijkstra {
                 // For R5 we need to additionally check ~adj(alpha, theta), where theta = second to last node and
                 // alpha = x.
                 if (!r9) {
-                    if (dijkstraEdge.getToNode() == y && x != y) {{
-                        if (adjacent(dijkstraGraph, currentVertex, x)) continue;
-                    }}
+                    if (dijkstraEdge.getToNode() == y && x != y) {
+                        {
+                            if (adjacent(dijkstraGraph, currentVertex, x)) continue;
+                        }
+                    }
                 }
 
                 // Skip length-1 paths.

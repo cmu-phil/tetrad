@@ -71,6 +71,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * The name of the model.
      */
     private final Map<String, Object> userAlgoSelections = new HashMap<>();
+    private final Map<Graph, String> graphSubtitle = new IdentityHashMap<>();
     /**
      * The graph list.
      */
@@ -109,17 +110,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      */
     private transient List<IndependenceTest> independenceTests;
     private List<String> resultNames = new ArrayList<>();
-    private final Map<Graph, String> graphSubtitle = new IdentityHashMap<>();
-
-    public String getGraphSubtitle(Graph g) {
-        return graphSubtitle.get(g);
-    }
     /**
      * The elapsed time for the algorithm to run.
      */
     private long elapsedTime = -1L;
-
-    //===========================CONSTRUCTORS===========================//
 
     /**
      * <p>Constructor for GeneralAlgorithmRunner.</p>
@@ -136,6 +130,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         this.userAlgoSelections.putAll(runner.userAlgoSelections);
     }
+
+    //===========================CONSTRUCTORS===========================//
 
     /**
      * <p>Constructor for GeneralAlgorithmRunner.</p>
@@ -367,7 +363,76 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
     }
 
+    private static boolean hasText(String s) {
+        return s != null && !s.isBlank();
+    }
+
     //============================PUBLIC METHODS==========================//
+
+    private static String datasetDisplayName(DataModel dm) {
+        // DataSet, CovarianceMatrix, etc. all implement DataModel#getName().
+        String n = (dm == null) ? null : dm.getName();
+        return hasText(n) ? n : null;
+    }
+
+    private static String noteFor(DataModel dm) {
+        if (dm instanceof DataSet ds) {
+            return "n=" + ds.getNumRows();
+        }
+        if (dm instanceof ICovarianceMatrix cm) {
+            return "n=" + cm.getSampleSize();
+        }
+        return null;
+    }
+
+    private static String noteForAggregate(List<? extends DataModel> dms) {
+        int k = 0, nTot = 0;
+        for (DataModel dm : dms) {
+            String s = noteFor(dm);
+            if (s != null && s.startsWith("n=")) {
+                try {
+                    nTot += Integer.parseInt(s.substring(2));
+                    k++;
+                } catch (NumberFormatException ignore) {
+                }
+            }
+        }
+        return (k > 0) ? String.format("aggregated over %d datasets, n_total=%d", k, nTot) : null;
+    }
+
+    public String getGraphSubtitle(Graph g) {
+        return graphSubtitle.get(g);
+    }
+
+//    // In GeneralAlgorithmRunner (additions/overrides; method names are illustrative)
+//    public void executeSearch() throws InterruptedException {
+//        var algo = getAlgorithm();
+//        var dml = getDataModelList();
+//
+//        // Clear previous results
+//        graphList.clear();
+//
+//        if (algo instanceof MultiDataSetAlgorithm mds) {
+//            // One graph from many datasets
+//            Graph g = mds.search(dml.getModelList(), getParameters());
+//            setResultGraphs(List.of(g));       // new multi container (GraphCard will read this)
+//            setResultNames(List.of("Combined"));
+//        } else {
+//            // One graph per dataset
+//            List<Graph> out = new ArrayList<>();
+//            List<String> names = new ArrayList<>();
+//            int idx = 1;
+//            for (DataModel dm : dml.getModelList()) {
+//                Graph g = getAlgorithm().search(dm, getParameters());
+//                out.add(g);
+//                String nm = (dm.getName() == null || dm.getName().isBlank()) ? ("Dataset " + idx) : dm.getName();
+//                names.add(nm);
+//                idx++;
+//            }
+//            setResultGraphs(out);              // primary
+//            setResultNames(names);       // store titles for tabs
+//        }
+//    }
 
     /**
      * {@inheritDoc}
@@ -568,7 +633,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 //
 //        this.graphList = graphList;
 //    }
-
     @Override
     public void execute() {
         long start = System.currentTimeMillis();
@@ -728,8 +792,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     // Type compatibility checks & run
                     boolean ok =
                             (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) ||
-                            (data.isDiscrete()   && (algDataType == DataType.Discrete   || algDataType == DataType.Mixed)) ||
-                            (data.isMixed()      &&  algDataType == DataType.Mixed);
+                            (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) ||
+                            (data.isMixed() && algDataType == DataType.Mixed);
 
                     if (!ok) {
                         throw new IllegalArgumentException("The algorithm was not expecting that type of data.");
@@ -770,16 +834,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 //        this.graphList = graphList;
     }
 
-    private static boolean hasText(String s) {
-        return s != null && !s.isBlank();
-    }
-
-    private static String datasetDisplayName(DataModel dm) {
-        // DataSet, CovarianceMatrix, etc. all implement DataModel#getName().
-        String n = (dm == null) ? null : dm.getName();
-        return hasText(n) ? n : null;
-    }
-
     public String getGraphSubtitle(Graph g, int indexHint) {
         // Prefer the paired data model when available and aligned by index.
         DataModelList dml = getDataModelList();
@@ -803,60 +857,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
 
         return ""; // No subtitle
-    }
-
-//    // In GeneralAlgorithmRunner (additions/overrides; method names are illustrative)
-//    public void executeSearch() throws InterruptedException {
-//        var algo = getAlgorithm();
-//        var dml = getDataModelList();
-//
-//        // Clear previous results
-//        graphList.clear();
-//
-//        if (algo instanceof MultiDataSetAlgorithm mds) {
-//            // One graph from many datasets
-//            Graph g = mds.search(dml.getModelList(), getParameters());
-//            setResultGraphs(List.of(g));       // new multi container (GraphCard will read this)
-//            setResultNames(List.of("Combined"));
-//        } else {
-//            // One graph per dataset
-//            List<Graph> out = new ArrayList<>();
-//            List<String> names = new ArrayList<>();
-//            int idx = 1;
-//            for (DataModel dm : dml.getModelList()) {
-//                Graph g = getAlgorithm().search(dm, getParameters());
-//                out.add(g);
-//                String nm = (dm.getName() == null || dm.getName().isBlank()) ? ("Dataset " + idx) : dm.getName();
-//                names.add(nm);
-//                idx++;
-//            }
-//            setResultGraphs(out);              // primary
-//            setResultNames(names);       // store titles for tabs
-//        }
-//    }
-
-    private static String noteFor(DataModel dm) {
-        if (dm instanceof DataSet ds) {
-            return "n=" + ds.getNumRows();
-        }
-        if (dm instanceof ICovarianceMatrix cm) {
-            return "n=" + cm.getSampleSize();
-        }
-        return null;
-    }
-
-    private static String noteForAggregate(List<? extends DataModel> dms) {
-        int k = 0, nTot = 0;
-        for (DataModel dm : dms) {
-            String s = noteFor(dm);
-            if (s != null && s.startsWith("n=")) {
-                try {
-                    nTot += Integer.parseInt(s.substring(2));
-                    k++;
-                } catch (NumberFormatException ignore) {}
-            }
-        }
-        return (k > 0) ? String.format("aggregated over %d datasets, n_total=%d", k, nTot) : null;
     }
 
     /**

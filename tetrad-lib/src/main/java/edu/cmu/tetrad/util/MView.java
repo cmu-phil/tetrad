@@ -16,30 +16,27 @@ public class MView implements TetradSerializable {
     private static final long serialVersionUID = 23L;
 
     /**
-     * Represents a view of a matrix, typically used to access or modify a subset
-     * of the rows and columns of an original matrix or another matrix view.
-     * This variable holds a reference to an immutable object of type {@code MView}.
-     * The {@code matrixView} object can include functionalities such as retrieving
-     * specific elements, updating values, or creating further sub-views of its data.
+     * Represents a view of a matrix, typically used to access or modify a subset of the rows and columns of an original
+     * matrix or another matrix view. This variable holds a reference to an immutable object of type {@code MView}. The
+     * {@code matrixView} object can include functionalities such as retrieving specific elements, updating values, or
+     * creating further sub-views of its data.
      */
     private final MView matrixView;
     /**
-     * Represents an array of row indices included in the matrix view. This array
-     * determines which rows from the original matrix are part of the current view.
-     * Immutable and specific to the representation of rows in a submatrix.
+     * Represents an array of row indices included in the matrix view. This array determines which rows from the
+     * original matrix are part of the current view. Immutable and specific to the representation of rows in a
+     * submatrix.
      */
     private final int[] viewRows;
     /**
-     * Represents the columns of the associated matrix view. Each element in this array
-     * corresponds to an index of a column in the original matrix that is part of the view.
-     * This array defines the mapping of columns from the original matrix to the matrix view.
-     * It is immutable.
+     * Represents the columns of the associated matrix view. Each element in this array corresponds to an index of a
+     * column in the original matrix that is part of the view. This array defines the mapping of columns from the
+     * original matrix to the matrix view. It is immutable.
      */
     private final int[] viewCols;
     /**
-     * Represents the underlying Matrix object associated with this MatrixView.
-     * This field stores the original matrix or a reference to it, which serves as
-     * the basis for any operations or sub-views created by this MatrixView instance.
+     * Represents the underlying Matrix object associated with this MatrixView. This field stores the original matrix or
+     * a reference to it, which serves as the basis for any operations or sub-views created by this MatrixView instance.
      * It can be null if the MatrixView is not initialized with a specific matrix.
      */
     private Matrix matrix = null;
@@ -156,12 +153,12 @@ public class MView implements TetradSerializable {
     }
 
     /**
-     * Sets the values of a specific row in the matrix view using the provided vector.
-     * The vector's values are converted to an array internally.
+     * Sets the values of a specific row in the matrix view using the provided vector. The vector's values are converted
+     * to an array internally.
      *
      * @param row the index of the row in the matrix view to be updated.
-     * @param v   a vector containing the values to assign to the specified row, where each value
-     *            corresponds to a column in the matrix view.
+     * @param v   a vector containing the values to assign to the specified row, where each value corresponds to a
+     *            column in the matrix view.
      */
     public void setRow(int row, Vector v) {
         setRow(row, v.toArray());
@@ -203,11 +200,11 @@ public class MView implements TetradSerializable {
      * Sets the values of a specific column in the matrix view using the provided array of values.
      *
      * @param column the index of the column in the matrix view to be updated
-     * @param values an array of values to assign to the specified column, where each value
-     *               corresponds to a row in the matrix view
+     * @param values an array of values to assign to the specified column, where each value corresponds to a row in the
+     *               matrix view
      * @throws IllegalArgumentException if the column index is out of bounds
-     * @throws IllegalArgumentException if the length of the provided values array does not match
-     *                                  the number of rows in the matrix view
+     * @throws IllegalArgumentException if the length of the provided values array does not match the number of rows in
+     *                                  the matrix view
      */
     public void setColumn(int column, double[] values) {
         // check indices.
@@ -283,17 +280,14 @@ public class MView implements TetradSerializable {
     }
 
     /**
-     * Updates the matrix view with the values from the specified 2D array.
-     * The dimensions of the input array must match the dimensions of the
-     * current matrix view.
+     * Updates the matrix view with the values from the specified 2D array. The dimensions of the input array must match
+     * the dimensions of the current matrix view.
      *
-     * @param m a two-dimensional array containing the values to set in the
-     *          matrix view. The number of rows in the array must match the
-     *          number of rows in the view, and the number of columns in the
-     *          array must match the number of columns in the view.
-     * @throws IllegalArgumentException if the dimensions of the provided
-     *                                  array do not match the dimensions of
-     *                                  the matrix view.
+     * @param m a two-dimensional array containing the values to set in the matrix view. The number of rows in the array
+     *          must match the number of rows in the view, and the number of columns in the array must match the number
+     *          of columns in the view.
+     * @throws IllegalArgumentException if the dimensions of the provided array do not match the dimensions of the
+     *                                  matrix view.
      */
     public void set(double[][] m) {
         if (m.length != viewRows.length || m[0].length != viewCols.length) {
@@ -308,15 +302,13 @@ public class MView implements TetradSerializable {
     }
 
     /**
-     * Sets the values of the current matrix view to match the provided matrix.
-     * The dimensions of the input matrix must match the dimensions of this
-     * matrix view.
+     * Sets the values of the current matrix view to match the provided matrix. The dimensions of the input matrix must
+     * match the dimensions of this matrix view.
      *
-     * @param m the matrix whose values will be used to update the matrix view.
-     *          The number of rows and columns in the input matrix must match
-     *          the number of rows and columns in the matrix view.
-     * @throws IllegalArgumentException if the dimensions of the provided matrix
-     *                                  do not match the dimensions of the matrix view.
+     * @param m the matrix whose values will be used to update the matrix view. The number of rows and columns in the
+     *          input matrix must match the number of rows and columns in the matrix view.
+     * @throws IllegalArgumentException if the dimensions of the provided matrix do not match the dimensions of the
+     *                                  matrix view.
      */
     public void set(Matrix m) {
         if (m.getNumRows() != viewRows.length || m.getNumColumns() != viewCols.length) {
@@ -417,9 +409,10 @@ public class MView implements TetradSerializable {
     }
 
     /**
-     * Converts a matrix view to a vector representation if the view corresponds to either a single row or a single column.
-     * If the matrix view has exactly one row, a vector containing all the columns in that row is returned.
-     * Similarly, if the matrix view has exactly one column, a vector containing all the rows in that column is returned.
+     * Converts a matrix view to a vector representation if the view corresponds to either a single row or a single
+     * column. If the matrix view has exactly one row, a vector containing all the columns in that row is returned.
+     * Similarly, if the matrix view has exactly one column, a vector containing all the rows in that column is
+     * returned.
      *
      * @return a Vector representing the single row or single column of the matrix view.
      * @throws IllegalArgumentException if the matrix view is null or does not correspond to a single row or column.
