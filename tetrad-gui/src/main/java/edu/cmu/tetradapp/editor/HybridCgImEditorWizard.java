@@ -33,7 +33,7 @@ public final class HybridCgImEditorWizard {
         dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         JPanel content = new JPanel(new BorderLayout());
-        content.add(editor.getEditorPanel(), BorderLayout.CENTER);
+        content.add(editor, BorderLayout.CENTER);
 
         JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton load = new JButton("Load from Model");

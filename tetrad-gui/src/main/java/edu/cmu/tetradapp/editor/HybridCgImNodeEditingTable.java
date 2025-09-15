@@ -1,88 +1,71 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
-import javax.swing.*;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.hybridcg.HybridCgModel;
+
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
- * Minimal hybrid CG editor table: Each row corresponds to a (discrete-parent configuration) for one target node.
- * Columns: [Node, DiscreteConfig, Mean, Variance, Betas]
+ * Mixed CG IM node editor model with inline validation (no popups).
+ * - Mean / Variance are edited as numbers (variance may be <= 0 temporarily; renderer paints red).
+ * - Betas are stored as raw text; renderer validates/counts vs PM and paints red when mismatched.
+ * - applyToIm(...) parses and writes only when the editor says the table is consistent.
  */
 public class HybridCgImNodeEditingTable extends AbstractTableModel {
 
     public static final int COL_NODE = 0;
-    public static final int COL_CFG = 1;
+    public static final int COL_CFG  = 1;
     public static final int COL_MEAN = 2;
-    public static final int COL_VAR = 3;
+    public static final int COL_VAR  = 3;
     public static final int COL_BETA = 4;
 
-    private final String[] columns = {"Node", "Config", "Mean", "Variance", "Betas (comma-separated)"};
+    private final String[] columns = {
+            "Node",
+            "Config (discrete parents)",
+            "Mean (intercept)",
+            "Variance",
+            "Betas (comma- or space-separated, cont-parent order)"
+    };
+
+    /** One editable row = one (continuous child, discrete-parent stratum) */
+    public static final class Row {
+        public final String nodeName;
+        public final String discreteConfig;
+        public double mean;
+        public double variance;
+
+        // Keep both: raw text (for inline invalid states) and parsed values (we recompute on apply).
+        public String betasText;
+
+        public Row(String nodeName, String discreteConfig,
+                   double mean, double variance, double[] betas) {
+            this.nodeName = nodeName;
+            this.discreteConfig = discreteConfig;
+            this.mean = mean;
+            this.variance = variance;
+            this.betasText = betasToString(betas);
+        }
+    }
+
     private final List<Row> rows = new ArrayList<>();
 
-    public HybridCgImNodeEditingTable() {
-        // TODO seed with something if you want; otherwise, provide setters to populate.
-        // Example placeholder:
-        rows.add(new Row("Y", "A=0,B=0", 0.0, 1.0, new double[]{0.0, 0.0}));
+    @Override public int getRowCount() { return rows.size(); }
+    @Override public int getColumnCount() { return columns.length; }
+    @Override public String getColumnName(int c) { return columns[c]; }
+
+    @Override public Class<?> getColumnClass(int c) {
+        return switch (c) {
+            case COL_NODE, COL_CFG, COL_BETA -> String.class;
+            case COL_MEAN, COL_VAR -> Double.class;
+            default -> Object.class;
+        };
     }
 
-    // --- small helpers ---
-    private static String betasToString(double[] b) {
-        if (b == null || b.length == 0) return "";
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < b.length; i++) {
-            if (i > 0) sb.append(", ");
-            sb.append(b[i]);
-        }
-        return sb.toString();
-    }
-
-    private static double[] parseBetas(String s) {
-        if (s.isEmpty()) return new double[0];
-        String[] parts = s.split(",");
-        double[] out = new double[parts.length];
-        for (int i = 0; i < parts.length; i++) out[i] = Double.parseDouble(parts[i].trim());
-        return out;
-    }
-
-    @Override
-    public int getRowCount() {
-        return rows.size();
-    }
-
-    @Override
-    public int getColumnCount() {
-        return columns.length;
-    }
-
-    @Override
-    public String getColumnName(int c) {
-        return columns[c];
-    }
-
-    @Override
-    public boolean isCellEditable(int r, int c) {
-        return c != COL_NODE;
+    @Override public boolean isCellEditable(int r, int c) {
+        return c != COL_NODE && c != COL_CFG;
     }
 
     @Override
@@ -90,10 +73,10 @@ public class HybridCgImNodeEditingTable extends AbstractTableModel {
         Row row = rows.get(r);
         return switch (c) {
             case COL_NODE -> row.nodeName;
-            case COL_CFG -> row.discreteConfig;
+            case COL_CFG  -> row.discreteConfig;
             case COL_MEAN -> row.mean;
-            case COL_VAR -> row.variance;
-            case COL_BETA -> betasToString(row.betas);
+            case COL_VAR  -> row.variance;
+            case COL_BETA -> row.betasText == null ? "" : row.betasText;
             default -> "";
         };
     }
@@ -102,72 +85,200 @@ public class HybridCgImNodeEditingTable extends AbstractTableModel {
     public void setValueAt(Object aValue, int r, int c) {
         Row row = rows.get(r);
         if (aValue == null) return;
+
         try {
             switch (c) {
-                case COL_CFG -> row.discreteConfig = aValue.toString().trim();
-                case COL_MEAN -> row.mean = Double.parseDouble(aValue.toString());
+                case COL_MEAN -> {
+                    // JFormattedTextField with NumberFormatter commits a Number
+                    double v = (aValue instanceof Number n) ? n.doubleValue()
+                            : Double.parseDouble(aValue.toString().trim());
+                    row.mean = v;
+                }
                 case COL_VAR -> {
-                    double v = Double.parseDouble(aValue.toString());
-                    if (v <= 0) throw new IllegalArgumentException("Variance must be > 0.");
+                    double v = (aValue instanceof Number n) ? n.doubleValue()
+                            : Double.parseDouble(aValue.toString().trim());
+                    // allow temporarily invalid (<=0); renderer paints red, apply gate prevents commit
                     row.variance = v;
                 }
-                case COL_BETA -> row.betas = parseBetas(aValue.toString().trim());
+                case COL_BETA -> {
+                    // keep raw text; renderer will reformat/validate; apply will parse
+                    row.betasText = aValue.toString().trim();
+                }
             }
-            fireTableRowsUpdated(r, r);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage(), "Edit Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ignore) {
+            // Inline validation: leave old value; no popups.
         }
+        fireTableCellUpdated(r, c);
     }
 
-    public void addDiscreteConfig() {
-        // TODO: compute next config string based on current targetâs discrete parents.
-        rows.add(new Row("Y", "A=0,B=1", 0.0, 1.0, new double[]{0.0, 0.0}));
-        int r = rows.size() - 1;
-        fireTableRowsInserted(r, r);
-    }
+    // ------------ Public API for the editor ------------
 
-    public void deleteSelectedConfig(int rowIndex) {
-        if (rowIndex < 0 || rowIndex >= rows.size()) return;
-        rows.remove(rowIndex);
+    /** Fill the table from a PM/IM (continuous children only). */
+    public void populateFrom(HybridCgModel.HybridCgPm pm, HybridCgModel.HybridCgIm im) {
+        rows.clear();
+
+        final Node[] nodes = pm.getNodes();
+        for (int y = 0; y < nodes.length; y++) {
+            if (pm.isDiscrete(y)) continue; // only continuous children here
+
+            int[] dps = pm.getDiscreteParents(y);
+            int[] cps = pm.getContinuousParents(y);
+
+            // Build "radices" for discrete parents: cardinalities in parent order
+            int[] radices = new int[dps.length];
+            for (int i = 0; i < dps.length; i++) {
+                radices[i] = pm.getCardinality(dps[i]);
+            }
+
+            // Iterate over all discrete-parent configurations
+            int[] discVals = new int[dps.length];
+            boolean wrapped;
+            do {
+                int rowIndex = pm.getRowIndex(y, discVals, null);
+
+                double mean = im.getIntercept(y, rowIndex);
+                double variance = im.getVariance(y, rowIndex);
+
+                double[] betas = new double[cps.length];
+                for (int t = 0; t < cps.length; t++) {
+                    betas[t] = im.getCoefficient(y, rowIndex, t);
+                }
+
+                String cfg = formatDiscreteConfig(pm, dps, discVals);
+
+                rows.add(new Row(nodes[y].getName(), cfg, mean, variance, betas));
+
+                wrapped = advanceOdometer(discVals, radices);
+            } while (!wrapped);
+        }
+
         fireTableDataChanged();
     }
 
-    public void validateAndNormalize() {
-        // For HybridCg, no row-wise normalization like CPTs; you can check variance>0, NaNs, etc.
-        for (int r = 0; r < rows.size(); r++) {
-            Row row = rows.get(r);
-            if (!(row.variance > 0)) {
-                JOptionPane.showMessageDialog(null, "Row " + r + " has non-positive variance.", "Validation", JOptionPane.WARNING_MESSAGE);
+    /** Apply edited values back into the IM in-place (assumes caller checked consistency). */
+    public void applyToIm(HybridCgModel.HybridCgPm pm, HybridCgModel.HybridCgIm im) {
+        final Node[] nodes = pm.getNodes();
+
+        for (Row r : rows) {
+            // locate child by name
+            int y = -1;
+            for (int i = 0; i < nodes.length; i++) {
+                if (nodes[i].getName().equals(r.nodeName)) { y = i; break; }
+            }
+            if (y < 0 || pm.isDiscrete(y)) continue;
+
+            int[] dps = pm.getDiscreteParents(y);
+            int[] cps = pm.getContinuousParents(y);
+
+            int[] discVals = parseDiscreteConfig(pm, dps, r.discreteConfig);
+            int rowIndex = pm.getRowIndex(y, discVals, null);
+
+            // write intercept/variance
+            im.setIntercept(y, rowIndex, r.mean);
+            im.setVariance(y, rowIndex, r.variance);
+
+            // parse betas text using either commas or whitespace
+            double[] betas = parseBetas(r.betasText);
+            for (int t = 0; t < cps.length; t++) {
+                double v = (betas != null && t < betas.length) ? betas[t] : 0.0;
+                im.setCoefficient(y, rowIndex, t, v);
             }
         }
     }
 
-    // --- API to integrate with estimator/model layer later ---
-    public List<Object> toParameterBlocks() {
-        // TODO: convert rows to your engineâs parameter objects (e.g., HybridCgIm blocks).
-        return List.of();
+    // ------------ helpers ------------
+
+    /** Advance a mixed-radix odometer; returns true if it wrapped back to zero (done). */
+    private static boolean advanceOdometer(int[] digits, int[] radices) {
+        if (digits.length == 0) return true;
+        for (int i = digits.length - 1; i >= 0; i--) {
+            digits[i]++;
+            if (digits[i] < radices[i]) return false;   // normal advance
+            digits[i] = 0;                               // carry
+        }
+        return true; // wrapped
     }
 
-    public void fromParameterBlocks(List<Object> blocks) {
-        // TODO: populate rows from a fitted HybridCgIm model (SEM or MLE layer).
+    /** Pretty config like "A=red, B=1" using category labels where available. */
+    private static String formatDiscreteConfig(HybridCgModel.HybridCgPm pm, int[] dps, int[] discVals) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < dps.length; i++) {
+            if (i > 0) sb.append(", ");
+            Node parent = pm.getNodes()[dps[i]];
+            sb.append(parent.getName()).append("=");
+
+            List<String> cats = pm.getCategories(dps[i]);
+            int idx = discVals[i];
+            if (cats != null && idx >= 0 && idx < cats.size()) {
+                sb.append(cats.get(idx));
+            } else {
+                sb.append(idx);
+            }
+        }
+        return sb.toString();
     }
 
     /**
-     * A tiny row holder. In practice youâll point these at your HybridCgIm param objects.
+     * Parse config like "A=red, B=1" into index array in the PM’s discrete-parent order.
+     * Accepts either category names or integer indices; trims whitespace.
      */
-    static class Row {
-        String nodeName;
-        String discreteConfig; // e.g. "A=0,B=1"
-        double mean;
-        double variance;
-        double[] betas; // regression coefficients for continuous parents, in a fixed order
+    private static int[] parseDiscreteConfig(HybridCgModel.HybridCgPm pm, int[] dps, String cfg) {
+        int[] out = new int[dps.length];
+        if (cfg == null || cfg.isBlank()) return out;
 
-        Row(String nodeName, String cfg, double mean, double variance, double[] betas) {
-            this.nodeName = nodeName;
-            this.discreteConfig = cfg;
-            this.mean = mean;
-            this.variance = variance;
-            this.betas = (betas == null ? new double[0] : betas.clone());
+        // Build a quick map name -> token value
+        java.util.Map<String,String> map = new java.util.LinkedHashMap<>();
+        String[] pairs = cfg.split(",");
+        for (String pair : pairs) {
+            String[] kv = pair.trim().split("=");
+            if (kv.length == 2) map.put(kv[0].trim(), kv[1].trim());
         }
+
+        for (int i = 0; i < dps.length; i++) {
+            Node parent = pm.getNodes()[dps[i]];
+            String v = map.get(parent.getName());
+            int idx = 0;
+            if (v != null) {
+                try { idx = Integer.parseInt(v); }
+                catch (NumberFormatException nfe) {
+                    List<String> cats = pm.getCategories(dps[i]);
+                    if (cats != null) {
+                        int found = -1;
+                        for (int k = 0; k < cats.size(); k++) {
+                            if (cats.get(k).equals(v)) { found = k; break; }
+                        }
+                        if (found >= 0) idx = found;
+                    }
+                }
+            }
+            out[i] = idx;
+        }
+        return out;
     }
+
+    private static String betasToString(double[] b) {
+        if (b == null || b.length == 0) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < b.length; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(String.format(Locale.US, "%.6f", b[i]));
+        }
+        return sb.toString();
+    }
+
+    /** Split on commas or whitespace; tolerate empty/extra separators. */
+    private static double[] parseBetas(String s) {
+        if (s == null || s.isBlank()) return new double[0];
+        String[] parts = s.trim().split("[,\\s]+");
+        double[] out = new double[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            out[i] = Double.parseDouble(parts[i].trim());
+        }
+        return out;
+    }
+
+    // API for editor
+    public void addDiscreteConfig() { /* shape is driven by PM; do nothing */ }
+    public void deleteSelectedConfig(int rowIndex) { /* not supported; shape is PM-driven */ }
+    public void validateAndNormalize() { /* no-op; editor validates inline */ }
 }
