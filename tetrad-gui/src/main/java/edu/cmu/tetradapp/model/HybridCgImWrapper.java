@@ -195,49 +195,6 @@ public class HybridCgImWrapper implements SessionModel, Cloneable {
         }
     }
 
-//    /**
-//     * Ensure cutpoints exist for every DISCRETE child that has >=1 continuous parent.
-//     * If none are present, we create equal-interval cutpoints on [low, high].
-//     *
-//     * @param bins number of bins (>=2). We will create (bins - 1) cutpoints.
-//     */
-//    private static void ensureDefaultCutpoints(HybridCgPm pm, int bins, double low, double high) {
-//        if (bins < 2) bins = 2;
-//        if (!(high > low)) { // degenerate range, fall back
-//            low = -1.0; high = 1.0;
-//        }
-//
-//        final var nodes = pm.getNodes();
-//
-//        for (int y = 0; y < nodes.length; y++) {
-//            if (!pm.isDiscrete(y)) continue;
-//
-//            int[] cps = pm.getContinuousParents(y);
-//            if (cps.length == 0) continue;
-//
-//            // Already has cutpoints?
-//            if (pm.getContParentCutpointsForDiscreteChild(y).isPresent()) continue;
-//
-//            // Build equal-interval cutpoints for each continuous parent
-//            Map<edu.cmu.tetrad.graph.Node, double[]> cpMap = new LinkedHashMap<>();
-//            double[] edgesTemplate = new double[bins - 1];
-//            double step = (high - low) / bins;
-//            for (int i = 0; i < bins - 1; i++) edgesTemplate[i] = low + (i + 1) * step;
-//
-//            for (int t = 0; t < cps.length; t++) {
-//                edu.cmu.tetrad.graph.Node p = nodes[cps[t]];
-//                cpMap.put(p, edgesTemplate.clone());
-//            }
-//
-//            try {
-//                pm.setContParentCutpointsForDiscreteChild(nodes[y], cpMap);
-//            } catch (IllegalArgumentException | IllegalStateException ignored) {
-//                // If the PM rejects these (shouldn't), we skip; IM construction may still fail,
-//                // but we tried to provide a safe default.
-//            }
-//        }
-//    }
-
     /**
      * Randomize the IM parameters for testing or initialization.
      * Discrete CPT rows get Dirichlet(1) draws; continuous rows get small random coefficients and positive variance.

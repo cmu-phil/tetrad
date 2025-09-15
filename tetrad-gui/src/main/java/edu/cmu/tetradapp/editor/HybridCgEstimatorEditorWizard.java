@@ -1,8 +1,6 @@
-// tetrad-gui/src/main/java/edu/cmu/tetradapp/editor/HybridCgImEstimatorWizard.java
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.hybridcg.HybridCgModel;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.HybridCgImWrapper;
@@ -16,19 +14,16 @@ import java.text.NumberFormat;
 import java.util.Objects;
 
 /**
- * Wizard dialog to estimate a Hybrid CG IM from a Hybrid CG PM + DataSet.
+ * Editor wizard panel to estimate a Hybrid CG IM from a Hybrid CG PM + DataSet.
  * Parameters:
  *   - Bin policy: equal_frequency | equal_interval | none
  *   - # bins    : >= 2 (when policy != none)
  *   - alpha     : Dirichlet pseudo-count (double)
  *   - shareVar  : share one variance across rows for each continuous child
  *
- * Usage:
- *   HybridCgImEstimatorWizard dlg = HybridCgImEstimatorWizard.create(owner, pmWrapper, dataSet);
- *   dlg.setVisible(true);
- *   HybridCgImWrapper result = dlg.getResult(); // null if canceled/failed
+ * Usage: Embed this panel inside a HybridCgEstimatorEditor (similar to Bayes).
  */
-public final class HybridCgImEstimatorWizard extends JDialog {
+public final class HybridCgEstimatorEditorWizard extends JPanel {
 
     private final HybridCgPmWrapper pmWrapper;
     private final DataSet data;
@@ -40,25 +35,14 @@ public final class HybridCgImEstimatorWizard extends JDialog {
 
     private HybridCgImWrapper result;
 
-    private HybridCgImEstimatorWizard(Window owner, HybridCgPmWrapper pmWrapper, DataSet data) {
-        super(owner, "Estimate Hybrid CG IM", ModalityType.APPLICATION_MODAL);
+    public HybridCgEstimatorEditorWizard(HybridCgPmWrapper pmWrapper, DataSet data) {
         this.pmWrapper = Objects.requireNonNull(pmWrapper, "pmWrapper");
         this.data = Objects.requireNonNull(data, "data");
 
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(0, 0));
-
         add(buildHeader(), BorderLayout.NORTH);
         add(buildForm(), BorderLayout.CENTER);
         add(buildButtons(), BorderLayout.SOUTH);
-
-        pack();
-        setMinimumSize(new Dimension(520, getHeight()));
-        setLocationRelativeTo(owner);
-    }
-
-    public static HybridCgImEstimatorWizard create(Window owner, HybridCgPmWrapper pmWrapper, DataSet data) {
-        return new HybridCgImEstimatorWizard(owner, pmWrapper, data);
     }
 
     public HybridCgImWrapper getResult() {
@@ -85,7 +69,6 @@ public final class HybridCgImEstimatorWizard extends JDialog {
         g.insets = new Insets(8, 10, 4, 10);
         g.anchor = GridBagConstraints.WEST;
         g.fill = GridBagConstraints.HORIZONTAL;
-        g.weightx = 0.0;
 
         // Number formatter for alpha
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -111,8 +94,7 @@ public final class HybridCgImEstimatorWizard extends JDialog {
         });
 
         int row = 0;
-
-        g.gridx = 0; g.gridy = row; g.weightx = 0.0;
+        g.gridx = 0; g.gridy = row;
         form.add(new JLabel("Binning policy:"), g);
         g.gridx = 1; g.weightx = 1.0;
         form.add(binPolicy, g);
@@ -124,9 +106,9 @@ public final class HybridCgImEstimatorWizard extends JDialog {
         form.add(binsSpinner, g);
 
         row++;
-        g.gridx = 0; g.gridy = row; g.weightx = 0.0;
+        g.gridx = 0; g.gridy = row;
         form.add(new JLabel("Dirichlet α:"), g);
-        g.gridx = 1; g.weightx = 1.0;
+        g.gridx = 1;
         form.add(alphaField, g);
 
         row++;
@@ -139,10 +121,7 @@ public final class HybridCgImEstimatorWizard extends JDialog {
 
     private JComponent buildButtons() {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton cancel = new JButton("Cancel");
         JButton run = new JButton("Estimate");
-
-        cancel.addActionListener(e -> dispose());
 
         run.addActionListener(e -> {
             try {
@@ -157,20 +136,13 @@ public final class HybridCgImEstimatorWizard extends JDialog {
                 params.set("hybridcg.alpha", alpha);
                 params.set("hybridcg.shareVariance", share);
 
-                // Build a new IM via the convenience ctor (calls the estimator glue)
+                // Build a new IM via wrapper ctor
                 HybridCgImWrapper imw = new HybridCgImWrapper(pmWrapper, data, params);
                 this.result = imw;
 
-                // Optional: nudge listeners that the model downstream changed
-                firePropertyChange("modelChanged", false, true);
+                // Notify host editor that the value changed
+                firePropertyChange("editorValueChanged", null, imw);
 
-                // Optional: quick summary
-                HybridCgModel.HybridCgIm im = imw.getHybridCgIm();
-                if (im != null && im.getPm() != null) {
-                    // no-op; you could show a tiny success message if you like
-                }
-
-                dispose();
             } catch (Exception ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(this,
@@ -179,7 +151,6 @@ public final class HybridCgImEstimatorWizard extends JDialog {
             }
         });
 
-        p.add(cancel);
         p.add(run);
         p.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         return p;

@@ -1012,6 +1012,14 @@
                 <editor-class>edu.cmu.tetradapp.editor.EmBayesEstimatorEditor</editor-class>
                 <params-editor-class>edu.cmu.tetradapp.editor.EMBayesEstimatorParamsEditor</params-editor-class>
             </model>
+            <model name="Hybrid CG Estimator" acronym="Hybrid CG Est" help="hybrid_cg_estimator">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="im" description="Estimated Model"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.HybridCgEstimatorWrapper</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.HybridCgEstimatorEditor</editor-class>
+            </model>
         </models>
         <display-component image="estimatorIcon.gif"/>
         <model-chooser title="Types of Estimators"/>
