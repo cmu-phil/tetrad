@@ -30,12 +30,11 @@ public final class HybridCgCutpoints {
         if (bins < 2) throw new IllegalArgumentException("bins must be >= 2");
 
         final Node[] nodes = pm.getNodes();
-        // quick lookup: node → dataset column
-        Map<Node,Integer> col = new HashMap<>();
-        for (int j = 0; j < nodes.length; j++) {
-            int c = data.getColumn(nodes[j]);
-            if (c < 0) throw new IllegalArgumentException("Node not found in DataSet: " + nodes[j]);
-            col.put(nodes[j], c);
+
+        // Build name -> column index once (robust to distinct Node instances)
+        Map<String, Integer> colByName = new HashMap<>(data.getNumColumns() * 2);
+        for (int j = 0; j < data.getNumColumns(); j++) {
+            colByName.put(data.getVariable(j).getName(), j);
         }
 
         for (int y = 0; y < nodes.length; y++) {
@@ -47,27 +46,23 @@ public final class HybridCgCutpoints {
             Map<Node,double[]> cutsByParent = new LinkedHashMap<>();
             for (int t = 0; t < cps.length; t++) {
                 Node parent = nodes[cps[t]];
-                int cj = col.get(parent);
-                double[] series = columnToArray(data, cj);
+                Integer cj = colByName.get(parent.getName());
+                if (cj == null) {
+                    throw new IllegalArgumentException("Node not found in DataSet: " + parent.getName());
+                }
 
+                double[] series = columnToArray(data, cj);
                 double[] cuts = switch (method) {
                     case EQUAL_INTERVALS  -> equalIntervalCuts(series, bins);
                     case EQUAL_FREQUENCY  -> equalFrequencyCuts(series, bins);
                 };
-
-                // Strictly increasing guarantee (drop duplicates, shrink bin count if needed)
                 cuts = strictlyIncreasingInterior(series, cuts);
-
-                // If everything was constant / too few uniques, fall back to 2 bins around the median
                 if (cuts.length == 0 && bins >= 2) {
                     double med = percentile(series, 0.5);
-                    cuts = new double[]{ med }; // gives 2 bins
+                    cuts = new double[]{ med };
                 }
-
                 cutsByParent.put(parent, cuts);
             }
-
-            // Install (may throw if something inconsistent; that’s OK—better to catch early)
             pm.setContParentCutpointsForDiscreteChild(nodes[y], cutsByParent);
         }
     }

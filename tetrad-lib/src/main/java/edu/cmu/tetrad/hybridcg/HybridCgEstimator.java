@@ -29,15 +29,39 @@ public final class HybridCgEstimator {
 
         // Build an aligned dataset so DataSet.getColumn(pmNode) works by identity
         DataSet aligned = alignDataVariablesToPm(pm, data);
+        verifyAlignment(pm, aligned);
 
         if (params == null) params = new Parameters();
         final double alpha    = params.getDouble("hybridcg.alpha", 1.0);
         final boolean shareVar = params.getBoolean("hybridcg.shareVariance", false);
         final String binPolicy = Optional.ofNullable(params.getString("hybridcg.binPolicy", "equal_frequency"))
                 .orElse("equal_frequency").toLowerCase(Locale.ROOT);
+
+        switch (binPolicy) {
+            case "equal_frequency":
+            case "equal_interval":
+            case "none":
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown binPolicy: " + binPolicy +
+                                                   " (expected equal_frequency, equal_interval, or none)");
+        }
+
         final int binsRequested = Math.max(2, params.getInt("hybridcg.bins", 3));
 
-        if (!"none".equals(binPolicy)) {
+        if ("none".equals(binPolicy)) {
+            // Ensure PM already carries cutpoints for any discrete child with continuous parents
+            Node[] nodes = pm.getNodes();
+            for (int y = 0; y < nodes.length; y++) {
+                if (!pm.isDiscrete(y)) continue;
+                if (pm.getContinuousParents(y).length == 0) continue;
+                if (pm.getContParentCutpointsForDiscreteChild(y).isEmpty()) {
+                    throw new IllegalStateException(
+                            "binPolicy=none, but PM has no cutpoints for discrete child with continuous parents: "
+                            + nodes[y].getName());
+                }
+            }
+        } else {
             setAllCutpoints(pm, aligned, binPolicy, binsRequested);
         }
 
@@ -124,7 +148,7 @@ public final class HybridCgEstimator {
     }
 
     private static double[] strictlyIncreasingOrFallback(double[] edges, double[] col, int bins) {
-        if (edges.length == 0) return edges;
+        if (edges.length == 0) return equalIntervalEdges(col, bins);
         double[] out = edges.clone();
 
         // Nudge ties upward in one pass
@@ -168,11 +192,11 @@ public final class HybridCgEstimator {
         Map<String, Node> pmByName = new LinkedHashMap<>();
         for (Node v : pm.getNodes()) pmByName.put(v.getName(), v);
 
-        java.util.List<Node> vars = new java.util.ArrayList<>(data.getNumColumns());
+        List<Node> vars = new ArrayList<>(data.getNumColumns());
         for (int i = 0; i < data.getNumColumns(); i++) {
             Node dv = data.getVariable(i);
-            Node pv = pmByName.get(dv.getName());
-            vars.add(pv != null ? pv : dv);
+            Node pv = pmByName.getOrDefault(dv.getName(), dv);
+            vars.add(pv);
         }
 
         return new BoxDataSet(box.getDataBox(), vars);

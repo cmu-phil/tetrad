@@ -36,7 +36,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-public class TestHybridCgModelModel {
+public class TestHybridCgModel {
 
     public static HybridCgModel.HybridCgIm randomIm(HybridCgModel.HybridCgPm pm, Random rng) {
         HybridCgModel.HybridCgIm im = new HybridCgModel.HybridCgIm(pm);
@@ -61,11 +61,11 @@ public class TestHybridCgModelModel {
             } else {
                 int m = pm.getContinuousParents(y).length;
                 for (int r = 0; r < rows; r++) {
-                    im.setIntercept(y, r, rng.nextGaussian()); // random mean offset
+                    im.setIntercept(y, r, rng.nextGaussian());         // random mean offset
                     for (int j = 0; j < m; j++) {
                         im.setCoefficient(y, r, j, rng.nextGaussian() * 0.5); // random slope
                     }
-                    im.setVariance(y, r, 1.0 + rng.nextDouble()); // variance > 0
+                    im.setVariance(y, r, 1.0 + rng.nextDouble());      // variance > 0
                 }
             }
         }
@@ -75,8 +75,8 @@ public class TestHybridCgModelModel {
     @Test
     public void test() {
 
+        // ----- Build a random mixed node list
         List<Node> nodes = new ArrayList<>();
-
         for (int i = 0; i < 10; i++) {
             if (RandomUtil.getInstance().nextDouble() < 0.5) {
                 nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -91,7 +91,7 @@ public class TestHybridCgModelModel {
         System.out.println("Nodes =  " + nodeOrder);
         System.out.println("Graph = " + g);
 
-        // Tell the PM which variables are discrete and their categories (order matters!)
+        // ----- Tell the PM which variables are discrete and their categories
         Map<Node, Boolean> isDisc = new HashMap<>();
         Map<Node, List<String>> cats = new HashMap<>();
 
@@ -103,6 +103,7 @@ public class TestHybridCgModelModel {
 
         HybridCgModel.HybridCgPm pm = new HybridCgModel.HybridCgPm(g, nodeOrder, isDisc, cats);
 
+        // ----- Install simple fixed cutpoints for any discrete child with continuous parents (Path A needs this)
         for (Node child : nodeOrder) {
             int y = pm.indexOf(child);
             if (!pm.isDiscrete(y)) continue;
@@ -112,62 +113,47 @@ public class TestHybridCgModelModel {
             Map<Node, double[]> cutpoints = new HashMap<>();
             for (int idx : cParents) {
                 Node cp = pm.getNodes()[idx];
-                // choose your policy:
-                //  - fixed edges (domain knowledge)
-                //  - equal-width or equal-frequency from data
-                //  - your ConditionalGaussianLikelihood helper (if it exposes binning)
-                cutpoints.put(cp, new double[]{-0.5, 0.5}); // example: 3 bins
+                // Example: three bins via two cutpoints
+                cutpoints.put(cp, new double[]{-0.5, 0.5});
             }
             pm.setContParentCutpointsForDiscreteChild(child, cutpoints);
         }
 
-        for (Node child : nodeOrder) {
-            int y = pm.indexOf(child);
-            if (!pm.isDiscrete(y)) continue;
-            int[] cParents = pm.getContinuousParents(y);
-            if (cParents.length == 0) continue;
-
-            Map<Node, double[]> cutpoints = new HashMap<>();
-            for (int idx : cParents) {
-                Node cp = pm.getNodes()[idx];
-                // choose your policy:
-                //  - fixed edges (domain knowledge)
-                //  - equal-width or equal-frequency from data
-                //  - your ConditionalGaussianLikelihood helper (if it exposes binning)
-                cutpoints.put(cp, new double[]{-0.5, 0.5}); // example: 3 bins
-            }
-            pm.setContParentCutpointsForDiscreteChild(child, cutpoints);
-        }
-
-        HybridCgModel.HybridCgIm im = randomIm(pm, new Random());
-
+        // ----- Simulate from a random IM (deterministic seeds)
+        HybridCgModel.HybridCgIm im = randomIm(pm, new Random(12345));
         int n = 5000;
         HybridCgModel.HybridCgIm.Sample draw = im.sample(n, new Random(42));
 
-        // Convert to a Tetrad DataSet (choose any node order you want in the output)
-        List<Node> outOrder = Arrays.asList(pm.getNodes()); // same order as PM
+        // Convert to a Tetrad DataSet
         DataSet simulated = im.toDataSet(draw);
 
-//        System.out.println(simulated);
-
-        // Dirichlet alpha = 1.0 for CPT smoothing; shareVarianceAcrossRows = false (change if strata are thin)
+        // ----- Path A: PM already has cutpoints (binPolicy="none") -> direct MLE
         HybridCgModel.HybridCgIm.HybridEstimator est = new HybridCgModel.HybridCgIm.HybridEstimator(1.0, false);
         HybridCgModel.HybridCgIm im2 = est.mle(pm, simulated);
-
+        System.out.println("=== MLE with pre-set PM cutpoints (binPolicy=none) ===");
         System.out.println(im2);
 
+        // ----- Path B: Have the estimator compute cutpoints from data (equal_frequency)
+        Parameters p = new Parameters();
+        p.set("hybridcg.alpha", 1.0);
+        p.set("hybridcg.shareVariance", false);
+        p.set("hybridcg.binPolicy", "equal_frequency"); // auto cutpoints
+        p.set("hybridcg.bins", 3);
+
+        HybridCgModel.HybridCgIm imAuto = HybridCgEstimator.estimate(pm, simulated, p);
+        System.out.println("=== MLE with auto cutpoints (binPolicy=equal_frequency) ===");
+        System.out.println(imAuto);
+
+        // ----- Score and run a small search (as before)
         ConditionalGaussianBicScore score = new ConditionalGaussianBicScore();
         edu.cmu.tetrad.search.score.Score _score = score.getScore(simulated, new Parameters());
 
         try {
             Graph cpdag = new PermutationSearch(new Boss(_score)).search();
-
             System.out.println("True CPDAG = " + GraphTransforms.dagToCpdag(g));
             System.out.println("BOSS result = " + cpdag);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
     }
 }
-

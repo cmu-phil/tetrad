@@ -19,7 +19,10 @@ public final class HybridCgVars {
         for (int i = 0; i < order.length; i++) {
             String name = order[i].getName();
             if (pm.isDiscrete(i)) {
-                List<String> cats = pm.getCategories(i); // already in the PM’s order
+                List<String> cats = pm.getCategories(i);
+                if (cats == null || cats.isEmpty()) {
+                    throw new IllegalStateException("Discrete variable has no categories: " + name);
+                }
                 vars.add(new DiscreteVariable(name, new ArrayList<>(cats)));
             } else {
                 vars.add(new ContinuousVariable(name));

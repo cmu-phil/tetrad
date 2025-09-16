@@ -1,23 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -34,12 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implements a conditional Gaussian BIC score for FGS, which calculates a BIC score for mixed discrete/Gaussian data
- * using the conditional Gaussian likelihood function (see). The reference is here:
- * <p>
- * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables. International
- * journal of data science and analytics, 6, 3-18.
- * <p>
+ * Implements a conditional Gaussian BIC score for FGS, which calculates a BIC score for mixed
+ * discrete/Gaussian data using the conditional Gaussian likelihood function.
+ *
+ * Reference:
+ * Andrews, B., Ramsey, J., & Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
+ * International Journal of Data Science and Analytics, 6, 3–18.
+ *
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
@@ -48,39 +29,30 @@ import java.util.List;
  * @see DegenerateGaussianScore
  */
 public class ConditionalGaussianScore implements Score {
-    // The dataset.
+
+    // Dataset and variables.
     private final DataSet dataSet;
-    // The variables of the dataset.
     private final List<Node> variables;
-    // Likelihood function
+
+    // Likelihood engine (leave as-is; we just forward settings).
     private final ConditionalGaussianLikelihood likelihood;
-    // The penalty discount.
+
+    // BIC controls.
     private double penaltyDiscount;
-    // The number of categories to discretize.
-    private int numCategoriesToDiscretize = 3;
-    // The structure prior.
     private double structurePrior = 0;
 
+    // Discretization controls (forwarded to likelihood).
+    private int numCategoriesToDiscretize = 3;
+
     /**
-     * Constructs the score using a covariance matrix.
+     * Constructs the score.
      *
-     * @param dataSet         A dataset with a mixture of continuous and discrete variables. It may be all continuous or
-     *                        all discrete.
-     * @param penaltyDiscount A multiplier on the penalty term in the BIC score.
-     * @param discretize      When a discrete variable is a child of a continuous variable, one (expensive) way to solve
-     *                        the problem is to do a numerical integration. A less expensive (and often more accurate)
-     *                        way to solve the problem is to discretize the child with a certain number of discrete
-     *                        categories. if this parameter is set to True, a separate copy of all variables is
-     *                        maintained that is discretized in this way, and these are substituted for the discrete
-     *                        children when this sort of problem needs to be solved. This information needs to be known
-     *                        in the constructor since one needs to know right away whether ot create this separate
-     *                        discretized version of the continuous columns.
-     * @see #setNumCategoriesToDiscretize
+     * @param dataSet         mixed (or all-continuous / all-discrete) dataset
+     * @param penaltyDiscount BIC penalty multiplier
+     * @param discretize      if true, use shadow discretization of continuous parents for discrete children
      */
     public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, boolean discretize) {
-        if (dataSet == null) {
-            throw new NullPointerException();
-        }
+        if (dataSet == null) throw new NullPointerException("dataSet");
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
@@ -88,19 +60,16 @@ public class ConditionalGaussianScore implements Score {
 
         this.likelihood = new ConditionalGaussianLikelihood(dataSet);
 
+        // Initial wiring to the engine
         this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
         this.likelihood.setDiscretize(discretize);
     }
 
-    /**
-     * Calculates the sample likelihood and BIC score for index i given its parents in a simple SEM model.
-     *
-     * @param i       The index of the child.
-     * @param parents The indices of the parents.
-     * @return The score.,
-     */
+    /** Local BIC score for child i with parents. */
     public double localScore(int i, int... parents) {
         List<Integer> rows = getRows(i, parents);
+        if (rows.isEmpty()) return Double.NEGATIVE_INFINITY;
+
         this.likelihood.setRows(rows);
 
         ConditionalGaussianLikelihood.Ret ret = this.likelihood.getLikelihood(i, parents);
@@ -108,153 +77,120 @@ public class ConditionalGaussianScore implements Score {
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        double score = 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * FastMath.log(rows.size());
+        double score = 2.0 * (lik + getStructurePrior(parents))
+                       - getPenaltyDiscount() * k * FastMath.log(rows.size());
 
-        if (Double.isNaN(score) || Double.isInfinite(score)) {
-            return Double.NEGATIVE_INFINITY;
-        } else {
-            return score;
-        }
+        if (Double.isNaN(score) || Double.isInfinite(score)) return Double.NEGATIVE_INFINITY;
+        return score;
     }
 
-    /**
-     * Calculates localScore(y | z, x) - localScore(z).
-     *
-     * @param x The index of the child.
-     * @param z The indices of the parents.
-     * @param y a int
-     * @return The score difference.
-     */
+    /** Score difference localScore(y | z ∪ {x}) - localScore(y | z). */
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    /**
-     * Returns the sample size of the data.
-     *
-     * @return This size.
-     */
+    /** Sample size. */
     public int getSampleSize() {
         return this.dataSet.getNumRows();
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * A method for FGES for determining whether an edge counts as an effect edges for this score bump.
-     *
-     * @see Fges
-     */
+    /** FGES “effect edge” convention for this score bump. */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variables of the data.
-     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the max degree recommended for the search form the MagSemBicScore and Fges.
-     *
-     * @see MagSemBicScore
-     * @see Fges
-     */
+    /** Recommended max degree (same heuristic used elsewhere). */
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(FastMath.log(this.dataSet.getNumRows()));
     }
 
-    /**
-     * Returns the penalty discount for this score, which is a multiplier on the penalty term of the BIC score.
-     *
-     * @return This penalty discount.
-     */
     public double getPenaltyDiscount() {
         return this.penaltyDiscount;
     }
 
-    /**
-     * Sets the penalty discount for this score, which is a multiplier on the penalty discount of the BIC score.
-     *
-     * @param penaltyDiscount This penalty discount.
-     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    /**
-     * Sets tne number of categories used to discretize, when this optimization is used.
-     *
-     * @param numCategoriesToDiscretize This number.
-     */
+    /** Forwarded: number of bins for shadow discretization. */
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
+        this.likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** Forwarded: enable/disable shadow discretization. */
+    public void setDiscretize(boolean discretize) {
+        this.likelihood.setDiscretize(discretize);
+    }
+
+    /** Forwarded: minimum per-cell N to include a cell in the likelihood. */
+    public void setMinSampleSizePerCell(int n) {
+        this.likelihood.setMinSampleSizePerCell(n);
+    }
+
+    /** Optional ER prior on structure (sparse bias). */
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
+    }
+
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
         return "Conditional Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
     }
 
+    // ------------------------------------------------------------------------------------
+    // Internals
+    // ------------------------------------------------------------------------------------
+
     /**
-     * <p>Setter for the field <code>structurePrior</code>.</p>
-     *
-     * @param structurePrior a double
+     * Row filter that drops any row with missing values for the child or any parent.
+     * For discrete variables we treat -99 as “missing”; for continuous we treat NaN as missing.
      */
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
-    }
-
     private List<Integer> getRows(int i, int[] parents) {
-        List<Integer> rows = new ArrayList<>();
+        List<Integer> rows = new ArrayList<>(this.dataSet.getNumRows());
 
-        K:
-        for (int k = 0; k < this.dataSet.getNumRows(); k++) {
-            if (this.variables.get(i) instanceof DiscreteVariable) {
-                if (this.dataSet.getInt(k, i) == -99) continue;
-            } else if (this.variables.get(i) instanceof ContinuousVariable) {
-                this.dataSet.getInt(k, i);
-            }
-
+        for (int r = 0; r < this.dataSet.getNumRows(); r++) {
+            // child
+            if (isMissing(variables.get(i), r)) continue;
+            // parents
+            boolean ok = true;
             for (int p : parents) {
-                if (this.variables.get(i) instanceof DiscreteVariable) {
-                    if (this.dataSet.getInt(k, p) == -99) continue K;
-                } else if (this.variables.get(i) instanceof ContinuousVariable) {
-                    this.dataSet.getInt(k, p);
-                }
+                if (isMissing(variables.get(p), r)) { ok = false; break; }
             }
-
-            rows.add(k);
+            if (ok) rows.add(r);
         }
-
         return rows;
     }
 
-    private double getStructurePrior(int[] parents) {
-        if (this.structurePrior <= 0) {
-            return 0;
+    /** Missingness by variable type. */
+    private boolean isMissing(Node v, int row) {
+        if (v instanceof DiscreteVariable) {
+            int val = this.dataSet.getInt(row, this.dataSet.getColumn(v));
+            return val == -99; // project convention
+        } else if (v instanceof ContinuousVariable) {
+            double val = this.dataSet.getDouble(row, this.dataSet.getColumn(v));
+            return Double.isNaN(val);
         } else {
-            int k = parents.length;
-            double n = this.dataSet.getNumColumns() - 1;
-            double p = this.structurePrior / n;
-            return k * FastMath.log(p) + (n - k) * FastMath.log(1.0 - p);
+            // default conservative
+            return false;
         }
     }
+
+    private double getStructurePrior(int[] parents) {
+        if (this.structurePrior <= 0) return 0.0;
+
+        int k = parents.length;
+        double n = this.dataSet.getNumColumns() - 1;
+        double p = this.structurePrior / n;
+        // log prior of ER(k; n, p) up to additive constant across families
+        return k * FastMath.log(p) + (n - k) * FastMath.log(1.0 - p);
+    }
 }
-
-
-
-

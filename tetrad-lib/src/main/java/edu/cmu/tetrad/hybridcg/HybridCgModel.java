@@ -126,6 +126,7 @@ public final class HybridCgModel {
         }
 
         public int getCardinality(int nodeIndex) {
+            if (!isDiscrete[nodeIndex]) throw new IllegalStateException("Not a discrete node: " + nodes[nodeIndex]);
             return categories[nodeIndex].size();
         }
 
@@ -243,6 +244,71 @@ public final class HybridCgModel {
             while (bin < cuts.length && value > cuts[bin]) bin++;
             return bin; // 0..cuts.length
         }
+
+        /**
+         * Populate cutpoints for each continuous parent of a DISCRETE child using equal-frequency binning.
+         * @param child discrete child
+         * @param data  data set that contains all variables by name
+         * @param binsPerParent number of bins to use for each continuous parent (>=2 recommended)
+         */
+        public void autoCutpointsForDiscreteChild(Node child, DataSet data, int binsPerParent) {
+            if (binsPerParent < 2) throw new IllegalArgumentException("binsPerParent >= 2");
+            int y = indexOf(child);
+            if (!isDiscrete[y]) throw new IllegalArgumentException("child is not discrete: " + child);
+
+            int[] cps = getContinuousParents(y);
+            if (cps.length == 0) return;
+
+            double[][] cuts = new double[cps.length][];
+            for (int t = 0; t < cps.length; t++) {
+                Node p = nodes[cps[t]];
+                int col = data.getColumn(p);
+                if (col < 0) throw new IllegalArgumentException("Data is missing column for parent: " + p.getName());
+
+                // collect non-missing
+                List<Double> vals = new ArrayList<>(data.getNumRows());
+                for (int r = 0; r < data.getNumRows(); r++) {
+                    double v = data.getDouble(r, col);
+                    if (!Double.isNaN(v)) vals.add(v);
+                }
+                if (vals.size() < binsPerParent) {
+                    // fall back to unique-sorted midpoints
+                    double[] unique = vals.stream().distinct().sorted().mapToDouble(d->d).toArray();
+                    if (unique.length <= 1) {
+                        cuts[t] = new double[0]; // all in one bin
+                        continue;
+                    }
+                    int m = Math.min(unique.length - 1, binsPerParent - 1);
+                    double[] cp = new double[m];
+                    int step = (unique.length - 1) / m;
+                    for (int k = 0; k < m; k++) {
+                        int i = (k + 1) * step;
+                        cp[k] = 0.5 * (unique[i-1] + unique[i]);
+                    }
+                    Arrays.sort(cp);
+                    cuts[t] = cp;
+                    continue;
+                }
+
+                // equal-frequency cutpoints at quantiles 1/b, 2/b, ... (b-1)/b
+                Collections.sort(vals);
+                double[] cp = new double[binsPerParent - 1];
+                for (int k = 1; k < binsPerParent; k++) {
+                    double q = k / (double) binsPerParent;
+                    int idx = Math.min(vals.size() - 1, Math.max(0, (int) Math.round(q * (vals.size() - 1))));
+                    cp[k - 1] = vals.get(idx);
+                }
+                // ensure strictly increasing (nudge ties)
+                for (int k = 1; k < cp.length; k++) {
+                    if (!(cp[k] > cp[k - 1])) cp[k] = Math.nextUp(cp[k - 1]);
+                }
+                cuts[t] = cp;
+            }
+            // install
+            Map<Node,double[]> map = new HashMap<>();
+            for (int t = 0; t < cps.length; t++) map.put(nodes[cps[t]], cuts[t]);
+            setContParentCutpointsForDiscreteChild(child, map);
+        }
     }
 
     // ======== IM (numbers) ========
@@ -329,9 +395,15 @@ public final class HybridCgModel {
                 contBins = new int[cps.length];
                 double[][] cuts = pm.getContParentCutpointsForDiscreteChild(nodeIndex).orElse(null);
                 if (cuts == null) throw new IllegalStateException("cutpoints not set for child " + pm.nodes[nodeIndex]);
+//                for (int t = 0; t < cps.length; t++)
+//                    contBins[t] = HybridEstimator.binFromCutpoints(cuts[t], data.getDouble(row, colIndex[cps[t]]));
+                // In HybridCgIm.rowIndexForCase(...)
                 for (int t = 0; t < cps.length; t++)
-                    contBins[t] = HybridEstimator.binFromCutpoints(cuts[t], data.getDouble(row, colIndex[cps[t]]));
+                    contBins[t] = binFromCutpoints(cuts[t],
+                            data.getDouble(row, colIndex[cps[t]])); // <-- use the local helper
             }
+
+
             return pm.getRowIndex(nodeIndex, discVals, contBins);
         }
 
@@ -398,26 +470,31 @@ public final class HybridCgModel {
             Objects.requireNonNull(sample, "sample");
 
             int n = sample.rows;
-            // Build a MixedDataBox so we can store ints for discrete and doubles for continuous
+
             MixedDataBox box = new MixedDataBox(nodes, n);
             DataSet ds = new BoxDataSet(box, nodes);
 
-            // Map external order to pm indices once
+            // Build PM name -> PM index once
+            Map<String, Integer> pmIdxByName = new HashMap<>(pm.getNodes().length * 2);
+            for (int i = 0; i < pm.getNodes().length; i++) {
+                pmIdxByName.put(pm.getNodes()[i].getName(), i);
+            }
+
+            // Map each output column to the PM index
             int[] pmIndex = new int[nodes.size()];
             for (int j = 0; j < nodes.size(); j++) {
-                pmIndex[j] = nodes.indexOf(nodes.get(j));
-                if (pmIndex[j] < 0) throw new IllegalArgumentException("node not in PM: " + nodes.get(j));
+                Integer idx = pmIdxByName.get(nodes.get(j).getName());
+                if (idx == null) throw new IllegalArgumentException("node not in PM: " + nodes.get(j));
+                pmIndex[j] = idx;
             }
 
             for (int r = 0; r < n; r++) {
                 for (int j = 0; j < nodes.size(); j++) {
                     int y = pmIndex[j];
                     if (pm.isDiscrete[y]) {
-                        int val = sample.discrete[y][r];
-                        ds.setInt(r, j, val);
+                        ds.setInt(r, j, sample.discrete[y][r]);
                     } else {
-                        double val = sample.continuous[y][r];
-                        ds.setDouble(r, j, val);
+                        ds.setDouble(r, j, sample.continuous[y][r]);
                     }
                 }
             }
