@@ -271,6 +271,7 @@ public class HybridCgImEditor extends JPanel {
     /**
      * Formats betas with project number format; colors red when count ≠ #continuous parents.
      */
+    /** Formats betas with labels for each continuous parent; colors red when count ≠ #continuous parents. */
     private static final class BetasRenderer extends DefaultTableCellRenderer {
         private final NumberFormat nf;
         private final TableCellRenderer fallback;
@@ -287,66 +288,123 @@ public class HybridCgImEditor extends JPanel {
             setHorizontalAlignment(SwingConstants.LEFT);
         }
 
-        private static String reformatBetasString(String s, NumberFormat nf) {
-            if (s == null || s.isBlank()) return "";
-            // split on one-or-more commas or whitespace
-            String[] parts = s.trim().split("[,\\s]+");
-            StringBuilder out = new StringBuilder();
-            for (String t : parts) {
-                if (t.isEmpty()) continue;
-                try {
-                    double v = Double.parseDouble(t);
-                    if (out.length() > 0) out.append(", ");
-                    out.append(nf.format(v));
-                } catch (NumberFormatException nfe) {
-                    if (out.length() > 0) out.append(", ");
-                    out.append(t); // show as-is; will still be validated elsewhere
-                }
-            }
-            return out.toString();
-        }
-
-        private static int countBetas(String s) {
-            if (s == null || s.isBlank()) return 0;
-            int count = 0;
-            for (String p : s.trim().split("[,\\s]+")) {
-                if (!p.isBlank()) count++;
-            }
-            return count;
-        }
-
-        private static int expectedBetaCount(HybridCgModel.HybridCgPm pm, String nodeName) {
+        /** Expected number of betas = number of continuous parents of the node. */
+        public static int expectedBetaCount(HybridCgModel.HybridCgPm pm, String nodeName) {
             if (pm == null || nodeName == null) return 0;
             var nodes = pm.getNodes();
             for (int i = 0; i < nodes.length; i++) {
                 if (nodeName.equals(nodes[i].getName())) {
-                    if (pm.isDiscrete(i)) return 0;
                     return pm.getContinuousParents(i).length;
                 }
             }
             return 0;
         }
 
+        /** Actual number of betas parsed from a double[] array. */
+        /** Actual number of betas parsed from a string (comma- or space-separated). */
+        public static int countBetas(String betas) {
+            if (betas == null || betas.isBlank()) return 0;
+
+            // Split on commas or whitespace
+            String[] tokens = betas.trim().split("[,\\s]+");
+
+            int count = 0;
+            for (String tok : tokens) {
+                if (tok.isBlank()) continue;
+                try {
+                    Double.parseDouble(tok);
+                    count++;
+                } catch (NumberFormatException ignore) {
+                    // skip invalid entries (user still editing)
+                }
+            }
+            return count;
+        }
+
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus,
                                                        int row, int column) {
-            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            // Re-format betas string using NumberFormat (we have only the String via model.getValueAt)
-            String s = String.valueOf(value);
-            String formatted = reformatBetasString(s, nf);
-            setText(formatted);
+            // Raw text as stored in the table model (comma/space separated numbers)
+            String s = (value == null) ? "" : value.toString().trim();
 
-            // Validate count vs PM: find node & expected cps length
+            // Which node is this row about?
             String nodeName = String.valueOf(table.getValueAt(row, HybridCgImNodeEditingTable.COL_NODE));
-            int expected = expectedBetaCount(pm, nodeName);
-            int actual = countBetas(formatted);
+            String[] parentNames = continuousParentNames(pm, nodeName);
 
-            if (!isSelected) {
-                setForeground(actual == expected ? Color.BLACK : new Color(0xB00020));
+            // Parse betas (tolerate commas or whitespace)
+            double[] betas = parseBetas(s);
+
+            // Build a labeled display string
+            String labeled = labelBetas(parentNames, betas, nf);
+            setText(labeled);
+
+            // Helpful tooltip with parent order
+            if (parentNames.length > 0) {
+                setToolTipText("Order: " + String.join(", ", parentNames));
+            } else {
+                setToolTipText(null);
             }
-            return c;
+
+            // Validity coloring: mismatch in count = red
+            if (!isSelected) {
+                setForeground(betas.length == parentNames.length ? Color.BLACK : new Color(0xB00020));
+            }
+            return this;
+        }
+
+        private static String[] continuousParentNames(HybridCgModel.HybridCgPm pm, String nodeName) {
+            if (pm == null || nodeName == null) return new String[0];
+            var nodes = pm.getNodes();
+            for (int i = 0; i < nodes.length; i++) {
+                if (nodeName.equals(nodes[i].getName())) {
+                    int[] cps = pm.getContinuousParents(i);
+                    String[] names = new String[cps.length];
+                    for (int t = 0; t < cps.length; t++) names[t] = nodes[cps[t]].getName();
+                    return names;
+                }
+            }
+            return new String[0];
+        }
+
+        private static double[] parseBetas(String s) {
+            if (s == null || s.isBlank()) return new double[0];
+            String[] parts = s.split("[,\\s]+");
+            java.util.List<Double> vals = new java.util.ArrayList<>();
+            for (String p : parts) {
+                if (p.isBlank()) continue;
+                try { vals.add(Double.parseDouble(p)); } catch (NumberFormatException ignore) {}
+            }
+            double[] out = new double[vals.size()];
+            for (int i = 0; i < out.length; i++) out[i] = vals.get(i);
+            return out;
+        }
+
+        private static String labelBetas(String[] parentNames, double[] betas, NumberFormat nf) {
+            // label up to the min length; if extra betas exist, append them unlabeled
+            StringBuilder sb = new StringBuilder();
+            int m = Math.min(parentNames.length, betas.length);
+            for (int i = 0; i < m; i++) {
+                if (i > 0) sb.append(", ");
+                sb.append(parentNames[i]).append(": ").append(nf.format(betas[i]));
+            }
+            // any extra parents (no beta parsed) -> show placeholder
+            if (parentNames.length > betas.length) {
+                for (int i = betas.length; i < parentNames.length; i++) {
+                    if (sb.length() > 0) sb.append(", ");
+                    sb.append(parentNames[i]).append(": ").append("—");
+                }
+            }
+            // any extra betas (no parent) -> show unlabeled
+            if (betas.length > parentNames.length) {
+                for (int i = parentNames.length; i < betas.length; i++) {
+                    if (sb.length() > 0) sb.append(", ");
+                    sb.append(nf.format(betas[i]));
+                }
+            }
+            return sb.toString();
         }
     }
 

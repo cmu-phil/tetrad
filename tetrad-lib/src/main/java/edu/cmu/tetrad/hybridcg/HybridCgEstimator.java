@@ -1,6 +1,7 @@
 // tetrad-lib/src/main/java/edu/cmu/tetrad/hybridcg/HybridCgEstimator.java
 package edu.cmu.tetrad.hybridcg;
 
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
@@ -25,22 +26,23 @@ public final class HybridCgEstimator {
     public static HybridCgIm estimate(HybridCgPm pm, DataSet data, Parameters params) {
         Objects.requireNonNull(pm, "pm");
         Objects.requireNonNull(data, "data");
-        if (params == null) params = new Parameters();
 
-        final double alpha = params.getDouble("hybridcg.alpha", 1.0);
+        // Build an aligned dataset so DataSet.getColumn(pmNode) works by identity
+        DataSet aligned = alignDataVariablesToPm(pm, data);
+
+        if (params == null) params = new Parameters();
+        final double alpha    = params.getDouble("hybridcg.alpha", 1.0);
         final boolean shareVar = params.getBoolean("hybridcg.shareVariance", false);
         final String binPolicy = Optional.ofNullable(params.getString("hybridcg.binPolicy", "equal_frequency"))
                 .orElse("equal_frequency").toLowerCase(Locale.ROOT);
         final int binsRequested = Math.max(2, params.getInt("hybridcg.bins", 3));
 
-        // 1) If requested, set cutpoints for every discrete child that has >=1 continuous parent
         if (!"none".equals(binPolicy)) {
-            setAllCutpoints(pm, data, binPolicy, binsRequested);
+            setAllCutpoints(pm, aligned, binPolicy, binsRequested);
         }
 
-        // 2) Run the existing MLE in HybridCgIm
         HybridCgIm.HybridEstimator mle = new HybridCgIm.HybridEstimator(alpha, shareVar);
-        return mle.mle(pm, data);
+        return mle.mle(pm, aligned);
     }
 
     // ---------- cutpoint helpers ----------
@@ -69,18 +71,41 @@ public final class HybridCgEstimator {
         }
     }
 
-    /** Get a column as doubles (NaNs ignored by edge builders). */
+    private static void verifyAlignment(HybridCgPm pm, DataSet data) {
+        var nodes = pm.getNodes();
+        for (var v : nodes) {
+            int col = data.getColumn(v);
+            if (col < 0) {
+                // Retry by name, safely
+                var byNameVar = data.getVariable(v.getName());
+                if (byNameVar == null) {
+                    throw new IllegalArgumentException("Variable from PM not found in dataset: " + v.getName());
+                }
+                col = data.getColumn(byNameVar);
+                if (col < 0) {
+                    throw new IllegalArgumentException("Variable from PM not found in dataset: " + v.getName());
+                }
+            }
+        }
+    }
+
     private static double[] columnAsDoubles(DataSet data, Node contVar) {
         int c = data.getColumn(contVar);
-        if (c < 0) throw new IllegalArgumentException("Variable not in dataset: " + contVar);
-        double[] out = new double[data.getNumRows()];
-        for (int r = 0; r < out.length; r++) {
-            out[r] = data.getDouble(r, c);
+        if (c < 0) {
+            var byNameVar = data.getVariable(contVar.getName());
+            if (byNameVar == null) {
+                throw new IllegalArgumentException("Variable not in dataset: " + contVar.getName());
+            }
+            c = data.getColumn(byNameVar);
+            if (c < 0) {
+                throw new IllegalArgumentException("Variable not in dataset: " + contVar.getName());
+            }
         }
+        double[] out = new double[data.getNumRows()];
+        for (int r = 0; r < out.length; r++) out[r] = data.getDouble(r, c);
         return out;
     }
 
-    /** Equal-interval edges between min..max (length = bins-1). */
     private static double[] equalIntervalEdges(double[] raw, int bins) {
         double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
         for (double v : raw) {
@@ -89,15 +114,30 @@ public final class HybridCgEstimator {
             if (v > max) max = v;
         }
         if (!(min < max)) {
-            // degenerate; return simple ascending tiny steps
-            double[] e = new double[Math.max(1, bins - 1)];
-            for (int i = 0; i < e.length; i++) e[i] = min + i * Math.ulp(min == 0 ? 1.0 : min);
-            return e;
+            // Degenerate column (all NaN or constant) — fallback to [0,1] base
+            min = 0.0; max = 1.0;
         }
         double step = (max - min) / bins;
         double[] e = new double[bins - 1];
         for (int i = 0; i < e.length; i++) e[i] = min + (i + 1) * step;
         return e;
+    }
+
+    private static double[] strictlyIncreasingOrFallback(double[] edges, double[] col, int bins) {
+        if (edges.length == 0) return edges;
+        double[] out = edges.clone();
+
+        // Nudge ties upward in one pass
+        for (int i = 1; i < out.length; i++) {
+            if (!(out[i] > out[i - 1])) {
+                out[i] = Math.nextUp(out[i - 1]);
+            }
+        }
+        for (int i = 1; i < out.length; i++) if (!(out[i] > out[i - 1])) {
+            // Still not strictly increasing? fallback
+            return equalIntervalEdges(col, bins);
+        }
+        return out;
     }
 
     /** Equal-frequency edges by quantiles (length = bins-1). */
@@ -120,31 +160,21 @@ public final class HybridCgEstimator {
         return e;
     }
 
-    /** Make edges strictly increasing; if impossible (too many ties), fallback to equal-interval. */
-    private static double[] strictlyIncreasingOrFallback(double[] edges, double[] col, int bins) {
-        if (edges.length == 0) return edges;
-        double[] out = edges.clone();
-        boolean ok = true;
-        for (int i = 1; i < out.length; i++) {
-            if (!(out[i] > out[i - 1])) {
-                ok = false; break;
-            }
+    private static DataSet alignDataVariablesToPm(HybridCgPm pm, DataSet data) {
+        if (!(data instanceof BoxDataSet box)) {
+            throw new IllegalArgumentException("Expected a BoxDataSet, got " + data.getClass());
         }
-        if (ok) return out;
 
-        // Try to nudge ties upward by ulp
-        for (int i = 1; i < out.length; i++) {
-            if (!(out[i] > out[i - 1])) {
-                out[i] = Math.nextUp(out[i - 1]);
-            }
-        }
-        ok = true;
-        for (int i = 1; i < out.length; i++) {
-            if (!(out[i] > out[i - 1])) { ok = false; break; }
-        }
-        if (ok) return out;
+        Map<String, Node> pmByName = new LinkedHashMap<>();
+        for (Node v : pm.getNodes()) pmByName.put(v.getName(), v);
 
-        // Still not ok? fallback to equal-interval on this column
-        return equalIntervalEdges(col, bins);
+        java.util.List<Node> vars = new java.util.ArrayList<>(data.getNumColumns());
+        for (int i = 0; i < data.getNumColumns(); i++) {
+            Node dv = data.getVariable(i);
+            Node pv = pmByName.get(dv.getName());
+            vars.add(pv != null ? pv : dv);
+        }
+
+        return new BoxDataSet(box.getDataBox(), vars);
     }
 }

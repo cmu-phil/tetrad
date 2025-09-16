@@ -623,9 +623,22 @@ public final class HybridCgModel {
                 HybridCgIm im = new HybridCgIm(pm);
                 Node[] nodes = pm.nodes;
 
-                // Precompute variable columns and discrete code maps
+                // Build a name→column map once
+                Map<String, Integer> colByName = new HashMap<>(data.getNumColumns() * 2);
+                for (int c = 0; c < data.getNumColumns(); c++) {
+                    colByName.put(data.getVariable(c).getName(), c);
+                }
+
+                // Resolve each PM node to a column (by exact name)
                 int[] colIndex = new int[nodes.length];
-                for (int j = 0; j < nodes.length; j++) colIndex[j] = data.getColumn(nodes[j]);
+                for (int j = 0; j < nodes.length; j++) {
+                    Integer c = colByName.get(nodes[j].getName());
+                    if (c == null) {
+                        throw new IllegalArgumentException(
+                                "Dataset is missing variable required by PM: " + nodes[j].getName());
+                    }
+                    colIndex[j] = c;
+                }
 
                 for (int y = 0; y < nodes.length; y++) {
                     if (pm.isDiscrete[y]) fitDiscreteChild(pm, im, data, y, colIndex);

@@ -43,6 +43,9 @@ public final class HybridCgEstimatorEditorWizard extends JPanel {
         add(buildHeader(), BorderLayout.NORTH);
         add(buildForm(), BorderLayout.CENTER);
         add(buildButtons(), BorderLayout.SOUTH);
+
+        // Ensure initial enable/disable state for bins reflects the default policy
+        SwingUtilities.invokeLater(this::syncBinsEnabledState);
     }
 
     public HybridCgImWrapper getResult() {
@@ -76,7 +79,8 @@ public final class HybridCgEstimatorEditorWizard extends JPanel {
         alphaFmt.setValueClass(Double.class);
         alphaFmt.setAllowsInvalid(false);
         alphaFmt.setCommitsOnValidEdit(true);
-        DefaultFormatterFactory alphaFactory = new DefaultFormatterFactory(alphaFmt, alphaFmt, alphaFmt);
+        DefaultFormatterFactory alphaFactory =
+                new DefaultFormatterFactory(alphaFmt, alphaFmt, alphaFmt);
 
         binPolicy = new JComboBox<>(new String[]{"equal_frequency", "equal_interval", "none"});
         binsSpinner = new JSpinner(new SpinnerNumberModel(3, 2, 1000, 1));
@@ -86,12 +90,7 @@ public final class HybridCgEstimatorEditorWizard extends JPanel {
         alphaField.setColumns(8);
 
         // Enable/disable bins spinner based on policy
-        binPolicy.addActionListener(e -> {
-            String p = (String) binPolicy.getSelectedItem();
-            boolean enable = !"none".equalsIgnoreCase(p);
-            binsSpinner.setEnabled(enable);
-            binsSpinner.setForeground(enable ? Color.BLACK : Color.GRAY);
-        });
+        binPolicy.addActionListener(e -> syncBinsEnabledState());
 
         int row = 0;
         g.gridx = 0; g.gridy = row;
@@ -119,16 +118,32 @@ public final class HybridCgEstimatorEditorWizard extends JPanel {
         return form;
     }
 
+    private void syncBinsEnabledState() {
+        String p = (String) binPolicy.getSelectedItem();
+        boolean enable = !"none".equalsIgnoreCase(p);
+        binsSpinner.setEnabled(enable);
+        binsSpinner.setForeground(enable ? Color.BLACK : Color.GRAY);
+    }
+
     private JComponent buildButtons() {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton run = new JButton("Estimate");
 
         run.addActionListener(e -> {
             try {
+                // Defensive read of alpha in case field is temporarily blank
+                Number alphaNum = (Number) alphaField.getValue();
+                if (alphaNum == null) {
+                    JOptionPane.showMessageDialog(this, "Please enter a valid α.", "Estimator",
+                            JOptionPane.WARNING_MESSAGE);
+                    alphaField.requestFocusInWindow();
+                    return;
+                }
+
                 Parameters params = new Parameters();
                 String policy = (String) binPolicy.getSelectedItem();
                 int bins = ((Number) binsSpinner.getValue()).intValue();
-                double alpha = ((Number) alphaField.getValue()).doubleValue();
+                double alpha = alphaNum.doubleValue();
                 boolean share = shareVar.isSelected();
 
                 params.set("hybridcg.binPolicy", policy);
@@ -142,12 +157,32 @@ public final class HybridCgEstimatorEditorWizard extends JPanel {
 
                 // Notify host editor that the value changed
                 firePropertyChange("editorValueChanged", null, imw);
+                // Optional: also fire the more generic event some containers expect
+                firePropertyChange("modelChanged", false, true);
 
             } catch (Exception ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(this,
-                        "Estimation failed:\n" + ex.getMessage(),
-                        "Estimator", JOptionPane.ERROR_MESSAGE);
+                // Build a clearer message than just ex.getMessage()
+                StringBuilder sb = new StringBuilder();
+                sb.append(ex.getClass().getSimpleName());
+                if (ex.getMessage() != null && !ex.getMessage().isBlank()) {
+                    sb.append(": ").append(ex.getMessage());
+                }
+                // Include root cause if present
+                Throwable cause = ex.getCause();
+                if (cause != null) {
+                    sb.append("\nCaused by ").append(cause.getClass().getSimpleName());
+                    if (cause.getMessage() != null && !cause.getMessage().isBlank()) {
+                        sb.append(": ").append(cause.getMessage());
+                    }
+                }
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Estimation failed:\n" + sb,
+                        "Estimator",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
 

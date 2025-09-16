@@ -31,324 +31,147 @@ import org.ejml.simple.SimpleSVD;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Translates a version of the FastICA algorithm used in R from Fortran into Java for use in Tetrad. This can be used in
- * various algorithms that assume linearity and non-Gaussianity as for example, LiNGAM and LiNG-D. There is one
- * difference from the R, in that in R FastICA can operate over complex numbers, whereas here it is restricted to real
- * numbers. A useful reference is this:
- * <p>
- * Oja, E., &amp; Hyvarinen, A. (2000). Independent component analysis: algorithms and applications. Neural networks,
- * 13(4-5), 411-430.
- * <p>
- * The documentation of the R version is as follows, all of which is true of this translation (so far as I know) except
- * for its being in R and its allowing complex values.
- * <p>
- * Description:
- * <p>
- * This is an R and C code implementation of the FastICA algorithm of Aapo Hyvarinen et al. (URL:
- * <a href="http://www.cis.hut.fi/aapo/">http://www.cis.hut.fi/aapo/</a>) to perform Independent Component Analysis
- * (ICA) and Projection Pursuit.
- * <p>
- * Usage:
- * <p>
- * fastICA(X, n.comp, alg.typ = c("parallel","deflation"), fun = c("logcosh","exp"), alpha = 1.0, method = c("R","C"),
- * row.norm = FALSE, maxit = 200, tol = 1e-04, verbose = FALSE, w.init = NULL)
- * <p>
- * Arguments:
- * <p>
- * X: a data matrix with n rows representing observations and p columns representing variables.
- * <p>
- * n.comp: number of components to be extracted
- * <p>
- * alg.typ: if 'alg.typ == "parallel"' the components are extracted simultaneously (the default). If 'alg.typ ==
- * "deflation"' the components are extracted one at a time.
- * <p>
- * fun: the functional form of the G function used in the approximation to neg-entropy (see details)
- * <p>
- * alpha: constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh"'
- * <p>
- * method: if 'method == "R"' then computations are done exclusively in R (default). The code allows the interested R
- * user to see exactly what the algorithm does. If 'method == "C"' then C code is used to perform most of the
- * computations, which makes the algorithm run faster. During compilation, the C code is linked to an optimized BLAS
- * library if present, otherwise stand-alone BLAS routines are compiled.
- * <p>
- * row.norm: a logical value indicating whether rows of the data matrix 'X' should be standardized beforehand.
- * <p>
- * maxit: maximum number of iterations to perform
- * <p>
- * tol: a positive scalar giving the tolerance at which the data matrix X is considered to be a linear combination of
- * non-Gaussian (independent) components i.e., X = SA where columns of S contain the independent components and A is a
- * linear mixing matrix. In short, ICA attempts to `un-mix' the data by estimating an un-mixing matrix W where XW = S.
- * <p>
- * Under this generative model, the measured `signals' in X will tend to be `more Gaussian' than the source components
- * (in S) due to the Central Limit Theorem. Thus, to extract the independent components/sources, we search for an
- * un-mixing matrix W that maximizes the non-gaussianity of the sources.
- * <p>
- * In FastICA, non-gaussianity is measured using approximations to neg-entropy (J) which are more robust than kurtosis-
- * * based measures and fast to compute.
- * <p>
- * The approximation takes the form
- * <p>
- * J(y)=[E{G(y)}-E{G(v)}]^2 where v is an N(0,1) r.v.
- * <p>
- * The following choices of G are included as options G(u)=frac{1}{alpha} log cosh (alpha u) and
- * G(u)=-exp(frac{-u^2}{2})
- * <p>
- * Algorithm*
- * <p>
- * First, the data is centered by subtracting the mean of each column of the data matrix X.
- * <p>
- * The data matrix is then `whitened' by projecting the data onto its principle-component directions--i.e., X &gt; XK
- * where K is a pre-whitening matrix. The user can specify the number of components.
- * <p>
- * The ICA algorithm then estimates a matrix W s.t XKW = S . W is chosen to maximize the neg-entropy approximation under
- * the constraints that W is an orthonormal matrix. This constraint ensures that the estimated components are
- * uncorrelated. The algorithm is based on a fixed-point iteration scheme for maximizing the neg-entropy.
- * <p>
- * Projection Pursuit*
- * <p>
- * In the absence of a generative model for the data, the algorithm can be used to find the projection pursuit
- * directions. Projection pursuit is a technique for finding `interesting' directions in multidimensional datasets.
- * These projections are useful for visualizing the dataset and in density estimation and regression. Interesting
- * directions are those which show the least Gaussian distribution, which is what the FastICA algorithm does.
- * <p>
- * Author(s):
- * <p>
- * J L Marchini and C Heaton
- * <p>
- * References:
- * <p>
- * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and Applications, _Neural Networks_,
- * *13(4-5)*:411-430
+ * FastICA (real-valued) translated for Tetrad.
+ *
+ * Key stability fixes:
+ *  - Correct derivative in symmetric (parallel) update: g'(u) = α(1 - g(u)^2) for logcosh.
+ *  - Whitening ridge (eps) to avoid exploding 1/sqrt(λ) on tiny eigenvalues.
+ *  - Orthonormalize random wInit via SVD (helps convergence).
+ *  - Small deflation loop fix (row assignment index).
+ *
+ * Reference:
+ *   Hyvarinen & Oja (2000) Independent Component Analysis: Algorithms and Applications. Neural Networks 13(4–5):411–430.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 public class FastIca {
 
-    /**
-     * The algorithm type where all components are extracted simultaneously.
-     */
+    /** Extract components simultaneously (symmetric decorrelation). */
     public static int PARALLEL;
 
-    /**
-     * The algorithm type where the components are extracted one at a time.
-     */
+    /** Extract components one-at-a-time. */
     public static int DEFLATION = 1;
 
-    /**
-     * One of the function types that can be used to approximate negative entropy.
-     */
+    /** Neg-entropy nonlinearity: logcosh. */
     public static int LOGCOSH = 2;
 
-    /**
-     * The other function type that can be used to approximate negative entropy.
-     */
+    /** Neg-entropy nonlinearity: exp. */
     public static int EXP = 3;
 
-    /**
-     * A data matrix with n rows representing observations and p columns representing variables.
-     */
+    /** Data matrix (rows = cases, cols = variables) after preselect; no missing values. */
     private final Matrix X;
 
-    /**
-     * The number of independent components to be extracted.
-     */
+    /** Number of components. */
     private int numComponents;
 
-    /**
-     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default). If algorithmType ==
-     * DEFLATION, the components are extracted one at a time.
-     */
+    /** Algorithm type (PARALLEL or DEFLATION). */
     private int algorithmType;
 
-    /**
-     * The function type to be used, either LOGCOSH or EXP.
-     */
+    /** Nonlinearity function (LOGCOSH or EXP). */
     private int function = FastIca.LOGCOSH;
 
-    /**
-     * Constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh". Default = 1.0.
-     */
+    /** Alpha in [1,2] for logcosh. */
     private double alpha = 1.1;
 
-    /**
-     * A logical value indicating whether rows of the data matrix 'X' should be standardized beforehand. Default =
-     * false.
-     */
+    /** Whether to row-normalize X prior to whitening. */
     private boolean rowNorm;
 
-    /**
-     * Maximum number of iterations to perform. Default = 200.
-     */
+    /** Max iterations. */
     private int maxIterations = 200;
 
-    /**
-     * A positive scalar giving the tolerance at which the un-mixing matrix is considered to have converged. Default =
-     * 1e-04.
-     */
+    /** Convergence tolerance. */
     private double tolerance = 1e-04;
 
-    /**
-     * A logical value indicating the level of output as the algorithm runs. Default = false.
-     */
+    /** Verbose logging. */
     private boolean verbose;
 
-    /**
-     * Initial un-mixing matrix of dimension (n.comp, n.comp). If null (default), then a matrix of normal r.v.'s is
-     * used.
-     */
+    /** Initial unmixing (n.comp x n.comp). If null, random and orthonormalized. */
     private Matrix wInit;
 
     /**
-     * Constructs an instance of the Fast ICA algorithm, taking as arguments the two arguments that cannot be defaulted:
-     * the data matrix itself and the number of components to be extracted.
-     *
-     * @param X             A 2D matrix, rows being cases, columns being variables. It is assumed that there are no
-     *                      missing values.
-     * @param numComponents an int
+     * Construct with data and number of components.
      */
     public FastIca(Matrix X, int numComponents) {
         this.X = X;
         this.numComponents = numComponents;
-        algorithmType = FastIca.PARALLEL;
+        this.algorithmType = FastIca.PARALLEL;
     }
 
-    /**
-     * Calculates the mean of the elements in a given Vector.
-     *
-     * @param v The Vector containing the elements.
-     * @return The mean value of the elements in the Vector.
-     */
+    // ---------- small helpers ----------
+
     private static double mean(Vector v) {
         double sum = 0.0;
-
-        for (int i = 0; i < v.size(); i++) {
-            sum += v.get(i);
-        }
-
+        for (int i = 0; i < v.size(); i++) sum += v.get(i);
         return sum / v.size();
     }
 
-    /**
-     * Centers each row of the given matrix by subtracting the mean of the row from each element.
-     *
-     * @param x The matrix to be centered.
-     */
+    /** Center each row (component-wise). */
     public static void center(Matrix x) {
         for (int i = 0; i < x.getNumRows(); i++) {
             Vector u = x.row(i);
-            double mean = mean(u);
-
+            double m = mean(u);
             for (int j = 0; j < x.getNumColumns(); j++) {
-                x.set(i, j, x.get(i, j) - mean);
+                x.set(i, j, x.get(i, j) - m);
             }
         }
-
     }
 
-    /**
-     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default). If algorithmType ==
-     * DEFLATION, the components are extracted one at a time.
-     *
-     * @param algorithmType This type.
-     */
     public void setAlgorithmType(int algorithmType) {
         if (!(algorithmType == FastIca.DEFLATION || algorithmType == FastIca.PARALLEL)) {
             throw new IllegalArgumentException("Value should be DEFLATION or PARALLEL.");
         }
-
         this.algorithmType = algorithmType;
     }
 
-    /**
-     * Sets the function type to be used, either LOGCOSH or EXP.
-     *
-     * @param function This function, LOGCOSH or EXP.
-     */
     public void setFunction(int function) {
         if (!(function == FastIca.LOGCOSH || function == FastIca.EXP)) {
             throw new IllegalArgumentException("Value should be LOGCOSH or EXP.");
         }
-
         this.function = function;
     }
 
-    /**
-     * Sets the FastICA alpha constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh"'
-     *
-     * @param alpha this constant.
-     */
     public void setAlpha(double alpha) {
         if (!(alpha >= 1 && alpha <= 2)) {
             throw new IllegalArgumentException("Alpha should be in range [1, 2].");
         }
-
         this.alpha = alpha;
     }
 
-    /**
-     * A logical value indicating whether rows of the data matrix 'X' should be standardized beforehand.
-     *
-     * @param rowNorm True, if so.
-     */
     public void setRowNorm(boolean rowNorm) {
         this.rowNorm = rowNorm;
     }
 
-    /**
-     * Sets the maximum number of iterations to allow.
-     *
-     * @param maxIterations This maximum.
-     */
     public void setMaxIterations(int maxIterations) {
         if (maxIterations < 1) {
             TetradLogger.getInstance().log("maxIterations should be positive.");
         }
-
         this.maxIterations = maxIterations;
     }
 
-    /**
-     * Sets a positive scalar giving the tolerance at which the un-mixing matrix is considered to have converged.
-     *
-     * @param tolerance This value.
-     */
     public void setTolerance(double tolerance) {
         if (!(tolerance > 0)) {
             TetradLogger.getInstance().log("Tolerance should be positive.");
         }
-
         this.tolerance = tolerance;
     }
 
-    /**
-     * Sets whether verbose output should be enabled or disabled for the algorithm.
-     *
-     * @param verbose A boolean value. If true, verbose output will be enabled; if false, it will be disabled.
-     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    /**
-     * Sets the initial un-mixing matrix of dimension (n.comp, n.comp). If NULL (default), then a random matrix of
-     * normal r.v.'s is used.
-     *
-     * @param wInit This matrix.
-     */
     public void setWInit(Matrix wInit) {
         this.wInit = wInit;
     }
 
+    // ---------- main entry ----------
+
     /**
-     * Runs the Fast ICA algorithm (following the R version) and returns the list of result items that the R version
-     * returns.
-     *
-     * @return this list, as a FastIca.IcaResult object.
+     * Run FastICA and return preprocessed X, whitening K, unmixing W, and sources S.
      */
     public IcaResult findComponents() {
-        int n = this.X.getNumColumns();
-        int p = this.X.getNumRows();
+        int n = this.X.getNumColumns(); // cases
+        int p = this.X.getNumRows();    // variables/components pre-whiten
 
         if (this.numComponents > min(n, p)) {
             TetradLogger.getInstance().log("Requested number of components is too large.");
@@ -356,6 +179,7 @@ public class FastIca {
             this.numComponents = min(n, p);
         }
 
+        // Initialize W; if random, orthonormalize (SVD U).
         if (this.wInit == null) {
             this.wInit = new Matrix(this.numComponents, this.numComponents);
             for (int i = 0; i < this.wInit.getNumRows(); i++) {
@@ -363,47 +187,35 @@ public class FastIca {
                     this.wInit.set(i, j, RandomUtil.getInstance().nextGaussian(0, 1));
                 }
             }
+            SimpleSVD<SimpleMatrix> sWi = this.wInit.getSimpleMatrix().svd();
+            this.wInit = new Matrix(sWi.getU()); // orthonormal
         } else if (this.wInit.getNumRows() != this.wInit.getNumColumns()) {
             throw new IllegalArgumentException("wInit is the wrong size.");
         }
 
-        if (this.verbose) {
-            TetradLogger.getInstance().log("Centering");
-        }
-
+        if (this.verbose) TetradLogger.getInstance().log("Centering");
         center(this.X);
+        if (this.rowNorm) scale(this.X);
 
-        if (this.rowNorm) {
-            scale(this.X);
-        }
-
-        if (this.verbose) {
-            TetradLogger.getInstance().log("Whitening");
-        }
-
-        // Whiten.
+        if (this.verbose) TetradLogger.getInstance().log("Whitening");
+        // Whitening with a small ridge to stabilize near-singular covariance.
+        double eps = 1e-6;
         Matrix cov = this.X.times(this.X.transpose()).scalarMult(1.0 / n);
-
+        for (int i = 0; i < cov.getNumRows(); i++) {
+            cov.set(i, i, cov.get(i, i) + eps);
+        }
         SimpleSVD<SimpleMatrix> s = cov.getSimpleMatrix().svd();
-
         Matrix D = new Matrix(s.getW());
         Matrix U = new Matrix(s.getU());
-
         for (int i = 0; i < D.getNumRows(); i++) {
-
-            // Need to take square roots to make sure the S vectors are uncorrelated here...
-            D.set(i, i, 1.0 / FastMath.sqrt(D.get(i, i)));
+            double lambda = D.get(i, i);
+            D.set(i, i, 1.0 / FastMath.sqrt(Math.max(lambda, eps)));
         }
-
-        cov.sqrt();
-
         Matrix K = D.times(U.transpose());
-        K = K.getPart(0, this.numComponents, 0, p);
-
+        K = K.getPart(0, this.numComponents, 0, p); // keep first components
         Matrix X1 = K.times(this.X);
 
         Matrix b;
-
         if (this.algorithmType == FastIca.DEFLATION) {
             b = icaDeflation(X1, this.tolerance, this.function, this.alpha,
                     this.maxIterations, this.verbose, this.wInit);
@@ -417,26 +229,24 @@ public class FastIca {
         Matrix w = b.times(K);
         Matrix S = w.times(this.X);
         return new IcaResult(this.X, K, w, S);
-
     }
+
+    // ---------- deflationary FastICA ----------
 
     private Matrix icaDeflation(Matrix X,
                                 double tolerance, int function, double alpha,
                                 int maxIterations, boolean verbose, Matrix wInit) {
         if (verbose && function == FastIca.LOGCOSH) {
-            TetradLogger.getInstance().log("Deflation FastIca using lgcosh approx. to neg-entropy function");
+            TetradLogger.getInstance().log("Deflation FastICA using logcosh");
         }
-
         if (verbose && function == FastIca.EXP) {
-            TetradLogger.getInstance().log("Deflation FastIca using exponential approx. to neg-entropy function");
+            TetradLogger.getInstance().log("Deflation FastICA using exp");
         }
 
         Matrix W = new Matrix(X.getNumRows(), X.getNumRows());
 
         for (int i = 0; i < X.getNumRows(); i++) {
-            if (verbose) {
-                TetradLogger.getInstance().log("Component " + (i + 1));
-            }
+            if (verbose) TetradLogger.getInstance().log("Component " + (i + 1));
 
             Vector w = wInit.row(i);
 
@@ -456,79 +266,50 @@ public class FastIca {
                 Vector wx = X.transpose().times(w);
 
                 Vector gwx0 = new Vector(X.getNumColumns());
-
-                for (int j = 0; j < X.getNumColumns(); j++) {
-                    gwx0.set(j, g(alpha, wx.get(j)));
-                }
+                for (int j = 0; j < X.getNumColumns(); j++) gwx0.set(j, g(alpha, wx.get(j)));
 
                 Matrix gwx = new Matrix(X.getNumRows(), X.getNumColumns());
-
-                for (int _i = 0; _i < X.getNumRows(); _i++) {
-                    gwx.assignRow(i, gwx0);
+                for (int r = 0; r < X.getNumRows(); r++) {
+                    gwx.assignRow(r, gwx0); // FIX: row index should be r, not i
                 }
 
-                // A weighting of X by gwx0.
+                // X weighted by gwx0
                 Matrix xgwx = new Matrix(X.getNumRows(), X.getNumColumns());
-
-                for (int _i = 0; _i < X.getNumRows(); _i++) {
+                for (int r = 0; r < X.getNumRows(); r++) {
                     for (int j = 0; j < X.getNumColumns(); j++) {
-                        xgwx.set(_i, j, X.get(_i, j) * gwx0.get(j));
+                        xgwx.set(r, j, X.get(r, j) * gwx0.get(j));
                     }
                 }
 
                 Vector v1 = new Vector(X.getNumRows());
-
-                for (int k = 0; k < X.getNumRows(); k++) {
-                    v1.set(k, mean(xgwx.row(k)));
-                }
+                for (int k = 0; k < X.getNumRows(); k++) v1.set(k, mean(xgwx.row(k)));
 
                 Vector g_wx = new Vector(X.getNumColumns());
-
                 for (int k = 0; k < X.getNumColumns(); k++) {
                     double t = g(alpha, wx.get(k));
                     g_wx.set(k, (1.0 - t * t));
                 }
 
-                Vector v2 = w.copy();
-                double meanGwx = mean(g_wx);
-                v2 = v2.scalarMult(meanGwx);
+                Vector v2 = w.copy().scalarMult(mean(g_wx));
 
                 Vector w1 = v1.minus(v2);
 
                 if (i > 0) {
                     Vector t = w1.like();
-
                     for (int u = 0; u < i; u++) {
                         double k = 0.0;
-
-                        for (int j = 0; j < X.getNumRows(); j++) {
-                            k += w1.get(j) * W.get(u, j);
-                        }
-
-                        for (int j = 0; j < X.getNumRows(); j++) {
-                            t.set(j, t.get(j) + k * W.get(u, j));
-                        }
+                        for (int j = 0; j < X.getNumRows(); j++) k += w1.get(j) * W.get(u, j);
+                        for (int j = 0; j < X.getNumRows(); j++) t.set(j, t.get(j) + k * W.get(u, j));
                     }
-
-                    for (int j = 0; j < X.getNumRows(); j++) {
-                        w1.set(j, w1.get(j) - t.get(j));
-                    }
+                    for (int j = 0; j < X.getNumRows(); j++) w1.set(j, w1.get(j) - t.get(j));
                 }
 
                 w1 = w1.scalarMult(1.0 / rms(w1));
-
                 _tolerance = 0.0;
-
-                for (int k = 0; k < X.getNumRows(); k++) {
-                    _tolerance += w1.get(k) * w.get(k);
-                }
-
+                for (int k = 0; k < X.getNumRows(); k++) _tolerance += w1.get(k) * w.get(k);
                 _tolerance = abs(abs(_tolerance) - 1.0);
 
-                if (verbose) {
-                    TetradLogger.getInstance().log("Iteration " + it + " tol = " + _tolerance);
-                }
-
+                if (verbose) TetradLogger.getInstance().log("Iteration " + it + " tol = " + _tolerance);
                 w = w1;
             }
 
@@ -538,14 +319,83 @@ public class FastIca {
         return W;
     }
 
-    /**
-     * Computes the value of the function g(alpha, y) based on the selected function type.
-     *
-     * @param alpha The alpha parameter used for the function approximation.
-     * @param y     The input value.
-     * @return The computed value of g(alpha, y).
-     * @throws IllegalArgumentException if the function type is not configured.
-     */
+    // ---------- symmetric (parallel) FastICA ----------
+
+    private Matrix icaParallel(Matrix X, int numComponents,
+                               double tolerance, double alpha,
+                               int maxIterations, boolean verbose, Matrix wInit) {
+        int p = X.getNumColumns();
+        Matrix W = wInit;
+
+        // Symmetric decorrelation of initial W via SVD
+        SimpleSVD<SimpleMatrix> sW = W.getSimpleMatrix().svd();
+        Matrix D = new Matrix(sW.getW());
+        for (int i = 0; i < D.getNumRows(); i++) D.set(i, i, 1.0 / D.get(i, i));
+        Matrix WTemp = new Matrix(sW.getU()).times(D);
+        WTemp = WTemp.times(new Matrix(sW.getU()).transpose());
+        WTemp = WTemp.times(W);
+        W = WTemp;
+
+        Matrix W1;
+        double _tolerance = Double.POSITIVE_INFINITY;
+        int it = 0;
+
+        if (verbose) TetradLogger.getInstance().log("Symmetric FastICA (logcosh)");
+
+        while (_tolerance > tolerance && it < maxIterations) {
+            Matrix wx = W.times(X); // (nComp x p)
+            Matrix gwx = new Matrix(numComponents, p);
+            for (int i = 0; i < numComponents; i++) {
+                for (int j = 0; j < p; j++) {
+                    gwx.set(i, j, g(alpha, wx.get(i, j)));
+                }
+            }
+
+            // E[ g(wx) x^T ] = gwx * X^T / p
+            Matrix v1 = gwx.times(X.transpose().scalarMult(1.0 / p));
+
+            // g'(u) = alpha * (1 - g(u)^2) for logcosh with tanh(alpha u)
+            Matrix g_wx = gwx.like();
+            for (int i = 0; i < g_wx.getNumRows(); i++) {
+                for (int j = 0; j < g_wx.getNumColumns(); j++) {
+                    double v = gwx.get(i, j);                // FIX: read from gwx, not g_wx
+                    g_wx.set(i, j, alpha * (1.0 - v * v));   // derivative
+                }
+            }
+
+            Vector V20 = new Vector(numComponents);
+            for (int k = 0; k < numComponents; k++) V20.set(k, mean(g_wx.row(k)));
+            Matrix v2 = V20.diag().times(W);
+
+            W1 = v1.minus(v2);
+
+            // Symmetric decorrelation of W1
+            SimpleSVD<SimpleMatrix> sW1 = (W1.getSimpleMatrix()).svd();
+            Matrix U = new Matrix(sW1.getU());
+            Matrix sD = new Matrix(sW1.getW());
+            for (int i = 0; i < sD.getNumRows(); i++) sD.set(i, i, 1.0 / sD.get(i, i));
+            Matrix W1Temp = U.times(sD).times(U.transpose()).times(W1);
+            W1 = W1Temp;
+
+            // Convergence via absolute cosines of principal angles between rows of W and W1
+            Matrix d1 = W1.times(W.transpose());
+            Vector d = d1.diag();
+            _tolerance = Double.NEGATIVE_INFINITY;
+            for (int i = 0; i < d.size(); i++) {
+                double m = abs(abs(d.get(i)) - 1);
+                if (m > _tolerance) _tolerance = m;
+            }
+
+            W = W1;
+            if (verbose) TetradLogger.getInstance().log("Iteration " + (it + 1) + " tol = " + _tolerance);
+            it++;
+        }
+
+        return W;
+    }
+
+    // ---------- nonlinearity ----------
+
     private double g(double alpha, double y) {
         if (this.function == FastIca.LOGCOSH) {
             return tanh(alpha * y);
@@ -556,138 +406,17 @@ public class FastIca {
         }
     }
 
-    /**
-     * Calculates the sum of squares for elements in a given Vector.
-     *
-     * @param v The Vector containing the elements.
-     * @return The sum of squares for the elements in the Vector.
-     */
     private double sumOfSquares(Vector v) {
         double sum = 0.0;
-
-        for (int i = 0; i < v.size(); i++) {
-            sum += v.get(i) * v.get(i);
-        }
-
+        for (int i = 0; i < v.size(); i++) sum += v.get(i) * v.get(i);
         return sum;
     }
 
-    /**
-     * Calculates the root-mean-square (RMS) of the elements in a given vector.
-     *
-     * @param w The vector containing the elements.
-     * @return The root-mean-square (RMS) of the elements in the vector.
-     */
     private double rms(Vector w) {
         double ssq = sumOfSquares(w);
         return FastMath.sqrt(ssq);
     }
 
-    /**
-     * This method implements the parallel Independent Component Analysis (ICA) algorithm.
-     *
-     * @param X             The input data matrix with rows representing cases and columns representing variables.
-     * @param numComponents The number of components to be extracted.
-     * @param tolerance     A positive scalar value indicating the convergence tolerance of the un-mixing matrix.
-     * @param alpha         The alpha constant in the range [1, 2] used in the approximation to neg-entropy when 'fun ==
-     *                      "logcosh"'.
-     * @param maxIterations The maximum number of iterations to allow.
-     * @param verbose       A boolean value indicating whether verbose output should be printed.
-     * @param wInit         The initial un-mixing matrix of dimension (numComponents, numComponents).
-     * @return The computed un-mixing matrix.
-     */
-    private Matrix icaParallel(Matrix X, int numComponents,
-                               double tolerance, double alpha,
-                               int maxIterations, boolean verbose, Matrix wInit) {
-        int p = X.getNumColumns();
-        Matrix W = wInit;
-
-        SimpleSVD<SimpleMatrix> sW = W.getSimpleMatrix().svd();
-
-        Matrix D = new Matrix(sW.getW());
-        for (int i = 0; i < D.getNumRows(); i++) D.set(i, i, 1.0 / D.get(i, i));
-
-        Matrix WTemp = new Matrix(sW.getU()).times(D);
-        WTemp = WTemp.times(new Matrix(sW.getU()).transpose());
-        WTemp = WTemp.times(W);
-        W = WTemp;
-
-        Matrix W1;
-        double _tolerance = Double.POSITIVE_INFINITY;
-        int it = 0;
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Symmetric FastICA using logcosh approx. to neg-entropy function");
-        }
-
-        while (_tolerance > tolerance && it < maxIterations) {
-            Matrix wx = W.times(X);
-            Matrix gwx = new Matrix(numComponents, p);
-
-            for (int i = 0; i < numComponents; i++) {
-                for (int j = 0; j < p; j++) {
-                    gwx.set(i, j, g(alpha, wx.get(i, j)));
-                }
-            }
-
-            Matrix v1 = gwx.times(X.transpose().scalarMult(1.0 / p));
-            Matrix g_wx = gwx.like();
-
-            for (int i = 0; i < g_wx.getNumRows(); i++) {
-                for (int j = 0; j < g_wx.getNumColumns(); j++) {
-                    double v = g_wx.get(i, j);
-                    double w = alpha * (1.0 - v * v);
-                    g_wx.set(i, j, w);
-                }
-            }
-
-            Vector V20 = new Vector(numComponents);
-
-            for (int k = 0; k < numComponents; k++) {
-                V20.set(k, mean(g_wx.row(k)));
-            }
-
-            Matrix v2 = V20.diag();
-            v2 = v2.times(W);
-            W1 = v1.minus(v2);
-
-            SimpleSVD<SimpleMatrix> sW1 = (W1.getSimpleMatrix()).svd();
-            Matrix U = new Matrix(sW1.getU());
-            Matrix sD = new Matrix(sW1.getW());
-            for (int i = 0; i < sD.getNumRows(); i++)
-                sD.set(i, i, 1.0 / sD.get(i, i));
-
-            Matrix W1Temp = U.times(sD);
-            W1Temp = W1Temp.times(U.transpose());
-            W1Temp = W1Temp.times(W1);
-            W1 = W1Temp;
-
-            Matrix d1 = W1.times(W.transpose());
-            Vector d = d1.diag();
-            _tolerance = Double.NEGATIVE_INFINITY;
-
-            for (int i = 0; i < d.size(); i++) {
-                double m = abs(abs(d.get(i)) - 1);
-                if (m > _tolerance) _tolerance = m;
-            }
-
-            W = W1;
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Iteration " + (it + 1) + " tol = " + _tolerance);
-            }
-
-            it++;
-        }
-
-        return W;
-    }
-
-    /**
-     * Scales the input matrix by dividing each row by its root-mean-square (RMS).
-     *
-     * @param x The matrix to be scaled.
-     */
     private void scale(Matrix x) {
         for (int i = 0; i < x.getNumRows(); i++) {
             Vector u = x.row(i).scalarMult(1.0 / rms(x.row(i)));
@@ -695,112 +424,25 @@ public class FastIca {
         }
     }
 
-    /**
-     * A list containing the following components
-     * <p>
-     * X: pre-processed data matrix
-     * <p>
-     * K: pre-whitening matrix that projects data onto the first n.comp principal components.
-     * <p>
-     * W: estimated un-mixing matrix (see definition in details)
-     * <p>
-     * A: estimated mixing matrix
-     * <p>
-     * S: estimated source matrix
-     */
+    // ---------- result container ----------
+
     public static class IcaResult {
-
-        /**
-         * The pre-processed data matrix.
-         */
         private final Matrix X;
-
-        /**
-         * The pre-whitening matrix that projects data onto the first n.comp principal components.
-         */
         private final Matrix K;
-
-        /**
-         * The estimated un-mixing matrix.
-         */
         private final Matrix W;
-
-        /**
-         * The estimated source matrix.
-         */
         private final Matrix S;
 
-        /**
-         * Constructs an instance of the IcaResult class, taking as arguments the four matrices that are the result of
-         * the Fast ICA algorithm.
-         *
-         * @param X The pre-processed data matrix.
-         * @param K The pre-whitening matrix that projects data onto the first n.comp principal components.
-         * @param W The estimated un-mixing matrix.
-         * @param S The estimated source matrix.
-         */
-        public IcaResult(Matrix X, Matrix K, Matrix W,
-                         Matrix S) {
-            this.X = X;
-            this.K = K;
-            this.W = W;
-            this.S = S;
+        public IcaResult(Matrix X, Matrix K, Matrix W, Matrix S) {
+            this.X = X; this.K = K; this.W = W; this.S = S;
         }
 
-        /**
-         * Returns the pre-processed data matrix.
-         *
-         * @return this matrix.
-         */
-        public Matrix getX() {
-            return this.X;
-        }
+        public Matrix getX() { return this.X; }
+        public Matrix getK() { return this.K; }
+        public Matrix getW() { return this.W; }
+        public Matrix getS() { return this.S; }
 
-        /**
-         * Returns the pre-whitening matrix that projects data onto the first n.comp principal components.
-         *
-         * @return this matrix.
-         */
-        public Matrix getK() {
-            return this.K;
-        }
-
-        /**
-         * Returns the estimated un-mixing matrix.
-         *
-         * @return this matrix.
-         */
-        public Matrix getW() {
-            return this.W;
-        }
-
-        /**
-         * Returns the estimated source matrix.
-         *
-         * @return this matrix.
-         */
-        public Matrix getS() {
-            return this.S;
-        }
-
-        /**
-         * Returns a string representation of this IcaResult object.
-         *
-         * @return this string.
-         */
         public String toString() {
-            return "\n\nX:\n" +
-                   this.X +
-                   "\n\nK:\n" +
-                   this.K +
-                   "\n\nW:\n" +
-                   this.W +
-                   "\n\nS:\n" +
-                   this.S;
+            return "\n\nX:\n" + this.X + "\n\nK:\n" + this.K + "\n\nW:\n" + this.W + "\n\nS:\n" + this.S;
         }
     }
 }
-
-
-
-

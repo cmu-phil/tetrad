@@ -1,7 +1,5 @@
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.hybridcg.HybridCgModel;
@@ -19,19 +17,12 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 /**
- * Editor for Hybrid CG estimator results. Mirrors BayesEstimatorEditor:
- * - Shows the graph on the left and an estimation panel on the right.
- * - Supports multiple datasets via a model selector.
- * - Fires "modelChanged" when a new IM is estimated in the right panel.
- *
- * This editor expects HybridCgEstimatorEditorWizard to be a JPanel taking:
- *   new HybridCgEstimatorEditorWizard(HybridCgPmWrapper pmWrapper, DataSet data)
- * and to fire a PropertyChange event "editorValueChanged" with the new HybridCgImWrapper as newValue.
+ * Editor for Hybrid CG estimator results.
+ * Left: graph workbench. Right: tabs with (1) Estimator panel and (2) Estimated Model (appears after estimation).
  */
 public class HybridCgEstimatorEditor extends JPanel {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     /** Container holding the workbench + tabs. */
     private final JPanel targetPanel;
@@ -39,43 +30,35 @@ public class HybridCgEstimatorEditor extends JPanel {
     /** Estimator wrapper (parallel to BayesEstimatorWrapper). */
     private final HybridCgEstimatorWrapper wrapper;
 
-    /** Right-side panel that runs estimation. */
+    /** Right-side estimator panel. */
     private HybridCgEstimatorEditorWizard wizard;
 
-    // ---------------------- Constructors ----------------------
+    /** Right-side tabs so we can add the “Estimated Model” tab after estimation. */
+    private JTabbedPane rightTabs;
 
-    /**
-     * Convenience ctor: take an existing IM + dataset + params and build an estimator wrapper.
-     * Note this will (re-)estimate using the graph from the IM's PM over the provided dataset.
-     */
+    /** The “Estimated Model” tab contents (created lazily). */
+    private Component estimatedTabContent;
+
     public HybridCgEstimatorEditor(HybridCgModel.HybridCgIm im, DataSet dataSet, Parameters parameters) {
         this(new HybridCgEstimatorWrapper(
                 new DataWrapper(dataSet),
-                // Build a PM wrapper from the IM's PM directly (uses the PM's graph/types)
                 new HybridCgPmWrapper(im.getPm()),
                 parameters
         ));
     }
 
-    /**
-     * Primary ctor: from an estimator wrapper (one or more datasets).
-     */
     public HybridCgEstimatorEditor(HybridCgEstimatorWrapper estWrapper) {
         this.wrapper = estWrapper;
 
         setLayout(new BorderLayout());
-
         this.targetPanel = new JPanel(new BorderLayout());
         resetHybridImEditor();
-
         add(this.targetPanel, BorderLayout.CENTER);
         validate();
 
-        // If there are multiple datasets/models, add a selector like the Bayes editor
         if (this.wrapper.getNumModels() > 1) {
             JComboBox<Integer> comp = new JComboBox<>();
             for (int i = 0; i < this.wrapper.getNumModels(); i++) comp.addItem(i + 1);
-
             comp.addActionListener(e -> {
                 Object sel = comp.getSelectedItem();
                 if (sel instanceof Integer idx1) {
@@ -84,7 +67,6 @@ public class HybridCgEstimatorEditor extends JPanel {
                     validate();
                 }
             });
-
             comp.setMaximumSize(comp.getPreferredSize());
 
             Box b = Box.createHorizontalBox();
@@ -93,7 +75,6 @@ public class HybridCgEstimatorEditor extends JPanel {
             b.add(new JLabel(" from "));
             b.add(new JLabel(this.wrapper.getName()));
             b.add(Box.createHorizontalGlue());
-
             add(b, BorderLayout.NORTH);
         }
     }
@@ -111,53 +92,62 @@ public class HybridCgEstimatorEditor extends JPanel {
         return this.wizard;
     }
 
-    /** Rebuild the right-hand tabs and left-hand graph for the currently selected model. */
+    /** Rebuild the UI for the currently selected model. */
     private void resetHybridImEditor() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        // Pull estimated IM and its graph
+        // Left: graph workbench
         HybridCgModel.HybridCgIm hybridIm = this.wrapper.getEstimatedHybridCgIm();
         HybridCgModel.HybridCgPm hybridPm = hybridIm.getPm();
         Graph graph = hybridPm.getGraph();
-
-        // Left: graph workbench
         GraphWorkbench workbench = new GraphWorkbench(graph);
 
-        // Dataset currently selected inside the wrapper
+        // Right: tabs
+        rightTabs = new JTabbedPane();
+
+        // Estimator tab (wizard)
         DataSet dataSet = this.wrapper.getDataSet();
-
-        // Build a PM wrapper to feed the right-side estimation panel
-        // Prefer to use the actual HybridCgPm object if your wrapper supports it
         HybridCgPmWrapper pmWrapperForWizard = new HybridCgPmWrapper(hybridPm);
-
-        // Right: the estimator panel (runs MLE with user options)
         this.wizard = new HybridCgEstimatorEditorWizard(pmWrapperForWizard, dataSet);
 
-        // When estimation finishes, the wizard fires "editorValueChanged" with the new HybridCgImWrapper
+        // When estimation finishes, the wizard fires "editorValueChanged" with the new HybridCgImWrapper.
         this.wizard.addPropertyChangeListener(evt -> {
             if ("editorValueChanged".equals(evt.getPropertyName())) {
-                // evt.getNewValue() should be a HybridCgImWrapper; you can read it if you want
-                // and/or just propagate that a model changed.
-                firePropertyChange("modelChanged", null, evt.getNewValue());
+                Object nv = evt.getNewValue();
+                if (nv instanceof HybridCgImWrapper imw) {
+                    // Install (or replace) the “Estimated Model” tab and switch to it
+                    installEstimatedModelTab(imw);
+                    rightTabs.setSelectedIndex(1); // 0 = Estimator, 1 = Estimated Model
+                    // Bubble up to the app that the model changed
+                    firePropertyChange("modelChanged", null, imw);
+                } else {
+                    // Still tell upstream something changed
+                    firePropertyChange("modelChanged", null, nv);
+                }
             }
         });
 
-        JScrollPane workbenchScroll = new JScrollPane(workbench);
-        workbenchScroll.setPreferredSize(new Dimension(400, 400));
         JScrollPane wizardScroll = new JScrollPane(getWizard());
 
-        // --- Model statistics tab (simple summary for now) ---
+        // Stats tab content as text (optional: keep inside “Estimator” tab or move to a separate tab)
         String stats = buildModelStatsText(hybridIm, dataSet);
         JTextArea modelStats = new JTextArea(stats);
         modelStats.setEditable(false);
         JScrollPane statsScroll = new JScrollPane(modelStats);
 
-        // Tabs on right
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("Estimator", wizardScroll);
-        tabbedPane.add("Model Statistics", statsScroll);
+        // Put estimator + stats into a small right-side vertical split (optional). To keep parity with Bayes,
+        // we’ll just make a two-tab right panel: Estimator | Estimated Model. Stats are embedded at the bottom of Estimator.
+        JPanel estimatorHost = new JPanel(new BorderLayout());
+        estimatorHost.add(wizardScroll, BorderLayout.CENTER);
+        estimatorHost.add(statsScroll, BorderLayout.SOUTH);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, workbenchScroll, tabbedPane);
+        rightTabs.addTab("Estimator", estimatorHost);
+        // “Estimated Model” tab is added dynamically after user runs an estimation.
+
+        // Split: left graph | right tabs
+        JScrollPane workbenchScroll = new JScrollPane(workbench);
+        workbenchScroll.setPreferredSize(new Dimension(400, 400));
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, workbenchScroll, rightTabs);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
 
@@ -166,7 +156,7 @@ public class HybridCgEstimatorEditor extends JPanel {
 
         setName("Hybrid CG Estimator");
 
-        // Menu bar with Save Graph Image, like Bayes editor
+        // Menu bar with Save Graph Image
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         menuBar.add(file);
@@ -180,7 +170,29 @@ public class HybridCgEstimatorEditor extends JPanel {
         this.targetPanel.repaint();
     }
 
-    /** Light-weight stats text (safe defaults if your model doesn’t expose likelihood/BIC yet). */
+    /** Create/update the “Estimated Model” tab with a live HybridCgImEditor bound to the given IM wrapper. */
+    private void installEstimatedModelTab(HybridCgImWrapper imw) {
+        HybridCgImEditor imEditor = new HybridCgImEditor(imw);
+
+        JScrollPane estimatedScroll = new JScrollPane(imEditor);
+
+        if (estimatedTabContent == null) {
+            rightTabs.addTab("Estimated Model", estimatedScroll);
+            estimatedTabContent = estimatedScroll;
+        } else {
+            int idx = rightTabs.indexOfComponent(estimatedTabContent);
+            if (idx >= 0) {
+                rightTabs.setComponentAt(idx, estimatedScroll);
+                rightTabs.setTitleAt(idx, "Estimated Model");
+                estimatedTabContent = estimatedScroll;
+            } else {
+                rightTabs.addTab("Estimated Model", estimatedScroll);
+                estimatedTabContent = estimatedScroll;
+            }
+        }
+    }
+
+    /** Lightweight stats. */
     private static String buildModelStatsText(HybridCgModel.HybridCgIm im, DataSet dataSet) {
         StringBuilder buf = new StringBuilder();
         NumberFormat nf = new DecimalFormat("0.000");
@@ -191,7 +203,6 @@ public class HybridCgEstimatorEditor extends JPanel {
         buf.append("Variables: ").append(dataSet != null ? dataSet.getNumColumns() : "—").append('\n');
         buf.append('\n');
 
-        // Structural summary
         HybridCgModel.HybridCgPm pm = im.getPm();
         edu.cmu.tetrad.graph.Node[] nodes = pm.getNodes();
         int discrete = 0, continuous = 0;
@@ -201,10 +212,9 @@ public class HybridCgEstimatorEditor extends JPanel {
         buf.append("Discrete vars: ").append(discrete).append('\n');
         buf.append("Continuous vars: ").append(continuous).append('\n');
 
-        // Placeholders for future estimator metrics:
-        // buf.append("Log-likelihood: ").append(nf.format(result.logLik)).append('\n');
-        // buf.append("Parameters (k): ").append(result.numParams).append('\n');
-        // buf.append("BIC: ").append(nf.format(result.bic)).append('\n');
+        // Placeholders for future metrics:
+        // buf.append("Log-likelihood: ").append(nf.format(...)).append('\n');
+        // buf.append("BIC: ").append(nf.format(...)).append('\n');
 
         return buf.toString();
     }
