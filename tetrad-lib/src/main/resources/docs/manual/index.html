@@ -11244,6 +11244,128 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Value Type:
                 <span id="pathsMaxLength_value_type">Integer</span></li>
         </ul>
+
+        <h3 class="parameter_description" id="rcit.rcitMode">rcit.rcitMode</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.rcitMode_short_desc">Use RCIT (true) or RCoT (false)</span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.rcitMode_long_desc">
+      Chooses between the two randomized kernel tests:
+      <b>RCIT</b> augments <i>Y</i> with <i>Z</i> features (tests <i>X ⟂ Y,Z | Z</i>),
+      while <b>RCoT</b> uses only <i>X</i> and <i>Y</i> features with residualization against <i>Z</i>.
+      In the original RCIT code base this switch is exposed as <code>rcit=True/False</code>.
+    </span>
+            </li>
+            <li>Default Value: <span id="rcit.rcitMode_default_value">true</span></li>
+            <li>Lower Bound: <span id="rcit.rcitMode_lower_bound"></span></li>
+            <li>Upper Bound: <span id="rcit.rcitMode_upper_bound"></span></li>
+            <li>Value Type: <span id="rcit.rcitMode_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.numFeaturesZ">rcit.numFeaturesZ</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.numFeaturesZ_short_desc">Random Fourier features for Z</span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.numFeaturesZ_long_desc">
+                  Number of random Fourier features used to represent the conditioning set <i>Z</i>.
+                  Larger values are more accurate but slower; values in the 50–300 range are typical.
+                </span>
+            </li>
+            <li>Default Value: <span id="rcit.numFeaturesZ_default_value">100</span></li>
+            <li>Lower Bound: <span id="rcit.numFeaturesZ_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="rcit.numFeaturesZ_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="rcit.numFeaturesZ_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.numFeaturesXY">rcit.numFeaturesXY</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.numFeaturesXY_short_desc">Random Fourier features for X and Y</span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.numFeaturesXY_long_desc">
+              Number of random Fourier features for the tested variables <i>X</i> and <i>Y</i>.
+              Small values (e.g., 3–10) often suffice; increasing improves power but adds cost.
+            </span>
+            </li>
+            <li>Default Value: <span id="rcit.numFeaturesXY_default_value">5</span></li>
+            <li>Lower Bound: <span id="rcit.numFeaturesXY_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="rcit.numFeaturesXY_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="rcit.numFeaturesXY_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.lambda">rcit.lambda</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.lambda_short_desc">Ridge regularization (λ)</span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.lambda_long_desc">
+                Ridge penalty used when residualizing feature maps of <i>X</i> and <i>Y</i> against <i>Z</i>.
+                Prevents ill-conditioning when <i>Z</i> features are collinear.
+        </span>
+            </li>
+            <li>Default Value: <span id="rcit.lambda_default_value">0.001</span></li>
+            <li>Lower Bound: <span id="rcit.lambda_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="rcit.lambda_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="rcit.lambda_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.approx">rcit.approx</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.approx_short_desc">
+                Null approximation method: 1 = LpB4, 2 = HBE, 3 = Gamma, 4 = Chi², 5 = Permutation
+            </span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.approx_long_desc">
+                    1 = Lindsay–Pilla–Basak (LpB4) 2 = Hall–Buckley–Eagleson (HBE)
+                    3 = Gamma (Satterthwaite–Welch) 4 = Chi² (normalized)
+                    5 = Permutation test (slower, more accurate for small samples)</span></li>
+            <li>Default Value: <span id="rcit.approx_default_value">1</span></li>
+            <li>Lower Bound: <span id="rcit.approx_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="rcit.approx_upper_bound">5</span></li>
+            <li>Value Type: <span id="rcit.approx_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.permutations">rcit.permutations</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.permutations_short_desc">Permutations for "perm" approx</span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.permutations_long_desc">
+                  Number of permutations used when <code>rcit.approx = "perm"</code>.
+                  Ignored for analytic approximations (<code>lpd4</code>, <code>hbe</code>, <code>gamma</code>, <code>chi2</code>).
+                </span>
+            </li>
+            <li>Default Value: <span id="rcit.permutations_default_value">500</span></li>
+            <li>Lower Bound: <span id="rcit.permutations_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="rcit.permutations_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="rcit.permutations_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.centerFeatures">rcit.centerFeatures</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.centerFeatures_short_desc">Center feature matrices</span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.centerFeatures_long_desc">
+                  If true, center random-feature matrices before regression and test-statistic computation.
+                  Recommended for numerical stability and alignment with kernelized formulations.
+                </span>
+            </li>
+            <li>Default Value: <span id="rcit.centerFeatures_default_value">true</span></li>
+            <li>Lower Bound: <span id="rcit.centerFeatures_lower_bound"></span></li>
+            <li>Upper Bound: <span id="rcit.centerFeatures_upper_bound"></span></li>
+            <li>Value Type: <span id="rcit.centerFeatures_value_type">Boolean</span></li>
+        </ul>
     </div> <!-- End of search parameters -->
 
 

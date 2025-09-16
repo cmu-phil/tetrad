@@ -1205,6 +1205,49 @@ public final class Params {
      */
     public static String MC_ALPHA = "mcAlpha";
 
+    /**
+     * Constant <code>RCIT_MODE="rcit.rcitMode"</code>
+     * Whether to use RCIT (true) or RCoT (false).
+     */
+    public static String RCIT_MODE = "rcit.rcitMode";
+
+    /**
+     * Constant <code>RCIT_NUM_FEATURES_Z="rcit.numFeaturesZ"</code>
+     * Number of random Fourier features for the conditioning set Z (num_f).
+     */
+    public static String RCIT_NUM_FEATURES_Z = "rcit.numFeaturesZ";
+
+    /**
+     * Constant <code>RCIT_NUM_FEATURES_XY="rcit.numFeaturesXY"</code>
+     * Number of random Fourier features for the test variables X and Y (num_f2).
+     */
+    public static String RCIT_NUM_FEATURES_XY = "rcit.numFeaturesXY";
+
+    /**
+     * Constant <code>RCIT_LAMBDA="rcit.lambda"</code>
+     * Ridge regularization parameter (λ) used during residualization.
+     */
+    public static String RCIT_LAMBDA = "rcit.lambda";
+
+    /**
+     * Constant <code>RCIT_APPROX="rcit.approx"</code>
+     * Approximation method for the null distribution:
+     * one of {"lpd4", "hbe", "gamma", "chi2", "perm"}.
+     */
+    public static String RCIT_APPROX = "rcit.approx";
+
+    /**
+     * Constant <code>RCIT_PERMUTATIONS="rcit.permutations"</code>
+     * Number of permutations used when RCIT_APPROX is "perm".
+     */
+    public static String RCIT_PERMUTATIONS = "rcit.permutations";
+
+    /**
+     * Constant <code>RCIT_CENTER_FEATURES="rcit.centerFeatures"</code>
+     * Whether to center feature matrices before regression and HSIC.
+     */
+    public static String RCIT_CENTER_FEATURES = "rcit.centerFeatures";
+
     private Params() {
     }
 
