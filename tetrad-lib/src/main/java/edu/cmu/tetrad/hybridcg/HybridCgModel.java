@@ -309,6 +309,134 @@ public final class HybridCgModel {
             for (int t = 0; t < cps.length; t++) map.put(nodes[cps[t]], cuts[t]);
             setContParentCutpointsForDiscreteChild(child, map);
         }
+
+        /**
+         * Compute the local-table row index for a single data case.
+         *
+         * <p>Rules:
+         * <ul>
+         *   <li>Discrete parents contribute their category indices directly.</li>
+         *   <li>If the child is DISCRETE and has continuous parents, each continuous parent
+         *       is discretized using the stored cutpoints to a bin index (0..bins-1),
+         *       and those bin indices extend the row index.</li>
+         *   <li>If the child is CONTINUOUS, only discrete parents contribute (continuous
+         *       parents do not add dimensions for continuous children).</li>
+         * </ul>
+         *
+         * @param nodeIndex index of the child (in this PM's node order)
+         * @param discParentStates length must equal getDiscreteParents(nodeIndex).length; each entry in [0, card-1]
+         * @param contParentValues raw values for the child's continuous parents; for a DISCRETE child length must equal getContinuousParents(nodeIndex).length; ignored for CONTINUOUS child
+         * @return row index in [0, getNumRows(nodeIndex)-1]
+         */
+        public int rowIndexForCase(int nodeIndex, int[] discParentStates, double[] contParentValues) {
+            int[] dps = getDiscreteParents(nodeIndex);
+            int[] cps = getContinuousParents(nodeIndex);
+
+            if (discParentStates == null || discParentStates.length != dps.length) {
+                throw new IllegalArgumentException("discParentStates length mismatch: expected " + dps.length);
+            }
+
+            int row = 0;
+            int[] dims = getRowDims(nodeIndex);
+            int k = 0; // dims cursor
+
+            // 1) Discrete parent states
+            for (int i = 0; i < dps.length; i++) {
+                int s = discParentStates[i];
+                int card = getCardinality(dps[i]);
+                if (s < 0 || s >= card) {
+                    throw new IllegalArgumentException("discParentStates[" + i + "] out of range 0.." + (card - 1));
+                }
+                row = row * dims[k] + s;
+                k++;
+            }
+
+            // 2) Continuous-parent bins (only if child is DISCRETE)
+            if (isDiscrete(nodeIndex)) {
+                if (cps.length > 0) {
+                    if (contParentValues == null || contParentValues.length != cps.length) {
+                        throw new IllegalArgumentException("contParentValues length mismatch: expected " + cps.length);
+                    }
+                    double[][] cuts = getContParentCutpointsForDiscreteChild(nodeIndex)
+                            .orElseThrow(() -> new IllegalStateException(
+                                    "Cutpoints not set for discrete child with continuous parents: " + nodes[nodeIndex]));
+                    for (int t = 0; t < cps.length; t++) {
+                        int bin = binFromCutpoints(cuts[t], contParentValues[t]);
+                        int binsHere = dims[k];
+                        if (bin < 0 || bin >= binsHere) {
+                            throw new IllegalStateException("Computed bin out of range for parent #" + t + ": " + bin + " / " + binsHere);
+                        }
+                        row = row * dims[k] + bin;
+                        k++;
+                    }
+                }
+            }
+            return row;
+        }
+
+        /**
+         * Convenience overload when the child has NO discrete parents.
+         * Useful for tests like: pm.rowIndexForCase(yIdx, new double[]{ xVal }).
+         *
+         * @param nodeIndex child index
+         * @param contParentValues raw values for the child's continuous parents
+         */
+        public int rowIndexForCase(int nodeIndex, double[] contParentValues) {
+            if (getDiscreteParents(nodeIndex).length != 0) {
+                throw new IllegalArgumentException("Child has discrete parents—use rowIndexForCase(node,int[],double[])");
+            }
+            return rowIndexForCase(nodeIndex, new int[0], contParentValues);
+        }
+
+        /**
+         * Convenience overload that reads parent states/values from a DataSet row.
+         * Child's discrete-parent states are taken from integer columns; continuous-parent
+         * values are taken from double columns and binned (if the child is discrete).
+         *
+         * @param nodeIndex child index
+         * @param data      dataset containing all variables (by name)
+         * @param row       row index into the dataset
+         */
+        public int rowIndexForCase(int nodeIndex, edu.cmu.tetrad.data.DataSet data, int row) {
+            int[] dps = getDiscreteParents(nodeIndex);
+            int[] cps = getContinuousParents(nodeIndex);
+
+            int[] discStates = new int[dps.length];
+            for (int i = 0; i < dps.length; i++) {
+                Node parent = nodes[dps[i]];
+                int col = data.getColumn(parent);
+                if (col < 0) {
+                    Node byName = data.getVariable(parent.getName());
+                    if (byName == null) throw new IllegalArgumentException("Dataset missing parent: " + parent.getName());
+                    col = data.getColumn(byName);
+                }
+                discStates[i] = data.getInt(row, col);
+            }
+
+            double[] contVals = null;
+            if (isDiscrete(nodeIndex) && cps.length > 0) {
+                contVals = new double[cps.length];
+                for (int t = 0; t < cps.length; t++) {
+                    Node parent = nodes[cps[t]];
+                    int col = data.getColumn(parent);
+                    if (col < 0) {
+                        Node byName = data.getVariable(parent.getName());
+                        if (byName == null) throw new IllegalArgumentException("Dataset missing parent: " + parent.getName());
+                        col = data.getColumn(byName);
+                    }
+                    contVals[t] = data.getDouble(row, col);
+                }
+            }
+
+            return rowIndexForCase(nodeIndex, discStates, contVals);
+        }
+
+        // --- small local helper (keep near other helpers in PM) ---
+        private static int binFromCutpoints(double[] cuts, double v) {
+            int b = 0;
+            while (b < cuts.length && v > cuts[b]) b++;
+            return b; // 0..cuts.length
+        }
     }
 
     // ======== IM (numbers) ========

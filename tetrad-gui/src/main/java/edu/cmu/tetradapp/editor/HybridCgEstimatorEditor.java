@@ -1,221 +1,118 @@
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.hybridcg.HybridCgModel;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.HybridCgEstimatorWrapper;
-import edu.cmu.tetradapp.model.HybridCgImWrapper;
 import edu.cmu.tetradapp.model.HybridCgPmWrapper;
-import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetrad.util.Parameters;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.io.Serial;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
+import java.util.Locale;
 
-/**
- * Editor for Hybrid CG estimator results.
- * Left: graph workbench. Right: tabs with (1) Estimator panel and (2) Estimated Model (appears after estimation).
- */
-public class HybridCgEstimatorEditor extends JPanel {
+public final class HybridCgEstimatorEditor extends JPanel {
 
-    @Serial private static final long serialVersionUID = 1L;
+    private final Parameters params;
 
-    /** Container holding the workbench + tabs. */
-    private final JPanel targetPanel;
+    private final JSpinner alpha = new JSpinner(new SpinnerNumberModel(1.0, 0.0, 1e6, 0.1));
+    private final JCheckBox shareVar = new JCheckBox("Share variance across strata", false);
+    private final JComboBox<String> binPolicy =
+            new JComboBox<>(new String[]{"equal_frequency", "equal_interval", "none"});
+    private final JSpinner bins = new JSpinner(new SpinnerNumberModel(3, 2, 50, 1));
 
-    /** Estimator wrapper (parallel to BayesEstimatorWrapper). */
-    private final HybridCgEstimatorWrapper wrapper;
+    private final JSpinner defBins = new JSpinner(new SpinnerNumberModel(3, 2, 50, 1));
+    private final JSpinner defLo = new JSpinner(new SpinnerNumberModel(-1.0, -1e6, 1e6, 0.1));
+    private final JSpinner defHi = new JSpinner(new SpinnerNumberModel(1.0, -1e6, 1e6, 0.1));
 
-    /** Right-side estimator panel. */
-    private HybridCgEstimatorEditorWizard wizard;
-
-    /** Right-side tabs so we can add the “Estimated Model” tab after estimation. */
-    private JTabbedPane rightTabs;
-
-    /** The “Estimated Model” tab contents (created lazily). */
-    private Component estimatedTabContent;
-
-    public HybridCgEstimatorEditor(HybridCgModel.HybridCgIm im, DataSet dataSet, Parameters parameters) {
-        this(new HybridCgEstimatorWrapper(
-                new DataWrapper(dataSet),
-                new HybridCgPmWrapper(im.getPm()),
-                parameters
-        ));
+    public HybridCgEstimatorEditor(Parameters params,
+                                   DataWrapper dataWrapper,
+                                   HybridCgPmWrapper pmWrapper) {
+        this.params = (params == null) ? new Parameters() : params;
+        setLayout(new BorderLayout(10,10));
+        add(buildPanel(), BorderLayout.CENTER);
+        add(buildButtons(dataWrapper, pmWrapper), BorderLayout.SOUTH);
+        loadFromParams();
+        wireBindings();
     }
 
-    public HybridCgEstimatorEditor(HybridCgEstimatorWrapper estWrapper) {
-        this.wrapper = estWrapper;
+    private JPanel buildPanel() {
+        JPanel p = new JPanel(new GridBagLayout());
+        p.setBorder(new TitledBorder("Hybrid CG Estimation Settings"));
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(4,4,4,4);
+        c.anchor = GridBagConstraints.WEST;
 
-        setLayout(new BorderLayout());
-        this.targetPanel = new JPanel(new BorderLayout());
-        resetHybridImEditor();
-        add(this.targetPanel, BorderLayout.CENTER);
-        validate();
+        int r = 0;
 
-        if (this.wrapper.getNumModels() > 1) {
-            JComboBox<Integer> comp = new JComboBox<>();
-            for (int i = 0; i < this.wrapper.getNumModels(); i++) comp.addItem(i + 1);
-            comp.addActionListener(e -> {
-                Object sel = comp.getSelectedItem();
-                if (sel instanceof Integer idx1) {
-                    HybridCgEstimatorEditor.this.wrapper.setModelIndex(idx1 - 1);
-                    resetHybridImEditor();
-                    validate();
-                }
-            });
-            comp.setMaximumSize(comp.getPreferredSize());
+        c.gridx=0; c.gridy=r; p.add(new JLabel("Dirichlet alpha:"), c);
+        c.gridx=1; p.add(alpha, c); r++;
 
-            Box b = Box.createHorizontalBox();
-            b.add(new JLabel("Using model "));
-            b.add(comp);
-            b.add(new JLabel(" from "));
-            b.add(new JLabel(this.wrapper.getName()));
-            b.add(Box.createHorizontalGlue());
-            add(b, BorderLayout.NORTH);
-        }
+        c.gridx=0; c.gridy=r; c.gridwidth=2; p.add(shareVar, c); r++; c.gridwidth=1;
+
+        c.gridx=0; c.gridy=r; p.add(new JLabel("Bin policy:"), c);
+        c.gridx=1; p.add(binPolicy, c); r++;
+
+        c.gridx=0; c.gridy=r; p.add(new JLabel("Bins:"), c);
+        c.gridx=1; p.add(bins, c); r++;
+
+        p.add(new JSeparator(), grid(c,0,++r,2)); r++;
+
+        c.gridx=0; c.gridy=r; p.add(new JLabel("Fallback default bins:"), c);
+        c.gridx=1; p.add(defBins, c); r++;
+
+        c.gridx=0; c.gridy=r; p.add(new JLabel("Default range low:"), c);
+        c.gridx=1; p.add(defLo, c); r++;
+
+        c.gridx=0; c.gridy=r; p.add(new JLabel("Default range high:"), c);
+        c.gridx=1; p.add(defHi, c); r++;
+
+        return p;
     }
 
-    @Override
-    public void setName(String name) {
-        String old = getName();
-        super.setName(name);
-        this.firePropertyChange("name", old, getName());
-    }
-
-    // ---------------------- Internals ----------------------
-
-    private HybridCgEstimatorEditorWizard getWizard() {
-        return this.wizard;
-    }
-
-    /** Rebuild the UI for the currently selected model. */
-    private void resetHybridImEditor() {
-        JPanel panel = new JPanel(new BorderLayout());
-
-        // Left: graph workbench
-        HybridCgModel.HybridCgIm hybridIm = this.wrapper.getEstimatedHybridCgIm();
-        HybridCgModel.HybridCgPm hybridPm = hybridIm.getPm();
-        Graph graph = hybridPm.getGraph();
-        GraphWorkbench workbench = new GraphWorkbench(graph);
-
-        // Right: tabs
-        rightTabs = new JTabbedPane();
-
-        // Estimator tab (wizard)
-        DataSet dataSet = this.wrapper.getDataSet();
-        HybridCgPmWrapper pmWrapperForWizard = new HybridCgPmWrapper(hybridPm);
-        this.wizard = new HybridCgEstimatorEditorWizard(pmWrapperForWizard, dataSet);
-
-        // When estimation finishes, the wizard fires "editorValueChanged" with the new HybridCgImWrapper.
-        this.wizard.addPropertyChangeListener(evt -> {
-            if ("editorValueChanged".equals(evt.getPropertyName())) {
-                Object nv = evt.getNewValue();
-                if (nv instanceof HybridCgImWrapper imw) {
-                    // Install (or replace) the “Estimated Model” tab and switch to it
-                    installEstimatedModelTab(imw);
-                    rightTabs.setSelectedIndex(1); // 0 = Estimator, 1 = Estimated Model
-                    // Bubble up to the app that the model changed
-                    firePropertyChange("modelChanged", null, imw);
-                } else {
-                    // Still tell upstream something changed
-                    firePropertyChange("modelChanged", null, nv);
-                }
+    private JPanel buildButtons(DataWrapper dataWrapper, HybridCgPmWrapper pmWrapper) {
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton estimate = new JButton("Estimate");
+        estimate.addActionListener(ev -> {
+            try {
+                // Runs the same pipeline your wrapper uses in constructors
+                HybridCgEstimatorWrapper wrapper =
+                        new HybridCgEstimatorWrapper(dataWrapper, pmWrapper, params);
+                JOptionPane.showMessageDialog(this, "Estimated Hybrid CG IM for "
+                                                    + wrapper.getNumModels() + " dataset(s).", "Done",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Estimation failed:\n" + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-
-        JScrollPane wizardScroll = new JScrollPane(getWizard());
-
-        // Stats tab content as text (optional: keep inside “Estimator” tab or move to a separate tab)
-        String stats = buildModelStatsText(hybridIm, dataSet);
-        JTextArea modelStats = new JTextArea(stats);
-        modelStats.setEditable(false);
-        JScrollPane statsScroll = new JScrollPane(modelStats);
-
-        // Put estimator + stats into a small right-side vertical split (optional). To keep parity with Bayes,
-        // we’ll just make a two-tab right panel: Estimator | Estimated Model. Stats are embedded at the bottom of Estimator.
-        JPanel estimatorHost = new JPanel(new BorderLayout());
-        estimatorHost.add(wizardScroll, BorderLayout.CENTER);
-        estimatorHost.add(statsScroll, BorderLayout.SOUTH);
-
-        rightTabs.addTab("Estimator", estimatorHost);
-        // “Estimated Model” tab is added dynamically after user runs an estimation.
-
-        // Split: left graph | right tabs
-        JScrollPane workbenchScroll = new JScrollPane(workbench);
-        workbenchScroll.setPreferredSize(new Dimension(400, 400));
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, workbenchScroll, rightTabs);
-        splitPane.setOneTouchExpandable(true);
-        splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
-
-        setLayout(new BorderLayout());
-        panel.add(splitPane, BorderLayout.CENTER);
-
-        setName("Hybrid CG Estimator");
-
-        // Menu bar with Save Graph Image
-        JMenuBar menuBar = new JMenuBar();
-        JMenu file = new JMenu("File");
-        menuBar.add(file);
-        file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
-        panel.add(menuBar, BorderLayout.NORTH);
-
-        // Replace content
-        this.targetPanel.removeAll();
-        this.targetPanel.add(panel, BorderLayout.CENTER);
-        this.targetPanel.revalidate();
-        this.targetPanel.repaint();
+        p.add(estimate);
+        return p;
     }
 
-    /** Create/update the “Estimated Model” tab with a live HybridCgImEditor bound to the given IM wrapper. */
-    private void installEstimatedModelTab(HybridCgImWrapper imw) {
-        HybridCgImEditor imEditor = new HybridCgImEditor(imw);
-
-        JScrollPane estimatedScroll = new JScrollPane(imEditor);
-
-        if (estimatedTabContent == null) {
-            rightTabs.addTab("Estimated Model", estimatedScroll);
-            estimatedTabContent = estimatedScroll;
-        } else {
-            int idx = rightTabs.indexOfComponent(estimatedTabContent);
-            if (idx >= 0) {
-                rightTabs.setComponentAt(idx, estimatedScroll);
-                rightTabs.setTitleAt(idx, "Estimated Model");
-                estimatedTabContent = estimatedScroll;
-            } else {
-                rightTabs.addTab("Estimated Model", estimatedScroll);
-                estimatedTabContent = estimatedScroll;
-            }
-        }
+    private void loadFromParams() {
+        alpha.setValue(params.getDouble("hybridcg.alpha", 1.0));
+        shareVar.setSelected(params.getBoolean("hybridcg.shareVariance", false));
+        binPolicy.setSelectedItem(params.getString("hybridcg.binPolicy", "equal_frequency"));
+        bins.setValue(Math.max(2, params.getInt("hybridcg.bins", 3)));
+        defBins.setValue(Math.max(2, params.getInt("hybridcg.defaultBins", 3)));
+        defLo.setValue(params.getDouble("hybridcg.defaultRangeLow", -1.0));
+        defHi.setValue(params.getDouble("hybridcg.defaultRangeHigh", 1.0));
     }
 
-    /** Lightweight stats. */
-    private static String buildModelStatsText(HybridCgModel.HybridCgIm im, DataSet dataSet) {
-        StringBuilder buf = new StringBuilder();
-        NumberFormat nf = new DecimalFormat("0.000");
+    private void wireBindings() {
+        alpha.addChangeListener(e -> params.set("hybridcg.alpha", ((Number)alpha.getValue()).doubleValue()));
+        shareVar.addActionListener(e -> params.set("hybridcg.shareVariance", shareVar.isSelected()));
+        binPolicy.addActionListener(e -> params.set("hybridcg.binPolicy",
+                String.valueOf(binPolicy.getSelectedItem()).toLowerCase(Locale.ROOT)));
+        bins.addChangeListener(e -> params.set("hybridcg.bins", ((Number)bins.getValue()).intValue()));
+        defBins.addChangeListener(e -> params.set("hybridcg.defaultBins", ((Number)defBins.getValue()).intValue()));
+        defLo.addChangeListener(e -> params.set("hybridcg.defaultRangeLow", ((Number)defLo.getValue()).doubleValue()));
+        defHi.addChangeListener(e -> params.set("hybridcg.defaultRangeHigh", ((Number)defHi.getValue()).doubleValue()));
+    }
 
-        buf.append("Hybrid CG Estimation Summary\n");
-        buf.append("----------------------------\n");
-        buf.append("Rows (N): ").append(dataSet != null ? dataSet.getNumRows() : "—").append('\n');
-        buf.append("Variables: ").append(dataSet != null ? dataSet.getNumColumns() : "—").append('\n');
-        buf.append('\n');
-
-        HybridCgModel.HybridCgPm pm = im.getPm();
-        edu.cmu.tetrad.graph.Node[] nodes = pm.getNodes();
-        int discrete = 0, continuous = 0;
-        for (int i = 0; i < nodes.length; i++) {
-            if (pm.isDiscrete(i)) discrete++; else continuous++;
-        }
-        buf.append("Discrete vars: ").append(discrete).append('\n');
-        buf.append("Continuous vars: ").append(continuous).append('\n');
-
-        // Placeholders for future metrics:
-        // buf.append("Log-likelihood: ").append(nf.format(...)).append('\n');
-        // buf.append("BIC: ").append(nf.format(...)).append('\n');
-
-        return buf.toString();
+    private static GridBagConstraints grid(GridBagConstraints c, int x, int y, int w) {
+        GridBagConstraints cc = (GridBagConstraints) c.clone();
+        cc.gridx = x; cc.gridy = y; cc.gridwidth = w; cc.fill = GridBagConstraints.HORIZONTAL; cc.weightx = 1;
+        return cc;
     }
 }

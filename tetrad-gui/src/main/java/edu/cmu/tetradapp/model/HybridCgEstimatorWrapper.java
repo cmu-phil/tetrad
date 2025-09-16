@@ -20,13 +20,15 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.hybridcg.HybridCgEstimator;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.session.SessionModel;
 
@@ -39,21 +41,24 @@ import java.util.*;
 /**
  * Wraps the Hybrid CG MLE estimator for use in the Tetrad application.
  *
- * <p>Behavior mirrors {@code BayesEstimatorWrapper}:
+ * <p>Behavior mirrors {@code BayesEstimatorWrapper}:</p>
  * <ul>
- *   <li>Consumes one or more DataSet(s) from a {@link DataWrapper}.</li>
- *   <li>For each dataset, estimates a {@link HybridCgIm} from the provided {@link HybridCgPm}.</li>
- *   <li>Keeps a list of IMs parallel to the dataset list; exposes model index switching, etc.</li>
+ *   <li>Consumes one or more {@link DataSet}s from a {@link DataWrapper}.</li>
+ *   <li>For each dataset, estimates a {@link edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm}
+ *       from the provided {@link edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm}.</li>
+ *   <li>Keeps a list of IMs parallel to the dataset list; exposes model index switching.</li>
  * </ul>
  *
- * <p><b>Parameters</b> (optional; with defaults):
+ * <p>Parameters are passed through to {@link edu.cmu.tetrad.hybridcg.HybridCgEstimator}:</p>
  * <ul>
- *   <li>{@code hybridcg.alpha} (double, default 1.0): Dirichlet pseudo-count for discrete CPT rows.</li>
- *   <li>{@code hybridcg.shareVariance} (boolean, default false): share one variance across strata per continuous child.</li>
- *   <li>{@code hybridcg.binPolicy} (string: {@code equal_frequency} | {@code equal_interval} | {@code none}; default {@code equal_frequency})</li>
- *   <li>{@code hybridcg.bins} (int, default 3): number of bins if binPolicy != none.</li>
- *   <li>{@code hybridcg.defaultBins} (int, default 3), {@code hybridcg.defaultRangeLow} (double, default -1.0),
- *       {@code hybridcg.defaultRangeHigh} (double, default 1.0): fallback cutpoints when data not usable.</li>
+ *   <li>{@code hybridcg.alpha} (double, default 1.0)</li>
+ *   <li>{@code hybridcg.shareVariance} (boolean, default false)</li>
+ *   <li>{@code hybridcg.binPolicy} (string: {@code equal_frequency} | {@code equal_interval} | {@code none};
+ *       default {@code equal_frequency})</li>
+ *   <li>{@code hybridcg.bins} (int, default 3, min 2)</li>
+ *   <li>{@code hybridcg.defaultBins} (int, default 3)</li>
+ *   <li>{@code hybridcg.defaultRangeLow} (double, default -1.0)</li>
+ *   <li>{@code hybridcg.defaultRangeHigh} (double, default 1.0)</li>
  * </ul>
  */
 public class HybridCgEstimatorWrapper implements SessionModel {
@@ -88,24 +93,22 @@ public class HybridCgEstimatorWrapper implements SessionModel {
         if (pmWrapper == null) throw new NullPointerException("HybridCgPmWrapper must not be null.");
 
         this.dataWrapper = dataWrapper;
-        this.parameters = parameters == null ? new Parameters() : parameters;
+        this.parameters = (parameters == null) ? new Parameters() : parameters;
 
         DataModelList dml = dataWrapper.getDataModelList();
         if (dml == null || dml.size() == 0) {
             throw new IllegalArgumentException("Data must be a non-empty list of data sets.");
         }
 
+        // Estimate an IM per dataset
         for (int i = 0; i < dml.size(); i++) {
             DataModel dm = dml.get(i);
             if (!(dm instanceof DataSet ds)) {
                 throw new IllegalArgumentException("All entries must be DataSet instances (mixed or discrete/continuous).");
             }
-
-            // Fetch the PM from the wrapper and make a defensive copy for this dataset
-            HybridCgPm pmOriginal = pmWrapper.getHybridCgPm();
-            HybridCgPm pm = copyPmForEstimation(pmOriginal); // see helper below
-
-            HybridCgIm im = estimate(ds, pm, this.parameters);
+            // Defensive PM copy so per-dataset cutpoints don’t bleed across runs.
+            HybridCgPm pmCopy = copyPmForEstimation(pmWrapper.getHybridCgPm());
+            HybridCgIm im = HybridCgEstimator.estimate(pmCopy, ds, this.parameters);
             this.hybridIms.add(im);
         }
 
@@ -126,77 +129,13 @@ public class HybridCgEstimatorWrapper implements SessionModel {
 
     // ================================ API ====================================
 
+    // Kept for back-compat if something expects this symbol; no-op proxy to existing pattern.
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
-    /** Ensure the PM has uniform cutpoints (lo..hi) split into {@code bins} for every continuous parent of a discrete child. */
-    private static void ensureDefaultCutpoints(HybridCgPm pm, int bins, double lo, double hi) {
-        final double[] cuts = new double[bins - 1];
-        for (int i = 0; i < cuts.length; i++) cuts[i] = lo + (i + 1) * (hi - lo) / bins;
-
-        final Node[] nodes = pm.getNodes();
-        for (int y = 0; y < nodes.length; y++) {
-            if (!pm.isDiscrete(y)) continue;
-            int[] cps = pm.getContinuousParents(y);
-            if (cps.length == 0) continue;
-
-            Map<Node, double[]> byParent = new LinkedHashMap<>();
-            for (int t = 0; t < cps.length; t++) {
-                byParent.put(pm.getNodes()[cps[t]], cuts.clone());
-            }
-            pm.setContParentCutpointsForDiscreteChild(nodes[y], byParent);
-        }
-    }
-
-    /** Set cutpoints for each continuous parent of each discrete child, from data. */
-    private static void setCutpointsFromData(HybridCgPm pm, DataSet data, int bins, boolean equalFrequency) {
-        final Node[] nodes = pm.getNodes();
-
-        for (int y = 0; y < nodes.length; y++) {
-            if (!pm.isDiscrete(y)) continue;
-
-            int[] cps = pm.getContinuousParents(y);
-            if (cps.length == 0) continue;
-
-            Map<Node, double[]> byParent = new LinkedHashMap<>();
-
-            for (int t = 0; t < cps.length; t++) {
-                int parentIndex = cps[t];
-                Node parentNode = nodes[parentIndex];
-
-                int col = getColumnByNodeOrName(data, parentNode);
-                if (col < 0) {
-                    throw new IllegalArgumentException("Variable not in dataset: " + parentNode.getName());
-                }
-
-                double[] colData = new double[data.getNumRows()];
-                for (int r = 0; r < data.getNumRows(); r++) colData[r] = data.getDouble(r, col);
-
-                double[] cuts;
-                if (equalFrequency) {
-                    cuts = edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints(colData, bins);
-                } else {
-                    double min = edu.cmu.tetrad.util.StatUtils.min(colData);
-                    double max = edu.cmu.tetrad.util.StatUtils.max(colData);
-                    cuts = new double[bins - 1];
-                    double step = (max - min) / bins;
-                    for (int k = 0; k < cuts.length; k++) cuts[k] = min + (k + 1) * step;
-                }
-
-                for (int k = 1; k < cuts.length; k++) {
-                    if (!(cuts[k] > cuts[k - 1])) cuts[k] = Math.nextUp(cuts[k - 1]);
-                }
-                byParent.put(parentNode, cuts);
-            }
-
-            pm.setContParentCutpointsForDiscreteChild(nodes[y], byParent);
-        }
-    }
-
-    /** Defensive PM copy so per-dataset cutpoints don't bleed across runs. */
+    /** Defensive PM copy so per-dataset cutpoints (set during estimation) don’t mutate the original PM. */
     private static HybridCgPm copyPmForEstimation(HybridCgPm pm) {
-        // If you have a real copy constructor, prefer: return new HybridCgPm(pm);
         Graph g = pm.getGraph();
         List<Node> order = List.of(pm.getNodes());
 
@@ -228,6 +167,7 @@ public class HybridCgEstimatorWrapper implements SessionModel {
                 try {
                     copy.setContParentCutpointsForDiscreteChild(child, cpMap);
                 } catch (Exception ignore) {
+                    // if shapes changed, we’ll let the estimator recompute per policy
                 }
             }
         }
@@ -240,7 +180,7 @@ public class HybridCgEstimatorWrapper implements SessionModel {
 
     public void setHybridCgIm(HybridCgIm im) {
         this.hybridIms.clear();
-        this.hybridIms.add(im);
+        this.hybridIms.add(Objects.requireNonNull(im));
         this.hybridIm = im;
         this.numModels = 1;
         this.modelIndex = 0;
@@ -258,8 +198,6 @@ public class HybridCgEstimatorWrapper implements SessionModel {
         return this.name;
     }
 
-    // ============================= SERIALIZATION =============================
-
     public void setName(String name) {
         this.name = (name == null || name.isBlank()) ? "Hybrid CG Estimator" : name;
     }
@@ -272,11 +210,11 @@ public class HybridCgEstimatorWrapper implements SessionModel {
         this.numModels = numModels;
     }
 
-    // ============================ INTERNALS ==================================
-
     public int getModelIndex() {
         return this.modelIndex;
     }
+
+    // ============================= SERIALIZATION =============================
 
     public void setModelIndex(int modelIndex) {
         if (modelIndex < 0 || modelIndex >= hybridIms.size()) {
@@ -288,8 +226,6 @@ public class HybridCgEstimatorWrapper implements SessionModel {
         this.dataSet = (DataSet) dml.get(modelIndex);
     }
 
-    // ------------------------ Cutpoint utilities -----------------------------
-
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         try {
@@ -300,6 +236,8 @@ public class HybridCgEstimatorWrapper implements SessionModel {
         }
     }
 
+    // ============================ INTERNALS ==================================
+
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {
@@ -308,64 +246,6 @@ public class HybridCgEstimatorWrapper implements SessionModel {
             TetradLogger.getInstance().log("Failed to deserialize: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
-    }
-
-    private HybridCgIm estimate(DataSet data, HybridCgPm pm, Parameters params) {
-        if (edu.cmu.tetrad.data.DataUtils.containsMissingValue(data)) {
-            throw new IllegalArgumentException("Please remove or impute missing values.");
-        }
-
-        // *** NEW: align dataset variable objects to PM nodes ***
-        DataSet aligned = alignDataVariablesToPm(pm, data);
-
-        final double alpha    = params.getDouble("hybridcg.alpha", 1.0);
-        final boolean shareVar = params.getBoolean("hybridcg.shareVariance", false);
-        final String binPolicy = params.getString("hybridcg.binPolicy", "equal_frequency");
-        final int bins         = Math.max(2, params.getInt("hybridcg.bins", 3));
-        final int defaultBins  = Math.max(2, params.getInt("hybridcg.defaultBins", 3));
-        final double defLo     = params.getDouble("hybridcg.defaultRangeLow", -1.0);
-        final double defHi     = params.getDouble("hybridcg.defaultRangeHigh",  1.0);
-
-        try {
-            switch (binPolicy.toLowerCase(java.util.Locale.ROOT)) {
-                case "equal_interval"  -> setCutpointsFromData(pm, aligned, bins, false);
-                case "equal_frequency" -> setCutpointsFromData(pm, aligned, bins, true);
-                case "none"            -> ensureDefaultCutpoints(pm, defaultBins, defLo, defHi);
-                default                -> setCutpointsFromData(pm, aligned, bins, true);
-            }
-        } catch (Exception ex) {
-            ensureDefaultCutpoints(pm, defaultBins, defLo, defHi);
-        }
-
-        // *** IMPORTANT: run MLE against the aligned dataset ***
-        HybridCgIm.HybridEstimator est = new HybridCgIm.HybridEstimator(alpha, shareVar);
-        return est.mle(pm, aligned);
-    }
-
-    // 1) Build a dataset whose variables are the PM's Node instances (by name), in the SAME column order
-    private static DataSet alignDataVariablesToPm(HybridCgPm pm, DataSet data) {
-        // Build name -> PM node map
-        Map<String, Node> pmByName = new LinkedHashMap<>();
-        for (Node v : pm.getNodes()) pmByName.put(v.getName(), v);
-
-        // For each existing dataset column, swap in the PM node with the same name (if present)
-        java.util.List<Node> newVars = new java.util.ArrayList<>(data.getNumColumns());
-        for (int i = 0; i < data.getNumColumns(); i++) {
-            Node dv = data.getVariable(i);
-            Node pv = pmByName.get(dv.getName());
-            newVars.add(pv != null ? pv : dv); // fall back to original if not found
-        }
-
-        // Re-wrap using the same DataBox but the new variable list
-        return new edu.cmu.tetrad.data.BoxDataSet(((BoxDataSet) data).getDataBox(), newVars);
-    }
-
-    // 2) Safe column lookup (by node, with name fallback)
-    private static int getColumnByNodeOrName(DataSet data, Node v) {
-        int c = data.getColumn(v);
-        if (c >= 0) return c;
-        Node byName = data.getVariable(v.getName());
-        return byName == null ? -1 : data.getColumn(byName);
     }
 
     private void log(HybridCgIm im) {
