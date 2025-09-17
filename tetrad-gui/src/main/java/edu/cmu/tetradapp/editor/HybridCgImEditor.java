@@ -19,12 +19,17 @@ import java.util.stream.Collectors;
 /**
  * Hybrid CG IM Editor
  *
- * Left: variable list (+ filter)
- * Right (card):
- *   - Discrete: full CPT table (all strata) + Normalize/Randomize actions
- *   - Continuous: full regression table (all strata) + ShareVariance/Randomize actions
+ * <ul>
+ *   <li><b>Left:</b> variable list (+ filter)</li>
+ *   <li><b>Right (card):</b>
+ *     <ul>
+ *       <li>Discrete — full CPT table (all strata) + Normalize/Randomize actions</li>
+ *       <li>Continuous — full regression table (all strata) + ShareVariance/Randomize actions</li>
+ *     </ul>
+ *   </li>
+ * </ul>
  *
- * All numeric cells use 0.### formatting (renderer + editor).
+ * <p>All numeric cells use <code>0.###</code> formatting (renderer + editor).</p>
  */
 public final class HybridCgImEditor extends JPanel {
 
@@ -230,6 +235,8 @@ public final class HybridCgImEditor extends JPanel {
             jc.revalidate();
             jc.repaint();
         }
+
+        firePropertyChange("modelChanged", null, null);
     }
 
     // =========================== Actions ===========================
@@ -262,6 +269,7 @@ public final class HybridCgImEditor extends JPanel {
             for (int k = 0; k < K; k++) { e[k] = -Math.log(1.0 - rng.nextDouble()); sum += e[k]; }
             for (int k = 0; k < K; k++) im.setProbability(y, r, k, e[k] / sum);
         }
+        firePropertyChange("modelChanged", null, null);
     }
 
     private void randomizeContinuousTable(int y) {
@@ -274,6 +282,7 @@ public final class HybridCgImEditor extends JPanel {
             for (int j = 0; j < m; j++) im.setCoefficient(y, r, j, rng.nextGaussian() * 0.15);
             im.setVariance(y, r, 0.25 + 0.75 * rng.nextDouble());
         }
+        firePropertyChange("modelChanged", null, null);
     }
 
     // ======================= Formatting helpers =======================

@@ -36,6 +36,7 @@ final class HybridCgRegEditingTable extends JTable {
                 else super.setValue(value);
             }
         });
+
         setDefaultEditor(Double.class, new HybridCgImEditor.DoubleCellEditor("0.###"));
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -205,6 +206,45 @@ final class HybridCgRegEditingTable extends JTable {
             String longest = parentName;
             for (String s : cats) if (s.length() > longest.length()) longest = s;
             return longest;
+        }
+    }
+
+    // inside HybridCgImEditor (at class level, alongside your other inner classes/utilities)
+
+    /**
+     * Simple reusable Double cell editor with number formatting.
+     */
+    public static final class DoubleCellEditor extends DefaultCellEditor {
+        private final DecimalFormat fmt;
+
+        public DoubleCellEditor(String pattern) {
+            super(new JTextField());
+            this.fmt = new DecimalFormat(pattern);
+            JTextField tf = (JTextField) getComponent();
+            tf.setHorizontalAlignment(SwingConstants.RIGHT);
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            String s = ((JTextField)getComponent()).getText().trim();
+            try {
+                return Double.valueOf(s);
+            } catch (Exception ex) {
+                return Double.NaN;
+            }
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(
+                JTable table, Object value, boolean isSelected, int row, int column) {
+            String text = "";
+            if (value instanceof Number n) {
+                text = fmt.format(n.doubleValue());
+            } else if (value != null) {
+                text = value.toString();
+            }
+            ((JTextField)getComponent()).setText(text);
+            return getComponent();
         }
     }
 }

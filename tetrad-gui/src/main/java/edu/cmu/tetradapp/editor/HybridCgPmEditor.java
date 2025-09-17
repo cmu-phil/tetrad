@@ -16,9 +16,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Hybrid CG PM editor:
- * 1) Variables panel (edit type & categories, apply → rebuild PM)
- * 2) Cutpoint editor (for discrete children with continuous parents)
+ * Hybrid CG PM editor
+ *
+ * <ol>
+ *   <li><b>Variables panel</b> — edit type &amp; categories; edits apply immediately and atomically.</li>
+ *   <li><b>Cutpoint editor</b> — for discrete children with continuous parents.</li>
+ * </ol>
+ *
+ * <p>The PM is kept in a <b>complete</b>, valid state at all times:</p>
+ * <ul>
+ *   <li>Edits that would make it incomplete are rejected and reverted.</li>
+ *   <li>Any missing cutpoints for (Discrete child &larr; Continuous parent) are auto-seeded to defaults.</li>
+ * </ul>
  */
 public final class HybridCgPmEditor extends JPanel {
 
@@ -28,9 +37,6 @@ public final class HybridCgPmEditor extends JPanel {
     // --------------- top: variable/type editing ----------------
     private final JTable varTable = new JTable();
     private VarTableModel varModel;
-
-    private final JTextField nameField = new JTextField();
-    private final JButton applyTypesBtn = new JButton("Apply Types");
 
     // --------------- cutpoints controls ------------------------
     private final JComboBox<String> methodCombo =
@@ -56,13 +62,13 @@ public final class HybridCgPmEditor extends JPanel {
         setLayout(new BorderLayout(10, 10));
         add(buildVariablesPanel(), BorderLayout.NORTH);
         add(buildCutpointPanel(dataOrNull), BorderLayout.CENTER);
-//        add(buildFooter(), BorderLayout.SOUTH);
 
         // init from wrapper
-        nameField.setText(pmWrapper.getName());
-        methodCombo.setSelectedItem(this.params.getString("hybridcg.cutMethod", "freq")
-                .equalsIgnoreCase("intervals") ? "equal_interval" : "equal_frequency");
+        methodCombo.setSelectedItem(this.params.getString("hybridcg.cutMethod", "equal_frequency"));
         binsSpinner.setValue(Math.max(2, this.params.getInt("hybridcg.cutBins", 3)));
+
+        // Ensure the incoming PM has all required cutpoints seeded
+        ensureCutpointsSeeded(pmWrapper.getHybridCgPm(), (int) binsSpinner.getValue());
 
         refreshChildParentSelectors();
         rebuildCutTable();
@@ -73,20 +79,6 @@ public final class HybridCgPmEditor extends JPanel {
     private JComponent buildVariablesPanel() {
         JPanel outer = new JPanel(new BorderLayout());
         outer.setBorder(new TitledBorder("Hybrid CG PM"));
-
-        // name + apply-name
-        JPanel top = new JPanel(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(4,4,4,4);
-        c.gridx = 0; c.gridy = 0; c.anchor = GridBagConstraints.WEST;
-//        top.add(new JLabel("Name:"), c);
-        c.gridx = 1; c.weightx = 1.0; c.fill = GridBagConstraints.HORIZONTAL;
-//        top.add(nameField, c);
-//        JButton applyName = new JButton("Apply Name");
-//        applyName.addActionListener(ev -> pmWrapper.setName(nameField.getText()));
-        c.gridx = 2; c.weightx = 0; c.fill = GridBagConstraints.NONE;
-//        top.add(applyName, c);
-        outer.add(top, BorderLayout.NORTH);
 
         // variable table
         varModel = new VarTableModel(pmWrapper.getHybridCgPm());
@@ -107,77 +99,18 @@ public final class HybridCgPmEditor extends JPanel {
         varTable.getColumnModel().getColumn(3).setCellRenderer(new CategoriesRenderer(varModel));
         varTable.getColumnModel().getColumn(3).setCellEditor(new CategoriesEditor());
 
-        // apply types button
-        JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        applyTypesBtn.addActionListener(ev -> applyTypesAndRebuildPm());
-        btns.add(applyTypesBtn);
-
         JScrollPane sc = new JScrollPane(varTable);
         outer.add(sc, BorderLayout.CENTER);
-        outer.add(btns, BorderLayout.SOUTH);
 
         SwingUtilities.invokeLater(() -> adjustVarTableColumnWidths(varTable));
         return outer;
-    }
-
-    private void applyTypesAndRebuildPm() {
-        // enforce categories-count validity
-        List<String> problems = varModel.validateAll();
-        if (!problems.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Please fix category lists:\n- " + String.join("\n- ", problems),
-                    "Invalid categories", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        Map<Node, Boolean> isDisc = new LinkedHashMap<>();
-        Map<Node, List<String>> cats = new LinkedHashMap<>();
-        for (VarRow r : varModel.rows) {
-            isDisc.put(r.node, r.discrete);
-            cats.put(r.node, r.discrete ? new ArrayList<>(r.categories) : null);
-        }
-
-        HybridCgPm oldPm = pmWrapper.getHybridCgPm();
-        Graph g = oldPm.getGraph();
-        List<Node> order = Arrays.asList(oldPm.getNodes());
-
-        HybridCgPm newPm = new HybridCgPm(g, order, isDisc, cats);
-        preserveCompatibleCutpoints(oldPm, newPm);
-        pmWrapper.setHybridCgPm(newPm);
-
-        refreshChildParentSelectors();
-        rebuildCutTable();
-    }
-
-    private void preserveCompatibleCutpoints(HybridCgPm oldPm, HybridCgPm newPm) {
-        Node[] nodes = oldPm.getNodes();
-        for (Node child : nodes) {
-            int yo = oldPm.indexOf(child), yn = newPm.indexOf(child);
-            if (yo < 0 || yn < 0) continue;
-            if (!oldPm.isDiscrete(yo) || !newPm.isDiscrete(yn)) continue;
-            Set<String> oldC = Arrays.stream(oldPm.getContinuousParents(yo))
-                    .mapToObj(i -> oldPm.getNodes()[i].getName()).collect(Collectors.toSet());
-            Set<String> newC = Arrays.stream(newPm.getContinuousParents(yn))
-                    .mapToObj(i -> newPm.getNodes()[i].getName()).collect(Collectors.toSet());
-            if (!oldC.equals(newC)) continue;
-
-            Map<Node,double[]> map = new LinkedHashMap<>();
-            oldPm.getContParentCutpointsForDiscreteChild(yo).ifPresent(cuts -> {
-                int[] cps = oldPm.getContinuousParents(yo);
-                for (int t = 0; t < cps.length; t++)
-                    map.put(oldPm.getNodes()[cps[t]], cuts[t].clone());
-            });
-            if (!map.isEmpty()) {
-                try { newPm.setContParentCutpointsForDiscreteChild(child, map); } catch (Exception ignore) {}
-            }
-        }
     }
 
     // ===================== UI: Cutpoints ======================
 
     private JComponent buildCutpointPanel(DataSet dataOrNull) {
         JPanel outer = new JPanel(new BorderLayout(8,8));
-        outer.setBorder(new TitledBorder("Cutpoint Editor"));
+        outer.setBorder(new TitledBorder("Cutpoint Editor for Discrete Children of Continuous Parents"));
 
         JPanel top = new JPanel(new GridBagLayout());
         GridBagConstraints g = new GridBagConstraints();
@@ -200,7 +133,7 @@ public final class HybridCgPmEditor extends JPanel {
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton applyData = new JButton("Apply from Data…");
         JButton seedDefaults = new JButton("Seed Defaults");
-        JButton clear = new JButton("Clear");
+        JButton clear = new JButton("Reseed Defaults"); // <--- no “empty” state
         JButton addRow = new JButton("+ row");
         JButton delRow = new JButton("− row");
 
@@ -216,36 +149,27 @@ public final class HybridCgPmEditor extends JPanel {
                     ? HybridCgPmWrapper.CutMethod.EQUAL_INTERVALS
                     : HybridCgPmWrapper.CutMethod.EQUAL_FREQUENCY;
             pmWrapper.applyCutpointsFromData(dataOrNull, bins, m);
+            firePropertyChange("modelChanged", null, null);
             refreshChildParentSelectors();
             rebuildCutTable();
         });
 
         seedDefaults.addActionListener(ev -> {
             new DefaultSeeding().run(pmWrapper.getHybridCgPm(), (int) binsSpinner.getValue());
+            firePropertyChange("modelChanged", null, null);
             rebuildCutTable();
         });
 
+        // “Clear” now reseeds defaults so the PM never becomes incomplete.
         clear.addActionListener(ev -> {
-            HybridCgPm pm = pmWrapper.getHybridCgPm();
-            Node[] nodes = pm.getNodes();
-            for (int y = 0; y < nodes.length; y++) {
-                if (!pm.isDiscrete(y)) continue;
-                int[] cps = pm.getContinuousParents(y);
-                if (cps.length == 0) continue;
-                Map<Node,double[]> empty = new LinkedHashMap<>();
-                for (int t = 0; t < cps.length; t++) empty.put(nodes[cps[t]], new double[0]);
-                pm.setContParentCutpointsForDiscreteChild(nodes[y], empty);
-            }
+            new DefaultSeeding().run(pmWrapper.getHybridCgPm(), (int) binsSpinner.getValue());
             rebuildCutTable();
         });
 
         addRow.addActionListener(ev -> cutModel.addRow());
         delRow.addActionListener(ev -> cutModel.removeSelectedRow(cutTable.getSelectedRow()));
 
-        if (dataOrNull != null) {
-            btns.add(applyData);
-        }
-
+        if (dataOrNull != null) btns.add(applyData);
         btns.add(seedDefaults); btns.add(clear); btns.add(addRow); btns.add(delRow);
 
         childCombo.addActionListener(ev -> rebuildCutTable());
@@ -253,7 +177,7 @@ public final class HybridCgPmEditor extends JPanel {
 
         outer.add(top, BorderLayout.NORTH);
 
-        cutModel = new CutpointsTableModel(pmWrapper.getHybridCgPm(), null, null);
+        cutModel = new CutpointsTableModel(pmWrapper.getHybridCgPm(), null, null, cutModel.onChange);
         cutTable.setModel(cutModel);
         JScrollPane scroll = new JScrollPane(cutTable);
         scroll.setPreferredSize(new Dimension(520, 120));
@@ -262,14 +186,6 @@ public final class HybridCgPmEditor extends JPanel {
         outer.add(scroll, BorderLayout.SOUTH);
         return outer;
     }
-
-//    private JComponent buildFooter() {
-//        JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER));
-//        JButton done = new JButton("Done");
-//        done.addActionListener(e -> SwingUtilities.getWindowAncestor(this).dispose());
-//        p.add(done);
-//        return p;
-//    }
 
     // ================= Helpers: selectors & tables =================
 
@@ -298,10 +214,14 @@ public final class HybridCgPmEditor extends JPanel {
         HybridCgPm pm = pmWrapper.getHybridCgPm();
         Node child = (Node) childCombo.getSelectedItem();
         Node parent = (Node) parentCombo.getSelectedItem();
-        cutModel = new CutpointsTableModel(pm, child, parent);
+
+//        cutModel = new CutpointsTableModel(pm, child, parent);
+//        cutTable.setModel(cutModel);
+
+        cutModel = new CutpointsTableModel(pm, child, parent, () -> firePropertyChange("modelChanged", null, null));
         cutTable.setModel(cutModel);
 
-        // ----- Renderer: formatted display when NOT editing -----
+        // Renderer: formatted display when NOT editing
         cutTable.setDefaultRenderer(Double.class, new DefaultTableCellRenderer() {
             private final java.text.DecimalFormat fmt = new java.text.DecimalFormat("0.###");
             @Override
@@ -314,7 +234,7 @@ public final class HybridCgPmEditor extends JPanel {
             }
         });
 
-        // ----- Editor: formatted display WHEN editing -----
+        // Editor: formatted display WHEN editing
         final java.text.DecimalFormat fmt = new java.text.DecimalFormat("0.###");
         final JFormattedTextField ftf = new JFormattedTextField(fmt);
         ftf.setBorder(null);
@@ -323,7 +243,6 @@ public final class HybridCgPmEditor extends JPanel {
         TableCellEditor editor = new DefaultCellEditor(ftf) {
             @Override
             public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-                // Show formatted text immediately
                 if (value instanceof Number) {
                     ftf.setValue(((Number) value).doubleValue());
                     ftf.setText(fmt.format(((Number) value).doubleValue()));
@@ -342,7 +261,7 @@ public final class HybridCgPmEditor extends JPanel {
                 try {
                     return fmt.parse(ftf.getText()).doubleValue();
                 } catch (Exception e) {
-                    return Double.NaN; // or keep previous value if you prefer
+                    return Double.NaN;
                 }
             }
         };
@@ -363,13 +282,20 @@ public final class HybridCgPmEditor extends JPanel {
             this.node = node;
             this.discrete = discrete;
             if (discrete) {
-                this.categories = new ArrayList<>(cats == null ? List.of("c1","c2") : cats);
+                this.categories = new ArrayList<>(cats == null ? List.of("c1","c2","c3") : cats);
                 this.catCount = Math.max(2, this.categories.size());
             } else {
                 this.categories = null;
                 this.catCount = 0;
             }
             this.countMismatch = false;
+        }
+
+        VarRow deepCopy() {
+            VarRow r = new VarRow(node, discrete, categories == null ? null : new ArrayList<>(categories));
+            r.catCount = catCount;
+            r.countMismatch = countMismatch;
+            return r;
         }
 
         void enforceCount() {
@@ -428,38 +354,50 @@ public final class HybridCgPmEditor extends JPanel {
         }
 
         @Override public void setValueAt(Object v, int r, int c) {
-            VarRow row = rows.get(r);
-            if (c == 1) {
-                String s = String.valueOf(v);
-                boolean toDisc = s.equalsIgnoreCase("Discrete");
-                if (toDisc != row.discrete) {
-                    row.discrete = toDisc;
-                    if (toDisc) {
-                        if (row.categories == null) {
-                            row.categories = new ArrayList<>(List.of("c1", "c2", "c3"));
+            // transactional edit: try, rebuild PM; on failure revert & show message
+            List<VarRow> snapshot = rows.stream().map(VarRow::deepCopy).collect(Collectors.toList());
+            try {
+                VarRow row = rows.get(r);
+                if (c == 1) {
+                    String s = String.valueOf(v);
+                    boolean toDisc = s.equalsIgnoreCase("Discrete");
+                    if (toDisc != row.discrete) {
+                        row.discrete = toDisc;
+                        if (toDisc) {
+                            if (row.categories == null) row.categories = new ArrayList<>(List.of("c1","c2","c3"));
+                            row.catCount = Math.max(2, row.categories.size());
+                        } else {
+                            row.categories = null;
+                            row.catCount = 0;
+                            row.countMismatch = false;
                         }
-                        row.catCount = Math.max(2, row.categories.size());
-                    }  else {
-                        row.categories = null;
-                        row.catCount = 0;
-                        row.countMismatch = false;
+                        fireTableRowsUpdated(r, r);
+                        SwingUtilities.invokeLater(() -> adjustVarTableColumnWidths(varTable));
                     }
+                } else if (c == 2 && row.discrete) {
+                    int k = Math.max(2, ((Number) v).intValue());
+                    row.catCount = k;
+                    row.enforceCount();
                     fireTableRowsUpdated(r, r);
-                    SwingUtilities.invokeLater(() -> adjustVarTableColumnWidths(varTable));
+                } else if (c == 3 && row.discrete) {
+                    String s = String.valueOf(v).trim();
+                    List<String> labels = Arrays.stream(s.split(","))
+                            .map(String::trim).filter(t -> !t.isEmpty()).collect(Collectors.toList());
+                    if (labels.isEmpty()) labels = new ArrayList<>();
+                    row.categories = labels;
+                    row.countMismatch = (labels.size() != row.catCount);
+                    fireTableCellUpdated(r, c);
                 }
-            } else if (c == 2 && row.discrete) {
-                int k = Math.max(2, ((Number) v).intValue());
-                row.catCount = k;
-                row.enforceCount();
-                fireTableRowsUpdated(r, r);
-            } else if (c == 3 && row.discrete) {
-                String s = String.valueOf(v).trim();
-                List<String> labels = Arrays.stream(s.split(","))
-                        .map(String::trim).filter(t -> !t.isEmpty()).collect(Collectors.toList());
-                if (labels.isEmpty()) labels = new ArrayList<>();
-                row.categories = labels;
-                row.countMismatch = (labels.size() != row.catCount);
-                fireTableCellUpdated(r, c);
+
+                // Rebuild & install PM immediately (validates + auto-seeds)
+                rebuildAndInstallPm();
+            } catch (Exception ex) {
+                // revert & notify
+                rows.clear(); rows.addAll(snapshot);
+                fireTableDataChanged();
+                JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(varTable),
+                        "Edit rejected: " + ex.getMessage(),
+                        "Invalid change", JOptionPane.WARNING_MESSAGE);
             }
         }
 
@@ -536,7 +474,6 @@ public final class HybridCgPmEditor extends JPanel {
         TableColumn c0 = table.getColumnModel().getColumn(0);
         TableColumn c1 = table.getColumnModel().getColumn(1);
         TableColumn c2 = table.getColumnModel().getColumn(2);
-        TableColumn c3 = table.getColumnModel().getColumn(3);
 
         c0.setMinWidth(varW); c0.setPreferredWidth(varW); c0.setMaxWidth(varW + 6);
         c1.setMinWidth(typeW); c1.setPreferredWidth(typeW); c1.setMaxWidth(typeW + 6);
@@ -544,17 +481,19 @@ public final class HybridCgPmEditor extends JPanel {
         // c3 elastic – leave preferred, allow to stretch
     }
 
-    // ---- Cutpoint table model (unchanged except add/remove rows helpers) ----
+    // ---- Cutpoint table model ----
     private static final class CutpointsTableModel extends AbstractTableModel {
         private final HybridCgPm pm;
         private final Node child;
         private final Node parent;
         private double[] edges;
+        private final Runnable onChange;
 
-        CutpointsTableModel(HybridCgPm pm, Node child, Node parent) {
-            this.pm = pm; this.child = child; this.parent = parent;
+        CutpointsTableModel(HybridCgPm pm, Node child, Node parent, Runnable onChange) {
+            this.pm = pm; this.child = child; this.parent = parent; this.onChange = (onChange == null ? () -> {} : onChange);
             loadEdges();
         }
+
         private void loadEdges() {
             edges = new double[0];
             if (child == null || parent == null) return;
@@ -568,6 +507,9 @@ public final class HybridCgPmEditor extends JPanel {
             if (idx >= 0) edges = opt.get()[idx].clone();
         }
 
+
+
+
         @Override public int getRowCount() { return edges.length; }
         @Override public int getColumnCount() { return 1; }
         @Override public String getColumnName(int c) { return "Cutpoint"; }
@@ -579,6 +521,10 @@ public final class HybridCgPmEditor extends JPanel {
             try {
                 double v = ((Number) aValue).doubleValue();
                 edges[r] = v;
+                // enforce strictly increasing cutpoints
+                for (int i = 1; i < edges.length; i++) {
+                    if (!(edges[i] > edges[i-1])) edges[i] = Math.nextUp(edges[i-1]);
+                }
                 fireTableCellUpdated(r, c);
                 persistBack();
             } catch (Exception ignore) {}
@@ -615,27 +561,129 @@ public final class HybridCgPmEditor extends JPanel {
                 for (int t = 0; t < cps.length; t++)
                     map.put(pm.getNodes()[cps[t]], all[t] == null ? new double[0] : all[t]);
                 pm.setContParentCutpointsForDiscreteChild(child, map);
+
+                // notify outer editor listeners
+                SwingUtilities.invokeLater(() ->
+                        // HybridCgPmEditor.this is not visible in a static class;
+                        // see "Wiring an onChange callback" below for a clean pattern.
+                        onChange.run()
+                );
             }
         }
     }
 
-    // Small helper: seed simple defaults
+    // ===================== Core: rebuild + seeding ======================
+
+    private void rebuildAndInstallPm() {
+        // Validate categories first
+        List<String> problems = varModel.validateAll();
+        if (!problems.isEmpty()) {
+            throw new IllegalStateException("Please fix category lists:\n- " + String.join("\n- ", problems));
+        }
+
+        Map<Node, Boolean> isDisc = new LinkedHashMap<>();
+        Map<Node, List<String>> cats = new LinkedHashMap<>();
+        for (VarRow r : varModel.rows) {
+            isDisc.put(r.node, r.discrete);
+            cats.put(r.node, r.discrete ? new ArrayList<>(r.categories) : null);
+        }
+
+        HybridCgPm oldPm = pmWrapper.getHybridCgPm();
+        Graph g = oldPm.getGraph();
+        List<Node> order = Arrays.asList(oldPm.getNodes());
+
+        HybridCgPm newPm = new HybridCgPm(g, order, isDisc, cats);
+        preserveCompatibleCutpoints(oldPm, newPm);
+
+        // Auto-seed any missing/empty cutpoints to defaults
+        ensureCutpointsSeeded(newPm, (int) binsSpinner.getValue());
+
+        // If we got here, PM is complete—install it.
+        pmWrapper.setHybridCgPm(newPm);
+        firePropertyChange("modelChanged", null, null);
+        refreshChildParentSelectors();
+        rebuildCutTable();
+    }
+
+    private void preserveCompatibleCutpoints(HybridCgPm oldPm, HybridCgPm newPm) {
+        Node[] nodes = oldPm.getNodes();
+        for (Node child : nodes) {
+            int yo = oldPm.indexOf(child), yn = newPm.indexOf(child);
+            if (yo < 0 || yn < 0) continue;
+            if (!oldPm.isDiscrete(yo) || !newPm.isDiscrete(yn)) continue;
+            Set<String> oldC = Arrays.stream(oldPm.getContinuousParents(yo))
+                    .mapToObj(i -> oldPm.getNodes()[i].getName()).collect(Collectors.toSet());
+            Set<String> newC = Arrays.stream(newPm.getContinuousParents(yn))
+                    .mapToObj(i -> newPm.getNodes()[i].getName()).collect(Collectors.toSet());
+            if (!oldC.equals(newC)) continue;
+
+            Map<Node,double[]> map = new LinkedHashMap<>();
+            oldPm.getContParentCutpointsForDiscreteChild(yo).ifPresent(cuts -> {
+                int[] cps = oldPm.getContinuousParents(yo);
+                for (int t = 0; t < cps.length; t++)
+                    map.put(oldPm.getNodes()[cps[t]], cuts[t].clone());
+            });
+            if (!map.isEmpty()) {
+                try { newPm.setContParentCutpointsForDiscreteChild(child, map); } catch (Exception ignore) {}
+            }
+        }
+    }
+
+    /** Ensure every (discrete child ← continuous parent) has non-empty, strictly increasing cutpoints. */
+    private void ensureCutpointsSeeded(HybridCgPm pm, int bins) {
+        Node[] nodes = pm.getNodes();
+        int B = Math.max(2, bins);
+        double lo = -0.5, hi = 0.5, step = (hi - lo) / B;
+        double[] defaultEdges = new double[B - 1];
+        for (int i = 0; i < defaultEdges.length; i++) defaultEdges[i] = lo + (i + 1) * step;
+
+        for (int y = 0; y < nodes.length; y++) {
+            if (!pm.isDiscrete(y)) continue;
+            int[] cps = pm.getContinuousParents(y);
+            if (cps.length == 0) continue;
+
+            boolean needSeed = true;
+            Optional<double[][]> opt = pm.getContParentCutpointsForDiscreteChild(y);
+            if (opt.isPresent()) {
+                double[][] arr = opt.get();
+                if (arr.length == cps.length) {
+                    needSeed = false;
+                    // also check empties -> seed those
+                    Map<Node,double[]> map = new LinkedHashMap<>();
+                    for (int t = 0; t < cps.length; t++) {
+                        double[] e = (arr[t] == null || arr[t].length == 0) ? defaultEdges : arr[t];
+                        e = e.clone();
+                        for (int k = 1; k < e.length; k++) if (!(e[k] > e[k-1])) e[k] = Math.nextUp(e[k-1]);
+                        map.put(pm.getNodes()[cps[t]], e);
+                    }
+                    try { pm.setContParentCutpointsForDiscreteChild(nodes[y], map); } catch (Exception ignore) {}
+                    continue;
+                }
+            }
+
+            if (needSeed) {
+                Map<Node,double[]> m = new LinkedHashMap<>();
+                for (int t = 0; t < cps.length; t++) m.put(nodes[cps[t]], defaultEdges.clone());
+                try { pm.setContParentCutpointsForDiscreteChild(nodes[y], m); } catch (Exception ignore) {}
+            }
+        }
+    }
+
+    // Small helper: seed simple defaults (used by button actions)
     private static final class DefaultSeeding {
         void run(HybridCgPm pm, int bins) {
             Node[] nodes = pm.getNodes();
+            int B = Math.max(2, bins);
+            double lo = -0.5, hi = 0.5, step = (hi - lo) / B;
+            double[] edges = new double[B - 1];
+            for (int i = 0; i < edges.length; i++) edges[i] = lo + (i + 1) * step;
+
             for (int y = 0; y < nodes.length; y++) {
                 if (!pm.isDiscrete(y)) continue;
                 int[] cps = pm.getContinuousParents(y);
                 if (cps.length == 0) continue;
                 Map<Node,double[]> m = new LinkedHashMap<>();
-                if (bins <= 2) {
-                    for (int t = 0; t < cps.length; t++) m.put(nodes[cps[t]], new double[]{0.0});
-                } else {
-                    double lo = -0.5, hi = 0.5, step = (hi - lo) / bins;
-                    double[] edges = new double[bins - 1];
-                    for (int i = 0; i < edges.length; i++) edges[i] = lo + (i + 1) * step;
-                    for (int t = 0; t < cps.length; t++) m.put(nodes[cps[t]], edges.clone());
-                }
+                for (int t = 0; t < cps.length; t++) m.put(nodes[cps[t]], edges.clone());
                 try { pm.setContParentCutpointsForDiscreteChild(nodes[y], m); } catch (Exception ignore) {}
             }
         }
