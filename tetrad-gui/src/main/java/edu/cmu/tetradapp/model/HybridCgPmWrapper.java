@@ -30,11 +30,6 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
     private HybridCgModel.HybridCgPm hybridCgPm;
     private String name = "Hybrid CG PM";
     private String notes = "";
-//    /**
-//     * No-arg for reflection/serialization frameworks.
-//     */
-//    public HybridCgPmWrapper() {
-//    }
 
     public HybridCgPmWrapper(GraphWrapper graph, Parameters parameters) {
         this(graph.getGraph(), parameters);
@@ -42,16 +37,20 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
 
     /**
      * Construct from an existing PM.
+     *
+     * @param pm The parametric model.
      */
     public HybridCgPmWrapper(HybridCgModel.HybridCgPm pm) {
         this.hybridCgPm = Objects.requireNonNull(pm, "hybridCgPm");
     }
 
     /**
-     * Build a PM from a Graph + Parameters.
-     * <p>
-     * Params (optional): - String  "modelName"               : display name - boolean "hybridcg.seedDefaults"   : if
-     * true (default), seed simple {-0.5, 0.5} cutpoints when data is unavailable
+     * Constructs a HybridCgPmWrapper using the specified graph and parameters. Initializes the underlying HybridCgPm
+     * model based on the given graph structure and parameter settings, and optionally seeds default cutpoints if not
+     * already provided.
+     *
+     * @param graph  The graph representing the structure of the model. It must not be null.
+     * @param params The parameters used to configure the model. It must not be null.
      */
     public HybridCgPmWrapper(Graph graph, Parameters params) {
         Objects.requireNonNull(graph, "graph");
@@ -85,12 +84,14 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
     }
 
     /**
-     * Build a PM from Graph + Parameters + DataSet, computing cutpoints from data using equal-frequency (default) or
-     * equal-intervals.
-     * <p>
-     * Params (optional): - String  "modelName"             : display name - int     "hybridcg.cutBins"      : desired
-     * number of bins per continuous parent (default 3) - String  "hybridcg.cutMethod"    : "freq" or "intervals"
-     * (default "freq")
+     * Constructs a HybridCgPmWrapper using the specified graph, parameters, and dataset. This constructor initializes
+     * the underlying HybridCgPm model based on the given graph structure and parameter settings, applies cutpoints
+     * derived from the dataset if provided, and sets the binning method.
+     *
+     * @param graph  The graph representing the structure of the model. It must not be null.
+     * @param params The parameters used to configure the model. It must not be null.
+     * @param data   The dataset used to compute and apply cutpoints. It can be null; if null, no cutpoints are
+     *               applied.
      */
     public HybridCgPmWrapper(Graph graph, Parameters params, DataSet data) {
         this(graph, params); // builds PM first
@@ -257,6 +258,11 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
         return sorted[i] * (1 - frac) + sorted[i + 1] * frac;
     }
 
+    /**
+     * Retrieves the instance of HybridCgModel.HybridCgPm associated with this wrapper.
+     *
+     * @return the associated HybridCgModel.HybridCgPm instance
+     */
     public HybridCgModel.HybridCgPm getHybridCgPm() {
         return hybridCgPm;
     }
@@ -264,36 +270,69 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
     // ---------------- Cutpoint helpers (public API) ----------------
 
     /**
-     * Used by the PM editor to replace the PM instance.
+     * Sets the HybridCgPm instance for this wrapper. The provided instance must not be null, as it represents the
+     * parametric model to be associated with this wrapper.
+     *
+     * @param pm the HybridCgModel.HybridCgPm instance to set. It must not be null.
      */
     public void setHybridCgPm(HybridCgModel.HybridCgPm pm) {
         this.hybridCgPm = Objects.requireNonNull(pm);
     }
 
+    /**
+     * Retrieves the graph associated with the underlying HybridCgPm model.
+     *
+     * @return the graph if the underlying HybridCgPm instance is not null; otherwise, returns null.
+     */
     public Graph getGraph() {
         return hybridCgPm == null ? null : hybridCgPm.getGraph();
     }
 
+    /**
+     * Retrieves the name associated with the instance.
+     *
+     * @return the name of the instance
+     */
     public String getName() {
         return name;
     }
 
     // ---------------- Internal implementations ----------------
 
+    /**
+     * Sets the name of the session model. If the provided name is null or blank, defaults to "Hybrid CG PM".
+     *
+     * @param name the name of the session model.
+     */
     public void setName(String name) {
         this.name = (name == null || name.isBlank()) ? "Hybrid CG PM" : name;
     }
 
+    /**
+     * Retrieves the notes associated with the instance.
+     *
+     * @return the notes of the instance
+     */
     public String getNotes() {
         return notes;
     }
 
     // --------- tiny numeric helpers ---------
 
+    /**
+     * Sets the notes for the session model. If the provided notes are null, defaults to an empty string.
+     *
+     * @param notes the notes for the session model.
+     */
     public void setNotes(String notes) {
         this.notes = (notes == null) ? "" : notes;
     }
 
+    /**
+     * Returns a string representation of the HybridCgPmWrapper instance.
+     *
+     * @return a string representation of the instance
+     */
     @Override
     public String toString() {
         return "HybridCgPmWrapper{name='" + name + "', graph=" + getGraph() + "}";
@@ -339,5 +378,23 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
         }
     }
 
-    public enum CutMethod {EQUAL_INTERVALS, EQUAL_FREQUENCY}
+    /**
+     * Enumeration representing the methods for computing cutpoints.
+     */
+    public enum CutMethod {
+
+        /**
+         * Represents a method for computing cutpoints by dividing the range of values into equal intervals. This
+         * approach ensures that the range of values is split into evenly sized segments, regardless of the distribution
+         * of the underlying data points.
+         */
+        EQUAL_INTERVALS,
+
+        /**
+         * Represents a method for computing cutpoints by dividing the values such that each segment contains
+         * approximately an equal number of data points. This approach is sensitive to the distribution of the
+         * underlying data, ensuring balanced representation in each segment.
+         */
+        EQUAL_FREQUENCY
+    }
 }

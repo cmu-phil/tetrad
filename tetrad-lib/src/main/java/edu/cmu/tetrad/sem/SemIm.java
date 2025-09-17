@@ -536,6 +536,17 @@ public final class SemIm implements Im, ISemIm {
         return X.trace();
     }
 
+    /**
+     * Simulates possible shrinkage scenarios for a given graph and parameters.
+     * This method determines the shrinkage mode, validates input parameters,
+     * identifies the cyclic coefficient style, and simulates data accordingly.
+     *
+     * @param params The input parameters containing configuration for shrinkage mode,
+     *               cyclic coefficient style, regularization lambda, and other simulation parameters.
+     * @param g The graph on which the shrinkage simulation is performed.
+     * @return A Result object containing the shrinkage mode, simulated dataset, sample size,
+     *         and the SEM (Structural Equation Model) instance representing the data-generating process.
+     */
     public static @NotNull Result simulatePossibleShrinkage(Parameters params, Graph g) {
         // Shrinkage: 1=None, 2=Ridge, 3=LedoitâWolf
         params.set(Params.SHRINKAGE_MODE, 3);
@@ -889,19 +900,24 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * <p>existsEdgeCoef.</p>
+     * Determines whether an edge coefficient exists between two given nodes.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a boolean
+     * @param x the first node to check
+     * @param y the second node to check
+     * @return true if there exists a coefficient parameter for the edge from x to y, false otherwise
      */
     public boolean existsEdgeCoef(Node x, Node y) {
         return x != y && this.semPm.getCoefficientParameter(x, y) != null;
     }
 
     /**
-     * @deprecated Use setErrVar(x, value) for variances, or setErrCovar(x, y, value) for covariances.
+     * Sets the error covariance value for the specified node. This method is deprecated
+     * and may be removed in future versions. Use alternative methods for setting error
+     * covariance values.
      *
+     * @param x     the target node for which the error covariance value is to be set
+     * @param value the error covariance value to assign
+     * @deprecated Use setErrVar(x, value) for variances, or setErrCovar(x, y, value) for covariances.
      */
     @Deprecated
     public void setErrCovar(Node x, double value) {
@@ -2739,9 +2755,36 @@ public final class SemIm implements Im, ISemIm {
         return totalEffect;
     }
 
+    /**
+     * Represents the result of a cyclic simulation.
+     *
+     * This record combines two main components of the simulation result:
+     * a dataset of observed or generated data, and the structural equation model
+     * implementation (SEM IM) that describes the underlying causal relationships.
+     *
+     * @param dataSet The dataset representing the output of the simulation or
+     *                empirical data used in the simulation.
+     * @param semIm   The structural equation model implementation capturing the
+     *                causal structure of the simulation.
+     */
     public record CyclicSimResult(DataSet dataSet, SemIm semIm) {
     }
 
+    /**
+     * Represents the result of a computation or analysis, encapsulating the following:
+     *
+     * - The shrinkage mode used in an independent test.
+     * - The data set involved in the computation.
+     * - The sample size (N) associated with the computation.
+     * - The structural equation model implied by the computation.
+     *
+     * This record serves as an immutable data structure for storing these components.
+     *
+     * @param shrinkageMode The shrinkage mode used in the independent test.
+     * @param dataSet The data set utilized in the analysis or computation.
+     * @param N The sample size associated with the computation.
+     * @param im The structural equation model implied by the computation or analysis.
+     */
     public record Result(IndTestFisherZ.ShrinkageMode shrinkageMode, DataSet dataSet, int N, SemIm im) {
     }
 }

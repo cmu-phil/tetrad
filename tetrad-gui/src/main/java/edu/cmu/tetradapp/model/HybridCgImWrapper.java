@@ -51,35 +51,32 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
     private String name = "Hybrid CG IM";
     private String notes = "";
 
-//    /**
-//     * No-arg for reflection/serialization frameworks.
-//     */
-//    public HybridCgImWrapper() {
-//    }
-
     /**
-     * Construct from an existing IM.
+     * Constructs a HybridCgImWrapper with the specified HybridCgIm instance.
+     *
+     * @param im the HybridCgIm instance to be wrapped, must not be null
      */
     public HybridCgImWrapper(HybridCgIm im) {
         this.im = Objects.requireNonNull(im, "im");
     }
 
     /**
-     * Convenience: build a new HybridCgIm from a HybridCgPmWrapper using defaults (no data).
+     * Constructs a HybridCgImWrapper using a specified HybridCgPmWrapper and default parameters.
+     *
+     * @param pmWrapper the HybridCgPmWrapper instance used to construct this HybridCgImWrapper
      */
     public HybridCgImWrapper(HybridCgPmWrapper pmWrapper) {
         this(pmWrapper, new Parameters());
     }
 
     /**
-     * Construct from a HybridCgPmWrapper and Parameters (no data).
-     * <p>
-     * Supported keys: - "hybridcg.randomizeIm"  (boolean, default true) - "hybridcg.randomSeed"   (long, default
-     * RandomUtil.nextLong)
-     * <p>
-     * Cutpoint policy is not applied here (no data available). We require the PM to already have cutpoints wherever
-     * needed, or we seed simple defaults. If you prefer to disallow seeding here, set "hybridcg.seedDefaults" to false
-     * in the PM wrapper and ensure cutpoints before constructing the IM.
+     * Constructs a HybridCgImWrapper using a specified HybridCgPmWrapper and parameter settings.
+     * Performs initialization and validation of required settings for creating the wrapper.
+     *
+     * @param pmWrapper the HybridCgPmWrapper instance used to construct this HybridCgImWrapper; must not be null.
+     * @param params the Parameters instance containing configuration and settings for construction; must not be null.
+     * @throws NullPointerException if pmWrapper or params is null.
+     * @throws IllegalStateException if discrete children with continuous parents lack required cutpoints.
      */
     public HybridCgImWrapper(HybridCgPmWrapper pmWrapper, Parameters params) {
         Objects.requireNonNull(pmWrapper, "pmWrapper");
@@ -101,12 +98,13 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
     }
 
     /**
-     * Construct from PM + Data + Parameters: estimate parameters using {@link HybridCgEstimator}.
-     * <p>
-     * Recognized keys (passed through to the estimator): - "hybridcg.alpha"         : double  (Dirichlet pseudocount;
-     * default 1.0) - "hybridcg.shareVariance" : boolean (share variance across rows for cont child; default false) -
-     * "hybridcg.binPolicy"     : String  ("equal_frequency", "equal_interval", "none"; default "equal_frequency") -
-     * "hybridcg.bins"          : int     (#bins for each cont parent of a discrete child; default 3; min 2)
+     * Constructs a HybridCgImWrapper using a specified HybridCgPmWrapper, a data set, and parameter settings.
+     * Initializes the wrapper by estimating the internal model (IM) using the provided HybridCgPmWrapper, data, and parameters.
+     *
+     * @param pmWrapper the HybridCgPmWrapper instance used to construct this HybridCgImWrapper; must not be null.
+     * @param data the DataSet instance used for estimation during construction; must not be null.
+     * @param params the Parameters instance containing configuration and settings for construction; if null, default parameters are used.
+     * @throws NullPointerException if pmWrapper or data is null.
      */
     public HybridCgImWrapper(HybridCgPmWrapper pmWrapper, DataSet data, Parameters params) {
         Objects.requireNonNull(pmWrapper, "pmWrapper");
@@ -160,35 +158,80 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
         }
     }
 
-    // ---------- Accessors ----------
+    /**
+     * Retrieves the instance of HybridCgIm associated with this wrapper.
+     *
+     * @return the HybridCgIm instance currently wrapped by this HybridCgImWrapper
+     */
     public HybridCgIm getIm() {
         return im;
     }
 
+    /**
+     * Sets the instance of HybridCgIm associated with this wrapper. The provided
+     * instance must not be null.
+     *
+     * @param im the HybridCgIm instance to be set, must not be null
+     * @throws NullPointerException if the specified HybridCgIm instance is null
+     */
     public void setIm(HybridCgIm im) {
         this.im = Objects.requireNonNull(im, "im");
     }
 
+    /**
+     * Retrieves the instance of HybridCgPm associated with the wrapped HybridCgIm,
+     * if available. If the HybridCgIm is null, this method returns null.
+     *
+     * @return the HybridCgPm instance currently associated with the wrapped HybridCgIm, or null if the wrapped HybridCgIm is null
+     */
     public HybridCgPm getPm() {
         return im != null ? im.getPm() : null;
     }
 
+    /**
+     * Retrieves the graphical representation associated with the current instance.
+     * If the associated HybridCgPm object is null, this method returns null.
+     *
+     * @return the Graph instance associated with the current HybridCgImWrapper, or null if the associated HybridCgPm is null
+     */
     public Graph getGraph() {
         return getPm() != null ? getPm().getGraph() : null;
     }
 
+    /**
+     * Retrieves the name associated with this instance.
+     *
+     * @return the name associated with this instance, or null if not set
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Sets the name associated with this instance. If the provided name is null or
+     * blank, a default name "Hybrid CG IM" will be assigned.
+     *
+     * @param name the name to set; if null or blank, the default value will be used
+     */
     public void setName(String name) {
         this.name = (name == null || name.isBlank()) ? "Hybrid CG IM" : name;
     }
 
+    /**
+     * Retrieves the notes associated with this instance.
+     *
+     * @return the notes associated with this instance
+     */
     public String getNotes() {
         return notes;
     }
 
+    /**
+     * Sets the notes associated with this instance. If the provided notes
+     * parameter is null, an empty string will be assigned instead.
+     *
+     * @param notes the notes to set; if null, an empty string will be used
+     */
     public void setNotes(String notes) {
         this.notes = (notes == null) ? "" : notes;
     }
@@ -205,11 +248,21 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
         return w;
     }
 
+    /**
+     * Creates a deep copy of this HybridCgImWrapper instance.
+     *
+     * @return a new HybridCgImWrapper instance with the same HybridCgIm and settings
+     */
     @Override
     public HybridCgImWrapper clone() {
         return deepCopy();
     }
 
+    /**
+     * Returns a string representation of this HybridCgImWrapper instance.
+     *
+     * @return a string representation of this HybridCgImWrapper instance
+     */
     @Override
     public String toString() {
         Graph g = getGraph();
@@ -217,7 +270,11 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
         return String.format(Locale.US, "HybridCgImWrapper{name='%s', graph=%s}", name, gname);
     }
 
-    // Back-compat aliases for editors (optional)
+    /**
+     * Retrieves the HybridCgIm instance associated with this wrapper.
+     *
+     * @return the HybridCgIm instance associated with this wrapper
+     */
     public HybridCgIm getHybridCgIm() {
         return im;
     }

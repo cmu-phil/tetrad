@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.unmix;
 
@@ -40,6 +40,16 @@ import java.util.stream.Collectors;
  * EM-on-residuals baseline (parent-superset, diagonal covariance), with ARI
  */
 public class TestCausalUnmixer {
+
+    /**
+     * Default constructor for the TestCausalUnmixer class.
+     *
+     * This constructor initializes an instance of the TestCausalUnmixer, a class designed
+     * to test the performance of a causal unmixing algorithm in semi-synthetic scenarios.
+     * The class provides methods for generating datasets with structural differences, running
+     * the causal unmixing algorithm, and evaluating the results using various performance metrics.
+     */
+    public TestCausalUnmixer() {}
 
     // ---------- utilities ----------
 
@@ -153,8 +163,7 @@ public class TestCausalUnmixer {
             boolean db = eb != null && eb.isDirected();
             if (da != db) orientDiff++;
             else if (da) {
-                if (!(ea.getNode1().getName().equals(eb.getNode1().getName()) &&
-                      ea.getNode2().getName().equals(eb.getNode2().getName()))) {
+                if (!(ea.getNode1().getName().equals(eb.getNode1().getName()) && ea.getNode2().getName().equals(eb.getNode2().getName()))) {
                     orientDiff++;
                 }
             }
@@ -314,6 +323,33 @@ public class TestCausalUnmixer {
         return out;
     }
 
+    /**
+     * This test evaluates the performance of a causal unmixing algorithm in a semi-synthetic setting. The process
+     * involves generating data from two regimes that share a common backbone structure with intentional structural
+     * changes, simulating realistic marginal distributions, and testing the algorithm's ability to distinguish and
+     * recover the regimes.
+     *
+     * <p>The test includes the following steps:</p>
+     * <ol>
+     *   <li>Generate a random directed acyclic graph (DAG) as the backbone structure,
+     *       and simulate data with Laplace-distributed errors for heavy-tailed characteristics.</li>
+     *   <li>Create two regimes:
+     *     <ul>
+     *       <li><b>Regime A:</b> Uses the original backbone DAG.</li>
+     *       <li><b>Regime B:</b> Modifies the backbone by flipping the direction of some edges and
+     *           scaling regression coefficients and noise variances.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Simulate data for both regimes and combine them into a single dataset.</li>
+     *   <li>Shuffle the data and assign labels to indicate the regime of origin.</li>
+     *   <li>Run the causal unmixing algorithm using an expectation-maximization (EM)-based approach.
+     *       Evaluate its performance via metrics such as Adjusted Rand Index (ARI), adjacency F1,
+     *       arrow direction F1, and structural Hamming distance (SHD).</li>
+     *   <li>Perform a baseline test with K=1 (single cluster assumption) for diagnostics
+     *       and compute the difference in Bayesian Information Criterion (BIC) values
+     *       between K=2 and K=1 to determine cluster separation quality.</li>
+     * </ol>
+     */
     @Test
     public void phase3_semisynthetic() {
         // Use a backbone covariance from a single SEM sample, then inject shifts.
@@ -370,8 +406,7 @@ public class TestCausalUnmixer {
         if (mixed.labels == null) {
             System.out.println("Labels were not supplied.");
         } else {
-            System.out.printf("EM baseline:  ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n",
-                    adjustedRandIndex(mixed.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
+            System.out.printf("EM baseline:  ARI=%.3f  AdjF1=%.3f  ArrowF1=%.3f  SHD=%d%n", adjustedRandIndex(mixed.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
         }
 
         // === Optional: K=1 baseline for diagnostics (ÎBIC etc.) ===
@@ -415,8 +450,22 @@ public class TestCausalUnmixer {
 
     // ---------- helpers ----------
 
+    /**
+     * Represents labeled data consisting of a dataset and corresponding labels. This class is designed to encapsulate a
+     * dataset and an array of integer labels, where each label corresponds to a data point in the dataset.
+     */
     public static class LabeledData {
+
         DataSet data;
         int[] labels;
+        /**
+         * Constructs an empty instance of the LabeledData class.
+         * <p>
+         * This default constructor initializes a new LabeledData object without assigning any dataset or labels. After
+         * instantiation, the dataset and labels can be manually assigned as needed.
+         */
+        public LabeledData() {
+
+        }
     }
 }

@@ -29,39 +29,149 @@ import java.io.Serializable;
  * @author josephramsey
  */
 public final class UnmixSpec implements Serializable {
-
-    // ---- K handling ----
-    // If autoSelectK == true, use Kmin..Kmax; otherwise use K (>=1).
+    /**
+     * A flag that determines whether the value of 'k' in an operation or calculation should be automatically selected
+     * by the system. When set to true, the system determines the appropriate value of 'k' without user intervention. If
+     * false, the value of 'k' must be provided explicitly by the user or another part of the program.
+     */
     private boolean autoSelectK = true;
+    /**
+     * Represents an integer constant used within the class. The variable is initialized with a default value of 2. This
+     * value may signify a specific configuration or a predefined parameter relevant to the class operations.
+     */
     private int K = 2;
+    /**
+     * Represents the minimum value of K being used in the context of the program. This variable is initialized to 1 and
+     * is typically utilized to define a lower boundary or threshold for calculations or iterations involving K.
+     */
     private int Kmin = 1;
+    /**
+     * The maximum allowable value for a certain parameter or configuration in the application. This variable is used to
+     * define a constant limit for operations or calculations. It is initialized to a default value of 4.
+     */
     private int Kmax = 4;
+    /**
+     * A private instance variable representing the graph learning strategy. `graphLearner` is set to the
+     * `GraphLearner.BOSS` as the default learning method. The value determines the algorithm or approach used in the
+     * learning process within the graph-based operations.
+     */
     private GraphLearner graphLearner = GraphLearner.BOSS;
-    // PC-only knobs
+    /**
+     * Represents the alpha value for a specific probability or calculation context. This variable is often used to
+     * adjust sensitivity or weighting in algorithms. In this case, it is initialized with a default value of 0.01.
+     */
     private double pcAlpha = 0.01;
+    /**
+     * Represents the collision style for player-controlled objects in the application. The variable is initialized to
+     * the maximum precision collision style, defined as ColliderStyle.MAX_P. Determines how collisions are handled or
+     * processed for player-controlled entities. Can be modified to adjust the collision handling strategy during
+     * runtime.
+     */
     private ColliderStyle pcColliderStyle = ColliderStyle.MAX_P;
-    // BOSS-only knobs (use what you actually wire; this is a common one)
+    /**
+     * Represents the discount rate applied as a penalty imposed by the "boss". This value is used to calculate or
+     * adjust certain conditions or fees associated with tasks or operations where the penalty is relevant. The default
+     * value is 2.0.
+     */
     private double bossPenaltyDiscount = 2.0;
-    // ---- Parent-superset residualization ----
+    /**
+     * A flag indicating whether to use the parent superset in some operable context. When set to {@code true}, the
+     * logic will incorporate or rely on the parent superset instead of solely focusing on the current or individual
+     * scope. Otherwise, it will bypass or exclude the parent superset in the operation.
+     */
     private boolean useParentSuperset = true;
+    /**
+     * The maximum number of elements to be included in the superset. This defines the top limit for the collection or
+     * processing within a superset-related operation.
+     */
     private int supersetTopM = 12;
+    /**
+     * Represents the score type used for evaluating the similarity or ranking between elements in a superset. Defaults
+     * to {@code SupersetScore.KENDALL}. The value of this variable determines the method of computation for scoring or
+     * comparison within superset-related contexts.
+     */
     private SupersetScore supersetScore = SupersetScore.KENDALL;
-    // ---- Residual scaling ----
+    /**
+     * A flag that determines whether residuals should be scaled robustly. When set to true, residual scaling is
+     * performed in a manner that is less sensitive to outliers, improving the robustness of the scaling process. If set
+     * to false, residuals are not scaled robustly.
+     */
     private boolean robustScaleResiduals = true;
+    /**
+     * The covariance mode setting used to determine how covariance is calculated in specific operations or algorithms.
+     * This variable is an instance of the {@link CovarianceMode} enumeration and dictates the strategy for covariance
+     * estimation.
+     * <p>
+     * The available modes in {@link CovarianceMode} may include: - AUTO: Automatically selects the appropriate
+     * covariance handling method based on context. - Other specific modes depending on the {@link CovarianceMode}
+     * implementation.
+     * <p>
+     * This variable plays an essential role in configuring processes or computations that rely on covariance-related
+     * functionality or optimization.
+     */
     private CovarianceMode covarianceMode = CovarianceMode.AUTO;
-    // Used only when AUTO: require n/K >= p + safetyMargin to use FULL
+    /**
+     * Used only when AUTO: require n/K >= p + safetyMargin to use FULL
+     */
     private int fullSigmaSafetyMargin = 10;
-    // ---- EM stability ----
+    /**
+     * Represents the number of times the k-means clustering algorithm will be restarted with different initial
+     * centroids to improve the chances of finding a global optimum.
+     * <p>
+     * This value determines the number of random initializations performed during the k-means clustering process. A
+     * higher value increases the likelihood of achieving better clustering results at the expense of additional
+     * computation time.
+     */
     private int kmeansRestarts = 20;
+    /**
+     * Defines the maximum number of iterations allowed for the Expectation-Maximization (EM) algorithm to converge.
+     * This value is used to limit the computational effort when training or optimizing models using the EM approach.
+     * <p>
+     * The default value is set to 300 iterations.
+     */
     private int emMaxIters = 300;
+    /**
+     * Represents the ridge regularization parameter used in machine learning algorithms such as Ridge Regression. This
+     * parameter helps prevent overfitting by penalizing large coefficients. A smaller value indicates less
+     * regularization, whereas a larger value increases the regularization strength.
+     */
     private double ridge = 1e-3;
+    /**
+     * Represents the shrinkage regularization parameter used in machine learning algorithms such as Elastic Net. This
+     * parameter helps prevent overfitting by penalizing large coefficients. A smaller value indicates less
+     * regularization, whereas a larger value increases the regularization strength.
+     */
     private double shrinkage = 0.10;  // optional; use if you wire it
+    /**
+     * Represents the number of steps for annealing in a process. This parameter controls the number of iterations for
+     * annealing. The default value is set to 15 steps.
+     */
     private int annealSteps = 15;     // optional
+    /**
+     * Represents the starting temperature for annealing in a process. This parameter controls the initial temperature
+     * for annealing. The default value is set to 0.8.
+     */
     private double annealStartT = 0.8;// optional
+    /**
+     * Represents the random seed for generating random numbers. This parameter controls the initial seed for random
+     * number generation. The default value is set to 13.
+     */
     private long randomSeed = 13L;
-    // ---- Diagnostics ----
+    /**
+     * Determines if diagnostic information should be saved during the process.
+     */
     private boolean saveDiagnostics = false;
+    /**
+     * Determines if intermediate logging is enabled.
+     */
     private boolean logIntermediate = false;
+
+    /**
+     * Constructor for the UnmixSpec class. This constructor initializes an instance of the UnmixSpec class.
+     */
+    public UnmixSpec() {
+
+    }
 
     /**
      * Determines if intermediate logging is enabled.
@@ -93,8 +203,7 @@ public final class UnmixSpec implements Serializable {
     /**
      * Sets whether to enable or disable the automatic selection of the best value of K.
      *
-     * @param v a boolean value indicating whether to enable (true) or disable (false)
-     *          the automatic selection of K.
+     * @param v a boolean value indicating whether to enable (true) or disable (false) the automatic selection of K.
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setAutoSelectK(boolean v) {
@@ -112,8 +221,7 @@ public final class UnmixSpec implements Serializable {
     }
 
     /**
-     * Sets the value of K for the current instance of UnmixSpec.
-     * K must be greater than or equal to 1.
+     * Sets the value of K for the current instance of UnmixSpec. K must be greater than or equal to 1.
      *
      * @param k the value to set for K; must be a positive integer >= 1.
      * @return the current instance of UnmixSpec for method chaining.
@@ -137,8 +245,7 @@ public final class UnmixSpec implements Serializable {
     }
 
     /**
-     * Sets the minimum allowed value of K. Ensures that the value of Kmin
-     * is at least 1.
+     * Sets the minimum allowed value of K. Ensures that the value of Kmin is at least 1.
      *
      * @param kmin the proposed minimum value for K; must be an integer.
      * @return the current instance of UnmixSpec for method chaining.
@@ -158,8 +265,8 @@ public final class UnmixSpec implements Serializable {
     }
 
     /**
-     * Sets the maximum allowed value of K (Kmax) for the current instance of UnmixSpec. Ensures
-     * that the value of Kmax is at least 1.
+     * Sets the maximum allowed value of K (Kmax) for the current instance of UnmixSpec. Ensures that the value of Kmax
+     * is at least 1.
      *
      * @param kmax the proposed maximum value for K; must be an integer.
      * @return the current instance of UnmixSpec for method chaining.
@@ -172,17 +279,16 @@ public final class UnmixSpec implements Serializable {
     /**
      * Retrieves the graph learning method currently set for this instance.
      *
-     * @return the currently configured GraphLearner, which determines the method
-     *         used for graph learning (e.g., BOSS or PC_MAX).
+     * @return the currently configured GraphLearner, which determines the method used for graph learning (e.g., BOSS or
+     * PC_MAX).
      */
     public GraphLearner getGraphLearner() {
         return graphLearner;
     }
 
     /**
-     * Sets the graph learning method for this instance of UnmixSpec.
-     * The provided GraphLearner determines the algorithm to be used
-     * for graph learning (e.g., BOSS or PC_MAX).
+     * Sets the graph learning method for this instance of UnmixSpec. The provided GraphLearner determines the algorithm
+     * to be used for graph learning (e.g., BOSS or PC_MAX).
      *
      * @param g the GraphLearner to set; must be a valid enumeration value.
      * @return the current instance of UnmixSpec for method chaining.
@@ -195,19 +301,18 @@ public final class UnmixSpec implements Serializable {
     /**
      * Retrieves the alpha value used in the PC algorithm for statistical testing.
      *
-     * @return the alpha value for the PC algorithm, which is typically used as a threshold
-     *         for significance in tests.
+     * @return the alpha value for the PC algorithm, which is typically used as a threshold for significance in tests.
      */
     public double getPcAlpha() {
         return pcAlpha;
     }
 
     /**
-     * Sets the alpha value for the PC algorithm. This value is typically used
-     * as a significance threshold in statistical testing within the PC algorithm.
+     * Sets the alpha value for the PC algorithm. This value is typically used as a significance threshold in
+     * statistical testing within the PC algorithm.
      *
-     * @param a the alpha value to set for the PC algorithm; must be a non-negative
-     *          double representing the significance level.
+     * @param a the alpha value to set for the PC algorithm; must be a non-negative double representing the significance
+     *          level.
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setPcAlpha(double a) {
@@ -216,21 +321,20 @@ public final class UnmixSpec implements Serializable {
     }
 
     /**
-     * Retrieves the collider style used in the PC algorithm for handling colliders
-     * during causal discovery. The collider style determines the specific method
-     * or approach used to identify colliders in the causal graph.
+     * Retrieves the collider style used in the PC algorithm for handling colliders during causal discovery. The
+     * collider style determines the specific method or approach used to identify colliders in the causal graph.
      *
-     * @return the configured {@link ColliderStyle} for the PC algorithm, which
-     *         may be one of SEPSETS, CONSERVATIVE, or MAX_P.
+     * @return the configured {@link ColliderStyle} for the PC algorithm, which may be one of SEPSETS, CONSERVATIVE, or
+     * MAX_P.
      */
     public ColliderStyle getPcColliderStyle() {
         return pcColliderStyle;
     }
 
     /**
-     * Sets the collider style to be used in the PC algorithm for identifying colliders
-     * during causal graph discovery. The collider style determines the approach applied
-     * for handling colliders (e.g., SEPSETS, CONSERVATIVE, or MAX_P).
+     * Sets the collider style to be used in the PC algorithm for identifying colliders during causal graph discovery.
+     * The collider style determines the approach applied for handling colliders (e.g., SEPSETS, CONSERVATIVE, or
+     * MAX_P).
      *
      * @param s the {@link ColliderStyle} to set; must be a valid enumeration value.
      * @return the current instance of UnmixSpec for method chaining.
@@ -241,9 +345,8 @@ public final class UnmixSpec implements Serializable {
     }
 
     /**
-     * Retrieves the BOSS penalty discount value. The BOSS penalty discount is
-     * used as a parameter in graph learning algorithms to adjust or scale
-     * penalties during the learning process.
+     * Retrieves the BOSS penalty discount value. The BOSS penalty discount is used as a parameter in graph learning
+     * algorithms to adjust or scale penalties during the learning process.
      *
      * @return the current BOSS penalty discount value as a double.
      */
@@ -252,9 +355,8 @@ public final class UnmixSpec implements Serializable {
     }
 
     /**
-     * Sets the BOSS penalty discount value for this instance of UnmixSpec.
-     * The BOSS penalty discount is a parameter used in graph learning algorithms
-     * to adjust or scale penalties during the learning process.
+     * Sets the BOSS penalty discount value for this instance of UnmixSpec. The BOSS penalty discount is a parameter
+     * used in graph learning algorithms to adjust or scale penalties during the learning process.
      *
      * @param d the BOSS penalty discount value to set; must be a double.
      * @return the current instance of UnmixSpec for method chaining.
@@ -545,8 +647,8 @@ public final class UnmixSpec implements Serializable {
     }
 
     /**
-     * The GraphLearner enum represents different algorithms or strategies
-     * used for graph learning processes within a system.
+     * The GraphLearner enum represents different algorithms or strategies used for graph learning processes within a
+     * system.
      */
     public enum GraphLearner {
 
@@ -562,59 +664,76 @@ public final class UnmixSpec implements Serializable {
     }
 
     /**
-     * The ColliderStyle enum represents different styles for handling colliders
-     * during graph learning processes.
+     * The ColliderStyle enum represents different styles for handling colliders during graph learning processes.
      */
     public enum ColliderStyle {
 
         /**
-         * Represents the Sepsets collider style in the graph learning process.
-         * This style prioritizes the use of separating sets (sepsets) information
-         * to determine the orientation of colliders during inference.
+         * Represents the Sepsets collider style in the graph learning process. This style prioritizes the use of
+         * separating sets (sepsets) information to determine the orientation of colliders during inference.
          */
         SEPSETS,
 
         /**
-         * Represents the Conservative collider style in the graph learning process.
-         * This style is more cautious and may result in fewer edges being inferred.
+         * Represents the Conservative collider style in the graph learning process. This style is more cautious and may
+         * result in fewer edges being inferred.
          */
         CONSERVATIVE,
 
         /**
-         * Represents the Max_P collider style in the graph learning process.
-         * This style prioritizes maximizing the number of edges inferred.
+         * Represents the Max_P collider style in the graph learning process. This style prioritizes maximizing the
+         * number of edges inferred.
          */
         MAX_P
     }
 
-    public enum SupersetScore {KENDALL, SPEARMAN}
+    /**
+     * The SupersetScore enum represents statistical ranking correlation coefficients that can be used to assess the
+     * relationship between two rankings.
+     * <p>
+     * This enum can be utilized in various data analysis contexts where correlation between ranked data is required.
+     */
+    public enum SupersetScore {
+
+        /**
+         * Represents Kendall's tau coefficient, a measure of ordinal association between two ranked variables. It
+         * evaluates the strength and direction of association, focusing on concordant and discordant pairs of
+         * rankings.
+         */
+        KENDALL,
+
+        /**
+         * Represents Spearman's rank-order correlation coefficient, a non-parametric measure of the monotonic
+         * relationship between two ranked variables. Spearman's coefficient assesses how well the relationship between
+         * two variables can be described using a monotonic function, making it suitable for ordinal data or data that
+         * do not meet the assumptions of parametric correlation methods.
+         */
+        SPEARMAN
+    }
 
     // ---- Covariance policy ---
 
     /**
-     * The CovarianceMode enum represents different modes for handling covariance
-     * calculations during graph learning processes.
+     * The CovarianceMode enum represents different modes for handling covariance calculations during graph learning
+     * processes.
      */
     public enum CovarianceMode {
 
         /**
-         * Represents the automatic mode for covariance calculations.
-         * This mode automatically determines the appropriate covariance calculation
-         * based on the data characteristics.
+         * Represents the automatic mode for covariance calculations. This mode automatically determines the appropriate
+         * covariance calculation based on the data characteristics.
          */
         AUTO,
 
         /**
-         * Represents the full covariance mode.
-         * This mode calculates the full covariance matrix, including all pairwise
+         * Represents the full covariance mode. This mode calculates the full covariance matrix, including all pairwise
          * covariances between variables.
          */
         FULL,
 
         /**
-         * Represents the diagonal covariance mode.
-         * This mode calculates only the diagonal elements of the covariance matrix,
-         * ignoring off-diagonal covariances.
+         * Represents the diagonal covariance mode. This mode calculates only the diagonal elements of the covariance
+         * matrix, ignoring off-diagonal covariances.
          */
         DIAGONAL
     }

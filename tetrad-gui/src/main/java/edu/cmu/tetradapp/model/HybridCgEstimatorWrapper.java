@@ -80,13 +80,34 @@ public class HybridCgEstimatorWrapper implements SessionModel {
 
     // ============================== CONSTRUCTORS ==============================
 
-    /** Convenience: build from a Simulation like Bayes does. */
+    /**
+     * Constructs a HybridCgEstimatorWrapper instance initialized with a simulation,
+     * a HybridCgPmWrapper, and various estimation-related parameters.
+     *
+     * @param simulation the simulation object to be used in the estimation process
+     * @param pmWrapper the HybridCgPmWrapper providing the structure and functionality
+     *                  for parameter estimation
+     * @param parameters the parameters object containing configuration and constraint
+     *                   settings for the estimation
+     */
     public HybridCgEstimatorWrapper(Simulation simulation,
                                     HybridCgPmWrapper pmWrapper,
                                     Parameters parameters) {
         this(new DataWrapper(simulation, parameters), pmWrapper, parameters);
     }
 
+    /**
+     * Constructs a HybridCgEstimatorWrapper instance initialized with the specified data wrapper,
+     * parameter model wrapper, and estimation parameters.
+     *
+     * @param dataWrapper the data wrapper containing the dataset(s) for estimation; must not be null
+     * @param pmWrapper the parameter model wrapper (HybridCgPmWrapper) providing the structure
+     *                  required for the estimation; must not be null
+     * @param parameters the estimation parameters; if null, default parameters will be used
+     * @throws NullPointerException if dataWrapper or pmWrapper is null
+     * @throws IllegalArgumentException if the data wrapper contains an empty list
+     *                                  or non-DataSet entries
+     */
     public HybridCgEstimatorWrapper(DataWrapper dataWrapper,
                                     HybridCgPmWrapper pmWrapper,
                                     Parameters parameters) {
@@ -122,7 +143,16 @@ public class HybridCgEstimatorWrapper implements SessionModel {
         log(this.hybridIm);
     }
 
-    /** Alternate ctor: if starting from an IM wrapper, delegate to a PM wrapper for structure. */
+    /**
+     * Constructs a HybridCgEstimatorWrapper instance using the provided data wrapper,
+     * hybrid independence model wrapper, and estimation parameters.
+     *
+     * @param dataWrapper the data wrapper containing the dataset for estimation; must not be null
+     * @param imWrapper the HybridCgImWrapper representing the independence model for estimation; must not be null
+     * @param parameters the estimation parameters; if null, default parameters will be used
+     * @throws NullPointerException if dataWrapper or imWrapper is null
+     * @throws IllegalArgumentException if the data wrapper contains an empty list or non-DataSet entries
+     */
     public HybridCgEstimatorWrapper(DataWrapper dataWrapper,
                                     HybridCgImWrapper imWrapper,
                                     Parameters parameters) {
@@ -131,7 +161,12 @@ public class HybridCgEstimatorWrapper implements SessionModel {
 
     // ================================ API ====================================
 
-    // Kept for back-compat if something expects this symbol; no-op proxy to existing pattern.
+    /**
+     * Provides a serializable instance of the PcRunner class.
+     *
+     * @return A PcRunner instance that supports serialization for use in
+     *         operations requiring a serializable object.
+     */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
@@ -176,10 +211,24 @@ public class HybridCgEstimatorWrapper implements SessionModel {
         return copy;
     }
 
+    /**
+     * Retrieves the estimated Hybrid Conditional Gaussian Independence Model (HybridCgIm)
+     * that is associated with this instance.
+     *
+     * @return the estimated HybridCgIm for the current instance
+     */
     public HybridCgIm getEstimatedHybridCgIm() {
         return this.hybridIm;
     }
 
+    /**
+     * Sets the specified Hybrid Conditional Gaussian Independence Model (HybridCgIm)
+     * for this instance. This method clears existing HybridCgIm models,
+     * adds the provided model, and updates related internal parameters.
+     *
+     * @param im the HybridCgIm model to be set; must not be null
+     * @throws NullPointerException if the provided HybridCgIm model is null
+     */
     public void setHybridCgIm(HybridCgIm im) {
         this.hybridIms.clear();
         this.hybridIms.add(Objects.requireNonNull(im));
@@ -188,41 +237,102 @@ public class HybridCgEstimatorWrapper implements SessionModel {
         this.modelIndex = 0;
     }
 
+    /**
+     * Retrieves the DataSet associated with this instance.
+     *
+     * @return the DataSet currently associated with this instance
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * Retrieves the graph associated with the current instance.
+     * If the hybrid independence model (HybridCgIm) is not null,
+     * this method returns the graph from its parameter model (HybridCgPm).
+     * Otherwise, it returns null.
+     *
+     * @return the graph from the parameter model if the HybridCgIm is not null;
+     *         null otherwise
+     */
     public Graph getGraph() {
         return this.hybridIm != null ? this.hybridIm.getPm().getGraph() : null;
     }
 
+    /**
+     * Retrieves the name associated with this instance.
+     *
+     * @return the name associated with this instance as a String
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Sets the name associated with this instance.
+     * If the provided name is null or blank, it defaults to "Hybrid CG Estimator".
+     *
+     * @param name the name of the session model.
+     */
     public void setName(String name) {
         this.name = (name == null || name.isBlank()) ? "Hybrid CG Estimator" : name;
     }
 
+    /**
+     * Retrieves the number of models associated with this instance.
+     *
+     * @return the number of models as an integer
+     */
     public int getNumModels() {
         return this.numModels;
     }
 
+    /**
+     * Sets the number of models associated with this instance.
+     * If the provided number of models is less than 1, it defaults to 1.
+     *
+     * @param numModels
+     */
     public void setNumModels(int numModels) {
         this.numModels = numModels;
     }
 
+    /**
+     * Retrieves the index of the current model.
+     *
+     * @return the index of the current model as an integer
+     */
     public int getModelIndex() {
         return this.modelIndex;
     }
 
-    // In HybridCgEstimatorWrapper
+    /**
+     * Retrieves the data wrapper associated with this instance.
+     *
+     * @return the data wrapper associated with this instance
+     */
     public DataWrapper getDataWrapper() { return this.dataWrapper; }
+
+    /**
+     * Retrieves the parameter model wrapper associated with this instance.
+     *
+     * @return the parameter model wrapper associated with this instance
+     */
     public HybridCgPmWrapper getPmWrapper() { return this.pmWrapper; }
+
+    /**
+     * Retrieves the parameters associated with this instance.
+     *
+     * @return the parameters associated with this instance
+     */
     public Parameters getParameters()   { return this.parameters; }
 
-    // ============================= SERIALIZATION =============================
-
+    /**
+     * Sets the index of the current model.
+     * If the provided index is out of bounds, it throws an IndexOutOfBoundsException.
+     *
+     * @param modelIndex the index of the current model
+     */
     public void setModelIndex(int modelIndex) {
         if (modelIndex < 0 || modelIndex >= hybridIms.size()) {
             throw new IndexOutOfBoundsException("modelIndex=" + modelIndex + " outside 0.." + (hybridIms.size() - 1));

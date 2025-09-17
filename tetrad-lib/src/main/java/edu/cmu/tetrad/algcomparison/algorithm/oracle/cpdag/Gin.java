@@ -61,8 +61,16 @@ public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Represents an {@link IndependenceWrapper} instance used within the Gin class.
+     * This field is utilized to manage independence testing in the algorithm.
+     */
     private IndependenceWrapper test;
 
+    /**
+     * Default constructor for the Gin class.
+     * This constructor is used for reflection purposes and should not be removed.
+     */
     public Gin() {
         // Used in reflection; do not delete.
     }

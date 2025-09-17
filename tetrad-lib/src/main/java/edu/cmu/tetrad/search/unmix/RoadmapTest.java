@@ -58,6 +58,12 @@ import java.util.stream.Collectors;
 public class RoadmapTest {
 
     /**
+     * Constructor for the RoadmapTest class.
+     * This is the default no-argument constructor.
+     */
+    public  RoadmapTest() {}
+
+    /**
      * Orientation accuracy only among edges that are directed in BOTH truth and estimate.
      */
     private static double arrowAccBothOriented(Graph[] truth, List<Graph> found) {
@@ -368,6 +374,27 @@ public class RoadmapTest {
         return q3 - q1;
     }
 
+    /**
+     * This method performs a controlled evaluation process for the "Phase 1" experiments involving
+     * statistical clustering and graph learning methods. Various scenarios are tested, participating
+     * in a sweep across different configurations and noise profiles.
+     *
+     * <p>The method executes the following steps:</p>
+     * <ul>
+     *   <li>Constructs different scenarios including parameter-based configurations,
+     *       small topological flips, and large topological flips.</li>
+     *   <li>Configures and runs the {@code EmUnmix} algorithm with fixed and adaptive cluster settings.</li>
+     *   <li>Computes external per-cluster graphs using various algorithms such as BOSS and PC-Max.</li>
+     *   <li>Calculates metrics like Adjusted Rand Index (ARI) for clustering and graph-level metrics
+     *       including adjacency F1, arrow accuracy, and Structural Hamming Distance (SHD).</li>
+     *   <li>Performs a raw-data baseline analysis using the Gaussian Mixture EM algorithm for comparison.</li>
+     * </ul>
+     *
+     * <p>Results from the experiments, including metrics and timings, are printed to the standard output.</p>
+     *
+     * <p>This method is used as part of the {@code RoadmapTest} class for assessing the performance of
+     * clustering and graph-learning algorithms under different simulated conditions.</p>
+     */
     @Test
     public void phase1_controlledSweep() {
         int p = 12;
@@ -494,6 +521,35 @@ public class RoadmapTest {
         }
     }
 
+    /**
+     * Evaluates the robustness of clustering algorithms under different simulated conditions
+     * by sweeping over multiple parameters and configurations. The method simulates scenarios
+     * with varying dataset sizes, imbalances, and signal scales, then analyzes clustering performance.
+     *
+     * <p>The robustness evaluation is carried out as follows:</p>
+     * <ul>
+     *   <li>Defines a set of total data sizes ({@code nTotals}) and calculates sample sizes for two groups
+     *       based on specified imbalances ({@code imbalances}).</li>
+     *   <li>Sweeps through different signal scales ({@code signalScales}) representing the level of
+     *       separation between clusters.</li>
+     *   <li>Repeats the experiment multiple times ({@code repeats}) with different random seeds.</li>
+     *   <li>For each configuration:
+     *     <ol>
+     *       <li>Constructs a synthetic scenario using the {@code Scenario.smallTopoFlipParamScaled()} method
+     *           with specified parameters, such as flips, signal scale, and noise type.</li>
+     *       <li>Configures the {@code EmUnmix} clustering algorithm with specific settings such as cluster count
+     *           ({@code K}), parent superset usage, scoring type, and covariance type.</li>
+     *       <li>Runs the clustering algorithm and evaluates its performance using Adjusted Rand Index (ARI).</li>
+     *       <li>Collects the median ARI and interquartile range (IQR) for each configuration.</li>
+     *     </ol>
+     *   </li>
+     *   <li>Outputs the median ARI and IQR for each combination of data size, imbalance, and signal scale.</li>
+     * </ul>
+     *
+     * <p>This method is useful for understanding the stability and robustness of clustering algorithms
+     * across varying conditions and provides insights into their sensitivity to dataset properties,
+     * random seed initialization, and signal strength.</p>
+     */
     @Test
     public void phase2_robustness() {
         int p = 12;
@@ -537,6 +593,41 @@ public class RoadmapTest {
         }
     }
 
+    /**
+     * Phase 3 of a study using semi-synthetic data to evaluate causal structure learning
+     * methods. This test simulates data under two distinct regimes (A and B) based
+     * on directed acyclic graph (DAG) structures and evaluates the reconstruction
+     * accuracy of the clusters learned using mixture model algorithms and causal graph
+     * discovery techniques.
+     *
+     * <p>The process is as follows:</p>
+     * <ol>
+     *   <li>Generate a backbone DAG ({@code gBackbone}) with specified nodes and edges.</li>
+     *   <li>Simulate data ({@code Dreal}) from the backbone DAG using Laplace-distributed errors.</li>
+     *   <li>Create two modified regimes:
+     *     <ul>
+     *       <li><b>Regime A:</b> retains the original backbone structure.</li>
+     *       <li><b>Regime B:</b> modifies the DAG by flipping directions of a subset of edges and
+     *           scaling coefficients as well as error variances.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Simulate datasets ({@code dA} and {@code dB}) for each regime and concatenate them into a
+     *       unified dataset with associated labels.</li>
+     *   <li>Shuffle the combined dataset while retaining the labels.</li>
+     *   <li>Use an Expectation-Maximization-based Gaussian Mixture Model (EM-GMM) to
+     *       learn cluster assignments.</li>
+     *   <li>Perform causal graph learning separately for each discovered cluster using
+     *       either a SEM-BIC score with permutation-based search or an alternative
+     *       PC-Max approach.</li>
+     *   <li>Evaluate the reconstructed DAGs for each cluster against the ground-truth
+     *       DAGs using various metrics such as Adjusted Rand Index (ARI), adjusted F1,
+     *       arrow F1, and Structural Hamming Distance (SHD).</li>
+     * </ol>
+     *
+     * <p>This test is designed to assess the ability of a mixture model approach combined
+     * with graph discovery methods to recover cluster-specific causal structures under
+     * the semi-synthetic data setup.</p>
+     */
     @Test
     public void phase3_semisynthetic() {
         // Use a backbone covariance from a single SEM sample, then inject shifts.
@@ -627,52 +718,7 @@ public class RoadmapTest {
                 adjustedRandIndex(mix.labels, rEM.labels), gmEM.adjF1, gmEM.arrowF1, gmEM.shd);
     }
 
-    //    @Test
-    public EmUnmix.Config makeDefaultEc(DataSet data, int K) {
-        // For residual-EM (your EmUnmix pipeline)
-        EmUnmix.Config ec = new EmUnmix.Config();
-        ec.K = 2;                               // or leave unset and use selectK (below)
-        ec.useParentSuperset = true;            // if you want the superset trick
-        ec.supersetCfg.topM = 10;
-        ec.supersetCfg.scoreType = ParentSupersetBuilder.ScoreType.KENDALL;
-        ec.robustScaleResiduals = true;
-
-        // Covariance: FULL if safe, else DIAGONAL
-        int p = data.getNumColumns();
-        int n = data.getNumRows();
-        boolean okFull = (n / Math.max(1, K)) >= (p + 10);
-        ec.covType = okFull ? GaussianMixtureEM.CovarianceType.FULL
-                : GaussianMixtureEM.CovarianceType.DIAGONAL;
-
-        // Stable EM
-        ec.kmeansRestarts = 20;                 // robust init
-        ec.emMaxIters = 300;
-        ec.covRidgeRel = 1e-3;                  // well-conditioned Î£
-        ec.covShrinkage = 0.10;                 // mild shrinkage
-        ec.annealSteps = 15;                   // tempered EM helps in tougher cases
-        ec.annealStartT = 0.8;
-
-        return ec;
-    }
-
     // ---------- Basic helpers reused from prior tests ----------
-
-    public void defaultsRawXEM(DataSet data) {
-        GaussianMixtureEM.Config gx = new GaussianMixtureEM.Config();
-        gx.K = 2;
-        int p = data.getNumColumns();
-        int n = data.getNumRows();
-        boolean okFull = (n / Math.max(1, gx.K)) >= (p + 10);
-        gx.covType = okFull ? GaussianMixtureEM.CovarianceType.FULL
-                : GaussianMixtureEM.CovarianceType.DIAGONAL;
-        gx.kmeansRestarts = 20;
-        gx.maxIters = 300;
-        gx.covRidgeRel = 1e-3;
-        gx.covShrinkage = 0.10;
-        gx.annealSteps = 15;
-        gx.annealStartT = 0.8;
-        // remember to z-score columns before fit(X, gx)
-    }
 
     private enum NoiseFamily {GAUSSIAN, LAPLACE}
 

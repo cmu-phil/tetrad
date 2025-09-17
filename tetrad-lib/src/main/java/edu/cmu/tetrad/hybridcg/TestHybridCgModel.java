@@ -42,6 +42,14 @@ import java.util.*;
 public class TestHybridCgModel {
 
     /**
+     * Default constructor for the TestHybridCgModel class.
+     * This constructor initializes an instance of the TestHybridCgModel class.
+     */
+    public TestHybridCgModel() {
+
+    }
+
+    /**
      * Generates a random HybridCgIm model.
      *
      * @param pm the HybridCgPm

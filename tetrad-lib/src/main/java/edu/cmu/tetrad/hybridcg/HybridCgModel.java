@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.hybridcg;
 
@@ -47,46 +47,69 @@ import java.util.*;
 public final class HybridCgModel {
 
     /**
-     * The HybridCgPm class represents a structural model for hybrid Bayesian networks,
-     * which may include both discrete and continuous variables. It provides various
-     * methods to manage the graph structure, nodes, discrete and continuous parent
-     * relationships, and discretize continuous values based on predefined cutpoints.
-     * The class is also responsible for indexing and generating the local tables
-     * needed for conditional probability computations across mixed data types.
+     * The HybridCgPm class represents a structural model for hybrid Bayesian networks, which may include both discrete
+     * and continuous variables. It provides various methods to manage the graph structure, nodes, discrete and
+     * continuous parent relationships, and discretize continuous values based on predefined cutpoints. The class is
+     * also responsible for indexing and generating the local tables needed for conditional probability computations
+     * across mixed data types.
      */
     public static final class HybridCgPm implements Pm, Serializable {
         @Serial
         private static final long serialVersionUID = 1L;
 
+        /**
+         * Represents a structural model for hybrid Bayesian networks, which may include both discrete and continuous
+         * variables.
+         */
         private final Graph dag;
-        private final Node[] nodes;                // fixed node order
-
-        // Variable typing and categories (for discrete variables only)
+        /**
+         * An array representing the nodes in the hybrid causal graph probabilistic model. Each element corresponds to a
+         * specific node in the directed acyclic graph (DAG), reflecting the structure and dependencies of the model.
+         * <p>
+         * This field is initialized during the construction of the model and contains the ordered representation of
+         * nodes used throughout various computations and methods within the model.
+         * <p>
+         * The nodes can be either discrete or continuous, as defined by the model's configuration.
+         */
+        private final Node[] nodes;
+        /**
+         * Variable typing and categories (for discrete variables only)
+         */
         private final boolean[] isDiscrete;
+        /**
+         * Represents the categories associated with each node in the hybrid causal probabilistic model. This array
+         * defines the categorical values for discrete nodes and remains null for continuous nodes.
+         * <p>
+         * For a discrete node, the list size corresponds to the node's cardinality (number of categories), and each
+         * entry in the list denotes a specific category label. If a node is continuous,
+         */
         private final List<String>[] categories;   // null for continuous; else size = cardinality
-
-        // Parent lists split by type, pointing to indices into nodes[]
+        /**
+         * Parent lists split by type, pointing to indices into nodes[]
+         */
         private final int[][] discParents;
+        /**
+         * Parent lists split by type, pointing to indices into nodes[]
+         */
         private final int[][] contParents;
-
-        // For DISCRETE children ONLY: if a continuous parent exists, we discretize it.
-        // Store per (child, contParentIndexInOrder) the monotonically increasing cutpoints.
-        // bins = cutpoints.length + 1
+        /**
+         * For DISCRETE children ONLY: if a continuous parent exists, we discretize it. Store per (child,
+         * contParentIndexInOrder) the monotonically increasing cutpoints. bins = cutpoints.length + 1
+         */
         private final double[][][] contParentCutpointsForDiscreteChild;
 
         /**
-         * Constructs a HybridCgPm instance based on the provided directed acyclic graph (DAG),
-         * node ordering, discrete flags for nodes, and a mapping of node categories.
+         * Constructs a HybridCgPm instance based on the provided directed acyclic graph (DAG), node ordering, discrete
+         * flags for nodes, and a mapping of node categories.
+         * <p>
+         * The HybridCgPm represents a probabilistic model that supports a mix of continuous and discrete variables with
+         * parent dependencies. This constructor initializes the model structure and categorization for nodes based on
+         * the supplied inputs, ensuring the specified order and discrete/continuous classifications are accounted for.
          *
-         * The HybridCgPm represents a probabilistic model that supports a mix of continuous
-         * and discrete variables with parent dependencies. This constructor initializes the
-         * model structure and categorization for nodes based on the supplied inputs, ensuring
-         * the specified order and discrete/continuous classifications are accounted for.
-         *
-         * @param dag            the directed acyclic graph representing dependencies; must not be null
-         * @param nodeOrder      the ordered list of nodes, defining the sequence used; must not be null
-         * @param discreteFlags  a map indicating whether each node is discrete (true) or continuous (false)
-         * @param categoryMap    a map providing a list of category strings for discrete nodes
+         * @param dag           the directed acyclic graph representing dependencies; must not be null
+         * @param nodeOrder     the ordered list of nodes, defining the sequence used; must not be null
+         * @param discreteFlags a map indicating whether each node is discrete (true) or continuous (false)
+         * @param categoryMap   a map providing a list of category strings for discrete nodes
          */
         public HybridCgPm(Graph dag, List<Node> nodeOrder, Map<Node, Boolean> discreteFlags,
                           Map<Node, List<String>> categoryMap) {
@@ -330,8 +353,9 @@ public final class HybridCgModel {
 
         /**
          * Populate cutpoints for each continuous parent of a DISCRETE child using equal-frequency binning.
-         * @param child discrete child
-         * @param data  data set that contains all variables by name
+         *
+         * @param child         discrete child
+         * @param data          data set that contains all variables by name
          * @param binsPerParent number of bins to use for each continuous parent (>=2 recommended)
          */
         public void autoCutpointsForDiscreteChild(Node child, DataSet data, int binsPerParent) {
@@ -406,9 +430,10 @@ public final class HybridCgModel {
          *       parents do not add dimensions for continuous children).</li>
          * </ul>
          *
-         * @param nodeIndex index of the child (in this PM's node order)
+         * @param nodeIndex        index of the child (in this PM's node order)
          * @param discParentStates length must equal getDiscreteParents(nodeIndex).length; each entry in [0, card-1]
-         * @param contParentValues raw values for the child's continuous parents; for a DISCRETE child length must equal getContinuousParents(nodeIndex).length; ignored for CONTINUOUS child
+         * @param contParentValues raw values for the child's continuous parents; for a DISCRETE child length must equal
+         *                         getContinuousParents(nodeIndex).length; ignored for CONTINUOUS child
          * @return row index in [0, getNumRows(nodeIndex)-1]
          */
         public int rowIndexForCase(int nodeIndex, int[] discParentStates, double[] contParentValues) {
@@ -458,10 +483,10 @@ public final class HybridCgModel {
         }
 
         /**
-         * Convenience overload when the child has NO discrete parents.
-         * Useful for tests like: pm.rowIndexForCase(yIdx, new double[]{ xVal }).
+         * Convenience overload when the child has NO discrete parents. Useful for tests like: pm.rowIndexForCase(yIdx,
+         * new double[]{ xVal }).
          *
-         * @param nodeIndex child index
+         * @param nodeIndex        child index
          * @param contParentValues raw values for the child's continuous parents
          */
         public int rowIndexForCase(int nodeIndex, double[] contParentValues) {
@@ -472,9 +497,9 @@ public final class HybridCgModel {
         }
 
         /**
-         * Convenience overload that reads parent states/values from a DataSet row.
-         * Child's discrete-parent states are taken from integer columns; continuous-parent
-         * values are taken from double columns and binned (if the child is discrete).
+         * Convenience overload that reads parent states/values from a DataSet row. Child's discrete-parent states are
+         * taken from integer columns; continuous-parent values are taken from double columns and binned (if the child
+         * is discrete).
          *
          * @param nodeIndex child index
          * @param data      dataset containing all variables (by name)
@@ -535,12 +560,28 @@ public final class HybridCgModel {
     public static final class HybridCgIm implements Serializable {
         @Serial
         private static final long serialVersionUID = 1L;
+        /**
+         * A probabilistic model used for hybrid causal graph inference. This field represents an instance of
+         * {@link HybridCgPm}, providing the necessary structure and parameters to define the hybrid causal graph
+         * model.
+         * <p>
+         * The {@code pm} is immutable, ensuring the consistency and integrity of the model throughout its usage in the
+         * associated {@link HybridCgIm} instance.
+         * <p>
+         * Typical operations leveraging this field include accessing the model’s parameters, retrieving conditional
+         * probabilities, and determining node dependencies within the causal graph.
+         * <p>
+         * This field encapsulates all the key information required to perform probabilistic reasoning and to simulate
+         * observations for both discrete and continuous variables in the hybrid causal structure.
+         */
         private final HybridCgPm pm;
-
-        // Continuous child: for node y, params[y] is rows x (m+2) where m = #cont parents; cols = [intercept, coeffs..., variance]
+        /**
+         * Continuous child: for node y, params[y] is rows x (m+2) where m = #cont parents; cols = [intercept, coeffs..., variance]
+         */
         private final double[][][] contParams; // null for discrete children
-
-        // Discrete child: probs[y] is rows x card(y)
+        /**
+         * Discrete child: probs[y] is rows x card(y)
+         */
         private final double[][][] discProbs;   // null for continuous children
 
         /**
@@ -612,11 +653,11 @@ public final class HybridCgModel {
         /**
          * Computes the row index for a given data case in the hybrid causal graph model.
          *
-         * @param pm      the probabilistic model
+         * @param pm        the probabilistic model
          * @param nodeIndex the index of the node
-         * @param data    the dataset
-         * @param row     the row index in the dataset
-         * @param colIndex the column indices for the parents
+         * @param data      the dataset
+         * @param row       the row index in the dataset
+         * @param colIndex  the column indices for the parents
          * @return the row index for the data case
          */
         public static int rowIndexForCase(HybridCgPm pm, int nodeIndex, DataSet data, int row, int[] colIndex) {
@@ -716,8 +757,8 @@ public final class HybridCgModel {
         /**
          * Retrieves the coefficient value for a continuous child node.
          *
-         * @param nodeIndex           the index of the continuous child node
-         * @param rowIndex            the row index in the local table
+         * @param nodeIndex            the index of the continuous child node
+         * @param rowIndex             the row index in the local table
          * @param contParentOrderIndex the index of the continuous parent
          * @return the coefficient value
          */
@@ -728,10 +769,10 @@ public final class HybridCgModel {
         /**
          * Sets the coefficient value for a continuous child node.
          *
-         * @param nodeIndex           the index of the continuous child node
-         * @param rowIndex            the row index in the local table
+         * @param nodeIndex            the index of the continuous child node
+         * @param rowIndex             the row index in the local table
          * @param contParentOrderIndex the index of the continuous parent
-         * @param v                   the coefficient value to set
+         * @param v                    the coefficient value to set
          */
         public void setCoefficient(int nodeIndex, int rowIndex, int contParentOrderIndex, double v) {
             contParams[nodeIndex][rowIndex][1 + contParentOrderIndex] = v;

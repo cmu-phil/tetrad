@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.graph;
 
@@ -31,8 +31,8 @@ import java.util.regex.Pattern;
  * <p>
  * Node naming convention: - Base (lag 0) is "X" - Lagged versions are "X:1", "X:2", ...
  * <p>
- * Examples: add X:1 -> Y  â also add X:2 -> Y:1, X:3 -> Y:2, ... if nodes exist remove Z:2 --- W:1  â also remove Z:1
- * --- W, Z:3 --- W:2, ...
+ * Examples: add X:1 -> Y  â also add X:2 -> Y:1, X:3 -> Y:2, ... if nodes exist remove Z:2 --- W:1  â also remove
+ * Z:1 --- W, Z:3 --- W:2, ...
  * <p>
  * Only addEdge / removeEdge are overridden; everything else is inherited from EdgeListGraph.
  */
@@ -41,23 +41,48 @@ public class SvarEdgeListGraph extends EdgeListGraph {
     /**
      * Prevent recursive mirroring during internal add/remove operations.
      */
-    private static final ThreadLocal<Boolean> IN_REPLICATION =
-            ThreadLocal.withInitial(() -> Boolean.FALSE);
+    private static final ThreadLocal<Boolean> IN_REPLICATION = ThreadLocal.withInitial(() -> Boolean.FALSE);
+    /**
+     * A regex pattern used to identify and parse strings representing lagged relationships.
+     * <p>
+     * The pattern matches strings of the format `base:lag`, where: - `base` represents the base name of an element. It
+     * is optional and will be captured if present. - `lag` represents an optional integer that follows a colon (`:`).
+     * It will also be captured if present.
+     * <p>
+     * Examples of valid matches include "X:5", "Y", or ":3", where parts before or after the colon are optional. This
+     * pattern is typically used to parse or interpret graph components that involve lagged relationships.
+     */
     private static final Pattern LAG_PATTERN = Pattern.compile("^(.*?)(?::(\\d+))?$");
 
+    /**
+     * Default constructor for the SvarEdgeListGraph class.
+     * <p>
+     * Constructs a new SvarEdgeListGraph instance, initializing it as an empty graph by invoking the no-argument
+     * constructor of the superclass EdgeListGraph. This serves as the basic initialization for creating a graph
+     * structure with behavior extended to include SVAR-specific functionality.
+     */
     public SvarEdgeListGraph() {
         super();
     }
 
     /**
-     * Copy constructor: builds an EdgeListGraph copy first, then augments with SVAR behavior.
+     * Constructs a SvarEdgeListGraph using the given graph as the underlying data structure. This constructor
+     * initializes the graph with the provided {@code Graph} object and extends its behavior to include SVAR-specific
+     * functionality.
+     *
+     * @param g the {@code Graph} instance to be used as the base for the SvarEdgeListGraph. The input graph should be
+     *          properly initialized and non-null.
      */
     public SvarEdgeListGraph(Graph g) {
         super(g);
     }
 
     /**
-     * Construct from a collection of nodes.
+     * Constructs a new SvarEdgeListGraph instance using the provided list of nodes. The graph is initialized with the
+     * specified nodes while extending its behavior to include SVAR-specific functionality.
+     *
+     * @param nodes the list of {@code Node} objects to initialize the graph with. The list should represent a properly
+     *              initialized set of nodes to form the foundation of the graph structure. It must not be null.
      */
     public SvarEdgeListGraph(List<Node> nodes) {
         super(nodes);
@@ -74,6 +99,17 @@ public class SvarEdgeListGraph extends EdgeListGraph {
 
     /* ======================= Helpers ======================= */
 
+    /**
+     * Adds an edge to the graph, ensuring that during replication, mirrored edges are also added in accordance with the
+     * required behavior of the SvarEdgeListGraph.
+     *
+     * @param e the {@code Edge} to be added to the graph. This edge represents a connection between two nodes in the
+     *          graph. It must be non-null and properly initialized.
+     * @return {@code true} if the edge was successfully added to the graph or if residual mirrored edges were handled
+     * accordingly; {@code false} if the edge already existed in the graph or no structural changes were made.
+     * @throws IllegalArgumentException if the input edge {@code e} is invalid, does not conform to the expected format,
+     *                                  or required properties.
+     */
     @Override
     public synchronized boolean addEdge(Edge e) throws IllegalArgumentException {
         if (Boolean.TRUE.equals(IN_REPLICATION.get())) {
@@ -99,6 +135,15 @@ public class SvarEdgeListGraph extends EdgeListGraph {
         return changed;
     }
 
+    /**
+     * Removes the specified edge from the graph, along with any mirrored counterparts if applicable. The removal is
+     * synchronized to ensure thread safety. During replication, only the raw removal of the given edge is performed.
+     *
+     * @param e the {@code Edge} to be removed from the graph. This edge should represent a valid connection between
+     *          nodes and must not be null.
+     * @return {@code true} if the edge (and any mirrored counterparts) was successfully removed from the graph;
+     * {@code false} if the edge did not previously exist in the graph or if no structural changes were made.
+     */
     @Override
     public synchronized boolean removeEdge(Edge e) {
         if (Boolean.TRUE.equals(IN_REPLICATION.get())) {
@@ -182,7 +227,15 @@ public class SvarEdgeListGraph extends EdgeListGraph {
     }
 
     /**
-     * Simple record to hold parsed base name and lag.
+     * The Lagged record represents a pair of a base identifier and an associated lag value. It is effectively a simple
+     * way to encapsulate the relationship between a base string and an integer lag value for use within the larger
+     * functionality of the SvarEdgeListGraph.
+     * <p>
+     * This record is immutable and designed to serve as a lightweight, value-based structure for scenarios where
+     * identification and lag association are relevant.
+     * <p>
+     * Fields: - base: A string representing the base identifier or key. - lag: An integer representing the lag value
+     * associated with the base.
      */
     private record Lagged(String base, int lag) {
     }
