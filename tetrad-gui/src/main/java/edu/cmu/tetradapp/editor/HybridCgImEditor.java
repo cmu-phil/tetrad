@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -195,17 +196,39 @@ public final class HybridCgImEditor extends JPanel {
         revalidate(); repaint();
     }
 
+//    private void refreshActiveTable() {
+//        // Simple repaint of current card’s table after bulk operations
+//        if (currentY < 0) return;
+//        if (pm.isDiscrete(currentY)) {
+//            if (discScroll != null && discScroll.getViewport().getView() instanceof JComponent jc) {
+//                jc.repaint();
+//            }
+//        } else {
+//            if (contScroll != null && contScroll.getViewport().getView() instanceof JComponent jc) {
+//                jc.repaint();
+//            }
+//        }
+//    }
+
+    /** After bulk ops, refresh the active table more robustly (model event if possible). */
     private void refreshActiveTable() {
-        // Simple repaint of current card’s table after bulk operations
         if (currentY < 0) return;
-        if (pm.isDiscrete(currentY)) {
-            if (discScroll != null && discScroll.getViewport().getView() instanceof JComponent jc) {
-                jc.repaint();
+
+        JScrollPane sc = pm.isDiscrete(currentY) ? discScroll : contScroll;
+        if (sc == null) return;
+
+        Component view = sc.getViewport().getView();
+
+        if (view instanceof JTable jt) {
+            if (jt.getModel() instanceof AbstractTableModel atm) {
+                atm.fireTableDataChanged();  // tell the model to refresh
+                return;
             }
-        } else {
-            if (contScroll != null && contScroll.getViewport().getView() instanceof JComponent jc) {
-                jc.repaint();
-            }
+            jt.revalidate();
+            jt.repaint();
+        } else if (view instanceof JComponent jc) {
+            jc.revalidate();
+            jc.repaint();
         }
     }
 
@@ -256,15 +279,38 @@ public final class HybridCgImEditor extends JPanel {
     // ======================= Formatting helpers =======================
 
     /** Install 0.### renderer/editor on a JTable (or a JTable wrapped in our helper components). */
+//    private void installDoubleFormatting(JTable table) {
+//        if (table == null) return;
+//        table.setDefaultRenderer(Double.class, new DefaultTableCellRenderer() {
+//            @Override protected void setValue(Object value) {
+//                if (value instanceof Number n) setText(DF3.format(n.doubleValue()));
+//                else super.setValue(value);
+//            }
+//        });
+//        table.setDefaultEditor(Double.class, new DoubleCellEditor("0.###"));
+//        table.setRowHeight(22);
+//    }
+
+    /** Install 0.### renderer/editor on a JTable (works for Double.class and Number.class). */
     private void installDoubleFormatting(JTable table) {
         if (table == null) return;
-        table.setDefaultRenderer(Double.class, new DefaultTableCellRenderer() {
+
+        DefaultTableCellRenderer numRenderer = new DefaultTableCellRenderer() {
             @Override protected void setValue(Object value) {
                 if (value instanceof Number n) setText(DF3.format(n.doubleValue()));
                 else super.setValue(value);
             }
-        });
-        table.setDefaultEditor(Double.class, new DoubleCellEditor("0.###"));
+        };
+
+        // Apply to both Double and Number to be safe
+        table.setDefaultRenderer(Double.class, numRenderer);
+        table.setDefaultRenderer(Number.class, numRenderer);
+
+        // Reuse our formatted editor for both keys
+        TableCellEditor numEditor = new DoubleCellEditor("0.###");
+        table.setDefaultEditor(Double.class, numEditor);
+        table.setDefaultEditor(Number.class, numEditor);
+
         table.setRowHeight(22);
     }
 
