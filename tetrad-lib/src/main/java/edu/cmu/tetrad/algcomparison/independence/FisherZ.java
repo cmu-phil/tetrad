@@ -42,7 +42,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "Fisher Z Test",
+        name = "Fisher Z",
         command = "fisher-z-test",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
@@ -97,7 +97,7 @@ public class FisherZ implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Fisher Z test";
+        return "Fisher Z";
     }
 
     /**

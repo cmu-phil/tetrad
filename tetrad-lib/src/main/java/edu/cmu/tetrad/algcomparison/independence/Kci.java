@@ -40,7 +40,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "KCI-Test (Kernel Conditional Independence Test)",
+        name = "KCI (Kernel Conditional Independence Test)",
         command = "kci-test",
         dataType = DataType.Continuous
 )

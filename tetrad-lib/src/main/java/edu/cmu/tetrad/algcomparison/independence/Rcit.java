@@ -40,7 +40,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "RCIT-Test (Random Conditional Independence Test)",
+        name = "RCIT (Random Conditional Independence Test)",
         command = "rcit-test",
         dataType = DataType.Continuous
 )

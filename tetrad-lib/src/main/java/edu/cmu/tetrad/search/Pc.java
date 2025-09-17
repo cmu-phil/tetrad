@@ -95,6 +95,7 @@ public class Pc implements IGraphSearch {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+        test.setVerbose(verbose);
     }
 
     public void setTimeoutMs(long timeoutMs) {
