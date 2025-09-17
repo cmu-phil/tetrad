@@ -24,9 +24,17 @@ public final class HybridCgEstimatorEditor extends JPanel {
     private final JSpinner defLo = new JSpinner(new SpinnerNumberModel(-1.0, -1e6, 1e6, 0.1));
     private final JSpinner defHi = new JSpinner(new SpinnerNumberModel(1.0, -1e6, 1e6, 0.1));
 
-    public HybridCgEstimatorEditor(Parameters params,
-                                   DataWrapper dataWrapper,
-                                   HybridCgPmWrapper pmWrapper) {
+    // --- New convenience ctor: accept the wrapper directly
+    public HybridCgEstimatorEditor(HybridCgEstimatorWrapper wrapper) {
+        this(
+                wrapper.getDataWrapper(),
+                // Rebuild a PM wrapper from the same graph + params; category typing comes from node classes
+                new HybridCgPmWrapper(wrapper.getGraph(), wrapper.getParameters()),
+                wrapper.getParameters()
+        );
+    }
+
+    public HybridCgEstimatorEditor(DataWrapper dataWrapper, HybridCgPmWrapper pmWrapper, Parameters params) {
         this.params = (params == null) ? new Parameters() : params;
         setLayout(new BorderLayout(10,10));
         add(buildPanel(), BorderLayout.CENTER);
@@ -74,15 +82,22 @@ public final class HybridCgEstimatorEditor extends JPanel {
         JButton estimate = new JButton("Estimate");
         estimate.addActionListener(ev -> {
             try {
-                // Runs the same pipeline your wrapper uses in constructors
-                HybridCgEstimatorWrapper wrapper =
+                // Run the same pipeline your wrapper ctor uses
+                HybridCgEstimatorWrapper out =
                         new HybridCgEstimatorWrapper(dataWrapper, pmWrapper, params);
-                JOptionPane.showMessageDialog(this, "Estimated Hybrid CG IM for "
-                                                    + wrapper.getNumModels() + " dataset(s).", "Done",
-                        JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Estimated Hybrid CG IM for " + out.getNumModels() + " dataset(s).",
+                        "Done",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Estimation failed:\n" + ex.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Estimation failed:\n" + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
         p.add(estimate);

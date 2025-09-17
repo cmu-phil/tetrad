@@ -214,6 +214,10 @@ public class HybridCgEstimatorWrapper implements SessionModel {
         return this.modelIndex;
     }
 
+    // In HybridCgEstimatorWrapper
+    public DataWrapper getDataWrapper() { return this.dataWrapper; }
+    public Parameters getParameters()   { return this.parameters; }
+
     // ============================= SERIALIZATION =============================
 
     public void setModelIndex(int modelIndex) {

@@ -437,6 +437,14 @@ public final class HybridCgModel {
             while (b < cuts.length && v > cuts[b]) b++;
             return b; // 0..cuts.length
         }
+
+        public int[] getParents(int y) {
+            Node child = nodes[y];
+            List<Node> parents = dag.getParents(child);
+            return parents.stream()
+                    .mapToInt(this::indexOf)
+                    .toArray();
+        }
     }
 
     // ======== IM (numbers) ========

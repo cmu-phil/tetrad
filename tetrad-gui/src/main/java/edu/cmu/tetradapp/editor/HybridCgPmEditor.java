@@ -56,7 +56,7 @@ public final class HybridCgPmEditor extends JPanel {
         setLayout(new BorderLayout(10, 10));
         add(buildVariablesPanel(), BorderLayout.NORTH);
         add(buildCutpointPanel(dataOrNull), BorderLayout.CENTER);
-        add(buildFooter(), BorderLayout.SOUTH);
+//        add(buildFooter(), BorderLayout.SOUTH);
 
         // init from wrapper
         nameField.setText(pmWrapper.getName());
@@ -263,13 +263,13 @@ public final class HybridCgPmEditor extends JPanel {
         return outer;
     }
 
-    private JComponent buildFooter() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton done = new JButton("Done");
-        done.addActionListener(e -> SwingUtilities.getWindowAncestor(this).dispose());
-        p.add(done);
-        return p;
-    }
+//    private JComponent buildFooter() {
+//        JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER));
+//        JButton done = new JButton("Done");
+//        done.addActionListener(e -> SwingUtilities.getWindowAncestor(this).dispose());
+//        p.add(done);
+//        return p;
+//    }
 
     // ================= Helpers: selectors & tables =================
 
