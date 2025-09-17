@@ -226,7 +226,7 @@ public class SepsetFinder {
         }
 
         // Check if we found a valid separating set with a p-value above the alpha threshold
-        if (bestChoice != null && maxPValue > test.getAlpha()) {
+        if (bestChoice != null) {// && maxPValue > test.getAlpha()) {
             return combination(bestChoice, adj);
         }
 

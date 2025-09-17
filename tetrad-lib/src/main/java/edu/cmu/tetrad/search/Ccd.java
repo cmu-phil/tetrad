@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
+import edu.cmu.tetrad.search.utils.SepsetsMaxP;
 import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -63,12 +64,18 @@ public final class Ccd implements IGraphSearch {
      */
     private boolean applyR1;
     /**
-     * Indicates whether detailed logging or debugging information should be output during
-     * the execution of the CCD algorithm. When set to true, additional information regarding
-     * the algorithm's operations and decisions may be logged, which can be useful for debugging
-     * or understanding its behavior. Otherwise, minimal output is produced.
+     * Indicates whether detailed logging or debugging information should be output during the execution of the CCD
+     * algorithm. When set to true, additional information regarding the algorithm's operations and decisions may be
+     * logged, which can be useful for debugging or understanding its behavior. Otherwise, minimal output is produced.
      */
     private boolean verbose;
+    /**
+     * The maximum depth of conditional independence tests in the CCD algorithm. This value limits the number of
+     * variables that can be conditioned on during the search process. A smaller depth may speed up the algorithm but
+     * might reduce the accuracy of the resulting graph, while a larger depth allows for more thorough searches at a
+     * potential cost of increased computational time.
+     */
+    private int depth = -1;
 
     /**
      * Construct a CCD algorithm with the given independence test.
@@ -94,8 +101,6 @@ public final class Ccd implements IGraphSearch {
      * @return The CCD cyclic PAG for the data.
      */
     public Graph search() throws InterruptedException {
-        this.test.setVerbose(verbose);
-
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
         // Step A.
@@ -105,7 +110,8 @@ public final class Ccd implements IGraphSearch {
         Graph psi = fas.search();
         psi.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetProducer sepsets = new SepsetsSet(fas.getSepsets(), this.test);
+//        SepsetProducer sepsets = new SepsetsSet(fas.getSepsets(), this.test);
+        SepsetProducer sepsets = new SepsetsMaxP(psi, test, depth);
 
         stepB(psi, sepsets);
         stepC(psi, sepsets);
@@ -127,8 +133,7 @@ public final class Ccd implements IGraphSearch {
         List<Node> _nodes = test.getVariables();
 
         if (!nodes.equals(_nodes)) {
-            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" +
-                                                             "to the nodes of the existing test."));
+            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" + "to the nodes of the existing test."));
         }
 
         this.test = test;
@@ -202,16 +207,15 @@ public final class Ccd implements IGraphSearch {
                     // non-collider at b
                     psi.addUnderlineTriple(a, b, c);
                     if (verbose)
-                        TetradLogger.getInstance().log("StepB: underline (non-collider) " + a + "-" + b + "-" + c +
-                                                       " ; sepset(a,c)=" + S);
+                        TetradLogger.getInstance().log("StepB: underline (non-collider) " + a + "-" + b + "-" + c + " ; sepset(a,c)=" + S);
                 } else {
                     // collider at b: a -> b <- c
                     psi.removeEdge(a, b);
                     psi.removeEdge(c, b);
                     psi.addDirectedEdge(a, b);
                     psi.addDirectedEdge(c, b);
-                    if (verbose) TetradLogger.getInstance().log("StepB: collider " + a + "->" + b + "<-" + c +
-                                                                " ; sepset(a,c)=" + S);
+                    if (verbose)
+                        TetradLogger.getInstance().log("StepB: collider " + a + "->" + b + "<-" + c + " ; sepset(a,c)=" + S);
                 }
             }
         }
@@ -237,8 +241,7 @@ public final class Ccd implements IGraphSearch {
             List<Node> adjy = psi.getAdjacentNodes(y);
 
             for (Node node : adjx) {
-                if (psi.getEdge(node, x).getProximalEndpoint(x) == Endpoint.ARROW
-                    && psi.isUnderlineTriple(y, x, node)) {
+                if (psi.getEdge(node, x).getProximalEndpoint(x) == Endpoint.ARROW && psi.isUnderlineTriple(y, x, node)) {
                     continue EDGE;
                 }
             }
@@ -253,8 +256,7 @@ public final class Ccd implements IGraphSearch {
                 if (adjy.contains(a)) continue;
 
                 // Orientable...
-                if (!(psi.getEndpoint(y, x) == Endpoint.CIRCLE &&
-                      (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
+                if (!(psi.getEndpoint(y, x) == Endpoint.CIRCLE && (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
                     continue;
                 }
 
@@ -307,8 +309,7 @@ public final class Ccd implements IGraphSearch {
      * @param local      The map of local nodes.
      * @param b          The node to consider.
      */
-    private void doNodeStepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets,
-                             Map<Node, List<Node>> local, Node b) throws InterruptedException {
+    private void doNodeStepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets, Map<Node, List<Node>> local, Node b) throws InterruptedException {
         List<Node> adj = new ArrayList<>(psi.getAdjacentNodes(b));
 
         if (adj.size() < 2) {
@@ -556,6 +557,16 @@ public final class Ccd implements IGraphSearch {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+        test.setVerbose(verbose);
+    }
+
+    /**
+     * Sets the depth for the CCD algorithm.
+     *
+     * @param depth the maximum depth to be used when performing independence tests.
+     */
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 }
 

@@ -160,6 +160,7 @@ public final class Fci implements IGraphSearch {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+        test.setVerbose(verbose);
     }
 
     public void setStable(boolean stable) {

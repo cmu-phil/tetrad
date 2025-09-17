@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for KCI test.
+ * Wrapper for RCIT test.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -60,7 +60,7 @@ public class Rcit implements IndependenceWrapper {
     /**
      * {@inheritDoc}
      * <p>
-     * Returns a KCI test.
+     * Returns a RCIT test.
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {

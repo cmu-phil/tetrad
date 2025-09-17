@@ -41,6 +41,7 @@ import java.util.Set;
  */
 public class SepsetsMaxP implements SepsetProducer {
     private final IndependenceTest independenceTest;
+    private int depth = -1;
     private Graph graph;
     private boolean verbose;
     private IndependenceResult result;
@@ -54,6 +55,7 @@ public class SepsetsMaxP implements SepsetProducer {
      */
     public SepsetsMaxP(Graph graph, IndependenceTest independenceTest, int depth) {
         this.graph = graph;
+        this.depth = depth;
         this.independenceTest = independenceTest;
     }
 
