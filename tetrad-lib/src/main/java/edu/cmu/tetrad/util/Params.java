@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -1135,7 +1135,9 @@ public final class Params {
      * Constant <code>FDR_Q="cyclicCoefStyle"</code>
      */
     public static final String FDR_Q = "fdrQ";
-
+    public static final String GIN_BACKEND = "ginBackend";
+    public static final String GIN_PERMUTATIONS = "ginPermutations";
+    public static final String GIN_RIDGE = "ginRidge";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

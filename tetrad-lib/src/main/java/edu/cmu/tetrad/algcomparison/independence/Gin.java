@@ -66,9 +66,9 @@ public class Gin implements IndependenceWrapper {
 
         // --- Read parameters safely with sensible defaults ---
         double alpha = getDouble(parameters, Params.ALPHA, 0.05);
-        String backend = "dcor";//getString(parameters, Params.GIN_BACKEND, "dcor");
-        int permutations = 200;//getInt(parameters, Params.GIN_PERMUTATIONS, 0);
-        double ridge = 1e-8;//getDouble(parameters, Params.GIN_RIDGE, 1e-8);
+        String backend = getString(parameters, Params.GIN_BACKEND, "dcor");
+        int permutations = getInt(parameters, Params.GIN_PERMUTATIONS, 0);
+        double ridge = getDouble(parameters, Params.GIN_RIDGE, 1e-8);
         boolean verbose = getBoolean(parameters, Params.VERBOSE, false);
 
         // --- Construct test ---
@@ -106,9 +106,9 @@ public class Gin implements IndependenceWrapper {
         params.add(Params.SEED);
         params.add(Params.ALPHA);
         // Proposed GIN params (add to Params if not present yet):
-//        params.add(Params.GIN_BACKEND);      // "dcor" or "pearson"
-//        params.add(Params.GIN_PERMUTATIONS); // int
-//        params.add(Params.GIN_RIDGE);        // double
+        params.add(Params.GIN_BACKEND);      // "dcor" or "pearson"
+        params.add(Params.GIN_PERMUTATIONS); // int
+        params.add(Params.GIN_RIDGE);        // double
         // You can include Params.VERBOSE if you list it elsewhere for tests
         // params.add(Params.VERBOSE);
         return params;

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -140,6 +141,11 @@ public class IndTestGin implements IndependenceTest {
 
         lastP = p;
         boolean ind = p > alpha;
+
+        if (verbose) {
+            TetradLogger.getInstance().log(new IndependenceFact(x, y, cond) + " p = " + p);
+        }
+
         // Keep the 4th argument exactly as in your version (alpha - p) to preserve downstream behavior.
         return new IndependenceResult(new IndependenceFact(x, y, cond), ind, p, alpha - p);
     }
