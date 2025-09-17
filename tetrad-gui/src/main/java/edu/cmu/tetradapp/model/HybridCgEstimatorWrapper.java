@@ -70,6 +70,7 @@ public class HybridCgEstimatorWrapper implements SessionModel {
     private final Parameters parameters;
 
     private final List<HybridCgIm> hybridIms = new ArrayList<>();
+    private final HybridCgPmWrapper pmWrapper;
     private HybridCgIm hybridIm;
     private DataSet dataSet;
 
@@ -93,6 +94,7 @@ public class HybridCgEstimatorWrapper implements SessionModel {
         if (pmWrapper == null) throw new NullPointerException("HybridCgPmWrapper must not be null.");
 
         this.dataWrapper = dataWrapper;
+        this.pmWrapper = pmWrapper;
         this.parameters = (parameters == null) ? new Parameters() : parameters;
 
         DataModelList dml = dataWrapper.getDataModelList();
@@ -216,6 +218,7 @@ public class HybridCgEstimatorWrapper implements SessionModel {
 
     // In HybridCgEstimatorWrapper
     public DataWrapper getDataWrapper() { return this.dataWrapper; }
+    public HybridCgPmWrapper getPmWrapper() { return this.pmWrapper; }
     public Parameters getParameters()   { return this.parameters; }
 
     // ============================= SERIALIZATION =============================
