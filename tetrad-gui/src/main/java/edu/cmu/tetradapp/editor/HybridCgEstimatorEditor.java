@@ -211,20 +211,6 @@ public final class HybridCgEstimatorEditor extends JPanel {
         }
     }
 
-//    private void showPreview(HybridCgIm im) {
-//        // Replace the right-hand preview with a fresh HybridCgImEditor
-//        HybridCgImEditor editor = new HybridCgImEditor(im);
-//        // Bridge modelChanged events upward so callers only need to listen here.
-//        editor.addPropertyChangeListener("modelChanged",
-//                evt -> firePropertyChange("modelChanged", null, null));
-//
-//        currentPreview = editor;
-//        previewHost.removeAll();
-//        previewHost.add(editor, BorderLayout.CENTER);
-//        previewHost.revalidate();
-//        previewHost.repaint();
-//    }
-
     private void showPreview(HybridCgIm im) {
         HybridCgImEditor editor = new HybridCgImEditor(im);
         editor.addPropertyChangeListener("modelChanged",
