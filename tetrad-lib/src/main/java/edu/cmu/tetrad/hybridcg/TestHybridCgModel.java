@@ -36,8 +36,18 @@ import org.junit.Test;
 
 import java.util.*;
 
+/**
+ * Tests for HybridCgModel.
+ */
 public class TestHybridCgModel {
 
+    /**
+     * Generates a random HybridCgIm model.
+     *
+     * @param pm the HybridCgPm
+     * @param rng the random number generator
+     * @return the generated HybridCgIm model
+     */
     public static HybridCgModel.HybridCgIm randomIm(HybridCgModel.HybridCgPm pm, Random rng) {
         HybridCgModel.HybridCgIm im = new HybridCgModel.HybridCgIm(pm);
         int n = pm.getNodes().length;
@@ -72,6 +82,9 @@ public class TestHybridCgModel {
         return im;
     }
 
+    /**
+     * Tests the HybridCgModel with a random mixed node list.
+     */
     @Test
     public void test() {
 

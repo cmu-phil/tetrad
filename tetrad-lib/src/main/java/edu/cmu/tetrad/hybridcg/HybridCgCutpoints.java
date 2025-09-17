@@ -13,6 +13,9 @@ public final class HybridCgCutpoints {
 
     public enum Method { EQUAL_INTERVALS, EQUAL_FREQUENCY }
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
     private HybridCgCutpoints() {}
 
     /**

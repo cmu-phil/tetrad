@@ -9,9 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class HybridCgVars {
-    private HybridCgVars() {}
+    private HybridCgVars() {
+    }
 
-    /** Build data variables (ContinuousVariable / DiscreteVariable) from the PM’s schema. */
+    /**
+     * Build data variables (ContinuousVariable / DiscreteVariable) from the PM’s schema.
+     *
+     * @param pm the HybridCgPm
+     * @return the list of data variables
+     */
     public static List<Node> materializeDataVariables(HybridCgPm pm) {
         List<Node> vars = new ArrayList<>();
         Node[] order = pm.getNodes(); // graph nodes (names drive identity)

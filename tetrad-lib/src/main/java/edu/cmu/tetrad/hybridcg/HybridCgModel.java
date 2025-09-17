@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -46,7 +46,14 @@ import java.util.*;
  */
 public final class HybridCgModel {
 
-    // ======== PM (parametric model/skeleton & shapes) ========
+    /**
+     * The HybridCgPm class represents a structural model for hybrid Bayesian networks,
+     * which may include both discrete and continuous variables. It provides various
+     * methods to manage the graph structure, nodes, discrete and continuous parent
+     * relationships, and discretize continuous values based on predefined cutpoints.
+     * The class is also responsible for indexing and generating the local tables
+     * needed for conditional probability computations across mixed data types.
+     */
     public static final class HybridCgPm implements Pm, Serializable {
         @Serial
         private static final long serialVersionUID = 1L;
@@ -67,6 +74,20 @@ public final class HybridCgModel {
         // bins = cutpoints.length + 1
         private final double[][][] contParentCutpointsForDiscreteChild;
 
+        /**
+         * Constructs a HybridCgPm instance based on the provided directed acyclic graph (DAG),
+         * node ordering, discrete flags for nodes, and a mapping of node categories.
+         *
+         * The HybridCgPm represents a probabilistic model that supports a mix of continuous
+         * and discrete variables with parent dependencies. This constructor initializes the
+         * model structure and categorization for nodes based on the supplied inputs, ensuring
+         * the specified order and discrete/continuous classifications are accounted for.
+         *
+         * @param dag            the directed acyclic graph representing dependencies; must not be null
+         * @param nodeOrder      the ordered list of nodes, defining the sequence used; must not be null
+         * @param discreteFlags  a map indicating whether each node is discrete (true) or continuous (false)
+         * @param categoryMap    a map providing a list of category strings for discrete nodes
+         */
         public HybridCgPm(Graph dag, List<Node> nodeOrder, Map<Node, Boolean> discreteFlags,
                           Map<Node, List<String>> categoryMap) {
             this.dag = Objects.requireNonNull(dag, "dag");
@@ -104,36 +125,89 @@ public final class HybridCgModel {
             }
         }
 
+        // --- small local helper (keep near other helpers in PM) ---
+        private static int binFromCutpoints(double[] cuts, double v) {
+            int b = 0;
+            while (b < cuts.length && v > cuts[b]) b++;
+            return b; // 0..cuts.length
+        }
+
+        /**
+         * Retrieves the directed acyclic graph (DAG) associated with this model.
+         *
+         * @return the DAG representing the structure of this probabilistic model
+         */
         public Graph getGraph() {
             return dag;
         }
 
+        /**
+         * Retrieves the ordered list of nodes in this probabilistic model.
+         *
+         * @return the ordered list of nodes
+         */
         public Node[] getNodes() {
             return nodes.clone();
         }
 
+        /**
+         * Retrieves the index of a given node within the ordered list of nodes.
+         *
+         * @param v the node to find the index for
+         * @return the index of the node, or -1 if not found
+         */
         public int indexOf(Node v) {
             for (int i = 0; i < nodes.length; i++) if (nodes[i].equals(v)) return i;
             return -1;
         }
 
+        /**
+         * Checks if a node at a given index is discrete.
+         *
+         * @param nodeIndex the index of the node to check
+         * @return true if the node is discrete, false otherwise
+         */
         public boolean isDiscrete(int nodeIndex) {
             return isDiscrete[nodeIndex];
         }
 
+        /**
+         * Retrieves the list of categories for a discrete node at a given index.
+         *
+         * @param nodeIndex the index of the discrete node
+         * @return the list of categories for the node
+         */
         public List<String> getCategories(int nodeIndex) {
             return categories[nodeIndex];
         }
 
+        /**
+         * Retrieves the cardinality (number of categories) for a discrete node at a given index.
+         *
+         * @param nodeIndex the index of the discrete node
+         * @return the number of categories for the node
+         */
         public int getCardinality(int nodeIndex) {
             if (!isDiscrete[nodeIndex]) throw new IllegalStateException("Not a discrete node: " + nodes[nodeIndex]);
             return categories[nodeIndex].size();
         }
 
+        /**
+         * Retrieves the discrete parents of a node at a given index.
+         *
+         * @param nodeIndex the index of the node
+         * @return an array of indices representing discrete parents
+         */
         public int[] getDiscreteParents(int nodeIndex) {
             return discParents[nodeIndex];
         }
 
+        /**
+         * Retrieves the continuous parents of a node at a given index.
+         *
+         * @param nodeIndex the index of the node
+         * @return an array of indices representing continuous parents
+         */
         public int[] getContinuousParents(int nodeIndex) {
             return contParents[nodeIndex];
         }
@@ -161,12 +235,21 @@ public final class HybridCgModel {
             contParentCutpointsForDiscreteChild[y] = cuts;
         }
 
+        /**
+         * Retrieves the cutpoints for continuous parents of a discrete child node.
+         *
+         * @param nodeIndex the index of the discrete child node
+         * @return an Optional containing the cutpoints array, or empty if not set
+         */
         public Optional<double[][]> getContParentCutpointsForDiscreteChild(int nodeIndex) {
             return Optional.ofNullable(contParentCutpointsForDiscreteChild[nodeIndex]);
         }
 
         /**
-         * Number of rows in the local table for nodeIndex (shape contract).
+         * Retrieves the number of rows in the local table for a given node index.
+         *
+         * @param nodeIndex the index of the node
+         * @return the number of rows in the local table
          */
         public int getNumRows(int nodeIndex) {
             int rows = 1;
@@ -273,7 +356,7 @@ public final class HybridCgModel {
                 }
                 if (vals.size() < binsPerParent) {
                     // fall back to unique-sorted midpoints
-                    double[] unique = vals.stream().distinct().sorted().mapToDouble(d->d).toArray();
+                    double[] unique = vals.stream().distinct().sorted().mapToDouble(d -> d).toArray();
                     if (unique.length <= 1) {
                         cuts[t] = new double[0]; // all in one bin
                         continue;
@@ -283,7 +366,7 @@ public final class HybridCgModel {
                     int step = (unique.length - 1) / m;
                     for (int k = 0; k < m; k++) {
                         int i = (k + 1) * step;
-                        cp[k] = 0.5 * (unique[i-1] + unique[i]);
+                        cp[k] = 0.5 * (unique[i - 1] + unique[i]);
                     }
                     Arrays.sort(cp);
                     cuts[t] = cp;
@@ -305,7 +388,7 @@ public final class HybridCgModel {
                 cuts[t] = cp;
             }
             // install
-            Map<Node,double[]> map = new HashMap<>();
+            Map<Node, double[]> map = new HashMap<>();
             for (int t = 0; t < cps.length; t++) map.put(nodes[cps[t]], cuts[t]);
             setContParentCutpointsForDiscreteChild(child, map);
         }
@@ -407,7 +490,8 @@ public final class HybridCgModel {
                 int col = data.getColumn(parent);
                 if (col < 0) {
                     Node byName = data.getVariable(parent.getName());
-                    if (byName == null) throw new IllegalArgumentException("Dataset missing parent: " + parent.getName());
+                    if (byName == null)
+                        throw new IllegalArgumentException("Dataset missing parent: " + parent.getName());
                     col = data.getColumn(byName);
                 }
                 discStates[i] = data.getInt(row, col);
@@ -421,7 +505,8 @@ public final class HybridCgModel {
                     int col = data.getColumn(parent);
                     if (col < 0) {
                         Node byName = data.getVariable(parent.getName());
-                        if (byName == null) throw new IllegalArgumentException("Dataset missing parent: " + parent.getName());
+                        if (byName == null)
+                            throw new IllegalArgumentException("Dataset missing parent: " + parent.getName());
                         col = data.getColumn(byName);
                     }
                     contVals[t] = data.getDouble(row, col);
@@ -431,13 +516,12 @@ public final class HybridCgModel {
             return rowIndexForCase(nodeIndex, discStates, contVals);
         }
 
-        // --- small local helper (keep near other helpers in PM) ---
-        private static int binFromCutpoints(double[] cuts, double v) {
-            int b = 0;
-            while (b < cuts.length && v > cuts[b]) b++;
-            return b; // 0..cuts.length
-        }
-
+        /**
+         * Retrieves the parents of a node in the hybrid causal graph model.
+         *
+         * @param y the index of the node
+         * @return an array of indices representing the parents of the node
+         */
         public int[] getParents(int y) {
             Node child = nodes[y];
             List<Node> parents = dag.getParents(child);
@@ -459,6 +543,11 @@ public final class HybridCgModel {
         // Discrete child: probs[y] is rows x card(y)
         private final double[][][] discProbs;   // null for continuous children
 
+        /**
+         * Constructs a HybridCgIm instance from a HybridCgPm.
+         *
+         * @param pm the probabilistic model
+         */
         public HybridCgIm(HybridCgPm pm) {
             this.pm = pm;
             int n = pm.nodes.length;
@@ -520,7 +609,16 @@ public final class HybridCgModel {
             return b; // 0..cuts.length
         }
 
-        // ======== Convenience: compute row indices on-the-fly for a data case ========
+        /**
+         * Computes the row index for a given data case in the hybrid causal graph model.
+         *
+         * @param pm      the probabilistic model
+         * @param nodeIndex the index of the node
+         * @param data    the dataset
+         * @param row     the row index in the dataset
+         * @param colIndex the column indices for the parents
+         * @return the row index for the data case
+         */
         public static int rowIndexForCase(HybridCgPm pm, int nodeIndex, DataSet data, int row, int[] colIndex) {
             int[] dps = pm.getDiscreteParents(nodeIndex);
             int[] cps = pm.getContinuousParents(nodeIndex);
@@ -543,19 +641,45 @@ public final class HybridCgModel {
             return pm.getRowIndex(nodeIndex, discVals, contBins);
         }
 
+        /**
+         * Retrieves the probabilistic model associated with this hybrid causal graph model.
+         *
+         * @return the probabilistic model represented by a {@link HybridCgPm} instance
+         */
         public HybridCgPm getPm() {
             return pm;
         }
 
-        // ===== Discrete child accessors =====
+        /**
+         * Retrieves the probability of a specific category for a discrete child node.
+         *
+         * @param nodeIndex the index of the discrete child node
+         * @param rowIndex  the row index in the local table
+         * @param yCategory the category index for the discrete child
+         * @return the probability of the specified category
+         */
         public double getProbability(int nodeIndex, int rowIndex, int yCategory) {
             return discProbs[nodeIndex][rowIndex][yCategory];
         }
 
+        /**
+         * Sets the probability of a specific category for a discrete child node.
+         *
+         * @param nodeIndex the index of the discrete child node
+         * @param rowIndex  the row index in the local table
+         * @param yCategory the category index for the discrete child
+         * @param p         the probability value to set
+         */
         public void setProbability(int nodeIndex, int rowIndex, int yCategory, double p) {
             discProbs[nodeIndex][rowIndex][yCategory] = p;
         }
 
+        /**
+         * Normalizes the probabilities in a row of the local table for a discrete child node.
+         *
+         * @param nodeIndex the index of the discrete child node
+         * @param rowIndex  the row index in the local table
+         */
         public void normalizeRow(int nodeIndex, int rowIndex) {
             double[] row = discProbs[nodeIndex][rowIndex];
             double s = 0.0;
@@ -567,30 +691,71 @@ public final class HybridCgModel {
             for (int j = 0; j < row.length; j++) row[j] /= s;
         }
 
-        // ===== Continuous child accessors =====
+        /**
+         * Retrieves the intercept value for a continuous child node.
+         *
+         * @param nodeIndex the index of the continuous child node
+         * @param rowIndex  the row index in the local table
+         * @return the intercept value
+         */
         public double getIntercept(int nodeIndex, int rowIndex) {
             return contParams[nodeIndex][rowIndex][0];
         }
 
+        /**
+         * Sets the intercept value for a continuous child node.
+         *
+         * @param nodeIndex the index of the continuous child node
+         * @param rowIndex  the row index in the local table
+         * @param v         the intercept value to set
+         */
         public void setIntercept(int nodeIndex, int rowIndex, double v) {
             contParams[nodeIndex][rowIndex][0] = v;
         }
 
-        // ===== DataSet builder =====
-
+        /**
+         * Retrieves the coefficient value for a continuous child node.
+         *
+         * @param nodeIndex           the index of the continuous child node
+         * @param rowIndex            the row index in the local table
+         * @param contParentOrderIndex the index of the continuous parent
+         * @return the coefficient value
+         */
         public double getCoefficient(int nodeIndex, int rowIndex, int contParentOrderIndex) {
             return contParams[nodeIndex][rowIndex][1 + contParentOrderIndex];
         }
 
+        /**
+         * Sets the coefficient value for a continuous child node.
+         *
+         * @param nodeIndex           the index of the continuous child node
+         * @param rowIndex            the row index in the local table
+         * @param contParentOrderIndex the index of the continuous parent
+         * @param v                   the coefficient value to set
+         */
         public void setCoefficient(int nodeIndex, int rowIndex, int contParentOrderIndex, double v) {
             contParams[nodeIndex][rowIndex][1 + contParentOrderIndex] = v;
         }
 
+        /**
+         * Retrieves the variance value for a continuous child node.
+         *
+         * @param nodeIndex the index of the continuous child node
+         * @param rowIndex  the row index in the local table
+         * @return the variance value
+         */
         public double getVariance(int nodeIndex, int rowIndex) {
             int m = pm.getContinuousParents(nodeIndex).length;
             return contParams[nodeIndex][rowIndex][1 + m];
         }
 
+        /**
+         * Sets the variance value for a continuous child node.
+         *
+         * @param nodeIndex the index of the continuous child node
+         * @param rowIndex  the row index in the local table
+         * @param v         the variance value to set
+         */
         public void setVariance(int nodeIndex, int rowIndex, double v) {
             int m = pm.getContinuousParents(nodeIndex).length;
             contParams[nodeIndex][rowIndex][1 + m] = v;
@@ -599,6 +764,8 @@ public final class HybridCgModel {
         /**
          * Convert a sampled matrix into a Tetrad DataSet with the provided node ordering. The node list must be a
          * permutation of the PM's nodes; types (discrete/continuous) are taken from the PM.
+         *
+         * @param sample the sampled matrix
          */
         public DataSet toDataSet(Sample sample) {
             List<Node> nodes = HybridCgVars.materializeDataVariables(pm);
@@ -705,6 +872,11 @@ public final class HybridCgModel {
             return new Sample(contCols, discCols, n);
         }
 
+        /**
+         * Returns a string representation of the HybridIm model.
+         *
+         * @return a string representation of the HybridIm model
+         */
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
@@ -793,6 +965,11 @@ public final class HybridCgModel {
             return sb.toString();
         }
 
+        /**
+         * Returns a string representation of the HybridIm model.
+         *
+         * @return a string representation of the HybridIm model
+         */
         // ===== Sampler =====
         public static final class Sample {
             public final double[][] continuous;
@@ -832,6 +1009,13 @@ public final class HybridCgModel {
                 return b; // 0..cuts.length
             }
 
+            /**
+             * Estimates a HybridCgIm model from the given HybridCgPm and DataSet.
+             *
+             * @param pm   the HybridCgPm
+             * @param data the DataSet
+             * @return the estimated HybridCgIm model
+             */
             public HybridCgIm mle(HybridCgPm pm, DataSet data) {
                 HybridCgIm im = new HybridCgIm(pm);
                 Node[] nodes = pm.nodes;

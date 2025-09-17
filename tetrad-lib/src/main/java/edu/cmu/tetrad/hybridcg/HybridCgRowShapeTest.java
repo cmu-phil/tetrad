@@ -19,6 +19,9 @@ import static org.junit.Assert.*;
  */
 public class HybridCgRowShapeTest {
 
+    /**
+     * Tests the behavior of HybridCgPm row shapes when a discrete child has continuous parents.
+     */
     @Test
     public void testDiscChildWithContParent() {
         // Graph: X (continuous) -> Y (discrete, 3 categories)

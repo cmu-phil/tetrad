@@ -13,16 +13,32 @@ import java.util.*;
 /**
  * Estimator that prepares cutpoints (binning policy) and then runs MLE via HybridCgIm.HybridEstimator.
  *
- * Parameters (optional):
- *  - "hybridcg.alpha"           : double  (Dirichlet pseudocount for discrete CPTs; default 1.0)
- *  - "hybridcg.shareVariance"   : boolean (share one variance across rows for each cont child; default false)
- *  - "hybridcg.binPolicy"       : String  ("equal_frequency", "equal_interval", "none"; default "equal_frequency")
- *  - "hybridcg.bins"            : int     (#bins for each cont parent of a discrete child; default 3; min 2)
+ * <p>Parameters (optional):</p>
+ * <ul>
+ *   <li><b>"hybridcg.alpha"</b> : double &mdash; Dirichlet pseudocount for discrete CPTs; default 1.0</li>
+ *   <li><b>"hybridcg.shareVariance"</b> : boolean &mdash; share one variance across rows for each cont child; default false</li>
+ *   <li><b>"hybridcg.binPolicy"</b> : String &mdash; "equal_frequency", "equal_interval", "none"; default "equal_frequency"</li>
+ *   <li><b>"hybridcg.bins"</b> : int &mdash; number of bins for each cont parent of a discrete child; default 3; min 2</li>
+ * </ul>
  */
 public final class HybridCgEstimator {
 
     private HybridCgEstimator() {}
 
+    /**
+     * Estimates the parameters of a Hybrid Conditional Gaussian (HybridCG) Model using the given
+     * parameter model (pm), data set, and optional parameters.
+     *
+     * @param pm the Hybrid Conditional Gaussian parameter model. Must not be null.
+     * @param data the data set used for estimation. Must not be null.
+     * @param params optional parameters for estimation, including settings for alpha, binning policy,
+     *               shared variance, and number of bins. If null, defaults are used.
+     * @return a HybridCgIm object that represents the estimated model.
+     * @throws NullPointerException if pm or data is null.
+     * @throws IllegalArgumentException if an invalid binning policy is provided.
+     * @throws IllegalStateException if `binPolicy=none` is specified and the parameter model has no
+     *                                cutpoints for discrete children with continuous parents.
+     */
     public static HybridCgIm estimate(HybridCgPm pm, DataSet data, Parameters params) {
         Objects.requireNonNull(pm, "pm");
         Objects.requireNonNull(data, "data");
