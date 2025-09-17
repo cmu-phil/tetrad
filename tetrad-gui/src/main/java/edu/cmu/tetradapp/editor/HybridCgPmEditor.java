@@ -177,7 +177,15 @@ public final class HybridCgPmEditor extends JPanel {
 
         outer.add(top, BorderLayout.NORTH);
 
-        cutModel = new CutpointsTableModel(pmWrapper.getHybridCgPm(), null, null, cutModel.onChange);
+//        cutModel = new CutpointsTableModel(pmWrapper.getHybridCgPm(), null, null, cutModel.onChange);
+
+        cutModel = new CutpointsTableModel(
+                pmWrapper.getHybridCgPm(),
+                null,
+                null,
+                () -> firePropertyChange("modelChanged", null, null)
+        );
+
         cutTable.setModel(cutModel);
         JScrollPane scroll = new JScrollPane(cutTable);
         scroll.setPreferredSize(new Dimension(520, 120));

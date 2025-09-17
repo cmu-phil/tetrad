@@ -68,6 +68,12 @@ public final class HybridCgImEditor extends JPanel {
     // number formatting
     private static final DecimalFormat DF3 = new DecimalFormat("0.###");
 
+    // --- Forward "modelChanged" from inner tables ---
+    private javax.swing.event.TableModelListener discTml;
+    private javax.swing.event.TableModelListener contTml;
+    private javax.swing.table.TableModel discModel;
+    private javax.swing.table.TableModel contModel;
+
     public HybridCgImEditor(HybridCgImWrapper wrapper) { this(wrapper.getHybridCgIm()); }
 
     public HybridCgImEditor(HybridCgIm im) {
@@ -154,6 +160,43 @@ public final class HybridCgImEditor extends JPanel {
         return right;
     }
 
+    /** (Re)attach a TableModelListener that re-fires "modelChanged" when the user edits the table. */
+    private void wireModelChanged(JTable table, boolean isDiscreteCard) {
+        if (table == null) return;
+        javax.swing.table.TableModel model = table.getModel();
+
+        // Remove any old listener on the previous model for this card
+        if (isDiscreteCard) {
+            if (discModel != null && discTml != null) discModel.removeTableModelListener(discTml);
+        } else {
+            if (contModel != null && contTml != null) contModel.removeTableModelListener(contTml);
+        }
+
+        // New listener that forwards updates
+        javax.swing.event.TableModelListener tml = e -> {
+            // We forward on any update/insert/delete. If you want only edits, check e.getType().
+            firePropertyChange("modelChanged", null, null);
+        };
+
+        model.addTableModelListener(tml);
+
+        // Keep references so we can detach next time
+        if (isDiscreteCard) {
+            discTml = tml;
+            discModel = model;
+        } else {
+            contTml = tml;
+            contModel = model;
+        }
+
+        // (Optional) If the table itself fires a property change "modelChanged", forward that too:
+        table.addPropertyChangeListener(evt -> {
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
+            }
+        });
+    }
+
     // =========================== Selection ===========================
 
     private void onSelectChild(Node child) {
@@ -168,6 +211,8 @@ public final class HybridCgImEditor extends JPanel {
             discScroll = new JScrollPane(table);
             discCard.remove(1);
             discCard.add(discScroll, BorderLayout.CENTER);
+
+            wireModelChanged(table, true);
 
             // Update instructions
             int[] dps = pm.getDiscreteParents(currentY);
@@ -186,6 +231,8 @@ public final class HybridCgImEditor extends JPanel {
             contScroll = new JScrollPane(table);
             contCard.remove(1);
             contCard.add(contScroll, BorderLayout.CENTER);
+
+            wireModelChanged(table, true);
 
             // Update instructions
             int[] dps = pm.getDiscreteParents(currentY);
@@ -246,6 +293,7 @@ public final class HybridCgImEditor extends JPanel {
         int rows = pm.getNumRows(y);
         for (int r = 0; r < rows; r++) im.normalizeRow(y, r);
         refreshActiveTable();
+        firePropertyChange("modelChanged", null, null);
     }
 
     private void shareVarianceAcrossRows(int y) {
@@ -256,6 +304,7 @@ public final class HybridCgImEditor extends JPanel {
         double pooled = (cnt > 0) ? (s / cnt) : 1.0;
         for (int r = 0; r < rows; r++) im.setVariance(y, r, pooled);
         refreshActiveTable();
+        firePropertyChange("modelChanged", null, null);
     }
 
     private void randomizeDiscreteTable(int y) {
