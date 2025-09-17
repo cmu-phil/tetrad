@@ -40,7 +40,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  *  - Small deflation loop fix (row assignment index).
  *
  * Reference:
- *   Hyvarinen & Oja (2000) Independent Component Analysis: Algorithms and Applications. Neural Networks 13(4–5):411–430.
+ *   Hyvarinen &amp; Oja (2000) Independent Component Analysis: Algorithms and Applications. Neural Networks 13(4–5):411–430.
  *
  * @author josephramsey
  * @version $Id: $Id

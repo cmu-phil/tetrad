@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * Encapsulates RLCD’s heavy lifting:
  *  - Pull sub-blocks from covariance.
- *  - Test block-rank <= r (SVD quick test; hook for Wilks/CCA).
+ *  - Test block-rank &lt;= r (SVD quick test; hook for Wilks/CCA).
  *  - Accumulate must-have/must-not-have edges and collider/non-collider constraints.
  *  - Build CPDAG under Zhang rules; respect knowledge.
  */
@@ -109,7 +109,7 @@ public class RlcdCore {
     // ---------- Rank test utilities ----------
 
     /**
-     * Test whether rank(C_{A,B}) <= r using either:
+     * Test whether rank(C_{A,B}) &lt;= r using either:
      *  - "svd": numerical rank with threshold tau
      *  - "wilks": placeholder for a Wilks/CCA p-value test (hook to RankTests)
      */

@@ -172,7 +172,7 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Returns all unshielded triples that are definite colliders: x -> z <- y.
+     * Returns all unshielded triples that are definite colliders: x -&gt; z &lt;- y.
      */
     public List<Triple> getColliderTriples(Graph g) {
         List<Triple> result = new ArrayList<>();
@@ -185,7 +185,7 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Returns all unshielded triples that are definite noncolliders: x <- z -> y (both tails at z).
+     * Returns all unshielded triples that are definite noncolliders: x &lt;- z -&gt; y (both tails at z).
      */
     public List<Triple> getNoncolliderTriples(Graph g) {
         List<Triple> result = new ArrayList<>();

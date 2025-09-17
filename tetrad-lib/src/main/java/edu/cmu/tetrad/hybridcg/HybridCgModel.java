@@ -1007,9 +1007,10 @@ public final class HybridCgModel {
         }
 
         /**
-         * Returns a string representation of the HybridIm model.
-         *
-         * @return a string representation of the HybridIm model
+         * Represents a data structure for storing a sampled dataset.
+         * This is used in conjunction with the HybridCgIm model to hold
+         * both continuous and discrete variables for a specified
+         * number of rows.
          */
         // ===== Sampler =====
         public static final class Sample {

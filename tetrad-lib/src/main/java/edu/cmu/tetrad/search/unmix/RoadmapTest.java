@@ -43,13 +43,13 @@ import java.util.stream.Collectors;
 /**
  * RoadmapTest: EM baseline vs Residual-clustering across scenarios.
  * <p>
- * Phase 1 â Controlled synthetic sweep: (A) params-only mixtures; (B) small topology flips; (C) larger structural
+ * Phase 1 Controlled synthetic sweep: (A) params-only mixtures; (B) small topology flips; (C) larger structural
  * shifts. Noise: Gaussian vs non-Gaussian (Laplace). K: known, and unknown via EM-BIC. Metrics: ARI;
  * adjacency/arrowhead F1; SHD (simple implementation); runtime.
  * <p>
- * Phase 2 â Stress & robustness: Class imbalance, smaller n, larger p, weak separation, mis-specified K; seed repeats.
+ * Phase 2 Stress &amp; robustness: Class imbalance, smaller n, larger p, weak separation, mis-specified K; seed repeats.
  * <p>
- * Phase 3 â Semi-synthetic realism: Real covariance backbone + injected regime shifts; optional interventions knob.
+ * Phase 3 Semi-synthetic realism: Real covariance backbone + injected regime shifts; optional interventions knob.
  * <p>
  * Notes: - This is a practical harness: prints compact tables you can paste in email/docs. - Uses
  * Boss+PermutationSearch for graphs; swap to your preferred search if needed. - Keep DIAGONAL covariance for EM unless

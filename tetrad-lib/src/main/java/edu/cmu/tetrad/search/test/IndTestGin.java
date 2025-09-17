@@ -15,8 +15,8 @@ import java.util.stream.IntStream;
  * GIN (Generalized Independent Noise) conditional independence test. Reduces CI X ⟂ Y | S to unconditional independence
  * of regression residuals:
  * <ul>
- *  <li>rX := X - E[X | S \ {X}]</li
- *  <li>rY := Y - E[Y | S \ {Y}]</li>
+ *  <li>rX := X - E[X | S \ {X}]
+ *  <li>rY := Y - E[Y | S \ {Y}]
  * </ul>
  * <p>
  * Then tests rX ⟂ rY using an unconditional backend (dCor by default).

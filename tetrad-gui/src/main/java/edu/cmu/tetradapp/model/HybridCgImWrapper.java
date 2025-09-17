@@ -37,9 +37,9 @@ import java.util.Random;
 
 /**
  * GUI wrapper for a {@link HybridCgIm}. Mirrors BayesImWrapper responsibilities: - Holds the instantiated parameters
- * for the HybridCgPm (CPDs / CG params). - Provides cloning & light metadata for GUI editors.
+ * for the HybridCgPm (CPDs / CG params). - Provides cloning &amp; light metadata for GUI editors.
  * <p>
- * This wrapper delegates estimation & binning policy to {@link HybridCgEstimator} to avoid duplication and policy
+ * This wrapper delegates estimation &amp; binning policy to {@link HybridCgEstimator} to avoid duplication and policy
  * drift.
  */
 public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable {

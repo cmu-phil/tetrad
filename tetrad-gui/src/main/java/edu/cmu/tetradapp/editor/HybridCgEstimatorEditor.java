@@ -23,11 +23,11 @@ import java.util.Map;
  * Hybrid CG Estimator Editor
  *
  * <ul>
- *   <li><b>Left:</b> Estimation settings and “Estimate & Preview” button.</li>
- *   <li><b>Right:</b> Live preview of the estimated IM using {@link HybridCgImEditor}.</li>
+ *   <li><b>Left:</b> Estimation settings and “Estimate &amp; Preview” button.
+ *   <li><b>Right:</b> Live preview of the estimated IM using {@link HybridCgImEditor}.
  * </ul>
  *
- * <p>Pressing <i>Estimate & Preview</i> re-runs the estimator with the current settings
+ * <p>Pressing <i>Estimate &amp; Preview</i> re-runs the estimator with the current settings
  * and replaces the preview on the right. The preview fires <code>modelChanged</code>
  * events, which this editor re-fires so upstream listeners only need to listen
  * to this container.</p>

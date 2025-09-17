@@ -455,7 +455,7 @@ public final class UnmixDiagnostics {
      * The stability analysis provides:
      * <ul>
      * <li> The mean Adjusted Rand Index (meanARI) across all pairwise comparisons of cluster labelings.
-     * <li>< The standard deviation of the Adjusted Rand Index (sdARI) across these comparisons.
+     * <li> The standard deviation of the Adjusted Rand Index (sdARI) across these comparisons.
      * <li> The total number of pairwise comparisons (numPairs) considered.
      * </ul>
      * <p>

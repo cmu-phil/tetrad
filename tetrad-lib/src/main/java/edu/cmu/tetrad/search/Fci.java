@@ -35,10 +35,10 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * FCI with configurable R0 collider orientation: VANILLA:  use the FAS sepset S(x,y); orient x->z<-y iff z â S. CPC:
- *   enumerate S â adj(x)\{y} and adj(y)\{x}; orient iff ALL separating sets exclude z; dependent iff ALL include z;
+ * FCI with configurable R0 collider orientation: VANILLA:  use the FAS sepset S(x,y); orient x-&gt;z&lt;-y iff z not in S. CPC:
+ *   enumerate S in adj(x)\{y} and adj(y)\{x}; orient iff ALL separating sets exclude z; dependent iff ALL include z;
  * otherwise ambiguous (no orientation). MAX_P:    among separating sets, choose S* with max p; orient independent iff z
- * â S*, dependent iff z â S*.
+ * not in S*, dependent iff z in S*.
  * <p>
  * All other steps (possible-dsep, R1.., final orientation: Spirtes or Zhang) are unchanged.
  */
