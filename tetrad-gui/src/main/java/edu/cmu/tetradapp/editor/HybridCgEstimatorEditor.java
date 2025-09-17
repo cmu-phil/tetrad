@@ -64,7 +64,6 @@ public final class HybridCgEstimatorEditor extends JPanel {
         this(
                 wrapper.getDataWrapper(),
                 wrapper.getPmWrapper(),
-//                resolvePmWrapperFromEstimator(wrapper),
                 wrapper.getParameters()
         );
     }
@@ -106,33 +105,6 @@ public final class HybridCgEstimatorEditor extends JPanel {
     }
 
     // ---------- UI building ----------
-
-
-    /** Try hard to fetch the *existing* PM wrapper (with discrete types & categories). */
-    private static HybridCgPmWrapper resolvePmWrapperFromEstimator(HybridCgEstimatorWrapper w) {
-        // 1) Direct getters for PM wrapper
-        for (String m : new String[]{"getHybridCgPmWrapper", "getPmWrapper"}) {
-            try {
-                Object res = w.getClass().getMethod(m).invoke(w);
-                if (res instanceof HybridCgPmWrapper pw) return pw;
-            } catch (Throwable ignore) {}
-        }
-        // 2) Get raw PM and wrap it
-        for (String m : new String[]{"getHybridCgPm", "getPm"}) {
-            try {
-                Object res = w.getClass().getMethod(m).invoke(w);
-                if (res instanceof edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm pm) {
-                    return new HybridCgPmWrapper(pm);
-                }
-            } catch (Throwable ignore) {}
-        }
-        // 3) Last resort (not ideal): rebuild from graph (types may be lost!)
-        try {
-            return new HybridCgPmWrapper(w.getGraph(), w.getParameters());
-        } catch (Throwable t) {
-            throw new IllegalStateException("Could not resolve HybridCgPmWrapper for estimator.", t);
-        }
-    }
 
     private JPanel buildSettingsPanel() {
         JPanel root = new JPanel(new BorderLayout());
