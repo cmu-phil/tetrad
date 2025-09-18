@@ -510,6 +510,7 @@ public class Fas implements IFas {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+        test.setVerbose(verbose);
     }
 
     /**
