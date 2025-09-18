@@ -1607,12 +1607,7 @@ public final class SemIm implements Im, ISemIm {
                         }
                         Node child = semGraph.getChildren(parent).iterator().next();
 
-//                        double var = getParamValue(child, child);
-//                        sum += getNextNormal(0.0, Math.sqrt(var));
-
-                        // inside simulateTimeSeries(), in the 'if (parent.getNodeType() == NodeType.ERROR)' branch
-                        Node errorNode = parent;
-                        double var = getParamValue(errorNode, errorNode);
+                        double var = getParamValue(child, child); // variance parameter is on the child variable
                         sum += getNextNormal(0.0, Math.sqrt(Math.max(0.0, var)));
                     } else {
                         TimeLagGraph.NodeId id = timeSeriesGraph.getNodeId(parent);

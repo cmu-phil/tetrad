@@ -20,15 +20,13 @@
 
 package edu.cmu.tetrad.sem;
 
-import ai.djl.ndarray.NDArray;
-import ai.djl.translate.TranslateException;
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.MultiLayerPerceptronDjl;
+import edu.cmu.tetrad.search.utils.MultiLayerPerceptron;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -83,7 +81,7 @@ import java.util.stream.IntStream;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class CausalPerceptronNetworkDjl {
+public class CausalPerceptronNetworkOld {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -125,7 +123,7 @@ public class CausalPerceptronNetworkDjl {
      * dimensionality of the hidden layer, which can affect the model's capacity to approximate complex functions in the
      * causal simulation.
      */
-    private final List<Integer> hiddenDimensions;
+    private final int[] hiddenDimensions;
     /**
      * A scaling factor applied to the input data in the simulation, used to introduce variability and adjust the
      * "bumpiness" of the generated causal relationships. This parameter determines how sensitive the inputs are when
@@ -134,7 +132,7 @@ public class CausalPerceptronNetworkDjl {
      * It plays a critical role in shaping the nonlinearity and complexity of the causal mechanisms applied to the input
      * variables, influencing the statistical properties of the generated data.
      */
-    private final float inputScale;
+    private final double inputScale;
     /**
      * Represents the activation function used in the simulation process within the CGNN.
      * <p>
@@ -161,8 +159,8 @@ public class CausalPerceptronNetworkDjl {
      * @throws IllegalArgumentException If the graph contains cycles, numSamples is less than 1, rescaleMin is greater
      *                                  than rescaleMax, or any value in hiddenDimensions is less than 1.
      */
-    public CausalPerceptronNetworkDjl(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                      double rescaleMin, double rescaleMax, List<Integer> hiddenDimensions, double inputScale,
+    public CausalPerceptronNetworkOld(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                      double rescaleMin, double rescaleMax, int[] hiddenDimensions, double inputScale,
                                       Function<Double, Double> activationFunction) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
@@ -193,7 +191,7 @@ public class CausalPerceptronNetworkDjl {
         this.rescaleMax = rescaleMax;
         this.activationFunction = activationFunction;
         this.hiddenDimensions = hiddenDimensions;
-        this.inputScale = (float) inputScale;
+        this.inputScale = inputScale;
     }
 
     /**
@@ -204,122 +202,34 @@ public class CausalPerceptronNetworkDjl {
      * @return A DataSet object containing the generated synthetic data, with samples and variables defined by the
      * structure of the provided graph and simulation parameters.
      */
-//    public DataSet generateData() {
-//        DataSet data = new BoxDataSet(new DoubleDataBox(numSamples, graph.getNodes().size()), graph.getNodes());
-//
-//        List<Node> nodes = graph.getNodes();
-//        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size()).boxed().collect(Collectors.toMap(nodes::get, i -> i));
-//
-//        List<Node> validOrder = graph.paths().getValidOrder(graph.getNodes(), true);
-//
-//        for (Node node : validOrder) {
-//            List<Node> parents = graph.getParents(node);
-//
-//            MultiLayerPerceptronDjl randomFunction = new MultiLayerPerceptronDjl(
-//                    parents.size() + 1, // Input dimension (R^3 -> R)
-//                    hiddenDimensions, // Number of hidden neurons
-////                    this.activationFunction, // Activation function
-//                    "continuous", // variable type.
-//                    this.inputScale // Input scale for bumpiness
-////                    -1 // Random seed
-//            );
-//
-//            for (int sample = 0; sample < numSamples; sample++) {
-//                int _sample = sample;
-//
-//                List<Float> parentsList = new java.util.ArrayList<>(parents.stream().map(parent
-//                        -> (float) data.getDouble(_sample, nodeToIndex.get(parent))).toList());
-//                parentsList.add((float) noiseDistribution.sample());
-//
-////                float[] array = parents.stream().mapToDouble(parent -> data.getDouble(_sample, nodeToIndex.get(parent))).toArray();
-////                float[] array2 = new double[array.length + 1];
-////                System.arraycopy(array, 0, array2, 0, array.length);
-////                array2[array.length] = noiseDistribution.sample();
-//
-//                // Convert parentsList to float[] array.
-//                float[] array = new float[parentsList.size()];
-//                for (int i = 0; i < parentsList.size(); i++) {
-//                    array[i] = parentsList.get(i);
-//                }
-//
-//                NDArray input = randomFunction.getManager().create(array);
-//
-//                try {
-//                    data.setDouble(sample, nodeToIndex.get(node),
-//                            randomFunction.forward(randomFunction.getManager(),
-//                                    input).toFloatArray()[0]);
-//                } catch (TranslateException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//
-//            if (rescaleMin < rescaleMax) {
-//                DataTransforms.scale(data, rescaleMin, rescaleMax, node);
-//            }
-//        }
-//
-//        return data;
-//    }
-
     public DataSet generateData() {
         DataSet data = new BoxDataSet(new DoubleDataBox(numSamples, graph.getNodes().size()), graph.getNodes());
 
         List<Node> nodes = graph.getNodes();
-        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size()).boxed()
-                .collect(Collectors.toMap(nodes::get, i -> i));
+        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size()).boxed().collect(Collectors.toMap(nodes::get, i -> i));
 
-        List<Node> topo = graph.paths().getValidOrder(nodes, true);
+        List<Node> validOrder = graph.paths().getValidOrder(graph.getNodes(), true);
 
-        for (Node node : topo) {
+        for (Node node : validOrder) {
             List<Node> parents = graph.getParents(node);
 
-            // Build one random MLP per node
-            MultiLayerPerceptronDjl mlp = new MultiLayerPerceptronDjl(
-                    parents.size() + 1,            // input dim (parents + noise)
-                    this.hiddenDimensions,         // hidden dims
-                    "continuous",
-                    (float) this.inputScale
+            MultiLayerPerceptron randomFunction = new MultiLayerPerceptron(
+                    parents.size() + 1, // Input dimension (R^3 -> R)
+                    hiddenDimensions, // Number of hidden neurons
+                    this.activationFunction, // Activation function
+                    this.inputScale, // Input scale for bumpiness
+                    -1 // Random seed
             );
 
-            // Prepare a single batched input: shape (numSamples, Din)
-            int Din = parents.size() + 1;
-            float[] batch = new float[numSamples * Din];
-
-            // Fill parent columns
-            for (int s = 0; s < numSamples; s++) {
-                int base = s * Din;
-                for (int p = 0; p < parents.size(); p++) {
-                    int col = nodeToIndex.get(parents.get(p));
-                    batch[base + p] = (float) data.getDouble(s, col);
-                }
-                // noise as last column
-                batch[base + Din - 1] = (float) noiseDistribution.sample();
+            for (int sample = 0; sample < numSamples; sample++) {
+                int _sample = sample;
+                double[] array = parents.stream().mapToDouble(parent -> data.getDouble(_sample, nodeToIndex.get(parent))).toArray();
+                double[] array2 = new double[array.length + 1];
+                System.arraycopy(array, 0, array2, 0, array.length);
+                array2[array.length] = noiseDistribution.sample();
+                data.setDouble(sample, nodeToIndex.get(node), randomFunction.evaluate(array2));
             }
 
-            // One NDArray for the whole batch; single forward call
-            try (var mgr = mlp.getManager()) {
-//                NDArray X = mgr.create(batch, new long[]{numSamples, Din});
-                // old:
-                // NDArray X = mgr.create(batch, new long[]{numSamples, Din});
-
-                // replace with either:
-                //                NDArray X = mgr.create(batch, new Shape(numSamples, Din));
-                // or:
-                NDArray X = mgr.create(batch).reshape(numSamples, Din);
-
-                NDArray Y = mlp.forward(mgr, X);           // shape (numSamples, 1)
-                float[] out = Y.toFloatArray();            // length numSamples
-
-                // Write column back
-                int j = nodeToIndex.get(node);
-                for (int s = 0; s < numSamples; s++) {
-                    data.setDouble(s, j, out[s]);
-                }
-            } catch (ai.djl.translate.TranslateException e) {
-                throw new RuntimeException(e);
-            }
-
-            // Optional per-column rescale
             if (rescaleMin < rescaleMax) {
                 DataTransforms.scale(data, rescaleMin, rescaleMax, node);
             }

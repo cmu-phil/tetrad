@@ -1,241 +1,219 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.MultiLayerPerceptron;
-import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
- * Represents a Causal Perceptron Network (CPN) for generating synthetic data based on a directed acyclic graph (DAG),
- * simulated recursively.
- * <p>
- * The form of the model is Xi = fi(Pa(Xi), ei), ei _||_ Pa(Xi).
- * <p>
- * By default, the independent noise is assumed to be distributed as Beta(2, 5), though this can be adjusted. It is
- * assumed that the noise distribution is the same for all variables. In the future, this may be relaxed.
- * <p>
- * The activation function is assumed to be tanh, though this can be adjusted.
- * <p>
- * A good default for hidden dimension is 20; a good default for input scale it 5.0.
- * <p>
- * A good default for rescaling is to scale into the [-1, 1] interval, though rescaling can be turned off by setting the
- * min and max to be equal.
- * <p>
- * If is assumed that the random functions may be represented as shallow multi-layer perceptrons (MLPs).
- * <p>
- * See Zhang et al. (2015) for a reference discussion.
- * <p>
- * Goudet, O., Kalainathan, D., Caillou, P., Guyon, I., Lopez-Paz, D., &amp; Sebag, M. (2018). Learning functional
- * causal models with generative neural networks. Explainable and interpretable models in computer vision and machine
- * learning, 39-80.
- * <p>
- * Zhang, K., Wang, Z., Zhang, J., &amp; SchÃ¶lkopf, B. (2015). On estimation of functional causal models: general
- * results and application to the post-nonlinear causal model. ACM Transactions on Intelligent Systems and Technology
- * (TIST), 7(2), 1-22.
- * <p>
- * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
- * Machine Learning Research, 9(5).
- * <p>
- * BÃ¼hlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
- * penalized regression". The Annals of Statistics.
- * <p>
- * Peters, J., Mooij, J. M., Janzing, D., &amp; SchÃ¶lkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
- * Models". Journal of Machine Learning Research.
- * <p>
- * Zhang, K., &amp; Hyvarinen, A. (2012). On the identifiability of the post-nonlinear causal model. arXiv preprint
- * arXiv:1205.2599.
- * <p>
- * Hastie, T., &amp; Tibshirani, R. (1986). "Generalized Additive Models".
- * <p>
- * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
- * Results"
+ * Drop-in EJML generator for nonlinear DAG data:
+ * - Batches each node’s column through a tiny random MLP
+ * - Uses CommonOps_DDRM.multTransB (A * B^T) to avoid materializing transposes
+ * - Detects tanh via a typed cast of the method reference (no “method reference not expected here”)
+ * - No DJL / no parallelism
  */
 public class CausalPerceptronNetwork {
-    /**
-     * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
-     * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
-     * It must be acyclic for the simulation to be valid.
-     * <p>
-     * The `graph` is used to generate synthetic data under the assumption of additive noise models, where causal
-     * mechanisms are modeled as functions of their parent variables in the graph, with noise added to capture
-     * non-deterministic influences. The graph's structure is critical in determining these causal mechanisms and the
-     * relationships among variables.
-     */
+
     private final Graph graph;
-    /**
-     * Represents the number of samples to be generated in the additive noise simulation. This variable determines how
-     * many synthetic data points will be created based on the causal relationships in the provided directed acyclic
-     * graph (DAG).
-     * <p>
-     * Constraints: Must be a positive integer.
-     */
     private final int numSamples;
-    /**
-     * Represents the noise distribution used in the additive simulation framework. This distribution is used to
-     * introduce randomness into the simulated data, reflecting inherent noise in causal relationships. The noise is
-     * applied during data generation, ensuring variability and realism in the synthetic dataset. Exogenous variables
-     * are assumed to be independent and identically distributed (i.i.d) with the specified noise distribution.
-     */
     private final RealDistribution noiseDistribution;
-    /**
-     * The lower bound used for rescaling data during the simulation process. This value is used to ensure that the
-     * synthetic data is scaled within a specific range before further processing or transformations.
-     */
-    private final double rescaleMin;
-    /**
-     * The upper bound used for rescaling data during the simulation process. This value determines the maximum scale
-     * applied to normalized data, ensuring it fits within the specified range during synthetic data generation.
-     */
-    private final double rescaleMax;
-    /**
-     * Represents the number of hidden neurons in a multilayer perceptron (MLP) function. This variable determines the
-     * dimensionality of the hidden layer, which can affect the model's capacity to approximate complex functions in the
-     * causal simulation.
-     */
+    private final double rescaleMin, rescaleMax;
     private final int[] hiddenDimensions;
-    /**
-     * A scaling factor applied to the input data in the simulation, used to introduce variability and adjust the
-     * "bumpiness" of the generated causal relationships. This parameter determines how sensitive the inputs are when
-     * passed through the data generation process.
-     * <p>
-     * It plays a critical role in shaping the nonlinearity and complexity of the causal mechanisms applied to the input
-     * variables, influencing the statistical properties of the generated data.
-     */
     private final double inputScale;
-    /**
-     * Represents the activation function used in the simulation process within the CGNN.
-     * <p>
-     * The activation function is applied to intermediate computations or transformations during the simulation,
-     * providing a non-linear mapping that influences the resulting synthetic causal data. By default, the tangent
-     * hyperbolic function (tanh) is used, though it can be customized through a setter method to support other
-     * non-linear functions.
-     */
-    private Function<Double, Double> activationFunction = Math::tanh;
+    private final Function<Double, Double> activationFunction;
+    private final boolean useFastTanh;
 
-    /**
-     * Constructs a CausalPerceptronNetwork that operates on a directed acyclic graph (DAG) to model causal
-     * relationships with post-nonlinear causal mechanisms and custom activation functions.
-     *
-     * @param graph              The directed acyclic graph (DAG) representing the causal structure.
-     * @param numSamples         The number of synthetic data samples to generate.
-     * @param noiseDistribution  The noise distribution used for simulating random noise in the causal relationships.
-     * @param rescaleMin         The minimum value for rescaling the generated data.
-     * @param rescaleMax         The maximum value for rescaling the generated data.
-     * @param hiddenDimensions   An array specifying the number of units in each hidden layer of the perceptron
-     *                           network.
-     * @param inputScale         A scaling factor to adjust the input to the network.
-     * @param activationFunction The activation function applied within the perceptron network for nonlinearity.
-     * @throws IllegalArgumentException If the graph contains cycles, numSamples is less than 1, rescaleMin is greater
-     *                                  than rescaleMax, or any value in hiddenDimensions is less than 1.
-     */
-    public CausalPerceptronNetwork(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                   double rescaleMin, double rescaleMax, int[] hiddenDimensions, double inputScale,
+    // Keep simple per-node seeding (still random overall)
+    private final Random seeder = new Random();
+
+    public CausalPerceptronNetwork(Graph graph,
+                                   int numSamples,
+                                   RealDistribution noiseDistribution,
+                                   double rescaleMin,
+                                   double rescaleMax,
+                                   int[] hiddenDimensions,
+                                   double inputScale,
                                    Function<Double, Double> activationFunction) {
-        if (!graph.paths().isAcyclic()) {
-            throw new IllegalArgumentException("Graph contains cycles.");
-        }
+        if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
+        if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
+        if (rescaleMin > rescaleMax) throw new IllegalArgumentException("rescaleMin > rescaleMax");
+        Objects.requireNonNull(noiseDistribution, "noiseDistribution");
+        Objects.requireNonNull(hiddenDimensions, "hiddenDimensions");
+        Objects.requireNonNull(activationFunction, "activationFunction");
 
-        if (numSamples < 1) {
-            throw new IllegalArgumentException("Number of samples must be positive.");
-        }
-
-        if (rescaleMin > rescaleMax) {
-            throw new IllegalArgumentException("Rescale min must be less than or equal to rescale max.");
-        }
-
-        if (rescaleMin == rescaleMax) {
-            TetradLogger.getInstance().log("Rescale min and rescale max are equal. No rescaling will be applied.");
-        }
-
-        for (int hiddenDimension : hiddenDimensions) {
-            if (hiddenDimension < 1) {
-                throw new IllegalArgumentException("Hidden dimensions must be positive integers.");
-            }
-        }
+        for (int h : hiddenDimensions) if (h < 1) throw new IllegalArgumentException("Hidden dims must be >= 1");
 
         this.graph = graph;
         this.numSamples = numSamples;
         this.noiseDistribution = noiseDistribution;
         this.rescaleMin = rescaleMin;
         this.rescaleMax = rescaleMax;
-        this.activationFunction = activationFunction;
-        this.hiddenDimensions = hiddenDimensions;
+        this.hiddenDimensions = hiddenDimensions.clone();
         this.inputScale = inputScale;
+        this.activationFunction = activationFunction;
+
+        // IMPORTANT: give the method reference a target type to make == legal
+        @SuppressWarnings("unchecked")
+        Function<Double, Double> tanhRef = (Function<Double, Double>) (Double x) -> Math.tanh(x);
+        this.useFastTanh = activationFunction == tanhRef;
     }
 
-    /**
-     * Generates synthetic data based on a directed acyclic graph (DAG) with causal relationships and post-nonlinear
-     * causal mechanisms. The data generation process involves simulating parent-child relationships in the graph,
-     * applying noise, rescaling, and applying random piecewise linear transformations.
-     *
-     * @return A DataSet object containing the generated synthetic data, with samples and variables defined by the
-     * structure of the provided graph and simulation parameters.
-     */
+    /** Generate data (rows = samples, cols = nodes in topological order). */
     public DataSet generateData() {
-        DataSet data = new BoxDataSet(new DoubleDataBox(numSamples, graph.getNodes().size()), graph.getNodes());
+        final List<Node> topo = graph.paths().getValidOrder(graph.getNodes(), true);
+        final int P = topo.size(), N = numSamples;
 
-        List<Node> nodes = graph.getNodes();
-        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size()).boxed().collect(Collectors.toMap(nodes::get, i -> i));
+        // raw[row][col]
+        final double[][] raw = new double[N][P];
 
-        List<Node> validOrder = graph.paths().getValidOrder(graph.getNodes(), true);
+        // map node -> topo index (avoid topo.indexOf in hot loops)
+        final Map<Node, Integer> indexOf = new HashMap<>(P * 2);
+        for (int j = 0; j < P; j++) indexOf.put(topo.get(j), j);
 
-        for (Node node : validOrder) {
-            List<Node> parents = graph.getParents(node);
+        // parents indices per node
+        final int[][] parentsIdx = new int[P][];
+        for (int j = 0; j < P; j++) {
+            List<Node> ps = graph.getParents(topo.get(j));
+            int[] idx = new int[ps.size()];
+            for (int k = 0; k < idx.length; k++) idx[k] = indexOf.get(ps.get(k));
+            parentsIdx[j] = idx;
+        }
 
-            MultiLayerPerceptron randomFunction = new MultiLayerPerceptron(
-                    parents.size() + 1, // Input dimension (R^3 -> R)
-                    hiddenDimensions, // Number of hidden neurons
-                    this.activationFunction, // Activation function
-                    this.inputScale, // Input scale for bumpiness
-                    -1 // Random seed
-            );
+        // Reusable EJML matrices
+        DMatrixRMaj A = new DMatrixRMaj(N, 1);  // input to MLP (will reshape)
+        DMatrixRMaj Z = new DMatrixRMaj(N, 1);  // hidden scratch
+        DMatrixRMaj Y = new DMatrixRMaj(N, 1);  // output (N x 1)
 
-            for (int sample = 0; sample < numSamples; sample++) {
-                int _sample = sample;
-                double[] array = parents.stream().mapToDouble(parent -> data.getDouble(_sample, nodeToIndex.get(parent))).toArray();
-                double[] array2 = new double[array.length + 1];
-                System.arraycopy(array, 0, array2, 0, array.length);
-                array2[array.length] = noiseDistribution.sample();
-                data.setDouble(sample, nodeToIndex.get(node), randomFunction.evaluate(array2));
+        final double[] noise = new double[N];
+
+        for (int j = 0; j < P; j++) {
+            final int[] pj = parentsIdx[j];
+            final int Din = pj.length + 1;      // parents + noise
+            A.reshape(N, Din, false);
+
+            // copy parents
+            for (int c = 0; c < pj.length; c++) {
+                int col = pj[c];
+                int k = c;
+                for (int i = 0; i < N; i++, k += Din) A.data[k] = raw[i][col];
             }
+            // draw noise once and place as last column
+            for (int i = 0; i < N; i++) noise[i] = noiseDistribution.sample();
+            int k = pj.length;
+            for (int i = 0; i < N; i++, k += Din) A.data[k] = noise[i];
 
-            if (rescaleMin < rescaleMax) {
-                DataTransforms.scale(data, rescaleMin, rescaleMax, node);
+            // Random MLP for this node, supports H=[] (no hidden) too
+            RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
+
+            // Forward pass: Y = mlp(A)
+            Y = mlp.forward(A, Z, Y, activationFunction, useFastTanh);
+
+            // write column + rescale
+            double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+            for (int i = 0; i < N; i++) {
+                double v = Y.data[i]; raw[i][j] = v;
+                if (v < min) min = v; if (v > max) max = v;
+            }
+            if (rescaleMax > rescaleMin && max > min) {
+                double inR = (max - min), outR = (rescaleMax - rescaleMin);
+                for (int i = 0; i < N; i++) raw[i][j] = rescaleMin + outR * (raw[i][j] - min) / inR;
             }
         }
 
-        return data;
+        return new BoxDataSet(new DoubleDataBox(raw), new ArrayList<>(topo));
+    }
+
+    // ------------------ Tiny EJML MLP ------------------
+
+    private static final class RandomMLP {
+        final int Din, Dout;
+        final int[] H;
+        final DMatrixRMaj[] W;   // layer weights: (out x in)
+        final double[][] b;      // biases per layer
+
+        RandomMLP(int Din, int[] hidden, int Dout, double inputScale, Random r) {
+            this.Din = Din; this.Dout = Dout;
+            this.H = hidden == null ? new int[0] : hidden.clone();
+            int L = H.length + 1;
+            this.W = new DMatrixRMaj[L];
+            this.b = new double[L][];
+
+            int prev = Din;
+            for (int l = 0; l < H.length; l++) {
+                W[l] = new DMatrixRMaj(H[l], prev);
+                b[l] = new double[H[l]];
+                heInit(W[l], r, inputScale);
+                prev = H[l];
+            }
+            W[L - 1] = new DMatrixRMaj(Dout, prev);
+            b[L - 1] = new double[Dout];
+            heInit(W[L - 1], r, inputScale * 0.5);
+        }
+
+        /** Y = forward(X). Uses multTransB so we never materialize W^T. */
+        /** Y = forward(X). Uses two scratch buffers so output != input for EJML. */
+        DMatrixRMaj forward(DMatrixRMaj X,
+                            DMatrixRMaj scratch1,
+                            DMatrixRMaj out,
+                            Function<Double, Double> act,
+                            boolean fastTanh) {
+
+            // Two ping-pong buffers for hidden activations
+            DMatrixRMaj cur = X;
+            DMatrixRMaj bufA = scratch1;
+            DMatrixRMaj bufB = new DMatrixRMaj(1, 1); // will be reshaped
+
+            // Hidden layers
+            for (int l = 0; l < H.length; l++) {
+                int h = H[l];
+
+                // choose destination buffer so it's not the same instance as 'cur'
+                DMatrixRMaj dest = (cur == bufA) ? bufB : bufA;
+                dest.reshape(X.numRows, h, false);
+
+                // dest = cur * W[l]^T
+                CommonOps_DDRM.multTransB(cur, W[l], dest);
+                addBiasRowsInPlace(dest, b[l]);
+                applyActivationInPlace(dest, act, fastTanh);
+
+                // advance
+                cur = dest;
+            }
+
+            // Output layer: write into 'out' (guaranteed != cur)
+            out.reshape(X.numRows, Dout, false);
+            CommonOps_DDRM.multTransB(cur, W[W.length - 1], out);
+            addBiasRowsInPlace(out, b[b.length - 1]);
+            return out;
+        }
+
+        private static void heInit(DMatrixRMaj W, Random r, double scale) {
+            double s = scale * Math.sqrt(2.0 / Math.max(1, W.numCols));
+            for (int i = 0, n = W.getNumElements(); i < n; i++) W.data[i] = r.nextGaussian() * s;
+        }
+    }
+
+    private static void addBiasRowsInPlace(DMatrixRMaj A, double[] b) {
+        final int n = A.numRows, m = A.numCols;
+        int k = 0;
+        for (int i = 0; i < n; i++) for (int j = 0; j < m; j++, k++) A.data[k] += b[j];
+    }
+
+    private static void applyActivationInPlace(DMatrixRMaj A,
+                                               Function<Double, Double> f,
+                                               boolean fastTanh) {
+        final int n = A.getNumElements();
+        if (fastTanh) {
+            for (int i = 0; i < n; i++) A.data[i] = Math.tanh(A.data[i]);
+        } else {
+            for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
+        }
     }
 }
-

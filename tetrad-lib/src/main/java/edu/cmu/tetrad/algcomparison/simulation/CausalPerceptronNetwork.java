@@ -301,11 +301,11 @@ public class CausalPerceptronNetwork implements Simulation {
         // Convert hidden dimsnions to List<Integer>
         List<Integer> hiddenDimensionsList = MathUtils.getInts(hiddenDimensions);
 
-        edu.cmu.tetrad.sem.CausalPerceptronNetworkDjl generator = new edu.cmu.tetrad.sem.CausalPerceptronNetworkDjl(
+        edu.cmu.tetrad.sem.CausalPerceptronNetwork generator = new edu.cmu.tetrad.sem.CausalPerceptronNetwork(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
-                hiddenDimensionsList, parameters.getDouble(Params.INPUT_SCALE), activation);
+                hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
 
         return generator.generateData();
     }
