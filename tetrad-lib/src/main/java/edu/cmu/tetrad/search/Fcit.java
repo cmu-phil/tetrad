@@ -887,7 +887,7 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Sets the number of starts for BOSS
+     * Sets the number of starts for BOSS.
      *
      * @param numStarts The number of starts.
      */
