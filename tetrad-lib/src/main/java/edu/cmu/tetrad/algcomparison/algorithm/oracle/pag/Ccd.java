@@ -22,11 +22,13 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
@@ -51,7 +53,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm, HasKnowledge {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -59,6 +61,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      * The independence test to use.
      */
     private IndependenceWrapper test;
+    private Knowledge knowledge;
 
     /**
      * Constructs a new CCD algorithm.
@@ -89,6 +92,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(_test);
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setKnowledge(knowledge);
 
         Graph graph;
         double fdrQ = parameters.getDouble(Params.FDR_Q);
@@ -152,7 +156,6 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         return parameters;
     }
 
-
     /**
      * Returns the IndependenceWrapper object associated with this instance.
      *
@@ -171,6 +174,16 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
+    }
+
+    @Override
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
     }
 }
 

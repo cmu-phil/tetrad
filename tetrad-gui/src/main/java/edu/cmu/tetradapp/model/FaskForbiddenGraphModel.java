@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -65,7 +66,9 @@ public class FaskForbiddenGraphModel extends KnowledgeBoxModel {
             throw new IllegalArgumentException("FaskForbiddenGraphModel only works with continuous data.");
         }
 
-        double[][] data = dataSet.getDoubleData().transpose().toArray();
+        DataSet _dataSet = DataTransforms.standardizeData(dataSet);
+        double[][] data = _dataSet.getDoubleData().transpose().toArray();
+        List<Node> nodes = _dataSet.getVariables();
 
         Knowledge knowledge = getKnowledge();
 
@@ -84,8 +87,6 @@ public class FaskForbiddenGraphModel extends KnowledgeBoxModel {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-        List<Node> nodes = dataSet.getVariables();
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {

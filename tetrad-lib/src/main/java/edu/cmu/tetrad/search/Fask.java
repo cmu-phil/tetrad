@@ -335,7 +335,6 @@ public final class Fask {
         setCutoff(alpha);
 
         DataSet dataSet = DataTransforms.standardizeData(this.dataSet);
-
         List<Node> variables = dataSet.getVariables();
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
         Graph G0;
