@@ -162,14 +162,14 @@ public class StatsListEditor extends JPanel {
                 pag.setSelected(true);
                 break;
             default:
-                menu.setText("Compare to DAG...");
+                menu.setText("Compare to Truth...");
                 graph.setSelected(true);
                 break;
         }
 
         graph.addActionListener(e -> {
             this.params.set("graphComparisonType", "DAG");
-            menu.setText("Compare to DAG...");
+            menu.setText("Compare to Truth...");
             menu.setBackground(Color.WHITE);
 //            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
 
