@@ -64,9 +64,6 @@ public class FciFask extends AbstractBootstrapAlgorithm
     /** Independence test wrapper (same as FCI wrapper). */
     private IndependenceWrapper test;
 
-    /** Internally constructed knowledge (forbidden edges only). Not exposed/settable. */
-    private Knowledge internalKnowledge;
-
     public FciFask() {}
 
     public FciFask(IndependenceWrapper test) {
@@ -102,7 +99,7 @@ public class FciFask extends AbstractBootstrapAlgorithm
         for (int k = 0; k < nodes.size(); k++) nameToIdx.put(nodes.get(k).getName(), k);
 
         // --- Phase 0: Build FASK-forbidden knowledge (internal only) ---
-        this.internalKnowledge = buildFaskForbiddenKnowledge(data, nodes);
+        Knowledge internalKnowledge = buildFaskForbiddenKnowledge(data, nodes);
 
         // --- Phase 1: Run FCI with that knowledge ---
         edu.cmu.tetrad.search.Fci.ColliderRule colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
@@ -115,7 +112,7 @@ public class FciFask extends AbstractBootstrapAlgorithm
         edu.cmu.tetrad.search.Fci fci = new edu.cmu.tetrad.search.Fci(this.test.getTest(dataModel, parameters));
         fci.setDepth(parameters.getInt(Params.DEPTH));
         fci.setR0ColliderRule(colliderOrientationStyle);
-        fci.setKnowledge(this.internalKnowledge);
+        fci.setKnowledge(internalKnowledge);
         fci.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         fci.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         fci.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
