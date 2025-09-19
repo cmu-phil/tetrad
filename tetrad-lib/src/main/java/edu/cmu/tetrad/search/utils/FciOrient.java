@@ -584,11 +584,13 @@ public class FciOrient {
     }
 
     /**
-     * R1 If Î± ââ Î² oâââ Î³, and Î± and Î³ are not adjacent, then orient the triple as Î± ââ Î² â Î³.
+     * R1:
+     * If α *→ β o––* γ, and α and γ are not adjacent,
+     * then orient the triple as α *→ β → γ.
      *
-     * @param a     Î±
-     * @param b     Î²
-     * @param c     Î³
+     * @param a     α
+     * @param b     β
+     * @param c     γ
      * @param graph the graph containing the edges and nodes
      */
     public void ruleR1(Node a, Node b, Node c, Graph graph) {
@@ -613,11 +615,15 @@ public class FciOrient {
     }
 
     /**
-     * R2 If Î± â Î² ââ Î³ or Î± ââ Î² â Î³, and Î± ââo Î³, then orient Î± ââo Î³ as Î± ââ Î³.
+     * R2:
+     * If α → β ∘→ γ  or  α ∘→ β → γ, and α ∘–o γ, then orient α ∘–o γ as α ∘→ γ.
      *
-     * @param a     Î±
-     * @param b     Î²
-     * @param c     Î³
+     * Intuition: when there’s a directed path α → β → γ with a circle on the edge incident to β on one side,
+     * and α–γ is currently a circle–circle edge, we can orient α–γ toward γ.
+     *
+     * @param a     α
+     * @param b     β
+     * @param c     γ
      * @param graph the graph in which the nodes exist
      */
     public void ruleR2(Node a, Node b, Node c, Graph graph) {
@@ -641,9 +647,14 @@ public class FciOrient {
     }
 
     /**
-     * R3 If Î± ââ Î² ââ Î³, Î± ââo Î¸ oââ Î³, Î± and Î³ are not adjacent, and Î¸ ââo Î², then orient Î¸ ââo Î² as Î¸ ââ Î².
+     * R3:
+     * If α *→ β ←* γ,
+     *     α *–o θ o–* γ,
+     *     α and γ are not adjacent,
+     * and θ *–o β,
+     * then orient θ *–o β as θ *→ β.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph the graph in which the nodes exist
      */
     public void ruleR3(Graph graph) {
 

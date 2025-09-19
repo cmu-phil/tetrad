@@ -146,9 +146,9 @@ public class RecursiveBlocking {
             return Blockable.INDETERMINATE;
         }
 
-//        if (notFollowed.contains(y)) {
-//            return Blockable.UNBLOCKABLE;
-//        }
+        if (notFollowed.contains(y)) {
+            return Blockable.UNBLOCKABLE;
+        }
 
         path.add(b);
 

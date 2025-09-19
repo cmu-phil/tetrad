@@ -3370,6 +3370,65 @@ public final class GraphUtils {
         g.setEndpoint(y, z, Endpoint.ARROW);
     }
 
+
+    /**
+     * Compute strongly connected components (SCCs) of a directed graph.
+     * Uses Tarjan's algorithm. Each SCC is returned as a Set<Node>.
+     */
+    public static List<Set<Node>> stronglyConnectedComponents(Graph g) {
+        Objects.requireNonNull(g, "graph");
+        List<Node> nodes = g.getNodes();
+        Map<Node, Integer> index = new HashMap<>();
+        Map<Node, Integer> lowlink = new HashMap<>();
+        Deque<Node> stack = new ArrayDeque<>();
+        Set<Node> onStack = new HashSet<>();
+        List<Set<Node>> sccs = new ArrayList<>();
+        int[] counter = {0};
+
+        for (Node v : nodes) {
+            if (!index.containsKey(v)) {
+                strongConnect(v, g, index, lowlink, stack, onStack, counter, sccs);
+            }
+        }
+        return sccs;
+    }
+
+    private static void strongConnect(Node v,
+                                      Graph g,
+                                      Map<Node,Integer> index,
+                                      Map<Node,Integer> lowlink,
+                                      Deque<Node> stack,
+                                      Set<Node> onStack,
+                                      int[] counter,
+                                      List<Set<Node>> sccs) {
+        index.put(v, counter[0]);
+        lowlink.put(v, counter[0]);
+        counter[0]++;
+        stack.push(v);
+        onStack.add(v);
+
+        for (Node w : g.getChildren(v)) {  // outgoing edges only
+            if (!index.containsKey(w)) {
+                strongConnect(w, g, index, lowlink, stack, onStack, counter, sccs);
+                lowlink.put(v, Math.min(lowlink.get(v), lowlink.get(w)));
+            } else if (onStack.contains(w)) {
+                lowlink.put(v, Math.min(lowlink.get(v), index.get(w)));
+            }
+        }
+
+        // root of an SCC
+        if (lowlink.get(v).equals(index.get(v))) {
+            Set<Node> comp = new LinkedHashSet<>();
+            Node w;
+            do {
+                w = stack.pop();
+                onStack.remove(w);
+                comp.add(w);
+            } while (!w.equals(v));
+            sccs.add(comp);
+        }
+    }
+
     /**
      * The GraphType enum represents the types of graphs that can be used in the application.
      */

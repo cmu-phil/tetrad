@@ -884,6 +884,7 @@ public final class Fcit implements IGraphSearch {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+        setSuperVerbose(verbose);
     }
 
     /**
