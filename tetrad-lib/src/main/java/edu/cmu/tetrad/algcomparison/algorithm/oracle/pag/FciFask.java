@@ -133,37 +133,33 @@ public class FciFask extends AbstractBootstrapAlgorithm
 
         // --- Phase 2a: Orient tail–tail (—) edges using FASK left-right on standardized data ---
         for (Edge e : new ArrayList<>(pag.getEdges())) { // snapshot to allow mutation
-            if (!Edges.isUndirectedEdge(e)) continue;     // only X — Y (cycle marker under no selection)
+            if (Edges.isUndirectedEdge(e)) {
+                Node n1 = e.getNode1();
+                Node n2 = e.getNode2();
 
-            Node n1 = e.getNode1();
-            Node n2 = e.getNode2();
+                Integer i = nameToIdx.get(n1.getName());
+                Integer j = nameToIdx.get(n2.getName());
+                if (i == null || j == null) continue; // defensive: mismatch in variable sets
 
-            Integer i = nameToIdx.get(n1.getName());
-            Integer j = nameToIdx.get(n2.getName());
-            if (i == null || j == null) continue; // defensive: mismatch in variable sets
+                pag.removeEdge(e);
 
-            pag.removeEdge(e);
+                if (Fask.leftRightV2(data[i], data[j])) {
+                    pag.addDirectedEdge(n1, n2); // n1 -> n2
+                } else {
+                    pag.addDirectedEdge(n2, n1); // n2 -> n1
+                }
 
-            if (Fask.leftRightV2(data[i], data[j])) {
-                pag.addDirectedEdge(n1, n2); // n1 -> n2
-            } else {
-                pag.addDirectedEdge(n2, n1); // n2 -> n1
+                continue;
             }
-        }
 
-        // --- Phase 2b: Tail–circle (—o) and circle–tail (o—) safe refinements ---
-        for (Edge e : new ArrayList<>(pag.getEdges())) { // snapshot again; we'll mutate
             Node x = e.getNode1();
             Node y = e.getNode2();
 
             Endpoint exy = pag.getEndpoint(x, y);
             Endpoint eyx = pag.getEndpoint(y, x);
 
-            // Skip if already two heads or any tails that would be contradicted
-            if (exy == Endpoint.ARROW && eyx == Endpoint.ARROW) continue;
-
             // Case: x — o y  (TAIL at x toward y; CIRCLE at y toward x)
-            if (exy == Endpoint.TAIL && eyx == Endpoint.CIRCLE) {
+            if (eyx == Endpoint.TAIL && exy == Endpoint.CIRCLE) {
                 Integer ix = nameToIdx.get(x.getName());
                 Integer iy = nameToIdx.get(y.getName());
                 if (ix == null || iy == null) continue;
@@ -173,17 +169,18 @@ public class FciFask extends AbstractBootstrapAlgorithm
                     pag.removeEdge(x, y);
                     pag.addDirectedEdge(x, y);
                 }
+
                 continue;
             }
 
             // Case: x o — y  (CIRCLE at x toward y; TAIL at y toward x)
-            if (exy == Endpoint.CIRCLE && eyx == Endpoint.TAIL) {
+            if (eyx == Endpoint.CIRCLE && exy == Endpoint.TAIL) {
                 Integer ix = nameToIdx.get(x.getName());
                 Integer iy = nameToIdx.get(y.getName());
                 if (ix == null || iy == null) continue;
 
                 // If skewness prefers y -> x, sharpen to y -> x
-                if (!Fask.leftRightV2(data[ix], data[iy])) {
+                if (Fask.leftRightV2(data[iy], data[ix])) {
                     pag.removeEdge(x, y);
                     pag.addDirectedEdge(y, x);
                 }
