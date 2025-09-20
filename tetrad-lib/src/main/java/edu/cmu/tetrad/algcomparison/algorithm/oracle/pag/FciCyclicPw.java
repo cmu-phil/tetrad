@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
@@ -29,6 +29,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.R0R4Strategy;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -41,52 +44,50 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * FCI-CPW: Run FCI with internally constructed PW-forbidden knowledge, then orient edges using a pairwise left-right
- * rule on standardized data in cases that are safe under no-selection-bias cyclic semantics:
+ * FCI-CPW: Run FCI with internally constructed PW-forbidden knowledge, then orient edges
+ * using a pairwise left-right rule on standardized data in cases that are safe under
+ * no-selection-bias cyclic semantics:
  *
  * <ol>
  *   <li>Tail–tail (—) edges
- *     <ul>
- *       <li>Orient per pairwise rule.</li>
- *     </ul>
+ *     <ul><li>Orient per pairwise rule.</li></ul>
  *   </li>
  *   <li>Tail–circle (—o) edges
- *     <ul>
- *       <li>If pairwise prefers x→y, set x→y.</li>
- *     </ul>
+ *     <ul><li>If pairwise prefers x→y, set x→y (symmetrically, if prefers y→x, set y→x).</li></ul>
  *   </li>
- *   <li>Circle–tail (o—) edges
- *     <ul>
- *       <li>If pairwise prefers y→x, set y→x.</li>
- *     </ul>
+ *   <li>Circle–circle (o–o) edges
+ *     <ul><li>If pairwise prefers x→y, set x o→y (symmetrically for y→x).</li></ul>
  *   </li>
  * </ol>
  *
  * <p>We never alter &lt;-&gt; (two heads), never flip existing tails/heads,
- * and never touch o→ / ←o or o–o edges.</p>
+ * and never touch o→ or ←o edges.</p>
+ *
+ * <p>Finally, we apply Zhang’s final orientation rules (sound for cyclic graphs per Mooij & Claassen).
+ * Any directed arrow contradicting the CPW forbidden knowledge is demoted to o→ in the allowed direction.</p>
  *
  * <p><b>Parameter:</b> PAIRWISE_RULE ∈ {1..5}, default 3 (RSKEW).
  * 1=FASK1, 2=FASK2, 3=RSKEW, 4=SKEW, 5=TANH.</p>
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FCI-CPW",
-        command = "fci-cpw",
-        algoType = AlgType.allow_latent_common_causes
-)
+@edu.cmu.tetrad.annotation.Algorithm(name = "FCI-CPW", command = "fci-cpw", algoType = AlgType.allow_latent_common_causes)
 @Bootstrapping
-public class FciCyclicPw extends AbstractBootstrapAlgorithm
-        implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
 
-    /** Optional name for pairwise rule param (read if present). */
+    /**
+     * Optional name for pairwise rule param (read if present).
+     */
     private static final String PARAM_PAIRWISE_RULE = "PAIRWISE_RULE";
 
-    /** Independence test wrapper (same as FCI wrapper). */
+    /**
+     * Independence test wrapper (same as FCI wrapper).
+     */
     private IndependenceWrapper test;
 
-    public FciCyclicPw() {}
+    public FciCyclicPw() {
+    }
 
     public FciCyclicPw(IndependenceWrapper test) {
         this.test = test;
@@ -218,17 +219,29 @@ public class FciCyclicPw extends AbstractBootstrapAlgorithm
                     if (verbose) TetradLogger.getInstance().log("CPW o—: " + y + "→" + x + " (diff=" + diff + ")");
                 }
             }
+
+            // Case x o-o y
+            if (eyx == Endpoint.CIRCLE && exy == Endpoint.CIRCLE) {
+                if (diff > 0) {
+                    pag.setEndpoint(x, y, Endpoint.ARROW);
+                } else {
+                    pag.setEndpoint(y, x, Endpoint.ARROW);
+                }
+            }
         }
 
+        R0R4Strategy strategy = new R0R4StrategyTestBased(this.test.getTest(dataModel, parameters));
+        FciOrient orient = new FciOrient(strategy);
+        orient.setKnowledge(internalKnowledge);
+        orient.finalOrientation(pag);
         return pag;
     }
 
     // --------------------------- Internals ---------------------------
 
     /**
-     * Build forbidden knowledge from standardized data using pairwise left-right:
-     * For each pair (i,j), if diff(i,j,pwRule) > 0 forbid j->i; else forbid i->j.
-     * (No thresholding.)
+     * Build forbidden knowledge from standardized data using pairwise left-right: For each pair (i,j), if
+     * diff(i,j,pwRule) > 0 forbid j->i; else forbid i->j. (No thresholding.)
      */
     private Knowledge buildPwForbiddenKnowledge(double[][] data, List<Node> nodes, int pwRule, boolean verbose) {
         Knowledge knowledge = new Knowledge();
@@ -243,11 +256,13 @@ public class FciCyclicPw extends AbstractBootstrapAlgorithm
                 if (diff > 0) {
                     // prefer xi -> yj  ⇒ forbid yj -> xi
                     knowledge.setForbidden(yj.getName(), xi.getName());
-                    if (verbose) TetradLogger.getInstance().log("CPW-K: forbid " + yj + "→" + xi + " (prefer " + xi + "→" + yj + ", diff=" + diff + ")");
+                    if (verbose)
+                        TetradLogger.getInstance().log("CPW-K: forbid " + yj + "→" + xi + " (prefer " + xi + "→" + yj + ", diff=" + diff + ")");
                 } else {
                     // prefer yj -> xi  ⇒ forbid xi -> yj
                     knowledge.setForbidden(xi.getName(), yj.getName());
-                    if (verbose) TetradLogger.getInstance().log("CPW-K: forbid " + xi + "→" + yj + " (prefer " + yj + "→" + xi + ", diff=" + diff + ")");
+                    if (verbose)
+                        TetradLogger.getInstance().log("CPW-K: forbid " + xi + "→" + yj + " (prefer " + yj + "→" + xi + ", diff=" + diff + ")");
                 }
             }
         }
