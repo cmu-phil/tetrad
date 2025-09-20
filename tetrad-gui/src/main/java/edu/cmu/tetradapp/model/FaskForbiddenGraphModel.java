@@ -35,6 +35,8 @@ import edu.cmu.tetrad.util.Parameters;
 import java.io.Serial;
 import java.util.List;
 
+import static java.lang.Math.abs;
+
 /**
  * The FaskForbiddenGraphModel class is a subclass of KnowledgeBoxModel and represents a model for a graph with
  * forbidden edges. It creates a graph to which the forbidden edges are added based on the given data set and
@@ -49,6 +51,10 @@ public class FaskForbiddenGraphModel extends KnowledgeBoxModel {
      * The graph to which the forbidden edges are to be added.
      */
     private Graph resultGraph = new EdgeListGraph();
+    /**
+     * The minimum left-right difference to register a direction,
+     */
+    private double minDiff = 0.01;
 
     /**
      * <p>Constructor for ForbiddenGraphModel.</p>
@@ -90,13 +96,20 @@ public class FaskForbiddenGraphModel extends KnowledgeBoxModel {
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
-                Node node1 = nodes.get(i);
-                Node node2 = nodes.get(j);
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
 
-                if (Fask.leftRightV2(data[i], data[j])) {
-                    knowledge.setForbidden(node1.getName(), node2.getName());
-                } else {
-                    knowledge.setForbidden(node2.getName(), node1.getName());
+                double[] _x = data[i];
+                double[] _y = data[j];
+
+                double diff = Fask.corrExp(_x, _y, _x) - Fask.corrExp(_x, _y, _y);
+
+                if (abs(diff) > minDiff) {
+                    if (diff > 0) {
+                        knowledge.setForbidden(y.getName(), x.getName());
+                    } else {
+                        knowledge.setForbidden(x.getName(), y.getName());
+                    }
                 }
             }
         }

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
@@ -39,34 +39,53 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Math.abs;
+
 /**
- * FCI-FASK: Run FCI with internally constructed FASK-forbidden knowledge,
- * then orient edges using FASK's left-right rule on standardized data in cases that are safe under no-selection-bias
- * cyclic semantics:
- *   (1) tail–tail (—) edges → orient per skewness;
- *   (2) tail–circle (—o) edges → if skewness prefers x→y, set x→y;
- *   (3) circle–tail (o—) edges → if skewness prefers y→x, set y→x.
+ * FCI-CPW: Run FCI with internally constructed PW-forbidden knowledge, then orient edges using a pairwise left-right
+ * rule on standardized data in cases that are safe under no-selection-bias cyclic semantics:
  *
- * We never alter <-> (two heads), never flip existing tails/heads, and never touch o→ / ←o or o–o edges.
+ * <ol>
+ *   <li>Tail–tail (—) edges
+ *     <ul>
+ *       <li>Orient per skewness.</li>
+ *     </ul>
+ *   </li>
+ *   <li>Tail–circle (—o) edges
+ *     <ul>
+ *       <li>If skewness prefers x→y, set x→y.</li>
+ *     </ul>
+ *   </li>
+ *   <li>Circle–tail (o—) edges
+ *     <ul>
+ *       <li>If skewness prefers y→x, set y→x.</li>
+ *     </ul>
+ *   </li>
+ * </ol>
+ *
+ * <p>We never alter &lt;-&gt; (two heads), never flip existing tails/heads,
+ * and never touch o→ / ←o or o–o edges.</p>
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FCI-FASK",
-        command = "fci-fask",
-        algoType = AlgType.allow_latent_common_causes
-)
+@edu.cmu.tetrad.annotation.Algorithm(name = "FCI-CPW", command = "fci-cpw", algoType = AlgType.allow_latent_common_causes)
 @Bootstrapping
-public class FciFask extends AbstractBootstrapAlgorithm
-        implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
 
-    /** Independence test wrapper (same as FCI wrapper). */
+    /**
+     * Independence test wrapper (same as FCI wrapper).
+     */
     private IndependenceWrapper test;
+    /**
+     * The minimum left-right difference to register a direction,
+     */
+    private double minDiff = 0.01;
 
-    public FciFask() {}
+    public FciCyclicPw() {
+    }
 
-    public FciFask(IndependenceWrapper test) {
+    public FciCyclicPw(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -83,10 +102,10 @@ public class FciFask extends AbstractBootstrapAlgorithm
         }
 
         if (!(dataModel instanceof DataSet dataSet)) {
-            throw new IllegalArgumentException("FCI-FASK expects a DataSet.");
+            throw new IllegalArgumentException("FCI-CPW expects a DataSet.");
         }
         if (!dataSet.isContinuous()) {
-            throw new IllegalArgumentException("FCI-FASK currently supports continuous data (for FASK skewness).");
+            throw new IllegalArgumentException("FCI-CPW currently supports linear skewed data (skewed).");
         }
 
         // Standardize once; reuse for knowledge + all skewness decisions
@@ -98,8 +117,8 @@ public class FciFask extends AbstractBootstrapAlgorithm
         Map<String, Integer> nameToIdx = new HashMap<>();
         for (int k = 0; k < nodes.size(); k++) nameToIdx.put(nodes.get(k).getName(), k);
 
-        // --- Phase 0: Build FASK-forbidden knowledge (internal only) ---
-        Knowledge internalKnowledge = buildFaskForbiddenKnowledge(data, nodes);
+        // --- Phase 0: Build PW-forbidden knowledge (internal only) ---
+        Knowledge internalKnowledge = buildPwForbiddenKnowledge(data, nodes);
 
         // --- Phase 1: Run FCI with that knowledge ---
         edu.cmu.tetrad.search.Fci.ColliderRule colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
@@ -131,26 +150,10 @@ public class FciFask extends AbstractBootstrapAlgorithm
             pag = IndTestFdrWrapper.doFdrLoop(fci, negativelyCorrelated, alpha, fdrQ, verbose);
         }
 
-        // --- Phase 2a: Orient tail–tail (—) edges using FASK left-right on standardized data ---
+        // --- Phase 2a: Orient tail–tail (—) edges using PW left-right on standardized data ---
         for (Edge e : new ArrayList<>(pag.getEdges())) { // snapshot to allow mutation
-            if (Edges.isUndirectedEdge(e)) {
-                Node n1 = e.getNode1();
-                Node n2 = e.getNode2();
-
-                Integer i = nameToIdx.get(n1.getName());
-                Integer j = nameToIdx.get(n2.getName());
-                if (i == null || j == null) continue; // defensive: mismatch in variable sets
-
-                pag.removeEdge(e);
-
-                if (Fask.leftRightV2(data[i], data[j])) {
-                    pag.addDirectedEdge(n1, n2); // n1 -> n2
-                } else {
-                    pag.addDirectedEdge(n2, n1); // n2 -> n1
-                }
-
-                continue;
-            }
+            Node n1 = e.getNode1();
+            Node n2 = e.getNode2();
 
             Node x = e.getNode1();
             Node y = e.getNode2();
@@ -158,31 +161,40 @@ public class FciFask extends AbstractBootstrapAlgorithm
             Endpoint exy = pag.getEndpoint(x, y);
             Endpoint eyx = pag.getEndpoint(y, x);
 
-            // Case: x — o y  (TAIL at x toward y; CIRCLE at y toward x)
-            if (eyx == Endpoint.TAIL && exy == Endpoint.CIRCLE) {
-                Integer ix = nameToIdx.get(x.getName());
-                Integer iy = nameToIdx.get(y.getName());
-                if (ix == null || iy == null) continue;
+            Integer i = nameToIdx.get(n1.getName());
+            Integer j = nameToIdx.get(n2.getName());
+            if (i == null || j == null) continue; // defensive: mismatch in variable sets
 
-                // If skewness prefers x -> y, sharpen to x -> y
-                if (Fask.leftRightV2(data[ix], data[iy])) {
-                    pag.removeEdge(x, y);
-                    pag.addDirectedEdge(x, y);
+            double[] _x = data[i];
+            double[] _y = data[j];
+
+            double diff = Fask.corrExp(_x, _y, _x) - Fask.corrExp(_x, _y, _y);
+
+            if (abs(diff) > minDiff) {
+                if (Edges.isUndirectedEdge(e)) {
+                    if (diff > 0) {
+                        pag.removeEdge(n1, n2);
+                        pag.addDirectedEdge(n1, n2);
+                    } else {
+                        pag.removeEdge(n2, n1);
+                        pag.addDirectedEdge(n2, n1);
+                    }
                 }
 
-                continue;
-            }
+                // Case: x — o y  (TAIL at x toward y; CIRCLE at y toward x)
+                else if (eyx == Endpoint.TAIL && exy == Endpoint.CIRCLE) {
+                    if (diff > 0) {
+                        pag.removeEdge(n1, n2);
+                        pag.addDirectedEdge(n1, n2);
+                    }
+                }
 
-            // Case: x o — y  (CIRCLE at x toward y; TAIL at y toward x)
-            if (eyx == Endpoint.CIRCLE && exy == Endpoint.TAIL) {
-                Integer ix = nameToIdx.get(x.getName());
-                Integer iy = nameToIdx.get(y.getName());
-                if (ix == null || iy == null) continue;
-
-                // If skewness prefers y -> x, sharpen to y -> x
-                if (Fask.leftRightV2(data[iy], data[ix])) {
-                    pag.removeEdge(x, y);
-                    pag.addDirectedEdge(y, x);
+                // Case: x o — y  (CIRCLE at x toward y; TAIL at y toward x)
+                else if (eyx == Endpoint.CIRCLE && exy == Endpoint.TAIL) {
+                    if (diff < 0) {
+                        pag.removeEdge(n2, n1);
+                        pag.addDirectedEdge(n2, n1);
+                    }
                 }
             }
         }
@@ -193,21 +205,28 @@ public class FciFask extends AbstractBootstrapAlgorithm
     // --------------------------- Internals ---------------------------
 
     /**
-     * Build forbidden knowledge from standardized data using FASK left-right:
-     * For each pair (i,j), if leftRightV2(data[i], data[j]) is true, forbid i -> j; else forbid j -> i.
+     * Build forbidden knowledge from standardized data using pairwise left-right: For each pair (i,j), if
+     * leftRightV2(data[i], data[j]) is true, forbid i -> j; else forbid j -> i.
      */
-    private Knowledge buildFaskForbiddenKnowledge(double[][] data, List<Node> nodes) {
+    private Knowledge buildPwForbiddenKnowledge(double[][] data, List<Node> nodes) {
         Knowledge knowledge = new Knowledge();
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
-                Node node1 = nodes.get(i);
-                Node node2 = nodes.get(j);
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
 
-                if (Fask.leftRightV2(data[i], data[j])) {
-                    knowledge.setForbidden(node1.getName(), node2.getName());
-                } else {
-                    knowledge.setForbidden(node2.getName(), node1.getName());
+                double[] _x = data[i];
+                double[] _y = data[j];
+
+                double diff = Fask.corrExp(_x, _y, _x) - Fask.corrExp(_x, _y, _y);
+
+                if (abs(diff) > minDiff) {
+                    if (diff > 0) {
+                        knowledge.setForbidden(y.getName(), x.getName());
+                    } else {
+                        knowledge.setForbidden(x.getName(), y.getName());
+                    }
                 }
             }
         }
@@ -224,7 +243,7 @@ public class FciFask extends AbstractBootstrapAlgorithm
 
     @Override
     public String getDescription() {
-        return "FCI-FASK: FCI with FASK-derived forbidden knowledge and skewness-based orientation of —, —o, and o— edges";
+        return "FCI-CPW: FCI with pairwise-derived forbidden knowledge and pairwise orientation of —, —o, and o— edges";
     }
 
     @Override
