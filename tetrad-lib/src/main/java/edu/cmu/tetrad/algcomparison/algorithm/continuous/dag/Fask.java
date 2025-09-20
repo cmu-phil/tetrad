@@ -112,37 +112,43 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             }
         }
 
-        edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters));
+        edu.cmu.tetrad.search.Fask fask = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters));
 
         int lrRule = parameters.getInt(FASK_LEFT_RIGHT_RULE);
 
         if (lrRule == 1) {
-            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
         } else if (lrRule == 2) {
-            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
         } else if (lrRule == 3) {
-            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
         } else if (lrRule == 4) {
-            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
         } else if (lrRule == 5) {
-            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
         } else {
             throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
         }
 
-        search.setDepth(parameters.getInt(DEPTH));
-        search.setAlpha(parameters.getDouble(ALPHA));
-        search.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
-        search.setDelta(parameters.getDouble(FASK_DELTA));
-        search.setUseFasAdjacencies(true);
-        search.setUseSkewAdjacencies(true);
+        fask.setDepth(parameters.getInt(DEPTH));
+        fask.setAlpha(parameters.getDouble(ALPHA));
+        fask.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
+        fask.setDelta(parameters.getDouble(FASK_DELTA));
+        fask.setUseFasAdjacencies(true);
+        fask.setUseSkewAdjacencies(true);
+
+        fask.setTwoCycleMinHits(1);
+        fask.setTwoCycleBonferroni(false);
+        fask.setTwoCycleMinPartitionFrac(0.10); // or 0.15
+        fask.setTwoCycleRidgeLambda(1e-6);      // small ridge; increase if Z is big/collinear
+        fask.setAlpha(0.05);                    // a bit looser than 1e-5
 
         if (algorithm != null) {
-            search.setExternalGraph(algorithm.search(dataSet, parameters));
+            fask.setExternalGraph(algorithm.search(dataSet, parameters));
         }
 
-        search.setKnowledge(this.knowledge);
-        return search.search();
+        fask.setKnowledge(this.knowledge);
+        return fask.search();
     }
 
     /**
