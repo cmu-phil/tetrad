@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -35,14 +35,12 @@ import edu.cmu.tetrad.util.Parameters;
 import java.io.Serial;
 import java.util.List;
 
-import static java.lang.Math.abs;
-
 /**
  * The FaskForbiddenGraphModel class is a subclass of KnowledgeBoxModel and represents a model for a graph with
  * forbidden edges. It creates a graph to which the forbidden edges are added based on the given data set and
  * parameters.
  */
-public class FaskForbiddenGraphModel extends KnowledgeBoxModel {
+public class PairwiseForbiddenGraphModel extends KnowledgeBoxModel {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -51,10 +49,6 @@ public class FaskForbiddenGraphModel extends KnowledgeBoxModel {
      * The graph to which the forbidden edges are to be added.
      */
     private Graph resultGraph = new EdgeListGraph();
-    /**
-     * The minimum left-right difference to register a direction,
-     */
-    private double minDiff = 0.01;
 
     /**
      * <p>Constructor for ForbiddenGraphModel.</p>
@@ -62,7 +56,7 @@ public class FaskForbiddenGraphModel extends KnowledgeBoxModel {
      * @param wrapper a {@link DataWrapper} object
      * @param params  a {@link Parameters} object
      */
-    public FaskForbiddenGraphModel(DataWrapper wrapper, Parameters params) {
+    public PairwiseForbiddenGraphModel(DataWrapper wrapper, Parameters params) {
         super(params);
         createKnowledge((DataSet) wrapper.getSelectedDataModel(), params);
     }
@@ -102,14 +96,12 @@ public class FaskForbiddenGraphModel extends KnowledgeBoxModel {
                 double[] _x = data[i];
                 double[] _y = data[j];
 
-                double diff = Fask.corrExp(_x, _y, _x) - Fask.corrExp(_x, _y, _y);
+                double diff = Fask.leftRightDiff(_x, _y, 3);
 
-                if (abs(diff) > minDiff) {
-                    if (diff > 0) {
-                        knowledge.setForbidden(y.getName(), x.getName());
-                    } else {
-                        knowledge.setForbidden(x.getName(), y.getName());
-                    }
+                if (diff > 0) {
+                    knowledge.setForbidden(y.getName(), x.getName());
+                } else {
+                    knowledge.setForbidden(x.getName(), y.getName());
                 }
             }
         }
