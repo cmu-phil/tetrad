@@ -4,44 +4,78 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.CamAdditiveBic;
+import edu.cmu.tetrad.search.score.AdditiveLocalScorer;
 import edu.cmu.tetrad.search.score.CamAdditivePsplineBic;
-import edu.cmu.tetrad.sem.Scorer;
 
 import java.util.*;
 
 /**
- * CAM (Causal Additive Models) search implementation.
+ * CAM (Causal Additive Models): PNS -> IncEdge (order) -> Prune.
+ * Scoring is injected via AdditiveLocalScorer so you can use either
+ * P-splines or BasisFunctionBlocksBicScore (through the adapter).
  */
 public class Cam {
 
-    private DataSet data;
-    private int degree = 3;
+    // ----- data -----
+    private final DataSet data;
+
+    // ----- scorer (injectable) -----
+    private AdditiveLocalScorer scorer;
+
+    // ----- knobs -----
+    private int degree = 3;                  // kept for API parity; not used by P-splines directly
     private double ridge = 1e-6;
     private double penaltyDiscount = 1.0;
     private int maxForwardParents = 20;
-    private int maxOrderIters = 2000;
     private boolean verbose = false;
 
-    // --- initialization & multi-start knobs ---
+    // Order search restarts
     private long seed = System.nanoTime();
-    private int restarts = 10; // number of random initial orders to try
+    private int restarts = 10;
 
-    // Scorer for local scores (assumed initialized elsewhere)
-    private CamAdditivePsplineBic scorer;
+    // PNS candidates: top-k univariate per target
+    private int pnsTopK = 10;
+    private final Map<Node, List<Node>> pnsCandidates = new HashMap<>();
+
+    // Small LRU cache for local scores: key = "Y|P1,P2,..."
+    private final Map<String, Double> localCache = new LinkedHashMap<>(1 << 12, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Double> eldest) { return size() > 20000; }
+    };
+
+    // ---------------- ctor ----------------
 
     public Cam(DataSet data, int degree) {
-        this.data = data;
-//        this.degree = degree;
-//        this.scorer = new CamAdditiveBic(data, degree);//, ridge, penaltyDiscount);
+        this.data = Objects.requireNonNull(data, "data");
         this.degree = degree;
-        this.scorer = new CamAdditivePsplineBic(data)
-                .setNumBasis(10)          // try 8–12
-                .setPenaltyOrder(2)
-                .setRidge(1e-6)
-                .setPenaltyDiscount(this.penaltyDiscount); // keep in sync if you change later
 
+        // Default scorer = P-splines wrapped to AdditiveLocalScorer
+        CamAdditivePsplineBic ps = new CamAdditivePsplineBic(data)
+                .setNumBasis(10)
+                .setPenaltyOrder(2)
+                .setRidge(ridge)
+                .setPenaltyDiscount(penaltyDiscount);
+        this.scorer = new AdditiveLocalScorer() {
+            @Override public double localScore(Node y, Collection<Node> parents) { return ps.localScore(y, parents); }
+            @Override public double localScore(int yIndex, int... parentIdxs) { return ps.localScore(yIndex, parentIdxs); }
+            @Override public AdditiveLocalScorer setPenaltyDiscount(double c) { ps.setPenaltyDiscount(c); return this; }
+            @Override public AdditiveLocalScorer setRidge(double r) { ps.setRidge(r); return this; }
+        };
     }
+
+    // ---------------- scorer injection ----------------
+
+    /** Inject a custom local scorer (e.g., CamBasisFunctionBicScorer). */
+    public Cam setScorer(AdditiveLocalScorer s) {
+        this.scorer = Objects.requireNonNull(s, "scorer");
+        // keep penalties in sync
+        this.scorer.setPenaltyDiscount(this.penaltyDiscount).setRidge(this.ridge);
+        // clear cache since scoring regime changed
+        this.localCache.clear();
+        return this;
+    }
+
+    // ---------------- setters ----------------
 
     public Cam setRidge(double ridge) {
         this.ridge = ridge;
@@ -56,12 +90,7 @@ public class Cam {
     }
 
     public Cam setMaxForwardParents(int maxForwardParents) {
-        this.maxForwardParents = maxForwardParents;
-        return this;
-    }
-
-    public Cam setMaxOrderIters(int maxOrderIters) {
-        this.maxOrderIters = maxOrderIters;
+        this.maxForwardParents = Math.max(1, maxForwardParents);
         return this;
     }
 
@@ -70,116 +99,186 @@ public class Cam {
         return this;
     }
 
-    public Cam setSeed(long s){ this.seed = s; return this; }
-    public Cam setRestarts(int r){ this.restarts = Math.max(1, r); return this; }
+    public Cam setSeed(long seed) {
+        this.seed = seed;
+        return this;
+    }
+
+    public Cam setRestarts(int restarts) {
+        this.restarts = Math.max(1, restarts);
+        return this;
+    }
+
+    /** CAM PNS strength: keep top-k univariate candidates per target (default 10). */
+    public Cam setPnsTopK(int k) {
+        this.pnsTopK = Math.max(1, k);
+        return this;
+    }
+
+    // ---------------- core search ----------------
 
     public Graph search() throws InterruptedException {
-        final List<Node> vars = new ArrayList<>(data.getVariables());
+        // Stage 1: PNS
+        computePnsCandidates();
+
+        // Stage 2: IncEdge order with restarts
         List<Node> bestOrder = null;
         double bestScore = Double.POSITIVE_INFINITY;
 
         for (int r = 0; r < restarts; r++) {
-            // ---- Step 1: order search with seeded random init ----
-            List<Node> order = new ArrayList<>(vars);
-            Collections.shuffle(order, new Random(seed + 31L * r));
-
-            // Initial total using full scoring
-            double current = permutationScoreInitial(order);
-            boolean improved = true;
-            int iters = 0;
-
-            while (improved && iters++ < maxOrderIters) {
-                improved = false;
-
-                for (int i = 0; i + 1 < order.size(); i++) {
-                    // Nodes at positions i and i+1
-                    Node A = order.get(i);
-                    Node B = order.get(i + 1);
-
-                    // Build predecessor lists quickly
-                    List<Node> predsForA_before = (i == 0) ? Collections.emptyList() : new ArrayList<>(order.subList(0, i));
-                    List<Node> predsForB_before = new ArrayList<>(predsForA_before);
-                    predsForB_before.add(A); // because B sits after A before the swap
-
-                    // Scores before the swap (only A and B are affected)
-                    double sA_before = scorer.localScore(A, predsForA_before);
-                    double sB_before = scorer.localScore(B, predsForB_before);
-
-                    // After swap, positions are B (at i) and A (at i+1)
-                    // Predecessors for B_after are exactly predsForA_before
-                    // Predecessors for A_after are predsForA_before U {B}
-                    double sB_after = scorer.localScore(B, predsForA_before);
-                    List<Node> predsForA_after = new ArrayList<>(predsForA_before);
-                    predsForA_after.add(B);
-                    double sA_after = scorer.localScore(A, predsForA_after);
-
-                    double delta = (sB_after + sA_after) - (sA_before + sB_before);
-                    if (delta < 0.0) {
-                        // accept swap
-                        Collections.swap(order, i, i + 1);
-                        current += delta;
-                        improved = true;
-                    }
-
-                    if (Thread.interrupted()) throw new InterruptedException();
-                }
-            }
-
-            if (current < bestScore) {
-                bestScore = current;
+            Random rnd = new Random(seed + 31L * r);
+            List<Node> order = incEdgeOrder(rnd);
+            double total = permutationScore(order);
+            if (total < bestScore) {
+                bestScore = total;
                 bestOrder = order;
             }
+            if (Thread.interrupted()) throw new InterruptedException();
         }
 
-        if (verbose) System.out.printf("CAM order best score: %.3f (over %d restarts)\n", bestScore, restarts);
+        if (verbose) {
+            System.out.printf("CAM order best score: %.3f (over %d restarts)%n", bestScore, restarts);
+        }
 
-        // ---- Step 2: forward–backward selection using the best order ----
+        // Stage 3: Prune (forward+backward) restricted to PNS
         return buildDagFromOrder(bestOrder);
     }
 
-    /** Full score for an order: sum_y BIC(y | predecessors in order). */
-    private double permutationScoreInitial(List<Node> order){
-        double sum = 0.0;
-        for (int i = 0; i < order.size(); i++) {
-            Node y = order.get(i);
-            List<Node> preds = (i == 0) ? Collections.emptyList() : new ArrayList<>(order.subList(0, i));
-            sum += scorer.localScore(y, preds);
+    // ---------------- CAM: PNS ----------------
+
+    /** For each target y, rank all x≠y by univariate additive BIC and keep top-k. */
+    private void computePnsCandidates() {
+        List<Node> vars = data.getVariables();
+        pnsCandidates.clear();
+
+        for (Node y : vars) {
+            int yIdx = vars.indexOf(y);
+            List<Node> others = new ArrayList<>(vars);
+            others.remove(y);
+
+            // rank by BIC of y ~ s(x) (lower is better)
+            others.sort(Comparator.comparingDouble(x -> {
+                int xIdx = vars.indexOf(x);
+                return scorer.localScore(yIdx, xIdx);
+            }));
+
+            if (others.size() > pnsTopK) {
+                others = new ArrayList<>(others.subList(0, pnsTopK));
+            }
+            pnsCandidates.put(y, others);
         }
-        return sum;
     }
 
-    /** Build DAG by greedy forward + backward among predecessors of each node in the given order. */
+    // ---------------- CAM: IncEdge order ----------------
+
+    /**
+     * Build an order greedily by appending the best next variable (IncEdge).
+     * Predecessors considered for candidate y are placed ∩ PNS(y).
+     */
+    private List<Node> incEdgeOrder(Random rnd) {
+        List<Node> all = new ArrayList<>(data.getVariables());
+        Collections.shuffle(all, rnd); // randomized scan order; ties resolved deterministically below
+
+        List<Node> order = new ArrayList<>(all.size());
+        Set<Node> placed = new LinkedHashSet<>();
+
+        while (order.size() < all.size()) {
+            Node bestVar = null;
+            double best = Double.POSITIVE_INFINITY;
+
+            for (Node y : all) {
+                if (placed.contains(y)) continue;
+
+                // predecessors = placed ∩ PNS(y)
+                List<Node> preds = new ArrayList<>(order);
+                List<Node> cand = pnsCandidates.getOrDefault(y, all);
+                preds.removeIf(p -> !cand.contains(p));
+
+                double s = cachedLocal(y, preds);
+                if (s < best - 1e-12) {
+                    best = s;
+                    bestVar = y;
+                } else if (Math.abs(s - best) <= 1e-12) {
+                    // deterministic tie-break: lexicographic by name
+                    if (bestVar == null || y.getName().compareTo(bestVar.getName()) < 0) {
+                        bestVar = y;
+                    }
+                }
+            }
+
+            order.add(bestVar);
+            placed.add(bestVar);
+        }
+        return order;
+    }
+
+    // ---------------- CAM: Prune ----------------
+
+    /** Build DAG by greedy forward + backward restricted to predecessors in PNS(y). */
     private Graph buildDagFromOrder(List<Node> order) throws InterruptedException {
         Graph g = new EdgeListGraph(order);
 
         for (int i = 0; i < order.size(); i++) {
             Node y = order.get(i);
-            List<Node> cand = (i == 0) ? Collections.emptyList() : new ArrayList<>(order.subList(0, i));
+
+            // predecessors by order
+            List<Node> preds = (i == 0) ? Collections.emptyList() : new ArrayList<>(order.subList(0, i));
+            // restrict to PNS(y)
+            List<Node> cand = new ArrayList<>(pnsCandidates.getOrDefault(y, preds));
+            cand.retainAll(preds);
 
             Set<Node> pa = forwardSelect(y, cand, maxForwardParents);
             backwardPrune(y, pa);
-            for (Node p : pa) g.addDirectedEdge(p, y);
 
+            for (Node p : pa) g.addDirectedEdge(p, y);
             if (Thread.interrupted()) throw new InterruptedException();
         }
         return g;
     }
 
-    // Assume forwardSelect, backwardPrune, and any other helpers remain unchanged here.
+    // ---------------- helpers: scoring & selection ----------------
+
+    /** Sum of local scores consistent with the order (each node given its predecessors). */
+    private double permutationScore(List<Node> order) {
+        double sum = 0.0;
+        for (int i = 0; i < order.size(); i++) {
+            Node y = order.get(i);
+            List<Node> preds = (i == 0) ? Collections.emptyList() : new ArrayList<>(order.subList(0, i));
+            sum += cachedLocal(y, preds);
+        }
+        return sum;
+    }
+
+    /** Tiny LRU cache over scorer.localScore(y, parents). */
+    private double cachedLocal(Node y, Collection<Node> parents) {
+        final String key;
+        if (parents.isEmpty()) {
+            key = y.getName() + "|";
+        } else {
+            StringBuilder sb = new StringBuilder(64).append(y.getName()).append('|');
+            for (Node p : parents) sb.append(p.getName()).append(',');
+            key = sb.toString();
+        }
+        Double v = localCache.get(key);
+        if (v != null) return v;
+        double s = scorer.localScore(y, parents);
+        localCache.put(key, s);
+        return s;
+    }
 
     private Set<Node> forwardSelect(Node y, List<Node> cand, int cap) {
         Set<Node> parents = new LinkedHashSet<>();
-        double cur = scorer.localScore(y, parents);
+        double cur = cachedLocal(y, parents);
 
-        // simple greedy forward: add single best ΔBIC < 0 until no improvement or cap
         boolean improved = true;
         while (improved && parents.size() < cap && !cand.isEmpty()) {
             improved = false;
             Node bestP = null; double bestDelta = 0.0;
+
             for (Node x : cand) {
                 if (parents.contains(x)) continue;
                 parents.add(x);
-                double s = scorer.localScore(y, parents);
+                double s = cachedLocal(y, parents);
                 double d = s - cur;
                 parents.remove(x);
                 if (d < bestDelta) { bestDelta = d; bestP = x; }
@@ -194,14 +293,16 @@ public class Cam {
     }
 
     private void backwardPrune(Node y, Set<Node> parents) {
-        double cur = scorer.localScore(y, parents);
+        double cur = cachedLocal(y, parents);
         boolean improved = true;
+
         while (improved && !parents.isEmpty()) {
             improved = false;
-            Node bestDrop = null; double bestDelta = 0.0; // negative better
+            Node bestDrop = null; double bestDelta = 0.0;
+
             for (Node x : new ArrayList<>(parents)) {
                 parents.remove(x);
-                double s = scorer.localScore(y, parents);
+                double s = cachedLocal(y, parents);
                 double d = s - cur;
                 parents.add(x);
                 if (d < bestDelta) { bestDelta = d; bestDrop = x; }

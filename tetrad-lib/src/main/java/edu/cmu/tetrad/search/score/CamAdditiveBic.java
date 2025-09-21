@@ -8,13 +8,13 @@ import edu.cmu.tetrad.search.utils.Embedding;
 import java.util.*;
 
 /**
- * CAM-style additive BIC scorer for a single node given a candidate parent set.
- * Implements: Y ~ sum_k Phi(X_k)  (main effects only; no interactions).
- *
- * Internally, we build one global embedding via Embedding, then use BlocksBicScore
- * restricted to the blocks of the chosen parents.
+ * CAM-style additive BIC scorer for a single node given a candidate parent set. Implements: Y ~ sum_k Phi(X_k)  (main
+ * effects only; no interactions).
+ * <p>
+ * Internally, we build one global embedding via Embedding, then use BlocksBicScore restricted to the blocks of the
+ * chosen parents.
  */
-public final class CamAdditiveBic {
+public final class CamAdditiveBic implements AdditiveLocalScorer {
 
     private final DataSet raw;
     private final List<Node> variables;
@@ -25,7 +25,7 @@ public final class CamAdditiveBic {
 
     // knobs (CAM defaults)
     private final int degree;
-    private int includeIntercept = 1;
+    private int includeIntercept = 2;
     private int standardize = 1;
     private double ridge = 0.0;
     private double penaltyDiscount = 1.0;
@@ -51,24 +51,45 @@ public final class CamAdditiveBic {
         this.blocksBic.setPenaltyDiscount(penaltyDiscount);
     }
 
-    public void setIncludeIntercept(int v) { this.includeIntercept = v; }
-    public void setStandardize(int v) { this.standardize = v; }
-    public void setRidge(double v) { this.ridge = v; blocksBic.setRidge(v); }
-    public void setPenaltyDiscount(double c) { this.penaltyDiscount = c; blocksBic.setPenaltyDiscount(c); }
+    public void setIncludeIntercept(int v) {
+        this.includeIntercept = v;
+    }
 
-    /** Return BIC(Y | Pa) where Pa ⊆ variables. */
+    public void setStandardize(int v) {
+        this.standardize = v;
+    }
+
+    public AdditiveLocalScorer setRidge(double v) {
+        this.ridge = v;
+        blocksBic.setRidge(v);
+        return this;
+    }
+
+    public AdditiveLocalScorer setPenaltyDiscount(double c) {
+        this.penaltyDiscount = c;
+        blocksBic.setPenaltyDiscount(c);
+        return this;
+    }
+
+    /**
+     * Return BIC(Y | Pa) where Pa ⊆ variables.
+     */
     public double localScore(Node y, Collection<Node> parents) {
         return blocksBic.localScore(y, List.copyOf(parents));
     }
 
-    /** Convenience by index. */
+    /**
+     * Convenience by index.
+     */
     public double localScore(int yIndex, int... parentIdxs) {
         return blocksBic.localScore(yIndex, parentIdxs);
     }
 
-    /** Total CAM score for a permutation π: sum_y BIC( y | {π-predecessors} ). */
+    /**
+     * Total CAM score for a permutation π: sum_y BIC( y | {π-predecessors} ).
+     */
     public double permutationScore(List<Node> order) {
-        Map<Node,Integer> pos = new HashMap<>();
+        Map<Node, Integer> pos = new HashMap<>();
         for (int i = 0; i < order.size(); i++) pos.put(order.get(i), i);
 
         double sum = 0.0;
@@ -81,6 +102,11 @@ public final class CamAdditiveBic {
         return sum;
     }
 
-    public List<Node> getVariables(){ return variables; }
-    public int getDegree(){ return degree; }
+    public List<Node> getVariables() {
+        return variables;
+    }
+
+    public int getDegree() {
+        return degree;
+    }
 }

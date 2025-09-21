@@ -17,7 +17,7 @@ import java.util.*;
  *
  * No external deps; uses EJML for linear algebra.
  */
-public final class CamAdditivePsplineBic {
+public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
 
     // ----- config knobs -----
     private final DataSet data;
