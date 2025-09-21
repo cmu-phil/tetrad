@@ -10,233 +10,97 @@ import edu.cmu.tetrad.search.score.CamAdditivePsplineBic;
 import java.util.*;
 
 /**
- * CAM (Causal Additive Models): PNS -> IncEdge (order) -> Prune. Scoring is injected via AdditiveLocalScorer so you can
- * use either P-splines or BasisFunctionBlocksBicScore (through the adapter).
+ * CAM (Causal Additive Models): PNS -> IncEdge (order) -> Prune.
+ * Scoring is injected via AdditiveLocalScorer so you can use either
+ * P-splines or a basis-function scorer (through an adapter).
  */
 public class Cam {
-    /**
-     * The primary dataset used by the CAM (Causal Additive Model) algorithm for causal discovery. Represents the input
-     * data upon which the model operates, including processing and scoring. This is a final reference and cannot be
-     * re-assigned after initialization.
-     */
+
+    // ----- data -----
     private final DataSet data;
-    /**
-     * Small LRU cache for local scores: key = "Y|P1,P2,..."
-     */
+
+    // ----- PNS candidates: y -> list of top univariate candidates -----
     private final Map<Node, List<Node>> pnsCandidates = new HashMap<>();
-    /**
-     * Small LRU cache for local scores: key = "Y|P1,P2,..."
-     */
+
+    // ----- Tiny LRU cache for local scores: key = "Y|P1,P2,..." (parents sorted) -----
     private final Map<String, Double> localCache = new LinkedHashMap<>(1 << 12, 0.75f, true) {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, Double> eldest) {
-            return size() > 20000;
-        }
+        @Override protected boolean removeEldestEntry(Map.Entry<String, Double> e) { return size() > 20_000; }
     };
-    /**
-     * The `scorer` variable represents an instance of the `AdditiveLocalScorer` interface. It is used to compute local
-     * scores for nodes based on specified parent sets. This variable plays a critical role in the structure learning
-     * process within the CAM (Causal Additive Modeling) algorithm, as it provides the scoring mechanism necessary for
-     * evaluating candidate structures.
-     * <p>
-     * The scorer can be injected or customized by using the `setScorer` method, allowing flexibility in defining the
-     * scoring logic, such as BIC or other additive scoring strategies.
-     */
+
+    // ----- scorer (injectable) -----
     private AdditiveLocalScorer scorer = null;
-    /**
-     * A small regularization parameter used to prevent overfitting or numerical instability during the model's scoring
-     * and optimization process. This value typically helps to stabilize computations, especially in ridge regression or
-     * additive scoring methods.
-     */
+
+    // ----- knobs -----
     private double ridge = 1e-6;
-    /**
-     * Represents a penalty discount factor used to adjust the penalty term in the scoring function. This value modifies
-     * how strongly complexity penalties impact the selection of model structures. A higher value applies less penalty,
-     * encouraging more complex structures, while a lower value increases the penalty, favoring simpler structures.
-     * <p>
-     * Default value is set to 1.0.
-     */
     private double penaltyDiscount = 1.0;
-    /**
-     * Specifies the maximum number of forward parent nodes to be considered for a given target in the constrained
-     * optimization process for causal structure learning.
-     * <p>
-     * This parameter limits the search space during the greedy forward selection when identifying dependencies, thus
-     * improving computational efficiency while controlling model complexity.
-     * <p>
-     * Default value: 20.
-     */
     private int maxForwardParents = 20;
-    /**
-     * Indicates whether verbose output is enabled. If set to true, additional logging or detailed information may be
-     * printed during execution. This can be useful for debugging or understanding the internal processes of the
-     * algorithm.
-     */
     private boolean verbose = false;
-    /**
-     * Seed used to initialize the random number generator for order search restarts. It is assigned with the current
-     * system time in nanoseconds by default.
-     * <p>
-     * Changing the seed value ensures variation in the search process, which may lead to different results in
-     * algorithms that rely on randomization.
-     */
+
+    // Order search restarts
     private long seed = System.nanoTime();
-    /**
-     * Specifies the number of restarts during the optimization process performed by the CAM algorithm. Restarts can
-     * help avoid local optima by reinitializing the process multiple times.
-     */
     private int restarts = 10;
-    /**
-     * The number of top univariate candidates to retain for each target during the constraint-based Pre-Neighborhood
-     * Selection (PNS) step. This parameter determines how many of the highest-ranked variables (based on univariate
-     * additive BIC scores) are considered relevant for further causal structure discovery.
-     * <p>
-     * Default value is 10.
-     * <p>
-     * Used in: - {@link #computePnsCandidates()} - {@link #setPnsTopK(int)}
-     */
+
+    // PNS candidates: top-k univariate per target
     private int pnsTopK = 10;
 
-    /**
-     * Constructs a Cam object with the specified data set.
-     *
-     * @param data the data set to be used for the algorithm; must not be null
-     */
     public Cam(DataSet data) {
         this.data = Objects.requireNonNull(data, "data");
     }
 
-    /**
-     * Sets the AdditiveLocalScorer instance to the specified scorer and updates its configurations with the current
-     * penalty discount and ridge values. Clears the local cache after setting.
-     *
-     * @param s the AdditiveLocalScorer instance to be used; must not be null
-     */
-    private void setScorer(AdditiveLocalScorer s) {
+    /** Public: inject a custom local scorer (e.g., P-splines or basis-functions). */
+    public Cam setScorer(AdditiveLocalScorer s) {
         this.scorer = Objects.requireNonNull(s, "scorer");
         this.scorer.setPenaltyDiscount(this.penaltyDiscount).setRidge(this.ridge);
         this.localCache.clear();
+        return this;
     }
 
-    /**
-     * Sets the ridge parameter for the Cam instance. This parameter is commonly used for regularization in algorithms
-     * that involve scoring or optimization processes. Setting this value updates the ridge configuration in the Cam
-     * object.
-     *
-     * @param ridge the double value representing the ridge parameter to be used; must not be negative
-     * @return the current Cam instance, allowing for method chaining
-     */
     public Cam setRidge(double ridge) {
         this.ridge = ridge;
+        if (this.scorer != null) this.scorer.setRidge(ridge);
         return this;
     }
 
-    /**
-     * Sets the penalty discount parameter for the Cam instance. The penalty discount is a factor used to adjust the
-     * scoring function in the underlying optimization or scoring algorithms. This method updates the current
-     * configuration of the Cam object with the specified value.
-     *
-     * @param penaltyDiscount the double value representing the penalty discount to be applied; must not be negative
-     * @return the current Cam instance, allowing for method chaining
-     */
     public Cam setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
+        if (this.scorer != null) this.scorer.setPenaltyDiscount(penaltyDiscount);
         return this;
     }
 
-    /**
-     * Sets the maximum number of forward parents that can be considered in the algorithm. The method ensures that the
-     * value for maximum forward parents is at least 1.
-     *
-     * @param maxForwardParents the maximum number of forward parents to be set; must be a positive integer
-     * @return the current Cam instance, allowing for method chaining
-     */
     public Cam setMaxForwardParents(int maxForwardParents) {
         this.maxForwardParents = Math.max(1, maxForwardParents);
         return this;
     }
 
-    /**
-     * Sets the verbose mode for the Cam instance. When verbose mode is enabled, additional diagnostic or logging
-     * information may be generated during execution.
-     *
-     * @param verbose a boolean value indicating whether verbose mode should be enabled (true) or disabled (false)
-     * @return the current Cam instance, allowing for method chaining
-     */
     public Cam setVerbose(boolean verbose) {
         this.verbose = verbose;
         return this;
     }
 
-    /**
-     * Sets the seed value for the random operations used within the Cam instance. This method allows reproducibility of
-     * results by initializing the random number generator with a specific seed value.
-     *
-     * @param seed the long value representing the seed for random operations
-     * @return the current Cam instance, allowing for method chaining
-     */
     public Cam setSeed(long seed) {
         this.seed = seed;
         return this;
     }
 
-    /**
-     * Sets the number of restarts to be used in the algorithm. The number of restarts determines how many times the
-     * search process restarts to potentially explore different solutions. This method ensures that the value is at
-     * least 1.
-     *
-     * @param restarts the integer value representing the number of restarts; must be a positive integer
-     * @return the current Cam instance, allowing for method chaining
-     */
     public Cam setRestarts(int restarts) {
         this.restarts = Math.max(1, restarts);
         return this;
     }
 
-    /**
-     * CAM PNS strength: keep top-k univariate candidates per target (default 10).
-     *
-     * @param k the integer value representing the number of top candidates to keep per target; must be a positive
-     *          integer
-     */
+    /** CAM PNS strength: keep top-k univariate candidates per target (default 10). */
     public Cam setPnsTopK(int k) {
         this.pnsTopK = Math.max(1, k);
         return this;
     }
 
     /**
-     * Executes the search process to learn a Directed Acyclic Graph (DAG) from the given data
-     * using the CAM algorithm. The search consists of:
-     *
-     * <ol>
-     *   <li><b>Preselection of Neighborhood Selection (PNS)</b>:
-     *     <ul>
-     *       <li>Identifies candidate parents for each node via univariate/additive screening.</li>
-     *       <li>Reduces the search space by keeping only the top candidates per target.</li>
-     *     </ul>
-     *   </li>
-     *   <li><b>Order search with restarts</b>:
-     *     <ul>
-     *       <li>Finds a good node ordering by iterating over multiple randomized restarts.</li>
-     *       <li>Scores partial orders and applies local improvements (e.g., incremental edge/order moves).</li>
-     *     </ul>
-     *   </li>
-     *   <li><b>DAG construction and pruning</b>:
-     *     <ul>
-     *       <li>Builds the final graph via forward selection among predecessors restricted to PNS candidates.</li>
-     *       <li>Applies backward pruning using the same local score to remove superfluous parents.</li>
-     *     </ul>
-     *   </li>
-     * </ol>
-     *
-     * During the search, the algorithm leverages scoring, candidate generation, and order optimization
-     * techniques to identify the best graph structure under the CAM assumptions.
-     *
-     * @return the Directed Acyclic Graph (DAG) learned through the search process
-     * @throws InterruptedException if the thread executing the method is interrupted during execution
+     * Executes the search: PNS -> order (IncEdge, multi-start) -> prune (forward/backward).
      */
     public Graph search() throws InterruptedException {
-        setScorer(new CamAdditivePsplineBic(data));
+        // Default scorer if none injected by caller.
+        if (this.scorer == null) {
+            setScorer(new CamAdditivePsplineBic(data));
+        }
 
         // Stage 1: PNS
         computePnsCandidates();
@@ -266,9 +130,7 @@ public class Cam {
 
     // ---------------- CAM: PNS ----------------
 
-    /**
-     * For each target y, rank all x≠y by univariate additive BIC and keep top-k.
-     */
+    /** For each target y, rank all x≠y by univariate additive BIC and keep top-k. */
     private void computePnsCandidates() {
         List<Node> vars = data.getVariables();
         pnsCandidates.clear();
@@ -294,8 +156,8 @@ public class Cam {
     // ---------------- CAM: IncEdge order ----------------
 
     /**
-     * Build an order greedily by appending the best next variable (IncEdge). Predecessors considered for candidate y
-     * are placed ∩ PNS(y).
+     * Build an order greedily by appending the best next variable (IncEdge).
+     * Predecessors considered for candidate y are placed ∩ PNS(y).
      */
     private List<Node> incEdgeOrder(Random rnd) {
         List<Node> all = new ArrayList<>(data.getVariables());
@@ -336,9 +198,7 @@ public class Cam {
 
     // ---------------- CAM: Prune ----------------
 
-    /**
-     * Build DAG by greedy forward + backward restricted to predecessors in PNS(y).
-     */
+    /** Build DAG by greedy forward + backward restricted to predecessors in PNS(y). */
     private Graph buildDagFromOrder(List<Node> order) throws InterruptedException {
         Graph g = new EdgeListGraph(order);
 
@@ -362,9 +222,7 @@ public class Cam {
 
     // ---------------- helpers: scoring & selection ----------------
 
-    /**
-     * Sum of local scores consistent with the order (each node given its predecessors).
-     */
+    /** Sum of local scores consistent with the order (each node given its predecessors). */
     private double permutationScore(List<Node> order) {
         double sum = 0.0;
         for (int i = 0; i < order.size(); i++) {
@@ -375,16 +233,18 @@ public class Cam {
         return sum;
     }
 
-    /**
-     * Tiny LRU cache over scorer.localScore(y, parents).
-     */
+    /** Order-invariant cache over scorer.localScore(y, parents). */
     private double cachedLocal(Node y, Collection<Node> parents) {
         final String key;
         if (parents.isEmpty()) {
             key = y.getName() + "|";
         } else {
+            // canonicalize parent names to avoid cache misses due to order
+            List<String> names = new ArrayList<>(parents.size());
+            for (Node p : parents) names.add(p.getName());
+            Collections.sort(names);
             StringBuilder sb = new StringBuilder(64).append(y.getName()).append('|');
-            for (Node p : parents) sb.append(p.getName()).append(',');
+            for (String name : names) sb.append(name).append(',');
             key = sb.toString();
         }
         Double v = localCache.get(key);
@@ -401,8 +261,7 @@ public class Cam {
         boolean improved = true;
         while (improved && parents.size() < cap && !cand.isEmpty()) {
             improved = false;
-            Node bestP = null;
-            double bestDelta = 0.0;
+            Node bestP = null; double bestDelta = 0.0;
 
             for (Node x : cand) {
                 if (parents.contains(x)) continue;
@@ -410,10 +269,7 @@ public class Cam {
                 double s = cachedLocal(y, parents);
                 double d = s - cur;
                 parents.remove(x);
-                if (d < bestDelta) {
-                    bestDelta = d;
-                    bestP = x;
-                }
+                if (d < bestDelta) { bestDelta = d; bestP = x; }
             }
             if (bestP != null) {
                 parents.add(bestP);
@@ -430,18 +286,14 @@ public class Cam {
 
         while (improved && !parents.isEmpty()) {
             improved = false;
-            Node bestDrop = null;
-            double bestDelta = 0.0;
+            Node bestDrop = null; double bestDelta = 0.0;
 
             for (Node x : new ArrayList<>(parents)) {
                 parents.remove(x);
                 double s = cachedLocal(y, parents);
                 double d = s - cur;
                 parents.add(x);
-                if (d < bestDelta) {
-                    bestDelta = d;
-                    bestDrop = x;
-                }
+                if (d < bestDelta) { bestDelta = d; bestDrop = x; }
             }
             if (bestDrop != null) {
                 parents.remove(bestDrop);
