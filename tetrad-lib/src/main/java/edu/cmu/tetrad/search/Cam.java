@@ -49,11 +49,10 @@ public class Cam {
     /**
      * Inject a custom local scorer (e.g., CamBasisFunctionBicScorer).
      */
-    public Cam setScorer(AdditiveLocalScorer s) {
+    private void setScorer(AdditiveLocalScorer s) {
         this.scorer = Objects.requireNonNull(s, "scorer");
         this.scorer.setPenaltyDiscount(this.penaltyDiscount).setRidge(this.ridge);
         this.localCache.clear();
-        return this;
     }
 
     // ---------------- setters ----------------
@@ -99,11 +98,7 @@ public class Cam {
     // ---------------- core search ----------------
 
     public Graph search() throws InterruptedException {
-        if (scorer != null) {
-            setScorer(scorer);
-        } else {
-            setScorer(new CamAdditivePsplineBic(data));
-        }
+        setScorer(new CamAdditivePsplineBic(data));
 
         // Stage 1: PNS
         computePnsCandidates();
