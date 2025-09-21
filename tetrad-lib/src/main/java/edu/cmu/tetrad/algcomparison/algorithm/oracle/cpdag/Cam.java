@@ -45,7 +45,6 @@ public class Cam extends AbstractBootstrapAlgorithm implements Algorithm,
         DataSet data = (DataSet) dataModel;
 
         // Defaults
-        final int degree = 3; // for polynomial/basis scorers
         final double ridgeDefault = 1e-6;
         final double penDefault = 1.0;
 
@@ -66,12 +65,8 @@ public class Cam extends AbstractBootstrapAlgorithm implements Algorithm,
         // Ridge: use a dedicated param if present; otherwise tiny default
         final double ridge = parameters.getDouble(Params.GIN_RIDGE, ridgeDefault);
 
-        // Optional toggle: choose scorer family
-        final boolean useBasisScorer = parameters.getBoolean("CAM_USE_BASIS_SCORER", true);
-        // ^ If you don’t have custom params, set this constant true/false as you like.
-
         // Build search
-        edu.cmu.tetrad.search.Cam cam = new edu.cmu.tetrad.search.Cam(data, degree)
+        edu.cmu.tetrad.search.Cam cam = new edu.cmu.tetrad.search.Cam(data)
                 .setPenaltyDiscount(penDiscount)
                 .setRidge(ridge)
                 .setRestarts(restarts)
@@ -79,17 +74,7 @@ public class Cam extends AbstractBootstrapAlgorithm implements Algorithm,
                 .setPnsTopK(pnsTopK)
                 .setVerbose(verbose);
 
-        // Plug in scorer
-        AdditiveLocalScorer scorer = new CamAdditivePsplineBic(data);
-//                useBasisScorer
-//                        ? new CamAdditiveBic(data, degree)                  // basis-block BIC (fast, stable)
-//                        : new CamBasisFunctionBicScorer(data, degree);      // adapter to your BlocksBicScore (identical family)
-
-        scorer.setPenaltyDiscount(penDiscount).setRidge(ridge);
-        cam.setScorer(scorer);
-
-        Graph dag = cam.search();
-        return dag;
+        return cam.search();
     }
 
     @Override

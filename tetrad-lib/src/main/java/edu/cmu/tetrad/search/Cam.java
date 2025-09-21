@@ -10,67 +10,48 @@ import edu.cmu.tetrad.search.score.CamAdditivePsplineBic;
 import java.util.*;
 
 /**
- * CAM (Causal Additive Models): PNS -> IncEdge (order) -> Prune.
- * Scoring is injected via AdditiveLocalScorer so you can use either
- * P-splines or BasisFunctionBlocksBicScore (through the adapter).
+ * CAM (Causal Additive Models): PNS -> IncEdge (order) -> Prune. Scoring is injected via AdditiveLocalScorer so you can
+ * use either P-splines or BasisFunctionBlocksBicScore (through the adapter).
  */
 public class Cam {
 
     // ----- data -----
     private final DataSet data;
-
+    private final Map<Node, List<Node>> pnsCandidates = new HashMap<>();
+    // Small LRU cache for local scores: key = "Y|P1,P2,..."
+    private final Map<String, Double> localCache = new LinkedHashMap<>(1 << 12, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Double> eldest) {
+            return size() > 20000;
+        }
+    };
     // ----- scorer (injectable) -----
-    private AdditiveLocalScorer scorer;
-
+    private AdditiveLocalScorer scorer = null;
     // ----- knobs -----
-    private int degree = 3;                  // kept for API parity; not used by P-splines directly
     private double ridge = 1e-6;
     private double penaltyDiscount = 1.0;
     private int maxForwardParents = 20;
     private boolean verbose = false;
-
     // Order search restarts
     private long seed = System.nanoTime();
     private int restarts = 10;
-
     // PNS candidates: top-k univariate per target
     private int pnsTopK = 10;
-    private final Map<Node, List<Node>> pnsCandidates = new HashMap<>();
-
-    // Small LRU cache for local scores: key = "Y|P1,P2,..."
-    private final Map<String, Double> localCache = new LinkedHashMap<>(1 << 12, 0.75f, true) {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, Double> eldest) { return size() > 20000; }
-    };
 
     // ---------------- ctor ----------------
 
-    public Cam(DataSet data, int degree) {
+    public Cam(DataSet data) {
         this.data = Objects.requireNonNull(data, "data");
-        this.degree = degree;
-
-        // Default scorer = P-splines wrapped to AdditiveLocalScorer
-        CamAdditivePsplineBic ps = new CamAdditivePsplineBic(data)
-                .setNumBasis(10)
-                .setPenaltyOrder(2)
-                .setRidge(ridge)
-                .setPenaltyDiscount(penaltyDiscount);
-        this.scorer = new AdditiveLocalScorer() {
-            @Override public double localScore(Node y, Collection<Node> parents) { return ps.localScore(y, parents); }
-            @Override public double localScore(int yIndex, int... parentIdxs) { return ps.localScore(yIndex, parentIdxs); }
-            @Override public AdditiveLocalScorer setPenaltyDiscount(double c) { ps.setPenaltyDiscount(c); return this; }
-            @Override public AdditiveLocalScorer setRidge(double r) { ps.setRidge(r); return this; }
-        };
     }
 
     // ---------------- scorer injection ----------------
 
-    /** Inject a custom local scorer (e.g., CamBasisFunctionBicScorer). */
+    /**
+     * Inject a custom local scorer (e.g., CamBasisFunctionBicScorer).
+     */
     public Cam setScorer(AdditiveLocalScorer s) {
         this.scorer = Objects.requireNonNull(s, "scorer");
-        // keep penalties in sync
         this.scorer.setPenaltyDiscount(this.penaltyDiscount).setRidge(this.ridge);
-        // clear cache since scoring regime changed
         this.localCache.clear();
         return this;
     }
@@ -79,13 +60,11 @@ public class Cam {
 
     public Cam setRidge(double ridge) {
         this.ridge = ridge;
-        this.scorer.setRidge(ridge);
         return this;
     }
 
     public Cam setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
-        this.scorer.setPenaltyDiscount(penaltyDiscount);
         return this;
     }
 
@@ -109,7 +88,9 @@ public class Cam {
         return this;
     }
 
-    /** CAM PNS strength: keep top-k univariate candidates per target (default 10). */
+    /**
+     * CAM PNS strength: keep top-k univariate candidates per target (default 10).
+     */
     public Cam setPnsTopK(int k) {
         this.pnsTopK = Math.max(1, k);
         return this;
@@ -118,6 +99,12 @@ public class Cam {
     // ---------------- core search ----------------
 
     public Graph search() throws InterruptedException {
+        if (scorer != null) {
+            setScorer(scorer);
+        } else {
+            setScorer(new CamAdditivePsplineBic(data));
+        }
+
         // Stage 1: PNS
         computePnsCandidates();
 
@@ -146,7 +133,9 @@ public class Cam {
 
     // ---------------- CAM: PNS ----------------
 
-    /** For each target y, rank all x≠y by univariate additive BIC and keep top-k. */
+    /**
+     * For each target y, rank all x≠y by univariate additive BIC and keep top-k.
+     */
     private void computePnsCandidates() {
         List<Node> vars = data.getVariables();
         pnsCandidates.clear();
@@ -172,8 +161,8 @@ public class Cam {
     // ---------------- CAM: IncEdge order ----------------
 
     /**
-     * Build an order greedily by appending the best next variable (IncEdge).
-     * Predecessors considered for candidate y are placed ∩ PNS(y).
+     * Build an order greedily by appending the best next variable (IncEdge). Predecessors considered for candidate y
+     * are placed ∩ PNS(y).
      */
     private List<Node> incEdgeOrder(Random rnd) {
         List<Node> all = new ArrayList<>(data.getVariables());
@@ -214,7 +203,9 @@ public class Cam {
 
     // ---------------- CAM: Prune ----------------
 
-    /** Build DAG by greedy forward + backward restricted to predecessors in PNS(y). */
+    /**
+     * Build DAG by greedy forward + backward restricted to predecessors in PNS(y).
+     */
     private Graph buildDagFromOrder(List<Node> order) throws InterruptedException {
         Graph g = new EdgeListGraph(order);
 
@@ -238,7 +229,9 @@ public class Cam {
 
     // ---------------- helpers: scoring & selection ----------------
 
-    /** Sum of local scores consistent with the order (each node given its predecessors). */
+    /**
+     * Sum of local scores consistent with the order (each node given its predecessors).
+     */
     private double permutationScore(List<Node> order) {
         double sum = 0.0;
         for (int i = 0; i < order.size(); i++) {
@@ -249,7 +242,9 @@ public class Cam {
         return sum;
     }
 
-    /** Tiny LRU cache over scorer.localScore(y, parents). */
+    /**
+     * Tiny LRU cache over scorer.localScore(y, parents).
+     */
     private double cachedLocal(Node y, Collection<Node> parents) {
         final String key;
         if (parents.isEmpty()) {
@@ -273,7 +268,8 @@ public class Cam {
         boolean improved = true;
         while (improved && parents.size() < cap && !cand.isEmpty()) {
             improved = false;
-            Node bestP = null; double bestDelta = 0.0;
+            Node bestP = null;
+            double bestDelta = 0.0;
 
             for (Node x : cand) {
                 if (parents.contains(x)) continue;
@@ -281,7 +277,10 @@ public class Cam {
                 double s = cachedLocal(y, parents);
                 double d = s - cur;
                 parents.remove(x);
-                if (d < bestDelta) { bestDelta = d; bestP = x; }
+                if (d < bestDelta) {
+                    bestDelta = d;
+                    bestP = x;
+                }
             }
             if (bestP != null) {
                 parents.add(bestP);
@@ -298,14 +297,18 @@ public class Cam {
 
         while (improved && !parents.isEmpty()) {
             improved = false;
-            Node bestDrop = null; double bestDelta = 0.0;
+            Node bestDrop = null;
+            double bestDelta = 0.0;
 
             for (Node x : new ArrayList<>(parents)) {
                 parents.remove(x);
                 double s = cachedLocal(y, parents);
                 double d = s - cur;
                 parents.add(x);
-                if (d < bestDelta) { bestDelta = d; bestDrop = x; }
+                if (d < bestDelta) {
+                    bestDelta = d;
+                    bestDrop = x;
+                }
             }
             if (bestDrop != null) {
                 parents.remove(bestDrop);
