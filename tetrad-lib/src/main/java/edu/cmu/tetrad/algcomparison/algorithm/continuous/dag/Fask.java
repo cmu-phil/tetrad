@@ -133,14 +133,10 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         fask.setDepth(parameters.getInt(DEPTH));
         fask.setAlpha(parameters.getDouble(ALPHA));
         fask.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
-        fask.setDelta(parameters.getDouble(FASK_DELTA));
+        edu.cmu.tetrad.search.Fask.setDelta(parameters.getDouble(FASK_DELTA));
         fask.setUseFasAdjacencies(true);
         fask.setUseSkewAdjacencies(true);
 
-        fask.setTwoCycleMinHits(1);
-        fask.setTwoCycleBonferroni(false);
-        fask.setTwoCycleMinPartitionFrac(0.10); // or 0.15
-        fask.setTwoCycleRidgeLambda(1e-6);      // small ridge; increase if Z is big/collinear
         fask.setAlpha(0.05);                    // a bit looser than 1e-5
 
         if (algorithm != null) {

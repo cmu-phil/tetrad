@@ -79,14 +79,10 @@ public final class Fask {
     private double extraEdgeThreshold = 0.3;
     private boolean useFasAdjacencies = true;
     private boolean useSkewAdjacencies = true;
-    private double delta = -0.1;
-    private Fask.LeftRight leftRight = Fask.LeftRight.FASK1;
+    private static double delta = -0.1;
+    private Fask.LeftRight leftRight = LeftRight.RSKEW;
 
     // --- 2-cycle tuning knobs (conservative defaults) ---
-    private int twoCycleMinHits = 1;            // require at least K subset votes
-    private double twoCycleMinPartitionFrac = 0.1; // min fraction in X>0 or Y>0
-    private boolean twoCycleBonferroni = false;  // Bonferroni over subset tests
-    private double twoCycleRidgeLambda = 1e-6;  // ridge for partial corr
 
     // ------------ Ctor ------------
     public Fask(DataSet dataSet, Score score) {
@@ -168,7 +164,7 @@ public final class Fask {
         lr *= signum(r);
 
         // Use the same default delta as instance (−0.1) for static scoring.
-        if (r < -0.1) lr *= -1;
+        if (r < delta) lr *= -1;
         return lr;
     }
 
@@ -328,108 +324,11 @@ public final class Fask {
         this.useSkewAdjacencies = useSkewAdjacencies;
     }
 
-    public void setDelta(double delta) {
-        this.delta = delta;
-    }
-
-    public void setTwoCycleMinHits(int k) {
-        this.twoCycleMinHits = Math.max(1, k);
-    }
-
-    public void setTwoCycleMinPartitionFrac(double f) {
-        this.twoCycleMinPartitionFrac = Math.max(0.0, Math.min(0.49, f));
-    }
-
-    public void setTwoCycleBonferroni(boolean b) {
-        this.twoCycleBonferroni = b;
-    }
-
-    public void setTwoCycleRidgeLambda(double lambda) {
-        this.twoCycleRidgeLambda = Math.max(0.0, lambda);
+    public static void setDelta(double _delta) {
+        delta = _delta;
     }
 
     // ------------ Internals ------------
-
-    // --- 2-cycle vote thresholds ---
-//    private int twoCycleMinHits = 2;        // require at least K subsets to flag possibleTwoCycle
-    private double twoCycleMinRatio = 0.30; // or require at least this fraction of subsets to flag
-
-//    private boolean bidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
-//        Set<Node> adjSet = new HashSet<>(G0.getAdjacentNodes(X));
-//        adjSet.addAll(G0.getAdjacentNodes(Y));
-//        List<Node> adj = new ArrayList<>(adjSet);
-//        adj.remove(X);
-//        adj.remove(Y);
-//
-//        int numIsPossibleTwoCycles = 0;
-//        int numTotal = 0;
-//
-//        double min = Double.POSITIVE_INFINITY;
-//        boolean minChoice = true;
-//
-//        SublistGenerator gen = new SublistGenerator(adj.size(), Math.min(depth, adj.size()));
-//        int[] choice;
-//        while ((choice = gen.next()) != null) {
-//            List<Node> _adj = GraphUtils.asList(choice, adj);
-//
-//
-//            double[][] _Z = new double[_adj.size()][];
-//            for (int f = 0; f < _adj.size(); f++) {
-//                Node _z = _adj.get(f);
-//                int column = dataSet.getColumn(_z);
-//                _Z[f] = data[column];
-//            }
-//
-//            double lambda = 0.0;
-//
-//            double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1, lambda);
-//            double pc1 = partialCorrelation(x, y, _Z, x, 0, +1, lambda);
-//            double pc2 = partialCorrelation(x, y, _Z, y, 0, +1, lambda);
-//
-//            int nc = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
-//            int nc1 = StatUtils.getRows(x, x, 0, +1).size();
-//            int nc2 = StatUtils.getRows(y, y, 0, +1).size();
-//
-//            double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
-//            double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
-//            double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
-//
-//            double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
-//            double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
-//
-//
-//            boolean rejected1 = abs(zv1) > cutoff;
-//            boolean rejected2 = abs(zv2) > cutoff;
-//
-//            boolean possibleTwoCycle = false;
-//            if (zv1 < 0 && zv2 > 0 && rejected1) possibleTwoCycle = true;
-//            else if (zv1 > 0 && zv2 < 0 && rejected2) possibleTwoCycle = true;
-//            else if (rejected1 && rejected2) possibleTwoCycle = true;
-//
-//            double sum = abs(zv1) + abs(zv2);
-//            if (sum < min) {
-//                min = sum;
-//                minChoice = possibleTwoCycle;
-//            }
-//
-//            System.out.print("adj " + X + " *-* " + Y + " = " +_adj + " zv1 = " + z + " zv2 = " + zv2 + " sum = " + sum);
-//
-//            if (possibleTwoCycle) {
-//                System.out.print(" possibleTwoCycle");
-//                numIsPossibleTwoCycles++;
-//            }
-//
-//            System.out.println();
-//
-//            numTotal++;
-//        }
-//
-//        double ratio = numIsPossibleTwoCycles / (double) numTotal;
-//        System.out.println(X + "*-* " + Y + " numIsPossibleTwoCycle = " + numIsPossibleTwoCycles + " numTotal " + numTotal
-//                           + " ratio = " + ratio + " max = " + min + " minChoice = " + minChoice);
-//
-//        return minChoice;
-//    }
 
     private boolean bidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
         // -------------------- Candidate Z pool: neighbors of X or Y (excluding X,Y) --------------------
@@ -534,144 +433,6 @@ public final class Fask {
         return Z;
     }
 
-//    private boolean bidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
-//        // Local conditioning pool
-//        Set<Node> adjSet = new HashSet<>(G0.getAdjacentNodes(X));
-//        adjSet.addAll(G0.getAdjacentNodes(Y));
-//        List<Node> adj = new ArrayList<>(adjSet);
-//        adj.remove(X);
-//        adj.remove(Y);
-//
-//        // Depth handling: depth < 0 means "all sizes"
-//        int maxSize = (depth < 0) ? adj.size() : Math.min(depth, adj.size());
-//        if (maxSize < 0) maxSize = adj.size(); // extra guard
-//
-//        // No candidates? still test Z = empty set
-//        if (adj.isEmpty() && maxSize == 0) maxSize = 0;
-//
-//        SublistGenerator gen = new SublistGenerator(adj.size(), maxSize);
-//
-//        final int n = x.length;
-//        final int minPart = (int) Math.ceil(twoCycleMinPartitionFrac * n);
-//
-//        // Collect viable subset results to determine adjusted thresholds
-//        class SubTest {
-//            final double zv1, zv2; // standardized z-diffs (z - z1)/se1, (z - z2)/se2
-//            final double s1, s2;   // signs of (z - z1), (z - z2)
-//
-//            SubTest(double zv1, double zv2, double s1, double s2) {
-//                this.zv1 = zv1;
-//                this.zv2 = zv2;
-//                this.s1 = s1;
-//                this.s2 = s2;
-//            }
-//        }
-//        List<SubTest> results = new ArrayList<>();
-//        int viable = 0;
-//
-//        int[] choice;
-//        while ((choice = gen.next()) != null) {
-//            List<Node> _adj = GraphUtils.asList(choice, adj);
-//            double[][] Z = new double[_adj.size()][];
-//            for (int f = 0; f < _adj.size(); f++) {
-//                Node _z = _adj.get(f);
-//                int col = dataSet.getColumn(_z);
-//                Z[f] = data[col];
-//            }
-//
-//            // Partition sizes
-//            int ncAll = n;
-//            int nc1 = StatUtils.getRows(x, x, 0, +1).size();
-//            int nc2 = StatUtils.getRows(y, y, 0, +1).size();
-//
-////            // Require enough rows in both partitions
-////            if (nc1 < minPart || nc2 < minPart || ncAll <= 3 || nc1 <= 3 || nc2 <= 3) {
-////                continue;
-////            }
-//
-//            double lambda = twoCycleRidgeLambda;
-//
-//            double pc = partialCorrelation(x, y, Z, x, Double.NEGATIVE_INFINITY, +1, lambda);
-//            double pc1 = partialCorrelation(x, y, Z, x, 0, +1, lambda);
-//            double pc2 = partialCorrelation(x, y, Z, y, 0, +1, lambda);
-//
-////            // Clamp to avoid infinities
-////            pc = Math.max(-0.999999, Math.min(0.999999, pc));
-////            pc1 = Math.max(-0.999999, Math.min(0.999999, pc1));
-////            pc2 = Math.max(-0.999999, Math.min(0.999999, pc2));
-//
-//            double z = 0.5 * (Math.log1p(pc) - Math.log1p(-pc));
-//            double z1 = 0.5 * (Math.log1p(pc1) - Math.log1p(-pc1));
-//            double z2 = 0.5 * (Math.log1p(pc2) - Math.log1p(-pc2));
-//
-//            double se1 = Math.sqrt(1.0 / (ncAll - 3.0) + 1.0 / (nc1 - 3.0));
-//            double se2 = Math.sqrt(1.0 / (ncAll - 3.0) + 1.0 / (nc2 - 3.0));
-//
-//            double zv1 = (z - z1) / se1;
-//            double zv2 = (z - z2) / se2;
-//
-//            double s1 = Math.signum(z - z1);
-//            double s2 = Math.signum(z - z2);
-//
-//            results.add(new SubTest(zv1, zv2, s1, s2));
-//            viable++;
-//        }
-//
-//        if (viable == 0) {
-//            // As a last resort, test Z = empty set if we didn't already
-//            double[][] Z = new double[0][];
-//            int ncAll = n, nc1 = StatUtils.getRows(x, x, 0, +1).size(), nc2 = StatUtils.getRows(y, y, 0, +1).size();
-//            if (nc1 >= Math.max(4, minPart) && nc2 >= Math.max(4, minPart)) {
-//                double lambda = twoCycleRidgeLambda;
-//                double pc = partialCorrelation(x, y, Z, x, Double.NEGATIVE_INFINITY, +1, lambda);
-//                double pc1 = partialCorrelation(x, y, Z, x, 0, +1, lambda);
-//                double pc2 = partialCorrelation(x, y, Z, y, 0, +1, lambda);
-
-    ////                pc = Math.max(-0.999999, Math.min(0.999999, pc));
-    ////                pc1 = Math.max(-0.999999, Math.min(0.999999, pc1));
-    ////                pc2 = Math.max(-0.999999, Math.min(0.999999, pc2));
-//                double z = 0.5 * (Math.log1p(pc) - Math.log1p(-pc));
-//                double z1 = 0.5 * (Math.log1p(pc1) - Math.log1p(-pc1));
-//                double z2 = 0.5 * (Math.log1p(pc2) - Math.log1p(-pc2));
-//                double se1 = Math.sqrt(1.0 / (ncAll - 3.0) + 1.0 / (nc1 - 3.0));
-//                double se2 = Math.sqrt(1.0 / (ncAll - 3.0) + 1.0 / (nc2 - 3.0));
-//                results.add(new SubTest((z - z1) / se1, (z - z2) / se2,
-//                        Math.signum(z - z1), Math.signum(z - z2)));
-//                viable = 1;
-//            }
-//        }
-//
-//        if (viable == 0) return false;
-//
-//        // Compute thresholds
-//        double alphaLocalStrict = alpha;
-//        if (twoCycleBonferroni) alphaLocalStrict = Math.min(1.0, alpha / viable);
-//        double zcritStrict = StatUtils.getZForAlpha(alphaLocalStrict);
-//
-//        // Relaxed threshold (softer than strict)
-//        double alphaLocalRelax = Math.min(1.0, 3.0 * alpha); // e.g., 3× alpha (no Bonferroni)
-//        double zcritRelax = StatUtils.getZForAlpha(alphaLocalRelax);
-//
-//        // Tally hits
-//        int hitsStrict = 0, hitsRelax = 0;
-//        for (SubTest r : results) {
-//            boolean opp = (r.s1 * r.s2 < 0.0);
-//
-//            boolean bothSigStrict =
-//                    (Math.abs(r.zv1) > zcritStrict) && (Math.abs(r.zv2) > zcritStrict);
-//
-//            boolean oneStrictOneRelax =
-//                    (Math.abs(r.zv1) > zcritStrict && Math.abs(r.zv2) > zcritRelax) ||
-//                    (Math.abs(r.zv2) > zcritStrict && Math.abs(r.zv1) > zcritRelax);
-//
-//            if (opp && bothSigStrict) hitsStrict++;
-//            else if (opp && oneStrictOneRelax) hitsRelax++;
-//        }
-//
-//        if (hitsStrict >= twoCycleMinHits) return true;
-//        // fallback: allow relaxed evidence if strict didn’t reach K
-//        return hitsRelax >= twoCycleMinHits;
-//    }
     private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition,
                                       double threshold, double direction, double lambda)
             throws SingularMatrixException {

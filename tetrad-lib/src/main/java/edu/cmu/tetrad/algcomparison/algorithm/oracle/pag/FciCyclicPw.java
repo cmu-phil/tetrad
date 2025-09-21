@@ -63,9 +63,6 @@ import java.util.Map;
  * <p>We never alter &lt;-&gt; (two heads), never flip existing tails/heads,
  * and never touch o→ or ←o edges.</p>
  *
- * <p>Finally, we apply Zhang’s final orientation rules (sound for cyclic graphs per Mooij & Claassen).
- * Any directed arrow contradicting the CPW forbidden knowledge is demoted to o→ in the allowed direction.</p>
- *
  * <p><b>Parameter:</b> PAIRWISE_RULE ∈ {1..5}, default 3 (RSKEW).
  * 1=FASK1, 2=FASK2, 3=RSKEW, 4=SKEW, 5=TANH.</p>
  */
@@ -230,10 +227,6 @@ public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm
             }
         }
 
-        R0R4Strategy strategy = new R0R4StrategyTestBased(this.test.getTest(dataModel, parameters));
-        FciOrient orient = new FciOrient(strategy);
-        orient.setKnowledge(internalKnowledge);
-        orient.finalOrientation(pag);
         return pag;
     }
 
