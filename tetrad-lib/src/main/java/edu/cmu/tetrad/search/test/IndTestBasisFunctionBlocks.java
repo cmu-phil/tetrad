@@ -52,6 +52,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     private final IndTestBlocksWilkes blocksTest;          // delegate
     private final int degree;
     private final int sampleSize;
+    private int basisType = 1;
     // ---- Knobs ----
     private double alpha = 0.01;
     private int nEff;
@@ -64,12 +65,13 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
      * @param degree the degree of the basis function embedding; must be non-negative
      * @throws IllegalArgumentException if {@code raw} is null or {@code degree} is negative
      */
-    public IndTestBasisFunctionBlocks(DataSet raw, int degree) {
+    public IndTestBasisFunctionBlocks(DataSet raw, int degree, int basisType) {
         if (raw == null) throw new IllegalArgumentException("raw == null");
         if (degree < 0) throw new IllegalArgumentException("degree must be >= 0");
 
         this.raw = raw;
         this.degree = degree;
+        this.basisType = basisType;
         // Keep the exact Node instances from the caller's dataset
         this.variables = new ArrayList<>(raw.getVariables());
 
@@ -79,7 +81,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         // 1) Build embedded matrix + blocks using your existing Embedding utility
         //    (Adjust the extra args (e.g., intercept/standardization) to your Embedding API as needed.)
         Embedding.EmbeddedData embeddedData = Objects.requireNonNull(
-                Embedding.getEmbeddedData(raw, degree, /*includeIntercept?*/ 1, /*standardize?*/ 1),
+                Embedding.getEmbeddedData(raw, degree,  basisType, 1),
                 "Embedding.getEmbeddedData returned null");
 
         // blocks: one per ORIGINAL variable, in the same order
@@ -191,7 +193,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         DataSet ds = twoColumnDataSet("X", x, "Y", y);
 
         // Build the BFIT test bound to this dataset
-        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(ds, degree);
+        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(ds, degree, basisType);
 
         // Resolve nodes and run the marginal test
         Node X = ds.getVariable("X");

@@ -43,7 +43,7 @@ import static java.lang.Math.log;
  * @author josephramsey
  * @see DegenerateGaussianScore
  */
-@Deprecated(since = "7.9", forRemoval = false)
+//@Deprecated(since = "7.9", forRemoval = false)
 public class BasisFunctionBicScore implements Score {
     /**
      * A list containing nodes that represent the variables in the basis function score.

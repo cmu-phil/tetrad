@@ -61,6 +61,10 @@ public final class SimulationTypes {
      */
     public static final String CAUSAL_PERCEPTRON_NETWORK = "Causal Peceptron Network (CPN)";
     /**
+     * Constant <code>CAUSAL_PERCEPTRON_NETWORK="Causal Peceptron Network (CPN)"</code>
+     */
+    public static final String ADDITIVE_ANM_NETWORK = "Additive Nonlinear SEM (ANM)";
+    /**
      * Constant <code>LG_MNAR_SIMULATION="LG MNAR Simulation"</code>
      */
     public static final String LG_MNAR_SIMULATION = "LG MNAR Simulation";

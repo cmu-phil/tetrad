@@ -49,6 +49,7 @@ public final class SimulationUtils {
             case SimulationTypes.NONLINEAR_ADDITIVE_NOISE_MODEL -> new NonlinearAdditiveNoiseModel(randomGraph);
             case SimulationTypes.POST_NONLINEAR_MODEL -> new PostnonlinearCausalModel(randomGraph);
             case SimulationTypes.CAUSAL_PERCEPTRON_NETWORK -> new CausalPerceptronNetwork(randomGraph);
+            case SimulationTypes.ADDITIVE_ANM_NETWORK -> new AdditiveAnmSimulation(randomGraph);
             case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL -> new GeneralSemSimulationSpecial1(randomGraph);
             case SimulationTypes.LEE_AND_HASTIE -> new LeeHastieSimulation(randomGraph);
             case SimulationTypes.CONDITIONAL_GAUSSIAN -> new ConditionalGaussianSimulation(randomGraph);

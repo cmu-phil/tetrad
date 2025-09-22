@@ -18,15 +18,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.independence;
+package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.annotation.Mixed;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.search.test.IndTestBasisFunctionBlocks;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -35,39 +34,47 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for BF-Blocks-Test.
+ * Wrapper for Basis Function BIC Score (Basis-BIC) version.
  *
  * @author josephramsey
  * @author bryanandrews
  * @version $Id: $Id
  */
-@TestOfIndependence(
-        name = "BF-Blocks-Test",
-        command = "bf-blocks-test",
-        dataType = DataType.Mixed
-)
+@edu.cmu.tetrad.annotation.Score(name = "BF-BIC", command = "bf-bic-score", dataType = DataType.Mixed)
 @Mixed
-public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
+public class BasisFunctionBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * Initializes a new instance of the DegenerateGaussianLrt class.
+     * The data set.
      */
-    public BasisFunctionBlocksIndTest() {
+    private DataModel dataSet;
+
+    /**
+     * Initializes a new instance of the BasisFunctionBicScore class.
+     */
+    public BasisFunctionBicScore() {
+
     }
 
     /**
-     * {@inheritDoc}x
+     * {@inheritDoc}
      */
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(SimpleDataLoader.getMixedDataSet(dataSet),
-                parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE));
-        test.setAlpha(parameters.getDouble(Params.ALPHA));
-        test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
-        return test;
+    public Score getScore(DataModel dataSet, Parameters parameters) {
+        this.dataSet = dataSet;
+        edu.cmu.tetrad.search.score.BasisFunctionBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
+                SimpleDataLoader.getMixedDataSet(dataSet),
+                parameters.getInt(Params.TRUNCATION_LIMIT),
+                parameters.getDouble(Params.REGULARIZATION_LAMBDA));
+//        edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample score = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample(
+//                SimpleDataLoader.getMixedDataSet(dataSet),
+//                parameters.getInt(Params.TRUNCATION_LIMIT),
+//                parameters.getDouble(Params.REGULARIZATION_LAMBDA));
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        return score;
     }
 
     /**
@@ -75,7 +82,7 @@ public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "BF Blocks Test";
+        return "BF Blocks BIC";
     }
 
     /**
@@ -92,11 +99,18 @@ public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.ALPHA);
         parameters.add(Params.TRUNCATION_LIMIT);
-        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
-        parameters.add(Params.BASIS_TYPE);
+        parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.REGULARIZATION_LAMBDA);
         return parameters;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Node getVariable(String name) {
+        return this.dataSet.getVariable(name);
     }
 }
 

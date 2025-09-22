@@ -12,14 +12,25 @@ import java.util.*;
 /**
  * Additive Nonlinear SEM generator (ANM style):
  *
+ * <pre>
  *   X_j = sum_{k in pa(j)} f_{jk}(X_k) + eps_j
+ * </pre>
  *
- * - Noise is added ONLY at the output layer (after summing the parent functions).
- * - Each edge (k->j) gets an independent randomized univariate function f_{jk}.
- * - Supports multiple function families: RBF bumps, tanh units, or simple polynomials.
- * - Expects an acyclic graph and generates in a single topological sweep (fast).
+ * <ul>
+ *   <li>Noise is added <b>only</b> at the output layer (after summing the parent functions).</li>
+ *   <li>Each edge (k-&gt;j) gets an independent randomized univariate function f<sub>jk</sub>.</li>
+ *   <li>Supports multiple function families:
+ *     <ul>
+ *       <li>RBF bumps</li>
+ *       <li>tanh units</li>
+ *       <li>simple polynomials</li>
+ *     </ul>
+ *   </li>
+ *   <li>Expects an acyclic graph and generates in a single topological sweep (fast).</li>
+ * </ul>
  *
- * Usage:
+ * <p><b>Usage:</b></p>
+ * <pre>
  *   AdditiveAnmSimulator gen = new AdditiveAnmSimulator(graph, N, noise, -3, 3)
  *       .setFunctionFamily(AdditiveAnmSimulator.Family.RBF)
  *       .setNumUnitsPerEdge(6)
@@ -27,6 +38,7 @@ import java.util.*;
  *       .setEdgeScale(1.0)
  *       .setSeed(1234L);
  *   DataSet ds = gen.generate();
+ * </pre>
  */
 public class AdditiveAnmSimulator {
 

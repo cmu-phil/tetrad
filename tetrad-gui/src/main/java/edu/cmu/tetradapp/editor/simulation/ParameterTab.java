@@ -66,6 +66,7 @@ public class ParameterTab extends JPanel {
             SimulationTypes.LINEAR_FISHER_MODEL,
             SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.CAUSAL_PERCEPTRON_NETWORK,
+            SimulationTypes.ADDITIVE_ANM_NETWORK,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES
@@ -218,6 +219,9 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.CAUSAL_PERCEPTRON_NETWORK:
                         this.simulation.setSimulation(new CausalPerceptronNetwork(randomGraph), this.simulation.getParams());
                         break;
+                    case SimulationTypes.ADDITIVE_ANM_NETWORK:
+                        this.simulation.setSimulation(new AdditiveAnmSimulation(randomGraph), this.simulation.getParams());
+                        break;
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
                         break;
@@ -275,6 +279,9 @@ public class ParameterTab extends JPanel {
                         break;
                     case SimulationTypes.CAUSAL_PERCEPTRON_NETWORK:
                         this.simulation.setSimulation(new CausalPerceptronNetwork(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.ADDITIVE_ANM_NETWORK:
+                        this.simulation.setSimulation(new AdditiveAnmSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
