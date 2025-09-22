@@ -134,7 +134,7 @@ public class BlockClusteringWizard extends JPanel {
         editorPanel.setOnApply(this::fireBlockSpec);
 
         JPanel resultTop = new JPanel(new BorderLayout());
-        JButton btnBack = new JButton("â Back");
+        JButton btnBack = new JButton("◀ Back");
         resultTop.add(btnBack, BorderLayout.WEST);
 
         JLabel lblResultTitle = new JLabel();
