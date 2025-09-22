@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.simulation;
 
@@ -40,7 +40,6 @@ import org.apache.commons.math3.util.FastMath;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Additive Nonlinear SEM (ANM-style) simulator wrapper for algcomparison.
@@ -68,36 +67,33 @@ public class AdditiveAnmSimulation implements Simulation {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Represents a random graph used in the simulation. This instance is a core component of the
-     * simulation process and is utilized for generating and managing graph structures that the
-     * simulation operates on. It implements the {@code RandomGraph} interface to ensure
-     * compatibility with various random graph types and their specific configurations.
-     *
-     * This variable is final, meaning it is assigned once during the construction of the
-     * simulation instance and cannot be reassigned afterward.
-     *
-     * The graph is configured based on given parameters and is used to create or retrieve
-     * graphs used for simulating data models, representing true graphs, and generating
-     * randomized structures in support of the underlying simulation logic.
+     * Represents a random graph used in the simulation. This instance is a core component of the simulation process and
+     * is utilized for generating and managing graph structures that the simulation operates on. It implements the
+     * {@code RandomGraph} interface to ensure compatibility with various random graph types and their specific
+     * configurations.
+     * <p>
+     * This variable is final, meaning it is assigned once during the construction of the simulation instance and cannot
+     * be reassigned afterward.
+     * <p>
+     * The graph is configured based on given parameters and is used to create or retrieve graphs used for simulating
+     * data models, representing true graphs, and generating randomized structures in support of the underlying
+     * simulation logic.
      */
     private final RandomGraph randomGraph;
 
     /**
-     * A collection of DataSet objects generated or utilized within the
-     * AdditiveAnmSimulation class. Each DataSet typically represents a
-     * collection of data points, which may be simulated or post-processed
-     * during the execution of the simulation.
-     *
-     * This field is used internally to store and manage multiple data
-     * sets created or manipulated by various methods within the simulation,
-     * enabling efficient access and reuse during the computation and analysis.
+     * A collection of DataSet objects generated or utilized within the AdditiveAnmSimulation class. Each DataSet
+     * typically represents a collection of data points, which may be simulated or post-processed during the execution
+     * of the simulation.
+     * <p>
+     * This field is used internally to store and manage multiple data sets created or manipulated by various methods
+     * within the simulation, enabling efficient access and reuse during the computation and analysis.
      */
     private List<DataSet> dataSets = new ArrayList<>();
 
     /**
-     * A collection of Graph objects utilized within the AdditiveAnmSimulation class.
-     * These graphs represent the true graphs used for simulating data models,
-     * representing true graphs, and generating randomized structures in support
+     * A collection of Graph objects utilized within the AdditiveAnmSimulation class. These graphs represent the true
+     * graphs used for simulating data models, representing true graphs, and generating randomized structures in support
      * of the underlying simulation logic.
      */
     private List<Graph> graphs = new ArrayList<>();
@@ -386,6 +382,41 @@ public class AdditiveAnmSimulation implements Simulation {
         return gen.generate();
     }
 
+    /**
+     * Retrieves the list of parameters used in the simulation.
+     *
+     * @return the list of parameters
+     */
+    @Override
+    public List<String> getParameters() {
+        List<String> params = new ArrayList<>();
+
+        if (!(this.randomGraph instanceof SingleGraph)) {
+            params.addAll(this.randomGraph.getParameters());
+        }
+
+        // minimal user-facing
+        params.add(Params.ANM_PRESET);
+        params.add(Params.ANM_NONLINEARITY);
+        params.add(Params.ANM_NOISE_KIND);
+        params.add(Params.ANM_NOISE_STRENGTH);
+//        params.add(Params.ANM_UNITS_PER_EDGE);
+
+        // sampling & post-process
+        params.add(Params.SAMPLE_SIZE);
+        params.add(Params.STANDARDIZE);
+        params.add(Params.SEED);
+
+        // book-keeping
+        params.add(Params.NUM_RUNS);
+        params.add(Params.PROB_REMOVE_COLUMN);
+        params.add(Params.DIFFERENT_GRAPHS);
+        params.add(Params.RANDOMIZE_COLUMNS);
+        params.add(Params.SAVE_LATENT_VARS);
+
+        return params;
+    }
+
     // Transform wrapper that only implements sampling (the simulator only calls sample()).
     private static final class TransformedOnlyForSampling implements RealDistribution {
         private final RealDistribution base;
@@ -479,40 +510,5 @@ public class AdditiveAnmSimulation implements Simulation {
         public boolean isSupportConnected() {
             return true;
         }
-    }
-
-    /**
-     * Retrieves the list of parameters used in the simulation.
-     *
-     * @return the list of parameters
-     */
-    @Override
-    public List<String> getParameters() {
-        List<String> params = new ArrayList<>();
-
-        if (!(this.randomGraph instanceof SingleGraph)) {
-            params.addAll(this.randomGraph.getParameters());
-        }
-
-        // minimal user-facing
-        params.add(Params.ANM_PRESET);
-        params.add(Params.ANM_NONLINEARITY);
-        params.add(Params.ANM_NOISE_KIND);
-        params.add(Params.ANM_NOISE_STRENGTH);
-//        params.add(Params.ANM_UNITS_PER_EDGE);
-
-        // sampling & post-process
-        params.add(Params.SAMPLE_SIZE);
-        params.add(Params.STANDARDIZE);
-        params.add(Params.SEED);
-
-        // book-keeping
-        params.add(Params.NUM_RUNS);
-        params.add(Params.PROB_REMOVE_COLUMN);
-        params.add(Params.DIFFERENT_GRAPHS);
-        params.add(Params.RANDOMIZE_COLUMNS);
-        params.add(Params.SAVE_LATENT_VARS);
-
-        return params;
     }
 }
