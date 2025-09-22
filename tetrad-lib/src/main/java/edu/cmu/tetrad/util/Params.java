@@ -1139,6 +1139,12 @@ public final class Params {
     public static final String GIN_PERMUTATIONS = "ginPermutations";
     public static final String GIN_RIDGE = "ginRidge";
 
+    public static final String ANM_PRESET = "anmPreset";
+    public static final String ANM_NONLINEARITY = "anmNonlinearity";
+    public static final String ANM_NOISE_KIND = "anmNoiseKind";
+    public static final String ANM_NOISE_STRENGTH = "anmNoiseStrength";
+
+
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,

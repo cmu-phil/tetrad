@@ -17,7 +17,8 @@ public final class CamBasisFunctionBicScorer implements AdditiveLocalScorer {
 
     public CamBasisFunctionBicScorer(DataSet data, int degree) {
         this.data = Objects.requireNonNull(data, "data");
-        this.bf = new BasisFunctionBlocksBicScore(data, degree);
+        int basisType = 1;
+        this.bf = new BasisFunctionBlocksBicScore(data, degree, basisType);
     }
 
     @Override

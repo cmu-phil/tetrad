@@ -67,7 +67,8 @@ public class BasisFunctionBlocksBicScore implements ScoreWrapper {
         this.dataSet = dataSet;
         edu.cmu.tetrad.search.score.BasisFunctionBlocksBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionBlocksBicScore(
                 SimpleDataLoader.getMixedDataSet(dataSet),
-                parameters.getInt(Params.TRUNCATION_LIMIT));
+                parameters.getInt(Params.TRUNCATION_LIMIT),
+                parameters.getInt(Params.BASIS_TYPE));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         return score;
     }
@@ -96,6 +97,7 @@ public class BasisFunctionBlocksBicScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.BASIS_TYPE);
         return parameters;
     }
 

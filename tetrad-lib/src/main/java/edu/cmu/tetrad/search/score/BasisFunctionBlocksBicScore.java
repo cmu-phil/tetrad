@@ -64,7 +64,7 @@ public class BasisFunctionBlocksBicScore implements Score {
      * @throws IllegalArgumentException if {@code raw} is null
      * @throws IllegalArgumentException if {@code degree} is less than 0
      */
-    public BasisFunctionBlocksBicScore(DataSet raw, int degree) {
+    public BasisFunctionBlocksBicScore(DataSet raw, int degree, int basisType) {
         if (raw == null) throw new IllegalArgumentException("raw == null");
         if (degree < 0) throw new IllegalArgumentException("degree must be >= 0");
 
@@ -74,7 +74,7 @@ public class BasisFunctionBlocksBicScore implements Score {
         // 1) Build embedded matrix + blocks using your existing Embedding utility
         //    Adjust flags as needed (here: includeIntercept=1, standardize=1).
         Embedding.EmbeddedData emb = Objects.requireNonNull(
-                Embedding.getEmbeddedData(raw, degree, /*includeIntercept*/ 2, /*standardize*/ 1),
+                Embedding.getEmbeddedData(raw, degree, basisType, 1),
                 "Embedding.getEmbeddedData returned null");
 
         this.embeddedDataSet = emb.embeddedData();

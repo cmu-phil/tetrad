@@ -7699,6 +7699,69 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="inputScale_value_type">Double</span></li>
         </ul>
 
+        <h3 class="parameter_description" id="anmPreset">anmPreset</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="anmPreset_short_desc">
+        Preset function family: 1 = Smooth RBF, 2 = Wavy RBF, 3 = Tanh, 4 = Polynomial
+    </span></li>
+            <li>Long Description: <span id="anmPreset_long_desc">
+        Selects the base family of nonlinear functions used on each edge for the ANM simulator.
+        Options: 1 = Smooth RBF (gentle), 2 = Wavy RBF (richer),
+        3 = Tanh (sigmoidal), 4 = Polynomial (low-degree).
+    </span></li>
+            <li>Default Value: <span id="anmPreset_default_value">2</span></li>
+            <li>Lower Bound: <span id="anmPreset_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="anmPreset_upper_bound">4</span></li>
+            <li>Value Type: <span id="anmPreset_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="anmNonlinearity">anmNonlinearity</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="anmNonlinearity_short_desc">
+        Controls strength of nonlinearity in ANM simulator
+    </span></li>
+            <li>Long Description: <span id="anmNonlinearity_long_desc">
+        A slider in [0,1] that simultaneously controls the number of basis units
+        per edge and their amplitude. Low values produce nearly linear functions,
+        high values produce strongly nonlinear functions.
+    </span></li>
+            <li>Default Value: <span id="anmNonlinearity_default_value">0.6</span></li>
+            <li>Lower Bound: <span id="anmNonlinearity_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="anmNonlinearity_upper_bound">1.0</span></li>
+            <li>Value Type: <span id="anmNonlinearity_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="anmNoiseKind">anmNoiseKind</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="anmNoiseKind_short_desc">
+        Noise distribution family: 1 = Beta (skewed), 2 = Gaussian, 3 = Student-t (heavy-tailed)
+    </span></li>
+            <li>Long Description: <span id="anmNoiseKind_long_desc">
+        Selects the distribution of exogenous noise for the ANM simulator
+        Options: 1 = Beta (skewed), 2 = Gaussian, 3 = Student-t (heavy-tailed).
+    </span></li>
+            <li>Default Value: <span id="anmNoiseKind_default_value">1</span></li>
+            <li>Lower Bound: <span id="anmNoiseKind_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="anmNoiseKind_upper_bound">3</span></li>
+            <li>Value Type: <span id="anmNoiseKind_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="anmNoiseStrength">anmNoiseStrength</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="anmNoiseStrength_short_desc">
+        Controls variance/strength of noise in ANM simulator
+    </span></li>
+            <li>Long Description: <span id="anmNoiseStrength_long_desc">
+        A slider in [0,1] that scales the standard deviation of the chosen noise distribution.
+        Low values yield weak noise, high values yield stronger noise. For Student-t, this also
+        interacts with degrees of freedom (heavier tails at higher strength).
+    </span></li>
+            <li>Default Value: <span id="anmNoiseStrength_default_value">0.4</span></li>
+            <li>Lower Bound: <span id="anmNoiseStrength_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="anmNoiseStrength_upper_bound">1.0</span></li>
+            <li>Value Type: <span id="anmNoiseStrength_value_type">Double</span></li>
+        </ul>
+
         <h3 class="parameter_description"
             id="maxSepsetSize">maxSepsetSize</h3>
         <ul class="parameter_description_list">

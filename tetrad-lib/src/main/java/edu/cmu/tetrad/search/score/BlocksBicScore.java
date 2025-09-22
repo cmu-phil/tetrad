@@ -298,6 +298,36 @@ public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSet
         return localScore(y, newParents) - localScore(y, oldParents);
     }
 
+    // --- Optional: use effective df instead of raw block widths for BIC penalty ---
+    private boolean useEffectiveDf = true;
+    public void setUseEffectiveDf(boolean on) { this.useEffectiveDf = on; scoreCache.clear(); }
+
+    // Efficient submatrix pull (cols x cols) from Sphi
+    private SimpleMatrix submatrixSymmetric(SimpleMatrix S, int[] cols) {
+        int d = cols.length;
+        SimpleMatrix A = new SimpleMatrix(d, d);
+        for (int i = 0; i < d; i++) {
+            int ci = cols[i];
+            for (int j = 0; j < d; j++) {
+                int cj = cols[j];
+                A.set(i, j, S.get(ci, cj));
+            }
+        }
+        return A;
+    }
+
+    /** Effective dimension: tr( S (S + ridge I)^(-1) ).  Returns [0, d]. */
+    private double effectiveDim(SimpleMatrix Sblock, double ridge) {
+        int d = Sblock.numRows();
+        if (d == 0) return 0.0;
+        // A = S + ridge*I
+        SimpleMatrix A = Sblock.copy();
+        for (int i = 0; i < d; i++) A.set(i, i, A.get(i, i) + ridge);
+        // prod = S * A^{-1}
+        SimpleMatrix prod = Sblock.mult(A.invert());
+        return prod.trace();
+    }
+
     /**
      * Sets the penalty discount used in scoring calculations and clears the cached scores, since changing the penalty
      * affects the score computations.
