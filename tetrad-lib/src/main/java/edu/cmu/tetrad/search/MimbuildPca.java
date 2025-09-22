@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -43,13 +43,48 @@ import java.util.Set;
  */
 public class MimbuildPca {
 
+    /**
+     * Represents the specification of a block of data used in the MimbuildPca algorithm. This variable is immutable and holds
+     * the configuration required for block-specific data processing and principal components analysis (PCA).
+     * It provides the necessary details for standardizing data blocks, calculating principal components, and performing
+     * structural dependency analysis within the algorithm.
+     */
     private final BlockSpec blockSpec;
-
+    /**
+     * A configurable penalty discount factor used in the principal components analysis (PCA) and
+     * structural dependency graph search process. This variable adjusts the weighting of penalty
+     * terms during the Bayesian Information Criterion (BIC) scoring within the search algorithm.
+     *
+     * The default value is 1.0, which means no penalty discount is applied. This value may be
+     * modified via the {@code setPenaltyDiscount} method to tune the behavior of the search process.
+     */
     private double penaltyDiscount = 1.0;
 
     // output
+    /**
+     * Represents the covariance matrix of latent variables computed after the search process.
+     * This matrix encapsulates the relationships and dependencies between the latent variables
+     * as derived during the principal component analysis (PCA) and structural learning.
+     *
+     * The {@code latentsCovariance} is utilized for modeling and further analysis of the structure
+     * identified through the search algorithm in the {@code MimbuildPca} class.
+     */
     private ICovarianceMatrix latentsCovariance;  // covariance over latents (after search)
 
+    /**
+     * Constructs an instance of MimbuildPca with the specified BlockSpec.
+     * The constructor validates the given BlockSpec, ensuring it contains non-empty,
+     * valid block definitions with disjoint column indices, a corresponding latent variable
+     * for each block, and a data set. It throws an exception if any of these conditions are violated.
+     *
+     * @param blockSpec The block specification containing blocks, latent variables,
+     *                  and data set information for PCA analysis.
+     * @throws IllegalArgumentException If blockSpec is null, if it lacks blocks or a dataset,
+     *                                  if the numbers of blocks and latent variables do not match,
+     *                                  if any block is empty, if column indices in the blocks
+     *                                  are out of range or not disjoint, or if there are duplicate
+     *                                  latent variable names.
+     */
     public MimbuildPca(BlockSpec blockSpec) {
         if (blockSpec == null) throw new IllegalArgumentException("blockSpec == null");
         if (blockSpec.blocks() == null || blockSpec.blocks().isEmpty())
@@ -191,6 +226,12 @@ public class MimbuildPca {
         return structureGraph;
     }
 
+    /**
+     * Sets the penalty discount value used in the PCA analysis.
+     *
+     * @param penaltyDiscount The penalty discount value to be set. This value is used to adjust
+     *                        the weighting or scaling in the analysis process.
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
@@ -198,7 +239,10 @@ public class MimbuildPca {
     // ------------------------- helpers -------------------------
 
     /**
-     * The estimated covariance over latents (after search).
+     * Retrieves the latent covariance matrix, which encapsulates the covariances
+     * between the latent variables associated with the specified blocks in the PCA analysis.
+     *
+     * @return the covariance matrix of the latent variables as an instance of ICovarianceMatrix
      */
     public ICovarianceMatrix getLatentsCovariance() {
         return latentsCovariance;

@@ -61,6 +61,11 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      * The independence test to use.
      */
     private IndependenceWrapper test;
+    /**
+     * Represents the knowledge structure associated with the CCD (Cyclic Causal Discovery) algorithm.
+     * The knowledge object typically holds domain-specific constraints or background knowledge
+     * that is used to guide the search process in the algorithm.
+     */
     private Knowledge knowledge;
 
     /**
@@ -176,11 +181,27 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         this.test = independenceWrapper;
     }
 
+    /**
+     * Retrieves the knowledge object associated with this instance.
+     * The knowledge object typically contains prior knowledge or constraints
+     * to guide the algorithm's behavior.
+     *
+     * @return the {@code Knowledge} object associated with this instance
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge object for this instance.
+     * The knowledge object typically contains prior assumptions or constraints
+     * to guide the algorithm's behavior.
+     *
+     * @param knowledge the {@code Knowledge} object to set; this object
+     *                  encapsulates domain-specific knowledge or constraints
+     *                  relevant to the algorithm.
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;

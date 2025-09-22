@@ -35,8 +35,23 @@ public class Cam extends AbstractBootstrapAlgorithm implements Algorithm,
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Represents the knowledge associated with the {@code Cam} class.
+     * This field is used to store domain-specific background knowledge
+     * that may influence the behavior of the implemented search algorithm
+     * within this class. It facilitates incorporating prior knowledge
+     * into the algorithm's process.
+     */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * Constructor for the Cam class.
+     *
+     * Initializes a new instance of the Cam algorithm. This algorithm forms part
+     * of the latent structure modeling tools and supports bootstrapping and
+     * other algorithmic features. The constructor prepares the Cam instance
+     * for searching graphical causal structures based on input data and modeling parameters.
+     */
     public Cam() {
     }
 
@@ -77,33 +92,58 @@ public class Cam extends AbstractBootstrapAlgorithm implements Algorithm,
         return cam.search();
     }
 
+    /**
+     * Constructs and returns a comparison graph in the form of a completed partially directed acyclic graph (CPDAG).
+     * This method transforms an input graph into a directed acyclic graph (DAG)
+     * and subsequently converts it to a CPDAG representation.
+     *
+     * @param graph the input graph to be transformed into a CPDAG; must be a valid representation of a graph.
+     * @return the transformed graph in CPDAG form.
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph dag = new EdgeListGraph(graph);
         return GraphTransforms.dagToCpdag(dag);
     }
 
+    /**
+     * Provides a description of the CAM algorithm's functionality
+     * in this implementation.
+     *
+     * @return a string summarizing the CAM algorithm, including its order via IncEdge
+     *         with PNS and pruning via local additive BIC with a swappable scorer.
+     */
     @Override
     public String getDescription() {
         return "CAM: order via IncEdge with PNS; pruning via local additive BIC (swappable scorer).";
     }
 
+    /**
+     * Retrieves the data type associated with the implementation.
+     *
+     * @return the data type of the dataset, which in this implementation is always {@code DataType.Continuous}.
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * Retrieves a list of parameter names used in the configuration and execution
+     * of the CAM algorithm. These parameters are integral to the setting and tuning
+     * of the algorithm for specific use cases or datasets.
+     *
+     * @return a list of parameter names as strings, representing the configurable options
+     *         and settings available for the CAM algorithm.
+     */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.NUM_STARTS);     // prefer this
         params.add(Params.NUM_STARTS);       // fallback
-//        params.add(Params.MAX_PARENTS);
-//        params.add(Params.PNS_TOP_K);
         params.add(Params.GIN_RIDGE);
         params.add(Params.VERBOSE);
-        // params.add("CAM_USE_BASIS_SCORER"); // if you register custom keys
         return params;
     }
 

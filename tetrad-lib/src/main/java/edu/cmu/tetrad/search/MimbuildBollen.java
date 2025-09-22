@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -43,31 +43,97 @@ import java.util.*;
 
 /**
  * MimbuildBollen (BlockSpec version)
- *
- * Takes a clustering of measured variables (disjoint blocks), one latent per block,
- * estimates the latent covariance via a simple ML-like objective, then learns a
- * structure over the latents using BOSS + SEM-BIC.
- *
+ * <p>
+ * Takes a clustering of measured variables (disjoint blocks), one latent per block, estimates the latent covariance via
+ * a simple ML-like objective, then learns a structure over the latents using BOSS + SEM-BIC.
+ * <p>
  * Required input is a DataSet and a BlockSpec (blocks + latent nodes).
- *
+ * <p>
  * See Spirtes et al., "Causation, Prediction, and Search".
  */
 public class MimbuildBollen {
 
     // --- Inputs
+    /**
+     * Represents a dataset containing observed measurements or data that will be used in the MimbuildBollen class for
+     * conducting latent variable modeling, estimation of latent covariance, and performing structural analysis over
+     * latent variables.
+     * <p>
+     * This dataset is a crucial input that influences the analysis and should adhere to the expected format or
+     * structure required by the methods in the MimbuildBollen class.
+     * <p>
+     * The `dataSet` is immutable and is intended to hold the initial input data throughout the lifecycle of an instance
+     * of MimbuildBollen.
+     */
     private final DataSet dataSet;
+    /**
+     * Represents the specification of structural blocks used in the MimbuildBollen class. This variable encapsulates
+     * the configuration parameters needed for operations related to block structures in the model.
+     * <p>
+     * The `blockSpec` is immutable and is initialized during the construction of the MimbuildBollen object, ensuring
+     * the consistency of block configurations throughout the lifecycle of the instance.
+     */
     private final BlockSpec blockSpec;
 
     // --- Outputs & knobs
+    /**
+     * Represents the estimated latent covariance matrix in the MimbuildBollen class. This holds an instance of a
+     * covariance matrix (ICovarianceMatrix) which is optimized and updated during the execution of the algorithm.
+     * <p>
+     * The matrix encapsulates statistical relationships between latent variables, allowing further structure-learning
+     * and causal inference processes.
+     */
     private ICovarianceMatrix latentsCov;
+    /**
+     * Represents the minimum value determined during optimization within the MimbuildBollen class. This field stores
+     * the objective minimum value computed during execution and is used in various internal calculations to evaluate
+     * performance or convergence.
+     */
     private double minimum;        // objective minimum
+    /**
+     * Represents the chi-squared p-value that quantifies the fit between the implied and observed measures covariance
+     * in the MimbuildBollen model.
+     * <p>
+     * This value is essential for evaluating the goodness-of-fit in the model by comparing how well the implied
+     * covariance structure matches the observed data covariance.
+     */
     private double pValue;         // chi^2 p-value (fit of implied vs observed measures cov)
+    /**
+     * Represents the penalty discount factor used in the MimbuildBollen class. This value influences the penalization
+     * applied during model optimization or covariance estimation processes. By default, the penalty discount is set to
+     * 1.0.
+     * <p>
+     * The penalty discount can be adjusted based on user-defined parameters or requirements of a particular analysis. A
+     * lower value might lead to greater penalization, encouraging simpler models or solutions.
+     * <p>
+     * Modifications to this value should be done using the provided setter method to ensure proper configuration within
+     * the class context.
+     */
     private double penaltyDiscount = 1.0;
 
     // --- Working state for optimization
+    /**
+     * A nested list representing blocks of integers. This serves as a convenience view within the context of the
+     * MimbuildBollen class.
+     */
     private List<List<Integer>> blocks; // convenience view
+    /**
+     * Represents a list of latent nodes in the MimbuildBollen process. These nodes correspond to latent variables
+     * identified and analyzed during the structural modeling and latent covariance estimation phases.
+     */
     private List<Node> latentNodes;
 
+    /**
+     * Constructor for the MimbuildBollen class. Initializes the object with the provided BlockSpec, validates the
+     * input, and prepares internal data structures for processing.
+     *
+     * @param spec the BlockSpec defining the data set, blocks, and latent variables. Must not be null. The BlockSpec
+     *             must contain at least one block, and the number of latent variables must match the number of blocks.
+     *             Each block must be non-empty, reference valid columns in the data set, and be disjoint from all other
+     *             blocks. Latent variable names must be unique.
+     * @throws IllegalArgumentException if spec is null, contains invalid blocks, or fails validation criteria as
+     *                                  described above.
+     */
     public MimbuildBollen(BlockSpec spec) {
         if (spec == null) throw new IllegalArgumentException("blockSpec == null");
         this.dataSet = spec.dataSet();
@@ -102,7 +168,9 @@ public class MimbuildBollen {
         }
     }
 
-    /** Run MIMBUILD: estimate latent covariance, then structure over latents using BOSS. */
+    /**
+     * Run MIMBUILD: estimate latent covariance, then structure over latents using BOSS.
+     */
     public Graph search() throws InterruptedException {
         // 1) Build measured-covariance for only variables in blocks (preserve block order)
         List<String> selectedNames = new ArrayList<>();
@@ -152,7 +220,9 @@ public class MimbuildBollen {
         return out;
     }
 
-    /** Expose the estimated latent covariance (after search()). */
+    /**
+     * Expose the estimated latent covariance (after search()).
+     */
     public ICovarianceMatrix getLatentsCovariance() {
         return latentsCov;
     }

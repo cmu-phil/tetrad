@@ -149,7 +149,7 @@ public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm
         fci.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
         fci.setVerbose(verbose);
         fci.setStable(parameters.getBoolean(Params.STABLE_FAS));
-        fci.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+//        fci.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
         Graph pag;
         double fdrQ = parameters.getDouble(Params.FDR_Q);
@@ -291,7 +291,7 @@ public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
-        parameters.add(Params.GUARANTEE_PAG);
+//        parameters.add(Params.GUARANTEE_PAG);
         parameters.add(Params.VERBOSE);
         // Note: PAIRWISE_RULE is read if provided; not registered as a Params constant here.
         return parameters;

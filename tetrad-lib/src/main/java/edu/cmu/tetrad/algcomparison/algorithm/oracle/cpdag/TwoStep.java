@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for the Two-Step algorithm (ICA-based, allows cycles) using FastIca.
- * Returns the directed graph and prints the B matrix to stdout.
+ * Wrapper for the Two-Step algorithm (ICA-based, allows cycles) using FastIca. Returns the directed graph and prints
+ * the B matrix to stdout.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "Two-Step (FastICA, cyclic)",
@@ -33,9 +33,20 @@ public class TwoStep extends AbstractBootstrapAlgorithm implements Algorithm {
     @Serial
     private static final long serialVersionUID = 2L;
 
+    /**
+     * The knowledge object, maintained for API compatibility. It is not used directly in the implementation of this
+     * class but may serve as a placeholder to ensure parity with other similar APIs or extensions. This variable can be
+     * accessed or modified through the provided getter and setter methods.
+     */
     private Knowledge knowledge = new Knowledge(); // kept for API parity (not used here)
 
-    public TwoStep() { }
+    /**
+     * Default constructor for the TwoStep class.
+     * <p>
+     * Initializes an instance of the TwoStep algorithm with no additional parameters.
+     */
+    public TwoStep() {
+    }
 
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters ignored) throws InterruptedException {
@@ -108,32 +119,69 @@ public class TwoStep extends AbstractBootstrapAlgorithm implements Algorithm {
         return result.graph;
     }
 
+    /**
+     * Returns the given graph for comparison purposes. The method assumes that the graph input is prepared for a
+     * two-step algorithm and may contain cycles, which are retained in the returned graph.
+     *
+     * @param graph the input graph to be used for comparison, which may include cycles
+     * @return the same graph object that was passed as input, unaltered
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         // Two-Step may return cycles; just return as-is for comparison.
         return graph;
     }
 
+    /**
+     * Provides a description of the Two-Step algorithm, which is based on FastICA and supports cycles in continuous
+     * data.
+     *
+     * @return a string representation of the Two-Step algorithm description
+     */
     @Override
     public String getDescription() {
         return "Two-Step (FastICA-based, allows cycles) over continuous data.";
     }
 
+    /**
+     * Returns the data type associated with the TwoStep algorithm. This implementation specifies that the data type is
+     * continuous.
+     *
+     * @return the data type, which is {@code DataType.Continuous}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * Retrieves the list of parameters associated with the algorithm's configuration.
+     *
+     * @return a list of parameter names as strings. If no parameters are defined, this method returns an empty list.
+     */
     @Override
     public List<String> getParameters() {
         // Parameters are hardcoded above for now; return an empty list.
         return new ArrayList<>();
     }
 
+    /**
+     * Retrieves the current knowledge associated with the TwoStep algorithm. The knowledge represents constraints or
+     * prior information that guide the structure search during the algorithm's execution.
+     *
+     * @return the current {@code Knowledge} object associated with this instance
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge object for the TwoStep algorithm. The knowledge represents user-provided constraints or prior
+     * information that guide the structure search during the algorithm's execution.
+     *
+     * @param knowledge the {@code Knowledge} object to be set. This object encapsulates constraints or prior
+     *                  information to be used by the algorithm.
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }

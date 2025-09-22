@@ -36,12 +36,31 @@ public class Cdnod extends AbstractBootstrapAlgorithm implements Algorithm, HasK
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Represents an instance of {@link IndependenceWrapper} used within the Cdnod class. This field is utilized for
+     * performing independence tests and configuring algorithm-specific behaviors based on the provided implementation.
+     */
     private IndependenceWrapper test;
+    /**
+     * Encapsulates prior knowledge constraints to be used during the execution of the algorithm. It defines any
+     * structural assumptions or constraints about the data or model, such as forbidden or required edges.
+     * <p>
+     * This field can be set and retrieved via the corresponding accessor methods.
+     */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * Default constructor for the Cdnod class. This constructor initializes a new instance of Cdnod without any
+     * specific parameters.
+     */
     public Cdnod() {
     }
 
+    /**
+     * Constructs a new instance of Cdnod with the specified IndependenceWrapper.
+     *
+     * @param test the IndependenceWrapper instance to be associated with this Cdnod object
+     */
     public Cdnod(IndependenceWrapper test) {
         this.test = test;
     }
@@ -97,52 +116,96 @@ public class Cdnod extends AbstractBootstrapAlgorithm implements Algorithm, HasK
         return g;
     }
 
+    /**
+     * Generates a comparison graph by converting a given graph into its completed partially directed acyclic graph
+     * (CPDAG) form.
+     *
+     * @param graph the input graph to be processed, represented as a Graph object
+     * @return a new Graph object representing the CPDAG form of the input graph
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph dag = new EdgeListGraph(graph);
         return GraphTransforms.dagToCpdag(dag);
     }
 
+    /**
+     * Provides a description of the CD-NOD algorithm using the associated configured IndependenceWrapper test or a
+     * default description if no test is configured.
+     *
+     * @return A string description of the CD-NOD algorithm and its associated test.
+     */
     @Override
     public String getDescription() {
         return "CD-NOD using " + (this.test != null ? this.test.getDescription() : "configured test");
     }
 
+    /**
+     * Retrieves the data type associated with the current test instance.
+     *
+     * @return the data type required by the configured IndependenceWrapper test, which can be Continuous, Discrete,
+     * Mixed, or other defined types.
+     */
     @Override
     public DataType getDataType() {
         return this.test.getDataType();
     }
 
+    /**
+     * Retrieves a list of parameter names associated with the CD-NOD algorithm. These parameters are used to configure
+     * specific aspects of the algorithm's execution.
+     *
+     * @return a list of strings representing the names of parameters available for the algorithm.
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
-//        parameters.add(Params.ALLOW_BIDIRECTED); // currently ignored by CD-NOD core
         parameters.add(Params.DEPTH);
         parameters.add(Params.FDR_Q);
-//        parameters.add(Params.TIME_LAG);         // not applied here; leave for future
         parameters.add(Params.VERBOSE);
-//        parameters.add(Params.ALPHA);            // optional pass-through
-//        parameters.add(Params.MAXP_MARGIN);      // optional pass-through
         return parameters;
     }
 
+    /**
+     * Retrieves the knowledge object associated with the current instance of Cdnod.
+     *
+     * @return the Knowledge object representing the domain knowledge or constraints configured for this algorithm
+     * instance.
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge object for the current instance of the Cdnod class. The knowledge object represents domain
+     * knowledge or constraints used to inform the algorithm's execution.
+     *
+     * @param knowledge the Knowledge object to set for this instance
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
+    /**
+     * Retrieves the configured IndependenceWrapper instance associated with this object.
+     *
+     * @return the current IndependenceWrapper instance used for independence testing.
+     */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /**
+     * Sets the IndependenceWrapper test instance for this object. The IndependenceWrapper is used to perform
+     * statistical independence tests as part of the CD-NOD algorithm's functionality.
+     *
+     * @param test the IndependenceWrapper instance to be set
+     */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;

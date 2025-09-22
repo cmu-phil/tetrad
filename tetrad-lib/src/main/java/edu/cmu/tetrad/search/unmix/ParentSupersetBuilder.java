@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.unmix;
 
@@ -30,12 +30,25 @@ import java.util.stream.Collectors;
 
 /**
  * Builds a parent *superset* per node without assuming a single pooled DAG. Combines fast statistical screening (|corr|
- * or |Kendall Ï|) with an optional union of parents from several *shallow searches* run on subsamples ("bags").
+ * or |Kendall τ) with an optional union of parents from several *shallow searches* run on subsamples ("bags").
  */
 public final class ParentSupersetBuilder {
+    /**
+     * A private constructor to prevent instantiation of the {@code ParentSupersetBuilder} class.
+     * This class is designed to provide utility methods for building parent supersets and should not be instantiated.
+     */
+    private ParentSupersetBuilder() {}
 
     /**
-     * Main API: returns a map v -> superset parents S_v (list order arbitrary).
+     * Builds a map representing a superset of parent nodes for each variable node in the given data set. This method
+     * performs statistical screening based on provided configurations, and optionally refines the superset using bagged
+     * subsamples and a shallow-search procedure.
+     *
+     * @param data The dataset containing the variables for which the parent superset will be constructed.
+     * @param cfg  The configuration object that specifies scoring type, top variable selection, bagging preferences,
+     *             and shallow-search method among other parameters.
+     * @return A map where each key is a target node, and the corresponding value is a list of potential parent nodes.
+     * These parent nodes are determined based on the statistical screening and optional bagging operations.
      */
     public static Map<Node, List<Node>> build(DataSet data, Config cfg) {
         Objects.requireNonNull(data);
@@ -189,15 +202,87 @@ public final class ParentSupersetBuilder {
         return r;
     }
 
-    public enum ScoreType {PEARSON, SPEARMAN, KENDALL}
+    /**
+     * Represents the type of correlation score used for statistical calculations or comparisons.
+     */
+    public enum ScoreType {
+        /**
+         * Pearson correlation coefficient, which measures linear correlation between two variables.
+         */
+        PEARSON,
+        /**
+         * Spearman's rank correlation coefficient, which measures rank-based correlation.
+         */
+        SPEARMAN,
+        /**
+         * Kendall's tau correlation coefficient, which measures ordinal association between variables.
+         */
+        KENDALL
+    }
 
+    /**
+     * Represents the configuration settings used for statistical screening and optional bagging operations in the
+     * parent superset construction process. This class contains parameters that control behavior such as scoring type,
+     * selection size, bagging, and optional shallow search functionality.
+     */
     public static class Config {
+        /**
+         * Specifies the maximum number of strongest candidates to retain per node during the statistical screening
+         * process. This value is utilized to limit the selection of candidates to the top M based on their strength,
+         * determined using relevant scoring functions in the algorithm. A lower value of this parameter can reduce
+         * memory and computational overhead, while a higher value allows for broader exploration of potential
+         * candidates.
+         */
         public int topM = 10;                 // keep up to M strongest candidates per node (from stats)
+        /**
+         * Specifies the type of correlation score to be used for statistical calculations in the screening process. The
+         * value determines the method of determining correlation, such as Pearson, Spearman, or Kendall correlations.
+         * This parameter influences the scoring mechanism applied while evaluating relationships between variables.
+         */
         public ScoreType scoreType = ScoreType.PEARSON;
+        /**
+         * Determines whether bagging should be applied during the parent superset construction process. If set to true,
+         * the algorithm performs shallow searches on data subsamples and takes the union of parent sets identified in
+         * these subsamples. This can help increase robustness and improve statistical reliability by leveraging
+         * ensemble-like techniques.
+         */
         public boolean useBagging = false;    // if true, union with parents from shallow searches on subsamples
+        /**
+         * Specifies the number of subsamples to use during the bagging process. This parameter determines how many
+         * subsets of the data are created during the statistical screening or shallow search. A higher value increases
+         * the robustness of the aggregate parent set construction by incorporating results from more subsample
+         * analyses, while a lower value reduces computational costs.
+         */
         public int bags = 5;                  // number of subsamples
+        /**
+         * Specifies the fraction of rows to use in each subsample during the bagging process. This parameter defines
+         * the proportion of the dataset that is randomly selected for each subsample. A lower value reduces the size of
+         * each subset used in the analysis, potentially lowering computational costs but increasing variability. A
+         * higher value results in larger subsets, contributing to more stable statistical outcomes at the expense of
+         * increased resource usage.
+         */
         public double bagFraction = 0.5;      // fraction of rows per subsample
+        /**
+         * The seed variable is used to initialize the random number generator, ensuring reproducibility in randomized
+         * operations within the configuration or associated processes.
+         * <p>
+         * This variable allows for deterministic behavior by providing a fixed starting point for random number
+         * generation. It is particularly useful in scenarios where consistency of results is required, such as testing
+         * or simulations.
+         */
         public long seed = 13L;
+
+        /**
+         * Constructs a new instance of the Config class with default settings.
+         *
+         * This constructor initializes a Config object with pre-defined default values
+         * for its parameters. Instances of the Config class are used to store and manage
+         * configuration settings for various operations or algorithms. The initialized
+         * values can be modified after construction if specific configurations are required.
+         */
+        public Config
+                () {}
+
         /**
          * If provided, called on each subsample to get a shallow graph (e.g., PC-Max depth 1)
          */

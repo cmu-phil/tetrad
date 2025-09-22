@@ -46,12 +46,15 @@ public class MvpScore implements Score {
     private final double logn;
 
     /**
-     * Constructor.
+     * Constructs an MvpScore instance with the given dataset and parameters.
      *
-     * @param dataSet        The mixed dataset being analyzed.
-     * @param structurePrior The structure prior
-     * @param fDegree        The f degree.
-     * @param discretize     a boolean
+     * @param dataSet The dataset to be used for scoring. Must not be null.
+     * @param structurePrior The prior over structures, influencing the scoring model.
+     * @param fDegree The degree of freedom adjustment for the scoring algorithm.
+     * @param discretize Whether the data should be discretized (true) or not (false).
+     * @param effectiveSampleSize The effective sample size to be used; if less than 0,
+     *                            the actual sample size of the dataset is used.
+     * @throws NullPointerException If the dataSet is null.
      */
     public MvpScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize,
                     int effectiveSampleSize) {

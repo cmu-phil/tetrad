@@ -119,6 +119,13 @@ public final class Pcmci implements IGraphSearch {
          */
         public Builder collapseToLag0(boolean c){ this.collapseToLag0 = c; return this; }
 
+        /**
+         * Builds and returns a Pcmci object configured with the parameters set in the Builder instance.
+         * The Pcmci object created will use the specified data, test, and various optional configurations,
+         * such as maximum lag, significance level, maximum conditioning set size, verbosity, and lag collapsing.
+         *
+         * @return a new Pcmci instance based on the current Builder configuration
+         */
         public Pcmci build(){ return new Pcmci(this); }
     }
 

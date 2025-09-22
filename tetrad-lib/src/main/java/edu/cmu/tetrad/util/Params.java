@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.util;
 
@@ -1097,7 +1097,9 @@ public final class Params {
      * Constant <code>TSC_MIN_RANK_DROP="tscMinRankDrop"</code>
      */
     public static final String TSC_MIN_RANK_DROP = "tscMinRankDrop";
-
+    /**
+     * Constant <code>TSC_MIN_REDUNDANCY="tscMinRedundancy"</code>
+     */
     public static final String TSC_MIN_REDUNDANCY = "tscMinRedundancy";
     /**
      * Constant <code>GFFC_R_MAX="gffc_r_max"</code>
@@ -1132,16 +1134,37 @@ public final class Params {
      */
     public static final String CYCLIC_COEF_STYLE = "cyclicCoefStyle";
     /**
-     * Constant <code>FDR_Q="cyclicCoefStyle"</code>
+     * Constant <code>FDR_Q="fdrQ"</code>
      */
     public static final String FDR_Q = "fdrQ";
+    /**
+     * Constant <code>GIN_BACKEND="ginBackend"</code>
+     */
     public static final String GIN_BACKEND = "ginBackend";
+    /**
+     * Constant <code>GIN_PERMUTATIONS="ginPermutations"</code>
+     */
     public static final String GIN_PERMUTATIONS = "ginPermutations";
+    /**
+     * Constant <code>GIN_RIDGE="ginRidge"</code>
+     */
     public static final String GIN_RIDGE = "ginRidge";
 
+    /**
+     * Constant <code>ANM_PRESET="anmPreset"</code>
+     */
     public static final String ANM_PRESET = "anmPreset";
+    /**
+     * Constant <code>ANM_NONLINEARITY="anmNonlinearity"</code>
+     */
     public static final String ANM_NONLINEARITY = "anmNonlinearity";
+    /**
+     * Constant <code>ANM_NOISE_KIND="anmNoiseKind"</code>
+     */
     public static final String ANM_NOISE_KIND = "anmNoiseKind";
+    /**
+     * Constant <code>ANM_NOISE_STRENGTH="anmNoiseStrength"</code>
+     */
     public static final String ANM_NOISE_STRENGTH = "anmNoiseStrength";
 
 
@@ -1214,45 +1237,42 @@ public final class Params {
     public static String MC_ALPHA = "mcAlpha";
 
     /**
-     * Constant <code>RCIT_MODE="rcit.rcitMode"</code>
-     * Whether to use RCIT (true) or RCoT (false).
+     * Constant <code>RCIT_MODE="rcit.rcitMode"</code> Whether to use RCIT (true) or RCoT (false).
      */
     public static String RCIT_MODE = "rcit.rcitMode";
 
     /**
-     * Constant <code>RCIT_NUM_FEATURES_Z="rcit.numFeaturesZ"</code>
-     * Number of random Fourier features for the conditioning set Z (num_f).
+     * Constant <code>RCIT_NUM_FEATURES_Z="rcit.numFeaturesZ"</code> Number of random Fourier features for the
+     * conditioning set Z (num_f).
      */
     public static String RCIT_NUM_FEATURES_Z = "rcit.numFeaturesZ";
 
     /**
-     * Constant <code>RCIT_NUM_FEATURES_XY="rcit.numFeaturesXY"</code>
-     * Number of random Fourier features for the test variables X and Y (num_f2).
+     * Constant <code>RCIT_NUM_FEATURES_XY="rcit.numFeaturesXY"</code> Number of random Fourier features for the test
+     * variables X and Y (num_f2).
      */
     public static String RCIT_NUM_FEATURES_XY = "rcit.numFeaturesXY";
 
     /**
-     * Constant <code>RCIT_LAMBDA="rcit.lambda"</code>
-     * Ridge regularization parameter (λ) used during residualization.
+     * Constant <code>RCIT_LAMBDA="rcit.lambda"</code> Ridge regularization parameter (λ) used during residualization.
      */
     public static String RCIT_LAMBDA = "rcit.lambda";
 
     /**
-     * Constant <code>RCIT_APPROX="rcit.approx"</code>
-     * Approximation method for the null distribution:
-     * one of {"lpd4", "hbe", "gamma", "chi2", "perm"}.
+     * Constant <code>RCIT_APPROX="rcit.approx"</code> Approximation method for the null distribution: one of {"lpd4",
+     * "hbe", "gamma", "chi2", "perm"}.
      */
     public static String RCIT_APPROX = "rcit.approx";
 
     /**
-     * Constant <code>RCIT_PERMUTATIONS="rcit.permutations"</code>
-     * Number of permutations used when RCIT_APPROX is "perm".
+     * Constant <code>RCIT_PERMUTATIONS="rcit.permutations"</code> Number of permutations used when RCIT_APPROX is
+     * "perm".
      */
     public static String RCIT_PERMUTATIONS = "rcit.permutations";
 
     /**
-     * Constant <code>RCIT_CENTER_FEATURES="rcit.centerFeatures"</code>
-     * Whether to center feature matrices before regression and HSIC.
+     * Constant <code>RCIT_CENTER_FEATURES="rcit.centerFeatures"</code> Whether to center feature matrices before
+     * regression and HSIC.
      */
     public static String RCIT_CENTER_FEATURES = "rcit.centerFeatures";
 
