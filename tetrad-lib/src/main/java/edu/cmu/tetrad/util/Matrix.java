@@ -844,6 +844,12 @@ public class Matrix implements TetradSerializable {
         return data;
     }
 
+    /**
+     * Solves the linear system represented by this matrix and the given matrix.
+     *
+     * @param yzCovModel The matrix representing the right-hand side of the linear system.
+     * @return The solution matrix.
+     */
     public Matrix solve(Matrix yzCovModel) {
         return yzCovModel.solve(this);
     }

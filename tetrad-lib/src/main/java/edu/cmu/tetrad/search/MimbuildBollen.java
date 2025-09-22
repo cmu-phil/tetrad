@@ -169,7 +169,19 @@ public class MimbuildBollen {
     }
 
     /**
-     * Run MIMBUILD: estimate latent covariance, then structure over latents using BOSS.
+     * Executes a search operation to build and optimize a graphical structure based on the
+     * covariance of latent and measured variables.
+     *
+     * <p>The procedure comprises:</p>
+     * <ol>
+     *   <li>Construct a covariance matrix for the selected variables within the specified blocks.</li>
+     *   <li>Define an indicator layout consistent with the selected covariance matrix.</li>
+     *   <li>Estimate the latent covariance matrix and associated parameters via optimization.</li>
+     *   <li>Score and search over latent variables to construct the resulting graph.</li>
+     * </ol>
+     *
+     * @return a {@code Graph} representing the optimized structure of latent variables and their relationships.
+     * @throws InterruptedException if the thread executing the search is interrupted.
      */
     public Graph search() throws InterruptedException {
         // 1) Build measured-covariance for only variables in blocks (preserve block order)
@@ -221,7 +233,9 @@ public class MimbuildBollen {
     }
 
     /**
-     * Expose the estimated latent covariance (after search()).
+     * Retrieves the latent covariance matrix associated with the MimbuildBollen instance.
+     *
+     * @return the latent covariance matrix as an ICovarianceMatrix object.
      */
     public ICovarianceMatrix getLatentsCovariance() {
         return latentsCov;

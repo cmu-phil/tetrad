@@ -1155,6 +1155,17 @@ public final class MatrixUtils {
         return copy;
     }
 
+    /**
+     * Computes the symmetrized version of the given square matrix. The symmetrized
+     * matrix is calculated as (A + A^T) / 2, where A is the input matrix and A^T is
+     * its transpose. The method does not modify the original matrix.
+     *
+     * @param sigma the input square matrix to be symmetrized; must not be null.
+     *              The matrix must have the same number of rows and columns.
+     * @return the symmetrized matrix computed as (A + A^T) / 2.
+     * @throws NullPointerException if the input matrix is null.
+     * @throws IllegalArgumentException if the input matrix is not square.
+     */
     public static Matrix symmetrize(Matrix sigma) {
         if (sigma == null) {
             throw new NullPointerException("Matrix must not be null.");
