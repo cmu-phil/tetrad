@@ -52,14 +52,14 @@ public final class SimulationTypes {
      * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
      */
     public static final String POST_NONLINEAR_MODEL = "Post-nonlinear causal Model";
-    /**
-     * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
-     */
-    public static final String NONLINEAR_FUNCTIONS_OF_LINEAR = "Nonlinear Functions of Linear (NFL) Model";
+//    /**
+//     * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
+//     */
+//    public static final String NONLINEAR_FUNCTIONS_OF_LINEAR = "Nonlinear Functions of Linear (NFL) Model";
     /**
      * Constant <code>CAUSAL_PERCEPTRON_NETWORK="Causal Peceptron Network (CPN)"</code>
      */
-    public static final String CAUSAL_PERCEPTRON_NETWORK = "Causal Peceptron Network (CPN)";
+    public static final String CAUSAL_PERCEPTRON_NETWORK = "Nonlinear SEM (Neural Net)";
     /**
      * Constant <code>CAUSAL_PERCEPTRON_NETWORK="Causal Peceptron Network (CPN)"</code>
      */

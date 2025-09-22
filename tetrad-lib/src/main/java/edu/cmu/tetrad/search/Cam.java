@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.AdditiveLocalScorer;
 import edu.cmu.tetrad.search.score.CamAdditivePsplineBic;
+import edu.cmu.tetrad.search.score.CamBasisFunctionBicScorer;
 
 import java.util.*;
 
@@ -42,6 +43,14 @@ public class Cam {
 
     // PNS candidates: top-k univariate per target
     private int pnsTopK = 10;
+
+    // --- Numerical-stability knobs (safe defaults) ---
+    private double xtxJitter = 1e-8;      // tiny jitter added to B^T B
+    private double gcvMinDenom = 5.0;     // floor for N - edf in GCV
+    private double edfEps = 1e-6;         // keep edf strictly < N
+    private double lambdaMinExp = -4.0;   // λ grid: 10^min .. 10^max
+    private double lambdaMaxExp = 6.0;
+    private int    lambdaNum = 15;        // # grid points
 
     public Cam(DataSet data) {
         this.data = Objects.requireNonNull(data, "data");

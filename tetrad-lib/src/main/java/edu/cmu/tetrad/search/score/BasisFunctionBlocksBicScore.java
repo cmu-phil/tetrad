@@ -39,6 +39,7 @@ import java.util.Objects;
  * CONTRACT: 'blocks' maps each ORIGINAL variable index v (0..V-1) to the list of embedded column indices in the
  * embedded matrix produced here.
  */
+@Deprecated
 public class BasisFunctionBlocksBicScore implements Score {
 
     // ---- Source data / variables (block-level nodes are the caller's originals) ----

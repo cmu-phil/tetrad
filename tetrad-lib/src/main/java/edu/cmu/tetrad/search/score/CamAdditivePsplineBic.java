@@ -35,6 +35,14 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
     private final double[] ybuf;        // scratch buffers
     private final double[] xbuf;
 
+    // --- Numerical-stability knobs (safe defaults) ---
+    private double xtxJitter = 1e-8;      // tiny jitter added to B^T B
+    private double gcvMinDenom = 0.0;     // floor for N - edf in GCV
+    private double edfEps = 1e-6;         // keep edf strictly < N
+    private double lambdaMinExp = -8.0;   // λ grid: 10^min .. 10^max
+    private double lambdaMaxExp = 8.0;
+    private int    lambdaNum = 10;        // # grid points
+
     // Precompute spline bases per variable (keyed by variable index + config)
     private final Map<String, Precomp> precomp = new HashMap<>();
 
@@ -242,6 +250,11 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
         DMatrixRMaj BtB = new DMatrixRMaj(M, M);
         CommonOps_DDRM.multTransA(B, B, BtB); // B^T B
 
+        if (xtxJitter > 0) {
+            DMatrixRMaj I = identity(M);
+            CommonOps_DDRM.addEquals(BtB, xtxJitter, I);
+        }
+
         return new Precomp(B, P, BtB);
     }
 
@@ -266,9 +279,13 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
         }
 
         // Lambda grid: warm-start around lastLambda if available; otherwise coarse grid
+//        double[] lambdas = (pb.lastLambda > 0)
+//                ? gridAround(pb.lastLambda, 1e-4, 1e4)
+//                : logspace(-3, 4, 12); // 1e-3 .. 1e4
+
         double[] lambdas = (pb.lastLambda > 0)
-                ? gridAround(pb.lastLambda, 1e-4, 1e4)
-                : logspace(-3, 4, 12); // 1e-3 .. 1e4
+                ? gridAround(pb.lastLambda, 1e-6, 1e6)
+                : logspace(lambdaMinExp, lambdaMaxExp, lambdaNum);
 
         double bestGcv = Double.POSITIVE_INFINITY;
         double[] bestBeta = null;
@@ -293,6 +310,9 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
             DMatrixRMaj S = solveSPDForRight(M, XtX);
             double edf = trace(S);
 
+            // Keep edf within sensible bounds to avoid N - edf → 0
+            edf = Math.max(0.0, Math.min(edf, Math.min(pb.M - edfEps, N - 2.0)));
+
             // RSS = || r - B beta ||^2
             double rss = 0.0;
             for (int i = 0; i < N; i++) {
@@ -301,7 +321,10 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
                 double e = pb.r[i] - fi;
                 rss += e * e;
             }
-            double denom = Math.max(1e-12, N - Math.min(N - 1, edf));
+//            double denom = Math.max(1e-12, N - Math.min(N - 1, edf));
+//            double gcv = (rss / N) / Math.pow(denom / N, 2.0);
+
+            double denom = Math.max(gcvMinDenom, N - Math.min(N - 1.0, edf));
             double gcv = (rss / N) / Math.pow(denom / N, 2.0);
 
             if (gcv < bestGcv) {

@@ -202,7 +202,7 @@ public class CausalPerceptronNetwork implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Causal Perceptron Network (CPN) using " + this.randomGraph.getDescription();
+        return "Nonlinear SEM (Neural Net)";
     }
 
     /**
@@ -292,20 +292,20 @@ public class CausalPerceptronNetwork implements Simulation {
 
         Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
 
-//        edu.cmu.tetrad.sem.CausalPerceptronNetwork generator = new edu.cmu.tetrad.sem.CausalPerceptronNetwork(
-//                graph, parameters.getInt(Params.SAMPLE_SIZE),
-//                new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
-//                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
-//                hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
-
-        // Convert hidden dimsnions to List<Integer>
-        List<Integer> hiddenDimensionsList = MathUtils.getInts(hiddenDimensions);
-
-        edu.cmu.tetrad.sem.CausalPerceptronNetworkDjl generator = new edu.cmu.tetrad.sem.CausalPerceptronNetworkDjl(
+        edu.cmu.tetrad.sem.CausalPerceptronNetwork generator = new edu.cmu.tetrad.sem.CausalPerceptronNetwork(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
-                hiddenDimensionsList, parameters.getDouble(Params.INPUT_SCALE), activation);
+                hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
+
+//        // Convert hidden dimsnions to List<Integer>
+//        List<Integer> hiddenDimensionsList = MathUtils.getInts(hiddenDimensions);
+//
+//        edu.cmu.tetrad.sem.CausalPerceptronNetworkDjl generator = new edu.cmu.tetrad.sem.CausalPerceptronNetworkDjl(
+//                graph, parameters.getInt(Params.SAMPLE_SIZE),
+//                new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
+//                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
+//                hiddenDimensionsList, parameters.getDouble(Params.INPUT_SCALE), activation);
 
         return generator.generateData();
     }

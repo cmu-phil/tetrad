@@ -41,6 +41,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(name = "BF-Blocks-BIC", command = "bf-blocks-bic-score", dataType = DataType.Mixed)
+@Deprecated
 @Mixed
 public class BasisFunctionBlocksBicScore implements ScoreWrapper {
 

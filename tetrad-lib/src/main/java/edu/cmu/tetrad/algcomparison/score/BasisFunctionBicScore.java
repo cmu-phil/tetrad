@@ -82,7 +82,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "BF Blocks BIC";
+        return "BF BIC";
     }
 
     /**

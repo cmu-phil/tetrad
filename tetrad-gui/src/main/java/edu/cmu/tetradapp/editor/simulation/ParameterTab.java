@@ -213,9 +213,9 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.POST_NONLINEAR_MODEL:
                         this.simulation.setSimulation(new PostnonlinearCausalModel(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_FUNCTIONS_OF_LINEAR:
-                        this.simulation.setSimulation(new NonlinearFunctionsOfLinear(randomGraph), this.simulation.getParams());
-                        break;
+//                    case SimulationTypes.NONLINEAR_FUNCTIONS_OF_LINEAR:
+//                        this.simulation.setSimulation(new NonlinearFunctionsOfLinear(randomGraph), this.simulation.getParams());
+//                        break;
                     case SimulationTypes.CAUSAL_PERCEPTRON_NETWORK:
                         this.simulation.setSimulation(new CausalPerceptronNetwork(randomGraph), this.simulation.getParams());
                         break;
@@ -274,9 +274,9 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.POST_NONLINEAR_MODEL:
                         this.simulation.setSimulation(new PostnonlinearCausalModel(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_FUNCTIONS_OF_LINEAR:
-                        this.simulation.setSimulation(new NonlinearFunctionsOfLinear(randomGraph), this.simulation.getParams());
-                        break;
+//                    case SimulationTypes.NONLINEAR_FUNCTIONS_OF_LINEAR:
+//                        this.simulation.setSimulation(new NonlinearFunctionsOfLinear(randomGraph), this.simulation.getParams());
+//                        break;
                     case SimulationTypes.CAUSAL_PERCEPTRON_NETWORK:
                         this.simulation.setSimulation(new CausalPerceptronNetwork(randomGraph), this.simulation.getParams());
                         break;

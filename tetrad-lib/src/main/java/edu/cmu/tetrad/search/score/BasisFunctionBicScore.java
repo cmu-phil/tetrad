@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search.score;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
@@ -90,7 +91,7 @@ public class BasisFunctionBicScore implements Score {
         DataSet embeddedData = result.embeddedData();
 
         // We will zero out the correlations that are very close to zero.
-        CovarianceMatrix correlationMatrix = new CovarianceMatrix(embeddedData);
+        CorrelationMatrix correlationMatrix = new CorrelationMatrix(embeddedData);
 
         this.bic = new SemBicScore(correlationMatrix);
         this.bic.setPenaltyDiscount(penaltyDiscount);
@@ -103,7 +104,7 @@ public class BasisFunctionBicScore implements Score {
         this.bic.setStructurePrior(0);
 
     }
-
+    
     /**
      * Calculates the local score for a given node and its parent nodes.
      *
