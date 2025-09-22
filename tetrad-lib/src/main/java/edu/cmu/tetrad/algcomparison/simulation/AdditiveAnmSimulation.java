@@ -54,7 +54,7 @@ import java.util.Locale;
  *  - ANM_NOISE_KIND:   "beta" | "gaussian" | "student_t"
  *  - ANM_NOISE_STRENGTH: [0,1] slider (σ of noise after centering/standardizing family base)
  *
- * Keeps existing post-processing knobs: STANDARDIZE, AM_RESCALE_MIN/MAX, etc.
+ * Keeps existing post-processing knobs: STANDARDIZE, etc.
  */
 public class AdditiveAnmSimulation implements Simulation {
 
@@ -176,37 +176,6 @@ public class AdditiveAnmSimulation implements Simulation {
         return "ANM";
     }
 
-    @Override
-    public List<String> getParameters() {
-        List<String> params = new ArrayList<>();
-
-        if (!(this.randomGraph instanceof SingleGraph)) {
-            params.addAll(this.randomGraph.getParameters());
-        }
-
-        // minimal user-facing
-        params.add(Params.ANM_PRESET);
-        params.add(Params.ANM_NONLINEARITY);
-        params.add(Params.ANM_NOISE_KIND);
-        params.add(Params.ANM_NOISE_STRENGTH);
-//        params.add(Params.ANM_UNITS_PER_EDGE);
-
-        // sampling & post-process
-        params.add(Params.SAMPLE_SIZE);
-        params.add(Params.STANDARDIZE);
-        params.add(Params.AM_RESCALE_MIN);
-        params.add(Params.AM_RESCALE_MAX);
-        params.add(Params.SEED);
-
-        // book-keeping
-        params.add(Params.NUM_RUNS);
-        params.add(Params.PROB_REMOVE_COLUMN);
-        params.add(Params.DIFFERENT_GRAPHS);
-        params.add(Params.RANDOMIZE_COLUMNS);
-        params.add(Params.SAVE_LATENT_VARS);
-
-        return params;
-    }
 
     @Override
     public Class<? extends RandomGraph> getRandomGraphClass() {
@@ -254,185 +223,81 @@ public class AdditiveAnmSimulation implements Simulation {
         return dataSet;
     }
 
-//    private DataSet runModel(Graph graph, Parameters parameters) {
-//        // ---------- 1) Read compact knobs (with defaults) ----------
-//        final int presetIndex = 2;// clampInt(parameters.getInt(Params.ANM_PRESET, 2), 1, 4);
-//        final int noiseKindIndex = 1;// clampInt(parameters.getInt(Params.ANM_NOISE_KIND, 1), 1, 3);
-//
-//        String preset = switch (presetIndex) {
-//            case 1 -> "smooth_rbf";
-//            case 2 -> "wavy_rbf";
-//            case 3 -> "tanh";
-//            case 4 -> "polynomial";
-//            default -> "wavy_rbf";
-//        };
-//
-//        final String noiseKind = switch (noiseKindIndex) {
-//            case 1 -> "beta";
-//            case 2 -> "gaussian";
-//            case 3 -> "student_t";
-//            default -> "beta";
-//        };
-//
-//        final double nonlin = clamp01(parameters.getDouble(Params.ANM_NONLINEARITY, 0.6));
-//        final double noiseStrength = clamp01(parameters.getDouble(Params.ANM_NOISE_STRENGTH, 0.4));
-//
-//        final int N = parameters.getInt(Params.SAMPLE_SIZE, 200);
-//        final boolean standardizeParents = parameters.getBoolean(Params.STANDARDIZE, true);
-//        final double rescaleMin = parameters.getDouble(Params.AM_RESCALE_MIN, -3.0);
-//        final double rescaleMax = parameters.getDouble(Params.AM_RESCALE_MAX, 3.0);
-//
-//        // ---------- 2) Preset -> base family & base richness/amplitude ----------
-//        AdditiveAnmSimulator.Family family = switch (preset) {
-//            case "smooth_rbf" -> AdditiveAnmSimulator.Family.RBF;
-//            case "wavy_rbf" -> AdditiveAnmSimulator.Family.RBF;
-//            case "tanh" -> AdditiveAnmSimulator.Family.TANH;
-//            case "polynomial" -> AdditiveAnmSimulator.Family.POLY;
-//            default -> AdditiveAnmSimulator.Family.RBF; // fallback
-//        };
-//
-//        int baseUnits = switch (preset) {
-//            case "smooth_rbf" -> 6;
-//            case "wavy_rbf" -> 10;
-//            case "tanh" -> 8;
-//            case "polynomial" -> 5;
-//            default -> 8;
-//        };
-//
-//        double baseEdgeScale = switch (preset) {
-//            case "smooth_rbf" -> 0.8;
-//            case "wavy_rbf" -> 1.0;
-//            case "tanh" -> 0.9;
-//            case "polynomial" -> 0.7;
-//            default -> 0.9;
-//        };
-//
-//        // ---------- 3) Nonlinearity slider -> adjust units & scale ----------
-//        int unitsPerEdge = clampInt((int) Math.round(baseUnits + 6.0 * nonlin), 3, 20);
-//        double edgeScale = clamp(baseEdgeScale + 0.8 * (nonlin - 0.5), 0.2, 2.0);
-//
-////        unitsPerEdge = parameters.getInt(Params.ANM_UNITS_PER_EDGE, unitsPerEdge);
-//
-//        // ---------- 5) Noise ----------
-//        final double sigma = 0.2 + 1.0 * noiseStrength; // maps [0,1] -> [0.2, 1.2]
-//        RealDistribution noiseDist = buildNoise(parameters, noiseKind, sigma);
-//
-//        // ---------- 6) Build generator ----------
-//        AdditiveAnmSimulator gen = new AdditiveAnmSimulator(
-//                graph,
-//                N,
-//                noiseDist,
-//                rescaleMin,
-//                rescaleMax
-//        )
-//                .setFunctionFamily(family)
-//                .setNumUnitsPerEdge(unitsPerEdge)
-//                .setInputStandardize(standardizeParents)
-//                .setEdgeScale(edgeScale);
-//
-//        long seed = parameters.getLong(Params.SEED);
-//        if (seed != -1L) gen.setSeed(seed);
-//
-//        return gen.generate();
-//    }
+    private DataSet runModel(Graph graph, Parameters parameters) {
+        // ---------- 1) Read compact knobs (with defaults) ----------
+        final int presetIndex = clampInt(parameters.getInt(Params.ANM_PRESET, 2), 1, 4);
+        final int noiseKindIndex = clampInt(parameters.getInt(Params.ANM_NOISE_KIND, 1), 1, 3);
 
-    // --- DROP-IN REPLACEMENT ---
-//    private DataSet runModel(Graph graph, Parameters parameters) {
-//        // Stronger default nonlinearity & lower masking by noise
-//        final double nonlin = clamp01(parameters.getDouble(Params.ANM_NONLINEARITY, 0.85));
-//        final double noiseStrength = clamp01(parameters.getDouble(Params.ANM_NOISE_STRENGTH, 0.25));
-//
-//        final int N = parameters.getInt(Params.SAMPLE_SIZE, 200);
-//
-//        // Key change: DON'T standardize parents so tanh saturates more often
-//        final boolean standardizeParents = false;
-//
-//        final double rescaleMin = parameters.getDouble(Params.AM_RESCALE_MIN, -3.0);
-//        final double rescaleMax = parameters.getDouble(Params.AM_RESCALE_MAX,  3.0);
-//
-//        // Force a highly nonlinear family
-//        final AdditiveAnmSimulator.Family family = AdditiveAnmSimulator.Family.TANH;
-//
-//        // Make functions much “wigglier”: more units + stronger amplitude
-//        // (These caps keep generation numerically stable.)
-//        final int unitsPerEdge = 32;//clampInt((int) Math.round(12 + 12 * nonlin), 10, 32);
-//        final double edgeScale  = 3.0;//clamp(1.2 + 1.0 * nonlin, 0.5, 3.0);
-//
-//        // Keep noise modest so nonlinearity is visible (Gaussian here)
-//        // Map [0,1] -> sigma in ~[0.12, 0.72]
-//        final double sigma = 0.12 + 0.60 * noiseStrength;
-//        final RealDistribution noiseDist = new NormalDistribution(0.0, Math.max(1e-8, sigma));
-//
-//        AdditiveAnmSimulator gen = new AdditiveAnmSimulator(
-//                graph,
-//                N,
-//                noiseDist,
-//                rescaleMin,
-//                rescaleMax
-//        )
-//                .setFunctionFamily(family)
-//                .setNumUnitsPerEdge(unitsPerEdge)
-//                .setInputStandardize(standardizeParents) // deliberate: stronger tanh saturation
-//                .setEdgeScale(edgeScale);
-//
-//        long seed = parameters.getLong(Params.SEED);
-//        if (seed != -1L) gen.setSeed(seed);
-//
-//        return gen.generate();
-//    }
+        String preset = switch (presetIndex) {
+            case 1 -> "smooth_rbf";
+            case 2 -> "wavy_rbf";
+            case 3 -> "tanh";
+            case 4 -> "polynomial";
+            default -> "wavy_rbf";
+        };
 
-// --- DROP-IN: hyper-nonlinear ANM generation ---
-private DataSet runModel(Graph graph, Parameters parameters) {
-    // lock in strong nonlinearity & modest noise (visible curves)
-    final double nonlin = 0.9;                     // ignore slider; keep it high
-    final double noiseStrength = 0.20;             // lighter noise shows shape
+        final String noiseKind = switch (noiseKindIndex) {
+            case 1 -> "beta";
+            case 2 -> "gaussian";
+            case 3 -> "student_t";
+            default -> "beta";
+        };
 
-    final int N = parameters.getInt(Params.SAMPLE_SIZE, 200);
+        final double nonlin = clamp01(parameters.getDouble(Params.ANM_NONLINEARITY, 0.6));
+        final double noiseStrength = clamp01(parameters.getDouble(Params.ANM_NOISE_STRENGTH, 0.4));
 
-    // KEY: do NOT standardize parents → more saturation/curvature
-    final boolean standardizeParents = false;
+        final int N = parameters.getInt(Params.SAMPLE_SIZE, 200);
+        final boolean standardizeParents = parameters.getBoolean(Params.STANDARDIZE, true);
 
-    // widen the output window a bit so we don’t over-compress
-    final double rescaleMin = parameters.getDouble(Params.AM_RESCALE_MIN, -4.0);
-    final double rescaleMax = parameters.getDouble(Params.AM_RESCALE_MAX,  4.0);
+        // ---------- 2) Preset -> base family & base richness/amplitude ----------
+        AdditiveAnmSimulator.Family family = switch (preset) {
+            case "smooth_rbf" -> AdditiveAnmSimulator.Family.RBF;
+            case "wavy_rbf" -> AdditiveAnmSimulator.Family.RBF;
+            case "tanh" -> AdditiveAnmSimulator.Family.TANH;
+            case "polynomial" -> AdditiveAnmSimulator.Family.POLY;
+            default -> AdditiveAnmSimulator.Family.RBF; // fallback
+        };
 
-    // family: wavy RBF feels “more curved” than tanh in scatter plots
-    final AdditiveAnmSimulator.Family family = AdditiveAnmSimulator.Family.RBF;
+        int baseUnits = switch (preset) {
+            case "smooth_rbf" -> 6;
+            case "wavy_rbf" -> 10;
+            case "tanh" -> 8;
+            case "polynomial" -> 5;
+            default -> 8;
+        };
 
-    // more units + stronger amplitude
-    final int    unitsPerEdge = 28;                // rich basis (cap keeps it stable)
-    final double edgeScale    = 2.4;               // big but not explosive
+        double baseEdgeScale = switch (preset) {
+            case "smooth_rbf" -> 0.8;
+            case "wavy_rbf" -> 1.0;
+            case "tanh" -> 0.9;
+            case "polynomial" -> 0.7;
+            default -> 0.9;
+        };
 
-    // light, slightly heavy-tailed noise to preserve wiggles
-    final double sigma = 0.10 + 0.40 * noiseStrength;  // ~0.18 here
-    final double df    = 5.0;                           // gentle heavy tails
-    final RealDistribution noiseDist =
-            new org.apache.commons.math3.distribution.TDistribution(df) {
-                @Override public double sample() {
-                    // standardize base t to unit sd, then scale to sigma
-                    double x = super.sample();
-                    double sd = Math.sqrt(df / (df - 2.0));
-                    return (x / sd) * sigma;
-                }
-            };
+        // ---------- 3) Nonlinearity slider -> adjust units & scale ----------
+        int unitsPerEdge = clampInt((int) Math.round(baseUnits + 6.0 * nonlin), 3, 20);
+        double edgeScale = clamp(baseEdgeScale + 0.8 * (nonlin - 0.5), 0.2, 2.0);
 
-    AdditiveAnmSimulator gen = new AdditiveAnmSimulator(
-            graph,
-            N,
-            noiseDist,
-            rescaleMin,
-            rescaleMax
-    )
-            .setFunctionFamily(family)
-            .setNumUnitsPerEdge(unitsPerEdge)
-            .setInputStandardize(standardizeParents)   // << keep false
-            .setEdgeScale(edgeScale);
+        // ---------- 5) Noise ----------
+        final double sigma = 0.2 + 1.0 * noiseStrength; // maps [0,1] -> [0.2, 1.2]
+        RealDistribution noiseDist = buildNoise(parameters, noiseKind, sigma);
 
-    long seed = parameters.getLong(Params.SEED);
-    if (seed != -1L) gen.setSeed(seed);
+        // ---------- 6) Build generator ----------
+        AdditiveAnmSimulator gen = new AdditiveAnmSimulator(
+                graph,
+                N,
+                noiseDist
+        )
+                .setFunctionFamily(family)
+                .setNumUnitsPerEdge(unitsPerEdge)
+                .setInputStandardize(standardizeParents)
+                .setEdgeScale(edgeScale);
 
-    return gen.generate();
-}
+        long seed = parameters.getLong(Params.SEED);
+        if (seed != -1L) gen.setSeed(seed);
+
+        return gen.generate();
+    }
 
     // Transform wrapper that only implements sampling (the simulator only calls sample()).
     private static final class TransformedOnlyForSampling implements RealDistribution {
@@ -527,5 +392,36 @@ private DataSet runModel(Graph graph, Parameters parameters) {
         public boolean isSupportConnected() {
             return true;
         }
+    }
+
+
+    @Override
+    public List<String> getParameters() {
+        List<String> params = new ArrayList<>();
+
+        if (!(this.randomGraph instanceof SingleGraph)) {
+            params.addAll(this.randomGraph.getParameters());
+        }
+
+        // minimal user-facing
+        params.add(Params.ANM_PRESET);
+        params.add(Params.ANM_NONLINEARITY);
+        params.add(Params.ANM_NOISE_KIND);
+        params.add(Params.ANM_NOISE_STRENGTH);
+//        params.add(Params.ANM_UNITS_PER_EDGE);
+
+        // sampling & post-process
+        params.add(Params.SAMPLE_SIZE);
+        params.add(Params.STANDARDIZE);
+        params.add(Params.SEED);
+
+        // book-keeping
+        params.add(Params.NUM_RUNS);
+        params.add(Params.PROB_REMOVE_COLUMN);
+        params.add(Params.DIFFERENT_GRAPHS);
+        params.add(Params.RANDOMIZE_COLUMNS);
+        params.add(Params.SAVE_LATENT_VARS);
+
+        return params;
     }
 }

@@ -31,7 +31,7 @@ import java.util.*;
  *
  * <p><b>Usage:</b></p>
  * <pre>
- *   AdditiveAnmSimulator gen = new AdditiveAnmSimulator(graph, N, noise, -3, 3)
+ *   AdditiveAnmSimulator gen = new AdditiveAnmSimulator(graph, N, noise)
  *       .setFunctionFamily(AdditiveAnmSimulator.Family.RBF)
  *       .setNumUnitsPerEdge(6)
  *       .setInputStandardize(true)
@@ -48,8 +48,6 @@ public class AdditiveAnmSimulator {
     private final Graph graph;
     private final int numSamples;
     private final RealDistribution noise;
-    private final double rescaleMin;
-    private final double rescaleMax;
 
     private Family family = Family.RBF;
     private int numUnitsPerEdge = 6;      // K: #basis per edge
@@ -63,20 +61,15 @@ public class AdditiveAnmSimulator {
     // ---------------- ctor ----------------
     public AdditiveAnmSimulator(Graph graph,
                                 int numSamples,
-                                RealDistribution noiseDistribution,
-                                double rescaleMin,
-                                double rescaleMax) {
+                                RealDistribution noiseDistribution) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph must be acyclic for this generator.");
         }
         if (numSamples < 1) throw new IllegalArgumentException("numSamples must be >= 1");
-        if (rescaleMin > rescaleMax) throw new IllegalArgumentException("rescaleMin > rescaleMax");
 
         this.graph = Objects.requireNonNull(graph, "graph");
         this.numSamples = numSamples;
         this.noise = Objects.requireNonNull(noiseDistribution, "noiseDistribution");
-        this.rescaleMin = rescaleMin;
-        this.rescaleMax = rescaleMax;
         this.rng = new Random(seed);
     }
 
@@ -167,18 +160,6 @@ public class AdditiveAnmSimulator {
                         s += funcs[j][t].eval(parentCols[t][i]);
                     }
                     X[i][j] = edgeScale * s + eps[i][j];
-                }
-            }
-
-            // optional per-column rescale
-            if (rescaleMax > rescaleMin) {
-                double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
-                for (int i = 0; i < N; i++) {
-                    double v = X[i][j]; if (v < min) min = v; if (v > max) max = v;
-                }
-                if (max > min) {
-                    double inR = max - min, outR = rescaleMax - rescaleMin;
-                    for (int i = 0; i < N; i++) X[i][j] = rescaleMin + outR * (X[i][j] - min) / inR;
                 }
             }
         }
