@@ -36,7 +36,7 @@ import java.util.*;
  * Cyclic Causal Discovery (CCD) after Richardson.
  *
  * <p>Richardson, T. S. (2013). A discovery algorithm for directed cyclic graphs. arXiv:1302.3599.</p>
- * <p>See also Chapter 7 of: Glymour & Cooper (1999), <i>Computation, Causation, and Discovery</i>.</p>
+ * <p>See also Chapter 7 of: Glymour &amp; Cooper (1999), <i>Computation, Causation, and Discovery</i>.</p>
  *
  * <p>Input: a conditional independence oracle/test for data from a directed cyclic model (DCG).
  * Output: a cyclic PAG (with underline/dotted-underline annotations) representing the Markov equivalence class.</p>
@@ -46,22 +46,34 @@ import java.util.*;
  */
 public final class Ccd implements IGraphSearch {
 
-    /** Fixed node list from the test. */
+    /**
+     * Fixed node list from the test.
+     */
     private final List<Node> nodes;
 
-    /** Cached independence test. */
+    /**
+     * Cached independence test.
+     */
     private IndependenceTest test;
 
-    /** Whether to apply R1 push-away rule (default: true). */
+    /**
+     * Whether to apply R1 push-away rule (default: true).
+     */
     private boolean applyR1 = true;
 
-    /** Verbose logging toggle. */
+    /**
+     * Verbose logging toggle.
+     */
     private boolean verbose;
 
-    /** Maximum conditioning depth; -1 means unlimited. */
+    /**
+     * Maximum conditioning depth; -1 means unlimited.
+     */
     private int depth = -1;
 
-    /** Background knowledge: only forbidden directed edges are honored. */
+    /**
+     * Background knowledge: only forbidden directed edges are honored.
+     */
     private Knowledge knowledge = new Knowledge();
 
     public Ccd(IndependenceTest test) {
@@ -70,7 +82,9 @@ public final class Ccd implements IGraphSearch {
         this.nodes = this.test.getVariables();
     }
 
-    /** Run CCD and return a cyclic PAG. */
+    /**
+     * Run CCD and return a cyclic PAG.
+     */
     public Graph search() throws InterruptedException {
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
@@ -94,9 +108,13 @@ public final class Ccd implements IGraphSearch {
 
     // ------------------------- Public configuration --------------------------
 
-    public IndependenceTest getTest() { return test; }
+    public IndependenceTest getTest() {
+        return test;
+    }
 
-    /** Preserve caching and require identical variable sets (order-insensitive). */
+    /**
+     * Preserve caching and require identical variable sets (order-insensitive).
+     */
     public void setTest(IndependenceTest test) {
         Objects.requireNonNull(test, "test");
         Set<Node> oldSet = new HashSet<>(this.test.getVariables());
@@ -107,17 +125,26 @@ public final class Ccd implements IGraphSearch {
         this.test = (test instanceof CachingIndependenceTest) ? test : new CachingIndependenceTest(test);
     }
 
-    public boolean isApplyR1() { return this.applyR1; }
-    public void setApplyR1(boolean applyR1) { this.applyR1 = applyR1; }
+    public boolean isApplyR1() {
+        return this.applyR1;
+    }
+
+    public void setApplyR1(boolean applyR1) {
+        this.applyR1 = applyR1;
+    }
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
         test.setVerbose(verbose);
     }
 
-    public void setDepth(int depth) { this.depth = depth; }
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
 
-    /** Set background knowledge (forbidden edges). Required edges are not supported. */
+    /**
+     * Set background knowledge (forbidden edges). Required edges are not supported.
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) throw new NullPointerException("knowledge must not be null");
 
@@ -130,7 +157,9 @@ public final class Ccd implements IGraphSearch {
 
     // ------------------------------ Algorithm --------------------------------
 
-    /** Step B — Add underlines (non-colliders) and colliders for unshielded triples. */
+    /**
+     * Step B — Add underlines (non-colliders) and colliders for unshielded triples.
+     */
     private void stepB(Graph psi, SepsetProducer sepsets) throws InterruptedException {
         if (verbose) TetradLogger.getInstance().log("CCD: Step B — Underlines & Colliders");
 
@@ -179,7 +208,9 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
-    /** Step C — Propagate some orientations (with change-flag until quiescence). */
+    /**
+     * Step C — Propagate some orientations (with change-flag until quiescence).
+     */
     private void stepC(Graph psi, SepsetProducer sepsets) throws InterruptedException {
         if (verbose) TetradLogger.getInstance().log("CCD: Step C — Orientation propagation");
 
@@ -235,7 +266,9 @@ public final class Ccd implements IGraphSearch {
         } while (changed);
     }
 
-    /** Step D — Add dotted-underline triples and compute supSepsets. */
+    /**
+     * Step D — Add dotted-underline triples and compute supSepsets.
+     */
     private void stepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) throws InterruptedException {
         if (verbose) TetradLogger.getInstance().log("CCD: Step D — Dotted underlines");
 
@@ -297,7 +330,9 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
-    /** Step E — Use supSepsets to orient edges out of b towards neighbors in A∪C neighborhoods. */
+    /**
+     * Step E — Use supSepsets to orient edges out of b towards neighbors in A∪C neighborhoods.
+     */
     private void stepE(Map<Triple, Set<Node>> supSepset, Graph psi) throws InterruptedException {
         if (verbose) TetradLogger.getInstance().log("CCD: Step E — Orientation propagation via supSepsets");
 
@@ -338,7 +373,9 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
-    /** Step F — Further propagation using d-connection given supSepset ∪ {d}. */
+    /**
+     * Step F — Further propagation using d-connection given supSepset ∪ {d}.
+     */
     private void stepF(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) throws InterruptedException {
         if (verbose) TetradLogger.getInstance().log("CCD: Step F — More orientations via d-connection checks");
 
@@ -379,8 +416,8 @@ public final class Ccd implements IGraphSearch {
     // ------------------------------- Helpers ---------------------------------
 
     /**
-     * Attempt to orient u -> v if not forbidden by knowledge.
-     * Returns true if applied; false if vetoed (or if the edge vanished concurrently).
+     * Attempt to orient u -> v if not forbidden by knowledge. Returns true if applied; false if vetoed (or if the edge
+     * vanished concurrently).
      */
     private boolean addDirectedIfAllowed(Graph g, Node u, Node v) {
         // Knowledge forbids orientation u->v?
@@ -392,7 +429,9 @@ public final class Ccd implements IGraphSearch {
         return true;
     }
 
-    /** Local expansion around x: adj(x) plus z where x-y-z is a definite collider. */
+    /**
+     * Local expansion around x: adj(x) plus z where x-y-z is a definite collider.
+     */
     private List<Node> local(Graph psi, Node x) {
         Set<Node> nodes = new HashSet<>(psi.getAdjacentNodes(x));
         for (Node y : new HashSet<>(nodes)) {
@@ -405,7 +444,9 @@ public final class Ccd implements IGraphSearch {
         return new ArrayList<>(nodes);
     }
 
-    /** Top-level push-away pass over all arrowheads (iterate over snapshot). */
+    /**
+     * Top-level push-away pass over all arrowheads (iterate over snapshot).
+     */
     private void orientAwayFromArrow(Graph graph) throws InterruptedException {
         for (Edge e : new ArrayList<>(graph.getEdges())) {
             if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
@@ -423,7 +464,9 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
-    /** Apply R1 push-away from a->b to b's nondirected neighbors, recursively (veto-aware). */
+    /**
+     * Apply R1 push-away from a->b to b's nondirected neighbors, recursively (veto-aware).
+     */
     private void orientAwayFromArrow(Node a, Node b, Graph graph) {
         if (!isApplyR1()) return;
         for (Node c : new ArrayList<>(graph.getAdjacentNodes(b))) {
@@ -432,7 +475,9 @@ public final class Ccd implements IGraphSearch {
         }
     }
 
-    /** DFS-style push-away with backtracking safety and knowledge veto. */
+    /**
+     * DFS-style push-away with backtracking safety and knowledge veto.
+     */
     private boolean orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
         Edge bc = graph.getEdge(b, c);
         if (bc == null || !Edges.isNondirectedEdge(bc)) return false;

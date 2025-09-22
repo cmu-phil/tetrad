@@ -8,14 +8,22 @@ import org.ejml.dense.row.CommonOps_DDRM;
 import java.util.*;
 
 /**
- * CAM scorer using penalized cubic B-splines (P-splines; Eilers & Marx).
- * - Main effects only (additive model), one smooth per parent: f_y(x_j)
- * - For each parent, builds a cubic B-spline basis with M basis functions
- * - Penalizes second differences of coefficients (D2^T D2) with smoothing λ
- * - Fits by backfitting on partial residuals; chooses λ_j by GCV over a log grid
- * - Score is BIC with effective df = sum_j trace(H_j) + 1 (intercept)
+ * <p>CAM scorer using penalized cubic B-splines (P-splines; Eilers &amp; Marx).</p>
  *
- * No external deps; uses EJML for linear algebra.
+ * <ul>
+ *   <li>Main effects only (additive model), one smooth per parent:
+ *       <code>f<sub>y</sub>(x<sub>j</sub>)</code>.</li>
+ *   <li>For each parent, builds a cubic B-spline basis with <em>M</em> basis functions.</li>
+ *   <li>Penalizes second differences of coefficients with
+ *       <code>D<sub>2</sub><sup>T</sup> D<sub>2</sub></code> and smoothing
+ *       <code>&lambda;</code>.</li>
+ *   <li>Fits by backfitting on partial residuals; chooses
+ *       <code>&lambda;<sub>j</sub></code> by GCV over a logarithmic grid.</li>
+ *   <li>Score is BIC with effective degrees of freedom
+ *       <code>&Sigma;<sub>j</sub> tr(H<sub>j</sub>) + 1</code> (intercept).</li>
+ * </ul>
+ *
+ * <p>No external dependencies; uses EJML for linear algebra.</p>
  */
 public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
 

@@ -3373,7 +3373,9 @@ public final class GraphUtils {
 
     /**
      * Compute strongly connected components (SCCs) of a directed graph.
-     * Uses Tarjan's algorithm. Each SCC is returned as a Set<Node>.
+     * Uses Tarjan's algorithm. Each SCC is returned as a Set.
+     *
+     * @param g The graph.
      */
     public static List<Set<Node>> stronglyConnectedComponents(Graph g) {
         Objects.requireNonNull(g, "graph");

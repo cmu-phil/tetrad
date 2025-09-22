@@ -39,7 +39,14 @@ public final class ResidualUtils {
     }
 
     /**
-     * Build an n Ã p residual matrix for all measured nodes in the dataset, using parents from the given graph.
+     * Constructs a residual matrix where each column corresponds to a variable in the dataset and contains
+     * the residuals obtained after regressing that variable on its parents as specified by the given graph.
+     *
+     * @param data the dataset containing the variables and their observed values
+     * @param g the graph that specifies the parent-child relationships among the variables
+     * @param reg the regressor used to compute the residuals for each variable
+     * @return a 2D array representing the residual matrix, where each row corresponds to a data point
+     *         and each column corresponds to the residuals for one variable
      */
     public static double[][] residualMatrix(DataSet data,
                                             Graph g,
@@ -59,7 +66,15 @@ public final class ResidualUtils {
     }
 
     /**
-     * Build an n Ã p residual matrix using a custom parent map (e.g., from ParentSupersetBuilder).
+     * Constructs a residual matrix where each column corresponds to a variable in the dataset
+     * and contains the residuals obtained after regressing that variable on its parents
+     * as specified by the given parent map.
+     *
+     * @param data the dataset containing the variables and their observed values
+     * @param parentsMap a map where each key is a variable and the value is the list of its parent variables
+     * @param reg the regressor used to compute the residuals for each variable
+     * @return a 2D array representing the residual matrix, where each row corresponds to a data point
+     *         and each column corresponds to the residuals for one variable
      */
     public static double[][] residualMatrix(DataSet data,
                                             Map<Node, List<Node>> parentsMap,
@@ -79,7 +94,13 @@ public final class ResidualUtils {
     }
 
     /**
-     * Divide each column by robust scale (MAD/0.6745). Avoids zero-divide by adding epsilon.
+     * Standardizes the input residual matrix in place using a robust method based on the
+     * median and median absolute deviation (MAD). This method scales each column of the
+     * matrix by the MAD, ensuring that the scaling is less sensitive to outliers.
+     *
+     * @param R a 2D array representing the residual matrix. Each row corresponds to a data point,
+     *          and each column corresponds to residuals for a specific variable. The input array
+     *          is modified in place, with each column being standardized according to robust statistics.
      */
     public static void robustStandardizeInPlace(double[][] R) {
         if (R.length == 0) return;
