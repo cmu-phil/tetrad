@@ -42,19 +42,14 @@ import java.util.*;
  */
 public class AdditiveAnmSimulator {
 
-    // ---------------- configuration ----------------
-    public enum Family { RBF, TANH, POLY }
-
     private final Graph graph;
     private final int numSamples;
     private final RealDistribution noise;
-
     private Family family = Family.RBF;
     private int numUnitsPerEdge = 6;      // K: #basis per edge
     private boolean inputStandardize = true; // z-score inputs before f(x)
     private double edgeScale = 1.0;       // global multiplier for sum_k f_{jk}(x_k)
     private long seed = System.nanoTime();
-
     // internal
     private Random rng;
 
@@ -73,34 +68,18 @@ public class AdditiveAnmSimulator {
         this.rng = new Random(seed);
     }
 
-    // ---------------- fluent setters ----------------
-    public AdditiveAnmSimulator setFunctionFamily(Family fam) {
-        this.family = Objects.requireNonNull(fam);
-        return this;
-    }
-
-    /** # of basis units per edge (K). For POLY, this is the polynomial degree (>=1). */
-    public AdditiveAnmSimulator setNumUnitsPerEdge(int k) {
-        this.numUnitsPerEdge = Math.max(1, k);
-        return this;
-    }
-
-    /** Standardize each parent input (z-score) before applying f(x). */
-    public AdditiveAnmSimulator setInputStandardize(boolean on) {
-        this.inputStandardize = on;
-        return this;
-    }
-
-    /** Global scale for the deterministic part (sum of edge functions). */
-    public AdditiveAnmSimulator setEdgeScale(double s) {
-        this.edgeScale = s;
-        return this;
-    }
-
-    public AdditiveAnmSimulator setSeed(long seed) {
-        this.seed = seed;
-        this.rng = new Random(seed);
-        return this;
+    private static void zscoreInPlace(double[] x) {
+        int n = x.length;
+        double m = 0.0;
+        for (double v : x) m += v;
+        m /= n;
+        double v = 0.0;
+        for (double a : x) {
+            double d = a - m;
+            v += d * d;
+        }
+        double sd = Math.sqrt(Math.max(v / Math.max(1, n - 1), 1e-12));
+        for (int i = 0; i < n; i++) x[i] = (x[i] - m) / sd;
     }
 
     // ---------------- main API ----------------
@@ -166,21 +145,6 @@ public class AdditiveAnmSimulator {
 
         return new BoxDataSet(new DoubleDataBox(X), new ArrayList<>(topo));
     }
-
-    // ---------------- helpers ----------------
-
-    private static void zscoreInPlace(double[] x) {
-        int n = x.length;
-        double m = 0.0;
-        for (double v : x) m += v;
-        m /= n;
-        double v = 0.0;
-        for (double a : x) { double d = a - m; v += d * d; }
-        double sd = Math.sqrt(Math.max(v / Math.max(1, n - 1), 1e-12));
-        for (int i = 0; i < n; i++) x[i] = (x[i] - m) / sd;
-    }
-
-    // ---------------- randomized univariate functions per edge ----------------
 
     private EdgeFunction randomEdgeFunction() {
         return switch (family) {
@@ -248,14 +212,111 @@ public class AdditiveAnmSimulator {
         };
     }
 
+    public Family getFunctionFamily() {
+        return family;
+    }
+
+    // ---------------- helpers ----------------
+
+    /**
+     * Sets the function family for the simulation.
+     *
+     * @param fam the function family to use
+     * @return this simulator instance
+     */
+    public AdditiveAnmSimulator setFunctionFamily(Family fam) {
+        this.family = Objects.requireNonNull(fam);
+        return this;
+    }
+
+    // ---------------- randomized univariate functions per edge ----------------
+
+    public int getNumUnitsPerEdge() {
+        return numUnitsPerEdge;
+    }
+
+    /**
+     * # of basis units per edge (K). For POLY, this is the polynomial degree (>=1).
+     *
+     * @param k The number of units.
+     */
+    public AdditiveAnmSimulator setNumUnitsPerEdge(int k) {
+        this.numUnitsPerEdge = Math.max(1, k);
+        return this;
+    }
+
+    /**
+     * Standardize each parent input (z-score) before applying f(x).
+     *
+     * @param on New choice.
+     */
+    public AdditiveAnmSimulator setInputStandardize(boolean on) {
+        this.inputStandardize = on;
+        return this;
+    }
+
+    /**
+     * Sets the edge scale parameter for the simulation. The edge scale affects the variance or spread of the generated
+     * functions for edges in the graph.
+     *
+     * @param s The new edge scale value to set.
+     * @return This simulator instance, allowing for method chaining.
+     */
+    public AdditiveAnmSimulator setEdgeScale(double s) {
+        this.edgeScale = s;
+        return this;
+    }
+
+    /**
+     * Retrieves the seed used for random number generation in the simulator.
+     *
+     * @return the seed value currently used by the simulator.
+     */
+    public long getSeed() {
+        return seed;
+    }
+
+    /**
+     * Sets the seed for the random number generator used in the simulator. This ensures reproducibility of random
+     * processes within the simulation.
+     *
+     * @param seed the seed value to initialize the random number generator.
+     * @return this simulator instance, allowing for method chaining.
+     */
+    public AdditiveAnmSimulator setSeed(long seed) {
+        this.seed = seed;
+        this.rng = new Random(seed);
+        return this;
+    }
+
+    /**
+     * Represents the type of function family used in the additive noise model (ANM) simulation. The function family
+     * determines the mathematical form of the functions applied on graph edges during the simulation. Each family
+     * corresponds to a distinct functional model:
+     * <p>
+     * This enum is primarily utilized in the configuration and behavior of the AdditiveAnmSimulator class to specify
+     * the desired structure for edge functions.
+     */
+    public enum Family {
+
+        /**
+         * Radial Basis Functions, a sum of exponential terms.
+         */
+        RBF,
+
+        /**
+         * Hyperbolic Tangent Functions, a sum of tanh-based terms.
+         */
+        TANH,
+
+        /**
+         * Polynomial Functions, represented as a sum of powers of the input.
+         */
+        POLY
+    }
+
     // simple functional interface
-    private interface EdgeFunction { double eval(double x); }
-
-    // ---------------- getters for reproducibility/debug ----------------
-
-    public Family getFunctionFamily() { return family; }
-    public int getNumUnitsPerEdge() { return numUnitsPerEdge; }
-    public boolean isInputStandardize() { return inputStandardize; }
-    public double getEdgeScale() { return edgeScale; }
-    public long getSeed() { return seed; }
+    private interface EdgeFunction {
+        double eval(double x);
+    }
 }

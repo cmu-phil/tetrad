@@ -1742,11 +1742,6 @@ public class SessionNode implements Node {
                     int begin = packagePath.lastIndexOf('.') + 1;
                     String name = packagePath.substring(begin);
 
-//                    if (e.getTargetException() instanceof ThreadDeath) {
-//                        e.printStackTrace();
-//                        return;
-//                    }
-
                     e.printStackTrace();
 
                     if (e.getCause().getMessage() != null && !e.getCause().getMessage().isEmpty()) {
