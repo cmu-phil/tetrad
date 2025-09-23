@@ -348,6 +348,12 @@ public interface DataSet extends DataModel {
      */
     DataSet subsetRows(int[] rows);
 
+    /**
+     * Creates a new DataSet containing only the rows specified by the given list of row indices.
+     *
+     * @param rows a list of integer indices representing the rows to be included in the subset
+     * @return a new DataSet containing the specified rows
+     */
     DataSet subsetRows(List<Integer> rows);
 
     /**

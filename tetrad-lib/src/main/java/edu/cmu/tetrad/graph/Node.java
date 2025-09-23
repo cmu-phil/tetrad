@@ -71,6 +71,8 @@ public interface Node extends TetradSerializable, Comparable<Node> {
 
     /**
      * Returns the rank, or -1 if no rank is set.
+     *
+     * @return the rank of the node
      */
     default int getRank() {
         return -1;
@@ -78,6 +80,8 @@ public interface Node extends TetradSerializable, Comparable<Node> {
 
     /**
      * Sets the rank, or -1 if no rank is set.
+     *
+     * @param rank the rank to set
      * @throws UnsupportedOperationException if the node type does not support setting a rank.
      */
     default void setRank(int rank) {
@@ -86,6 +90,8 @@ public interface Node extends TetradSerializable, Comparable<Node> {
 
     /**
      * Returns the display name.
+     *
+     * @return the display name
      */
     default String getDisplayName() {
         boolean displayRank = !(getRank() == -1); // || getRank() == 1);

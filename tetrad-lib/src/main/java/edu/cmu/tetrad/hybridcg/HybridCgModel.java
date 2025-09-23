@@ -1059,10 +1059,14 @@ public final class HybridCgModel {
         }
 
         /**
-         * Represents a data structure for storing a sampled dataset. This is used in conjunction with the HybridCgIm
-         * model to hold both continuous and discrete variables for a specified number of rows.
+         * Represents a sample containing continuous and discrete data arrays along with a specified number of rows.
+         * This record is useful for holding the data structure for sampled data in hybrid causal graph models,
+         * where both continuous and discrete variables are included.
+         *
+         * @param continuous The continuous data array.
+         * @param discrete The discrete data array.
+         * @param rows The number of rows in the sample.
          */
-        // ===== Sampler =====
         public record Sample(double[][] continuous, int[][] discrete, int rows) {
         }
 

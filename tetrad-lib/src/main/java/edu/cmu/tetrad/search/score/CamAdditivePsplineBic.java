@@ -54,6 +54,13 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
     // Precompute spline bases per variable (keyed by variable index + config)
     private final Map<String, Precomp> precomp = new HashMap<>();
 
+    /**
+     * Constructs an instance of CamAdditivePsplineBic.
+     * Initializes fields and buffers from the provided dataset.
+     *
+     * @param raw the input dataset containing variables and observations;
+     *            must not be null
+     */
     public CamAdditivePsplineBic(DataSet raw) {
         this.data = Objects.requireNonNull(raw);
         this.vars = new ArrayList<>(raw.getVariables());
@@ -63,32 +70,75 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
         this.xbuf = new double[N];
     }
 
-    // ---- setters for knobs ----
+    /**
+     * Sets the number of basis functions, ensuring a minimum value of 4.
+     * Updates the internal state of the object with the specified number of basis functions.
+     *
+     * @param m the requested number of basis functions; must be a positive integer
+     * @return the current instance of {@code CamAdditivePsplineBic}, allowing for method chaining
+     */
     public CamAdditivePsplineBic setNumBasis(int m) {
         this.numBasis = Math.max(4, m);
         return this;
     }
 
+    /**
+     * Sets the penalty order for the P-spline model. The penalty order determines the smoothness of the fitted spline.
+     * The value is constrained to be between 1 and 3 (inclusive).
+     *
+     * @param d the desired penalty order; values outside the range [1, 3] will be clamped to the nearest bound
+     * @return the current instance of {@code CamAdditivePsplineBic}, allowing for method chaining
+     */
     public CamAdditivePsplineBic setPenaltyOrder(int d) {
         this.penaltyOrder = Math.max(1, Math.min(3, d));
         return this;
     }
 
+    /**
+     * Sets the ridge parameter for the P-spline model to control the amount of regularization.
+     * The ridge parameter is constrained to be non-negative, and values below 0.0 are clamped to 0.0.
+     *
+     * @param r the desired ridge parameter; if negative, it will be set to 0.0
+     * @return the current instance of {@code CamAdditivePsplineBic}, enabling method chaining
+     */
     public CamAdditivePsplineBic setRidge(double r) {
         this.ridge = Math.max(0.0, r);
         return this;
     }
 
+    /**
+     * Sets the penalty discount parameter for the P-spline model. The penalty discount
+     * is a factor that adjusts the balance between the smoothness penalty and
+     * goodness-of-fit during spline estimation.
+     *
+     * @param c the desired penalty discount value
+     * @return the current instance of {@code CamAdditivePsplineBic}, enabling method chaining
+     */
     public CamAdditivePsplineBic setPenaltyDiscount(double c) {
         this.penaltyDiscount = c;
         return this;
     }
 
+    /**
+     * Sets the maximum number of iterations for the backfitting process.
+     * Ensures that the number of iterations is at least 1.
+     *
+     * @param it the desired maximum number of backfitting iterations; values less than 1 are clamped to 1
+     * @return the current instance of {@code CamAdditivePsplineBic}, enabling method chaining
+     */
     public CamAdditivePsplineBic setMaxBackfitIters(int it) {
         this.maxBackfitIters = Math.max(1, it);
         return this;
     }
 
+    /**
+     * Sets the tolerance value for the P-spline model, ensuring it is
+     * not lower than 1e-8. The tolerance typically controls the precision
+     * in iterative processes or convergence criteria.
+     *
+     * @param t the desired tolerance value; values below 1e-8 will be clamped to 1e-8
+     * @return the current instance of {@code CamAdditivePsplineBic}, allowing for method chaining
+     */
     public CamAdditivePsplineBic setTol(double t) {
         this.tol = Math.max(1e-8, t);
         return this;
@@ -96,6 +146,10 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
 
     /**
      * Local score: BIC(Y | parents) under additive P-splines, with λ_j by GCV via backfitting.
+     *
+     * @param y the target node for which to compute the local score
+     * @param parents the parent nodes of the target node
+     * @return the local score for the given node and its parents
      */
     public double localScore(Node y, Collection<Node> parents) {
         int yIdx = indexOf(y);
@@ -104,7 +158,13 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
     }
 
     /**
-     * Local score by index.
+     * Calculates the Bayesian Information Criterion (BIC)-based score for a target variable
+     * given its index and optional parent variable indices.
+     * It is used to evaluate the fit and complexity of a statistical model.
+     *
+     * @param yIndex the index of the target variable.
+     * @param parentIdxs the indices of the parent variables (optional, can be empty or null).
+     * @return the calculated BIC score for the given target and parent variables.
      */
     public double localScore(int yIndex, int... parentIdxs) {
         if (parentIdxs == null) parentIdxs = new int[0];
@@ -286,11 +346,6 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
             return;
         }
 
-        // Lambda grid: warm-start around lastLambda if available; otherwise coarse grid
-//        double[] lambdas = (pb.lastLambda > 0)
-//                ? gridAround(pb.lastLambda, 1e-4, 1e4)
-//                : logspace(-3, 4, 12); // 1e-3 .. 1e4
-
         double[] lambdas = (pb.lastLambda > 0)
                 ? gridAround(pb.lastLambda, 1e-6, 1e6)
                 : logspace(lambdaMinExp, lambdaMaxExp, lambdaNum);
@@ -329,8 +384,6 @@ public final class CamAdditivePsplineBic implements AdditiveLocalScorer {
                 double e = pb.r[i] - fi;
                 rss += e * e;
             }
-//            double denom = Math.max(1e-12, N - Math.min(N - 1, edf));
-//            double gcv = (rss / N) / Math.pow(denom / N, 2.0);
 
             double denom = Math.max(gcvMinDenom, N - Math.min(N - 1.0, edf));
             double gcv = (rss / N) / Math.pow(denom / N, 2.0);

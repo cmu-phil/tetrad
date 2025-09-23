@@ -627,6 +627,11 @@ public class Bpc {
         return count;
     }
 
+    /**
+     * Enables or disables verbose logging for the Bpc instance.
+     *
+     * @param verbose A boolean indicating whether verbose logging should be enabled (true) or disabled (false).
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

@@ -18,5 +18,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * This package contains classes for causal graph search algorithms.
+ */
 package edu.cmu.tetrad.search;
 

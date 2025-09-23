@@ -53,7 +53,17 @@ public class AdditiveAnmSimulator {
     // internal
     private Random rng;
 
-    // ---------------- ctor ----------------
+    /**
+     * Constructs an instance of the AdditiveAnmSimulator. This simulator generates data based on an acyclic graph
+     * structure using additive noise models, producing synthetic datasets with specified characteristics.
+     *
+     * @param graph             the directed acyclic graph (DAG) to define the structure of the simulation. Must be
+     *                          acyclic; otherwise, an IllegalArgumentException is thrown.
+     * @param numSamples        the number of samples to generate for the dataset. Must be greater than or equal to 1;
+     *                          otherwise, an IllegalArgumentException is thrown.
+     * @param noiseDistribution the distribution used to generate noise for the simulation. Must not be null; a
+     *                          NullPointerException is thrown if null.
+     */
     public AdditiveAnmSimulator(Graph graph,
                                 int numSamples,
                                 RealDistribution noiseDistribution) {
@@ -82,7 +92,13 @@ public class AdditiveAnmSimulator {
         for (int i = 0; i < n; i++) x[i] = (x[i] - m) / sd;
     }
 
-    // ---------------- main API ----------------
+    /**
+     * Generates a synthetic dataset based on the configured directed acyclic graph (DAG) structure
+     * using additive noise models. The process involves computing values in topological order,
+     * incorporating noise, edge-specific functions, and optionally standardized inputs.
+     *
+     * @return a DataSet containing the generated synthetic data and corresponding nodes in the order they were processed
+     */
     public DataSet generate() {
         final List<Node> topo = graph.paths().getValidOrder(graph.getNodes(), true);
         final int P = topo.size();
@@ -212,6 +228,11 @@ public class AdditiveAnmSimulator {
         };
     }
 
+    /**
+     * Retrieves the function family currently being used in the simulation.
+     *
+     * @return the function family associated with the simulator, such as RBF, TANH, or POLY.
+     */
     public Family getFunctionFamily() {
         return family;
     }
@@ -231,6 +252,12 @@ public class AdditiveAnmSimulator {
 
     // ---------------- randomized univariate functions per edge ----------------
 
+    /**
+     * Retrieves the number of basis units per edge in the simulator. For the POLY function family, this value
+     * represents the polynomial degree (which is always >= 1).
+     *
+     * @return the number of units or basis functions per edge.
+     */
     public int getNumUnitsPerEdge() {
         return numUnitsPerEdge;
     }
@@ -239,6 +266,7 @@ public class AdditiveAnmSimulator {
      * # of basis units per edge (K). For POLY, this is the polynomial degree (>=1).
      *
      * @param k The number of units.
+     * @return This simulator instance, allowing for method chaining.
      */
     public AdditiveAnmSimulator setNumUnitsPerEdge(int k) {
         this.numUnitsPerEdge = Math.max(1, k);
@@ -249,6 +277,7 @@ public class AdditiveAnmSimulator {
      * Standardize each parent input (z-score) before applying f(x).
      *
      * @param on New choice.
+     * @return This simulator instance, allowing for method chaining.
      */
     public AdditiveAnmSimulator setInputStandardize(boolean on) {
         this.inputStandardize = on;

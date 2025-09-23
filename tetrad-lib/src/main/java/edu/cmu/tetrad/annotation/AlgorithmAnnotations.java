@@ -63,6 +63,12 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
         return filterOutByAnnotation(list, Experimental.class);
     }
 
+    /**
+     * Filters out classes annotated with the {@link Deprecated} annotation from the provided list.
+     *
+     * @param list the list of classes annotated with {@link Algorithm}
+     * @return a list of classes annotated with {@link Algorithm} where none are annotated with {@link Deprecated}
+     */
     public List<AnnotatedClass<Algorithm>> filterOutDeprecated(List<AnnotatedClass<Algorithm>> list) {
         return filterOutByAnnotation(list, Deprecated.class);
     }

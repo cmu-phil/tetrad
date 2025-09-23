@@ -18,5 +18,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * A package for algorithms that are not ready for prime time.
+ */
 package edu.cmu.tetrad.search.work_in_progress;
 

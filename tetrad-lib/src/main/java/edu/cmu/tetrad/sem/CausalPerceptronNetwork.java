@@ -13,11 +13,15 @@ import java.util.*;
 import java.util.function.Function;
 
 /**
- * Drop-in EJML generator for nonlinear DAG data:
- * - Batches each node’s column through a tiny random MLP
- * - Uses CommonOps_DDRM.multTransB (A * B^T) to avoid materializing transposes
- * - Detects tanh via a typed cast of the method reference (no “method reference not expected here”)
- * - No DJL / no parallelism
+ * Represents a Causal Perceptron Network designed to generate synthetic data by traversing
+ * an acyclic graph while applying random multi-layer perceptron (MLP) computations to represent
+ * node relationships. This class provides functionality to create a dataset that respects the
+ * causal structure defined by the graph, optionally applying noise, rescaling, and activation
+ * functions to the generated data.
+ * <p>
+ * Each node of the graph can be represented as being driven by other parent nodes,
+ * constructed through a random MLP. The MLP structure, activation function, and other
+ * parameters can be customized in the constructor.
  */
 public class CausalPerceptronNetwork {
 
@@ -33,6 +37,22 @@ public class CausalPerceptronNetwork {
     // Keep simple per-node seeding (still random overall)
     private final Random seeder = new Random();
 
+    /**
+     * Creates a CausalPerceptronNetwork for generating data with a causal structure based on the provided graph.
+     *
+     * @param graph The acyclic graph representing the causal structure of the network.
+     * @param numSamples The number of samples to generate by the network. Must be greater than 0.
+     * @param noiseDistribution The probability distribution used to sample noise for the network.
+     * @param rescaleMin The minimum value for rescaling output data. Must be less than or equal to rescaleMax.
+     * @param rescaleMax The maximum value for rescaling output data. Must be greater than or equal to rescaleMin.
+     * @param hiddenDimensions An array representing the number of hidden neurons per layer. All entries must be at least 1.
+     * @param inputScale A scaling factor applied to the inputs of the network.
+     * @param activationFunction A function applied as the activation function for the perceptron network.
+     *                           Must be provided and not null.
+     * @throws IllegalArgumentException If the graph is not acyclic, numSamples is less than 1, rescaleMin is greater
+     *                                  than rescaleMax, or if any hidden dimensions are less than 1.
+     * @throws NullPointerException If noiseDistribution, hiddenDimensions, or activationFunction are null.
+     */
     public CausalPerceptronNetwork(Graph graph,
                                    int numSamples,
                                    RealDistribution noiseDistribution,
@@ -65,7 +85,17 @@ public class CausalPerceptronNetwork {
         this.useFastTanh = activationFunction == tanhRef;
     }
 
-    /** Generate data (rows = samples, cols = nodes in topological order). */
+    /**
+     * Generates a dataset based on the causal structure defined by the network's graph.
+     * This method uses a causal graph to determine the order of nodes, processes the
+     * parent's data, adds noise, and forwards it through a randomly initialized multilayer
+     * perceptron (MLP) with the specified parameters. The data is optionally rescaled
+     * between specified minimum and maximum values, and the resulting data is returned
+     * as part of a structured dataset.
+     *
+     * @return A dataset containing generated data with causal relationships derived from
+     *         the network's graph structure and the associated processing logic.
+     */
     public DataSet generateData() {
         final List<Node> topo = graph.paths().getValidOrder(graph.getNodes(), true);
         final int P = topo.size(), N = numSamples;

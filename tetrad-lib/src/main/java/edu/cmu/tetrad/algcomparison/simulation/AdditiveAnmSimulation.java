@@ -215,7 +215,7 @@ public class AdditiveAnmSimulation implements Simulation {
      * Retrieves the simulated data set at the specified index.
      *
      * @param index The index of the desired simulated data set.
-     * @return
+     * @return the simulated data set at the specified index
      */
     @Override
     public DataModel getDataModel(int index) {

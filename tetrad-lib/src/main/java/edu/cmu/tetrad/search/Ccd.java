@@ -76,6 +76,14 @@ public final class Ccd implements IGraphSearch {
      */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * Constructs a Ccd object with the given independence test.
+     *
+     * @param test the IndependenceTest to be used within the CCD algorithm. If the test is not an instance of
+     *             {@code CachingIndependenceTest}, a caching wrapper will be applied to the provided test. Must not be
+     *             null.
+     * @throws NullPointerException if the provided test is null.
+     */
     public Ccd(IndependenceTest test) {
         if (test == null) throw new NullPointerException("Test is not provided");
         this.test = (test instanceof CachingIndependenceTest) ? test : new CachingIndependenceTest(test);
@@ -83,7 +91,18 @@ public final class Ccd implements IGraphSearch {
     }
 
     /**
-     * Run CCD and return a cyclic PAG.
+     * Executes the CCD search algorithm to infer a causal graph based on statistical independence tests. The algorithm
+     * applies a series of steps, including adjacency search, orientation rules, and edge propagation, while taking into
+     * account background knowledge (if provided) and specific algorithm configurations (e.g., depth). A verbose logging
+     * option is available for detailed execution monitoring.
+     * <p>
+     * The resulting graph is modified with orientations and additional structures based on statistical properties and
+     * algorithmic rules. These modifications include reoriented endpoints, the addition of non-collider and collider
+     * triples, and propagation of orientation changes to ensure consistency with the underlying causal structure. A
+     * final step attempts to direct edges where permissible according to the background knowledge.
+     *
+     * @return the inferred causal graph as a {@code Graph} object after applying the CCD search algorithm.
+     * @throws InterruptedException if the process is interrupted during execution.
      */
     public Graph search() throws InterruptedException {
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();
@@ -108,12 +127,24 @@ public final class Ccd implements IGraphSearch {
 
     // ------------------------- Public configuration --------------------------
 
+    /**
+     * Retrieves the current independence test being used.
+     *
+     * @return the current IndependenceTest instance.
+     */
     public IndependenceTest getTest() {
         return test;
     }
 
     /**
-     * Preserve caching and require identical variable sets (order-insensitive).
+     * Sets the independence test to be used during the algorithm's execution. The provided test must have the same
+     * variable set as the current test. A caching wrapper will be applied to the test if it is not already cached.
+     *
+     * @param test the new independence test to be set. Must not be null and must have the same variable set as the
+     *             existing test.
+     * @throws NullPointerException     if the provided test is null.
+     * @throws IllegalArgumentException if the variable set of the new test differs from the variable set of the current
+     *                                  test.
      */
     public void setTest(IndependenceTest test) {
         Objects.requireNonNull(test, "test");
@@ -125,25 +156,50 @@ public final class Ccd implements IGraphSearch {
         this.test = (test instanceof CachingIndependenceTest) ? test : new CachingIndependenceTest(test);
     }
 
+    /**
+     * Determines whether the R1 orientation rule is set to be applied during the search process.
+     *
+     * @return true if the R1 orientation rule is enabled; false otherwise.
+     */
     public boolean isApplyR1() {
         return this.applyR1;
     }
 
+    /**
+     * Sets whether the R1 orientation rule should be applied during the search process.
+     *
+     * @param applyR1 a boolean indicating whether to apply the R1 rule. If true, the R1 rule will be applied;
+     *                otherwise, it will not.
+     */
     public void setApplyR1(boolean applyR1) {
         this.applyR1 = applyR1;
     }
 
+    /**
+     * Sets whether verbose output should be enabled for the current process.
+     *
+     * @param verbose a boolean indicating whether verbose output is enabled. If true, detailed logs or messages may be
+     *                printed. If false, minimal or no verbose output will be shown.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
         test.setVerbose(verbose);
     }
 
+    /**
+     * Sets the depth parameter, which may affect the algorithm's behavior during its operation.
+     *
+     * @param depth an integer representing the depth limit or level of recursion to be applied. A higher value
+     *              typically increases the scope or complexity taken into account.
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
     /**
      * Set background knowledge (forbidden edges). Required edges are not supported.
+     *
+     * @param knowledge the knowledge to be set
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) throw new NullPointerException("knowledge must not be null");

@@ -18,5 +18,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * This package contains classes for scoring causal graph models.
+ */
 package edu.cmu.tetrad.search.score;
 

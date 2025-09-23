@@ -509,9 +509,13 @@ public class FastIca {
     // ---------- result container ----------
 
     /**
-     * Represents the result of an Independent Component Analysis (ICA) computation. This class provides access to the
-     * matrices resulting from the ICA algorithm, including the preprocessed data matrix (X), the whitening matrix (K),
-     * the unmixing matrix (W), and the source matrix (S).
+     * A record that represents the result of the Independent Component Analysis (ICA) process.
+     * This object encapsulates the key matrices obtained during the computation of ICA.
+     *
+     * @param X The preprocessed input data matrix. Each row represents a signal, and each column is a feature.
+     * @param K The whitening matrix used to decorrelate and normalize the input data.
+     * @param W The unmixing matrix used to extract independent components from the preprocessed data.
+     * @param S The matrix of independent components computed by the ICA algorithm.
      */
     public record IcaResult(Matrix X, Matrix K, Matrix W, Matrix S) {
     }

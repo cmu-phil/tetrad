@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.blocks;
 
@@ -161,10 +161,7 @@ public final class BlocksUtil {
      */
     public static List<List<Integer>> makeDisjointBySize(List<List<Integer>> blocks) {
         // Sort by descending size; work on copies so we donât mutate inputs
-        List<ArrayList<Integer>> sorted = blocks.stream()
-                .sorted((a, b) -> Integer.compare(b.size(), a.size()))
-                .map(ArrayList::new)
-                .toList();
+        List<ArrayList<Integer>> sorted = blocks.stream().sorted((a, b) -> Integer.compare(b.size(), a.size())).map(ArrayList::new).toList();
 
         BitSet used = new BitSet();
         List<List<Integer>> out = new ArrayList<>();
@@ -213,9 +210,7 @@ public final class BlocksUtil {
      * @param alpha     a double value representing a parameter used in the computation of ranks
      * @return a new BlockSpec object that reflects the changes made according to the specified policy
      */
-    public static BlockSpec applySingleClusterPolicy(
-            BlockSpec blockSpec, SingleClusterPolicy policy, double alpha
-    ) {
+    public static BlockSpec applySingleClusterPolicy(BlockSpec blockSpec, SingleClusterPolicy policy, double alpha) {
         final DataSet dataSet = blockSpec.dataSet();
         final List<List<Integer>> blocks = blockSpec.blocks();
 
@@ -331,18 +326,14 @@ public final class BlocksUtil {
     // ---------- helpers ----------
 
     // Safe rank: if others empty â unconditioned fallback; singleton â 1.
-    private static int estimateRankSafe(
-            org.ejml.simple.SimpleMatrix S, int nRows,
-            List<Integer> block, int[] others, double alpha) {
+    private static int estimateRankSafe(org.ejml.simple.SimpleMatrix S, int nRows, List<Integer> block, int[] others, double alpha) {
         if (block == null || block.isEmpty()) return 0; // empty â 0
         int[] blk = toIndexArray(block);
 
         if (others != null && others.length > 0) {
-            return Math.max(0, edu.cmu.tetrad.util.RankTests
-                    .estimateWilksRank(S, blk, others, nRows, alpha));
+            return Math.max(0, edu.cmu.tetrad.util.RankTests.estimateWilksRank(S, blk, others, nRows, alpha));
         } else {
-            return Math.max(0, edu.cmu.tetrad.util.RankTests
-                    .estimateWilksRank(S, blk, new int[0], nRows, alpha));
+            return Math.max(0, edu.cmu.tetrad.util.RankTests.estimateWilksRank(S, blk, new int[0], nRows, alpha));
         }
     }
 
@@ -381,11 +372,26 @@ public final class BlocksUtil {
      * @param mode         the NamingMode specifying how the latent variables should be named
      * @return a BlockSpec object with updated latent variable names based on the true clusters and naming mode
      */
-    public static BlockSpec giveGoodLatentNames(BlockSpec spec,
-                                                Map<String, List<String>> trueClusters,
-                                                NamingMode mode) {
+    public static BlockSpec giveGoodLatentNames(BlockSpec spec, Map<String, List<String>> trueClusters, NamingMode mode) {
         return LatentNameAssigner.giveGoodLatentNames(spec, trueClusters, mode);
     }
 
-    public enum NamingMode {LEARNED_SINGLE, SIMULATION_EXPANDED}
+    /**
+     * An enumeration representing different naming modes for assigning names to latent variables in the context of
+     * block specifications.
+     */
+    public enum NamingMode {
+
+        /**
+         * Represents a naming mode where latent variables are named based on a single learning mechanism, typically
+         * resulting in consolidated names.
+         */
+        LEARNED_SINGLE,
+
+        /**
+         * Represents a naming mode focused on scenarios where the names are expanded and adjusted for simulations,
+         * often leading to more detailed or descriptive names for latent variables
+         */
+        SIMULATION_EXPANDED
+    }
 }

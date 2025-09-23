@@ -60,6 +60,7 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
      * @param alpha   the significance threshold for the statistical test in BPC
      * @param ess     the equivalent sample size parameter used in the BPC algorithm
      * @param policy  the policy applied to adjust or refine single clusters during block discovery
+     * @param verbose flag indicating whether verbose output should be generated during the discovery process
      */
     public BpcBlockDiscoverer(DataSet dataSet, double alpha, int ess, SingleClusterPolicy policy, boolean verbose) {
         this.dataSet = dataSet;

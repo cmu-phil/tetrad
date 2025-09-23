@@ -23,6 +23,12 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents the CAM algorithm, which is a causal additive model search algorithm.
+ * This class extends AbstractBootstrapAlgorithm and implements Algorithm, HasKnowledge,
+ * ReturnsBootstrapGraphs, and LatentStructureAlgorithm interfaces. It provides functionality
+ * for searching for optimal directed acyclic graph (DAG) structures that best fit the data.
+ */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CAM",
         command = "cam",

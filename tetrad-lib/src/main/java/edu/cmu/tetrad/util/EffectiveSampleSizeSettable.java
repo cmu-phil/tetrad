@@ -27,6 +27,8 @@ public interface EffectiveSampleSizeSettable {
 
     /**
      * Returns the effective sample size.
+     *
+     * @return the effective sample size
      */
     int getEffectiveSampleSize();
 

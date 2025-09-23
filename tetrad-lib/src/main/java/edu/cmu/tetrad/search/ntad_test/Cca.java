@@ -83,6 +83,16 @@ public class Cca extends NtadTest {
         return RankTests.rankLeByWilks(S, a, b, n, r);
     }
 
+    /**
+     * Determines the smallest rank value for which the hypothesis test returns a result
+     * below the specified alpha threshold using Wilks' lambda test.
+     *
+     * @param ntad a 2D integer array where ntad[0] represents an array of indices for the x-block variables,
+     *             and ntad[1] represents an array of indices for the y-block variables.
+     * @param alpha a double value representing the significance level threshold to evaluate the hypothesis test.
+     * @return the smallest integer rank value for which the hypothesis test fails to reject the null hypothesis.
+     *         If no such rank is found, returns the minimum of the lengths of the two index arrays.
+     */
     public int rank(int[][] ntad, double alpha) {
         SimpleMatrix S = this.S;
         int[] a = ntad[0];
