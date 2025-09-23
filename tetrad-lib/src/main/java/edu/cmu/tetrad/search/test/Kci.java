@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
@@ -35,15 +35,10 @@ import org.ejml.simple.SimpleMatrix;
 import java.util.*;
 
 /**
- * Fast KCI (Kernel-based Conditional Independence) scaffold tuned for EJML 0.44.0.
- * <p>
- * Key optimizations: - O(n^2) centering (no H K H multiplies) - Fast Gaussian kernel via one XÂ·Xáµ GEMM + vectorized exp
- * - Cache of RZ = eps * (KZ + eps I)^{-1} per (Z, rows, eps) key
- * <p>
- * Null:  X â Y | Z Test:  S = (1/n) * tr(RZ*K_[X,Z]*RZ * RZ*K_Y*RZ) with Gamma tail approx or permutation fallback.
- * <p>
- * Notes: - This is a focused class; integrate/rename fields/methods as needed for your codebase. - For large n,
- * consider NystrÃ¶m downsampling before forming kernels.
+ * The Kci class implements the Kernel-based Conditional Independence (KCI) test for statistical independence between
+ * variables. It supports various kernel types (e.g., Gaussian, Polynomial, Linear) and provides both Gamma
+ * approximation as well as permutation-based p-value computation. This class utilizes kernel matrices and bandwidth
+ * selection heuristics for efficient statistical test computation.
  */
 public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     /**
@@ -57,39 +52,88 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     /**
      * LRU-ish cache for RZ matrices keyed by (Z, rows, eps).
      */
-    private final Map<String, DMatrixRMaj> rzCache =
-            new LinkedHashMap<>(128, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<String, DMatrixRMaj> e) {
-                    return size() > 64;
-                }
-            };
+    private final Map<String, DMatrixRMaj> rzCache = new LinkedHashMap<>(128, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, DMatrixRMaj> e) {
+            return size() > 64;
+        }
+    };
     /**
      * Optional small cache for Ky per Y (helps inside PC/FCI loops).
      */
-    private final Map<Integer, SimpleMatrix> kyCache =
-            new LinkedHashMap<>(64, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<Integer, SimpleMatrix> e) {
-                    return size() > 64;
-                }
-            };
+    private final Map<Integer, SimpleMatrix> kyCache = new LinkedHashMap<>(64, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Integer, SimpleMatrix> e) {
+            return size() > 64;
+        }
+    };
     /**
      * RNG for permutations; can be null (seeded later).
      */
     public Random rng = new Random(0);
     /**
-     * Optional: last computed p-value.
+     * Specifies the degree of the polynomial in the polynomial kernel function.
+     * <p>
+     * The polynomial kernel is defined as: k(u, v) = (polyGamma * (u · v) + polyCoef0) ^ polyDegree. This variable
+     * determines the exponent applied to the kernel computation.
+     * <p>
+     * A higher degree increases the capacity of the kernel to model relationships between data points but may also
+     * increase the risk of overfitting.
+     * <p>
+     * By default, polyDegree is initialized to 2, which represents a quadratic polynomial kernel.
      */
-    public double lastPValue = Double.NaN;
     private int polyDegree = 2;
+    /**
+     * Represents the polynomial coefficient "coef0" used in the polynomial kernel function. It is an additive constant
+     * in the kernel formula defined as: k(u, v) = (polyGamma * (u · v) + polyCoef0)^polyDegree. This value influences
+     * the behavior of the kernel, particularly its non-linearity. The default value is initialized to 1.0.
+     */
     private double polyCoef0 = 1.0;
+    /**
+     * The scaling factor for the polynomial kernel in the form k(u, v) = (polyGamma * u·v + polyCoef0)^polyDegree.
+     * <p>
+     * This parameter acts as a multiplier for the dot product of the two vectors (u and v) in the polynomial kernel
+     * computation. Adjusting this value changes the influence of the inner product in the overall kernel function.
+     * <p>
+     * Default value is 1.0, but it can be set for automatic scaling (e.g., 1.0/d, where d is the dimension of the input
+     * space).
+     */
     private double polyGamma = 1.0;   // set yourself (e.g., 1.0/d) if you want automatic scaling
+    /**
+     * Specifies the type of kernel function used for kernel-based computations in the Kci class. The kernel type
+     * determines how input data is transformed or modeled to compute similarity or relationships between data points.
+     * By default, it is set to the Gaussian (RBF) kernel.
+     */
     private KernelType kernelType = KernelType.GAUSSIAN;
+    /**
+     * A small constant value used to add jitter before the inversion of a kernel matrix (e.g., KZ). This parameter is
+     * essential to ensure numerical stability in computations, particularly when matrices are close to singular or have
+     * extremely small eigenvalues.
+     * <p>
+     * The default value for this constant is set to 1e-3.
+     */
     private double epsilon = 1e-3;
     // ---------------------- configuration hooks ----------------------
+    /**
+     * A scaling factor used to modify the bandwidth in Gaussian kernel calculations by scaling it multiplicatively
+     * (sigma *= scalingFactor). This value is primarily utilized within the Gaussian bandwidth heuristic to adjust the
+     * spread or sensitivity of the kernel.
+     * <p>
+     * The default value is 1.0, meaning no scaling is applied to the bandwidth unless explicitly modified. A
+     * user-specified value can be set to customize the scaling behavior for specific kernels or data sets.
+     */
     private double scalingFactor = 1.0;
+    /**
+     * Indicates whether the Gamma approximation should be used for statistical tests. If set to true, the Gamma
+     * approximation is employed to compute p-values. If set to false, a permutation test is performed as an alternative
+     * method.
+     */
     private boolean approximate = true;
+    /**
+     * Specifies the number of permutations to be used in permutation-based statistical tests. This variable is used
+     * when conducting tests that involve random shuffling of data to approximate a distribution. It determines the
+     * number of random permutations to perform during the computation.
+     */
     private int numPermutations = 1000;
     /**
      * Represents the dataset used for analysis within the Kci class. It contains the data matrix and associated
@@ -112,6 +156,13 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     private boolean verbose = false;
 
     // ---------------------- data / indices ----------------------
+    /**
+     * The significance level (alpha) used in statistical hypothesis testing
+     * to determine the threshold for rejecting the null hypothesis.
+     * A smaller value indicates a stricter threshold.
+     *
+     * Default value is 0.01.
+     */
     private double alpha = 0.01;
     /**
      * Map variable Node -> column index in dataVxN (row in matrix terms).
@@ -147,15 +198,18 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     }
 
     /**
-     * @param dataVxN  variables x samples matrix (each row = variable, each column = sample)
-     * @param varToRow mapping from Node to its row index in dataVxN
-     * @param hHint    optional bandwidth hint matrix; may be null (median heuristic used otherwise)
-     * @param rows     sample indices to use (0..N-1)
+     * Constructs a Kci instance using specified data, variable-to-row mapping, an optional hint matrix,
+     * and a list of row indices.
+     * This constructor initializes the internal fields required for kernel-based independence testing.
+     *
+     * @param dataVxN a SimpleMatrix representing the data matrix where rows correspond to variables
+     *                and columns correspond to observations.
+     * @param varToRow a map from Node instances to integer indices, specifying the row mapping for variables.
+     * @param hHint a SimpleMatrix used as a hint for the kernel computation, often representing
+     *              precomputed or auxiliary data; can be null if not applicable.
+     * @param rows a list of integers representing the indices of rows to be used in the computation.
      */
-    public Kci(SimpleMatrix dataVxN,
-               Map<Node, Integer> varToRow,
-               SimpleMatrix hHint,
-               List<Integer> rows) {
+    public Kci(SimpleMatrix dataVxN, Map<Node, Integer> varToRow, SimpleMatrix hHint, List<Integer> rows) {
         this.dataVxN = dataVxN;
         this.varToRow = varToRow;
         this.hHint = hHint;
@@ -214,10 +268,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     /**
      * Cache key for RZ using sorted Z variable rows + n + eps.
      */
-    private static String keyForZ(List<Node> z,
-                                  List<Integer> rows,
-                                  Map<Node, Integer> varToRow,
-                                  double eps) {
+    private static String keyForZ(List<Node> z, List<Integer> rows, Map<Node, Integer> varToRow, double eps) {
         int[] cols = new int[z.size()];
         for (int i = 0; i < z.size(); i++) cols[i] = varToRow.get(z.get(i));
         Arrays.sort(cols);
@@ -245,10 +296,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      * Gamma-approx p-value for conditional KCI statistic. S = (1/n) * tr(RX * RY) ~ Gamma(k, theta) by moment
      * matching.
      */
-    private static double pValueGammaConditional(SimpleMatrix RX,
-                                                 SimpleMatrix RY,
-                                                 double stat,
-                                                 int n) {
+    private static double pValueGammaConditional(SimpleMatrix RX, SimpleMatrix RY, double stat, int n) {
         if (stat <= 0.0 || n <= 1) return 1.0;
 
         final int N = n;
@@ -311,12 +359,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      * Permutation p-value for conditional KCI. Permute Y (equivalently, conjugate RY by P) and recompute S_perm = (1/n)
      * tr(RX * P RY Páµ).
      */
-    private static double permutationPValueConditional(SimpleMatrix RX,
-                                                       SimpleMatrix RY,
-                                                       double stat,
-                                                       int n,
-                                                       int numPermutations,
-                                                       Random rng) {
+    private static double permutationPValueConditional(SimpleMatrix RX, SimpleMatrix RY, double stat, int n, int numPermutations, Random rng) {
         if (n <= 1 || numPermutations <= 0) return 1.0;
         if (rng == null) rng = new Random(0);
 
@@ -355,8 +398,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         return (geCount + 1.0) / (numPermutations + 1.0); // +1 smoothing
     }
 
-    private static DataSet twoColumnDataSet(String nameX, double[] x,
-                                            String nameY, double[] y) {
+    private static DataSet twoColumnDataSet(String nameX, double[] x, String nameY, double[] y) {
         int n = x.length;
         double[][] m = new double[n][2];
         for (int i = 0; i < n; i++) {
@@ -474,16 +516,40 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         return sigma;
     }
 
+    /**
+     * Retrieves the value of the alpha threshold, which is generally used for
+     * statistical tests to determine the significance or rejection criteria.
+     *
+     * @return the value of alpha as a double.
+     */
     @Override
     public double getAlpha() {
         return alpha;
     }
 
+    /**
+     * Sets the value of the alpha threshold, which is typically used for statistical testing
+     * to determine the significance level or rejection criteria.
+     *
+     * @param alpha the value of alpha to set, represented as a double.
+     */
     @Override
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
+    /**
+     * Tests the conditional independence of two given variables (x and y) with respect to a set of conditioning
+     * variables (z) using the KCI (Kernel-based Conditional Independence) method. This method evaluates
+     * whether x and y are independent given z by calculating a p-value and comparing it against the alpha threshold.
+     *
+     * @param x the first variable to be tested for independence, represented as a Node.
+     * @param y the second variable to be tested for independence, represented as a Node.
+     * @param z the set of conditioning variables, represented as a Set of Node objects.
+     * @return an IndependenceResult object containing the results of the independence test, including the
+     *         independence fact, the p-value, and additional statistical details.
+     * @throws InterruptedException if the thread executing the method is interrupted during execution.
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
 
@@ -495,21 +561,43 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         }
     }
 
+    /**
+     * Retrieves the list of variables associated with the current instance.
+     * This method returns a new list containing the variables, ensuring
+     * that modifications to the returned list do not affect the original list.
+     *
+     * @return a List of Node objects representing the variables.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Retrieves the data model associated with the current instance.
+     *
+     * @return the DataModel object representing the dataset being analyzed.
+     */
     @Override
     public DataModel getData() {
         return this.dataSet;
     }
 
+    /**
+     * Indicates whether verbose mode is enabled.
+     *
+     * @return true if verbose mode is enabled, false otherwise
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets the verbose mode for the current instance.
+     *
+     * @param verbose True, if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -518,28 +606,32 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     // ---------------------- bandwidth heuristic ----------------------
 
     /**
-     * Conditional KCI test: returns true iff we fail to reject independence at alpha.
+     * Tests for conditional independence between two variables given a set of conditioning variables.
+     * This method computes a test statistic and its corresponding p-value using either an approximate
+     * method or a permutation-based method depending on the configuration.
+     *
+     * @param x The first variable to test for independence.
+     * @param y The second variable to test for independence.
+     * @param z The list of conditioning variables.
+     * @param alpha The significance level used for the independence test.
+     * @return The p-value of the conditional independence test. A small p-value (less than alpha)
+     * indicates that x and y are not conditionally independent given z.
+     * @throws NullPointerException If x or y is null.
      */
-    public double isIndependenceConditional(Node x,
-                                            Node y,
-                                            List<Node> z,
-                                            double alpha) {
+    public double isIndependenceConditional(Node x, Node y, List<Node> z, double alpha) {
         Objects.requireNonNull(x, "x");
         Objects.requireNonNull(y, "y");
         if (z == null) z = Collections.emptyList();
         if (rows == null || rows.isEmpty()) {
-            this.lastPValue = 1.0;
             return 1.0;
         }
         final int n = rows.size();
         if (n < 2) {
-            this.lastPValue = 1.0;
             return 1.0;
         }
 
         // 1) Centered KZ
-        SimpleMatrix KZ = centerKernel(
-                kernelMatrix(/*x*/ null, /*z*/ z));
+        SimpleMatrix KZ = centerKernel(kernelMatrix(/*x*/ null, /*z*/ z));
 
         // 2) RZ = eps * (KZ + eps I)^-1  (cache by Z+rows+eps)
         final String zKey = keyForZ(z, rows, varToRow, getEpsilon());
@@ -588,12 +680,14 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
             TetradLogger.getInstance().log(new IndependenceFact(x, y, new HashSet<>(z)) + " p = " + p);
         }
 
-        this.lastPValue = p;
         return p;
     }
 
     /**
-     * Returns centered Ky for variable y (cached per y row index and current rows).
+     * Computes and returns the centered kernel matrix for the given node.
+     *
+     * @param y the input node for which the centered kernel matrix is computed
+     * @return the centered kernel matrix corresponding to the specified node
      */
     private SimpleMatrix getCenteredKy(Node y) {
         int ry = varToRow.get(y);
@@ -629,53 +723,11 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         }
     }
 
-//    @Override
-//    // === Public API: marginal (unconditional) HSIC p-value for two 1-D arrays ===
-//    public double computePValue(double[] x, double[] y) {
-//        if (x == null || y == null) throw new IllegalArgumentException("null input");
-//        int n = x.length;
-//        if (y.length != n) throw new IllegalArgumentException("Length mismatch");
-//        if (n <= 1) return 1.0;
-//
-//        // 1) Build kernels per your selected kernelType
-//        SimpleMatrix Kx, Ky;
-//        switch (getKernelType()) {
-//            case GAUSSIAN -> {
-//                double sigmaX = bandwidth1D(x) * getScalingFactor();
-//                double sigmaY = bandwidth1D(y) * getScalingFactor();
-//                Kx = gaussianKernel1D(x, sigmaX);
-//                Ky = gaussianKernel1D(y, sigmaY);
-//            }
-//            case LINEAR -> {
-//                Kx = linearKernel1D(x);
-//                Ky = linearKernel1D(y);
-//            }
-//            case POLYNOMIAL -> {
-//                // Use polyGamma if >0, else default to 1/d with d=1 â 1.0
-//                double gamma = (this.getPolyGamma() > 0.0) ? this.getPolyGamma() : 1.0;
-//                Kx = polynomialKernel1D(x, gamma, this.getPolyCoef0(), this.getPolyDegree());
-//                Ky = polynomialKernel1D(y, gamma, this.getPolyCoef0(), this.getPolyDegree());
-//            }
-//            default -> throw new IllegalStateException("Unknown kernel type: " + getKernelType());
-//        }
-//
-//        // 2) Center the kernels (same centering you use elsewhere)
-//        SimpleMatrix Kxc = centerKernel(Kx);
-//        SimpleMatrix Kyc = centerKernel(Ky);
-//
-//        // 3) HSIC statistic (unconditional): S = (1/n) * tr(Kxc * Kyc)
-//        double stat = Kxc.elementMult(Kyc).elementSum() / n;
-//
-//        // 4) p-value using the same paths as conditional (RZ = I here)
-//        if (isApproximate()) {
-//            return pValueGammaConditional(Kxc, Kyc, stat, n);
-//        } else {
-//            return permutationPValueConditional(Kxc, Kyc, stat, n, getNumPermutations(), rng);
-//        }
-//    }
-
     /**
-     * Build K for a single variable row index (fast path for Ky).
+     * Computes the kernel matrix for a single row index using the specified kernel type.
+     *
+     * @param rowIdx the index of the row for which the kernel matrix is computed
+     * @return the computed kernel matrix for the given row index
      */
     private SimpleMatrix kernelMatrixSingle(int rowIdx) {
         switch (getKernelType()) {
@@ -694,7 +746,14 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     }
 
     /**
-     * Fast Gaussian kernel for a set of variable rows (cols = variables, rows = samples).
+     * Computes the Gaussian kernel matrix for the given rows and bandwidth parameter sigma.
+     * The Gaussian kernel matrix is calculated using the Radial Basis Function (RBF) kernel,
+     * which measures similarity between data points in a multidimensional feature space.
+     *
+     * @param varRows A list of indices representing the selected variable rows to include in the computation.
+     * @param sigma The bandwidth parameter of the Gaussian kernel. It controls the width of the kernel function.
+     * @return A SimpleMatrix representing the computed Gaussian kernel matrix, where each entry (i, j) corresponds
+     *         to the kernel similarity between the i-th and j-th data points.
      */
     private SimpleMatrix gaussianKernelMatrix(List<Integer> varRows, double sigma) {
         final int n = rows.size();
@@ -740,7 +799,12 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     }
 
     /**
-     * Linear kernel (X Xáµ) with same layout as the Gaussian helper.
+     * Computes the linear kernel matrix for the given rows of variables.
+     *
+     * @param varRows a list of integers representing the indices of the variables to include
+     *                in the linear kernel computation.
+     * @return a SimpleMatrix object representing the linear kernel matrix, where each entry
+     *         is computed as the dot product of the corresponding rows of the variable subset.
      */
     private SimpleMatrix linearKernelMatrix(List<Integer> varRows) {
         final int n = rows.size();
@@ -770,10 +834,17 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
 // === 1-D kernel builders (fast and allocation-light) ===
 
     /**
-     * Polynomial kernel: K = (gamma * (X Xáµ) + coef0) ^ degree, with X built as (n Ã d).
+     * Computes the polynomial kernel matrix for a given set of variable rows, using the specified
+     * kernel parameters gamma, coef0, and degree. The kernel matrix is calculated as
+     * (gamma * G + coef0) ^ degree, where G = X * Xᵀ, and X is constructed from the input variable rows.
+     *
+     * @param varRows A list of indices representing the variable rows used to construct the matrix X.
+     * @param gamma The scalar factor by which the dot product matrix G is scaled within the kernel computation.
+     * @param coef0 An additive constant applied before raising the result to the specified degree.
+     * @param degree The degree of the polynomial kernel.
+     * @return A SimpleMatrix representing the computed polynomial kernel matrix.
      */
-    private SimpleMatrix polynomialKernelMatrix(List<Integer> varRows,
-                                                double gamma, double coef0, int degree) {
+    private SimpleMatrix polynomialKernelMatrix(List<Integer> varRows, double gamma, double coef0, int degree) {
         final int n = rows.size();
         final int d = varRows.size();
 
@@ -819,8 +890,12 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     }
 
     /**
-     * Median pairwise distance heuristic for Gaussian sigma, scaled by scalingFactor. Uses a light subsample for speed
-     * when n is large.
+     * Computes the Gaussian kernel bandwidth based on a subset of the pairwise distances between data points.
+     * The method estimates the bandwidth using the median of the pairwise squared distances,
+     * following a subsampling approach for computational efficiency when the dataset is large.
+     *
+     * @param varRows a list of integer indices representing the variable rows to be included in the calculation.
+     * @return the computed Gaussian kernel bandwidth (standard deviation), adjusted by a scaling factor.
      */
     private double bandwidthGaussian(List<Integer> varRows) {
         // If a hint matrix is provided and you have your own convention, you can read it here.
@@ -865,6 +940,21 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         return sigma;
     }
 
+    /**
+     * Computes the p-value for testing the independence of two variables
+     * represented by the input arrays. The method utilizes a kernel-based
+     * conditional independence test (KCI) provided by BFIT.
+     *
+     * @param x the first array of observed values representing one variable.
+     *          It must not be null and should contain at least three elements.
+     * @param y the second array of observed values representing another variable.
+     *          It must not be null, should contain at least three elements,
+     *          and have the same length as the first array.
+     * @return the computed p-value as a double. A result closer to 0 suggests
+     *         stronger evidence against the null hypothesis of independence,
+     *         while a value close to 1 supports independence. If the input
+     *         arrays are invalid or if an error occurs, the method returns 1.0.
+     */
     public double computePValue(double[] x, double[] y) {
         if (x == null || y == null) return 1.0;
         int n = x.length;
@@ -899,8 +989,18 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     }
 
     // === Optional: if you like your previous factoring ===
-    public double computePValueFromCenteredKernels(SimpleMatrix centeredKx,
-                                                   SimpleMatrix centeredKy) {
+
+    /**
+     * Computes the p-value from two centered kernel matrices using statistical methods.
+     * Depending on whether an approximate or exact method is specified, it calculates
+     * the p-value using a gamma distribution or a permutation test.
+     *
+     * @param centeredKx A centered kernel matrix (n x n) representing one dataset.
+     * @param centeredKy A centered kernel matrix (n x n) representing another dataset.
+     * @return The computed p-value indicating the statistical relationship between the two datasets.
+     * @throws IllegalArgumentException If the provided matrices are not square and of the same dimensions (n x n).
+     */
+    public double computePValueFromCenteredKernels(SimpleMatrix centeredKx, SimpleMatrix centeredKy) {
         int n = centeredKx.getNumRows();
         if (n != centeredKx.getNumCols() || n != centeredKy.getNumRows() || n != centeredKy.getNumCols())
             throw new IllegalArgumentException("Centered kernels must be nÃn");
@@ -913,92 +1013,170 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     }
 
     /**
-     * Polynomial kernel params: k(u,v) = (polyGamma * uÂ·v + polyCoef0)^polyDegree
+     * Retrieves the degree of the polynomial.
+     *
+     * @return the degree of the polynomial as an integer
      */
     public int getPolyDegree() {
         return polyDegree;
     }
 
+    /**
+     * Sets the degree of the polynomial.
+     *
+     * @param polyDegree the degree of the polynomial to be set
+     */
     public void setPolyDegree(int polyDegree) {
         this.polyDegree = polyDegree;
     }
 
     /**
-     * Polynomial kernel params: k(u,v) = (polyGamma * uÂ·v + polyCoef0)^polyDegree
+     * Retrieves the coefficient of the polynomial for the term of degree 0.
+     *
+     * @return the value of the polynomial coefficient for the term of degree 0
      */
     public double getPolyCoef0() {
         return polyCoef0;
     }
 
+    /**
+     * Sets the value of the polynomial coefficient at index 0.
+     *
+     * @param polyCoef0 the value to set for the polynomial coefficient at index 0
+     */
     public void setPolyCoef0(double polyCoef0) {
         this.polyCoef0 = polyCoef0;
     }
 
     /**
-     * Polynomial kernel params: k(u,v) = (polyGamma * uÂ·v + polyCoef0)^polyDegree
+     * Retrieves the gamma parameter for the polynomial kernel.
+     *
+     * @return the gamma parameter for the polynomial kernel
      */
     public double getPolyGamma() {
         return polyGamma;
     }
 
+    /**
+     * Sets the polyGamma value.
+     *
+     * @param polyGamma the value to set for the polyGamma property
+     */
     public void setPolyGamma(double polyGamma) {
         this.polyGamma = polyGamma;
     }
 
     /**
-     * Kernel type (default Gaussian).
+     * Retrieves the kernel type.
+     *
+     * @return the kernel type
      */
     public KernelType getKernelType() {
         return kernelType;
     }
 
+    /**
+     * Sets the kernel type.
+     *
+     * @param kernelType the kernel type to set
+     */
     public void setKernelType(KernelType kernelType) {
         this.kernelType = kernelType;
     }
 
     /**
-     * Additive diagonal jitter before inversion of KZ (must be > 0).
+     * Retrieves the epsilon value.
+     *
+     * @return the epsilon value
      */
     public double getEpsilon() {
         return epsilon;
     }
 
+    /**
+     * Sets the epsilon value.
+     *
+     * @param epsilon the epsilon value to set
+     */
     public void setEpsilon(double epsilon) {
         this.epsilon = epsilon;
     }
 
     /**
-     * Scaling for Gaussian bandwidth heuristic (sigma *= scalingFactor).
+     * Retrieves the scaling factor for the Gaussian bandwidth heuristic.
+     *
+     * @return the scaling factor
      */
     public double getScalingFactor() {
         return scalingFactor;
     }
 
+    /**
+     * Sets the scaling factor for the Gaussian bandwidth heuristic. The scaling factor is used to modify the bandwidth
+     * by scaling it multiplicatively (sigma *= scalingFactor).
+     *
+     * @param scalingFactor the scaling factor to set; a multiplier for the Gaussian bandwidth heuristic.
+     */
     public void setScalingFactor(double scalingFactor) {
         this.scalingFactor = scalingFactor;
     }
 
     /**
-     * If true, use Gamma approximation; else run permutation test.
+     * Retrieves whether the method should use an approximate approach or a permutation test.
+     *
+     * @return true if approximate method is used, false if permutation test is used
      */
     public boolean isApproximate() {
         return approximate;
     }
 
+    /**
+     * Sets whether the method should use an approximate approach or a permutation test.
+     *
+     * @param approximate true to use approximate method, false to use permutation test
+     */
     public void setApproximate(boolean approximate) {
         this.approximate = approximate;
     }
 
     /**
-     * Permutation count if approximate=false.
+     * Retrieves the number of permutations to be used in permutation tests.
+     *
+     * @return the number of permutations to be used in permutation tests
      */
     public int getNumPermutations() {
         return numPermutations;
     }
 
+    /**
+     * Sets the number of permutations to be used in permutation tests.
+     *
+     * @param numPermutations the number of permutations to set, typically used when conducting statistical tests that
+     *                        involve random shuffling of data to approximate a distribution.
+     */
     public void setNumPermutations(int numPermutations) {
         this.numPermutations = numPermutations;
     }
 
-    public enum KernelType {GAUSSIAN, LINEAR, POLYNOMIAL}
+    /**
+     * Enum representing the type of kernel function used in kernel-based computations. The kernel type determines how
+     * the input data is transformed or structured to measure similarity or relationships.
+     */
+    public enum KernelType {
+
+        /**
+         * Represents the Gaussian (RBF) kernel, commonly used for non-linear transformations.
+         */
+        GAUSSIAN,
+
+        /**
+         * Represents the linear kernel, useful for linear relationships.
+         */
+        LINEAR,
+
+        /**
+         * Represents the polynomial kernel, which generalizes the linear kernel by introducing polynomial terms.
+         */
+        POLYNOMIAL
+    }
 }

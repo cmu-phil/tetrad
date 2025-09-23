@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -33,7 +33,44 @@ import java.util.Random;
 
 import static org.ejml.UtilEjml.assertTrue;
 
+/**
+ * The {@code KciSmokeTest} class contains unit tests to evaluate the performance and correctness of the {@code Kci}
+ * class, specifically focusing on conditional independence tests.
+ *
+ * <p>It provides multiple test methods to verify the behavior of the Kci algorithm
+ * under different scenarios, such as independent and dependent data relationships, both with and without approximation
+ * techniques.</p>
+ *
+ * <p>The tests include:</p>
+ * <ul>
+ *   <li><b>gammaApprox_independent_vs_dependent</b>: Verifies the conditional independence
+ *       test using an approximate gamma distribution method for both independent and
+ *       dependent cases.</li>
+ *   <li><b>nonApprox_independent_vs_dependent</b>: Tests the deterministic behavior and
+ *       accuracy of the non-approximate (permutation-based) conditional independence
+ *       test with independent and dependent data.</li>
+ *   <li><b>permutation_independent_vs_dependent</b>: Validates the conditional independence
+ *       test using the permutation-based method under different data relationships.</li>
+ * </ul>
+ *
+ * <p>Utility methods:</p>
+ * <ul>
+ *   <li><b>makeDataVxN</b>: Generates simulated data for tests, with rows representing
+ *       variables (X, Y, Z) and columns representing samples. The method allows
+ *       controlling dependency with noise levels.</li>
+ *   <li><b>makeKci</b>: Initializes and configures the {@code Kci} instance with given
+ *       data and parameters for testing independence.</li>
+ * </ul>
+ */
 public class KciSmokeTest {
+
+    /**
+     * Default constructor for the {@code KciSmokeTest} class. This constructor initializes an instance of the
+     * {@code KciSmokeTest} class to perform unit tests on the {@code Kci} framework.
+     */
+    public KciSmokeTest() {
+
+    }
 
     private static SimpleMatrix makeDataVxN(int n, double depNoise) {
         Random r = new Random(42);
@@ -71,6 +108,37 @@ public class KciSmokeTest {
         return k;
     }
 
+    /**
+     * Tests the accuracy and behavior of the gamma approximation method for conditional independence testing using the
+     * {@code Kci} framework. This method evaluates two scenarios: independent and dependent relationships between
+     * variables.
+     *
+     * <p>The test is conducted with the following configurations:</p>
+     * <ul>
+     *   <li><b>Independent Test</b>: Variable Y is evaluated as being independent of X given Z.
+     *     <ul>
+     *       <li>The method ensures that the p-value is within valid bounds and fails
+     *           to reject the null hypothesis of independence when p > alpha.</li>
+     *     </ul>
+     *   </li>
+     *   <li><b>Dependent Test</b>: Variable Y is evaluated as linearly dependent on X with
+     *       noise (Y = X + 0.05 * e, strong dependence).
+     *     <ul>
+     *       <li>The method ensures that the p-value indicates strong significance
+     *           (p &lt; alpha) for the dependent case.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * <p><b>Assertions:</b></p>
+     * <ul>
+     *   <li>The p-value for the independent case lies within the acceptable [0, 1] range.</li>
+     *   <li>The p-value for the independent case does not indicate rejection of the null
+     *       hypothesis (p &gt; alpha).</li>
+     *   <li>The p-value for the dependent case is significant (p < alpha), confirming
+     *       the method's ability to detect dependence.</li>
+     * </ul>
+     */
     @Test
     public void gammaApprox_independent_vs_dependent() {
         double alpha = 0.01;
@@ -92,6 +160,37 @@ public class KciSmokeTest {
 //        assertTrue(pDep < 1e-3, "dependent should be very small (gamma approx).");
     }
 
+    /**
+     * Tests the accuracy and behavior of the non-approximate conditional independence testing method using the
+     * {@code Kci} framework. This method evaluates two scenarios: independent and dependent relationships between
+     * variables.
+     *
+     * <p>The test utilizes a fixed random seed for reproducibility and performs the following
+     * configurations:</p>
+     *
+     * <ul>
+     *   <li><b>Independent Test</b>: Evaluates whether variable Y is independent of X given Z.
+     *     <ul>
+     *       <li>Ensures the p-value lies within the valid range [0,1].</li>
+     *       <li>Confirms the p-value does not indicate a rejection of independence (p > alpha).</li>
+     *     </ul>
+     *   </li>
+     *   <li><b>Dependent Test</b>: Evaluates a scenario where variable Y is linearly dependent on X
+     *       (Y = X + 0.05 * e, with strong dependence).
+     *     <ul>
+     *       <li>Confirms the p-value indicates strong significance (p &lt; alpha), demonstrating
+     *           the method's sensitivity to dependence.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * <p><b>Assertions:</b></p>
+     * <ul>
+     *   <li>The p-value for the independent case lies within the range [0,1].</li>
+     *   <li>The p-value for the independent case does not reject the null hypothesis (p > alpha).</li>
+     *   <li>The p-value for the dependent case is small (e.g., p &lt; alpha), indicating significance.</li>
+     * </ul>
+     */
     @Test
     public void nonApprox_independent_vs_dependent() {
         double alpha = 0.01;
@@ -117,6 +216,42 @@ public class KciSmokeTest {
         // assertTrue(pDep < alpha, "dependent should be significant");
     }
 
+    /**
+     * Tests the behavior and accuracy of the permutation-based conditional independence testing method in the
+     * {@code Kci} framework. This method evaluates two scenarios: independent and dependent relationships between
+     * variables.
+     *
+     * <p>The test utilizes the following configuration:</p>
+     * <ul>
+     *   <li>A fixed random seed for reproducibility.</li>
+     *   <li>The permutation testing method to assess variable relationships.</li>
+     * </ul>
+     *
+     * <p>The test performs the following scenarios:</p>
+     * <ol>
+     *   <li><b>Independent Test</b>:
+     *     <ul>
+     *       <li>Variable Y is evaluated as being independent of X given Z.</li>
+     *       <li>Ensures that the p-value lies within the valid range [0, 1].</li>
+     *       <li>Confirms that the p-value fails to reject the null hypothesis of independence
+     *           when p > alpha (indicating no significant dependence).</li>
+     *     </ul>
+     *   </li>
+     *   <li><b>Dependent Test</b>:
+     *     <ul>
+     *       <li>Variable Y is evaluated as linearly dependent on X with noise (Y = X + 0.05 * e, strong dependence).</li>
+     *       <li>Ensures that the p-value indicates strong significance (p &lt; alpha), reflecting
+     *           the method's ability to detect dependence robustly.</li>
+     *     </ul>
+     *   </li>
+     * </ol>
+     *
+     * <p><b>Assertions:</b></p>
+     * <ul>
+     *   <li>For the independent case, the p-value lies within [0, 1] and satisfies p > alpha.</li>
+     *   <li>For the dependent case, the p-value is highly significant, confirming p < alpha.</li>
+     * </ul>
+     */
     @Test
     public void permutation_independent_vs_dependent() {
         double alpha = 0.01;

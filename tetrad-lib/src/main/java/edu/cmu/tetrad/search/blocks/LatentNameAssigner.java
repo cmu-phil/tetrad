@@ -28,13 +28,15 @@ import edu.cmu.tetrad.graph.NodeType;
 import java.util.*;
 
 /**
- * Deterministic, collision-safe latent naming for block-based models.
- * <p>
- * Features: - Content-based names using overlaps with provided true clusters - Stable tie-breaking (count â, Jaccard â,
- * name â) - Optional collapsing of legacy single-capital suffixes (e.g., L12C â L12) - Global uniqueness across latents
- * and observed names - Reserved literals (default: {"Noise"}) are never altered or suffixed - Two modes: â¢
- * LEARNED_SINGLE: one latent per block (preserves ranks if present) â¢ SIMULATION_EXPANDED: expands rank-r block into r
- * rank-1 latents with lettered suffixes
+ * The LatentNameAssigner class is responsible for assigning suitable latent names to
+ * blocks in a Block Specification (BlockSpec) based on provided clusters and naming modes.
+ * It also provides utility methods for name sanitization and uniqueness enforcement.
+ *
+ * This class is primarily used to normalize, clean, and assign names in a consistent
+ * and meaningful way for block specifications. Additionally, it supports customization
+ * through configurations specified in a Config object.
+ *
+ * The class is not intended to be instantiated and serves as a utility with static methods.
  */
 public final class LatentNameAssigner {
 
@@ -43,6 +45,18 @@ public final class LatentNameAssigner {
 
     // ----- Public API -----
 
+    /**
+     * Assigns descriptive and consistent names to the latent blocks in the given specification.
+     *
+     * The method ensures that the names assigned to latent blocks adhere to the configuration
+     * and naming convention specified, and attempts to make them intelligible and useful.
+     *
+     * @param spec the BlockSpec representing the data blocks to be named.
+     * @param trueClusters a map where keys are true cluster identifiers and values are lists
+     *        of associated items or elements within each cluster.
+     * @param mode the naming mode specifying how the names should be assigned or formatted.
+     * @return a BlockSpec with latent blocks renamed according to the specified naming conventions.
+     */
     public static BlockSpec giveGoodLatentNames(
             BlockSpec spec,
             Map<String, List<String>> trueClusters,
@@ -51,6 +65,17 @@ public final class LatentNameAssigner {
         return giveGoodLatentNames(spec, trueClusters, mode, Config.defaults());
     }
 
+    /**
+     * Assigns meaningful and unique names to latent variables in a given block specification according to
+     * the provided naming mode, true clusters, and configuration. Ensures variable names are consistent,
+     * deterministic, and avoid collisions with observed variables.
+     *
+     * @param spec The block specification containing data set, blocks of variables, and other relevant details. Must not be null.
+     * @param trueClusters A map of cluster names to their corresponding variable names, representing the true underlying clusters. Must not be null.
+     * @param mode The naming mode to dictate the strategy for generating latent names. Must not be null.
+     * @param config Configuration settings that define default naming behavior and reserved names. Must not be null.
+     * @return A new BlockSpec object with updated latent variable names based on the input specifications and naming mode.
+     */
     public static BlockSpec giveGoodLatentNames(
             BlockSpec spec,
             Map<String, List<String>> trueClusters,
@@ -317,14 +342,6 @@ public final class LatentNameAssigner {
         return s.replaceAll("_+$", "");        // drop trailing underscores
     }
 
-    //    private static String ensureUnique(String base, Set<String> used, Config cfg) {
-//        if (isReserved(base, cfg)) return base; // literal stays as-is, even if "used"
-//        String b = (base == null || base.isEmpty()) ? "L" : base;
-//        if (!used.contains(b)) return b;
-//        int k = 2;
-//        while (used.contains(b + cfg.numericSep + k)) k++;
-//        return b + cfg.numericSep + k;
-//    }
     private static String ensureUnique(String base, Set<String> used, Config cfg) {
         if (isReserved(base, cfg)) return base; // keep literal, even if "used"
         String b = (base == null || base.isEmpty()) ? "L" : base;
@@ -368,6 +385,9 @@ public final class LatentNameAssigner {
         return s == null ? "L" : s.replaceAll("[^A-Za-z0-9_\\-]", "_");
     }
 
+    /**
+     * A Config instance with the current builder's configuration settings.
+     */
     public static final class Config {
         /**
          * Specifies the maximum number of overlapping true clusters to display.

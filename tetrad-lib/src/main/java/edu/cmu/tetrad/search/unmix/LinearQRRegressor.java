@@ -31,24 +31,57 @@ import java.util.List;
  * ill-conditioned, applies a tiny ridge to stabilize.
  */
 public class LinearQRRegressor implements ResidualRegressor {
+    /**
+     * Threshold for the condition number of a matrix. If the condition number exceeds this threshold,
+     * ridge regression is triggered to address numerical instability issues.
+     */
     private final double condWarn;   // condition number threshold to trigger ridge
     // knobs
+    /**
+     * Tiny ridge added on ill-conditioning to stabilize regression coefficients.
+     */
     private double ridgeEps;   // tiny ridge added on ill-conditioning
+    /**
+     * Represents the coefficients of a linear regression model, including the intercept as the first element.
+     * This matrix is structured as a column vector with dimensions (p+1) x 1, where p is the number of predictors.
+     */
     private SimpleMatrix B;     // (p+1) x 1 coefficients, intercept first
+    /**
+     * Column indices of parents in the *fitted* dataset schema.
+     */
     private int[] parentCols;   // column indices of parents in the *fitted* dataset schema
+    /**
+     * Index of the response variable in the dataset schema.
+     */
     private int yCol;
 
+    /**
+     * Constructor with default values for ridgeEps and condWarn.
+     */
     public LinearQRRegressor() {
         this(1e-8, 1e10); // safe defaults
     }
 
+    /**
+     * Constructs a LinearQRRegressor instance with specified ridgeEps and condWarn parameters.
+     *
+     * @param ridgeEps The threshold for applying L2 ridge regularization when ill-conditioning is detected.
+     * @param condWarn A warning threshold indicating significant matrix condition number degradation.
+     */
     public LinearQRRegressor(double ridgeEps, double condWarn) {
         this.ridgeEps = ridgeEps;
         this.condWarn = condWarn;
     }
 
     /**
-     * Rough condition number for symmetric positive (semi)definite matrix via eigenvalue ratio.
+     * Computes the condition number of a symmetric, positive-definite matrix. The condition number
+     * is calculated as the ratio of the maximum eigenvalue to the minimum eigenvalue. If the matrix
+     * has non-positive eigenvalues or if eigenvalue decomposition fails, the method returns
+     * Double.POSITIVE_INFINITY.
+     *
+     * @param A The symmetric, positive-definite matrix for which the condition number is computed.
+     * @return The condition number of the matrix, or Double.POSITIVE_INFINITY if the computation
+     *         encounters an error or the matrix has non-positive eigenvalues.
      */
     private static double conditionNumberSymPD(SimpleMatrix A) {
         // For small p (typical here), eig is fine; fall back to NaN if it fails
@@ -68,6 +101,13 @@ public class LinearQRRegressor implements ResidualRegressor {
         }
     }
 
+    /**
+     * Fits the linear regression model to the given data.
+     *
+     * @param data    The dataset containing the data.
+     * @param target  The target node for regression.
+     * @param parents The parent nodes for regression.
+     */
     @Override
     public void fit(DataSet data, Node target, List<Node> parents) {
         this.yCol = data.getColumn(target);
@@ -127,6 +167,16 @@ public class LinearQRRegressor implements ResidualRegressor {
 
     // ---- helpers ----
 
+    /**
+     * Predicts the regression output for the given dataset, target node,
+     * and parent nodes using the model parameters. If the model has not
+     * been fitted yet, it is automatically trained on the provided inputs.
+     *
+     * @param data The dataset containing the feature values for prediction.
+     * @param target The target node for which predictions are to be generated.
+     * @param parents The list of parent nodes considered as predictors.
+     * @return A double array containing the predicted values for each data row.
+     */
     @Override
     public double[] predict(DataSet data, Node target, List<Node> parents) {
         if (B == null) fit(data, target, parents); // lazy fit
@@ -152,6 +202,9 @@ public class LinearQRRegressor implements ResidualRegressor {
 
     /**
      * Set L2 ridge strength (applied only when ill-conditioning is detected).
+     *
+     * @param v The ridege lambda
+     * @return this
      */
     public LinearQRRegressor setRidgeLambda(double v) {
         this.ridgeEps = Math.max(0.0, v);

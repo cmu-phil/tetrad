@@ -32,6 +32,10 @@ import java.util.Random;
  */
 public final class KMeans {
 
+    private  KMeans() {
+
+    }
+
     /**
      * Performs k-means clustering on a given dataset.
      *
@@ -128,7 +132,21 @@ public final class KMeans {
     }
 
     /**
-     * Multiple restarts; returns best by within-cluster SSE.
+     * Performs k-means clustering with multiple restarts and selects the best result based on the lowest
+     * within-cluster sum of squared errors (SSE).
+     *
+     * @param X        The data points to be clustered, represented as a 2D array where each row corresponds
+     *                 to a data point and each column corresponds to a feature. The dataset must be non-null.
+     * @param K        The number of clusters to create. If K is greater than the number of data points, it
+     *                 will be adjusted to the number of data points. K must be a positive integer.
+     * @param maxIter  The maximum number of iterations the algorithm will run. Must be a positive integer.
+     * @param seed     The seed for the random number generator used to initialize the cluster centroids for
+     *                 each restart.
+     * @param restarts The number of times to restart the clustering process with different initial centroids.
+     *                 If set to a value less than or equal to 0, the clustering algorithm will run only once.
+     * @return An instance of the {@code Result} class containing the cluster assignments (labels) for each
+     *         data point and the coordinates of the centroids of the clusters from the best run (based on
+     *         the lowest within-cluster SSE).
      */
     public static Result clusterWithRestarts(double[][] X, int K, int maxIter, long seed, int restarts) {
         Result best = null;
@@ -170,9 +188,31 @@ public final class KMeans {
      * of data points to clusters (labels) and the centroids of the clusters.
      */
     public static class Result {
+        /**
+         * An array representing the cluster assignments for each data point after the KMeans clustering operation.
+         * Each entry in the array corresponds to a specific data point, and its value indicates the index of the
+         * cluster to which the data point belongs.
+         */
         public final int[] labels;
+        /**
+         * A 2-dimensional array representing the centroids of clusters computed by the KMeans algorithm.
+         * Each row in the array corresponds to a cluster centroid, and each column represents one of
+         * the dimensions of the feature space. The values in the array are the coordinates of the
+         * centroids in the feature space.
+         */
         public final double[][] centroids;
 
+        /**
+         * Constructs a Result object containing the clustering assignments of data points to clusters and the
+         * centroids of the clusters computed by a clustering algorithm.
+         *
+         * @param labels An array representing the cluster assignments for each data point. Each element in the array
+         *               corresponds to a specific data point and indicates the index of the cluster to which
+         *               the data point was assigned.
+         * @param centroids A 2-dimensional array representing the coordinates of the cluster centroids. Each row in
+         *                  the array corresponds to a cluster centroid, and each column represents a dimension in the
+         *                  feature space.
+         */
         public Result(int[] labels, double[][] centroids) {
             this.labels = labels;
             this.centroids = centroids;
