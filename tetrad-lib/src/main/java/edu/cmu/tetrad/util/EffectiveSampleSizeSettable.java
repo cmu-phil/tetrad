@@ -20,6 +20,9 @@
 
 package edu.cmu.tetrad.util;
 
+/**
+ * Interface for classes that can set and retrieve the effective sample size.
+ */
 public interface EffectiveSampleSizeSettable {
 
     /**

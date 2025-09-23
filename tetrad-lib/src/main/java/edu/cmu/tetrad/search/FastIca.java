@@ -254,6 +254,8 @@ public class FastIca {
 
     /**
      * Run FastICA and return preprocessed X, whitening K, unmixing W, and sources S.
+     *
+     * @return IcaResult containing preprocessed X, whitening K, unmixing W, and sources S.
      */
     public IcaResult findComponents() {
         int n = this.X.getNumColumns(); // cases

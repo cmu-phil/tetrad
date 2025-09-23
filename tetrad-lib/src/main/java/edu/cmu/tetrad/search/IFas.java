@@ -37,7 +37,9 @@ public interface IFas extends IGraphSearch {
     Graph search() throws InterruptedException;
 
     /**
-     * Sep-sets discovered during the search.
+     * Sepsets discovered during the search.
+     *
+     * @return the sepset map.
      */
     SepsetMap getSepsets();
 

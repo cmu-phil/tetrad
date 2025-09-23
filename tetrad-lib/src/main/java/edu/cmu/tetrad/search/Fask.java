@@ -45,10 +45,9 @@ import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Implements the FASK (Fast Adjacency Skewness) algorithm.
- *
- * Exposes both boolean LR decisions (for backward compatibility) and a new
- * signed "difference/score" API so upstream algorithms (e.g., FCI-FASK) can
- * choose thresholds or compare competing rules:
+ * <p>
+ * Exposes both boolean LR decisions (for backward compatibility) and a new signed "difference/score" API so upstream
+ * algorithms (e.g., FCI-FASK) can choose thresholds or compare competing rules:
  *
  * <ul>
  *   <li><b>leftRightDiff(x, y, ruleIndex)</b> → double:
@@ -61,12 +60,13 @@ import static org.apache.commons.math3.util.FastMath.*;
  *     </ul>
  *     Positive ⇒ x→y, Negative ⇒ y→x.</li>
  * </ul>
- *
+ * <p>
  * All existing public behavior is preserved.
  *
  * @author Joseph Ramsey
  */
 public final class Fask {
+    private static double delta = -0.1;
     // ------------ Fields ------------
     private final Score score;
     private final double[][] data;
@@ -79,12 +79,14 @@ public final class Fask {
     private double extraEdgeThreshold = 0.3;
     private boolean useFasAdjacencies = true;
     private boolean useSkewAdjacencies = true;
-    private static double delta = -0.1;
     private Fask.LeftRight leftRight = LeftRight.RSKEW;
 
-    // --- 2-cycle tuning knobs (conservative defaults) ---
-
-    // ------------ Ctor ------------
+    /**
+     * Constructs a new Fask instance with the specified data set and score.
+     *
+     * @param dataSet the data set used for the analysis
+     * @param score   the scoring method utilized for evaluating the data
+     */
     public Fask(DataSet dataSet, Score score) {
         this.dataSet = dataSet;
         this.score = score;
@@ -93,7 +95,14 @@ public final class Fask {
 
     // ------------ Public static utilities (unchanged signatures) ------------
 
-    /** E[x y | condition > 0]. */
+    /**
+     * E[x y | condition > 0].
+     *
+     * @param x         the first array of data points
+     * @param y         the second array of data points
+     * @param condition the condition array
+     * @return the expected value of the product of x and y given the condition
+     */
     public static double cu(double[] x, double[] y, double[] condition) {
         double exy = 0.0;
         int n = 0;
@@ -105,12 +114,26 @@ public final class Fask {
         return exy / n;
     }
 
-    /** corrExp(x,y|z) = E(xy|z>0) / sqrt(E(x^2|z>0) E(y^2|z>0)). */
+    /**
+     * corrExp(x,y|z) = E(xy|z>0) / sqrt(E(x^2|z>0) E(y^2|z>0)).
+     *
+     * @param x the first array of data points
+     * @param y the second array of data points
+     * @param z the condition array
+     * @return the correlation expectation of x and y given z
+     */
     public static double corrExp(double[] x, double[] y, double[] z) {
         return E(x, y, z) / sqrt(E(x, x, z) * E(y, y, z));
     }
 
-    /** E(xy | z>0). */
+    /**
+     * E(xy | z>0).
+     *
+     * @param x the first array of data points
+     * @param y the second array of data points
+     * @param z the condition array
+     * @return the expected value of the product of x and y given z
+     */
     public static double E(double[] x, double[] y, double[] z) {
         double exy = 0.0;
         int n = 0;
@@ -122,20 +145,13 @@ public final class Fask {
         return exy / n;
     }
 
-    /** Static compatibility: previous boolean FASK2. */
-    public static boolean leftRightV2(double[] x, double[] y) {
-        return leftRightDiff(x, y, 2) > 0.0;
-    }
-
-    // ------------ NEW public static API: expose signed difference ------------
-
     /**
-     * Returns a signed left-right "difference/score" per rule.
-     * Positive ⇒ x→y, Negative ⇒ y→x.
+     * Returns a signed left-right "difference/score" per rule. Positive ⇒ x→y, Negative ⇒ y→x.
      *
-     * @param x          standardized (recommended) series for X
-     * @param y          standardized (recommended) series for Y
-     * @param ruleIndex  1=FASK1, 2=FASK2, 3=RSKEW, 4=SKEW, 5=TANH
+     * @param x         standardized (recommended) series for X
+     * @param y         standardized (recommended) series for Y
+     * @param ruleIndex 1=FASK1, 2=FASK2, 3=RSKEW, 4=SKEW, 5=TANH
+     * @return signed left-right score
      */
     public static double leftRightDiff(double[] x, double[] y, int ruleIndex) {
         return switch (ruleIndex) {
@@ -150,7 +166,13 @@ public final class Fask {
 
     // ------------ Rule score implementations (double-signed) ------------
 
-    /** FASK1: signed lr after skew/corr sign alignment and delta flip if r<delta. */
+    /**
+     * FASK1: signed lr after skew/corr sign alignment and delta flip if r<delta.
+     *
+     * @param x standardized (recommended) series for X
+     * @param y standardized (recommended) series for Y
+     * @return signed left-right score
+     */
     private static double fask1Score(double[] x, double[] y) {
         double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
         double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
@@ -168,12 +190,24 @@ public final class Fask {
         return lr;
     }
 
-    /** FASK2: corrExp(x,y|x) − corrExp(x,y|y). */
+    /**
+     * FASK2: corrExp(x,y|x) − corrExp(x,y|y).
+     *
+     * @param x standardized (recommended) series for X
+     * @param y standardized (recommended) series for Y
+     * @return signed left-right score
+     */
     private static double fask2Score(double[] x, double[] y) {
         return corrExp(x, y, x) - corrExp(x, y, y);
     }
 
-    /** Hyvärinen–Smith robust skew: corr(x,y) * mean(g(x)*y − x*g(y)), with sign-corrected skew. */
+    /**
+     * Hyvärinen–Smith robust skew: corr(x,y) * mean(g(x)*y − x*g(y)), with sign-corrected skew.
+     *
+     * @param x standardized (recommended) series for X
+     * @param y standardized (recommended) series for Y
+     * @return signed left-right score
+     */
     private static double rskewScore(double[] x, double[] y) {
         x = correctSkewness(x, skewness(x));
         y = correctSkewness(y, skewness(y));
@@ -182,7 +216,13 @@ public final class Fask {
         return correlation(x, y) * mean(lr);
     }
 
-    /** Hyvärinen–Smith skew: corr(x,y) * mean(x^2*y − x*y^2), with sign-corrected skew. */
+    /**
+     * Hyvärinen–Smith skew: corr(x,y) * mean(x^2*y − x*y^2), with sign-corrected skew.
+     *
+     * @param x standardized (recommended) series for X
+     * @param y standardized (recommended) series for Y
+     * @return signed left-right score
+     */
     private static double skewScore(double[] x, double[] y) {
         x = correctSkewness(x, skewness(x));
         y = correctSkewness(y, skewness(y));
@@ -191,7 +231,13 @@ public final class Fask {
         return correlation(x, y) * mean(lr);
     }
 
-    /** Hyvärinen–Smith tanh: corr(x,y) * mean(x*tanh(y) − tanh(x)*y), with sign-corrected skew. */
+    /**
+     * Hyvärinen–Smith tanh: corr(x,y) * mean(x*tanh(y) − tanh(x)*y), with sign-corrected skew.
+     *
+     * @param x standardized (recommended) series for X
+     * @param y standardized (recommended) series for Y
+     * @return signed left-right score
+     */
     private static double tanhScore(double[] x, double[] y) {
         x = correctSkewness(x, skewness(x));
         y = correctSkewness(y, skewness(y));
@@ -200,12 +246,16 @@ public final class Fask {
         return correlation(x, y) * mean(lr);
     }
 
-    /** Helper for robustSkew. */
+    /**
+     * Helper for robustSkew.
+     */
     private static double g(double x) {
         return log(cosh(FastMath.max(x, 0)));
     }
 
-    /** Multiply by sign of skew so “positive skew” convention holds. */
+    /**
+     * Multiply by sign of skew so “positive skew” convention holds.
+     */
     private static double[] correctSkewness(double[] data, double sk) {
         double s = signum(sk);
         double[] out = new double[data.length];
@@ -215,6 +265,29 @@ public final class Fask {
 
     // ------------ Main search ------------
 
+    /**
+     * Set the delta parameter for FASK search.
+     *
+     * @param _delta The new delta value to be set for the FASK algorithm.
+     */
+    public static void setDelta(double _delta) {
+        delta = _delta;
+    }
+
+    /**
+     * Executes the FASK (Fast Adjacency Skewness) algorithm to search for a causal graph based on the provided dataset,
+     * knowledge, and configurations.
+     * <p>
+     * The method first standardizes the dataset and initializes a preliminary graph structure with either an external
+     * graph or through a Fast Adjacency Search (FAS) with a scoring method. It then iteratively examines pairs of
+     * variables to determine potential causal edges based on various scoring rules, adjacency conditions, and provided
+     * prior knowledge. The final graph includes directed and potentially bidirected edges based on the algorithm's
+     * logic.
+     *
+     * @return A causal graph inferred by the FASK algorithm, where nodes represent variables and edges denote the
+     * presence and direction of inferred causal relationships.
+     * @throws InterruptedException if the execution is interrupted during the search process.
+     */
     public Graph search() throws InterruptedException {
         setCutoff(alpha);
 
@@ -286,46 +359,100 @@ public final class Fask {
         return graph;
     }
 
-    // ------------ Config ------------
+    /**
+     * Sets the left-right scoring method used in the FASK algorithm.
+     *
+     * @param leftRight the left-right scoring method to be used, represented by the Fask.LeftRight enum
+     */
     public void setLeftRight(Fask.LeftRight leftRight) {
         this.leftRight = leftRight;
     }
 
+    /**
+     * Sets the significance level for the FASK algorithm.
+     *
+     * @param alpha the significance level, must be between 0.0 and 1.0
+     */
     public void setCutoff(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) throw new IllegalArgumentException("Significance out of range: " + alpha);
         this.cutoff = StatUtils.getZForAlpha(alpha);
     }
 
+    /**
+     * Sets the depth of the search in the FASK algorithm.
+     *
+     * @param depth the depth of the search, must be non-negative
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
+    /**
+     * Sets the significance level (alpha) for the FASK algorithm. This parameter determines
+     * the threshold used in statistical tests within the algorithm, and must be a value
+     * between 0.0 and 1.0.
+     *
+     * @param alpha the significance level, must be between 0.0 and 1.0
+     */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
+    /**
+     * Sets the prior knowledge for the FASK algorithm. This knowledge represents constraints
+     * or background information that can guide or restrict the causal discovery process.
+     *
+     * @param knowledge the prior knowledge object to be used in the algorithm
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
+    /**
+     * Sets the external graph for the FASK algorithm.
+     * This graph can serve as an initial structure or provide constraints
+     * for further causal discovery during the algorithm's execution.
+     *
+     * @param externalGraph the external graph to be used, represented as a Graph object
+     */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
+    /**
+     * Sets the threshold value for considering extra edges in the FASK algorithm.
+     *
+     * @param extraEdgeThreshold the threshold value to be set for extra edges, where a lower value
+     *                           might result in more potential extra edges being considered in the analysis,
+     *                           while a higher value might be more restrictive
+     */
     public void setExtraEdgeThreshold(double extraEdgeThreshold) {
         this.extraEdgeThreshold = extraEdgeThreshold;
     }
 
+    /**
+     * Sets whether the FASK algorithm should use Fast Adjacency Search (FAS) for determining adjacencies.
+     * This configuration influences how the initial graph structure is constructed during the algorithm's execution.
+     *
+     * @param useFasAdjacencies a boolean indicating whether to use FAS adjacencies. If true, FAS is used to
+     *                          determine adjacencies during the graph search process; if false, an alternative
+     *                          approach may be employed.
+     */
     public void setUseFasAdjacencies(boolean useFasAdjacencies) {
         this.useFasAdjacencies = useFasAdjacencies;
     }
 
+    /**
+     * Configures whether the FASK algorithm should utilize skew adjacencies during its execution.
+     * Skew adjacencies, if enabled, influence the process by considering relationships
+     * determined through the skewness of data distributions.
+     *
+     * @param useSkewAdjacencies a boolean indicating whether to use skew adjacencies.
+     *                           If true, skewness-based adjacencies are considered as part
+     *                           of the graph construction process; if false, they are excluded.
+     */
     public void setUseSkewAdjacencies(boolean useSkewAdjacencies) {
         this.useSkewAdjacencies = useSkewAdjacencies;
-    }
-
-    public static void setDelta(double _delta) {
-        delta = _delta;
     }
 
     // ------------ Internals ------------
@@ -376,7 +503,7 @@ public final class Fask {
         // Partial correlations under three “slices”: all, X>0, Y>0
         final double pc, pc1, pc2;
         try {
-            pc  = partialCorrelation(x, y, Z, x, Double.NEGATIVE_INFINITY, +1, ridge);
+            pc = partialCorrelation(x, y, Z, x, Double.NEGATIVE_INFINITY, +1, ridge);
             pc1 = partialCorrelation(x, y, Z, x, 0, +1, ridge);
             pc2 = partialCorrelation(x, y, Z, y, 0, +1, ridge);
         } catch (Exception e) {
@@ -390,12 +517,12 @@ public final class Fask {
         if (nxPos < minPart || nyPos < minPart) return false;
 
         // Clamp correlations for Fisher z
-        double _pc  = Math.max(-1.0 + clampEps, Math.min(1.0 - clampEps, pc));
+        double _pc = Math.max(-1.0 + clampEps, Math.min(1.0 - clampEps, pc));
         double _pc1 = Math.max(-1.0 + clampEps, Math.min(1.0 - clampEps, pc1));
         double _pc2 = Math.max(-1.0 + clampEps, Math.min(1.0 - clampEps, pc2));
 
         // Fisher z
-        double z  = 0.5 * (Math.log(1.0 + _pc ) - Math.log(1.0 - _pc ));
+        double z = 0.5 * (Math.log(1.0 + _pc) - Math.log(1.0 - _pc));
         double z1 = 0.5 * (Math.log(1.0 + _pc1) - Math.log(1.0 - _pc1));
         double z2 = 0.5 * (Math.log(1.0 + _pc2) - Math.log(1.0 - _pc2));
 
@@ -411,7 +538,7 @@ public final class Fask {
         // or both significant (even if not cleanly opposite)
         if (zv1 < 0 && zv2 > 0 && rejected1) return true;
         if (zv1 > 0 && zv2 < 0 && rejected2) return true;
-        if (rejected1 && rejected2)          return true;
+        if (rejected1 && rejected2) return true;
 
         return false;
     }
@@ -446,8 +573,31 @@ public final class Fask {
                || knowledge.isRequired(left.getName(), right.getName());
     }
 
-    // ------------ Enum ------------
+    /**
+     * An enumeration representing directional and functional types.
+     * The constants in this enumeration could signify configurations or operations
+     * that relate to left, right, or other mathematical transformations.
+     */
     public enum LeftRight {
-        FASK1, FASK2, RSKEW, SKEW, TANH
+        /**
+         * Use FASK1.
+         */
+        FASK1,
+        /**
+         * Use FASK2.
+         */
+        FASK2,
+        /**
+         * Use RSkew.
+         */
+        RSKEW,
+        /**
+         * Use Skew.
+         */
+        SKEW,
+        /**
+         * Use Tanh.
+         */
+        TANH
     }
 }

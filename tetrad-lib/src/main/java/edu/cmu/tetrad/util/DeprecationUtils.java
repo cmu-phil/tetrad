@@ -30,8 +30,11 @@ public final class DeprecationUtils {
     }
 
     /**
-     * @param clazz The class to check (must not be null).
-     * @return true iff the class is annotated with {@link Deprecated}.
+     * Determines if the specified class is marked with the {@code @Deprecated} annotation.
+     *
+     * @param clazz the class to check; must not be null
+     * @return {@code true} if the class is annotated with {@code @Deprecated}, {@code false} otherwise
+     * @throws IllegalArgumentException if the provided class is null
      */
     public static boolean isClassDeprecated(Class<?> clazz) {
         if (clazz == null) {

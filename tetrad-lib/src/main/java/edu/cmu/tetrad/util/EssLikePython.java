@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.util;
 
@@ -24,22 +24,31 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.Random;
 
+/**
+ * The EssLikePython class provides methods for estimating the Effective Sample Size (ESS) of a dataset using procedures
+ * that closely mimic functionality found my Python script. This includes column standardization, row sampling, and
+ * computation of correlations to derive the ESS value.
+ */
 public final class EssLikePython {
 
     /**
-     * Mirrors your Python: 1) Column-standardize (ddof=0) across ALL rows. 2) Sample m rows without replacement (m â
-     * sqrt(2N) typical). 3) Row-standardize those m rows (ddof=0). 4) Compute full rowârow correlation matrix and
-     * average its off-diagonal. 5) ESS = N / (1 + (N-1)*avgCorr).
-     *
-     * @param X                N x P data (rows=samples, cols=features)
-     * @param sampleSize       desired number of rows to use (e.g., (int)Math.sqrt(2*N))
-     * @param clampNonnegative if true, clamp avgCorr to [0, 0.999999] before ESS
-     * @param rng              random (null â default)
+     * Default constructor for the EssLikePython class. Initializes a new instance of the EssLikePython class.
      */
-    public static Result estimateLikePython(SimpleMatrix X,
-                                            int sampleSize,
-                                            boolean clampNonnegative,
-                                            Random rng) {
+    public EssLikePython() {
+    }
+
+    /**
+     * Estimates the effective sample size (ESS) and average row correlation (avgRowCorr) from a given dataset, by
+     * column-standardizing, sampling rows, and computing row-wise correlations. Optionally clamps the correlation to
+     * ensure non-negativity.
+     *
+     * @param X                the input data matrix where rows represent observations and columns represent variables
+     * @param sampleSize       the number of rows to sample without replacement during the estimation process
+     * @param clampNonnegative a flag indicating whether to clamp avgRowCorr to nonnegative values
+     * @param rng              a Random object to control the random sampling of rows (if null, a default seed is used)
+     * @return a Result object containing the estimated avgRowCorr, computed ESS, and the number of rows used
+     */
+    public static Result estimateLikePython(SimpleMatrix X, int sampleSize, boolean clampNonnegative, Random rng) {
         if (rng == null) rng = new Random(0);
 
         final int N = X.getNumRows();
@@ -157,22 +166,60 @@ public final class EssLikePython {
         return idx;
     }
 
-    // ----- helpers -----
-
+    /**
+     * Encapsulates the results of an estimation process, including average row correlation, effective sample size
+     * (ESS), and the number of rows used in the computation.
+     * <p>
+     * avgRowCorr represents the average off-diagonal value of the row-row correlation matrix derived during the
+     * estimation process.
+     * <p>
+     * ess is the effective sample size, calculated as N / (1 + (N-1)*avgRowCorr), which may optionally be clamped.
+     * <p>
+     * mRowsUsed indicates the number of rows sampled and used in the computation.
+     */
     public static final class Result {
+        /**
+         * Represents the average off-diagonal value of the row-row correlation matrix computed during an estimation
+         * process. This value is used to assess the interdependence between rows in the data and influences other
+         * derived statistics such as the effective sample size (ESS).
+         */
         public final double avgRowCorr; // same definition as Python function
+        /**
+         * Represents the effective sample size (ESS) calculated as N / (1 + (N-1)*avgRowCorr). This statistic is used
+         * to adjust the sample size based on the average row correlation of the dataset. The value may optionally be
+         * clamped to a specific range, depending on the application context.
+         */
         public final double ess;        // N / (1 + (N-1)*avgRowCorr) (optionally clamped)
-        public final int mRowsUsed;
+        /**
+         * Represents the number of rows used in the computation.
+         */
+        public final int nRowsUsed;
 
+        /**
+         * Constructs a Result object encapsulating the average row correlation, effective sample size (ESS), and the
+         * number of rows used in the computation.
+         *
+         * @param avgRowCorr the average off-diagonal value of the row-row correlation matrix computed during an
+         *                   estimation process
+         * @param ess        the effective sample size, calculated as N / (1 + (N-1)*avgRowCorr), potentially clamped
+         *                   based on the application context
+         * @param mRowsUsed  the number of rows sampled and used during the computation
+         */
         Result(double avgRowCorr, double ess, int mRowsUsed) {
             this.avgRowCorr = avgRowCorr;
             this.ess = ess;
-            this.mRowsUsed = mRowsUsed;
+            this.nRowsUsed = mRowsUsed;
         }
 
+        /**
+         * Returns a string representation of the Result object, which includes the average row correlation
+         * (avgRowCorr), effective sample size (ESS), and the number of rows used in the computation (m).
+         *
+         * @return a formatted string containing avgRowCorr, ESS, and m values
+         */
         @Override
         public String toString() {
-            return String.format("avgRowCorr=%.6f, ESS=%.2f, m=%d", avgRowCorr, ess, mRowsUsed);
+            return String.format("avgRowCorr=%.6f, ESS=%.2f, m=%d", avgRowCorr, ess, nRowsUsed);
         }
     }
 }

@@ -40,6 +40,15 @@ public final class CyclicStableUtils {
 
     /**
      * Simulate from an arbitrary graph with SCC-wise fixed spectral radius s.
+     *
+     * @param g the graph to simulate from
+     * @param n the number of samples to generate
+     * @param s the fixed spectral radius for each SCC
+     * @param coefLow the lower bound for coefficient values
+     * @param coefHigh the upper bound for coefficient values
+     * @param seed the random seed for reproducibility, or -1 for random seed
+     * @param params the parameters for the SEM model
+     * @return the simulated data and SEM model
      */
     public static SemIm.CyclicSimResult simulateStableFixedRadius(
             Graph g, int n, double s, double coefLow, double coefHigh,
@@ -61,6 +70,15 @@ public final class CyclicStableUtils {
 
     /**
      * Simulate from an arbitrary graph with SCC-wise radius capped by sqrt(maxProd).
+     *
+     * @param g the graph to simulate from
+     * @param n the number of samples to generate
+     * @param maxProd the maximum product of spectral radii for SCCs
+     * @param coefLow the lower bound for coefficient values
+     * @param coefHigh the upper bound for coefficient values
+     * @param seed the random seed for reproducibility, or -1 for random seed
+     * @param params the parameters for the SEM model
+     * @return the simulated data and SEM model
      */
     public static SemIm.CyclicSimResult simulateStableProductCapped(
             Graph g, int n, double maxProd, double coefLow, double coefHigh,
@@ -71,6 +89,17 @@ public final class CyclicStableUtils {
     }
 
     // Scale-only: do not redraw; just rescale SCCs to target radius
+
+    /**
+     * Stabilizes all strongly connected components (SCCs) of a given graph by scaling internal edges
+     * such that the spectral radius of each SCC does not exceed the given target value s. Operates
+     * on a fixed radius and adjusts only internal edge scales.
+     *
+     * @param im the SEM instance representing the structural equation model to be stabilized
+     * @param g the graph containing the strongly connected components to stabilize
+     * @param s the target spectral radius for each SCC; must be in the range (0, 1)
+     * @throws IllegalArgumentException if the value of s is not in the range (0, 1)
+     */
     public static void stabilizeAllSccsFixedRadiusScaleOnly(SemIm im, Graph g, double s) {
         if (s <= 0.0 || s >= 1.0) throw new IllegalArgumentException("s in (0,1)");
         for (var scc : stronglyConnectedComponents(g)) {
@@ -85,6 +114,13 @@ public final class CyclicStableUtils {
 
     /**
      * Stabilize an existing SemIm in-place: enforce per-SCC spectral radius target s.
+     *
+     * @param im the SEM instance representing the structural equation model to be stabilized
+     * @param g the graph containing the strongly connected components to stabilize
+     * @param s the target spectral radius for each SCC; must be in the range (0, 1)
+     * @param coefLow the lower bound for the random coefficient range
+     * @param coefHigh the upper bound for the random coefficient range
+     * @throws IllegalArgumentException if the value of s is not in the range (0, 1)
      */
     public static void stabilizeAllSccsFixedRadius(
             SemIm im, Graph g, double s, double coefLow, double coefHigh) {
@@ -108,6 +144,13 @@ public final class CyclicStableUtils {
 
     /**
      * Randomize existing internal edges (that already exist in the graph) within [low, high], positive.
+     *
+     * @param im the SEM instance representing the structural equation model to be stabilized
+     * @param g the graph containing the strongly connected components to stabilize
+     * @param scc the strongly connected component to initialize internal edges for
+     * @param low the lower bound for the random coefficient range
+     * @param high the upper bound for the random coefficient range
+     * @throws IllegalArgumentException if the value of s is not in the range (0, 1)
      */
     public static void initializeInternalEdgesRandom(
             SemIm im, Graph g, List<Node> scc, double low, double high) {
@@ -126,6 +169,12 @@ public final class CyclicStableUtils {
 
     /**
      * Scale all internal edges of an SCC by a factor.
+     *
+     * @param im the SEM instance representing the structural equation model to be stabilized
+     * @param g the graph containing the strongly connected components to stabilize
+     * @param scc the strongly connected component to initialize internal edges for
+     * @param factor the scaling factor to apply to internal edges
++     * @throws IllegalArgumentException if the value of s is not in the range (0, 1)
      */
     public static void scaleInternalEdges(SemIm im, Graph g, List<Node> scc, double factor) {
         for (Node from : scc) {
@@ -140,7 +189,16 @@ public final class CyclicStableUtils {
     }
 
     /**
-     * Spectral radius estimate of |B| (absolute coefficient matrix) for the SCC using power iteration.
+     * Computes the spectral radius of the absolute value of the coefficient matrix of the given
+     * strongly connected component (SCC) in a graph.
+     *
+     * The spectral radius is calculated using the power iteration method on a matrix constructed
+     * from the absolute values of the edge coefficients for directed edges within the SCC.
+     *
+     * @param im the SEM instance containing the structural equation model with coefficient information
+     * @param g the graph representing the structural relationships between nodes
+     * @param scc the list of nodes representing the strongly connected component
+     * @return the spectral radius of the absolute value of the coefficient matrix for the SCC
      */
     public static double spectralRadiusAbs(SemIm im, Graph g, List<Node> scc) {
         int k = scc.size();
@@ -186,6 +244,12 @@ public final class CyclicStableUtils {
 
     /* ===================== Graph / SCC utilities ===================== */
 
+    /**
+     * Kosaraju's algorithm for strongly connected components.
+     *
+     * @param g the graph to find strongly connected components in
+     * @return a list of lists, where each inner list represents a strongly connected component
+     */
     public static List<List<Node>> stronglyConnectedComponents(Graph g) {
         // Kosaraju: DFS order, transpose, DFS assign
         List<Node> nodes = new ArrayList<>(g.getNodes());
@@ -259,6 +323,8 @@ public final class CyclicStableUtils {
 
     /**
      * Quick demo: build a graph, stabilize, simulate.
+     *
+     * @return the result.
      */
     public static edu.cmu.tetrad.sem.SemIm.CyclicSimResult quickDemo() {
         Node x = new ContinuousVariable("x");
