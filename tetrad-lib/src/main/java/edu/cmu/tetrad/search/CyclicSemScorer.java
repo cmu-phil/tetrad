@@ -18,6 +18,12 @@ import java.util.List;
  * cases.
  */
 public final class CyclicSemScorer {
+
+    /**
+     * Default constructor for the CyclicSemScorer class.
+     */
+    public CyclicSemScorer() {}
+
     /**
      * The stability tolerance parameter used in evaluating matrix properties such as stability of linear
      * transformations. This parameter can be interpreted as an upper threshold value to ensure numerical or
@@ -327,6 +333,23 @@ public final class CyclicSemScorer {
         return new ScoreResult(bic, true, k);
     }
 
+    /**
+     * Immutable result object representing the computed score from a scoring process.
+     *
+     * <p>This record encapsulates three key metrics:</p>
+     * <ul>
+     *   <li><b>BIC (Bayesian Information Criterion):</b> A statistical measure used for model selection.</li>
+     *   <li><b>Stability status:</b> Indicates whether the evaluated system is stable or not.</li>
+     *   <li><b>Number of parameters:</b> The count of parameters used during the scoring process.</li>
+     * </ul>
+     *
+     * <p>The {@code ScoreResult} is typically used to evaluate and compare the quality of models
+     * generated or analyzed within a broader scoring framework.</p>
+     *
+     * @param bic    The Bayesian Information Criterion score of the evaluated system.
+     * @param stable A boolean flag indicating the stability of the evaluated system.
+     * @param params The number of parameters used during the evaluation process.
+     */
     public record ScoreResult(double bic, boolean stable, int params) {
     }
 }

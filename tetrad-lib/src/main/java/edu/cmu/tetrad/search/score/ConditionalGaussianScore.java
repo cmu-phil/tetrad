@@ -3,10 +3,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
@@ -15,13 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implements a conditional Gaussian BIC score for FGS, which calculates a BIC score for mixed
- * discrete/Gaussian data using the conditional Gaussian likelihood function.
- *
- * Reference:
- * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
+ * Implements a conditional Gaussian BIC score for FGS, which calculates a BIC score for mixed discrete/Gaussian data
+ * using the conditional Gaussian likelihood function.
+ * <p>
+ * Reference: Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
  * International Journal of Data Science and Analytics, 6, 3–18.
- *
+ * <p>
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
@@ -66,7 +62,13 @@ public class ConditionalGaussianScore implements Score {
         this.likelihood.setDiscretize(discretize);
     }
 
-    /** Local BIC score for child i with parents. */
+    /**
+     * Local BIC score for child i with parents.
+     *
+     * @param i       child index
+     * @param parents parent indices
+     * @return local BIC score for child i with parents
+     */
     public double localScore(int i, int... parents) {
         List<Integer> rows = getRows(i, parents);
         if (rows.isEmpty()) return Double.NEGATIVE_INFINITY;
@@ -85,62 +87,120 @@ public class ConditionalGaussianScore implements Score {
         return score;
     }
 
-    /** Score difference localScore(y | z ∪ {x}) - localScore(y | z). */
+    /**
+     * Score difference localScore(y | z ∪ {x}) - localScore(y | z).
+     *
+     * @param x index of the variable to add to the parents
+     * @param y index of the child variable
+     * @param z array of parent indices
+     * @return score difference
+     */
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    /** Sample size. */
+    /**
+     * Sample size.
+     *
+     * @return sample size
+     */
     public int getSampleSize() {
         return this.dataSet.getNumRows();
     }
 
-    /** FGES “effect edge” convention for this score bump. */
+    /**
+     * FGES “effect edge” convention for this score bump.
+     *
+     * @param bump score bump
+     * @return true if the score bump is positive, false otherwise
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
+    /**
+     * Returns the list of variables.
+     *
+     * @return list of variables
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
-    /** Recommended max degree (same heuristic used elsewhere). */
+    /**
+     * Recommended max degree (same heuristic used elsewhere).
+     *
+     * @return the max degree.
+     */
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(FastMath.log(this.dataSet.getNumRows()));
     }
 
+    /**
+     * Retrieves the penalty discount value used in the scoring calculations.
+     *
+     * @return the penalty discount value as a double.
+     */
     public double getPenaltyDiscount() {
         return this.penaltyDiscount;
     }
 
+    /**
+     * Updates the penalty discount value used in the scoring calculations.
+     *
+     * @param penaltyDiscount the new penalty discount value as a double
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    /** Forwarded: number of bins for shadow discretization. */
+    /**
+     * Sets the number of categories to be used for discretizing child variables in order to avoid integration.
+     *
+     * @param numCategoriesToDiscretize the number of categories to discretize child variables
+     */
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
         this.likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
     }
 
-    /** Forwarded: enable/disable shadow discretization. */
+    /**
+     * Sets whether to discretize child variables for shadow discretization.
+     * This affects scoring during the learning process to optimize calculations involving mixed data types.
+     *
+     * @param discretize A boolean value indicating whether to enable discretization. If true, enables discretization.
+     */
     public void setDiscretize(boolean discretize) {
         this.likelihood.setDiscretize(discretize);
     }
 
-    /** Forwarded: minimum per-cell N to include a cell in the likelihood. */
+    /**
+     * Sets the minimum sample size per cell for scoring calculations during the learning process.
+     *
+     * @param n The minimum number of samples required per cell to guarantee stable computations.
+     */
     public void setMinSampleSizePerCell(int n) {
         this.likelihood.setMinSampleSizePerCell(n);
     }
 
-    /** Optional ER prior on structure (sparse bias). */
+    /**
+     * Sets the structure prior value for the scoring process.
+     *
+     * @param structurePrior The value of the structure prior to be used in scoring calculations.
+     */
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
     }
 
+    /**
+     * Returns a string representation of the Conditional Gaussian Score Penalty.
+     * The representation includes the penalty discount formatted to two decimal places.
+     *
+     * @return a string describing the Conditional Gaussian Score Penalty and its penalty discount value.
+     */
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
@@ -152,8 +212,8 @@ public class ConditionalGaussianScore implements Score {
     // ------------------------------------------------------------------------------------
 
     /**
-     * Row filter that drops any row with missing values for the child or any parent.
-     * For discrete variables we treat -99 as “missing”; for continuous we treat NaN as missing.
+     * Row filter that drops any row with missing values for the child or any parent. For discrete variables we treat
+     * -99 as “missing”; for continuous we treat NaN as missing.
      */
     private List<Integer> getRows(int i, int[] parents) {
         List<Integer> rows = new ArrayList<>(this.dataSet.getNumRows());
@@ -164,14 +224,19 @@ public class ConditionalGaussianScore implements Score {
             // parents
             boolean ok = true;
             for (int p : parents) {
-                if (isMissing(variables.get(p), r)) { ok = false; break; }
+                if (isMissing(variables.get(p), r)) {
+                    ok = false;
+                    break;
+                }
             }
             if (ok) rows.add(r);
         }
         return rows;
     }
 
-    /** Missingness by variable type. */
+    /**
+     * Missingness by variable type.
+     */
     private boolean isMissing(Node v, int row) {
         if (v instanceof DiscreteVariable) {
             int val = this.dataSet.getInt(row, this.dataSet.getColumn(v));
