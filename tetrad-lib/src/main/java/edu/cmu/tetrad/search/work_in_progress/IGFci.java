@@ -36,7 +36,28 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Instance-specific FGES-FCI given in Fattaneh Jabbari's dissertation (Pages 144-147)
+ * Implements instance-specific FGES-FCI, following the idea introduced by
+ * Fattaneh Jabbari in her dissertation (pp. 144–147). The goal is to adapt
+ * score-based causal discovery to make inferences not just at the population
+ * level, but also for a given individual case (a single "test row").
+ *
+ * Standard FGES searches for a population-wide graph by evaluating candidate
+ * edge additions, deletions, and reversals with a decomposable score such as
+ * BIC or BDeu. Instance-specific FGES modifies this process by using an
+ * {@link ISScore}, which augments the usual population likelihood with
+ * instance-specific likelihood terms that condition on the values of the test
+ * case. In this way, the score rewards structures that explain not only the
+ * data overall but also the observed values for the instance in question. A
+ * structure prior further penalizes deviations from the population model
+ * (e.g., instance-only additions, deletions, or reversals).
+ *
+ * The resulting search produces an instance-specific backbone graph that
+ * reflects both population regularities and instance-specific refinements.
+ * This graph is then refined using FCI-style pruning and orientation rules,
+ * producing an instance-specific PAG that accounts for possible latent
+ * confounders and selection effects. The outcome can therefore differ across
+ * test cases: two individuals with different attribute values may yield
+ * different instance-specific graphs, even when drawn from the same population.
  *
  * @author Fattaneh
  */
@@ -123,59 +144,127 @@ public final class IGFci implements IGraphSearch {
      *
      * @return the final oriented graph obtained after applying the FCI algorithm.
      */
+//    public Graph search() throws InterruptedException {
+//        long time1 = System.currentTimeMillis();
+//
+//        List<Node> nodes = getIndependenceTest().getVariables();
+//
+//        logger.log("Starting FCI algorithm.");
+//        logger.log("Independence test = " + getIndependenceTest() + ".");
+//
+//        this.graph = new EdgeListGraph(nodes);
+//
+//        ISFges fges = new ISFges(score);
+//        fges.setPopulationGraph(this.populationGraph);
+//        fges.setInitialGraph(this.populationGraph);
+//
+//
+//        graph = fges.search();
+//        Graph fgesGraph = new EdgeListGraph(graph);
+//        sepsets = new SepsetsGreedy(fgesGraph, independenceTest, -1);
+//
+//        for (Node b : nodes) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                break;
+//            }
+//
+//            List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
+//
+//            if (adjacentNodes.size() < 2) {
+//                continue;
+//            }
+//
+//            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+//            int[] combination;
+//
+//            while ((combination = cg.next()) != null) {
+//                if (Thread.currentThread().isInterrupted()) {
+//                    break;
+//                }
+//
+//                Node a = adjacentNodes.get(combination[0]);
+//                Node c = adjacentNodes.get(combination[1]);
+//
+//                if (graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
+//                    if (sepsets.getSepset(a, c, -1, null) != null) {
+//                        graph.removeEdge(a, c);
+//                    }
+//                }
+//            }
+//        }
+//
+//        modifiedR0(fgesGraph);
+//
+//        R0R4Strategy r0r4 = new R0R4StrategyTestBased(independenceTest);
+//
+//        FciOrient fciOrient = new FciOrient(r0r4);
+//        fciOrient.setVerbose(verbose);
+//        fciOrient.setKnowledge(getKnowledge());
+//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+//        fciOrient.setMaxDiscriminatingPathLength(maxPathLength);
+//        fciOrient.finalOrientation(graph);
+//
+//        GraphUtils.replaceNodes(graph, independenceTest.getVariables());
+//
+//        long time2 = System.currentTimeMillis();
+//
+//        elapsedTime = time2 - time1;
+//
+//        return graph;
+//    }
+
+    // --- in IGFci -------------------------------------------------------------
+
     public Graph search() throws InterruptedException {
-        long time1 = System.currentTimeMillis();
+        long t0 = System.currentTimeMillis();
 
-        List<Node> nodes = getIndependenceTest().getVariables();
-
-        logger.log("Starting FCI algorithm.");
+        final List<Node> nodes = getIndependenceTest().getVariables();
+        logger.log("Starting IG-FCI (instance-specific FGES→FCI).");
         logger.log("Independence test = " + getIndependenceTest() + ".");
-
         this.graph = new EdgeListGraph(nodes);
 
+        // ----- 1) Instance-specific FGES
         ISFges fges = new ISFges(score);
-        fges.setPopulationGraph(this.populationGraph);
-        fges.setInitialGraph(this.populationGraph);
+        if (this.populationGraph != null) {
+            fges.setPopulationGraph(this.populationGraph);
+            fges.setInitialGraph(this.populationGraph);
+        }
+        Graph fgesGraph = fges.search();
 
+        // Always work on a copy for subsequent manipulations
+        this.graph = new EdgeListGraph(fgesGraph);
 
-        graph = fges.search();
-        Graph fgesGraph = new EdgeListGraph(graph);
-        sepsets = new SepsetsGreedy(fgesGraph, independenceTest, -1);
+        // ----- 2) Sepsets constrained by FGES adjacencies (use configured maxDegree)
+        this.sepsets = new SepsetsGreedy(fgesGraph, independenceTest, this.maxDegree);
 
+        // Triangle-based prune: if a–c is present and test finds a sepset, remove a–c.
         for (Node b : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
+            if (Thread.currentThread().isInterrupted()) break;
 
-            List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
+            final List<Node> adjB = fgesGraph.getAdjacentNodes(b);
+            if (adjB.size() < 2) continue;
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
+            ChoiceGenerator cg = new ChoiceGenerator(adjB.size(), 2);
+            int[] comb;
+            while ((comb = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) break;
+                Node a = adjB.get(comb[0]);
+                Node c = adjB.get(comb[1]);
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
+                if (!graph.isAdjacentTo(a, c)) continue;
 
-            while ((combination = cg.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
-                    if (sepsets.getSepset(a, c, -1, null) != null) {
-                        graph.removeEdge(a, c);
-                    }
+                Set<Node> s = sepsets.getSepset(a, c, this.maxDegree, null);
+                if (s != null) {
+                    graph.removeEdge(a, c);
                 }
             }
         }
 
+        // ----- 3) R0-like pass tied to FGES definites + test-based collider completion
         modifiedR0(fgesGraph);
 
+        // ----- 4) FCI orientation phases (R0/R4 + rest)
         R0R4Strategy r0r4 = new R0R4StrategyTestBased(independenceTest);
-
         FciOrient fciOrient = new FciOrient(r0r4);
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(getKnowledge());
@@ -183,14 +272,109 @@ public final class IGFci implements IGraphSearch {
         fciOrient.setMaxDiscriminatingPathLength(maxPathLength);
         fciOrient.finalOrientation(graph);
 
+        // Keep node identities aligned with the test’s variables
         GraphUtils.replaceNodes(graph, independenceTest.getVariables());
 
-        long time2 = System.currentTimeMillis();
-
-        elapsedTime = time2 - time1;
-
+        this.elapsedTime = System.currentTimeMillis() - t0;
+        logger.log("IG-FCI finished in " + this.elapsedTime + " ms.");
         return graph;
     }
+
+    // Due to Spirtes; modified for interruptibility and guards.
+    /**
+     * Modifies the given FGES graph based on the FCI algorithm rules, reorienting edges and potentially identifying and
+     * orienting definite colliders.
+     *
+     * @param fgesGraph the FGES Graph to be processed; must not be null.
+     * @throws InterruptedException if the search is interrupted.
+     */
+    public void modifiedR0(Graph fgesGraph) throws InterruptedException {
+        graph.reorientAllWith(Endpoint.CIRCLE);
+        fciOrientbk(knowledge, graph, graph.getNodes());
+
+        final List<Node> nodes = graph.getNodes();
+
+        for (Node b : nodes) {
+            if (Thread.currentThread().isInterrupted()) return;
+
+            final List<Node> adjB = graph.getAdjacentNodes(b);
+            if (adjB.size() < 2) continue;
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjB.size(), 2);
+            int[] comb;
+            while ((comb = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) return;
+
+                Node a = adjB.get(comb[0]);
+                Node c = adjB.get(comb[1]);
+
+                // 1) Respect FGES-definite collider at b
+                if (fgesGraph.isDefCollider(a, b, c)) {
+                    orientToCollider(a, b, c);
+                    continue;
+                }
+
+                // 2) If FGES kept a–c AND graph currently has no a–c, test-based collider check
+                if (fgesGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+                    Set<Node> s = sepsets.getSepset(a, c, this.maxDegree, null);
+                    if (s != null && !s.contains(b)) {
+                        orientToCollider(a, b, c);
+                    }
+                }
+            }
+        }
+    }
+
+    // Small safe-orient helper.
+    private void orientToCollider(Node a, Node b, Node c) {
+        Edge eab = graph.getEdge(a, b);
+        Edge ecb = graph.getEdge(c, b);
+        if (eab != null) {
+            graph.setEndpoint(a, b, Endpoint.ARROW);
+        }
+        if (ecb != null) {
+            graph.setEndpoint(c, b, Endpoint.ARROW);
+        }
+    }
+
+    // Orients according to background knowledge (kept as-is with edge guards)
+    private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> vars) {
+        logger.log("Starting BK Orientation.");
+
+        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge edge = it.next();
+            Node from = GraphSearchUtils.translate(edge.getFrom(), vars);
+            Node to   = GraphSearchUtils.translate(edge.getTo(), vars);
+            if (from == null || to == null) continue;
+
+            Edge e = graph.getEdge(from, to);
+            if (e == null) continue;
+
+            // Orient to *-> from
+            graph.setEndpoint(to, from, Endpoint.ARROW);
+            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+            logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+
+        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge edge = it.next();
+            Node from = GraphSearchUtils.translate(edge.getFrom(), vars);
+            Node to   = GraphSearchUtils.translate(edge.getTo(), vars);
+            if (from == null || to == null) continue;
+
+            Edge e = graph.getEdge(from, to);
+            if (e == null) continue;
+
+            graph.setEndpoint(to, from, Endpoint.TAIL);
+            graph.setEndpoint(from, to, Endpoint.ARROW);
+            logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+
+        logger.log("Finishing BK Orientation.");
+    }
+
+    // Optional: expose elapsed time.
+    public long getElapsedTimeMillis() { return elapsedTime; }
 
     /**
      * Retrieves the maximum degree for the graph.
@@ -218,47 +402,47 @@ public final class IGFci implements IGraphSearch {
 
     // Due to Spirtes.
 
-    /**
-     * Modifies the given FGES graph based on the FCI algorithm rules, reorienting edges and potentially identifying and
-     * orienting definite colliders.
-     *
-     * @param fgesGraph the FGES Graph to be processed; must not be null.
-     * @throws InterruptedException if the search is interrupted.
-     */
-    public void modifiedR0(Graph fgesGraph) throws InterruptedException {
-        graph.reorientAllWith(Endpoint.CIRCLE);
-        fciOrientbk(knowledge, graph, graph.getNodes());
-
-        List<Node> nodes = graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (fgesGraph.isDefCollider(a, b, c)) {
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
-                } else if (fgesGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = sepsets.getSepset(a, c, -1, null);
-
-                    if (sepset != null && !sepset.contains(b)) {
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
-                    }
-                }
-            }
-        }
-    }
+//    /**
+//     * Modifies the given FGES graph based on the FCI algorithm rules, reorienting edges and potentially identifying and
+//     * orienting definite colliders.
+//     *
+//     * @param fgesGraph the FGES Graph to be processed; must not be null.
+//     * @throws InterruptedException if the search is interrupted.
+//     */
+//    public void modifiedR0(Graph fgesGraph) throws InterruptedException {
+//        graph.reorientAllWith(Endpoint.CIRCLE);
+//        fciOrientbk(knowledge, graph, graph.getNodes());
+//
+//        List<Node> nodes = graph.getNodes();
+//
+//        for (Node b : nodes) {
+//            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+//
+//            if (adjacentNodes.size() < 2) {
+//                continue;
+//            }
+//
+//            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+//            int[] combination;
+//
+//            while ((combination = cg.next()) != null) {
+//                Node a = adjacentNodes.get(combination[0]);
+//                Node c = adjacentNodes.get(combination[1]);
+//
+//                if (fgesGraph.isDefCollider(a, b, c)) {
+//                    graph.setEndpoint(a, b, Endpoint.ARROW);
+//                    graph.setEndpoint(c, b, Endpoint.ARROW);
+//                } else if (fgesGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+//                    Set<Node> sepset = sepsets.getSepset(a, c, -1, null);
+//
+//                    if (sepset != null && !sepset.contains(b)) {
+//                        graph.setEndpoint(a, b, Endpoint.ARROW);
+//                        graph.setEndpoint(c, b, Endpoint.ARROW);
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     /**
      * Returns the knowledge used in the IGFci algorithm.
@@ -418,55 +602,55 @@ public final class IGFci implements IGraphSearch {
 
     //===========================================PRIVATE METHODS=======================================//
 
-    /**
-     * Orients according to background knowledge
-     */
-    private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
-        logger.log("Starting BK Orientation.");
-
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
-            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*->from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-            logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
-            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-            logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        logger.log("Finishing BK Orientation.");
-    }
+//    /**
+//     * Orients according to background knowledge
+//     */
+//    private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
+//        logger.log("Starting BK Orientation.");
+//
+//        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+//            KnowledgeEdge edge = it.next();
+//
+//            //match strings to variables in the graph.
+//            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+//            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
+//
+//            if (from == null || to == null) {
+//                continue;
+//            }
+//
+//            if (graph.getEdge(from, to) == null) {
+//                continue;
+//            }
+//
+//            // Orient to*->from
+//            graph.setEndpoint(to, from, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+//        }
+//
+//        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+//            KnowledgeEdge edge = it.next();
+//
+//            //match strings to variables in this graph
+//            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+//            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
+//
+//            if (from == null || to == null) {
+//                continue;
+//            }
+//
+//            if (graph.getEdge(from, to) == null) {
+//                continue;
+//            }
+//
+//            graph.setEndpoint(to, from, Endpoint.TAIL);
+//            graph.setEndpoint(from, to, Endpoint.ARROW);
+//            logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+//        }
+//
+//        logger.log("Finishing BK Orientation.");
+//    }
 
 }
 

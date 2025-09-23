@@ -96,6 +96,9 @@ public final class Knowledge implements TetradSerializable {
      */
     private boolean defaultToKnowledgeLayout;
 
+    // in Knowledge.java
+    private final Map<String, String> meta = new HashMap<>();
+
     /**
      * <p>Constructor for Knowledge.</p>
      */
@@ -995,6 +998,30 @@ public final class Knowledge implements TetradSerializable {
             }
         }
     }
+
+    /**
+     * Sets a metadata key-value pair in the meta storage.
+     *
+     * @param key the key for the metadata entry
+     * @param value the value associated with the metadata key
+     */
+    public void setMeta(String key, String value) { meta.put(key, value); }
+
+    /**
+     * Retrieves the value associated with a metadata key.
+     *
+     * @param key the key for the metadata entry
+     * @return the value associated with the metadata key, or null if not found
+     */
+    public String getMeta(String key) { return meta.get(key); }
+
+    /**
+     * Checks if a metadata key exists in the storage.
+     *
+     * @param key the key for the metadata entry
+     * @return true if the key exists, false otherwise
+     */
+    public boolean hasMeta(String key) { return meta.containsKey(key); }
 
     /**
      * Computes a hashcode.

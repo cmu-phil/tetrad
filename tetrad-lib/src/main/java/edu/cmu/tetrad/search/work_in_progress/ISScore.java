@@ -26,7 +26,33 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Interface for a score suitable for FGES
+ * Defines the contract for an instance-specific score used in FGES-style
+ * search. Unlike a standard population score (e.g., BIC or BDeu), an
+ * {@code ISScore} evaluates parent sets for each node with respect to both
+ * the global dataset and a specific test case (a single row of values).
+ *
+ * The score is decomposable: each node contributes a local score based on
+ * its candidate parents. The local score is computed as the sum of two
+ * components:
+ * <ul>
+ *   <li><b>Population component:</b> the usual likelihood (or marginal
+ *   likelihood) over all rows of the dataset, conditioned on the population
+ *   parent set.</li>
+ *   <li><b>Instance-specific component:</b> a likelihood term restricted to
+ *   rows of the dataset whose parent values match those of the test case,
+ *   conditioned on the instance-specific parent set.</li>
+ * </ul>
+ *
+ * To control overfitting, the score also includes structure priors that
+ * penalize instance-specific deviations from the population structure,
+ * such as additions, deletions, or reversals of edges around a node.
+ *
+ * In practice, FGES (or a variant) uses this interface to compute local
+ * score differences when evaluating add/delete/reverse operators. As a
+ * result, the search can produce different graphs for different test cases,
+ * even when applied to the same population dataset.
+ *
+ * @author Fattaneh
  */
 public interface ISScore {
 
