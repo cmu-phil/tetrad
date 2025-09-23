@@ -81,7 +81,7 @@ public class TestHybridCgModel {
                 for (int r = 0; r < rows; r++) {
                     im.setIntercept(y, r, rng.nextGaussian());         // random mean offset
                     for (int j = 0; j < m; j++) {
-                        im.setCoefficient(y, r, j, rng.nextGaussian() * 0.5); // random slope
+                        im.setCoefficient(y, r, j, RandomUtil.getInstance().nextUniform(-1, 1)); // random slope
                     }
                     im.setVariance(y, r, 1.0 + rng.nextDouble());      // variance > 0
                 }

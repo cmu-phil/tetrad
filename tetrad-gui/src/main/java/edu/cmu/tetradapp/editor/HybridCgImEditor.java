@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetradapp.model.HybridCgImWrapper;
 
 import javax.swing.*;
@@ -328,7 +329,7 @@ public final class HybridCgImEditor extends JPanel {
         int m = pm.getContinuousParents(y).length;
         for (int r = 0; r < rows; r++) {
             im.setIntercept(y, r, rng.nextGaussian() * 0.25);
-            for (int j = 0; j < m; j++) im.setCoefficient(y, r, j, rng.nextGaussian() * 0.15);
+            for (int j = 0; j < m; j++) im.setCoefficient(y, r, j, RandomUtil.getInstance().nextUniform(-1, 1));
             im.setVariance(y, r, 0.25 + 0.75 * rng.nextDouble());
         }
         firePropertyChange("modelChanged", null, null);

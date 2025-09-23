@@ -149,7 +149,7 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
                 for (int r = 0; r < rows; r++) {
                     im.setIntercept(y, r, rng.nextGaussian() * 0.25);
                     for (int j = 0; j < m; j++) {
-                        im.setCoefficient(y, r, j, rng.nextGaussian() * 0.15);
+                        im.setCoefficient(y, r, j, RandomUtil.getInstance().nextUniform(-1, 1));
                     }
                     double var = 0.25 + 0.75 * rng.nextDouble(); // (0.25, 1.0]
                     im.setVariance(y, r, var);

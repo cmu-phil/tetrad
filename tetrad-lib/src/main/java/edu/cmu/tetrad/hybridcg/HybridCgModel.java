@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Pm;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.ejml.simple.SimpleMatrix;
 
 import java.io.Serial;
@@ -1186,7 +1187,7 @@ public final class HybridCgModel {
 
                     double intercept = beta.get(0);
                     im.setIntercept(y, row, intercept);
-                    for (int t = 0; t < m; t++) im.setCoefficient(y, row, t, beta.get(1 + t));
+                    for (int t = 0; t < m; t++) im.setCoefficient(y, row, t, RandomUtil.getInstance().nextUniform(-1, 1));
 
                     // Residual variance
                     SimpleMatrix resid = ym.minus(Xm.mult(beta));
