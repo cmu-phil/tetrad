@@ -58,8 +58,24 @@ public class Gin implements IndependenceWrapper {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Default constructor for the Gin class.
+     *
+     * This constructor initializes an instance of the Gin class.
+     */
     public Gin() { }
 
+    /**
+     * Configures and returns an IndependenceTest object based on the provided data model and parameters.
+     * This method initializes the independence test with specific settings such as significance level (alpha),
+     * the backend method for testing, number of permutations, ridge regression value, and verbosity.
+     *
+     * @param dataModel The data model on which this independence test is to be configured and run.
+     *                  It must be an instance of DataSet.
+     * @param parameters A set of parameters specifying the configuration for the independence test,
+     *                   such as alpha, backend method, number of permutations, ridge value, and verbosity.
+     * @return An instance of IndependenceTest with the configured settings, ready for use in conditional independence testing.
+     */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
         DataSet data = (DataSet) dataModel;
@@ -88,6 +104,13 @@ public class Gin implements IndependenceWrapper {
         return test;
     }
 
+    /**
+     * Provides a description of the GIN (Generalized Independent Noise) residual-independence test.
+     * The GIN test reduces conditional independence (X ⟂ Y | S) to unconditional independence
+     * between regression residuals (rX and rY).
+     *
+     * @return A string describing the GIN residual-independence test.
+     */
     @Override
     public String getDescription() {
         return "GIN (Generalized Independent Noise) residual-independence test "
@@ -95,11 +118,22 @@ public class Gin implements IndependenceWrapper {
                + "regression residuals rX and rY.";
     }
 
+    /**
+     * Retrieves the data type associated with this test, which indicates that the
+     * test operates on continuous data.
+     *
+     * @return the data type of this test, represented as a {@link DataType} enum value.
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * Retrieves the list of parameters required for this test.
+     *
+     * @return a list of parameter names as strings.
+     */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

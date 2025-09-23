@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -35,12 +35,12 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * FCI with configurable R0 collider orientation: VANILLA:  use the FAS sepset S(x,y); orient x-&gt;z&lt;-y iff z not in S. CPC:
- *   enumerate S in adj(x)\{y} and adj(y)\{x}; orient iff ALL separating sets exclude z; dependent iff ALL include z;
- * otherwise ambiguous (no orientation). MAX_P:    among separating sets, choose S* with max p; orient independent iff z
- * not in S*, dependent iff z in S*.
+ * The Fci class implements the Fast Causal Inference (FCI) algorithm for discovering causal structures from data. It
+ * supports various configurations and rule sets for orienting edges in a partially directed acyclic graph (PDAG) or a
+ * completed partially directed acyclic graph (CPDAG).
  * <p>
- * All other steps (possible-dsep, R1.., final orientation: Spirtes or Zhang) are unchanged.
+ * It provides methods for running searches, configuring the search process, and managing the independence test,
+ * variable filtering, depth settings, and other algorithm-specific options.
  */
 public final class Fci implements IGraphSearch {
 
@@ -67,15 +67,31 @@ public final class Fci implements IGraphSearch {
     private double maxPMargin = 0.0;            // margin to resolve near-ties (0 => off)
     private boolean logMaxPTies = false;
     private java.io.PrintStream logStream = System.out;
-    // ----------------------------------
-    // Constructors (unchanged signatures)
-    // ----------------------------------
+
+    /**
+     * Constructs an instance of the Fci algorithm using the specified independence test.
+     *
+     * @param test An {@link IndependenceTest} instance used to evaluate conditional independence among variables in the
+     *             search. This cannot be null.
+     * @throws NullPointerException If the provided {@code test} is null.
+     */
     public Fci(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
         this.test = new CachingIndependenceTest(test);
         this.variables.addAll(test.getVariables());
     }
 
+    /**
+     * Constructs an instance of the Fci algorithm using the specified independence test and a subset of variables to
+     * include in the search.
+     *
+     * @param test       An {@link IndependenceTest} instance used to evaluate conditional independence among variables
+     *                   in the search. This cannot be null.
+     * @param searchVars A list of {@link Node} objects specifying the subset of variables to include in the search.
+     *                   Only variables from this list will be considered. Variables not in this subset are removed from
+     *                   the internal variable set.
+     * @throws NullPointerException If the provided {@code test} is null.
+     */
     public Fci(IndependenceTest test, List<Node> searchVars) {
         if (test == null) throw new NullPointerException();
         this.test = test;
@@ -95,90 +111,224 @@ public final class Fci implements IGraphSearch {
         this.variables.removeAll(remVars);
     }
 
-    // -------------------------
-    // Public knobs (existing + new)
-    // -------------------------
+    /**
+     * Configures the R0 collider rule to be used in the FCI algorithm. The R0 collider rule determines how potential
+     * colliders are oriented during the causal discovery process. If the provided rule is null, the default rule
+     * {@code ColliderRule.SEPSETS} will be used.
+     *
+     * @param rule The {@link ColliderRule} option to specify the R0 collider rule. Possible values include
+     *             {@code ColliderRule.SEPSETS}, {@code ColliderRule.CONSERVATIVE}, and {@code ColliderRule.MAX_P}. A
+     *             null value will default to {@code ColliderRule.SEPSETS}.
+     */
     public void setR0ColliderRule(ColliderRule rule) {
         this.r0ColliderRule = rule == null ? ColliderRule.SEPSETS : rule;
     }
 
+    /**
+     * Configures whether the global MAX-P order is enabled to avoid order dependence during the causal discovery
+     * process in the FCI algorithm.
+     *
+     * @param enabled A boolean value to enable or disable the global MAX-P order. If true, the global MAX-P order is
+     *                enforced; otherwise, it is not.
+     */
     public void setMaxPGlobalOrder(boolean enabled) {
         this.maxPGlobalOrder = enabled;
     }
 
+    /**
+     * Configures whether the depth-specific stratification of the MAX-P condition is enabled during the FCI algorithm's
+     * causal discovery process. This setting influences how null hypotheses are evaluated based on conditional
+     * independence at varying depths.
+     *
+     * @param enabled A boolean value indicating whether to enable the depth-specific stratification of the MAX-P
+     *                condition. If true, depth-specific stratification is enforced; otherwise, it is not.
+     */
     public void setMaxPDepthStratified(boolean enabled) {
         this.maxPDepthStratified = enabled;
     }
 
+    /**
+     * Sets the maximum probability margin (max-P margin) to be used in the FCI algorithm during the causal discovery
+     * process. This margin determines the threshold for probability-based decisions in conditional independence
+     * evaluations. If a negative value is provided, it will be reset to 0.0.
+     *
+     * @param margin A double value representing the maximum probability margin to set. If negative, the margin will
+     *               default to 0.0.
+     */
     public void setMaxPMargin(double margin) {
         this.maxPMargin = Math.max(0.0, margin);
     }
 
+    /**
+     * Configures whether logging is enabled for ties in the MAX-P condition during the FCI algorithm's causal discovery
+     * process. This setting primarily controls the output of informational logs when ties occur in conditional
+     * independence evaluations.
+     *
+     * @param enabled A boolean value indicating whether to enable or disable logging for MAX-P condition ties. If true,
+     *                logging is enabled; otherwise, it is not.
+     */
     public void setLogMaxPTies(boolean enabled) {
         this.logMaxPTies = enabled;
     }
 
+    /**
+     * Sets the log stream for capturing output messages of the algorithm's execution. This stream allows logging
+     * information to be directed to a specified PrintStream instance.
+     *
+     * @param out A {@link java.io.PrintStream} object representing the output stream to which logs will be written.
+     *            Accepts {@code System.out}, {@code System.err}, or any other {@code PrintStream}. Can be set to
+     *            {@code null} to disable logging.
+     */
     public void setLogStream(java.io.PrintStream out) {
         this.logStream = out;
     }
 
+    /**
+     * Sets the maximum depth for the algorithm's search process. The depth controls the maximum number of edges that
+     * can be traversed when determining conditional independence relations. A depth of -1 indicates no limit on the
+     * depth, while non-negative values specify explicit limitations. Attempts to set a depth less than -1 result in an
+     * {@link IllegalArgumentException}.
+     *
+     * @param depth An integer specifying the maximum depth. Must be -1 (unlimited) or a non-negative value (≥ 0).
+     * @throws IllegalArgumentException If the provided {@code depth} is less than -1.
+     */
     public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0: " + depth);
         this.depth = depth;
     }
 
+    /**
+     * Returns the elapsed time recorded by the algorithm or process.
+     *
+     * @return A long value representing the elapsed time, typically measured in milliseconds.
+     */
     public long getElapsedTime() {
         return this.elapsedTime;
     }
 
+    /**
+     * Returns the sepset map maintained by this instance of the FCI algorithm. The sepset map contains information
+     * about the separating sets identified during the causal discovery process.
+     *
+     * @return A {@code SepsetMap} object representing the separating sets computed within the algorithm.
+     */
     public SepsetMap getSepsets() {
         return this.sepsets;
     }
 
+    /**
+     * Retrieves the knowledge structure maintained by this instance.
+     *
+     * @return A {@link Knowledge} object representing the domain knowledge used or inferred by the algorithm.
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge structure to be used or modified by the algorithm. The knowledge structure contains
+     * domain-specific constraints and information that guide the causal discovery process.
+     *
+     * @param knowledge A {@link Knowledge} object representing the domain-specific knowledge to set. This cannot be
+     *                  null.
+     * @throws NullPointerException If the provided {@code knowledge} is null.
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) throw new NullPointerException();
         this.knowledge = knowledge;
     }
 
+    /**
+     * Configures whether the complete rule set is used in the FCI algorithm during the causal discovery process. This
+     * setting determines if all rules in the FCI framework will be applied.
+     *
+     * @param completeRuleSetUsed A boolean value indicating whether to enable or disable the usage of the complete rule
+     *                            set. If true, the entire rule set is used; otherwise, a subset of the rules is
+     *                            applied.
+     */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
+    /**
+     * Configures whether the possible-DSEP (Definite Separation) step is performed as part of the FCI algorithm during
+     * the causal discovery process. The possible-DSEP step influences the identification of separating sets in the
+     * graph by considering potential additional conditioning sets.
+     *
+     * @param doPossibleDsep A boolean value indicating whether to enable or disable the possible-DSEP step. If true,
+     *                       the possible-DSEP step is performed; otherwise, it is not.
+     */
     public void setDoPossibleDsep(boolean doPossibleDsep) {
         this.doPossibleDsep = doPossibleDsep;
     }
 
+    /**
+     * Sets the maximum discriminating path length for the algorithm or process. If this value is set to -1, there is no
+     * limit on the path length. A non-negative value specifies the upper limit for the path length.
+     *
+     * @param maxDiscriminatingPathLength the maximum discriminating path length to set. Must be -1 (for no limit) or a
+     *                                    non-negative integer.
+     * @throws IllegalArgumentException if the specified value is less than -1.
+     */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         if (maxDiscriminatingPathLength < -1)
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
+    /**
+     * Sets the verbosity level for the system. When set to true, detailed logging or additional information may be
+     * displayed or processed.
+     *
+     * @param verbose a boolean value where true enables verbose mode and false disables it.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
         test.setVerbose(verbose);
     }
 
+    /**
+     * Sets the stability status.
+     *
+     * @param stable a boolean value indicating whether the object is stable or not
+     */
     public void setStable(boolean stable) {
         this.stable = stable;
     }
 
+    /**
+     * Sets the value of the guaranteePag flag.
+     *
+     * @param guaranteePag the boolean value to set as the guaranteePag flag
+     */
     public void setGuaranteePag(boolean guaranteePag) {
         this.guaranteePag = guaranteePag;
     }
 
+    /**
+     * Searches and retrieves a graph using the specified algorithm.
+     *
+     * @return the resulting Graph object obtained from the search operation
+     * @throws InterruptedException if the thread executing the search is interrupted
+     */
     public Graph search() throws InterruptedException {
         return search(new Fas(getTest()));
     }
 
-    // -------------------------
-    // Search
-    // -------------------------
-
+    /**
+     * Executes the search process using the provided `IFas` implementation and performs various graph orientation and
+     * refinement steps based on the FCI algorithm. This includes applying initial orientations, handling possible-dsep,
+     * and finalizing the graph structure according to the defined rules.
+     * <p>
+     * The method logs details of the operations performed when the verbose flag is enabled. It also ensures the
+     * resulting graph is in a valid PAG state if the guaranteePag option is set.
+     *
+     * @param fas Implementation of the `IFas` interface, providing the functionality for the Fast Adjacency Search
+     *            (FAS) to find the skeleton of the graph. Must be properly configured before calling this method.
+     * @return A `Graph` object representing the partially oriented graph (PAG) resulting from the search and
+     * orientation rules applied.
+     * @throws InterruptedException If the execution of the search process is interrupted.
+     */
     public Graph search(IFas fas) throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
 
@@ -210,8 +360,7 @@ public final class Fci implements IGraphSearch {
         orientR0(pag, this.sepsets);
 
         // Optional possible-dsep step (unchanged)
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased)
-                R0R4StrategyTestBased.specialConfiguration(test, knowledge, verbose);
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(test, knowledge, verbose);
         strategy.setDepth(-1);
         strategy.setMaxLength(-1);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.GREEDY);
@@ -268,25 +417,45 @@ public final class Fci implements IGraphSearch {
         return pag;
     }
 
+    /**
+     * Retrieves the IndependenceTest instance.
+     *
+     * @return the IndependenceTest instance
+     */
     public IndependenceTest getTest() {
         return test;
     }
 
+    /**
+     * Sets the independence test for the current object. The method checks if the variables of the provided test match
+     * the variables of the existing test. If they do not match, an IllegalArgumentException will be thrown.
+     *
+     * @param test the new IndependenceTest to be set. Must have the same list of variables as the existing test.
+     * @throws IllegalArgumentException if the variables of the provided test do not match the variables of the current
+     *                                  test.
+     */
     public void setTest(IndependenceTest test) {
         List<Node> nodes = this.test.getVariables();
         List<Node> _nodes = test.getVariables();
 
         if (!nodes.equals(_nodes)) {
-            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" +
-                                                             "to the nodes of the existing test."));
+            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" + "to the nodes of the existing test."));
         }
 
         this.test = test;
     }
 
-    // -------------------------
-    // R0 orientation with configurable collider rule
-    // -------------------------
+    /**
+     * Orients edges in the provided graph (pag) according to specific rules (R0 orientation rules) using unshielded
+     * triples. The orientation is based on the collider rule specified (e.g., SEPSETS, CONSERVATIVE, MAX_P). Depending
+     * on the rules and conditions, some edges are left unoriented.
+     *
+     * @param pag        The graph on which the R0 orientation rules will be applied. It is expected to have the
+     *                   required structure and edges for the orientation process.
+     * @param fasSepsets A map containing separation sets (sepsets) for pairs of nodes in the graph. This is used to
+     *                   determine independencies or dependencies when applying the SEPSETS rule.
+     * @throws InterruptedException If the process is interrupted during execution.
+     */
     private void orientR0(Graph pag, SepsetMap fasSepsets) throws InterruptedException {
         List<TripleLocal> triples = collectUnshieldedTriplesLocal(pag);
 
@@ -310,15 +479,20 @@ public final class Fci implements IGraphSearch {
 
             if (out == ColliderOutcome.INDEPENDENT && canOrientCollider(pag, t.x, t.z, t.y)) {
                 GraphUtils.orientCollider(pag, t.x, t.z, t.y);
-                if (verbose) TetradLogger.getInstance().log(
-                        "[R0-" + r0ColliderRule + "] " + t.x.getName() + " -> " + t.z.getName() + " <- " + t.y.getName());
+                if (verbose)
+                    TetradLogger.getInstance().log("[R0-" + r0ColliderRule + "] " + t.x.getName() + " -> " + t.z.getName() + " <- " + t.y.getName());
             }
             // DEPENDENT/NO_SEPSET/AMBIGUOUS -> leave as circles at z
         }
     }
 
     /**
-     * Global MAX-P order to avoid order dependence; same semantics as in PC.
+     * Orients R0-Max-P global colliders in the given graph based on a collection of triples. This method determines the
+     * best orientation of edges in a graph using statistical measures and optionally logs the results.
+     *
+     * @param pag     the graph object where the edges will be oriented based on the computed decisions
+     * @param triples a list of triple structures containing candidate collider triples to evaluate
+     * @throws InterruptedException if the thread executing the method is interrupted during processing
      */
     private void orientR0MaxPGlobal(Graph pag, List<TripleLocal> triples) throws InterruptedException {
         List<MaxPDecision> winners = new ArrayList<>();
@@ -335,35 +509,22 @@ public final class Fci implements IGraphSearch {
             Map<Integer, List<MaxPDecision>> byDepth = new TreeMap<>();
             for (MaxPDecision d : winners) byDepth.computeIfAbsent(d.bestS.size(), k -> new ArrayList<>()).add(d);
             for (List<MaxPDecision> bucket : byDepth.values()) {
-                bucket.sort(Comparator
-                        .comparingDouble((MaxPDecision m) -> m.bestP).reversed()
-                        .thenComparing(m -> m.t.x.getName())
-                        .thenComparing(m -> m.t.z.getName())
-                        .thenComparing(m -> m.t.y.getName())
-                        .thenComparing(m -> stringifySet(m.bestS)));
+                bucket.sort(Comparator.comparingDouble((MaxPDecision m) -> m.bestP).reversed().thenComparing(m -> m.t.x.getName()).thenComparing(m -> m.t.z.getName()).thenComparing(m -> m.t.y.getName()).thenComparing(m -> stringifySet(m.bestS)));
                 for (MaxPDecision d : bucket) {
                     if (canOrientCollider(pag, d.t.x, d.t.z, d.t.y)) {
                         GraphUtils.orientCollider(pag, d.t.x, d.t.z, d.t.y);
-                        if (verbose) TetradLogger.getInstance().log(
-                                "[R0-MAXP global(d=" + d.bestS.size() + ")] "
-                                + d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName()
-                                + " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
+                        if (verbose)
+                            TetradLogger.getInstance().log("[R0-MAXP global(d=" + d.bestS.size() + ")] " + d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName() + " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
                     }
                 }
             }
         } else {
-            winners.sort(Comparator
-                    .comparingDouble((MaxPDecision d) -> d.bestP).reversed()
-                    .thenComparing(d -> d.t.x.getName())
-                    .thenComparing(d -> d.t.z.getName())
-                    .thenComparing(d -> d.t.y.getName())
-                    .thenComparing(d -> stringifySet(d.bestS)));
+            winners.sort(Comparator.comparingDouble((MaxPDecision d) -> d.bestP).reversed().thenComparing(d -> d.t.x.getName()).thenComparing(d -> d.t.z.getName()).thenComparing(d -> d.t.y.getName()).thenComparing(d -> stringifySet(d.bestS)));
             for (MaxPDecision d : winners) {
                 if (canOrientCollider(pag, d.t.x, d.t.z, d.t.y)) {
                     GraphUtils.orientCollider(pag, d.t.x, d.t.z, d.t.y);
-                    if (verbose) TetradLogger.getInstance().log(
-                            "[R0-MAXP global] " + d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName()
-                            + " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
+                    if (verbose)
+                        TetradLogger.getInstance().log("[R0-MAXP global] " + d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName() + " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
                 }
             }
         }
@@ -414,9 +575,7 @@ public final class Fci implements IGraphSearch {
         for (SepCandidate c : indep) if (c.p == bestP) ties.add(c);
 
         // Order ties deterministically, prefer S that EXCLUDE z when only logging/choosing a representative
-        ties.sort(Comparator
-                .comparing((SepCandidate c) -> c.S.contains(t.z))
-                .thenComparing(c -> stringifySet(c.S)));
+        ties.sort(Comparator.comparing((SepCandidate c) -> c.S.contains(t.z)).thenComparing(c -> stringifySet(c.S)));
 
         double bestExcl = Double.NEGATIVE_INFINITY, bestIncl = Double.NEGATIVE_INFINITY;
         for (SepCandidate c : indep) {
@@ -436,8 +595,7 @@ public final class Fci implements IGraphSearch {
                 return new MaxPDecision(t, ColliderOutcome.DEPENDENT, bestIncl, bestS);
             }
             if (logMaxPTies && ties.size() > 1) debugPrintMaxPTies(t, bestP, ties);
-            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, Math.max(bestExcl, bestIncl),
-                    ties.isEmpty() ? Collections.emptySet() : ties.get(0).S);
+            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, Math.max(bestExcl, bestIncl), ties.isEmpty() ? Collections.emptySet() : ties.get(0).S);
         } else if (hasExcl) {
             Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, false);
             return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
@@ -477,7 +635,7 @@ public final class Fci implements IGraphSearch {
         int maxAdj = Math.max(adjx.size(), adjy.size());
 
         for (int d = 0; d <= Math.min(depthCap, maxAdj); d++) {
-            for (List<Node> adj : new List[]{adjx, adjy}) {
+            for (List adj : new List[]{adjx, adjy}) {
                 if (d > adj.size()) continue;
                 ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
                 int[] choice;
@@ -532,8 +690,7 @@ public final class Fci implements IGraphSearch {
             x = y;
             y = tmp;
         }
-        String header = "[R0-MAXP tie] pair=(" + x.getName() + "," + y.getName() + "), z=" + t.z.getName()
-                        + ", bestP=" + bestP + ", #ties=" + ties.size();
+        String header = "[R0-MAXP tie] pair=(" + x.getName() + "," + y.getName() + "), z=" + t.z.getName() + ", bestP=" + bestP + ", #ties=" + ties.size();
         logStream.println(header);
         for (SepCandidate c : ties) {
             boolean containsZ = c.S.contains(t.z);
@@ -567,10 +724,7 @@ public final class Fci implements IGraphSearch {
                 }
             }
         }
-        triples.sort(Comparator
-                .comparing((TripleLocal t) -> t.x.getName())
-                .thenComparing(t -> t.z.getName())
-                .thenComparing(t -> t.y.getName()));
+        triples.sort(Comparator.comparing((TripleLocal t) -> t.x.getName()).thenComparing(t -> t.z.getName()).thenComparing(t -> t.y.getName()));
         return triples;
     }
 
@@ -583,10 +737,27 @@ public final class Fci implements IGraphSearch {
         return set;
     }
 
-    // -------------------------
-    // New: R0 collider-rule options (shared semantics with PC)
-    // -------------------------
-    public enum ColliderRule {SEPSETS, CONSERVATIVE, MAX_P}
+    /**
+     * The ColliderRule enum defines the rules or strategies used to handle collider structures in causal inference or
+     * related algorithms. A collider is a specific type of dependency structure that arises in probabilistic graphical
+     * models and causal graphs.
+     */
+    public enum ColliderRule {
+        /**
+         * Indicates that separation sets (or conditional independence sets) are to be used for handling colliders.
+         */
+        SEPSETS,
+        /**
+         * Represents a more conservative approach to handling colliders, avoiding assumptions that may lead to
+         * incorrect inferences.
+         */
+        CONSERVATIVE,
+        /**
+         * Refers to the rule where the maximum p-value is considered when deciding colliders, often used in statistical
+         * tests or algorithms.
+         */
+        MAX_P
+    }
 
     // -------------------------
     // CPC / MAX-P decisions (shared semantics with PC)

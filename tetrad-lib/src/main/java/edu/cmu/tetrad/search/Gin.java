@@ -62,6 +62,14 @@ public class Gin {
     private List<List<Integer>> clusters;     // TSC clusters (indices into vars)
 
     // ----------------------------- Ctors -----------------------------
+
+    /**
+     * Constructs a Gin instance with the specified significance level and independence test.
+     *
+     * @param alpha the significance level to be used for statistical tests, typically in the range [0, 1]
+     * @param test the raw marginal independence test instance, used to compute p-values for independence testing
+     * @throws NullPointerException if the provided test is null
+     */
     public Gin(double alpha, RawMarginalIndependenceTest test) {
         this.alpha = alpha;
         this.test = Objects.requireNonNull(test, "test");
@@ -113,14 +121,34 @@ public class Gin {
     }
 
     // ----------------------------- Options ---------------------------
+
+    /**
+     * Sets the verbose mode for logging or output. When enabled, additional
+     * details may be provided for debugging or informational purposes.
+     *
+     * @param v true to enable verbose mode, false to disable it
+     */
     public void setVerbose(boolean v) {
         this.verbose = v;
     }
 
+    /**
+     * Sets whether whitening should be applied before performing Singular Value Decomposition (SVD).
+     *
+     * @param w true if whitening should be applied before SVD, false otherwise
+     */
     public void setWhitenBeforeSVD(boolean w) {
         this.whitenBeforeSVD = w;
     }
 
+    /**
+     * Sets the ridge value for regularization. The ridge value is used as a
+     * regularization parameter to ensure numerical stability in computations.
+     * It is constrained to be non-negative.
+     *
+     * @param r the ridge value to set. If the provided value is negative, it
+     *          will be set to 0.0.
+     */
     public void setRidge(double r) {
         this.ridge = Math.max(0.0, r);
     }
@@ -128,6 +156,18 @@ public class Gin {
     // ---------------------- Orientation (basic) ----------------------
 
     // ----------------------------- API -------------------------------
+
+    /**
+     * Searches and constructs a causal graph representation using the provided dataset.
+     * The method identifies clusters, builds the latent measurement structure,
+     * and performs basic GIN (Generalized Independent Noise) orientation.
+     *
+     * @param data the dataset containing variables and their covariance information,
+     *             used to construct the graph.
+     * @return a graphical representation (Graph) that includes both observed and
+     *         latent variables with directed edges based on relationships derived
+     *         from the analysis.
+     */
     public Graph search(DataSet data) {
         this.data = data;
         // Use covariance (not correlation) to match the centered Y used to form e

@@ -48,6 +48,15 @@ import java.util.*;
 public final class HybridCgModel {
 
     /**
+     * Constructs a new instance of the HybridCgModel class. This class serves as the foundational representation of a
+     * mixed graphical model encompassing both continuous and discrete variables, as well as their dependencies. The
+     * HybridCgModel offers a comprehensive framework for combining different variable types within a single hybrid
+     * representation.
+     */
+    public HybridCgModel() {
+    }
+
+    /**
      * The HybridCgPm class represents a structural model for hybrid Bayesian networks, which may include both discrete
      * and continuous variables. It provides various methods to manage the graph structure, nodes, discrete and
      * continuous parent relationships, and discretize continuous values based on predefined cutpoints. The class is
@@ -588,6 +597,12 @@ public final class HybridCgModel {
     }
 
     // ======== IM (numbers) ========
+
+    /**
+     * Represents a hybrid causal graph instantiated model (IM) derived from a hybrid causal graph probabilistic model (PM).
+     * This model supports both discrete and continuous variables and their dependencies, providing functionality for
+     * manipulating and generating data based on the underlying probabilistic structure.
+     */
     public static final class HybridCgIm implements Serializable {
         @Serial
         private static final long serialVersionUID = 1L;
@@ -839,6 +854,7 @@ public final class HybridCgModel {
          * permutation of the PM's nodes; types (discrete/continuous) are taken from the PM.
          *
          * @param sample the sampled matrix
+         * @return the Tetrad DataSet
          */
         public DataSet toDataSet(Sample sample) {
             List<Node> nodes = HybridCgVars.materializeDataVariables(pm);
@@ -884,6 +900,10 @@ public final class HybridCgModel {
          *   <li>Discrete child with continuous parents: uses <b>discretized bins</b> of the parent values to select the CPT row.</li>
          *   <li>Continuous child: for each discrete-parent stratum, samples from the fitted Gaussian regression.</li>
          * </ul>
+         *
+         * @param n   number of rows to sample
+         * @param rng random number generator
+         * @return sample
          */
         public Sample sample(int n, Random rng) {
             if (rng == null) rng = new Random();
@@ -1047,6 +1067,13 @@ public final class HybridCgModel {
         }
 
         // ======== Estimator (MLE) ========
+
+        /**
+         * The HybridEstimator class estimates Hybrid Causal Graphical Models using Maximum Likelihood Estimation (MLE).
+         * It supports both discrete and continuous variables and handles mixed parent configurations.
+         * This class provides functionalities to compute probabilities and coefficients, based on the provided
+         * Hybrid Causal Graphical Model (HybridCgPm) and an associated data set (DataSet).
+         */
         public static final class HybridEstimator {
             /**
              * Dirichlet pseudo-count for discrete CPTs.
@@ -1057,10 +1084,23 @@ public final class HybridCgModel {
              */
             private final boolean shareVarianceAcrossRows;
 
+            /**
+             * Constructs a new instance of the HybridEstimator class using default values. Specifically, the `alpha`
+             * parameter is set to 1.0, and the `shareVarianceAcrossRows` parameter is set to false.
+             * <p>
+             * This constructor is intended to provide a convenient way to initialize a HybridEstimator with standard
+             * default configurations.
+             */
             public HybridEstimator() {
                 this(1.0, false);
             }
 
+            /**
+             * Constructs a new instance of the HybridEstimator class with the specified parameters.
+             *
+             * @param alpha                   the regularization parameter to control the estimation process
+             * @param shareVarianceAcrossRows whether to share the variance across rows in the estimation process
+             */
             public HybridEstimator(double alpha, boolean shareVarianceAcrossRows) {
                 this.alpha = alpha;
                 this.shareVarianceAcrossRows = shareVarianceAcrossRows;
@@ -1187,7 +1227,8 @@ public final class HybridCgModel {
 
                     double intercept = beta.get(0);
                     im.setIntercept(y, row, intercept);
-                    for (int t = 0; t < m; t++) im.setCoefficient(y, row, t, RandomUtil.getInstance().nextUniform(-1, 1));
+                    for (int t = 0; t < m; t++)
+                        im.setCoefficient(y, row, t, RandomUtil.getInstance().nextUniform(-1, 1));
 
                     // Residual variance
                     SimpleMatrix resid = ym.minus(Xm.mult(beta));

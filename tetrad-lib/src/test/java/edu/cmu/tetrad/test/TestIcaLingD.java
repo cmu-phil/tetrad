@@ -200,8 +200,8 @@ public class TestIcaLingD {
         // should decompose a matrix as X = AS, where S consists of independent vectors, which we can
         // test by making sure the off-diagonal entries of cov(S) are zero.
         int p = X.getNumRows();
-        Matrix S = result.getS();
-        Matrix A = result.getW().inverse();
+        Matrix S = result.S();
+        Matrix A = result.W().inverse();
         Matrix AS = A.times(S);
         Matrix cov = S.times(S.transpose()).scalarMult(1.0 / S.getNumColumns());
         assertTrue(X.equals(AS, 0.001));

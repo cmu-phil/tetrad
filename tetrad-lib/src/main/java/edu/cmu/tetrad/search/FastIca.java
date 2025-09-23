@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -32,65 +32,94 @@ import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * FastICA (real-valued) translated for Tetrad.
- *
- * Key stability fixes:
- *  - Correct derivative in symmetric (parallel) update: g'(u) = α(1 - g(u)^2) for logcosh.
- *  - Whitening ridge (eps) to avoid exploding 1/sqrt(λ) on tiny eigenvalues.
- *  - Orthonormalize random wInit via SVD (helps convergence).
- *  - Small deflation loop fix (row assignment index).
- *
- * Reference:
- *   Hyvarinen &amp; Oja (2000) Independent Component Analysis: Algorithms and Applications. Neural Networks 13(4–5):411–430.
+ * <p>
+ * Key stability fixes: - Correct derivative in symmetric (parallel) update: g'(u) = α(1 - g(u)^2) for logcosh. -
+ * Whitening ridge (eps) to avoid exploding 1/sqrt(λ) on tiny eigenvalues. - Orthonormalize random wInit via SVD (helps
+ * convergence). - Small deflation loop fix (row assignment index).
+ * <p>
+ * Reference: Hyvarinen &amp; Oja (2000) Independent Component Analysis: Algorithms and Applications. Neural Networks
+ * 13(4–5):411–430.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 public class FastIca {
 
-    /** Extract components simultaneously (symmetric decorrelation). */
+    /**
+     * Extract components simultaneously (symmetric decorrelation).
+     */
     public static int PARALLEL;
 
-    /** Extract components one-at-a-time. */
+    /**
+     * Extract components one-at-a-time.
+     */
     public static int DEFLATION = 1;
 
-    /** Neg-entropy nonlinearity: logcosh. */
+    /**
+     * Neg-entropy nonlinearity: logcosh.
+     */
     public static int LOGCOSH = 2;
 
-    /** Neg-entropy nonlinearity: exp. */
+    /**
+     * Neg-entropy nonlinearity: exp.
+     */
     public static int EXP = 3;
 
-    /** Data matrix (rows = cases, cols = variables) after preselect; no missing values. */
+    /**
+     * Data matrix (rows = cases, cols = variables) after preselect; no missing values.
+     */
     private final Matrix X;
 
-    /** Number of components. */
+    /**
+     * Number of components.
+     */
     private int numComponents;
 
-    /** Algorithm type (PARALLEL or DEFLATION). */
+    /**
+     * Algorithm type (PARALLEL or DEFLATION).
+     */
     private int algorithmType;
 
-    /** Nonlinearity function (LOGCOSH or EXP). */
+    /**
+     * Nonlinearity function (LOGCOSH or EXP).
+     */
     private int function = FastIca.LOGCOSH;
 
-    /** Alpha in [1,2] for logcosh. */
+    /**
+     * Alpha in [1,2] for logcosh.
+     */
     private double alpha = 1.1;
 
-    /** Whether to row-normalize X prior to whitening. */
+    /**
+     * Whether to row-normalize X prior to whitening.
+     */
     private boolean rowNorm;
 
-    /** Max iterations. */
+    /**
+     * Max iterations.
+     */
     private int maxIterations = 200;
 
-    /** Convergence tolerance. */
+    /**
+     * Convergence tolerance.
+     */
     private double tolerance = 1e-04;
 
-    /** Verbose logging. */
+    /**
+     * Verbose logging.
+     */
     private boolean verbose;
 
-    /** Initial unmixing (n.comp x n.comp). If null, random and orthonormalized. */
+    /**
+     * Initial unmixing (n.comp x n.comp). If null, random and orthonormalized.
+     */
     private Matrix wInit;
 
     /**
-     * Construct with data and number of components.
+     * Constructs a FastIca object with the given data matrix and number of components.
+     *
+     * @param X             The input data matrix where each row represents a signal and each column is a feature.
+     * @param numComponents The number of independent components to extract from the input data.
      */
     public FastIca(Matrix X, int numComponents) {
         this.X = X;
@@ -106,7 +135,12 @@ public class FastIca {
         return sum / v.size();
     }
 
-    /** Center each row (component-wise). */
+    /**
+     * Centers the rows of the given matrix by subtracting the mean of each row from its elements. This operation
+     * adjusts the data so that each row has a mean value of zero.
+     *
+     * @param x The input matrix to be centered. Each row will have its mean value subtracted from its elements.
+     */
     public static void center(Matrix x) {
         for (int i = 0; i < x.getNumRows(); i++) {
             Vector u = x.row(i);
@@ -117,6 +151,14 @@ public class FastIca {
         }
     }
 
+    /**
+     * Sets the algorithm type to be used in the FastICA computation. The algorithm type determines the approach for
+     * extracting independent components and must be either DEFLATION or PARALLEL.
+     *
+     * @param algorithmType the type of algorithm to use. Acceptable values are FastIca.DEFLATION for the deflation
+     *                      approach or FastIca.PARALLEL for the parallel approach.
+     * @throws IllegalArgumentException if the value is not DEFLATION or PARALLEL.
+     */
     public void setAlgorithmType(int algorithmType) {
         if (!(algorithmType == FastIca.DEFLATION || algorithmType == FastIca.PARALLEL)) {
             throw new IllegalArgumentException("Value should be DEFLATION or PARALLEL.");
@@ -124,6 +166,13 @@ public class FastIca {
         this.algorithmType = algorithmType;
     }
 
+    /**
+     * Sets the function to be used for the ICA algorithm. The function determines the non-linear processing applied
+     * during the computation. Acceptable values are FastIca.LOGCOSH or FastIca.EXP.
+     *
+     * @param function The non-linear function type to be used. Must be either LOGCOSH or EXP.
+     * @throws IllegalArgumentException if the value is not FastIca.LOGCOSH or FastIca.EXP.
+     */
     public void setFunction(int function) {
         if (!(function == FastIca.LOGCOSH || function == FastIca.EXP)) {
             throw new IllegalArgumentException("Value should be LOGCOSH or EXP.");
@@ -131,6 +180,13 @@ public class FastIca {
         this.function = function;
     }
 
+    /**
+     * Sets the alpha parameter for the FastICA algorithm. The alpha parameter influences the non-linearity used during
+     * computation and must be within the range [1, 2].
+     *
+     * @param alpha The value to set for the alpha parameter. Must be within the range [1, 2].
+     * @throws IllegalArgumentException if the provided alpha value is outside the range [1, 2].
+     */
     public void setAlpha(double alpha) {
         if (!(alpha >= 1 && alpha <= 2)) {
             throw new IllegalArgumentException("Alpha should be in range [1, 2].");
@@ -138,10 +194,22 @@ public class FastIca {
         this.alpha = alpha;
     }
 
+    /**
+     * Sets whether row normalization should be applied. Row normalization adjusts the rows of the data matrix to ensure
+     * uniform scaling.
+     *
+     * @param rowNorm A boolean value indicating whether row normalization is enabled (true) or disabled (false).
+     */
     public void setRowNorm(boolean rowNorm) {
         this.rowNorm = rowNorm;
     }
 
+    /**
+     * Sets the maximum number of iterations for the FastICA algorithm. The algorithm will terminate if the maximum
+     * number of iterations is reached before convergence.
+     *
+     * @param maxIterations the maximum number of iterations to be set. It must be a positive integer.
+     */
     public void setMaxIterations(int maxIterations) {
         if (maxIterations < 1) {
             TetradLogger.getInstance().log("maxIterations should be positive.");
@@ -149,6 +217,12 @@ public class FastIca {
         this.maxIterations = maxIterations;
     }
 
+    /**
+     * Sets the tolerance value for convergence in the FastICA algorithm. This determines the threshold for stopping the
+     * iterative process based on the change in component values. The tolerance must be a positive value.
+     *
+     * @param tolerance The convergence tolerance to be set. Must be a positive value.
+     */
     public void setTolerance(double tolerance) {
         if (!(tolerance > 0)) {
             TetradLogger.getInstance().log("Tolerance should be positive.");
@@ -156,10 +230,22 @@ public class FastIca {
         this.tolerance = tolerance;
     }
 
+    /**
+     * Enables or disables verbose mode for the FastICA algorithm. When verbose mode is enabled, detailed information
+     * about the algorithm's progress and intermediate steps may be logged or displayed.
+     *
+     * @param verbose A boolean value indicating whether verbose mode is enabled (true) or disabled (false).
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the initial weights matrix to be used for the FastICA algorithm.
+     *
+     * @param wInit The initial weights matrix. This matrix is used as the starting point for the algorithm to compute
+     *              the independent components.
+     */
     public void setWInit(Matrix wInit) {
         this.wInit = wInit;
     }
@@ -217,11 +303,9 @@ public class FastIca {
 
         Matrix b;
         if (this.algorithmType == FastIca.DEFLATION) {
-            b = icaDeflation(X1, this.tolerance, this.function, this.alpha,
-                    this.maxIterations, this.verbose, this.wInit);
+            b = icaDeflation(X1, this.tolerance, this.function, this.alpha, this.maxIterations, this.verbose, this.wInit);
         } else if (this.algorithmType == FastIca.PARALLEL) {
-            b = icaParallel(X1, this.numComponents, this.tolerance, this.alpha,
-                    this.maxIterations, this.verbose, this.wInit);
+            b = icaParallel(X1, this.numComponents, this.tolerance, this.alpha, this.maxIterations, this.verbose, this.wInit);
         } else {
             throw new IllegalStateException();
         }
@@ -233,9 +317,7 @@ public class FastIca {
 
     // ---------- deflationary FastICA ----------
 
-    private Matrix icaDeflation(Matrix X,
-                                double tolerance, int function, double alpha,
-                                int maxIterations, boolean verbose, Matrix wInit) {
+    private Matrix icaDeflation(Matrix X, double tolerance, int function, double alpha, int maxIterations, boolean verbose, Matrix wInit) {
         if (verbose && function == FastIca.LOGCOSH) {
             TetradLogger.getInstance().log("Deflation FastICA using logcosh");
         }
@@ -321,9 +403,7 @@ public class FastIca {
 
     // ---------- symmetric (parallel) FastICA ----------
 
-    private Matrix icaParallel(Matrix X, int numComponents,
-                               double tolerance, double alpha,
-                               int maxIterations, boolean verbose, Matrix wInit) {
+    private Matrix icaParallel(Matrix X, int numComponents, double tolerance, double alpha, int maxIterations, boolean verbose, Matrix wInit) {
         int p = X.getNumColumns();
         Matrix W = wInit;
 
@@ -426,23 +506,11 @@ public class FastIca {
 
     // ---------- result container ----------
 
-    public static class IcaResult {
-        private final Matrix X;
-        private final Matrix K;
-        private final Matrix W;
-        private final Matrix S;
-
-        public IcaResult(Matrix X, Matrix K, Matrix W, Matrix S) {
-            this.X = X; this.K = K; this.W = W; this.S = S;
-        }
-
-        public Matrix getX() { return this.X; }
-        public Matrix getK() { return this.K; }
-        public Matrix getW() { return this.W; }
-        public Matrix getS() { return this.S; }
-
-        public String toString() {
-            return "\n\nX:\n" + this.X + "\n\nK:\n" + this.K + "\n\nW:\n" + this.W + "\n\nS:\n" + this.S;
-        }
+    /**
+     * Represents the result of an Independent Component Analysis (ICA) computation. This class provides access to the
+     * matrices resulting from the ICA algorithm, including the preprocessed data matrix (X), the whitening matrix (K),
+     * the unmixing matrix (W), and the source matrix (S).
+     */
+    public record IcaResult(Matrix X, Matrix K, Matrix W, Matrix S) {
     }
 }

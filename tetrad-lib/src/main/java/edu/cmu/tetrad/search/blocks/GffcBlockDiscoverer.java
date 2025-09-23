@@ -54,6 +54,7 @@ public class GffcBlockDiscoverer implements BlockDiscoverer {
      * @param ess     the equivalent sample size parameter used in Bayesian methods within the FOFC algorithm.
      * @param rMax    the maximum rank of clusters to be considered.
      * @param policy  the policy to handle scenarios involving overlapping or conflicting blocks.
+     * @param verbose whether to print verbose output during the block discovery process.
      */
     public GffcBlockDiscoverer(DataSet dataSet, double alpha, int ess,
                                int rMax, SingleClusterPolicy policy, boolean verbose) {

@@ -85,10 +85,11 @@ public class Fofc {
     private int ess;
 
     /**
-     * Conctructor.
+     * Constructs an instance of the Fofc class using the given dataset, significance level, and equivalent sample size.
      *
-     * @param dataSet The continuous dataset searched over.
-     * @param alpha   The alpha significance cutoff.
+     * @param dataSet The dataset from which the variables and correlation matrix will be extracted.
+     * @param alpha The significance level for statistical calculations.
+     * @param ess The equivalent sample size to use in certain scoring or prior computations.
      */
     public Fofc(DataSet dataSet, double alpha, int ess) {
         this.variables = dataSet.getVariables();

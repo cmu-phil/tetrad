@@ -704,6 +704,11 @@ public interface Graph extends TetradSerializable {
         return paths().existsSemiDirectedPath(node1, node2);
     }
 
+    /**
+     * Creates and returns a copy of the current graph.
+     *
+     * @return a new instance of a graph that is a duplicate of the current graph.
+     */
     default Graph copy() {
         return new EdgeListGraph(this);
     }

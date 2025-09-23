@@ -684,7 +684,7 @@ public final class TwoStep {
         ica.setVerbose(verbose);
 
         FastIca.IcaResult res = ica.findComponents();
-        SimpleMatrix W = res.getW().getSimpleMatrix(); // unmixing
+        SimpleMatrix W = res.W().getSimpleMatrix(); // unmixing
         SimpleMatrix A = W.invert();                   // mixing
 
         // Hungarian maximize |diag(A)| via column permutation

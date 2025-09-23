@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.blocks;
 
@@ -38,11 +38,19 @@ import static org.junit.Assert.*;
  */
 public class GiveGoodLatentNamesTest {
 
+    /**
+     * Default constructor for the GiveGoodLatentNamesTest class.
+     * <p>
+     * This constructor initializes a test instance for testing the behavior and functionality of the
+     * `giveGoodLatentNames` method and related utilities. The tests confirm expected outcomes for different naming
+     * modes and operations involving block specifications and latent variables used within the method.
+     */
+    public GiveGoodLatentNamesTest() {
+    }
+
     // --- Replace these with the actual class + static method where you put giveGoodLatentNames(...)
     // e.g., import static edu.cmu.tetrad.search.blocks.BlockSpecUtil.giveGoodLatentNames;
-    private static BlockSpec giveGoodLatentNames(BlockSpec spec,
-                                                 Map<String, List<String>> trueClusters,
-                                                 BlocksUtil.NamingMode mode) {
+    private static BlockSpec giveGoodLatentNames(BlockSpec spec, Map<String, List<String>> trueClusters, BlocksUtil.NamingMode mode) {
         return BlocksUtil.giveGoodLatentNames(spec, trueClusters, mode);
     }
 
@@ -92,6 +100,11 @@ public class GiveGoodLatentNamesTest {
         return false;
     }
 
+    /**
+     * This test verifies the behavior of the `giveGoodLatentNames` method in the case where the naming mode is set to
+     * `LEARNED_SINGLE`. It ensures that the method correctly aligns latent block names to content-based clusters,
+     * removes unnecessary single-letter suffixes (e.g., "B"), and maintains rank consistency.
+     */
     @Test
     public void learnedSingle_prefersContentNames_andDropsB_whenRanked() {
         // Build dataset with variables used in the user's example
@@ -103,13 +116,11 @@ public class GiveGoodLatentNamesTest {
                 // L3(2)
                 "X21", "X20", "X23", "X19", "X24", "X18",
                 // L1(2)
-                "X25", "X28", "X32", "X27", "X29", "X31"
-        );
+                "X25", "X28", "X32", "X27", "X29", "X31");
         DataSet ds = makeTinyDataSet(vnames);
 
         // Blocks by indices (one block per cluster)
-        List<List<Integer>> blocks = Arrays.asList(
-                idxs(ds, "X25", "X28", "X32", "X27", "X29", "X31"), // true L1
+        List<List<Integer>> blocks = Arrays.asList(idxs(ds, "X25", "X28", "X32", "X27", "X29", "X31"), // true L1
                 idxs(ds, "X11", "X14", "X12", "X13", "X10", "X15"), // true L2
                 idxs(ds, "X21", "X20", "X23", "X19", "X24", "X18"), // true L3
                 idxs(ds, "X4", "X8", "X7", "X2", "X5", "X3", "X6")   // true L1 (alternate ordering)
@@ -156,6 +167,11 @@ public class GiveGoodLatentNamesTest {
         }
     }
 
+    /**
+     * This test verifies the behavior of the `giveGoodLatentNames` method when the naming mode is set to
+     * `SIMULATION_EXPANDED`. Specifically, it ensures that a single latent block with a higher rank (e.g., rank = 2) is
+     * correctly expanded into multiple latent variables, each with rank 1.
+     */
     @Test
     public void simulationExpanded_expandsRankIntoMultipleLatents() {
         // Simpler example: one block with rank=2 -> expands to two latents: L1 and L1B

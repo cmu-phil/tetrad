@@ -221,7 +221,7 @@ public class Lofs {
             FastIca fastIca = new FastIca(this.dataSets.getFirst().getDoubleData(),
                     this.dataSets.getFirst().getNumColumns());
             FastIca.IcaResult result = fastIca.findComponents();
-            System.out.println(result.getW());
+            System.out.println(result.W());
             return new EdgeListGraph();
         }
 

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -86,10 +86,12 @@ public class Ftfc {
     private int ess;
 
     /**
-     * Conctructor.
+     * Constructs an instance of Ftfc.
      *
-     * @param dataSet The continuous dataset searched over.
-     * @param alpha   The alpha significance cutoff.
+     * @param dataSet The dataset containing the variables and data from which the model will be built.
+     * @param alpha The significance level used for statistical testing.
+     * @param ess The equivalent sample size to be set.
+     * @param policy The single cluster policy defining the strategy for cluster formation and analysis.
      */
     public Ftfc(DataSet dataSet, double alpha, int ess, SingleClusterPolicy policy) {
         this.variables = dataSet.getVariables();
@@ -134,9 +136,10 @@ public class Ftfc {
     }
 
     /**
-     * <p>Setter for the field <code>verbose</code>.</p>
+     * Sets the verbose mode for the instance. When verbose is set to true,
+     * additional logging or detailed output may be enabled by the class.
      *
-     * @param verbose a boolean
+     * @param verbose A boolean flag indicating whether verbose mode should be enabled (true) or disabled (false).
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

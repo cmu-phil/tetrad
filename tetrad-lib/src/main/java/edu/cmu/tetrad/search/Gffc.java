@@ -85,10 +85,14 @@ public class Gffc {
     private int ess;
 
     /**
-     * Conctructor.
+     * Constructs a new Gffc instance with the specified data set, alpha value, maximum rank (rMax),
+     * and effective sample size (ess). This implementation initializes several internal structures
+     * used for clustering and correlation computations.
      *
-     * @param dataSet The continuous dataset searched over.
-     * @param alpha   The alpha significance cutoff.
+     * @param dataSet The data set containing the variables and data for analysis.
+     * @param alpha The significance level for statistical tests, typically a small value like 0.05.
+     * @param rMax The maximum rank for search operations, influencing the depth and computational expense.
+     * @param ess The effective sample size, used for statistical adjustments in computations.
      */
     public Gffc(DataSet dataSet, double alpha, int rMax, int ess) {
         this.variables = dataSet.getVariables();
@@ -140,9 +144,9 @@ public class Gffc {
     }
 
     /**
-     * <p>Setter for the field <code>verbose</code>.</p>
+     * Enables or disables verbose mode for the current instance and associated components.
      *
-     * @param verbose a boolean
+     * @param verbose a boolean value where {@code true} enables verbose mode and {@code false} disables it.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

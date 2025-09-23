@@ -3365,6 +3365,15 @@ public final class GraphUtils {
         return fixedDirections;
     }
 
+    /**
+     * Orients the edges of the given graph by setting both specified nodes
+     * as arrow endpoints directed towards the specified target node.
+     *
+     * @param g The graph in which the edges will be oriented.
+     * @param x The first node to be set as an arrow endpoint directed towards the target node z.
+     * @param z The target node towards which both nodes x and y will be oriented.
+     * @param y The second node to be set as an arrow endpoint directed towards the target node z.
+     */
     public static void orientCollider(Graph g, Node x, Node z, Node y) {
         g.setEndpoint(x, z, Endpoint.ARROW);
         g.setEndpoint(y, z, Endpoint.ARROW);
@@ -3376,6 +3385,7 @@ public final class GraphUtils {
      * Uses Tarjan's algorithm. Each SCC is returned as a Set.
      *
      * @param g The graph.
+     * @return List of SCCs, each represented as a Set of Nodes.
      */
     public static List<Set<Node>> stronglyConnectedComponents(Graph g) {
         Objects.requireNonNull(g, "graph");

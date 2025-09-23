@@ -6,26 +6,25 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.*;
 
 /**
- * Utilities to populate HybridCgPm cutpoints for discrete children that have continuous parents.
- * Cutpoints are computed from a DataSet using either equal-interval or equal-frequency rules.
+ * Utilities to populate HybridCgPm cutpoints for discrete children that have continuous parents. Cutpoints are computed
+ * from a DataSet using either equal-interval or equal-frequency rules.
  */
 public final class HybridCgCutpoints {
-
-    public enum Method { EQUAL_INTERVALS, EQUAL_FREQUENCY }
 
     /**
      * Private constructor to prevent instantiation.
      */
-    private HybridCgCutpoints() {}
+    private HybridCgCutpoints() {
+    }
 
     /**
-     * For every DISCRETE child Y with ≥1 continuous parent, computes and installs cutpoints for each
-     * continuous parent using the chosen method and desired number of bins.
+     * For every DISCRETE child Y with ≥1 continuous parent, computes and installs cutpoints for each continuous parent
+     * using the chosen method and desired number of bins.
      *
-     * @param pm      existing HybridCgPm (unchanged except where cutpoints are set)
-     * @param data    DataSet whose columns match pm.getNodes() (names)
-     * @param bins    desired number of bins per continuous parent (>=2 → bins-1 cutpoints)
-     * @param method  equal-intervals or equal-frequency
+     * @param pm     existing HybridCgPm (unchanged except where cutpoints are set)
+     * @param data   DataSet whose columns match pm.getNodes() (names)
+     * @param bins   desired number of bins per continuous parent (>=2 → bins-1 cutpoints)
+     * @param method equal-intervals or equal-frequency
      */
     public static void setAll(HybridCgModel.HybridCgPm pm, DataSet data, int bins, Method method) {
         Objects.requireNonNull(pm, "pm");
@@ -46,7 +45,7 @@ public final class HybridCgCutpoints {
             int[] cps = pm.getContinuousParents(y);
             if (cps.length == 0) continue;
 
-            Map<Node,double[]> cutsByParent = new LinkedHashMap<>();
+            Map<Node, double[]> cutsByParent = new LinkedHashMap<>();
             for (int t = 0; t < cps.length; t++) {
                 Node parent = nodes[cps[t]];
                 Integer cj = colByName.get(parent.getName());
@@ -56,21 +55,19 @@ public final class HybridCgCutpoints {
 
                 double[] series = columnToArray(data, cj);
                 double[] cuts = switch (method) {
-                    case EQUAL_INTERVALS  -> equalIntervalCuts(series, bins);
-                    case EQUAL_FREQUENCY  -> equalFrequencyCuts(series, bins);
+                    case EQUAL_INTERVALS -> equalIntervalCuts(series, bins);
+                    case EQUAL_FREQUENCY -> equalFrequencyCuts(series, bins);
                 };
                 cuts = strictlyIncreasingInterior(series, cuts);
                 if (cuts.length == 0 && bins >= 2) {
                     double med = percentile(series, 0.5);
-                    cuts = new double[]{ med };
+                    cuts = new double[]{med};
                 }
                 cutsByParent.put(parent, cuts);
             }
             pm.setContParentCutpointsForDiscreteChild(nodes[y], cutsByParent);
         }
     }
-
-    // ----------- Cutpoint calculators -----------
 
     private static double[] equalIntervalCuts(double[] x, int bins) {
         double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
@@ -86,6 +83,8 @@ public final class HybridCgCutpoints {
         for (int i = 1; i < bins; i++) cuts[i - 1] = min + i * step;
         return cuts;
     }
+
+    // ----------- Cutpoint calculators -----------
 
     private static double[] equalFrequencyCuts(double[] x, int bins) {
         double[] clean = Arrays.stream(x).filter(Double::isFinite).sorted().toArray();
@@ -155,5 +154,20 @@ public final class HybridCgCutpoints {
         double[] out = new double[n];
         for (int r = 0; r < n; r++) out[r] = data.getDouble(r, col);
         return out;
+    }
+
+    /**
+     * Represents the method used to compute and install cutpoints for continuous parents within a hybrid
+     * continuous-discrete graphical model.
+     */
+    public enum Method {
+        /**
+         * Divides the range of data into bins of equal size.
+         */
+        EQUAL_INTERVALS,
+        /**
+         * Divides the data into bins such that each bin contains an approximately equal number of data points.
+         */
+        EQUAL_FREQUENCY
     }
 }

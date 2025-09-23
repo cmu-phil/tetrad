@@ -83,13 +83,44 @@ public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm
      */
     private IndependenceWrapper test;
 
+    /**
+     * Default constructor for the FciCyclicPw class.
+     * This constructor initializes the instance without any specific parameters
+     * or configurations. It is typically used for*/
     public FciCyclicPw() {
     }
 
+    /**
+     * Constructor for the FciCyclicPw class that initializes the algorithm with a specified
+     * independence test wrapper.
+     *
+     * @param test The IndependenceWrapper instance used for conditional independence testing
+     *             during the FCI algorithm execution.
+     */
     public FciCyclicPw(IndependenceWrapper test) {
         this.test = test;
     }
 
+    /**
+     * Executes the search algorithm on a given data model and set of parameters,
+     * producing a partially directed acyclic graph (PAG) that represents the
+     * causal structure inferred from the data.
+     *
+     * The underlying functionality includes handling time-lagged data, standardizing,
+     * generating internal knowledge, performing conditional independence tests,
+     * and refining the graph using pairwise adjustments based on standardization and rules.
+     *
+     * @param dataModel The data model to analyze, typically a {@link DataSet}, which
+     *                  contains the data from which causal relationships are inferred.
+     *                  Must be continuous for proper functioning.
+     * @param parameters Algorithm parameter settings that control various aspects of the
+     *                   computation, such as time lagging, collider orientation style,
+     *                   pairwise rules, and limits on graph structure exploration.
+     * @return A {@link Graph} representing the causal structure inferred by the search algorithm,
+     *         encoded as a PAG.
+     * @throws InterruptedException If the search process is interrupted during execution,
+     *                              possibly due to thread interruption.
+     */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         // --- Handle time-lagging exactly as in Fci wrapper ---
@@ -264,22 +295,53 @@ public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm
 
     // --------------------------- Boilerplate parity with Fci ---------------------------
 
+    /**
+     * Generates a comparison graph for the given graph by transforming it into
+     * a partially directed acyclic graph (PAG) representation.
+     *
+     * @param graph The input {@link Graph} to be transformed into a comparison graph.
+     *              This graph serves as the basis for creating the resulting PAG.
+     * @return A {@link Graph} representing the transformed partially directed
+     *         acyclic graph (PAG) based on the input graph.
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph trueGraph = new EdgeListGraph(graph);
         return GraphTransforms.dagToPag(trueGraph);
     }
 
+    /**
+     * Provides a textual description of the FCI-CPW algorithm, including its
+     * functionality and distinguishing features, such as the use of pairwise-derived
+     * forbidden knowledge and pairwise orientation for certain edges.
+     *
+     * @return A string describing the FCI-CPW algorithm and its characteristics.
+     */
     @Override
     public String getDescription() {
         return "FCI-CPW: FCI with pairwise-derived forbidden knowledge and pairwise orientation of —, —o, and o— edges (rule selectable)";
     }
 
+    /**
+     * Retrieves the data type associated with the current instance of the algorithm.
+     * The data type defines whether the dataset is continuous, discrete, mixed, or another recognized type.
+     *
+     * @return The {@link DataType} representing the type of dataset required or handled by the algorithm.
+     */
     @Override
     public DataType getDataType() {
         return this.test.getDataType();
     }
 
+    /**
+     * Retrieves a list of parameter names required for the configuration of the
+     * FCI-Cyclic-PW algorithm. These parameters control various aspects of the
+     * algorithm's execution, such as graph exploration limits, orientation styles,
+     * and additional settings affecting the causal inference process.
+     *
+     * @return A list of strings, where each string represents a parameter name
+     *         used by the FCI-Cyclic-PW algorithm.
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -297,11 +359,24 @@ public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm
         return parameters;
     }
 
+    /**
+     * Retrieves the current instance of the {@link IndependenceWrapper} used for
+     * conditional independence testing in the algorithm.
+     *
+     * @return The {@link IndependenceWrapper} instance being used by this algorithm.
+     */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /**
+     * Sets the {@link IndependenceWrapper} instance used for conditional
+     * independence testing in the algorithm.
+     *
+     * @param test The IndependenceWrapper instance to be used for testing
+     *             conditional independence relations.
+     */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;

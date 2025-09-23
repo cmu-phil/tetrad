@@ -52,6 +52,7 @@ public class FofcBlockDiscoverer implements BlockDiscoverer {
      * @param alpha   the significance level used in the statistical test to determine independence.
      * @param ess     the equivalent sample size parameter used in Bayesian methods within the FOFC algorithm.
      * @param policy  the policy to handle scenarios involving overlapping or conflicting blocks.
+     * @param verbose A boolean flag indicating whether verbose mode should be enabled (true) or disabled (false).
      */
     public FofcBlockDiscoverer(DataSet dataSet, double alpha, int ess,
                                SingleClusterPolicy policy, boolean verbose) {
