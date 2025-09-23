@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
@@ -44,8 +44,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 /**
  * Fisher's Z CI test with shrinkage (RIDGE/LedoitâWolf) and optional pseudoinverse fallback.
  */
-public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable,
-        RawMarginalIndependenceTest {
+public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable, RawMarginalIndependenceTest {
 
     private final Map<String, Integer> indexMap;
     private final Map<String, Node> nameMap;
@@ -81,6 +80,16 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     private double pinvTolerance = 1e-7;
     private int nEff;
 
+    /**
+     * Constructs an independence test using the Fisher Z test statistic.
+     * The test evaluates the independence of variables given a dataset and a significance level (alpha).
+     * The dataset must be continuous and should not contain missing values for certain operations.
+     *
+     * @param dataSet the dataset used for the independence test; must be continuous
+     * @param alpha the significance level for the Fisher Z test; must be in the range [0, 1]
+     * @throws IllegalArgumentException if the dataset is not continuous
+     * @throws IllegalArgumentException if the alpha value is not in the range [0, 1]
+     */
     public IndTestFisherZ(DataSet dataSet, double alpha) {
         this.dataSet = dataSet;
         this.sampleSize = dataSet.getNumRows();
@@ -104,14 +113,30 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         }
     }
 
-    /* ======================= Constructors ======================= */
-
+    /**
+     * Constructor for IndTestFisherZ which initializes the independence test using
+     * the Fisher Z test with specified parameters.
+     *
+     * @param dataSet the dataset on which the independence test will be performed
+     * @param alpha the significance level for determining independence
+     * @param ridge the ridge parameter used for regularization in the test
+     */
     public IndTestFisherZ(DataSet dataSet, double alpha, double ridge) {
         this(dataSet, alpha);
         setShrinkageMode(ShrinkageMode.RIDGE);
         setRidge(ridge);
     }
 
+    /**
+     * Constructs an instance of the IndTestFisherZ class, which is a statistical
+     * test for conditional independence based on the Fisher Z-test.
+     *
+     * @param data      The data matrix, where rows represent samples and columns
+     *                  represent variables.
+     * @param variables A list of variables corresponding to the columns in the data
+     *                  matrix. The order must match the column order in the data matrix.
+     * @param alpha     The significance level (type I error rate) for the Fisher Z-test.
+     */
     public IndTestFisherZ(Matrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.transpose().toArray()), variables);
         this.cor = SimpleDataLoader.getCorrelationMatrix(this.dataSet);
@@ -123,12 +148,27 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         setAlpha(alpha);
     }
 
+    /**
+     * Constructor for the IndTestFisherZ class, which performs a Fisher Z independence test
+     * with ridge regularization applied to handle issues with covariance matrix inversion.
+     *
+     * @param data The data matrix containing the dataset.
+     * @param variables The list of nodes corresponding to the variables in the dataset.
+     * @param alpha The significance level for the independence test.
+     * @param ridge The ridge parameter for regularization of the covariance matrix.
+     */
     public IndTestFisherZ(Matrix data, List<Node> variables, double alpha, double ridge) {
         this(data, variables, alpha);
         setShrinkageMode(ShrinkageMode.RIDGE);
         setRidge(ridge);
     }
 
+    /**
+     * Constructs an instance of IndTestFisherZ using the given covariance matrix and significance level.
+     *
+     * @param covMatrix the covariance matrix used to compute correlations and perform the Fisher's Z test
+     * @param alpha the significance level for independence tests
+     */
     public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha) {
         this.cor = new CorrelationMatrix(covMatrix);
         this.variables = covMatrix.getVariables();
@@ -139,6 +179,15 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         setAlpha(alpha);
     }
 
+    /**
+     * Constructor for the IndTestFisherZ class. It initializes the test with a given
+     * covariance matrix, significance level, and ridge parameter. This test determines
+     * the conditional independence of variables using the Fisher Z test.
+     *
+     * @param covMatrix the covariance matrix used for calculating correlations.
+     * @param alpha the significance level for testing conditional independence.
+     * @param ridge the ridge parameter used for regularization in the shrinkage mode.
+     */
     public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha, double ridge) {
         this(covMatrix, alpha);
         setShrinkageMode(ShrinkageMode.RIDGE);
@@ -162,6 +211,21 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         return new Array2DRowRealMatrix(m.toArray(), true);
     }
 
+    /**
+     * Returns a new IndependenceTest instance for a subset of variables.
+     * This method verifies that the given variables are part of the original
+     * variable set, then creates a submatrix of the covariance matrix and
+     * constructs an IndependenceTestFisherZ object for the subset.
+     *
+     * @param vars A list of variables for which the subset independence test
+     *             will be created. All variables in this list must be part of
+     *             the original set of variables.
+     * @return An IndependenceTest instance that operates on the given subset
+     *         of variables.
+     * @throws IllegalArgumentException If the provided subset is empty or
+     *                                  contains variables not in the original
+     *                                  variable set.
+     */
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) throw new IllegalArgumentException("Subset may not be empty.");
@@ -183,6 +247,17 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         return t;
     }
 
+    /**
+     * Checks the independence of two nodes given a conditioning set and returns the result.
+     *
+     * @param x the first node to be tested for independence
+     * @param y the second node to be tested for independence
+     * @param z the set of nodes conditioning the independence test
+     * @return an IndependenceResult containing the results of the independence test, including
+     *         whether x and y are independent given z, the p-value of the test, and other test details
+     * @throws RuntimeException if a singular matrix is encountered during computation
+     *                          or if the p-value is undefined
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double p;
@@ -205,6 +280,16 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         }
     }
 
+    /**
+     * Calculates the p-value for the partial correlation between two nodes conditioned on a set of other nodes.
+     *
+     * @param x the first node involved in the correlation.
+     * @param y the second node involved in the correlation.
+     * @param z the set of conditioning nodes.
+     * @return the p-value for the partial correlation between nodes x and y given the conditioning set z.
+     * @throws SingularMatrixException if the covariance matrix inversion fails during computation.
+     * @throws IllegalArgumentException if the degrees of freedom (df) are non-positive.
+     */
     public double getPValue(Node x, Node y, Set<Node> z) throws SingularMatrixException {
         double r;
         int n;
@@ -227,50 +312,114 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         return 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
     }
 
+    /**
+     * Retrieves the effective sample size.
+     *
+     * @return the effective sample size as an integer.
+     */
     public int getEffectiveSampleSize() {
         return nEff;
     }
 
+    /**
+     * Sets the effective sample size. If the provided effective sample size is negative,
+     * it will default to the sample size.
+     *
+     * @param effectiveSampleSize the effective sample size to set;
+     *                            if negative, the sample size will be used instead.
+     */
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
         this.nEff = effectiveSampleSize < 0 ? this.sampleSize : effectiveSampleSize;
     }
 
+    /**
+     * Computes and returns the Bayesian Information Criterion (BIC) value.
+     *
+     * @return the BIC value as a double calculated based on the effective sample size
+     *         and the correlation coefficient squared.
+     */
     public double getBic() {
         return -getEffectiveSampleSize() * FastMath.log(1.0 - this.r * this.r) - FastMath.log(getEffectiveSampleSize());
     }
 
+    /**
+     * Retrieves the significance level.
+     *
+     * @return the significance level as a double.
+     */
     public double getAlpha() {
         return this.alpha;
     }
 
+    /**
+     * Sets the significance level.
+     * Validates that the provided significance level is within the valid range (0.0 to 1.0).
+     *
+     * @param alpha This level.
+     */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) throw new IllegalArgumentException("Significance out of range: " + alpha);
         this.alpha = alpha;
     }
 
+    /**
+     * Retrieves the list of variables.
+     *
+     * @return the list of variables.
+     */
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * Sets the list of variables for the instance.
+     * Validates that the size of the provided variable list matches the current size
+     * of the instance's internal variable list, and updates internal state accordingly.
+     *
+     * @param variables the list of variables to set; must match the size of the current variable list
+     * @throws IllegalArgumentException if the size of the provided variable list does not match the current variable list size
+     */
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = new ArrayList<>(variables);
         this.cor.setVariables(variables);
     }
 
+    /**
+     * Retrieves a variable by its name from the internal mapping of variable names to nodes.
+     *
+     * @param name the name of the variable to retrieve; must match an existing key in the name map
+     * @return the node corresponding to the given name, or null if no such node exists
+     */
     public Node getVariable(String name) {
         return this.nameMap.get(name);
     }
 
+    /**
+     * Retrieves the data set associated with the current instance.
+     *
+     * @return the DataSet object representing the data in this instance
+     */
     public DataSet getData() {
         return this.dataSet;
     }
 
+    /**
+     * Retrieves the covariance matrix used by this instance.
+     *
+     * @return an object implementing the ICovarianceMatrix interface,
+     * representing the covariance matrix associated with this instance
+     */
     public ICovarianceMatrix getCov() {
         return this.cor;
     }
 
+    /**
+     * Retrieves a list of data sets associated with this instance.
+     *
+     * @return a list containing the data set associated with this instance
+     */
     @Override
     public List<DataSet> getDataSets() {
         List<DataSet> dataSets = new ArrayList<>();
@@ -278,20 +427,40 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         return dataSets;
     }
 
+    /**
+     * Retrieves the sample size of the data set associated with this instance.
+     *
+     * @return the number of rows in the data set, or the sample size of the covariance matrix if no data set is available
+     */
     @Override
     public int getSampleSize() {
         if (dataSet != null) return dataSet.getNumRows();
         else return this.cor.getSampleSize();
     }
 
+    /**
+     * Retrieves the verbosity setting for this instance.
+     *
+     * @return true if verbose output is enabled, false otherwise
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets the verbosity setting for this instance.
+     *
+     * @param verbose True, if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns a string representation of this instance, including details about the test configuration.
+     *
+     * @return a string representation of this instance
+     */
     @Override
     public String toString() {
         DecimalFormat f1 = new DecimalFormat("0.0###");
@@ -308,7 +477,14 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     /* ======================= Core ======================= */
 
     /**
-     * Determinism detection unchanged (no shrinkage here; we want true singularity).
+     * Determines whether the given set of nodes, z, has a deterministic relationship with the specified node, x.
+     * Specifically, this method checks if the covariance matrix derived from z is invertible.
+     * If the matrix is singular (non-invertible), it indicates a determinism detected between the nodes.
+     *
+     * @param z the list of nodes to analyze as a potential set of deterministic parents for the node x
+     * @param x the node to check for a deterministic relationship with the set of nodes z
+     * @return true if a deterministic relationship exists (when the covariance matrix is singular), false otherwise
+     * @throws UnsupportedOperationException if the operation is not supported due to some internal state or configuration
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
@@ -459,12 +635,27 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         return rows;
     }
 
+    /**
+     * Retrieves the list of row indices currently associated with this instance.
+     *
+     * @return a list of integers representing the row indices
+     */
     public List<Integer> getRows() {
         return rows;
     }
 
     /* ======================= Helpers & setters ======================= */
 
+    /**
+     * Sets the list of row indices for the instance. Validates the provided list to ensure
+     * all elements are non-negative and non-null. Resets internal correlation state
+     * if the rows are updated.
+     *
+     * @param rows the list of row indices to set. Each element must be non-null and non-negative.
+     *             If the provided list is null, the current row list is set to null.
+     * @throws NullPointerException if any element in the rows list is null.
+     * @throws IllegalArgumentException if any element in the rows list is negative.
+     */
     public void setRows(List<Integer> rows) {
         if (dataSet == null) return;
         if (rows == null) {
@@ -480,61 +671,124 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     /**
-     * Back-compat no-op for external code that still calls setLambda.
+     * Sets the value of the lambda parameter for this instance. Lambda is used
+     * for regularization or other purposes within the class, depending on the
+     * context of its implementation.
+     *
+     * @param lambda the value to set for the lambda parameter
      */
     public void setLambda(double lambda) {
         this.lambda = lambda;
     }
 
+    /**
+     * Retrieves the current value of the ridge parameter associated with this instance.
+     *
+     * @return the ridge parameter as a double value
+     */
     public double getRidge() {
         return this.ridge;
     }
 
+    /**
+     * Sets the value of the ridge parameter for this instance.
+     * The ridge parameter is commonly used for regularization purposes.
+     * The provided value must be non-negative.
+     *
+     * @param ridge the value to set for the ridge parameter; must be greater than or equal to 0
+     * @throws IllegalArgumentException if the ridge parameter is negative
+     */
     public void setRidge(double ridge) {
         if (ridge < 0.0) throw new IllegalArgumentException("ridge must be >= 0");
         this.ridge = ridge;
     }
 
+    /**
+     * Retrieves the current shrinkage mode used by this instance.
+     *
+     * @return the shrinkage mode, represented as a {@code ShrinkageMode} enum value, which indicates the type of
+     *         regularization or adjustment (if any) applied in computations.
+     */
     public ShrinkageMode getShrinkageMode() {
         return this.shrinkageMode;
     }
 
+    /**
+     * Sets the shrinkage mode for the instance. The shrinkage mode determines the type of
+     * regularization or adjustment applied during calculations, if any. If the provided mode
+     * is null, the shrinkage mode defaults to {@code ShrinkageMode.NONE}.
+     *
+     * @param mode the shrinkage mode to set, represented as a {@code ShrinkageMode} enum value.
+     *             It can be {@code ShrinkageMode.NONE}, {@code ShrinkageMode.RIDGE}, or
+     *             {@code ShrinkageMode.LEDOIT_WOLF}.
+     */
     public void setShrinkageMode(ShrinkageMode mode) {
         if (mode == null) mode = ShrinkageMode.NONE;
         this.shrinkageMode = mode;
     }
 
+    /**
+     * Checks whether the pseudoinverse is being used in computations.
+     *
+     * @return true if the pseudoinverse is enabled, false otherwise
+     */
     public boolean isUsePseudoinverse() {
         return this.usePseudoinverse;
     }
 
     /**
-     * NEW: pseudoinverse controls
+     * Sets whether to use the pseudoinverse in computations.
+     *
+     * @param use true to enable pseudoinverse, false to disable
      */
     public void setUsePseudoinverse(boolean use) {
         this.usePseudoinverse = use;
     }
 
+    /**
+     * Gets the tolerance for the pseudoinverse computation.
+     *
+     * @return the tolerance value
+     */
     public double getPinvTolerance() {
         return this.pinvTolerance;
     }
 
+    /**
+     * Sets the tolerance for the pseudoinverse computation.
+     *
+     * @param tol the tolerance value
+     */
     public void setPinvTolerance(double tol) {
         if (tol <= 0) throw new IllegalArgumentException("pinvTolerance must be > 0");
         this.pinvTolerance = tol;
     }
 
     /**
-     * Optional: expose last partial correlation for logging.
+     * Gets the last computed partial correlation.
+     *
+     * @return the last computed partial correlation
      */
     public double getLastR() {
         return this.r;
     }
 
+    /**
+     * Gets the last computed partial correlation.
+     *
+     * @return the last computed partial correlation
+     */
     public double getRho() {
         return r;
     }
 
+    /**
+     * Computes the p-value for the statistical test of independence between two variables.
+     *
+     * @param x the array of values representing the first variable
+     * @param y the array of values representing the second variable
+     * @return the computed p-value indicating the strength of independence between the two variables
+     */
     @Override
     public double computePValue(double[] x, double[] y) {
         double[][] combined = new double[x.length][2];
@@ -561,7 +815,27 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     /**
      * Shrinkage mode.
      */
-    public enum ShrinkageMode {NONE, RIDGE, LEDOIT_WOLF}
+    public enum ShrinkageMode {
+        /**
+         * Represents the absence of any shrinkage mode. This value indicates that no shrinkage adjustment is applied in
+         * the context of the enum it belongs to.
+         */
+        NONE,
+        /**
+         * Represents the Ridge shrinkage mode. Typically utilized in computational scenarios such as statistical
+         * regression or covariance estimation where regularization is applied to stabilize computations and handle
+         * ill-conditioned problems. This mode introduces a penalty proportional to the square of the magnitude of
+         * coefficients, aiding in reducing overfitting.
+         */
+        RIDGE,
+        /**
+         * Represents the Ledoit-Wolf shrinkage mode. This mode is commonly used in statistical covariance estimation to
+         * improve the stability of covariance matrix calculations by applying shrinkage. The Ledoit-Wolf method
+         * adaptively determines the optimal shrinkage intensity to balance bias and variance, making it particularly
+         * useful for high-dimensional data or scenarios with limited sample sizes.
+         */
+        LEDOIT_WOLF
+    }
 
     private static class MatrixUtilsCommons {
         static RealMatrix identity(int n) {

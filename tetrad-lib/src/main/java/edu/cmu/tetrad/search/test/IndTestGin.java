@@ -39,10 +39,24 @@ public class IndTestGin implements IndependenceTest {
     private int numPerm = 0;  // 0 = analytic/approx only for dCor; >0 enables permutation
     private double lastP = Double.NaN;
 
+    /**
+     * Constructs an instance of IndTestGin with the specified dataset. Initializes default values for regressor and
+     * backend components.
+     *
+     * @param data the dataset to be used for independence testing
+     */
     public IndTestGin(DataSet data) {
         this(data, new OlsRidge(1e-8), new DistanceCorrTest());
     }
 
+    /**
+     * Constructs an instance of IndTestGin with the specified dataset, regressor, and backend components. This
+     * constructor allows customization of the regressor and backend used in the independence tests.
+     *
+     * @param data      the dataset to be used for independence testing
+     * @param regressor the regressor implementation to be used for regression analysis
+     * @param backend   the unconditional independence test to be used as the backend
+     */
     public IndTestGin(DataSet data, Regressor regressor, UncondIndTest backend) {
         this.data = Objects.requireNonNull(data, "data");
         this.regressor = Objects.requireNonNull(regressor, "regressor");
@@ -54,6 +68,12 @@ public class IndTestGin implements IndependenceTest {
         return true;
     }
 
+    /**
+     * Provides a string description of the current configuration of the independence test, including details about the
+     * regressor and backend used, and additional information related to permutations if applicable.
+     *
+     * @return a descriptive string summarizing the configuration of the independence test
+     */
     public String getDescription() {
         String base = "GIN (residual-independence) with " + regressor.name() + " + " + backend.name();
         if (backend instanceof DistanceCorrTest && numPerm > 0) base += " (perm=" + numPerm + ")";
@@ -61,39 +81,79 @@ public class IndTestGin implements IndependenceTest {
         return base;
     }
 
+    /**
+     * Sets the number of permutations to be used for the independence test. If n is negative, it will be set to 0.
+     *
+     * @param n the number of permutations to set
+     */
     public void setNumPermutations(int n) {
         this.numPerm = Math.max(0, n);
     }
 
+    /**
+     * Sets the regressor to be used for the independence test. If r is null, it will throw a NullPointerException.
+     *
+     * @param r the regressor to set
+     */
     public void setRegressor(Regressor r) {
         this.regressor = Objects.requireNonNull(r);
         residCache.clear();
     }
 
+    /**
+     * Sets the backend to be used for the independence test. If b is null, it will throw a NullPointerException.
+     *
+     * @param b the backend to set
+     */
     public void setBackend(UncondIndTest b) {
         this.backend = Objects.requireNonNull(b);
     }
 
+    /**
+     * Returns the current regressor being used for the independence test.
+     *
+     * @return the current regressor
+     */
     @Override
     public DataSet getData() {
         return data;
     }
 
+    /**
+     * Returns the current backend being used for the independence test.
+     *
+     * @return the current backend
+     */
     @Override
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Sets the verbosity of the independence test.
+     *
+     * @param verbose True, if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns the variables involved in the independence test.
+     *
+     * @return the variables involved in the independence test
+     */
     @Override
     public List<Node> getVariables() {
         return data.getVariables();
     }
 
+    /**
+     * Returns the significance level for the independence test.
+     *
+     * @return the significance level
+     */
     @Override
     public double getAlpha() {
         return alpha;
@@ -101,10 +161,26 @@ public class IndTestGin implements IndependenceTest {
 
     // ---- IndependenceTest API ------------------------------------------------
 
+    /**
+     * Sets the significance level for the independence test.
+     *
+     * @param alpha the significance level to set
+     */
+    @Override
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
+    /**
+     * Checks the independence of two given nodes, conditioned on a set of other nodes. It computes residuals for the
+     * nodes and uses the backend independence test to determine the independence status along with the p-value.
+     *
+     * @param x    the first node for the independence test
+     * @param y    the second node for the independence test
+     * @param cond the set of conditioning nodes
+     * @return the result of the independence test containing details such as whether the nodes are independent, the
+     * p-value, and additional test information
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> cond) {
         int ix = data.getColumn(x);
@@ -152,6 +228,11 @@ public class IndTestGin implements IndependenceTest {
 
     // ---- Residualization with caching ---------------------------------------
 
+    /**
+     * Returns the p-value from the most recent independence test.
+     *
+     * @return the p-value of the last independence test
+     */
     public double getPValue() {
         return lastP;
     }
@@ -209,10 +290,22 @@ public class IndTestGin implements IndependenceTest {
      */
     public interface Regressor {
         /**
-         * Fit f: target ~ predictors; return residuals (target - fitted).
+         * Computes the residuals, which are the differences between the target values and the predicted values obtained
+         * using the given predictors.
+         *
+         * @param target     an array of target values that represent the observations.
+         * @param predictors a 2D array where each row represents a set of predictor variables for a corresponding
+         *                   observation.
+         * @return an array of residuals for each observation, calculated as the difference between the target value and
+         * the predicted value for that observation.
          */
         double[] residuals(double[] target, double[][] predictors);
 
+        /**
+         * Returns the name of the regressor.
+         *
+         * @return the name representing this regressor.
+         */
         String name();
     }
 
@@ -222,25 +315,71 @@ public class IndTestGin implements IndependenceTest {
      * Unconditional independence backend rX ⟂ rY → p-value
      */
     public interface UncondIndTest {
+        /**
+         * Calculates the p-value to test the unconditional independence between the variables represented by the input
+         * arrays.
+         *
+         * @param x an array of doubles representing the first variable in the independence test
+         * @param y an array of doubles representing the second variable in the independence test
+         * @return the calculated p-value indicating the strength of evidence against the null hypothesis of
+         * independence
+         */
         double pValue(double[] x, double[] y);
 
+        /**
+         * Returns the name of the independence test.
+         *
+         * @return a string representing the name of the independence test
+         */
         String name();
     }
 
     // ---- Default Regressor: OLS (ridge-stabilized), standardized ------------
 
+    /**
+     * Represents a ridge-regularized ordinary least squares (OLS) regressor. This implementation combines standard
+     * least-squares regression with a ridge penalty to enhance numerical stability and address multicollinearity when
+     * solving the regression problem.
+     * <p>
+     * This class implements the {@code Regressor} interface, providing methods to compute residuals and return a
+     * descriptive name for the regressor.
+     */
     public static final class OlsRidge implements Regressor {
         private final double ridge;
 
+        /**
+         * Constructs an instance of OlsRidge with the specified ridge parameter.
+         *
+         * @param ridge The ridge regression parameter, which is used to control the regularization strength in ridge
+         *              regression. A higher value indicates stronger regularization to prevent overfitting.
+         */
         public OlsRidge(double ridge) {
             this.ridge = ridge;
         }
 
+        /**
+         * Returns the name of the regression model, including the ridge parameter value.
+         *
+         * @return A string representing the name of the model in the format "OLS(ridge={value})", where {value} is the
+         * ridge parameter used in the model.
+         */
         @Override
         public String name() {
             return "OLS(ridge=" + ridge + ")";
         }
 
+        /**
+         * Computes the residuals of a regression model by fitting the target values to the predictors using a
+         * least-squares approach with ridge stabilization. The predictors are standardized, and an intercept is
+         * included in the model. If no predictors are provided, the residuals are calculated based on the mean of the
+         * target values.
+         *
+         * @param target     The array of target values (dependent variable) for the model.
+         * @param predictors The 2D array of predictors (independent variables) used in the regression. Each row
+         *                   corresponds to a data point, and each column corresponds to a predictor variable.
+         * @return An array of residuals, calculated as the difference between the target values and the predicted
+         * values, centered around zero.
+         */
         @Override
         public double[] residuals(double[] target, double[][] predictors) {
             // Empty/degenerate guard
@@ -306,6 +445,13 @@ public class IndTestGin implements IndependenceTest {
      * Fast Pearson correlation t-test (linear).
      */
     public static final class PearsonCorrTest implements UncondIndTest {
+        /**
+         * Default constructor for the PearsonCorrTest class. This class implements a statistical test for assessing the
+         * null hypothesis that two datasets are uncorrelated using the Pearson correlation coefficient.
+         */
+        public PearsonCorrTest() {
+        }
+
         private static double mean(double[] a) {
             return Arrays.stream(a).average().orElse(0.0);
         }
@@ -367,11 +513,24 @@ public class IndTestGin implements IndependenceTest {
             return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
         }
 
+        /**
+         * Returns the name of the test represented by this class.
+         *
+         * @return the name of the test, which is "Pearson-t".
+         */
         @Override
         public String name() {
             return "Pearson-t";
         }
 
+        /**
+         * Computes the p-value for testing the null hypothesis that two datasets are uncorrelated, based on the Pearson
+         * correlation coefficient. The p-value is derived from the t-distribution with the given sample sizes.
+         *
+         * @param x the first dataset, represented as an array of doubles
+         * @param y the second dataset, represented as an array of doubles
+         * @return the p-value for the hypothesis test, clamped to the range [0, 1]
+         */
         @Override
         public double pValue(double[] x, double[] y) {
             int n = x.length;
@@ -395,6 +554,14 @@ public class IndTestGin implements IndependenceTest {
      * permutations when feasible.
      */
     public static final class DistanceCorrTest implements UncondIndTest {
+        /**
+         * Constructs an instance of the DistanceCorrTest. The DistanceCorrTest class provides methods for computing
+         * distance correlation-based statistical tests, including the calculation of p-values and permutation-based
+         * p-values for input data arrays.
+         */
+        public DistanceCorrTest() {
+        }
+
         private static DcorrStats dcorr(double[] x, double[] y) {
             int n = x.length;
             double[][] ax = centeredDistance(x);
@@ -450,11 +617,24 @@ public class IndTestGin implements IndependenceTest {
             return D;
         }
 
+        /**
+         * Returns the name of the test.
+         *
+         * @return the name "dCor"
+         */
         @Override
         public String name() {
             return "dCor";
         }
 
+        /**
+         * Computes the p-value for the given input arrays using a distance correlation test. The method relies on a
+         * crude tail approximation for calculating the p-value. The result is constrained to the range [0.0, 1.0].
+         *
+         * @param x the first array of data values
+         * @param y the second array of data values
+         * @return the computed p-value based on the distance correlation test
+         */
         @Override
         public double pValue(double[] x, double[] y) {
             DcorrStats s = dcorr(x, y);
@@ -465,7 +645,14 @@ public class IndTestGin implements IndependenceTest {
         }
 
         /**
-         * Permutation p-value that doesn't mutate inputs.
+         * Computes the permutation-based p-value for the distance correlation statistic. The method performs a
+         * specified number of permutations of the second data array to compute the proportion of permuted statistics
+         * that are greater than or equal to the observed statistic. The result is constrained to the range [0.0, 1.0].
+         *
+         * @param x     the first array of data values
+         * @param y     the second array of data values
+         * @param perms the number of permutations to use in the computation
+         * @return the computed permutation-based p-value
          */
         public double pValuePermuted(double[] x, double[] y, int perms) {
             DcorrStats obs = dcorr(x, y);

@@ -8,7 +8,17 @@ import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The `HybridCgVars` class provides utility methods for constructing and managing hybrid continuous and discrete
+ * variables. It operates based on the schema defined by a `HybridCgPm` instance. The class is not meant to be
+ * instantiated, as all its methods are static.
+ */
 public final class HybridCgVars {
+
+    /**
+     * A private constructor for the `HybridCgVars` class to prevent instantiation. The `HybridCgVars` class contains
+     * static utility methods for constructing and managing hybrid continuous and discrete variables.
+     */
     private HybridCgVars() {
     }
 

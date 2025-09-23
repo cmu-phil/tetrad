@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -40,17 +40,16 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * ICA-LiNG-D (Lacerda, Spirtes, Ramsey, Hoyer, 2012).
- *
- * Stability hardening:
- *  - Uses fixed FastICA (sym. update derivative, whitening ridge, orthonormal wInit).
- *  - Robust diagonal scaling with epsilon guard.
- *  - Prefer Hungarian "best-diagonal" permutation; then enumerate NRooks permutations.
- *  - Spectral radius stability check with small tolerance.
- *
+ * <p>
+ * Stability hardening: - Uses fixed FastICA (sym. update derivative, whitening ridge, orthonormal wInit). - Robust
+ * diagonal scaling with epsilon guard. - Prefer Hungarian "best-diagonal" permutation; then enumerate NRooks
+ * permutations. - Spectral radius stability check with small tolerance.
+ * <p>
  * API is unchanged.
  *
  * @author peterspirtes
@@ -62,28 +61,63 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class IcaLingD {
 
-    /** Entries |W_ij| < wThreshold -> 0 before permutation search. */
+    /**
+     * Small guard used when scaling by diagonal.
+     */
+    private static final double DIAG_EPS = 1e-8;
+    /**
+     * Spectral-radius tolerance for stability (rho < 1 - tol).
+     */
+    private static final double STAB_TOL = 1e-8;
+    /**
+     * Entries |W_ij| < wThreshold -> 0 before permutation search.
+     */
     private double wThreshold = 0.1;
-
-    /** Entries |B_ij| < bThreshold -> 0 after forming B̂. */
+    /**
+     * Entries |B_ij| < bThreshold -> 0 after forming B̂.
+     */
     private double bThreshold = 0.1;
 
-    /** Small guard used when scaling by diagonal. */
-    private static final double DIAG_EPS = 1e-8;
-
-    /** Spectral-radius tolerance for stability (rho < 1 - tol). */
-    private static final double STAB_TOL = 1e-8;
-
-    public IcaLingD() {}
+    /**
+     * Default constructor for the IcaLingD class.
+     * <p>
+     * This initializes an instance of the IcaLingD class, which provides functionality related to Independent Component
+     * Analysis (ICA) and Linear Non-Gaussian Acyclic Model (LiNGAM) for directional inference and graph estimation
+     * tasks.
+     */
+    public IcaLingD() {
+    }
 
     // ----------------------------------------------------------------------
     // Estimation of W via FastICA
     // ----------------------------------------------------------------------
 
+    /**
+     * Estimates the weight matrix W using the Fast Independent Component Analysis (FastICA) algorithm.
+     *
+     * @param data             the input dataset used for the estimation process
+     * @param fastIcaMaxIter   the maximum number of iterations for the FastICA algorithm
+     * @param fastIcaTolerance the convergence tolerance for the FastICA algorithm
+     * @param fastIcaA         the scaling parameter used for the FastICA nonlinearity function
+     * @return the estimated weight matrix W
+     */
     public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA) {
         return estimateW(data, fastIcaMaxIter, fastIcaTolerance, fastIcaA, false);
     }
 
+    /**
+     * Estimates the weight matrix (W) using the Fast Independent Component Analysis (FastICA) algorithm. This method
+     * centers and preprocesses the input data, applies the FastICA algorithm, and optionally logs Anderson Darling test
+     * results for non-Gaussianity of the input variables if verbose mode is enabled.
+     *
+     * @param data             the input dataset containing variables used for the estimation process
+     * @param fastIcaMaxIter   the maximum number of iterations for the FastICA algorithm
+     * @param fastIcaTolerance the convergence tolerance threshold for the FastICA algorithm
+     * @param fastIcaA         the scaling parameter alpha used in the FastICA nonlinearity function
+     * @param verbose          a flag indicating whether logging of intermediate results, such as non-Gaussianity
+     *                         statistics, should be enabled
+     * @return the estimated weight matrix (W) derived from the FastICA algorithm
+     */
     public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA, boolean verbose) {
         double[][] _data = data.getDoubleData().transpose().toArray();
 
@@ -120,6 +154,14 @@ public class IcaLingD {
     // Graph helper
     // ----------------------------------------------------------------------
 
+    /**
+     * Constructs a directed graph based on the input binary adjacency matrix and a list of nodes. The method creates a
+     * graph where an edge is added from node j to node i if the value at position (i, j) in the matrix is non-zero.
+     *
+     * @param B         the binary adjacency matrix representing the edge structure of the graph
+     * @param variables the list of nodes corresponding to the graph's variables
+     * @return the constructed directed graph
+     */
     @NotNull
     public static Graph makeGraph(Matrix B, List<Node> variables) {
         Graph g = new EdgeListGraph(variables);
@@ -137,11 +179,23 @@ public class IcaLingD {
     // Diagonal permutation helpers
     // ----------------------------------------------------------------------
 
+    /**
+     * Computes a permutation matrix pair that maximizes the diagonal elements of a given matrix W. This involves
+     * finding an optimal arrangement of rows and columns to achieve this goal.
+     *
+     * @param W the matrix for which the diagonal is to be maximized
+     * @return a PermutationMatrixPair containing the optimized permutations and resulting matrix
+     */
     public static PermutationMatrixPair maximizeDiagonal(Matrix W) {
         return maximizeDiagonalSum(W);
     }
 
-    /** Spectral-radius stability with small tolerance. */
+    /**
+     * Spectral-radius stability with small tolerance.
+     *
+     * @param bHat the matrix to check for spectral radius stability
+     * @return true if the spectral radius of the matrix is less than 1 - STAB_TOL, false otherwise
+     */
     public static boolean isStable(Matrix bHat) {
         SimpleEVD<SimpleMatrix> eig = bHat.getSimpleMatrix().eig();
         for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
@@ -153,7 +207,12 @@ public class IcaLingD {
         return true;
     }
 
-    /** Scale columns by their diagonal (guarding tiny/zero). */
+    /**
+     * Scale columns by their diagonal (guarding tiny/zero).
+     *
+     * @param M the matrix to scale
+     * @return the scaled matrix
+     */
     public static Matrix scale(Matrix M) {
         Matrix _M = M.like();
         for (int i = 0; i < _M.getNumRows(); i++) {
@@ -166,7 +225,13 @@ public class IcaLingD {
         return _M;
     }
 
-    /** Hard threshold (copy). */
+    /**
+     * Hard threshold (copy).
+     *
+     * @param M the matrix to threshold
+     * @param threshold the threshold value
+     * @return the thresholded matrix
+     */
     public static Matrix threshold(Matrix M, double threshold) {
         if (threshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + threshold);
         Matrix _M = M.copy();
@@ -178,7 +243,12 @@ public class IcaLingD {
         return _M;
     }
 
-    /** Build B̂ from a permutation result; robust to tiny diagonals. */
+    /**
+     * Build B̂ from a permutation result; robust to tiny diagonals.
+     *
+     * @param pair the permutation matrix pair
+     * @return the scaled B̂ matrix
+     */
     public static Matrix getScaledBHat(PermutationMatrixPair pair) {
         Matrix WTilde = pair.getPermutedMatrix().transpose();
         WTilde = IcaLingD.scale(WTilde); // normalize diagonal to ~1
@@ -234,6 +304,9 @@ public class IcaLingD {
 
     /**
      * Convenience: estimate W via FastICA, then enumerate B̂ candidates.
+     *
+     * @param D the dataset to fit
+     * @return the list of scaled B̂ matrices
      */
     public List<Matrix> fit(DataSet D) {
         Matrix W = IcaLingD.estimateW(D, 10000, 1e-6, 1.1, true);
@@ -241,11 +314,12 @@ public class IcaLingD {
     }
 
     /**
-     * Local LiNG-D from a given W:
-     *  1) Threshold W (small entries -> 0).
-     *  2) Try best-diagonal permutation (Hungarian) first; then all NRooks permutations.
-     *  3) For each permutation, scale to WTilde with diag≈1, form B̂ = I - WTilde, threshold B̂.
-     *  4) Return the list (caller can filter with isStable).
+     * Local LiNG-D from a given W: 1) Threshold W (small entries -> 0). 2) Try best-diagonal permutation (Hungarian)
+     * first; then all NRooks permutations. 3) For each permutation, scale to WTilde with diag≈1, form B̂ = I - WTilde,
+     * threshold B̂. 4) Return the list (caller can filter with isStable).
+     *
+     * @param W the weight matrix to process
+     * @return the list of scaled B̂ matrices
      */
     public List<Matrix> getScaledBHats(Matrix W) {
         // 1) Threshold W
@@ -267,7 +341,8 @@ public class IcaLingD {
         for (PermutationMatrixPair p : pairsNRook(W)) {
             pairs.add(p);
         }
-        if (pairs.isEmpty()) throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
+        if (pairs.isEmpty())
+            throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
 
         // 3) Build B̂ per permutation with robust scaling & threshold
         List<Matrix> results = new ArrayList<>();
@@ -293,11 +368,26 @@ public class IcaLingD {
     // Params
     // ----------------------------------------------------------------------
 
+    /**
+     * Sets the threshold value for the `bThreshold` field. This is used to define
+     * a specific limit or boundary for the `bThreshold` parameter. Only non-negative
+     * values are allowed; an exception will be thrown otherwise.
+     *
+     * @param bThreshold the new threshold value to be assigned. Must be a non-negative number.
+     * @throws IllegalArgumentException if the provided value is negative.
+     */
     public void setBThreshold(double bThreshold) {
         if (bThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + bThreshold);
         this.bThreshold = bThreshold;
     }
 
+    /**
+     * Sets the threshold value for the `wThreshold` field. This is used to define
+     * a specific limit or boundary for the `wThreshold` parameter. Only non-negative
+     * values are allowed; an exception will be thrown otherwise.
+     *
+     * @param wThreshold the new threshold value to be assigned. Must be a non-negative number.
+     */
     public void setWThreshold(double wThreshold) {
         if (wThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + wThreshold);
         this.wThreshold = wThreshold;

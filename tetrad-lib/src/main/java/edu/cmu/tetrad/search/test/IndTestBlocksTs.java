@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
@@ -37,9 +37,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * Trek-separation block-level CI test (IndTestBlocksTs):
  * <p>
  * Given blocks X, Y, and conditioning blocks Z1..Zk that correspond to latent factors [X], [Y], [Z1]..[Zk], split each
- * Zi into two nearly-equal parts ZiA, ZiB. Form L = X âª Z1A âª ... âª ZkA,   R = Y âª Z1B âª ... âª ZkB and estimate
- * rank(Î£_{L,R}). Under linear measurement models with n conditioning latents, independence suggests rank(Î£_{L,R}) â¤
- * 2k.
+ * Zi into two nearly-equal parts ZiA, ZiB. Form L = X âª Z1A âª ... âª ZkA,   R = Y âª Z1B âª ... âª ZkB and
+ * estimate rank(Î£_{L,R}). Under linear measurement models with n conditioning latents, independence suggests
+ * rank(Î£_{L,R}) â¤ 2k.
  * <p>
  * Drop-in replacement matching the public surface of IndTestBlocksLemma10 (no p-values exposed).
  * <p>
@@ -80,7 +80,15 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
     private int nEff;
 
     /**
-     * Construct from a BlockSpec (same pattern as Lemma 10 test).
+     * Constructs an instance of IndTestBlocksTs using the provided block specification. Validates the input and
+     * initializes various internal properties required for the block-based independence test, including correlation
+     * matrix computation, variable mapping, and block configuration. Throws an exception if invalid configurations are
+     * detected.
+     *
+     * @param blockSpec the block specification used for setting up the test. Contains information about the data set,
+     *                  variables, and blocks. Must not be null.
+     * @throws IllegalArgumentException if blockSpec is null or contains invalid configurations such as duplicate nodes,
+     *                                  null variables, or invalid block column references.
      */
     public IndTestBlocksTs(BlockSpec blockSpec) {
         if (blockSpec == null) throw new IllegalArgumentException("blockspec == null");
@@ -173,46 +181,89 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
         return out;
     }
 
+    /**
+     * Retrieves the list of variable nodes associated with this instance.
+     *
+     * @return a new list containing the variable nodes.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Retrieves the data model associated with the current block specification.
+     *
+     * @return the DataModel instance representing the data set associated with this block specification
+     */
     @Override
     public DataModel getData() {
         return blockSpec.dataSet();
     }
 
+    /**
+     * Indicates whether verbose mode is enabled.
+     *
+     * @return true if verbose mode is enabled; false otherwise
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets the verbose mode for this instance.
+     *
+     * @param verbose True, if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Retrieves the significance level (alpha) for the independence test.
+     *
+     * @return the significance level (alpha) for the independence test
+     */
     public double getAlpha() {
         return alpha;
     }
 
+    /**
+     * Sets the significance level (alpha) for the independence test.
+     *
+     * @param alpha This level.
+     */
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("Alpha must be in (0,1).");
         this.alpha = alpha;
     }
 
+    /**
+     * Retrieves the effective sample size for the independence test.
+     *
+     * @return the effective sample size for the independence test
+     */
     @Override
     public int getEffectiveSampleSize() {
         return this.nEff;
     }
 
+    /**
+     * Sets the effective sample size for the independence test.
+     *
+     * @param effectiveSampleSize the effective sample size
+     */
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
         this.nEff = effectiveSampleSize < 0 ? this.n : effectiveSampleSize;
     }
 
     /**
-     * Enable randomized Zi splits (min over {@code numTrials} trials).
+     * Sets whether to randomize the splits and specifies a seed for randomization.
+     *
+     * @param randomize a boolean indicating whether the splits should be randomized.
+     * @param seed      a long value specifying the seed for randomization.
      */
     public void setRandomizeSplits(boolean randomize, long seed) {
         this.randomizeSplits = randomize;
@@ -222,7 +273,9 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
     // === Core test ===
 
     /**
-     * Number of split trials; min-rank across trials is used.
+     * Sets the number of trials for the independence test.
+     *
+     * @param t the number of trials
      */
     public void setNumTrials(int t) {
         if (t < 1) throw new IllegalArgumentException("numTrials >= 1");
@@ -233,6 +286,8 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
 
     /**
      * If true and |Zi| is odd, left gets floor(|Zi|/2); otherwise left gets ceil(|Zi|/2).
+     *
+     * @param flag a boolean indicating whether to use the smaller half when |Zi| is odd
      */
     public void setLeftGetsSmallerHalfWhenOdd(boolean flag) {
         this.leftGetsSmallerHalfWhenOdd = flag;
@@ -240,6 +295,11 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
 
     // === Rank via RankTests with LRU cache ===
 
+    /**
+     * Retrieves the block specification associated with this instance.
+     *
+     * @return the BlockSpec instance representing the current block specification.
+     */
     @Override
     public BlockSpec getBlockSpec() {
         return blockSpec;
@@ -247,6 +307,17 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
 
     // === Build L/R from blocks and Z split ===
 
+    /**
+     * Evaluates whether two nodes (variables) are independent given a set of conditioning nodes using a block-based
+     * conditional independence test. The method uses ranks to determine independence, with the process involving random
+     * splits and trials to enhance reliability.
+     *
+     * @param x the first node being tested for independence
+     * @param y the second node being tested for independence
+     * @param z the set of conditioning nodes
+     * @return an {@code IndependenceResult} object containing the outcome of the independence test, including whether
+     * the two nodes are independent given the conditioning set
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
 
@@ -288,15 +359,10 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
             List<Node> leftVars = indicesToNodes(b.Lcols, dataVars);
             List<Node> rightVars = indicesToNodes(b.Rcols, dataVars);
             TetradLogger.getInstance().log("TS split: left=" + leftVars + " right=" + rightVars);
-            TetradLogger.getInstance().log("TS: " + b.xName + " _||_ " + b.yName + " | " + b.zNames
-                                           + " ? estRank(min over trials)=" + bestRank
-                                           + ", target(sum ranks)=" + target + " -> " + (indep ? "INDEP" : "DEP"));
+            TetradLogger.getInstance().log("TS: " + b.xName + " _||_ " + b.yName + " | " + b.zNames + " ? estRank(min over trials)=" + bestRank + ", target(sum ranks)=" + target + " -> " + (indep ? "INDEP" : "DEP"));
         }
 
-        return new IndependenceResult(
-                new IndependenceFact(b.xNode, b.yNode, z),
-                indep,
-                Double.NaN, // p-value intentionally not exposed
+        return new IndependenceResult(new IndependenceFact(b.xNode, b.yNode, z), indep, Double.NaN, // p-value intentionally not exposed
                 Double.NaN  // score not used
         );
     }
@@ -423,9 +489,8 @@ public class IndTestBlocksTs implements IndependenceTest, EffectiveSampleSizeSet
         }
     }
 
-    private record Build(Node xNode, Node yNode,
-                         String xName, String yName, String zNames,
-                         Set<Node> zSet, int[] Lcols, int[] Rcols, int n) {
+    private record Build(Node xNode, Node yNode, String xName, String yName, String zNames, Set<Node> zSet, int[] Lcols,
+                         int[] Rcols, int n) {
     }
 
     private static final class RKey {

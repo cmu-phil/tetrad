@@ -135,7 +135,7 @@ public class KciSmokeTest {
      *   <li>The p-value for the independent case lies within the acceptable [0, 1] range.</li>
      *   <li>The p-value for the independent case does not indicate rejection of the null
      *       hypothesis (p &gt; alpha).</li>
-     *   <li>The p-value for the dependent case is significant (p < alpha), confirming
+     *   <li>The p-value for the dependent case is significant (p &lt; alpha), confirming
      *       the method's ability to detect dependence.</li>
      * </ul>
      */
@@ -248,8 +248,8 @@ public class KciSmokeTest {
      *
      * <p><b>Assertions:</b></p>
      * <ul>
-     *   <li>For the independent case, the p-value lies within [0, 1] and satisfies p > alpha.</li>
-     *   <li>For the dependent case, the p-value is highly significant, confirming p < alpha.</li>
+     *   <li>For the independent case, the p-value lies within [0, 1] and satisfies p &gt; alpha.</li>
+     *   <li>For the dependent case, the p-value is highly significant, confirming p &lt; alpha.</li>
      * </ul>
      */
     @Test

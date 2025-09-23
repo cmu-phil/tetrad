@@ -236,8 +236,16 @@ public final class HybridCgModel {
         }
 
         /**
-         * For a DISCRETE child that has k continuous parents, provide cutpoints for each parent. bins =
-         * cutpoints.length + 1. All arrays are copied defensively.
+         * Sets the continuous parent cutpoints for a specified discrete child node. This method ensures that for each
+         * continuous parent of the discrete child, the respective cutpoints are strictly increasing.
+         *
+         * @param child                 The discrete child node for which the cutpoints will be set.
+         * @param cutpointsByContParent A map containing the cutpoints for each continuous parent node. The keys in the
+         *                              map are the continuous parent nodes, and the values are arrays of cutpoints,
+         *                              which are expected to be strictly increasing.
+         * @throws IllegalArgumentException If the specified child is not discrete, if the cutpoints are missing for any
+         *                                  continuous parent, or if the provided cutpoints are not strictly
+         *                                  increasing.
          */
         public void setContParentCutpointsForDiscreteChild(Node child, Map<Node, double[]> cutpointsByContParent) {
             int y = indexOf(child);
@@ -291,7 +299,11 @@ public final class HybridCgModel {
         }
 
         /**
-         * Dimensions (radices) for mixed row indexing: [disc parents..., cont-parent-bins...]
+         * Computes and returns the row dimensions for a specific node in the network based on its discrete and
+         * continuous parents.
+         *
+         * @param nodeIndex the index of the node for which the row dimensions are to be computed
+         * @return an array of integers representing the row dimensions for the given node
          */
         public int[] getRowDims(int nodeIndex) {
             int d = discParents[nodeIndex].length;
@@ -307,11 +319,19 @@ public final class HybridCgModel {
         }
 
         /**
-         * Mixed row indexer: map parent <em>state indices</em> to a row number.
+         * Computes the row index for a given node in the model based on the state indices of its discrete and
+         * continuous parents. The method takes into account the dimensions determined by the parents to compute the
+         * correct row index.
          *
-         * @param nodeIndex   the child
-         * @param discVals    length = #discParents(child), each in [0, card-1]
-         * @param contBinVals length = #contParents(child) <b>iff child is discrete</b>; bin index in [0, bins-1]
+         * @param nodeIndex   the index of the node whose row index is to be computed
+         * @param discVals    an array of indices representing the states of the discrete parents of the node; the
+         *                    length must match the number of discrete parents
+         * @param contBinVals an array of indices representing the binned states of the continuous parents of the node;
+         *                    required only for discrete nodes with continuous parents, and its length must match the
+         *                    number of continuous parents for the node
+         * @return the computed row index, in the range [0, getNumRows(nodeIndex) - 1]
+         * @throws IllegalArgumentException if the lengths of discVals or contBinVals do not match the required
+         *                                  dimensions
          */
         public int getRowIndex(int nodeIndex, int[] discVals, int[] contBinVals) {
             int[] dims = getRowDims(nodeIndex);
@@ -332,7 +352,15 @@ public final class HybridCgModel {
         }
 
         /**
-         * Discretize a continuous parent value for a DISCRETE child using the stored cutpoints.
+         * Discretizes the given value of a continuous parent node for a specific discrete child node into a bin index
+         * based on predefined cutpoints.
+         *
+         * @param child      the discrete child node whose continuous parent's value will be discretized
+         * @param contParent the continuous parent node associated with the child node
+         * @param value      the value of the continuous parent node to discretize
+         * @return the bin index (in the range 0 to the number of cutpoints) corresponding to the given value
+         * @throws IllegalArgumentException if the specified parent node is not a continuous parent of the child node
+         * @throws IllegalStateException    if the cutpoints for the child node have not been set
          */
         public int discretizeFor(Node child, Node contParent, double value) {
             int iChild = indexOf(child);
@@ -488,6 +516,7 @@ public final class HybridCgModel {
          *
          * @param nodeIndex        child index
          * @param contParentValues raw values for the child's continuous parents
+         * @return the index.
          */
         public int rowIndexForCase(int nodeIndex, double[] contParentValues) {
             if (getDiscreteParents(nodeIndex).length != 0) {
@@ -504,6 +533,7 @@ public final class HybridCgModel {
          * @param nodeIndex child index
          * @param data      dataset containing all variables (by name)
          * @param row       row index into the dataset
+         * @return the row.
          */
         public int rowIndexForCase(int nodeIndex, edu.cmu.tetrad.data.DataSet data, int row) {
             int[] dps = getDiscreteParents(nodeIndex);
@@ -576,7 +606,8 @@ public final class HybridCgModel {
          */
         private final HybridCgPm pm;
         /**
-         * Continuous child: for node y, params[y] is rows x (m+2) where m = #cont parents; cols = [intercept, coeffs..., variance]
+         * Continuous child: for node y, params[y] is rows x (m+2) where m = #cont parents; cols = [intercept,
+         * coeffs..., variance]
          */
         private final double[][][] contParams; // null for discrete children
         /**
@@ -1007,22 +1038,11 @@ public final class HybridCgModel {
         }
 
         /**
-         * Represents a data structure for storing a sampled dataset.
-         * This is used in conjunction with the HybridCgIm model to hold
-         * both continuous and discrete variables for a specified
-         * number of rows.
+         * Represents a data structure for storing a sampled dataset. This is used in conjunction with the HybridCgIm
+         * model to hold both continuous and discrete variables for a specified number of rows.
          */
         // ===== Sampler =====
-        public static final class Sample {
-            public final double[][] continuous;
-            public final int[][] discrete;
-            public final int rows;
-
-            Sample(double[][] contCols, int[][] discCols, int n) {
-                this.continuous = contCols;
-                this.discrete = discCols;
-                this.rows = n;
-            }
+        public record Sample(double[][] continuous, int[][] discrete, int rows) {
         }
 
         // ======== Estimator (MLE) ========

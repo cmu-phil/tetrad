@@ -58,12 +58,14 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     private int nEff;
 
     /**
-     * Constructs an instance of {@code IndTestBasisFunctionBlocks} to perform block-based conditional independence
-     * testing using basis function embedding from a given dataset.
+     * Constructs an instance of IndTestBasisFunctionBlocks. This class is designed to perform independence
+     * tests based on basis function transformations of the provided dataset, using specified degree and basis type.
      *
-     * @param raw    the input dataset, where each variable (node) is represented as a column
-     * @param degree the degree of the basis function embedding; must be non-negative
-     * @throws IllegalArgumentException if {@code raw} is null or {@code degree} is negative
+     * @param raw the input dataset, which provides the raw data to be analyzed. Cannot be null.
+     * @param degree the degree of the basis function transformation. Must be a non-negative integer.
+     * @param basisType the type of basis functions to use for transformations (e.g., polynomial, Fourier, etc.).
+     *                  This value determines the embedding style and configuration specifics.
+     * @throws IllegalArgumentException if the raw dataset is null or if the degree is negative.
      */
     public IndTestBasisFunctionBlocks(DataSet raw, int degree, int basisType) {
         if (raw == null) throw new IllegalArgumentException("raw == null");

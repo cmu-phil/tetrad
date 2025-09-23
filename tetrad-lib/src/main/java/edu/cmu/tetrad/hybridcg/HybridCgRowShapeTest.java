@@ -14,10 +14,16 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 /**
- * Microtest: ensure HybridCgPm row shapes behave correctly
- * when a discrete child has continuous parents.
+ * This class contains test cases for validating the behavior of row shapes
+ * in the Hybrid Conditional Gaussian Parameter Model (HybridCgPm) when the
+ * model includes a discrete child node with continuous parent nodes.
  */
 public class HybridCgRowShapeTest {
+
+    /**
+     * Constructor for HybridCgRowShapeTest. Initializes a test suite for HybridCgPm row shape validation.
+     */
+    public HybridCgRowShapeTest() {}
 
     /**
      * Tests the behavior of HybridCgPm row shapes when a discrete child has continuous parents.
