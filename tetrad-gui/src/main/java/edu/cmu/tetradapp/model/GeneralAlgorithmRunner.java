@@ -45,8 +45,6 @@ import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsUtils;
-import edu.cmu.tetrad.search.work_in_progress.ISBDeuScore;
-import edu.cmu.tetrad.search.work_in_progress.ISScore;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.ParamsResettable;
 

@@ -22,9 +22,9 @@ package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.ISScore;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
