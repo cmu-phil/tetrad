@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.test;
@@ -27,8 +26,8 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -119,7 +118,6 @@ public class TestPc {
 
         Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.05));
         pc.setKnowledge(knowledge);
-        pc.setGuaranteeCpdag(true);
 
         Graph CPDAG = null;
         try {
@@ -331,7 +329,8 @@ public class TestPc {
                     search = new Pc(test);
                     break;
                 case 1:
-                    search = new Cpc(test);
+                    search = new Pc(test);
+                    ((Pc) search).setColliderOrientationStyle(Pc.ColliderOrientationStyle.CONSERVATIVE);
                     break;
                 case 2:
                     search = new Fges(score);
@@ -673,8 +672,7 @@ public class TestPc {
             switch (t) {
                 case 0:
                     search = new Pc(test);
-                    ((Pc) search).setGuaranteeCpdag(false);
-                    ((Pc) search).setStable(false);
+                    ((Pc) search).setFasStable(false);
                     try {
                         out = search.search();
                     } catch (InterruptedException e) {
@@ -682,8 +680,8 @@ public class TestPc {
                     }
                     break;
                 case 1:
-                    search = new Cpc(test);
-                    ((Cpc) search).setGuaranteeCpdag(false);
+                    search = new Pc(test);
+                    ((Pc) search).setColliderOrientationStyle(Pc.ColliderOrientationStyle.CONSERVATIVE);
                     try {
                         out = search.search();
                     } catch (InterruptedException e) {
@@ -820,6 +818,7 @@ public class TestPc {
         return graph;
     }
 }
+
 
 
 

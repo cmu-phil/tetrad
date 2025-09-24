@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,21 +15,18 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.ImagesScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
-import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZPercentIndependent;
 import edu.cmu.tetrad.search.work_in_progress.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -52,7 +49,7 @@ final class IndTestChooser {
      *
      * @param dataSource a {@link java.lang.Object} object
      * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
-     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @return a {@link IndependenceTest} object
      */
     public IndependenceTest getTest(Object dataSource, Parameters params) {
         return getTest(dataSource, params, IndTestType.DEFAULT);
@@ -123,9 +120,11 @@ final class IndTestChooser {
 
         if (IndTestType.MIXED_MLR == testType) {
             return new IndTestMultinomialLogisticRegressionWald(dataSet, params.getDouble("alpha", 0.001), false);
-        } else if (IndTestType.LINEAR_REGRESSION == testType) {
-            return new IndTestRegression(dataSet, params.getDouble("alpha", 0.001));
-        } else {
+        }
+//        else if (IndTestType.LINEAR_REGRESSION == testType) {
+//            return new IndTestRegression(dataSet, params.getDouble("alpha", 0.001));
+//        }
+        else {
             params.set("indTestType", IndTestType.MIXED_MLR);
             return new IndTestMultinomialLogisticRegression(dataSet, params.getDouble("alpha", 0.001));
         }
@@ -147,9 +146,9 @@ final class IndTestChooser {
     }
 
     private IndependenceTest getMultiContinuousTest(List<DataSet> dataSets, Parameters params, IndTestType testType) {
-        if (IndTestType.POOL_RESIDUALS_FISHER_Z == testType) {
-            return new IndTestFisherZPercentIndependent(dataSets, params.getDouble("alpha", 0.001));
-        }
+//        if (IndTestType.POOL_RESIDUALS_FISHER_Z == testType) {
+//            return new IndTestFisherZPercentIndependent(dataSets, params.getDouble("alpha", 0.001));
+//        }
 
         if (IndTestType.TIPPETT == testType) {
             List<IndependenceTest> independenceTests = new ArrayList<>();
@@ -175,9 +174,11 @@ final class IndTestChooser {
             return new ScoreIndTest(imagesScore);
         }
 
-        {
-            return new IndTestFisherZConcatenateResiduals(dataSets, params.getDouble("alpha", 0.001));
-        }
+        throw new IllegalArgumentException("Unsupported test type: " + testType);
+
+//        {
+//            return new IndTestFisherZConcatenateResiduals(dataSets, params.getDouble("alpha", 0.001));
+//        }
     }
 
     private IndependenceTest getDiscreteTest(DataSet dataDiscrete, Parameters params, IndTestType testType) {
@@ -215,6 +216,7 @@ final class IndTestChooser {
         this.precomputeCovariances = precomputeCovariances;
     }
 }
+
 
 
 

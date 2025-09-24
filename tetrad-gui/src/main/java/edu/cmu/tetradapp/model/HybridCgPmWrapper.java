@@ -1,0 +1,400 @@
+package edu.cmu.tetradapp.model;
+
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.hybridcg.HybridCgModel;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.session.SessionModel;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.*;
+
+/**
+ * Wrapper for {@link edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm}.
+ *
+ * <ul>
+ *   <li>Holds the PM and metadata.</li>
+ *   <li>Provides optional initialization of cutpoints from a {@link edu.cmu.tetrad.data.DataSet}
+ *       (equal-intervals / equal-frequency).</li>
+ *   <li>Reflection-friendly constructors.</li>
+ *   <li>Editor-friendly setter to replace the PM.</li>
+ * </ul>
+ */
+public class HybridCgPmWrapper implements SessionModel, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+    private HybridCgModel.HybridCgPm hybridCgPm;
+    private String name = "Hybrid CG PM";
+    private String notes = "";
+
+    public HybridCgPmWrapper(GraphWrapper graph, Parameters parameters) {
+        this(graph.getGraph(), parameters);
+    }
+
+    /**
+     * Construct from an existing PM.
+     *
+     * @param pm The parametric model.
+     */
+    public HybridCgPmWrapper(HybridCgModel.HybridCgPm pm) {
+        this.hybridCgPm = Objects.requireNonNull(pm, "hybridCgPm");
+    }
+
+    /**
+     * Constructs a HybridCgPmWrapper using the specified graph and parameters. Initializes the underlying HybridCgPm
+     * model based on the given graph structure and parameter settings, and optionally seeds default cutpoints if not
+     * already provided.
+     *
+     * @param graph  The graph representing the structure of the model. It must not be null.
+     * @param params The parameters used to configure the model. It must not be null.
+     */
+    public HybridCgPmWrapper(Graph graph, Parameters params) {
+        Objects.requireNonNull(graph, "graph");
+        Objects.requireNonNull(params, "params");
+
+        final List<Node> nodeOrder = new ArrayList<>(graph.getNodes());
+
+        // Build type/category maps from node classes (normalize categories to avoid nulls)
+        final Map<Node, Boolean> isDisc = new LinkedHashMap<>();
+        final Map<Node, List<String>> cats = new LinkedHashMap<>();
+
+        for (Node v : nodeOrder) {
+            final boolean discrete = v instanceof DiscreteVariable;
+            isDisc.put(v, discrete);
+            if (discrete) {
+                List<String> c = ((DiscreteVariable) v).getCategories();
+                cats.put(v, (c == null) ? List.of("0", "1") : new ArrayList<>(c));
+            } else {
+                cats.put(v, null);
+            }
+        }
+
+        this.hybridCgPm = new HybridCgModel.HybridCgPm(graph, nodeOrder, isDisc, cats);
+
+        if (params.getBoolean("hybridcg.seedDefaults", true)) {
+            seedSimpleDefaultCutpointsIfMissing(this.hybridCgPm);
+        }
+
+        String label = params.getString("modelName", null);
+        if (label != null && !label.isBlank()) this.name = label;
+    }
+
+    /**
+     * Constructs a HybridCgPmWrapper using the specified graph, parameters, and dataset. This constructor initializes
+     * the underlying HybridCgPm model based on the given graph structure and parameter settings, applies cutpoints
+     * derived from the dataset if provided, and sets the binning method.
+     *
+     * @param graph  The graph representing the structure of the model. It must not be null.
+     * @param params The parameters used to configure the model. It must not be null.
+     * @param data   The dataset used to compute and apply cutpoints. It can be null; if null, no cutpoints are
+     *               applied.
+     */
+    public HybridCgPmWrapper(Graph graph, Parameters params, DataSet data) {
+        this(graph, params); // builds PM first
+        int bins = Math.max(2, params.getInt("hybridcg.cutBins", 3));
+
+        String m = params.getString("hybridcg.cutMethod", "freq").trim().toLowerCase(Locale.ROOT);
+        CutMethod method = switch (m) {
+            case "intervals", "equal_intervals", "equal-intervals" -> CutMethod.EQUAL_INTERVALS;
+            default -> CutMethod.EQUAL_FREQUENCY;
+        };
+
+        if (data != null) {
+            applyCutpointsFromDataInternal(this.hybridCgPm, data, bins, method);
+        }
+    }
+
+    /**
+     * Seed default {-0.5, +0.5} edges only for places that are currently missing.
+     */
+    private static void seedSimpleDefaultCutpointsIfMissing(HybridCgModel.HybridCgPm pm) {
+        Node[] nodes = pm.getNodes();
+        for (int y = 0; y < nodes.length; y++) {
+            if (!pm.isDiscrete(y)) continue;
+            int[] cps = pm.getContinuousParents(y);
+            if (cps.length == 0) continue;
+
+            if (pm.getContParentCutpointsForDiscreteChild(y).isPresent()) continue; // already set
+
+            Map<Node, double[]> m = new LinkedHashMap<>();
+            for (int t = 0; t < cps.length; t++) {
+                Node p = nodes[cps[t]];
+                m.put(p, new double[]{-0.5, 0.5}); // 3 bins
+            }
+            try {
+                pm.setContParentCutpointsForDiscreteChild(nodes[y], m);
+            } catch (RuntimeException ignore) { /* user can set later */ }
+        }
+    }
+
+    // ---------------- Accessors ----------------
+
+    private static void applyCutpointsFromDataInternal(HybridCgModel.HybridCgPm pm,
+                                                       DataSet data,
+                                                       int bins,
+                                                       CutMethod method) {
+        final Node[] nodes = pm.getNodes();
+
+        // Build name → column index map once
+        Map<Node, Integer> col = new HashMap<>();
+        for (Node n : nodes) {
+            int c = data.getColumn(n);
+            if (c >= 0) col.put(n, c);
+        }
+
+        for (int y = 0; y < nodes.length; y++) {
+            if (!pm.isDiscrete(y)) continue;
+            int[] cps = pm.getContinuousParents(y);
+            if (cps.length == 0) continue;
+
+            Map<Node, double[]> cuts = new LinkedHashMap<>();
+            for (int t = 0; t < cps.length; t++) {
+                Node p = nodes[cps[t]];
+                Integer cj = col.get(p);
+                if (cj == null) continue;
+
+                double[] series = column(data, cj);
+                double[] raw = (method == CutMethod.EQUAL_INTERVALS)
+                        ? equalIntervalCuts(series, bins)
+                        : equalFrequencyCuts(series, bins);
+
+                double[] strict = strictlyIncreasingInterior(series, raw);
+
+                if (strict.length == 0 && bins >= 2) {
+                    double med = quantile(series, 0.5);
+                    strict = new double[]{med}; // 2 bins
+                }
+
+                cuts.put(p, strict);
+            }
+            if (!cuts.isEmpty()) {
+                try {
+                    pm.setContParentCutpointsForDiscreteChild(nodes[y], cuts);
+                } catch (RuntimeException ignore) { /* shapes changed; user can retry */ }
+            }
+        }
+    }
+
+    private static double[] column(DataSet data, int col) {
+        int n = data.getNumRows();
+        double[] out = new double[n];
+        for (int r = 0; r < n; r++) out[r] = data.getDouble(r, col);
+        return out;
+    }
+
+    private static double[] equalIntervalCuts(double[] x, int bins) {
+        double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+        for (double v : x)
+            if (Double.isFinite(v)) {
+                if (v < min) min = v;
+                if (v > max) max = v;
+            }
+        if (!(max > min)) return new double[0];
+        double step = (max - min) / bins;
+        double[] cuts = new double[bins - 1];
+        for (int i = 1; i < bins; i++) cuts[i - 1] = min + i * step;
+        return cuts;
+    }
+
+    private static double[] equalFrequencyCuts(double[] x, int bins) {
+        double[] clean = Arrays.stream(x).filter(Double::isFinite).sorted().toArray();
+        if (clean.length == 0) return new double[0];
+        double[] cuts = new double[bins - 1];
+        for (int i = 1; i < bins; i++) {
+            double q = (double) i / bins;
+            cuts[i - 1] = quantileSorted(clean, q);
+        }
+        return cuts;
+    }
+
+    private static double[] strictlyIncreasingInterior(double[] series, double[] rawCuts) {
+        if (rawCuts.length == 0) return rawCuts;
+        double[] c = Arrays.stream(rawCuts).filter(Double::isFinite).sorted().toArray();
+        if (c.length == 0) return c;
+
+        final double EPS = 1e-12;
+        List<Double> uniq = new ArrayList<>();
+        double last = Double.NEGATIVE_INFINITY;
+        for (double v : c) {
+            if (uniq.isEmpty() || v - last > EPS) {
+                uniq.add(v);
+                last = v;
+            }
+        }
+
+        double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+        for (double v : series)
+            if (Double.isFinite(v)) {
+                if (v < min) min = v;
+                if (v > max) max = v;
+            }
+        if (!(max > min)) return new double[0];
+
+        List<Double> interior = new ArrayList<>();
+        for (double v : uniq) if (v > min && v < max) interior.add(v);
+
+        double[] out = new double[interior.size()];
+        for (int i = 0; i < out.length; i++) out[i] = interior.get(i);
+        return out;
+    }
+
+    private static double quantile(double[] x, double q) {
+        double[] clean = Arrays.stream(x).filter(Double::isFinite).sorted().toArray();
+        return quantileSorted(clean, q);
+    }
+
+    private static double quantileSorted(double[] sorted, double q) {
+        if (sorted.length == 0) return Double.NaN;
+        if (q <= 0) return sorted[0];
+        if (q >= 1) return sorted[sorted.length - 1];
+        double pos = q * (sorted.length - 1);
+        int i = (int) Math.floor(pos);
+        double frac = pos - i;
+        if (i + 1 >= sorted.length) return sorted[i];
+        return sorted[i] * (1 - frac) + sorted[i + 1] * frac;
+    }
+
+    /**
+     * Retrieves the instance of HybridCgModel.HybridCgPm associated with this wrapper.
+     *
+     * @return the associated HybridCgModel.HybridCgPm instance
+     */
+    public HybridCgModel.HybridCgPm getHybridCgPm() {
+        return hybridCgPm;
+    }
+
+    // ---------------- Cutpoint helpers (public API) ----------------
+
+    /**
+     * Sets the HybridCgPm instance for this wrapper. The provided instance must not be null, as it represents the
+     * parametric model to be associated with this wrapper.
+     *
+     * @param pm the HybridCgModel.HybridCgPm instance to set. It must not be null.
+     */
+    public void setHybridCgPm(HybridCgModel.HybridCgPm pm) {
+        this.hybridCgPm = Objects.requireNonNull(pm);
+    }
+
+    /**
+     * Retrieves the graph associated with the underlying HybridCgPm model.
+     *
+     * @return the graph if the underlying HybridCgPm instance is not null; otherwise, returns null.
+     */
+    public Graph getGraph() {
+        return hybridCgPm == null ? null : hybridCgPm.getGraph();
+    }
+
+    /**
+     * Retrieves the name associated with the instance.
+     *
+     * @return the name of the instance
+     */
+    public String getName() {
+        return name;
+    }
+
+    // ---------------- Internal implementations ----------------
+
+    /**
+     * Sets the name of the session model. If the provided name is null or blank, defaults to "Hybrid CG PM".
+     *
+     * @param name the name of the session model.
+     */
+    public void setName(String name) {
+        this.name = (name == null || name.isBlank()) ? "Hybrid CG PM" : name;
+    }
+
+    /**
+     * Retrieves the notes associated with the instance.
+     *
+     * @return the notes of the instance
+     */
+    public String getNotes() {
+        return notes;
+    }
+
+    // --------- tiny numeric helpers ---------
+
+    /**
+     * Sets the notes for the session model. If the provided notes are null, defaults to an empty string.
+     *
+     * @param notes the notes for the session model.
+     */
+    public void setNotes(String notes) {
+        this.notes = (notes == null) ? "" : notes;
+    }
+
+    /**
+     * Returns a string representation of the HybridCgPmWrapper instance.
+     *
+     * @return a string representation of the instance
+     */
+    @Override
+    public String toString() {
+        return "HybridCgPmWrapper{name='" + name + "', graph=" + getGraph() + "}";
+    }
+
+    /**
+     * Recompute and install cutpoints from a DataSet.
+     *
+     * @param data   DataSet with columns matching PM node names
+     * @param bins   desired number of bins (>=2)
+     * @param method equal-frequency or equal-intervals
+     */
+    public void applyCutpointsFromData(DataSet data, int bins, CutMethod method) {
+        Objects.requireNonNull(hybridCgPm, "PM is null");
+        Objects.requireNonNull(data, "data");
+        if (bins < 2) throw new IllegalArgumentException("bins must be >= 2");
+        applyCutpointsFromDataInternal(hybridCgPm, data, bins, method == null ? CutMethod.EQUAL_FREQUENCY : method);
+    }
+
+    /**
+     * Quick diagnostic for the GUI: are there any discrete children with continuous parents that still lack cutpoints?
+     */
+    public boolean hasDiscreteChildrenNeedingCutpoints() {
+        if (hybridCgPm == null) return false;
+        Node[] nodes = hybridCgPm.getNodes();
+        for (int y = 0; y < nodes.length; y++) {
+            if (!hybridCgPm.isDiscrete(y)) continue;
+            if (hybridCgPm.getContinuousParents(y).length == 0) continue;
+            if (hybridCgPm.getContParentCutpointsForDiscreteChild(y).isEmpty()) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Throw with a friendly message if any needed cutpoints are missing (useful before IM creation).
+     */
+    public void ensureCutpointsOrThrow() {
+        if (hasDiscreteChildrenNeedingCutpoints()) {
+            throw new IllegalStateException(
+                    "Some discrete children have continuous parents but no cutpoints. " +
+                    "Use 'Apply Cutpoints from Data…' or enable default seeding."
+            );
+        }
+    }
+
+    /**
+     * Enumeration representing the methods for computing cutpoints.
+     */
+    public enum CutMethod {
+
+        /**
+         * Represents a method for computing cutpoints by dividing the range of values into equal intervals. This
+         * approach ensures that the range of values is split into evenly sized segments, regardless of the distribution
+         * of the underlying data points.
+         */
+        EQUAL_INTERVALS,
+
+        /**
+         * Represents a method for computing cutpoints by dividing the values such that each segment contains
+         * approximately an equal number of data points. This approach is sensitive to the distribution of the
+         * underlying data, ensuring balanced representation in each segment.
+         */
+        EQUAL_FREQUENCY
+    }
+}

@@ -1,10 +1,29 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -12,8 +31,8 @@ import java.io.Serial;
 
 /**
  * Represents a markov check statistic that calculates the Kolmogorov-Smirnoff P value for whether the p-values for the
- * estimated graph are distributed as U(0, 1). This version reports whether the p-value is greater than 0.05 and
- * reports the best of 10 repetitions.
+ * estimated graph are distributed as U(0, 1). This version reports whether the p-value is greater than 0.05 and reports
+ * the best of 10 repetitions.
  *
  * @author josephramsey
  */
@@ -21,18 +40,17 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
     @Serial
     private static final long serialVersionUID = 23L;
     /**
-     * An instance of {@link IndependenceWrapper} used to encapsulate and perform independence
-     * tests on the dataset with specific configurations. This variable is intended to facilitate
-     * independence testing within the context of Markov check calculations and other statistical
-     * operations in the enclosing class.
+     * An instance of {@link IndependenceWrapper} used to encapsulate and perform independence tests on the dataset with
+     * specific configurations. This variable is intended to facilitate independence testing within the context of
+     * Markov check calculations and other statistical operations in the enclosing class.
      */
     private final IndependenceWrapper independenceWrapper;
     /**
      * Represents the type of conditioning set used during the Markov checks in the context of statistical dependence
      * testing. It specifies how variables are conditioned upon during independence tests and directly influences the
      * results of the Markov checks. The type is defined by the {@link ConditioningSetType} enumeration, which includes
-     * various strategies for defining the conditioning set, such as GLOBAL_MARKOV, LOCAL_MARKOV, or MARKOV_BLANKET among
-     * others. This field is immutable and must be set during the initialization of the object.
+     * various strategies for defining the conditioning set, such as GLOBAL_MARKOV, LOCAL_MARKOV, or MARKOV_BLANKET
+     * among others. This field is immutable and must be set during the initialization of the object.
      */
     private final ConditioningSetType conditioningSetType;
 
@@ -77,7 +95,7 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
-     * @param parameters  The parameters.
+     * @param parameters The parameters.
      * @return 1 if p > 0.05, 0 if not.
      * @throws IllegalArgumentException if the data model is null.
      */
@@ -98,3 +116,4 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
         return value;
     }
 }
+

@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.util.TetradLogger;
@@ -152,19 +172,19 @@ public class Sextad implements TetradSerializable {
     public boolean equals(Object o) {
         if (!(o instanceof Sextad sextad)) return false;
 
-        boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
-                             this.i == sextad.i && this.j == sextad.k && this.k == sextad.j ||
-                             this.i == sextad.j && this.j == sextad.i && this.k == sextad.k ||
-                             this.i == sextad.j && this.j == sextad.k && this.k == sextad.i ||
-                             this.i == sextad.k && this.j == sextad.i && this.k == sextad.j ||
-                             this.i == sextad.k && this.j == sextad.j && this.k == sextad.i;
+        boolean leftEquals = (this.i == sextad.i && this.j == sextad.j && this.k == sextad.k) ||
+                             (this.i == sextad.i && this.j == sextad.k && this.k == sextad.j) ||
+                             (this.i == sextad.j && this.j == sextad.i && this.k == sextad.k) ||
+                             (this.i == sextad.j && this.j == sextad.k && this.k == sextad.i) ||
+                             (this.i == sextad.k && this.j == sextad.i && this.k == sextad.j) ||
+                             (this.i == sextad.k && this.j == sextad.j && this.k == sextad.i);
 
-        boolean rightEquals = this.l == sextad.l && this.m == sextad.m && this.n == sextad.n ||
-                              this.l == sextad.l && this.m == sextad.n && this.n == sextad.m ||
-                              this.l == sextad.m && this.m == sextad.l && this.n == sextad.n ||
-                              this.l == sextad.m && this.m == sextad.n && this.n == sextad.l ||
-                              this.l == sextad.n && this.m == sextad.l && this.n == sextad.m ||
-                              this.l == sextad.n && this.m == sextad.m && this.n == sextad.l;
+        boolean rightEquals = (this.l == sextad.l && this.m == sextad.m && this.n == sextad.n) ||
+                              (this.l == sextad.l && this.m == sextad.n && this.n == sextad.m) ||
+                              (this.l == sextad.m && this.m == sextad.l && this.n == sextad.n) ||
+                              (this.l == sextad.m && this.m == sextad.n && this.n == sextad.l) ||
+                              (this.l == sextad.n && this.m == sextad.l && this.n == sextad.m) ||
+                              (this.l == sextad.n && this.m == sextad.m && this.n == sextad.l);
 
         return leftEquals && rightEquals;
     }
@@ -234,8 +254,8 @@ public class Sextad implements TetradSerializable {
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.
@@ -252,3 +272,4 @@ public class Sextad implements TetradSerializable {
         }
     }
 }
+

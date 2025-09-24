@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.annotation.LinearGaussian;
@@ -61,6 +81,7 @@ public class PoissonPriorScore implements ScoreWrapper {
 
         score.setLambda(parameters.getDouble(Params.POISSON_LAMBDA));
         score.setSingularityLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         return score;
     }
@@ -90,6 +111,7 @@ public class PoissonPriorScore implements ScoreWrapper {
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.POISSON_LAMBDA);
         parameters.add(Params.SINGULARITY_LAMBDA);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 
@@ -101,3 +123,4 @@ public class PoissonPriorScore implements ScoreWrapper {
         return this.dataSet.getVariable(name);
     }
 }
+

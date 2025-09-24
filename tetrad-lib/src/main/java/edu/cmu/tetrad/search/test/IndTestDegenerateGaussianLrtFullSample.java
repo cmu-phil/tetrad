@@ -1,16 +1,34 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -29,6 +47,7 @@ import java.util.*;
  * @author bryanandrews
  * @see IndTestBasisFunctionLrt
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
     /**
      * The `dataSet` field holds a reference to the DataSet object used as the primary data structure for representing
@@ -108,6 +127,7 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      * Singularity lambda.
      */
     private double lambda;
+    private int nEff;
 
     /**
      * Constructs an instance of the IndTestBasisFunctionLrt class. This constructor initializes the object using the
@@ -115,8 +135,8 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      * input dataset to create the necessary embeddings and initializes key components such as the BIC score for later
      * use in independence testing.
      *
-     * @param dataSet         the input data set to be used for the analysis. It must not be null. May contain a mixture
-     *                        of continuous and discrete variables.
+     * @param dataSet the input data set to be used for the analysis. It must not be null. May contain a mixture of
+     *                continuous and discrete variables.
      * @throws NullPointerException if the provided dataSet is null.
      */
     public IndTestDegenerateGaussianLrtFullSample(DataSet dataSet) {
@@ -145,6 +165,8 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
         this.allRows = listRows();
+
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -153,12 +175,11 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      * singular. Regularization is controlled by the lambda parameter, which adds a scaled identity matrix to the design
      * matrix's normal equation.
      *
-     * @param B                    the design matrix, where rows correspond to observations and columns correspond to
-     *                             features.
-     * @param X                    the response matrix, where rows correspond to observations and columns to dependent
-     *                             variable outputs.
-     * @param lambda               the regularization parameter used to stabilize the solution. Larger values result in
-     *                             stronger regularization.
+     * @param B      the design matrix, where rows correspond to observations and columns correspond to features.
+     * @param X      the response matrix, where rows correspond to observations and columns to dependent variable
+     *               outputs.
+     * @param lambda the regularization parameter used to stabilize the solution. Larger values result in stronger
+     *               regularization.
      * @return the computed OLS solution as a SimpleMatrix object.
      */
     public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
@@ -180,7 +201,7 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      * Computes variance of residuals: Var(R) = sum(R^2) / N
      */
     private double computeVariance(SimpleMatrix residuals) {
-        return residuals.elementMult(residuals).elementSum() / this.sampleSize;
+        return residuals.elementMult(residuals).elementSum() / this.nEff;
     }
 
     /**
@@ -353,7 +374,7 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
 
         // Compute Likelihood Ratio Statistic
         double epsilon = 1e-10;
-        double LR_stat = this.sampleSize * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
+        double LR_stat = this.nEff * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
 
         // Compute p-value using chi-square distribution
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
@@ -366,6 +387,11 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
         return p_value;
     }
 
+    @Override
+    public int getEffectiveSampleSize() {
+        return this.nEff;
+    }
+
     /**
      * Sets the sample size to use for the independence test, which may be different from the sample size of the data
      * set or covariance matrix. If not set, the sample size of the data set or covariance matrix is used.
@@ -374,11 +400,7 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      */
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
-        if (effectiveSampleSize < 1) {
-            throw new IllegalArgumentException("Sample size must be positive.");
-        }
-
-        this.sampleSize = effectiveSampleSize;
+        this.nEff = effectiveSampleSize < 0 ? this.sampleSize : effectiveSampleSize;
     }
 
     /**
@@ -429,14 +451,14 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
     }
 
     /**
-     * Sets the regularization parameter lambda used in statistical computations or tests.
-     * The lambda parameter often helps to stabilize computations, particularly in the
-     * presence of ill-conditioned problems.
+     * Sets the regularization parameter lambda used in statistical computations or tests. The lambda parameter often
+     * helps to stabilize computations, particularly in the presence of ill-conditioned problems.
      *
-     * @param lambda the regularization parameter to be set. Larger values typically result in
-     *               stronger regularization. Must be a non-negative value.
+     * @param lambda the regularization parameter to be set. Larger values typically result in stronger regularization.
+     *               Must be a non-negative value.
      */
     public void setLambda(double lambda) {
         this.lambda = lambda;
     }
 }
+

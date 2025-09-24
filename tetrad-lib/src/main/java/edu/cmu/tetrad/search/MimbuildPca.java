@@ -1,282 +1,250 @@
+/// ////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+import java.util.Set;
 
 /**
- * A simplified Mimbuild implementation that replaces optimization with PCA over pure clusters. Each latent is
- * represented by the first principal component of its corresponding indicator cluster.
- *
- * @author jdramsey
+ * Mimbuild over the first principal components of (pure) clusters, driven by a BlockSpec. Each cluster's latent is PC1
+ * of its standardized indicators; latent scores are re-scaled to unit variance. A latentâlatent covariance is built
+ * using (n-1) and a tiny ridge, then BOSS (+PermutationSearch) learns a structure over the latents using SEM-BIC.
  */
 public class MimbuildPca {
 
     /**
-     * Represents the clustering structure within the class.
-     * The clustering is stored as a list of clusters, where each cluster
-     * is represented by a list of Node objects. Each cluster groups related
-     * nodes based on some predefined logic or algorithm, which may depend
-     * on the context of the containing class.
+     * Represents the specification of a block of data used in the MimbuildPca algorithm. This variable is immutable and holds
+     * the configuration required for block-specific data processing and principal components analysis (PCA).
+     * It provides the necessary details for standardizing data blocks, calculating principal components, and performing
+     * structural dependency analysis within the algorithm.
+     */
+    private final BlockSpec blockSpec;
+    /**
+     * A configurable penalty discount factor used in the principal components analysis (PCA) and
+     * structural dependency graph search process. This variable adjusts the weighting of penalty
+     * terms during the Bayesian Information Criterion (BIC) scoring within the search algorithm.
      *
-     * This variable is utilized in methods that require a grouping of nodes
-     * for analysis or processing, as well as for retrieving or updating the
-     * clustering structure.
+     * The default value is 1.0, which means no penalty discount is applied. This value may be
+     * modified via the {@code setPenaltyDiscount} method to tune the behavior of the search process.
      */
-    private List<List<Node>> clustering;
+    private double penaltyDiscount = 1.0;
+
+    // output
     /**
-     * Represents the covariance matrix of the latent variables in the PCA model.
-     * This covariance matrix characterizes the variance and covariance structure
-     * between the latent variables used in the analysis. It serves as a critical
-     * component in understanding and modeling the relationships among these latent
-     * variables.
-     */
-    private ICovarianceMatrix latentsCov;
-    /**
-     * A list of latent variables represented as Node objects. Each Node in the list corresponds
-     * to a latent variable within the model. These latent variables are used to capture and
-     * represent underlying, unobserved patterns or structures in the data. The list provides
-     * access to and storage of the latent variables for further processing and computations.
-     */
-    private List<Node> latents;
-    /**
-     * Represents the internal structure graph utilized by the MimbuildPca class. The structureGraph
-     * encapsulates the graphical representation of relationships between latent variables and potentially
-     * observed variables or other nodes. This graph serves as a foundational component for operations
-     * related to structure discovery, clustering, and model representation within this class. The specific
-     * characteristics and properties of the graph may depend on the methods employed and data supplied.
-     */
-    private Graph structureGraph;
-    /**
-     * Represents a penalty discount factor used in computations or adjustments within the class.
-     * This variable is a multiplier that influences penalty-based calculations, optimizations,
-     * or evaluations, allowing the adjustment of the penalty strength in the model.
+     * Represents the covariance matrix of latent variables computed after the search process.
+     * This matrix encapsulates the relationships and dependencies between the latent variables
+     * as derived during the principal component analysis (PCA) and structural learning.
      *
-     * The default value is set to 1, which may indicate no discount or adjustment
-     * to the penalties, depending on the context in which it is applied.
+     * The {@code latentsCovariance} is utilized for modeling and further analysis of the structure
+     * identified through the search algorithm in the {@code MimbuildPca} class.
      */
-    private double penaltyDiscount = 1;
-    /**
-     * A two-dimensional array of doubles representing the latent data in the
-     * context of the PCA-based model within the MimbuildPca class. Each row of
-     * the array corresponds to a data point, and each column represents a latent
-     * variable.
-     *
-     * The latentData variable is used internally to store the computed latent
-     * variable values for further analysis or processing. The data is typically
-     * derived from the underlying relationships in the input dataset and serves
-     * as an intermediate representation for tasks such as clustering, covariance
-     * analysis, and graph construction.
-     */
-    private double[][] latentData;
+    private ICovarianceMatrix latentsCovariance;  // covariance over latents (after search)
 
     /**
-     * Default constructor for the MimbuildPca class.
+     * Constructs an instance of MimbuildPca with the specified BlockSpec.
+     * The constructor validates the given BlockSpec, ensuring it contains non-empty,
+     * valid block definitions with disjoint column indices, a corresponding latent variable
+     * for each block, and a data set. It throws an exception if any of these conditions are violated.
      *
-     * This constructor initializes an instance of the MimbuildPca class. It sets
-     * up the internal structure for the object but does not perform any specific
-     * operations or calculations. Additional setup or initialization of properties
-     * and fields may be required using other methods provided by the class.
+     * @param blockSpec The block specification containing blocks, latent variables,
+     *                  and data set information for PCA analysis.
+     * @throws IllegalArgumentException If blockSpec is null, if it lacks blocks or a dataset,
+     *                                  if the numbers of blocks and latent variables do not match,
+     *                                  if any block is empty, if column indices in the blocks
+     *                                  are out of range or not disjoint, or if there are duplicate
+     *                                  latent variable names.
      */
-    public MimbuildPca() {
+    public MimbuildPca(BlockSpec blockSpec) {
+        if (blockSpec == null) throw new IllegalArgumentException("blockSpec == null");
+        if (blockSpec.blocks() == null || blockSpec.blocks().isEmpty())
+            throw new IllegalArgumentException("BlockSpec has no blocks.");
+        if (blockSpec.blockVariables() == null
+            || blockSpec.blockVariables().size() != blockSpec.blocks().size())
+            throw new IllegalArgumentException("#latents != #blocks in BlockSpec.");
+        if (blockSpec.dataSet() == null)
+            throw new IllegalArgumentException("BlockSpec has no DataSet.");
+        this.blockSpec = blockSpec;
+
+        // disjointness/indices sanity (against the spec's dataset)
+        DataSet ds = blockSpec.dataSet();
+        int D = ds.getNumColumns();
+        Set<Integer> seen = new HashSet<>();
+        for (int bi = 0; bi < blockSpec.blocks().size(); bi++) {
+            List<Integer> blk = blockSpec.blocks().get(bi);
+            if (blk == null || blk.isEmpty())
+                throw new IllegalArgumentException("Empty block at index " + bi);
+            for (int col : blk) {
+                if (col < 0 || col >= D)
+                    throw new IllegalArgumentException("Block " + bi + " references out-of-range column " + col);
+                if (!seen.add(col))
+                    throw new IllegalArgumentException("Blocks must be disjoint; repeated column " + col);
+            }
+        }
+
+        // latent name uniqueness
+        Set<String> names = new HashSet<>();
+        for (Node L : blockSpec.blockVariables()) {
+            if (L == null) throw new IllegalArgumentException("Null latent node in BlockSpec.");
+            if (!names.add(L.getName()))
+                throw new IllegalArgumentException("Duplicate latent name: " + L.getName());
+        }
+    }
+
+    private static void standardizeColumnsInPlace(SimpleMatrix X) {
+        int n = X.getNumRows();
+        int p = X.getNumCols();
+        for (int j = 0; j < p; j++) {
+            double mean = 0, m2 = 0;
+            for (int i = 0; i < n; i++) mean += X.get(i, j);
+            mean /= Math.max(1, n);
+            for (int i = 0; i < n; i++) {
+                double d = X.get(i, j) - mean;
+                m2 += d * d;
+            }
+            double sd = Math.sqrt(m2 / Math.max(1, n - 1));
+            if (!Double.isFinite(sd) || sd == 0.0) sd = 1.0;
+            for (int i = 0; i < n; i++) {
+                X.set(i, j, (X.get(i, j) - mean) / sd);
+            }
+        }
     }
 
     /**
-     * Performs a search operation to construct a graph representing the latent structure
-     * derived from the provided clustering, latent variable names, and dataset.
-     * This method processes the provided data, performs dimensionality reduction
-     * using PCA (Principal Component Analysis), computes covariance matrices,
-     * and applies a structure learning algorithm to identify dependency structures.
+     * Executes a search algorithm to identify a structural dependency graph based on block-specific data and principal
+     * components analysis (PCA). This method standardizes the blocks of data, computes principal components, constructs
+     * the covariances over latent variables, and learns the structure using a Permutation Search combined with Bayesian
+     * Information Criterion scoring and BOSS optimization.
      *
-     * @param clustering a list of clusters, where each cluster is represented as a
-     *        list of Node objects. These clusters define groupings of variables that
-     *        are considered in the construction of latent variables.
-     * @param latentNames a list of names for the latent variables. Each name corresponds
-     *        to a cluster in the `clustering` parameter.
-     * @param dataSet the dataset containing observed variables. This dataset is used
-     *        to compute the breakdown of latent structures and relationships among variables.
-     * @return a Graph object representing the identified latent dependency structure
-     *         based on the provided data, clusters, and latent variable names.
-     * @throws InterruptedException if the execution is interrupted during any processing step.
-     * @throws NullPointerException if any of the input parameters (`clustering`,
-     *         `latentNames`, or `dataSet`) are null.
-     * @throws IllegalArgumentException if the size of the `clustering` list does not
-     *         match the size of the `latentNames` list.
+     * @return A graph representing the structural dependencies learned through the search process.
+     * @throws InterruptedException If the search process is interrupted.
      */
-    public Graph search(List<List<Node>> clustering, List<String> latentNames, DataSet dataSet) throws InterruptedException {
-        if (clustering == null || latentNames == null || dataSet == null) {
-            throw new NullPointerException();
-        }
+    public Graph search() throws InterruptedException {
+        final DataSet dataSet = blockSpec.dataSet().copy();
+        final List<List<Integer>> blocks = blockSpec.blocks();
+        final List<Node> blockVariables = blockSpec.blockVariables();
 
-        if (clustering.size() != latentNames.size()) {
-            throw new IllegalArgumentException("#clusters != #latent names");
-        }
+        final int n = dataSet.getNumRows();
+        final int B = blocks.size();
 
-        this.clustering = clustering;
-        this.latents = new ArrayList<>();
-        for (String name : latentNames) {
-            GraphNode node = new GraphNode(name);
-            node.setNodeType(NodeType.LATENT);
-            latents.add(node);
-        }
+        // Build n x B matrix of PC1 scores (standardized per-block, then unit variance)
+        double[][] latentData = new double[n][B];
+        for (int bi = 0; bi < B; bi++) {
+            List<Integer> cols = blocks.get(bi);
 
-        int nSamples = dataSet.getNumRows();
-        int nLatents = clustering.size();
-        latentData = new double[nSamples][nLatents];
-
-        for (int i = 0; i < clustering.size(); i++) {
-            List<Node> cluster = clustering.get(i);
-            int[] cols = cluster.stream().mapToInt(n -> dataSet.getColumnIndex(dataSet.getVariable(n.getName()))).toArray();
-
-            SimpleMatrix clusterData = new SimpleMatrix(nSamples, cols.length);
-            for (int r = 0; r < nSamples; r++) {
-                for (int c = 0; c < cols.length; c++) {
-                    clusterData.set(r, c, dataSet.getDouble(r, cols[c]));
+            // Extract block data X (n x p_b)
+            SimpleMatrix X = new SimpleMatrix(n, cols.size());
+            for (int r = 0; r < n; r++) {
+                for (int c = 0; c < cols.size(); c++) {
+                    X.set(r, c, dataSet.getDouble(r, cols.get(c)));
                 }
             }
 
-            centerColumns(clusterData);
-            SimpleSVD<SimpleMatrix> svd = clusterData.svd();
-            SimpleMatrix v = svd.getV();
+            // standardize columns (z-score)
+            standardizeColumnsInPlace(X);
 
-            SimpleMatrix pc1 = clusterData.mult(v.extractVector(false, 0));
-            for (int r = 0; r < nSamples; r++) latentData[r][i] = pc1.get(r);
-        }
+            // PC1 = X * v1 (right singular vector #0)
+            SimpleSVD<SimpleMatrix> svd = X.svd();
+            SimpleMatrix v1 = svd.getV().extractVector(false, 0);
+            SimpleMatrix pc1 = X.mult(v1); // n x 1
 
-        SimpleMatrix latentMat = new SimpleMatrix(latentData);
-        SimpleMatrix latentCov = latentMat.transpose().mult(latentMat).divide(nSamples);
+            // Fix sign so average loading is positive (for stability across runs)
+            double sign = 0.0;
+            for (int c = 0; c < v1.getNumRows(); c++) sign += v1.get(c);
+            if (sign < 0) pc1 = pc1.negative();
 
-        SimpleMatrix covMatrix = new SimpleMatrix(nLatents, nLatents);
-        for (int i = 0; i < nLatents; i++) {
-            for (int j = 0; j < nLatents; j++) {
-                covMatrix.set(i, j, latentCov.get(i, j));
+            // Rescale to unit variance
+            double mean = 0, m2 = 0;
+            for (int r = 0; r < n; r++) mean += pc1.get(r);
+            mean /= Math.max(1, n);
+            for (int r = 0; r < n; r++) {
+                double d = pc1.get(r) - mean;
+                m2 += d * d;
+            }
+            double sd = Math.sqrt(m2 / Math.max(1, n - 1));
+            if (!Double.isFinite(sd) || sd == 0.0) sd = 1.0;
+
+            for (int r = 0; r < n; r++) {
+                latentData[r][bi] = (pc1.get(r) - mean) / sd;
             }
         }
 
-        this.latentsCov = new edu.cmu.tetrad.data.CovarianceMatrix(latents, new Matrix(covMatrix), nSamples);
+        // Covariance over latents with (n-1) divisor + tiny ridge
+        SimpleMatrix L = new SimpleMatrix(latentData);          // n x B
+        int dof = Math.max(1, n - 1);
+        SimpleMatrix latentCov = L.transpose().mult(L).divide(Math.max(1, n - 1));
 
-        SemBicScore score = new SemBicScore(this.latentsCov);
+        double diagMean = 0.0;
+        for (int k = 0; k < B; k++) diagMean += latentCov.get(k, k);
+        double eps = 1e-8 * (diagMean / Math.max(1, B));
+        if (!Double.isFinite(eps) || eps <= 0) eps = 1e-8;
+
+        for (int k = 0; k < B; k++) {
+            latentCov.set(k, k, latentCov.get(k, k) + eps);
+        }
+
+        this.latentsCovariance = new CovarianceMatrix(blockVariables, new Matrix(latentCov), n);
+
+        // 4) Learn structure over latents with SEM-BIC + BOSS
+        SemBicScore score = new SemBicScore(latentsCovariance);
         score.setPenaltyDiscount(this.penaltyDiscount);
-        PermutationSearch search = new PermutationSearch(new Boss(score));
 
-        this.structureGraph = search.search();
-        LayoutUtil.fruchtermanReingoldLayout(this.structureGraph);
-        return this.structureGraph;
+        PermutationSearch ps = new PermutationSearch(new Boss(score));
+        Graph structureGraph = ps.search();
+
+        LayoutUtil.fruchtermanReingoldLayout(structureGraph);
+        return structureGraph;
     }
 
     /**
-     * Retrieves the covariance matrix of the latent variables stored within the instance. This covariance matrix
-     * represents the relationships between the latent variables in terms of their variances and covariances.
+     * Sets the penalty discount value used in the PCA analysis.
      *
-     * @return An instance of ICovarianceMatrix that encapsulates the covariance structure of the latent variables.
-     */
-    public ICovarianceMatrix getLatentsCov() {
-        return latentsCov;
-    }
-
-    /**
-     * Retrieves the clustering structure stored within the instance. The clustering is represented as a list of
-     * clusters, where each cluster is a list of nodes.
-     *
-     * @return A list of clusters, with each cluster represented as a list of Node objects.
-     */
-    public List<List<Node>> getClustering() {
-        return clustering;
-    }
-
-    /**
-     * Constructs and returns a complete directed graph based on the provided nodes and the internal structure of the
-     * class. The returned graph integrates the latent and measured nodes with directed edges, using a specified layout
-     * algorithm to structure the graph visually.
-     *
-     * @param includeNodes a list of nodes to be included in the graph. These nodes will be added to the graph if they
-     *                     are not already present.
-     * @return a Graph object representing the full directed graph constructed from the latent and measured nodes.
-     */
-    public Graph getFullGraph(List<Node> includeNodes) {
-        Graph graph = new EdgeListGraph(this.structureGraph);
-
-        for (int i = 0; i < this.latents.size(); i++) {
-            Node latent = this.latents.get(i);
-            List<Node> measured = clustering.get(i);
-            for (Node m : measured) {
-                if (!graph.containsNode(m)) graph.addNode(m);
-                graph.addDirectedEdge(latent, m);
-            }
-        }
-
-        LayoutUtil.fruchtermanReingoldLayout(graph);
-        return graph;
-    }
-
-    /**
-     * Sets the penalty discount value used in computations or adjustments related to the model. The penalty discount
-     * may be used as a parameter to influence calculations, optimizations, or evaluations within the associated methods
-     * of the class.
-     *
-     * @param penaltyDiscount the penalty discount value to be set, represented as a double.
+     * @param penaltyDiscount The penalty discount value to be set. This value is used to adjust
+     *                        the weighting or scaling in the analysis process.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    /**
-     * Retrieves the latent data stored within the instance.
-     *
-     * @return A two-dimensional array of doubles representing the latent data.
-     */
-    public double[][] getLatentData() {
-        return latentData;
-    }
+    // ------------------------- helpers -------------------------
 
     /**
-     * Centers the columns of the provided matrix by subtracting their respective means. Each column's mean is
-     * calculated and then subtracted from each element in that column.
+     * Retrieves the latent covariance matrix, which encapsulates the covariances
+     * between the latent variables associated with the specified blocks in the PCA analysis.
      *
-     * @param mat the matrix whose columns are to be centered; each column's mean will be computed and subtracted from
-     *            its elements. This parameter must be an instance of SimpleMatrix.
+     * @return the covariance matrix of the latent variables as an instance of ICovarianceMatrix
      */
-    private void centerColumns(SimpleMatrix mat) {
-        int rows = mat.numRows();
-        int cols = mat.numCols();
-        for (int j = 0; j < cols; j++) {
-            double mean = 0;
-            for (int i = 0; i < rows; i++) mean += mat.get(i, j);
-            mean /= rows;
-            for (int i = 0; i < rows; i++) mat.set(i, j, mat.get(i, j) - mean);
-        }
-    }
-
-    /**
-     * Simulates a dataset from a given covariance matrix. The method generates random samples based on the provided
-     * covariance structure.
-     *
-     * @param cov      the covariance matrix from which to simulate the data. Must be an instance of SimpleMatrix with
-     *                 dimensions p x p, where p is the number of variables.
-     * @param nSamples the number of samples to generate. This indicates the number of data points (rows) in the
-     *                 simulated dataset.
-     * @return a two-dimensional array of doubles, where each row represents a generated sample and each column
-     * corresponds to a variable.
-     */
-    private double[][] simulateDataFromCovariance(SimpleMatrix cov, int nSamples) {
-        int p = cov.getNumRows();
-        double[][] L = new double[p][p];
-        for (int i = 0; i < p; i++) L[i][i] = Math.sqrt(cov.get(i, i));
-        Random rand = new Random();
-        double[][] data = new double[nSamples][p];
-        for (int i = 0; i < nSamples; i++) {
-            for (int j = 0; j < p; j++) {
-                data[i][j] = rand.nextGaussian() * L[j][j];
-            }
-        }
-        return data;
+    public ICovarianceMatrix getLatentsCovariance() {
+        return latentsCovariance;
     }
 }

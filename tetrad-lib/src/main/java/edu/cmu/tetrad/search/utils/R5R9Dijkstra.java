@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.Edge;
@@ -92,7 +112,7 @@ public class R5R9Dijkstra {
 
                 // For both R5 and R9 we need to check ~adj(beta, gamma) where gamma = y and beta is the second
                 // node on the path.
-                if (currentVertex == x  && x != y) {
+                if (currentVertex == x && x != y) {
                     Node beta = dijkstraEdge.getToNode();
                     if (adjacent(dijkstraGraph, beta, y)) continue;
                 }
@@ -100,9 +120,11 @@ public class R5R9Dijkstra {
                 // For R5 we need to additionally check ~adj(alpha, theta), where theta = second to last node and
                 // alpha = x.
                 if (!r9) {
-                    if (dijkstraEdge.getToNode() == y && x != y) {{
-                        if (adjacent(dijkstraGraph, currentVertex, x)) continue;
-                    }}
+                    if (dijkstraEdge.getToNode() == y && x != y) {
+                        {
+                            if (adjacent(dijkstraGraph, currentVertex, x)) continue;
+                        }
+                    }
                 }
 
                 // Skip length-1 paths.
@@ -429,4 +451,5 @@ public class R5R9Dijkstra {
         }
     }
 }
+
 

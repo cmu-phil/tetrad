@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Graph;
@@ -111,13 +131,14 @@ public class LatentPurifier {
     }
 
     /**
-     * Retrieves the latent parents of a given measured node from a specified graph.
-     * A latent parent is defined as a parent of the measured node that is also within the
-     * set of latent variables.
+     * Retrieves the latent parents of a given measured node from a specified graph. A latent parent is defined as a
+     * parent of the measured node that is also within the set of latent variables.
      *
      * @param graph    the graph from which the latent parents are to be identified; cannot be null.
-     * @param measured the node representing the measured variable whose latent parents are to be retrieved; cannot be null.
-     * @return a list of nodes representing the latent parents of the specified measured node. If no latent parents are found, returns an empty list.
+     * @param measured the node representing the measured variable whose latent parents are to be retrieved; cannot be
+     *                 null.
+     * @return a list of nodes representing the latent parents of the specified measured node. If no latent parents are
+     * found, returns an empty list.
      */
     private List<Node> getLatentParents(Graph graph, Node measured) {
         List<Node> parents = graph.getParents(measured);

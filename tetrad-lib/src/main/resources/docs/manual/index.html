@@ -4295,7 +4295,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="skew">
 
-        <p>This is an algorithm that orients an edge X--Y for continuous
+        <p>This is an algorithm that orients an edge X--Y for continuousz
             variables based on non-Gaussian information. This rule in particular
             uses a skewness to make the orientation. Note that if the variables X
             and Y are both Gaussian, and the model is linear, it is not possible
@@ -5276,13 +5276,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="avgDegree_short_desc">Average degree of graph (min =
-        1)</span></li>
+        0)</span></li>
             <li>Long Description: <span id="avgDegree_long_desc">
         The average degree of a graph is equal to 2E / V, where E is the
         number of edges in the graph and V the number of variables (vertices)
         in the graph, since each edge has two endpoints.</span></li>
             <li>Default Value: <span id="avgDegree_default_value">2</span></li>
-            <li>Lower Bound: <span id="avgDegree_lower_bound">1</span></li>
+            <li>Lower Bound: <span id="avgDegree_lower_bound">0</span></li>
             <li>Upper Bound: <span
                     id="avgDegree_upper_bound">2147483647</span></li>
             <li>Value Type:
@@ -5466,6 +5466,102 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 Type: <span id="coefSymmetric_value_type">Boolean</span></li>
         </ul>
 
+        <h3 class="parameter_description" id="cyclicCoefLow">cyclicCoefLow</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="cyclicCoefLow_short_desc">
+                    Cyclic: Low end of coefficient range for coefficients in cycles
+        </span></li>
+            <li>Long Description: <span id="cyclicCoefLow_long_desc">
+        			Cyclic: Low end of coefficient range for coefficients in cycles
+        </span></li>
+            <li>Default Value: <span
+                    id="cyclicCoefLow_default_value">0.2</span></li>
+            <li>Lower Bound: <span
+                    id="cyclicCoefLow_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span
+                    id="cyclicCoefLow_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value
+                Type: <span id="cyclicCoefLow_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="cyclicCoefHigh">cyclicCoefHigh</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="cyclicCoefHigh_short_desc">
+                    Cyclic: High end of coefficient range for coefficients in cycles
+        </span></li>
+            <li>Long Description: <span id="cyclicCoefHigh_long_desc">
+        			Cyclic: Higb end of coefficient range for coefficients in cycles
+        </span></li>
+            <li>Default Value: <span
+                    id="cyclicCoefHigh_default_value">1.0</span></li>
+            <li>Lower Bound: <span
+                    id="cyclicCoefHigh_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span
+                    id="cyclicCoefHigh_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value
+                Type: <span id="cyclicCoefHigh_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="cyclicRadius">cyclicRadius</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="cyclicRadius_short_desc">
+                    Cyclic: Target spectral radius used to stabilize cyclic feedback.
+        </span></li>
+            <li>Long Description: <span id="cyclicRadius_long_desc">
+        			Cyclic: Target spectral radius used to stabilize cyclic feedback.
+        </span></li>
+            <li>Default Value: <span
+                    id="cyclicRadius_default_value">0.6</span></li>
+            <li>Lower Bound: <span
+                    id="cyclicRadius_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="cyclicRadius_upper_bound">1</span></li>
+            <li>Value
+                Type: <span id="cyclicRadius_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="cyclicMaxProd">cyclicMaxProd</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="cyclicMaxProd_short_desc">
+                    Cyclic: Upper bound on product of coefficients around feedback loops.
+        </span></li>
+            <li>Long Description: <span id="cyclicMaxProd_long_desc">
+        			Cyclic: Upper bound on product of coefficients around feedback loops.
+        </span></li>
+            <li>Default Value: <span
+                    id="cyclicMaxProd_default_value">0.5</span></li>
+            <li>Lower Bound: <span
+                    id="cyclicMaxProd_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span
+                    id="cyclicMaxProd_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value
+                Type: <span id="cyclicMaxProd_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="cyclicCoefStyle">cyclicCoefStyle</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="cyclicCoefStyle_short_desc">
+            Cyclic: 0 = Auto 1 = Fix Radius 2 = Cap Products, 3 = None,
+        </span></li>
+            <li>Long Description: <span id="cyclicCoefStyle_long_desc">
+                Cyclic: 0 = Choose for Me 1 = Scale SCCs to cyclic radius 2 = Cap cyclic products in SCCs,
+                3 = Regular SEM initialization
+        </span></li>
+            <li>Default Value: <span
+                    id="cyclicCoefStyle_default_value">0</span></li>
+            <li>Lower Bound: <span
+                    id="cyclicCoefStyle_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="cyclicCoefStyle_upper_bound">3</span></li>
+            <li>Value
+                Type: <span id="cyclicCoefStyle_value_type">Integer</span></li>
+        </ul>
+
         <h3 class="parameter_description"
             id="colliderDiscoveryRule">colliderDiscoveryRule</h3>
         <ul
@@ -5602,6 +5698,24 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="conflictRule_value_type">Integer</span></li>
         </ul>
 
+        <h3 class="parameter_description" id="allowBidirected">allowBidirected</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="allowBidirected_short_desc">
+                 Allow bidirected edges to show collider conflicts
+        </span></li>
+            <li>Long Description: <span id="allowBidirected_long_desc">
+             Allow bidirected edges to show collider conflicts
+        </span></li>
+            <li>Default Value: <span
+                    id="allowBidirected_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="allowBidirected_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="allowBidirected_upper_bound"></span></li>
+            <li>Value Type: <span
+                    id="allowBidirected_value_type">Boolean</span></li>
+        </ul>
+
         <h3 class="parameter_description"
             id="guaranteeCpdag">guaranteeCpdag</h3>
         <ul class="parameter_description_list">
@@ -5674,6 +5788,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="targets_upper_bound"></span></li>
             <li>Value Type: <span
                     id="targets_value_type">String</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="clusterSizes">clusterSizes</h3>
+        <ul class="clusterSizes_list">
+            <li>Short Description: <span id="clusterSizes_short_desc">
+				Cluster sizes to check (comma separated, each >= 2, default = "2")
+        </span></li>
+            <li>Long Description: <span
+                    id="clusterSizes_long_desc">
+                    Cluster sizes to check (comma separated, each >= 2, default = "2")</span>
+            </li>
+            <li>Default Value: <span
+                    id="clusterSizes_default_value"></span></li>
+            <li>Lower Bound: <span
+                    id="clusterSizes_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="clusterSizes_upper_bound"></span></li>
+            <li>Value Type: <span
+                    id="clusterSizes_value_type">String</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6186,7 +6320,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         are given for relation to the literature, and the v1 FASK rule is
         included for backward compatibility.</span></li>
             <li>Default Value:
-                <span id="faskLeftRightRule_default_value">2</span></li>
+                <span id="faskLeftRightRule_default_value">3</span></li>
             <li>Lower
                 Bound: <span id="faskLeftRightRule_lower_bound">1</span></li>
             <li>Upper Bound: <span
@@ -6738,6 +6872,107 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
+            id="shrinkageMode">shrinkageMode</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="shrinkageMode_short_desc">
+                    Shrinkage Mode: 1 = None 2 = Ridge 3 = Ledoit-Wolf
+        </span></li>
+            <li>Long Description: <span
+                    id="shrinkageMode_long_desc">
+                    Shrinkage Mode: 1 = None 2 = Ridge 3 = Ledoit-Wolf
+         </span></li>
+            <li>Default Value: <span
+                    id="shrinkageMode_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="shrinkageMode_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="shrinkageMode_upper_bound">3</span></li>
+            <li>Value
+                Type: <span
+                        id="shrinkageMode_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="regularizationLambda">regularizationLambda</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="regularizationLambda_short_desc">
+                    Small number >= 0 Add lambda to the the diagonal of
+                    correlation/covariance matrices. Default 1e-8.
+        </span></li>
+            <li>Long Description: <span
+                    id="regularizationLambda_long_desc">
+                    Small number >= 0 Add lambda to the the diagonal of
+                    correlation/covariance matricers. Default 1e-8.
+         </span></li>
+            <li>Default Value: <span
+                    id="regularizationLambda_default_value">1e-8</span></li>
+            <li>Lower Bound: <span
+                    id="regularizationLambda_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="regularizationLambda_upper_bound">Infinity</span></li>
+            <li>Value
+                Type: <span
+                        id="regularizationLambda_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="fdrQ">fdrQ</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="fdrQ_short_desc">
+                    FDR q value, often 0.01 - 0.1, or 0 if FDR should not be done.
+        </span></li>
+            <li>Long Description: <span
+                    id="fdrQ_long_desc">
+                    FDR q value, often 0.01 - 0.1, or 0 if FDR should not be done.
+         </span></li>
+            <li>Default Value: <span
+                    id="fdrQ_default_value">0</span></li>
+            <li>Lower Bound: <span
+                    id="fdrQ_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="fdrQ_upper_bound">1</span></li>
+            <li>Value
+                Type: <span
+                        id="fdrQ_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="conditioningThreshold">conditioningThreshold</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="conditioningThreshold_short_desc">
+                    Matrix conditioning values above which Eigenvalue whitening is used.
+                    Default 1e-10.
+        </span></li>
+            <li>Long Description: <span
+                    id="conditioningThreshold_long_desc">
+                    Matrix conditioning values above which Eigenvalue whitening is used.
+                    For smaller tresholds, the faster Cholesky whitening is used.
+                    Default 1e-10, < 0 forces Eigenvalue whitening.
+         </span></li>
+            <li>Default Value: <span
+                    id="conditioningThreshold_default_value">1e-10</span></li>
+            <li>Lower Bound: <span
+                    id="conditioningThreshold_lower_bound">-Infinity</span></li>
+            <li>Upper
+                Bound: <span
+                        id="conditioningThreshold_upper_bound">Infinity</span></li>
+            <li>Value
+                Type: <span
+                        id="conditioningThreshold_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="sepsetFinderMethod">sepsetFinderMethod</h3>
         <ul
                 class="parameter_description_list">
@@ -6807,6 +7042,128 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Value
                 Type: <span
                         id="startFromCompleteGraph_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="tscPcUseBoss">tscPcUseBoss</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="tscPcUseBoss_short_desc">
+                    Yes, if the procedure should use BOSS (with the BOSS-specific parameters) and not PC
+        </span></li>
+            <li>Long Description: <span
+                    id="tscPcUseBoss_long_desc">
+                    Yes, if the procedure should use BOSS (with the BOSS-specific parameters) and not PC
+        </span></li>
+            <li>Default Value: <span
+                    id="tscPcUseBoss_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="tscPcUseBoss_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="tscPcUseBoss_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="tscPcUseBoss_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="tscEnableHierarchy">tscEnableHierarchy</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="tscEnableHierarchy_short_desc">
+                    Yes, if hierarchical latents should be detected
+        </span></li>
+            <li>Long Description: <span
+                    id="tscEnableHierarchy_long_desc">
+                    Yes, if hierarchical latents should be detected
+        </span></li>
+            <li>Default Value: <span
+                    id="tscEnableHierarchy_default_value">true</span></li>
+            <li>Lower Bound: <span
+                    id="tscEnableHierarchy_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="tscEnableHierarchy_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="tscEnableHierarchy_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="tscMinRankDrop">tscMinRankDrop</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="tscMinRankDrop_short_desc">
+                    Min rank drop for detecting hierarchical latents
+        </span></li>
+            <li>Long Description: <span
+                    id="tscMinRankDrop_long_desc">
+                    Min rank drop for detecting hierarchical latents
+        </span></li>
+            <li>Default Value: <span
+                    id="tscMinRankDrop_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="tscMinRankDrop_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="tscMinRankDrop_upper_bound">100</span></li>
+            <li>Value
+                Type: <span
+                        id="tscMinRankDrop_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="maxRank">maxRank</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="maxRank_short_desc">
+                    The algorithm looks for clusters from rank 1 up through this rank
+        </span></li>
+            <li>Long Description: <span
+                    id="maxRank_long_desc">
+                    The algorithm looks for clusters from rank 1 up through this rank
+        </span></li>
+            <li>Default Value: <span
+                    id="maxRank_default_value">2</span></li>
+            <li>Lower Bound: <span
+                    id="maxRank_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="maxRank_upper_bound">1000</span></li>
+            <li>Value
+                Type: <span
+                        id="maxRank_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="tscSingletonPolicy">tscSingletonPolicy</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="tscSingletonPolicy_short_desc">
+                    Singletons: 1 = Exclude 2 = Include 3 = Collect as Noise
+        </span></li>
+            <li>Long Description: <span
+                    id="tscSingletonPolicy_long_desc">
+                    Singletons: 1 = Exclude 2 = Include 3 = Collect as Noise
+        </span></li>
+            <li>Default Value: <span
+                    id="tscSingletonPolicy_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="tscSingletonPolicy_lower_bound">1</span></li>
+            <li>Upper
+                Bound:
+                <span4
+                        id="tscSingletonPolicy_upper_bound">3</span>
+            </li>
+            <li>Value
+                Type: <span
+                        id="tscSingletonPolicy_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7342,6 +7699,69 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="inputScale_value_type">Double</span></li>
         </ul>
 
+        <h3 class="parameter_description" id="anmPreset">anmPreset</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="anmPreset_short_desc">
+        Preset function family: 1 = Smooth RBF, 2 = Wavy RBF, 3 = Tanh, 4 = Polynomial
+    </span></li>
+            <li>Long Description: <span id="anmPreset_long_desc">
+        Selects the base family of nonlinear functions used on each edge for the ANM simulator.
+        Options: 1 = Smooth RBF (gentle), 2 = Wavy RBF (richer),
+        3 = Tanh (sigmoidal), 4 = Polynomial (low-degree).
+    </span></li>
+            <li>Default Value: <span id="anmPreset_default_value">2</span></li>
+            <li>Lower Bound: <span id="anmPreset_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="anmPreset_upper_bound">4</span></li>
+            <li>Value Type: <span id="anmPreset_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="anmNonlinearity">anmNonlinearity</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="anmNonlinearity_short_desc">
+        Controls strength of nonlinearity in ANM simulator
+    </span></li>
+            <li>Long Description: <span id="anmNonlinearity_long_desc">
+        A slider in [0,1] that simultaneously controls the number of basis units
+        per edge and their amplitude. Low values produce nearly linear functions,
+        high values produce strongly nonlinear functions.
+    </span></li>
+            <li>Default Value: <span id="anmNonlinearity_default_value">0.6</span></li>
+            <li>Lower Bound: <span id="anmNonlinearity_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="anmNonlinearity_upper_bound">10.0</span></li>
+            <li>Value Type: <span id="anmNonlinearity_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="anmNoiseKind">anmNoiseKind</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="anmNoiseKind_short_desc">
+        Noise distribution family: 1 = Beta (skewed), 2 = Gaussian, 3 = Student-t (heavy-tailed)
+    </span></li>
+            <li>Long Description: <span id="anmNoiseKind_long_desc">
+        Selects the distribution of exogenous noise for the ANM simulator
+        Options: 1 = Beta (skewed), 2 = Gaussian, 3 = Student-t (heavy-tailed).
+    </span></li>
+            <li>Default Value: <span id="anmNoiseKind_default_value">1</span></li>
+            <li>Lower Bound: <span id="anmNoiseKind_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="anmNoiseKind_upper_bound">3</span></li>
+            <li>Value Type: <span id="anmNoiseKind_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="anmNoiseStrength">anmNoiseStrength</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="anmNoiseStrength_short_desc">
+        Controls variance/strength of noise in ANM simulator
+    </span></li>
+            <li>Long Description: <span id="anmNoiseStrength_long_desc">
+        A slider in [0,1] that scales the standard deviation of the chosen noise distribution.
+        Low values yield weak noise, high values yield stronger noise. For Student-t, this also
+        interacts with degrees of freedom (heavier tails at higher strength).
+    </span></li>
+            <li>Default Value: <span id="anmNoiseStrength_default_value">0.4</span></li>
+            <li>Lower Bound: <span id="anmNoiseStrength_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="anmNoiseStrength_upper_bound">10.0</span></li>
+            <li>Value Type: <span id="anmNoiseStrength_value_type">Double</span></li>
+        </ul>
+
         <h3 class="parameter_description"
             id="maxSepsetSize">maxSepsetSize</h3>
         <ul class="parameter_description_list">
@@ -7405,7 +7825,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     Repairs errors in PAGs due to almost cyclic paths or non-maximalities.
                     This comes with a certain risk; errors in PAGs indicate that the PAG
                     assumptions were not met; the user may wish to consider why before
-                    selecting this <option value="" class=""></option>
+                    selecting this <option class="" value=""></option>
         </span></li>
             <li>Default Value: <span
                     id="guaranteePag_default_value">false</span></li>
@@ -7601,7 +8021,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <h3 class="parameter_description" id="kciEpsilon">kciEpsilon</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="kciEpsilon_short_desc">Epsilon for Proposition 5, a small
+                    id="kciEpsilon_short_desc">Epsilon, a small
         positive number</span></li>
             <li>Long Description: <span
                     id="kciEpsilon_long_desc"> See Zhang, K., Peters, J., Janzing, D., &
@@ -7622,8 +8042,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="kciNumBootstraps_short_desc">Number of bootstraps for Theorems 4
-        and Proposition 5 for KCI</span></li>
+                    id="kciNumBootstraps_short_desc">Number of bootstraps</span></li>
             <li>Long Description: <span
                     id="kciNumBootstraps_long_desc"> This parameter is the number of
         bootstraps for Theorems 4 from Zhang, K., Peters, J., Janzing, D., &
@@ -7644,7 +8063,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="kciUseApproximation_short_desc">Use the approximate Gamma
+                    id="kciUseApproximation_short_desc">Use the Gamma
         approximation algorithm</span></li>
             <li>Long Description: <span
                     id="kciUseApproximation_long_desc"> Referring to Zhang, K., Peters, J.,
@@ -7666,11 +8085,11 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="scalingFactor_short_desc">For Gaussian kernel: The scaling factor * Silverman bandwidth.</span>
+                    id="scalingFactor_short_desc">Scaling factor.</span>
             </li>
             <li>Long
                 Description: <span id="scalingFactor_long_desc">
-                    For Gaussian kernel: The scaling factor * Silverman bandwidth.
+                    For Gaussian kernel: The scaling factor.
                 </span></li>
             <li>Default Value: <span
                     id="scalingFactor_default_value">1.0</span></li>
@@ -7815,25 +8234,91 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="latentMeasuredImpureParents">latentMeasuredImpureParents</h3>
+            id="mimLatentGroupSpecs">mimLatentGroupSpecs</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="latentMeasuredImpureParents_short_desc">Number of Latent -->
+                    id="mimLatentGroupSpecs_short_desc">
+                MIM: List of count:children:(rank), comma separated; e.g. 5:6(1),2:8(2):</span></li>
+            <li>Long Description: <span
+                    id="mimLatentGroupSpecs_long_desc">
+                List of count:children:(rank), comma separated; e.g. 5:6(1),2:8(2)</span></li>
+            <li>Default Value: <span
+                    id="mimLatentGroupSpecs_default_value">5:6(1)</span></li>
+            <li>Lower Bound: <span
+                    id="mimLatentGroupSpecs_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="mimLatentGroupSpecs_upper_bound"></span></li>
+            <li>Value Type: <span
+                    id="mimLatentGroupSpecs_value_type">String</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="mimLatentMeasuredImpureParents">mimLatentMeasuredImpureParents</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="mimLatentMeasuredImpureParents_short_desc">MIM: Number of Latent -->
         Measured impure edges</span></li>
             <li>Long Description: <span
-                    id="latentMeasuredImpureParents_long_desc"> It is possible for
+                    id="mimLatentMeasuredImpureParents_long_desc"> It is possible for
         structural nodes to have as children measured variables that are
         children of other structural nodes. These edges in the graph will be
         considered impure.</span></li>
             <li>Default Value: <span
-                    id="latentMeasuredImpureParents_default_value">0</span></li>
+                    id="mimLatentMeasuredImpureParents_default_value">0</span></li>
             <li>Lower Bound: <span
-                    id="latentMeasuredImpureParents_lower_bound">-2147483648</span></li>
+                    id="mimLatentMeasuredImpureParents_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span
-                    id="latentMeasuredImpureParents_upper_bound">2147483647</span></li>
+                    id="mimLatentMeasuredImpureParents_upper_bound">2147483647</span></li>
             <li>Value Type: <span
-                    id="latentMeasuredImpureParents_value_type">Integer</span></li>
+                    id="mimLatentMeasuredImpureParents_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="mimNumChildrenPerGroup">mimNumChildrenPerGroup</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="mimNumChildrenPerGroup_short_desc">MIM: Number of children for
+                    each group  latents</span></li>
+            <li>Long Description: <span
+                    id="mimNumChildrenPerGroup_long_desc">Each group of latents shares
+                    a common set of children of this size.</span></li>
+            <li>Default Value: <span
+                    id="mimNumChildrenPerGroup_default_value">0</span></li>
+            <li>Lower Bound: <span
+                    id="mimNumChildrenPerGroup_lower_bound">-2147483648</span></li>
+            <li>Upper Bound: <span
+                    id="mimNumChildrenPerGroup_upper_bound">2147483647</span></li>
+            <li>Value Type: <span
+                    id="mimNumChildrenPerGroup_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="mimMetaEdgeConnectionType">mimMetaEdgeConnectionType</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="mimMetaEdgeConnectionType_short_desc">
+                    1 = Cartesian Product 2 = Corresponding, 3 = Patchy Connections
+        </span></li>
+            <li>Long Description: <span
+                    id="mimMetaEdgeConnectionType_long_desc">
+                    1 = Cartesian Product 2 = Corresponding, 3 = Patchy Connections
+        </span></li>
+            <li>Default Value: <span
+                    id="mimMetaEdgeConnectionType_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="mimMetaEdgeConnectionType_lower_bound">1</span></li>
+            <li>Upper
+                Bound:
+                <span4
+                        id="mimMetaEdgeConnectionType_upper_bound">3</span>
+            </li>
+            <li>Value
+                Type: <span
+                        id="mimMetaEdgeConnectionType_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="lowerBound">lowerBound</h3>
@@ -8115,72 +8600,72 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="measuredMeasuredImpureAssociations">
-            measuredMeasuredImpureAssociations</h3>
+            id="mimMeasuredMeasuredImpureAssociations">
+            mimMeasuredMeasuredImpureAssociations</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="measuredMeasuredImpureAssociations_short_desc"> Number of
+                    id="mimMeasuredMeasuredImpureAssociations_short_desc">MIM: Number of
         Measured <-> Measured impure edges</span></li>
             <li>Long Description:
-                <span id="measuredMeasuredImpureAssociations_long_desc"> It is
+                <span id="mimMeasuredMeasuredImpureAssociations_long_desc"> It is
         possible for measures from two different structural nodes to be
         confounded. These confounding (bidirected) edges will be considered
         to be impure.</span></li>
             <li>Default Value: <span
-                    id="measuredMeasuredImpureAssociations_default_value">0</span></li>
+                    id="mimMeasuredMeasuredImpureAssociations_default_value">0</span></li>
             <li>Lower Bound: <span
-                    id="measuredMeasuredImpureAssociations_lower_bound">-2147483648</span
+                    id="mimMeasuredMeasuredImpureAssociations_lower_bound">-2147483648</span
             ></li>
             <li>Upper Bound: <span
-                    id="measuredMeasuredImpureAssociations_upper_bound">2147483647</span>
+                    id="mimMeasuredMeasuredImpureAssociations_upper_bound">2147483647</span>
             </li>
             <li>Value Type: <span
-                    id="measuredMeasuredImpureAssociations_value_type">Integer</span></li
+                    id="mimMeasuredMeasuredImpureAssociations_value_type">Integer</span></li
             >
         </ul>
 
         <h3 class="parameter_description"
-            id="measuredMeasuredImpureParents">measuredMeasuredImpureParents</h3>
+            id="mimMeasuredMeasuredImpureParents">mimMeasuredMeasuredImpureParents</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="measuredMeasuredImpureParents_short_desc"> Number of Measured -->
+                    id="mimMeasuredMeasuredImpureParents_short_desc">MIM: Number of Measured -->
         Measured impure edges</span></li>
             <li>Long Description: <span
-                    id="measuredMeasuredImpureParents_long_desc"> It is possible for
+                    id="mimMeasuredMeasuredImpureParents_long_desc"> It is possible for
         measures from two different structural nodes to have directed edges
         between them. These edges will be considered to be impure.</span>
             </li>
             <li>Default Value: <span
-                    id="measuredMeasuredImpureParents_default_value">0</span></li>
+                    id="mimMeasuredMeasuredImpureParents_default_value">0</span></li>
             <li>Lower Bound: <span
-                    id="measuredMeasuredImpureParents_lower_bound">-2147483648</span></li
+                    id="mimMeasuredMeasuredImpureParents_lower_bound">-2147483648</span></li
             >
             <li>Upper Bound: <span
-                    id="measuredMeasuredImpureParents_upper_bound">2147483647</span></li>
+                    id="mimMeasuredMeasuredImpureParents_upper_bound">2147483647</span></li>
             <li>Value Type: <span
-                    id="measuredMeasuredImpureParents_value_type">Integer</span></li>
+                    id="mimMeasuredMeasuredImpureParents_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="measurementModelDegree">measurementModelDegree</h3>
+            id="mimMimNumStructuralNodes">mimMimNumStructuralNodes</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="measurementModelDegree_short_desc">Number of measurements per
+                    id="mimMimNumStructuralNodes_short_desc">Number of measurements per
         Latent</span></li>
             <li>Long Description: <span
-                    id="measurementModelDegree_long_desc"> Each structural node in the
+                    id="mimMimNumStructuralNodes_long_desc"> Each structural node in the
         MIM will be created to have this many measured children.</span></li>
             <li>Default Value: <span
-                    id="measurementModelDegree_default_value">5</span></li>
+                    id="mimMimNumStructuralNodes_default_value">5</span></li>
             <li>Lower
                 Bound: <span
-                        id="measurementModelDegree_lower_bound">-2147483648</span></li>
+                        id="mimMimNumStructuralNodes_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span
-                    id="measurementModelDegree_upper_bound">2147483647</span></li>
+                    id="mimMimNumStructuralNodes_upper_bound">2147483647</span></li>
             <li>Value Type: <span
-                    id="measurementModelDegree_value_type">Integer</span></li>
+                    id="mimMimNumStructuralNodes_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -8505,48 +8990,48 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="numStructuralEdges">numStructuralEdges</h3>
+            id="mimNumStructuralEdges">mimNumStructuralEdges</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="numStructuralEdges_short_desc">Number of structural
+                    id="mimNumStructuralEdges_short_desc">MIM: Number of structural
         edges</span></li>
             <li>Long Description: <span
-                    id="numStructuralEdges_long_desc"> This is a parameter for generating
+                    id="mimNumStructuralEdges_long_desc"> This is a parameter for generating
         random multiple indicator models (MIMs). A structural edge is an edge
         connecting two structural nodes.</span></li>
             <li>Default Value:
-                <span id="numStructuralEdges_default_value">3</span></li>
+                <span id="mimNumStructuralEdges_default_value">5</span></li>
             <li>Lower
                 Bound: <span
-                        id="numStructuralEdges_lower_bound">-2147483648</span></li>
+                        id="mimNumStructuralEdges_lower_bound">-2147483648</span></li>
             <li>Upper
                 Bound: <span
-                        id="numStructuralEdges_upper_bound">2147483647</span></li>
+                        id="mimNumStructuralEdges_upper_bound">2147483647</span></li>
             <li>Value
-                Type: <span id="numStructuralEdges_value_type">Integer</span></li>
+                Type: <span id="mimNumStructuralEdges_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="numStructuralNodes">numStructuralNodes</h3>
+            id="mimNumStructuralNodes">mimNumStructuralNodes</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="numStructuralNodes_short_desc">Number of structural
+                    id="mimNumStructuralNodes_short_desc">Number of structural
         nodes</span></li>
             <li>Long Description: <span
-                    id="numStructuralNodes_long_desc"> This is a parameter for generating
+                    id="mimNumStructuralNodes_long_desc"> This is a parameter for generating
         random multiple indicator models (MIMs). A structural node is one of
         the latent variables in the model; each structural node has a number
         of child measured variables.</span></li>
             <li>Default Value: <span
-                    id="numStructuralNodes_default_value">3</span></li>
+                    id="mimNumStructuralNodes_default_value">3</span></li>
             <li>Lower Bound:
-                <span id="numStructuralNodes_lower_bound">-2147483648</span></li>
+                <span id="mimNumStructuralNodes_lower_bound">-2147483648</span></li>
             <li>Upper Bound: <span
-                    id="numStructuralNodes_upper_bound">2147483647</span></li>
+                    id="mimNumStructuralNodes_upper_bound">2147483647</span></li>
             <li>Value
-                Type: <span id="numStructuralNodes_value_type">Integer</span></li>
+                Type: <span id="mimNumStructuralNodes_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -9830,6 +10315,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="stableFAS_value_type">Boolean</span></li>
         </ul>
 
+        <h3 class="parameter_description" id="colliderOrientationStyle">colliderOrientationStyle</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="colliderOrientationStyle_short_desc">
+                Collider Orientation Style: 1 = Sepsets 2 = Conservative 3 = Max-P
+            </span></li>
+            <li>Long Description: <span
+                    id="colliderOrientationStyle_long_desc">
+                Collider Orientation Style: 1 = Sepsets 2 = Conservative 3 = Max-P
+        </span></li>
+            <li>Default Value:
+                <span id="colliderOrientationStyle_default_value">3</span></li>
+            <li>Lower Bound:
+                <span id="colliderOrientationStyle_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="colliderOrientationStyle_upper_bound">3</span></li>
+            <li>Value Type: <span
+                    id="colliderOrientationStyle_value_type">Integer</span></li>
+        </ul>
+
         <h3 class="parameter_description"
             id="standardize">standardize</h3>
         <ul
@@ -10631,6 +11136,91 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
+            id="tscMode">tscMode</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="tscMode_short_desc">
+                TSC mode: 1 = Metaloop, 2 = Specific size/rank
+        	</span></li>
+            <li>Long
+                Description: <span id="tscMode_long_desc">
+                TSC mode: 1 = Metaloop, 2 = Specific cluster size/rank
+        </span></li>
+            <li>Default Value:
+                <span id="tscMode_default_value">1</span></li>
+            <li>Lower
+                Bound: <span id="tscMode_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="tscMode_upper_bound">2</span></li>
+            <li>Value Type:
+                <span id="tscMode_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="tscClusterSize">tscClusterSize</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="tscClusterSize_short_desc">
+                TSC cluster size (if desired)
+        	</span></li>
+            <li>Long
+                Description: <span id="tscClusterSize_long_desc">
+                TSC cluster size (if desired)
+        </span></li>
+            <li>Default Value:
+                <span id="tscClusterSize_default_value">2</span></li>
+            <li>Lower
+                Bound: <span id="tscClusterSize_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="tscClusterSize_upper_bound">500</span></li>
+            <li>Value Type:
+                <span id="tscClusterSize_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="tscClusterRank">tscClusterRank</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="tscClusterRank_short_desc">
+                TSC cluster rank (if desired)
+        	</span></li>
+            <li>Long
+                Description: <span id="tscClusterRank_long_desc">
+                TSC cluster rank (if desired)
+        </span></li>
+            <li>Default Value:
+                <span id="tscClusterRank_default_value">1</span></li>
+            <li>Lower
+                Bound: <span id="tscClusterRank_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="tscClusterRank_upper_bound">500</span></li>
+            <li>Value Type:
+                <span id="tscClusterRank_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="tscMinRedundancy">tscMinRedundancy</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="tscMinRedundancy_short_desc">
+                Minimum redundancy for clusters beyond size = rank + 1
+        	</span></li>
+            <li>Long
+                Description: <span id="tscMinRedundancy_long_desc">
+                Minimum redundancy: require at least k extra indicators
+                    per latent (|C| ≥ r+1+k). Higher values suppress trivially sized clusters.
+        </span></li>
+            <li>Default Value:
+                <span id="tscMinRedundancy_default_value">0</span></li>
+            <li>Lower
+                Bound: <span id="tscMinRedundancy_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="tscMinRedundancy_upper_bound">1000</span></li>
+            <li>Value Type:
+                <span id="tscMinRedundancy_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="pathsNearWhichEndpoint">pathsNearWhichEndpoint</h3>
         <ul
                 class="parameter_description_list">
@@ -10674,6 +11264,27 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 <span id="pathsMaxLengthAdjustment_value_type">Integer</span></li>
         </ul>
 
+        <h3 class="parameter_description" id="effectiveSampleSize">effectiveSampleSize</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="effectiveSampleSize_short_desc">
+                    The effective sample size, or -1 if the true sample size is to be used.
+                    </span></li>
+            <li>Long Description: <span
+                    id="effectiveSampleSize_long_desc">
+                    The effective sample size, or -1 is the true sample size is to be used.
+        </span></li>
+            <li>Default Value: <span
+                    id="effectiveSampleSize_default_value">-1</span></li>
+            <li>Lower Bound: <span
+                    id="effectiveSampleSize_lower_bound">-1</span></li>
+            <li>Upper Bound: <span
+                    id="effectiveSampleSize_upper_bound">2147483647</span></li>
+            <li>Value Type: <span
+                    id="effectiveSampleSize_value_type">Integer</span></li>
+        </ul>
+
         <h3 class="parameter_description"
             id="pathsMaxLength">pathsMaxLength</h3>
         <ul
@@ -10695,6 +11306,199 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="pathsMaxLength_upper_bound">100000</span></li>
             <li>Value Type:
                 <span id="pathsMaxLength_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.rcitMode">rcit.rcitMode</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.rcitMode_short_desc">Use RCIT (true) or RCoT (false)</span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.rcitMode_long_desc">
+      Chooses between the two randomized kernel tests:
+      <b>RCIT</b> augments <i>Y</i> with <i>Z</i> features (tests <i>X ⟂ Y,Z | Z</i>),
+      while <b>RCoT</b> uses only <i>X</i> and <i>Y</i> features with residualization against <i>Z</i>.
+      In the original RCIT code base this switch is exposed as <code>rcit=True/False</code>.
+    </span>
+            </li>
+            <li>Default Value: <span id="rcit.rcitMode_default_value">true</span></li>
+            <li>Lower Bound: <span id="rcit.rcitMode_lower_bound"></span></li>
+            <li>Upper Bound: <span id="rcit.rcitMode_upper_bound"></span></li>
+            <li>Value Type: <span id="rcit.rcitMode_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.numFeaturesZ">rcit.numFeaturesZ</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.numFeaturesZ_short_desc">Random Fourier features for Z</span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.numFeaturesZ_long_desc">
+                  Number of random Fourier features used to represent the conditioning set <i>Z</i>.
+                  Larger values are more accurate but slower; values in the 50–300 range are typical.
+                </span>
+            </li>
+            <li>Default Value: <span id="rcit.numFeaturesZ_default_value">100</span></li>
+            <li>Lower Bound: <span id="rcit.numFeaturesZ_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="rcit.numFeaturesZ_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="rcit.numFeaturesZ_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.numFeaturesXY">rcit.numFeaturesXY</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.numFeaturesXY_short_desc">Random Fourier features for X and Y</span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.numFeaturesXY_long_desc">
+              Number of random Fourier features for the tested variables <i>X</i> and <i>Y</i>.
+              Small values (e.g., 3–10) often suffice; increasing improves power but adds cost.
+            </span>
+            </li>
+            <li>Default Value: <span id="rcit.numFeaturesXY_default_value">5</span></li>
+            <li>Lower Bound: <span id="rcit.numFeaturesXY_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="rcit.numFeaturesXY_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="rcit.numFeaturesXY_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.lambda">rcit.lambda</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.lambda_short_desc">Ridge regularization (λ)</span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.lambda_long_desc">
+                Ridge penalty used when residualizing feature maps of <i>X</i> and <i>Y</i> against <i>Z</i>.
+                Prevents ill-conditioning when <i>Z</i> features are collinear.
+        </span>
+            </li>
+            <li>Default Value: <span id="rcit.lambda_default_value">0.001</span></li>
+            <li>Lower Bound: <span id="rcit.lambda_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span id="rcit.lambda_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="rcit.lambda_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.approx">rcit.approx</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.approx_short_desc">
+                Null approximation method: 1 = LpB4, 2 = HBE, 3 = Gamma, 4 = Chi², 5 = Permutation
+            </span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.approx_long_desc">
+                    1 = Lindsay–Pilla–Basak (LpB4) 2 = Hall–Buckley–Eagleson (HBE)
+                    3 = Gamma (Satterthwaite–Welch) 4 = Chi² (normalized)
+                    5 = Permutation test (slower, more accurate for small samples)</span></li>
+            <li>Default Value: <span id="rcit.approx_default_value">1</span></li>
+            <li>Lower Bound: <span id="rcit.approx_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="rcit.approx_upper_bound">5</span></li>
+            <li>Value Type: <span id="rcit.approx_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.permutations">rcit.permutations</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.permutations_short_desc">Permutations for "perm" approx</span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.permutations_long_desc">
+                  Number of permutations used when <code>rcit.approx = "perm"</code>.
+                  Ignored for analytic approximations (<code>lpd4</code>, <code>hbe</code>, <code>gamma</code>, <code>chi2</code>).
+                </span>
+            </li>
+            <li>Default Value: <span id="rcit.permutations_default_value">500</span></li>
+            <li>Lower Bound: <span id="rcit.permutations_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="rcit.permutations_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="rcit.permutations_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="rcit.centerFeatures">rcit.centerFeatures</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="rcit.centerFeatures_short_desc">Center feature matrices</span>
+            </li>
+            <li>Long Description:
+                <span id="rcit.centerFeatures_long_desc">
+                  If true, center random-feature matrices before regression and test-statistic computation.
+                  Recommended for numerical stability and alignment with kernelized formulations.
+                </span>
+            </li>
+            <li>Default Value: <span id="rcit.centerFeatures_default_value">true</span></li>
+            <li>Lower Bound: <span id="rcit.centerFeatures_lower_bound"></span></li>
+            <li>Upper Bound: <span id="rcit.centerFeatures_upper_bound"></span></li>
+            <li>Value Type: <span id="rcit.centerFeatures_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="ginBackend">ginBackend</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="ginBackend_short_desc">Backend test: 1 = dcor 2 = pearson.</span>
+            </li>
+            <li>Long Description:
+                <span id="ginBackend_long_desc">
+                  Choose unconditional test for residual independence: “dcor” detects
+                  nonlinear relations, “pearson” is fast but linear only.
+                </span>
+            </li>
+            <li>Default Value: <span id="ginBackend_default_value">1</span></li>
+            <li>Lower Bound: <span id="ginBackend_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="ginBackend_upper_bound">2</span></li>
+            <li>Value Type: <span id="ginBackend_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="ginPermutations">ginPermutations</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="ginPermutations_short_desc">Number of permutations for dCor.</span>
+            </li>
+            <li>Long Description:
+                <span id="ginPermutations_long_desc">
+                  Number of random shuffles used to compute p-values for dCor; higher
+                  values give more reliable p-values but increase runtime; ignored if backend is pearson.
+                </span>
+            </li>
+            <li>Default Value: <span id="ginPermutations_default_value">200</span></li>
+            <li>Lower Bound: <span id="ginPermutations_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="ginPermutations_upper_bound">100000</span></li>
+            <li>Value Type: <span id="ginPermutations_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="ginRidge">ginRidge</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="ginRidge_short_desc">Ridge penalty for OLS regression</span>
+            </li>
+            <li>Long Description:
+                <span id="ginRidge_long_desc">
+                  Small positive value added to regression diagonals for numerical
+                  stability when fitting residual models; larger values regularize
+                  more but bias residuals.
+                </span>
+            </li>
+            <li>Default Value: <span id="ginRidge_default_value">1e-8</span></li>
+            <li>Lower Bound: <span id="ginRidge_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="ginRidge_upper_bound">100000</span></li>
+            <li>Value Type: <span id="ginRidge_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="instanceRow">instanceRow</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="instanceRow_short_desc">Indicates a particular row in the
+                testing dataset (one-indexed)</span>
+            </li>
+            <li>Long Description:
+                <span id="instanceRow_long_desc">
+                  If the algorithm uses a testing dataset, this row index points to
+                  a specific row in the data to be used as input to the algorithm.
+                  This is one-indexed.
+                </span>
+            </li>
+            <li>Default Value: <span id="instanceRow_default_value">1</span></li>
+            <li>Lower Bound: <span id="instanceRow_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="instanceRow_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="instanceRow_value_type">Integer</span></li>
         </ul>
     </div> <!-- End of search parameters -->
 

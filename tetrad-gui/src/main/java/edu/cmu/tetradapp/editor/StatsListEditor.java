@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.CompareTwoGraphs;
@@ -142,14 +162,14 @@ public class StatsListEditor extends JPanel {
                 pag.setSelected(true);
                 break;
             default:
-                menu.setText("Compare to DAG...");
+                menu.setText("Compare to Truth...");
                 graph.setSelected(true);
                 break;
         }
 
         graph.addActionListener(e -> {
             this.params.set("graphComparisonType", "DAG");
-            menu.setText("Compare to DAG...");
+            menu.setText("Compare to Truth...");
             menu.setBackground(Color.WHITE);
 //            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
 
@@ -234,3 +254,4 @@ public class StatsListEditor extends JPanel {
         return menubar;
     }
 }
+

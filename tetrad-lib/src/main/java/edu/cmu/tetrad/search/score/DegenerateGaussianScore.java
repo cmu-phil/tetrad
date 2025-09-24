@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,15 +15,15 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -46,13 +46,15 @@ import java.util.Map;
  * @author Bryan Andrews
  * @version $Id: $Id
  */
-public class DegenerateGaussianScore implements Score {
+public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettable {
     // The mixed variables of the original dataset.
     private final List<Node> variables;
     // The embedding map.
     private final Map<Integer, List<Integer>> embedding;
     // The SEM BIC score.
     private final SemBicScore bic;
+    private final int sampleSize;
+    private int nEff;
 
     /**
      * Constructs the score using a dataset.
@@ -67,6 +69,7 @@ public class DegenerateGaussianScore implements Score {
         }
 
         this.variables = dataSet.getVariables();
+        this.sampleSize = dataSet.getNumRows();
 
         // Expand the discrete columns to give indicators for each category. For the continuous variables, we
         // wet the truncation limit to 1, on the contrqact that the first polynomial for any basis will be just
@@ -77,8 +80,11 @@ public class DegenerateGaussianScore implements Score {
         this.embedding = embeddedData.embedding();
 
         this.bic = new SemBicScore(convertedData, precomputeCovariances);
+        this.bic.setEffectiveSampleSize(this.nEff);
         this.bic.setLambda(lambda);
         this.bic.setStructurePrior(0);
+
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -189,4 +195,19 @@ public class DegenerateGaussianScore implements Score {
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.bic.setPenaltyDiscount(penaltyDiscount);
     }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+        if (bic == null) {
+            throw new IllegalStateException("bic is null");
+        }
+        this.bic.setEffectiveSampleSize(this.nEff);
+    }
 }
+

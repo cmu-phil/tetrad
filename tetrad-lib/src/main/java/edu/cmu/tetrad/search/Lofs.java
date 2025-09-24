@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
@@ -27,8 +26,8 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.utils.TsUtils;
-import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.commons.math3.util.FastMath;
 
@@ -37,8 +36,8 @@ import java.util.*;
 import static edu.cmu.tetrad.util.MatrixUtils.transpose;
 import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Double.isNaN;
-import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.*;
+import static org.apache.commons.math3.util.FastMath.pow;
 
 /**
  * Implements a number of methods which take a fixed graph as input and use linear, non-Gaussian methods to orient the
@@ -47,7 +46,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * do the orientations are given in the enum, Lofs.Rule. Most of these are taken from the literature and can be googled,
  * though we should certainly give this reference for several of them, to which we are indebted:
  * <p>
- * Hyvärinen, A., &amp; Smith, S. M. (2013). Pairwise likelihood ratios for estimation of non-Gaussian structural
+ * HyvÃ¤rinen, A., &amp; Smith, S. M. (2013). Pairwise likelihood ratios for estimation of non-Gaussian structural
  * equation models. The Journal of Machine Learning Research, 14(1), 111-152.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
@@ -222,7 +221,7 @@ public class Lofs {
             FastIca fastIca = new FastIca(this.dataSets.getFirst().getDoubleData(),
                     this.dataSets.getFirst().getNumColumns());
             FastIca.IcaResult result = fastIca.findComponents();
-            System.out.println(result.getW());
+            System.out.println(result.W());
             return new EdgeListGraph();
         }
 
@@ -1315,8 +1314,8 @@ public class Lofs {
      * @return A List of double arrays containing the extracted x and y data.
      */
     private List<double[]> extractData(DataSet data, Node _x, Node _y) {
-        int xIndex = data.getColumnIndex(_x);
-        int yIndex = data.getColumnIndex(_y);
+        int xIndex = data.getColumn(_x);
+        int yIndex = data.getColumn(_y);
 
         double[][] _data = data.getDoubleData().transpose().toArray();
 
@@ -1370,8 +1369,8 @@ public class Lofs {
      * @return A list containing the X-values and Y-values as double arrays.
      */
     private List<double[]> prepareData(DataSet concatData, Node _x, Node _y) {
-        int xIndex = concatData.getColumnIndex(_x);
-        int yIndex = concatData.getColumnIndex(_y);
+        int xIndex = concatData.getColumn(_x);
+        int yIndex = concatData.getColumn(_y);
 
         double[] xData = concatData.getDoubleData().getColumn(xIndex).toArray();
         double[] yData = concatData.getDoubleData().getColumn(yIndex).toArray();
@@ -1831,7 +1830,7 @@ public class Lofs {
 
             DataSet dataSet = this.dataSets.get(m);
 
-            int targetCol = dataSet.getColumnIndex(target);
+            int targetCol = dataSet.getColumn(target);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 if (isNaN(dataSet.getDouble(i, targetCol))) {
@@ -1844,7 +1843,7 @@ public class Lofs {
                     break;
                 }
 
-                int regressorCol = dataSet.getColumnIndex(regressor);
+                int regressorCol = dataSet.getColumn(regressor);
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     if (isNaN(dataSet.getDouble(i, regressorCol))) {
@@ -1934,7 +1933,7 @@ public class Lofs {
 
             DataSet dataSet = this.dataSets.get(m);
 
-            int targetCol = dataSet.getColumnIndex(target);
+            int targetCol = dataSet.getColumn(target);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 if (isNaN(dataSet.getDouble(i, targetCol))) {
@@ -1947,7 +1946,7 @@ public class Lofs {
                     break;
                 }
 
-                int regressorCol = dataSet.getColumnIndex(regressor);
+                int regressorCol = dataSet.getColumn(regressor);
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     if (isNaN(dataSet.getDouble(i, regressorCol))) {
@@ -2043,8 +2042,8 @@ public class Lofs {
         if (this._data == null) {
             this._data = DataTransforms.centerData(this.matrices.get(0));
         }
-        int xIndex = this.dataSets.getFirst().getColumnIndex(this.dataSets.getFirst().getVariable(x.getName()));
-        int yIndex = this.dataSets.getFirst().getColumnIndex(this.dataSets.getFirst().getVariable(y.getName()));
+        int xIndex = this.dataSets.getFirst().getColumn(this.dataSets.getFirst().getVariable(x.getName()));
+        int yIndex = this.dataSets.getFirst().getColumn(this.dataSets.getFirst().getVariable(y.getName()));
         double[] xCol = this._data.getColumn(xIndex).toArray();
         double[] yCol = this._data.getColumn(yIndex).toArray();
         int N = xCol.length;
@@ -2473,6 +2472,7 @@ public class Lofs {
         Tanh
     }
 }
+
 
 
 

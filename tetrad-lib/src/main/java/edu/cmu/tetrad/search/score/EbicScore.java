@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.score;
@@ -30,6 +29,7 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -49,15 +49,13 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class EbicScore implements Score {
+public class EbicScore implements Score, EffectiveSampleSizeSettable {
     // The variables of the covariance matrix.
     private final List<Node> variables;
     // The sample size of the covariance matrix.
-    private final int sampleSize;
+    private int sampleSize;
     // The covariance matrix.
     private ICovarianceMatrix covariances;
-    // The number of variables.
-    private double N;
     // The dataset.
     private Matrix data;
     // True if verbose output should be sent to out.
@@ -66,6 +64,7 @@ public class EbicScore implements Score {
     private double gamma = 1;
     // True if the pseudo-inverse should be used.
     private double lambda = 0.0;
+    private int nEff;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -80,6 +79,7 @@ public class EbicScore implements Score {
         setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -97,6 +97,7 @@ public class EbicScore implements Score {
 
         this.variables = dataSet.getVariables();
         this.sampleSize = dataSet.getNumRows();
+        setEffectiveSampleSize(-1);
 
         DataSet _dataSet = DataTransforms.center(dataSet);
         this.data = _dataSet.getDoubleData();
@@ -142,8 +143,8 @@ public class EbicScore implements Score {
 
         double gamma = this.gamma;//  1.0 - riskBound;
 
-        double score = -(this.N * log(varRy) + (pi * log(this.N)
-                                                + 2 * pi * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
+        double score = -(this.nEff * log(varRy) + (pi * log(this.nEff)
+                                                   + 2 * pi * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
@@ -193,7 +194,7 @@ public class EbicScore implements Score {
      */
     @Override
     public int getMaxDegree() {
-        return (int) ceil(log(this.sampleSize));
+        return (int) ceil(log(this.nEff));
     }
 
     /**
@@ -222,10 +223,10 @@ public class EbicScore implements Score {
     }
 
 
-
     private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
-        this.N = covariances.getSampleSize();
+        this.sampleSize = covariances.getSampleSize();
+        setEffectiveSampleSize(-1);
     }
 
     private int[] indices(List<Node> __adj) {
@@ -242,6 +243,17 @@ public class EbicScore implements Score {
     public void setLambda(double lambda) {
         this.lambda = lambda;
     }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+    }
 }
+
 
 

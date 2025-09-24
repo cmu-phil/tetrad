@@ -1,0 +1,141 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
+package edu.cmu.tetradapp.editor;
+
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.app.TetradDesktop;
+import edu.cmu.tetradapp.editor.blocks.BlockClusteringWizard;
+import edu.cmu.tetradapp.model.LatentClustersRunner;
+import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.FinalizingEditor;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.Serial;
+
+/**
+ * Edits some algorithm to search for Markov blanket CPDAGs.
+ *
+ * @author josephramsey
+ * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ * @author Zhou Yuan (zhy19@pitt.edu)
+ * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
+ */
+public class LatentClustersEditor extends JPanel implements PropertyChangeListener, ActionListener, FinalizingEditor {
+    @Serial
+    private static final long serialVersionUID = -23L;
+
+    /**
+     * The algorithm card.
+     */
+    private final LatentClustersRunner runner;
+
+    /**
+     * The desktop.
+     */
+    private final TetradDesktop desktop;
+    private final Parameters parameters;
+    private BlockClusteringWizard wizard;
+
+    /**
+     * <p>Constructor for GeneralAlgorithmEditor.</p>
+     *
+     * @param latentClustersRunner a {@link LatentClustersRunner} object
+     */
+    public LatentClustersEditor(LatentClustersRunner latentClustersRunner) {
+        this.runner = latentClustersRunner;
+        this.desktop = (TetradDesktop) DesktopController.getInstance();
+        this.parameters = latentClustersRunner.getParameters();
+        DataModelList dataModelList = latentClustersRunner.getDataWrapper().getDataModelList();
+        DataSet data = (DataSet) (dataModelList.getFirst());
+
+        String alg = runner.getAlg();
+        String test = runner.getTest();
+        String blockText = runner.getBlockText();
+
+        wizard = new BlockClusteringWizard(data, alg, test, blockText, runner.getTrueNamedClusters(), parameters);
+        wizard.setPreferredSize(new Dimension(800, 400));
+        setLayout(new BorderLayout());
+        add(wizard, BorderLayout.CENTER);
+
+        // 1) Register to receive specs from BOTH Search and Apply
+        wizard.addBlockSpecListener(this::onBlockSpecAvailable);
+    }
+
+    private void onBlockSpecAvailable(BlockSpec spec) {
+        // Always on EDT because wizard fires from done()/EDT and from Apply (EDT)
+        try {
+            runner.setBlockSpec(spec);
+            runner.setAlg(wizard.getAlg());
+            runner.setTest(wizard.getTest());
+            runner.setBlockText(wizard.getBlockTest());
+
+//            System.out.println("Blockspec p = " + new BlockSpecSemFit(runner.getBlockSpec()).fit());
+
+            firePropertyChange("modelChanged", null, null);
+
+            // Optionally kick off the downstream block-based search now,
+            // or enable a "Run structure search" button, etc.
+            // runner.runStructureSearchAsync(); // if you have that
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Failed to set BlockSpec: " + ex.getMessage(),
+                    "Cluster Runner", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void actionPerformed(ActionEvent evt) {
+    }
+
+    @Override
+    public boolean finalizeEditor() {
+        BlockSpec blockSpec = this.runner.getBlockSpec();
+        if (blockSpec == null) {
+            int option = JOptionPane.showConfirmDialog(this, "You have not performed a clustering. Close anyway?", "Close?",
+                    JOptionPane.YES_NO_OPTION);
+            return option == JOptionPane.YES_OPTION;
+        }
+
+        actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
+
+        return true;
+    }
+}
+

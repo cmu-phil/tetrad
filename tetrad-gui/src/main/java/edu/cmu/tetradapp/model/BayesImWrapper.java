@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,9 +15,9 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
@@ -90,33 +90,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
      */
     public BayesImWrapper(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
         setup(bayesPmWrapper, oldBayesImwrapper, params);
-    }
-
-    private void setup(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
-        if (bayesPmWrapper == null) {
-            throw new NullPointerException("BayesPmWrapper must not be null.");
-        }
-
-        if (params == null) {
-            throw new NullPointerException("Parameters must not be null.");
-        }
-
-        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
-
-        if (bayesIms == null) {
-            setBayesIm(new MlBayesIm(bayesPm));
-            return;
-        }
-
-        BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
-
-        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
-            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.MANUAL);
-        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
-            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.RANDOM);
-        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
-        }
     }
 
     /**
@@ -241,6 +214,33 @@ public class BayesImWrapper implements SessionModel, Memorable {
     public static BayesImWrapper serializableInstance() {
         return new BayesImWrapper(BayesPmWrapper.serializableInstance(),
                 new Parameters());
+    }
+
+    private void setup(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
+        if (bayesPmWrapper == null) {
+            throw new NullPointerException("BayesPmWrapper must not be null.");
+        }
+
+        if (params == null) {
+            throw new NullPointerException("Parameters must not be null.");
+        }
+
+        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
+
+        if (bayesIms == null) {
+            setBayesIm(new MlBayesIm(bayesPm));
+            return;
+        }
+
+        BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
+
+        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
+            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.MANUAL);
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
+            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.RANDOM);
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
+            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
+        }
     }
 
     /**
@@ -410,3 +410,4 @@ public class BayesImWrapper implements SessionModel, Memorable {
         }
     }
 }
+

@@ -1,12 +1,12 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,33 +15,38 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ExtraLatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
+import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.TakesGraph;
+import edu.cmu.tetrad.algcomparison.score.BlockScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.MSepScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsUtils;
+import edu.cmu.tetrad.search.work_in_progress.ISBDeuScore;
+import edu.cmu.tetrad.search.work_in_progress.ISScore;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.ParamsResettable;
 
@@ -68,58 +73,49 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * The name of the model.
      */
     private final Map<String, Object> userAlgoSelections = new HashMap<>();
-
+    private final Map<Graph, String> graphSubtitle = new IdentityHashMap<>();
+    /**
+     * The graph list.
+     */
+    List<Graph> graphList = new ArrayList<>();
+    BlockSpec blockSpec = null;
     /**
      * The data model.
      */
     private DataWrapper dataWrapper;
-
     /**
      * The name of the model.
      */
     private String name;
-
     /**
      * The wrapped algorithm.
      */
     private Algorithm algorithm;
-
     /**
      * The params object, so the GUI can remember stuff for logging.
      */
     private Parameters parameters;
-
     /**
      * The graph source.
      */
     private Graph sourceGraph;
-
     /**
      * The external graph.
      */
     private Graph externalGraph;
-
-    /**
-     * The graph list.
-     */
-    private List<Graph> graphList = new ArrayList<>();
-
     /**
      * The knowledge.
      */
     private Knowledge knowledge;
-
     /**
      * The independence tests.
      */
     private transient List<IndependenceTest> independenceTests;
-
+    private List<String> resultNames = new ArrayList<>();
     /**
      * The elapsed time for the algorithm to run.
      */
     private long elapsedTime = -1L;
-
-    //===========================CONSTRUCTORS===========================//
 
     /**
      * <p>Constructor for GeneralAlgorithmRunner.</p>
@@ -136,6 +132,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         this.userAlgoSelections.putAll(runner.userAlgoSelections);
     }
+
+    //===========================CONSTRUCTORS===========================//
 
     /**
      * <p>Constructor for GeneralAlgorithmRunner.</p>
@@ -155,8 +153,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
-    public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel,
+                                  Parameters parameters) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, null);
     }
 
@@ -367,16 +365,287 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
     }
 
+    public GeneralAlgorithmRunner(List<Graph> graphList) {
+        this.graphList = graphList;
+    }
+
     //============================PUBLIC METHODS==========================//
+
+    private static boolean hasText(String s) {
+        return s != null && !s.isBlank();
+    }
+
+    private static String datasetDisplayName(DataModel dm) {
+        // DataSet, CovarianceMatrix, etc. all implement DataModel#getName().
+        String n = (dm == null) ? null : dm.getName();
+        return hasText(n) ? n : null;
+    }
+
+    private static String noteFor(DataModel dm) {
+        if (dm instanceof DataSet ds) {
+            return "n=" + ds.getNumRows();
+        }
+        if (dm instanceof ICovarianceMatrix cm) {
+            return "n=" + cm.getSampleSize();
+        }
+        return null;
+    }
+
+    private static String noteForAggregate(List<? extends DataModel> dms) {
+        int k = 0, nTot = 0;
+        for (DataModel dm : dms) {
+            String s = noteFor(dm);
+            if (s != null && s.startsWith("n=")) {
+                try {
+                    nTot += Integer.parseInt(s.substring(2));
+                    k++;
+                } catch (NumberFormatException ignore) {
+                }
+            }
+        }
+        return (k > 0) ? String.format("aggregated over %d datasets, n_total=%d", k, nTot) : null;
+    }
+
+//    // In GeneralAlgorithmRunner (additions/overrides; method names are illustrative)
+//    public void executeSearch() throws InterruptedException {
+//        var algo = getAlgorithm();
+//        var dml = getDataModelList();
+//
+//        // Clear previous results
+//        graphList.clear();
+//
+//        if (algo instanceof MultiDataSetAlgorithm mds) {
+//            // One graph from many datasets
+//            Graph g = mds.search(dml.getModelList(), getParameters());
+//            setResultGraphs(List.of(g));       // new multi container (GraphCard will read this)
+//            setResultNames(List.of("Combined"));
+//        } else {
+//            // One graph per dataset
+//            List<Graph> out = new ArrayList<>();
+//            List<String> names = new ArrayList<>();
+//            int idx = 1;
+//            for (DataModel dm : dml.getModelList()) {
+//                Graph g = getAlgorithm().search(dm, getParameters());
+//                out.add(g);
+//                String nm = (dm.getName() == null || dm.getName().isBlank()) ? ("Dataset " + idx) : dm.getName();
+//                names.add(nm);
+//                idx++;
+//            }
+//            setResultGraphs(out);              // primary
+//            setResultNames(names);       // store titles for tabs
+//        }
+//    }
+
+    public String getGraphSubtitle(Graph g) {
+        return graphSubtitle.get(g);
+    }
 
     /**
      * {@inheritDoc}
      */
+//    @Override
+//    public void execute() {
+//        long start = System.currentTimeMillis();
+//
+//        this.graphList = new ArrayList<>();
+//
+//        if (this.independenceTests != null) {
+//            this.independenceTests.clear();
+//        }
+//
+//        Algorithm algo = getAlgorithm();
+//
+//        if (this.knowledge != null && !knowledge.isEmpty()) {
+//            if (algo instanceof HasKnowledge) {
+//                ((HasKnowledge) algo).setKnowledge(this.knowledge.copy());
+//            } else {
+//                throw new IllegalArgumentException("Knowledge has been supplied, but this algorithm does not use knowledge.");
+//            }
+//        }
+//
+//        if (getDataModelList().isEmpty() && getSourceGraph() != null) {
+//            if (algo instanceof TakesScoreWrapper) {
+//                // We inject the graph to the score to satisfy the tests like MSeparationScore - Zhou
+//                ScoreWrapper scoreWrapper = ((TakesScoreWrapper) algo).getScoreWrapper();
+//                if (scoreWrapper instanceof MSepScore) {
+//                    ((MSepScore) scoreWrapper).setGraph(getSourceGraph());
+//                }
+//                if (scoreWrapper instanceof BlockScoreWrapper) {
+//                    ((BlockScoreWrapper) scoreWrapper).setBlockSpec(blockSpec);
+//                }
+//            }
+//
+//            if (algo instanceof TakesIndependenceWrapper) {
+//                IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
+//                if (wrapper instanceof MSeparationTest) {
+//                    ((MSeparationTest) wrapper).setGraph(getSourceGraph());
+//                }
+//                if (wrapper instanceof BlockIndependenceWrapper) {
+//                    ((BlockIndependenceWrapper) wrapper).setBlockSpec(blockSpec);
+//                }
+//            }
+//
+//            if (algo instanceof TakesGraph) {
+//                ((TakesGraph) algo).setGraph(this.sourceGraph);
+//            }
+//
+//            if (this.algorithm instanceof HasKnowledge) {
+//                Knowledge knowledge1 = TsUtils.getKnowledge(getSourceGraph());
+//
+//                if (this.knowledge.isEmpty() && !knowledge1.isEmpty()) {
+//                    ((HasKnowledge) algo).setKnowledge(knowledge1);
+//                } else {
+//                    ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+//                }
+//            }
+//
+//
+//            Graph graph = null;
+//            try {
+//                graph = algo.search(null, this.parameters);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//            LayoutUtil.defaultLayout(graph);
+//
+//            graphList.add(graph);
+//        } else {
+//            if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
+//                for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
+//                    Knowledge knowledge1 = getDataModelList().getFirst().getKnowledge();
+//                    List<DataModel> dataSets = new ArrayList<>(getDataModelList());
+//                    for (DataModel dataSet : dataSets) dataSet.setKnowledge(knowledge1);
+//                    int randomSelectionSize = this.parameters.getInt("randomSelectionSize");
+//                    if (randomSelectionSize == 0) {
+//                        randomSelectionSize = dataSets.size();
+//                    }
+//                    if (dataSets.size() < randomSelectionSize) {
+//                        throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than "
+//                                                           + "the number of data sets: " + randomSelectionSize + " > " + dataSets.size());
+//                    }
+//                    RandomUtil.shuffle(dataSets);
+//
+//                    List<DataModel> sub = new ArrayList<>();
+//                    for (int j = 0; j < randomSelectionSize; j++) {
+//                        sub.add(dataSets.get(j));
+//                    }
+//
+//                    if (algo instanceof TakesGraph) {
+//                        ((TakesGraph) algo).setGraph(this.sourceGraph);
+//                    }
+//
+//                    if (this.algorithm instanceof HasKnowledge) {
+//                        ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+//                    }
+//
+//                    try {
+//                        graphList.add(((MultiDataSetAlgorithm) algo).search(sub, this.parameters));
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }
+//            } else {
+//                if (getDataModelList().size() != 1) {
+//                    throw new IllegalArgumentException("Expecting a single dataset here.");
+//                }
+//
+//                if (algo != null) {
+//                    getDataModelList().forEach(data -> {
+//                        Knowledge knowledgeFromData = data.getKnowledge();
+//                        if (!(knowledgeFromData == null || knowledgeFromData.getVariables().isEmpty())) {
+//                            this.knowledge = knowledgeFromData;
+//                        }
+//
+//                        if (algo instanceof TakesScoreWrapper) {
+//                            // We inject the graph to the score to satisfy the tests like MSeparationScore - Zhou
+//                            ScoreWrapper scoreWrapper = ((TakesScoreWrapper) algo).getScoreWrapper();
+//
+//                            if (scoreWrapper instanceof BlockScoreWrapper) {
+//                                ((BlockScoreWrapper) scoreWrapper).setBlockSpec(blockSpec);
+//                            }
+//                        }
+//
+//                        if (algo instanceof TakesIndependenceWrapper) {
+//                            IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
+//
+//                            if (wrapper instanceof BlockIndependenceWrapper) {
+//                                ((BlockIndependenceWrapper) wrapper).setBlockSpec(blockSpec);
+//                            }
+//                        }
+//
+//                        DataType algDataType = algo.getDataType();
+//
+//                        if (algo instanceof TakesGraph) {
+//                            ((TakesGraph) algo).setGraph(this.sourceGraph);
+//                        }
+//
+//                        if (this.algorithm instanceof HasKnowledge) {
+//                            ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+//                        }
+//
+//                        if (data instanceof ICovarianceMatrix && parameters.getInt(Params.NUMBER_RESAMPLING) > 0) {
+//                            throw new IllegalArgumentException("Sorry, you need a tabular dataset in order to do bootstrapping.");
+//                        }
+//
+//                        if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
+//                            Graph graph = null;
+//                            try {
+//                                graph = algo.search(data, this.parameters);
+//                            } catch (InterruptedException e) {
+//                                throw new RuntimeException(e);
+//                            }
+//                            LayoutUtil.defaultLayout(graph);
+//                            graphList.add(graph);
+//                        } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
+//                            Graph graph = null;
+//                            try {
+//                                graph = algo.search(data, this.parameters);
+//                            } catch (InterruptedException e) {
+//                                throw new RuntimeException(e);
+//                            }
+//                            LayoutUtil.defaultLayout(graph);
+//                            graphList.add(graph);
+//                        } else if (data.isMixed() && algDataType == DataType.Mixed) {
+//                            Graph graph = null;
+//                            try {
+//                                graph = algo.search(data, this.parameters);
+//                            } catch (InterruptedException e) {
+//                                throw new RuntimeException(e);
+//                            }
+//                            LayoutUtil.defaultLayout(graph);
+//                            graphList.add(graph);
+//                        } else {
+//                            throw new IllegalArgumentException("The algorithm was not expecting that type of data.");
+//                        }
+//                    });
+//                }
+//            }
+//
+//            long stop = System.currentTimeMillis();
+//
+//            this.elapsedTime = stop - start;
+//        }
+//
+//        if (knowledge != null && knowledge.getNumTiers() > 0) {
+//            for (Graph graph : graphList) {
+//                GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
+//            }
+//        } else {
+//            for (Graph graph : graphList) {
+//                LayoutUtil.defaultLayout(graph);
+//            }
+//        }
+//
+//        this.graphList = graphList;
+//    }
     @Override
     public void execute() {
         long start = System.currentTimeMillis();
 
-        List<Graph> graphList = new ArrayList<>();
+        this.graphList.clear();
+        this.resultNames.clear();
+        this.graphSubtitle.clear();
 
         if (this.independenceTests != null) {
             this.independenceTests.clear();
@@ -384,6 +653,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         Algorithm algo = getAlgorithm();
 
+        // Knowledge into algo if it accepts it
         if (this.knowledge != null && !knowledge.isEmpty()) {
             if (algo instanceof HasKnowledge) {
                 ((HasKnowledge) algo).setKnowledge(this.knowledge.copy());
@@ -392,12 +662,17 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
         }
 
-        if (getDataModelList().isEmpty() && getSourceGraph() != null) {
-            if (algo instanceof UsesScoreWrapper) {
-                // We inject the graph to the score to satisfy the tests like MSeparationScore - Zhou
-                ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWrapper();
+        // ===== CASE 1: No datasets, but a source graph is provided (graph-only search) =====
+        DataModelList dataModelList = getDataModelList();
+        if (dataModelList.isEmpty() && getSourceGraph() != null) {
+            if (algo instanceof TakesScoreWrapper) {
+                // Inject graph into special scores (e.g., MSepScore) and set block spec if present.
+                ScoreWrapper scoreWrapper = ((TakesScoreWrapper) algo).getScoreWrapper();
                 if (scoreWrapper instanceof MSepScore) {
                     ((MSepScore) scoreWrapper).setGraph(getSourceGraph());
+                }
+                if (scoreWrapper instanceof BlockScoreWrapper) {
+                    ((BlockScoreWrapper) scoreWrapper).setBlockSpec(blockSpec);
                 }
             }
 
@@ -405,6 +680,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
                 if (wrapper instanceof MSeparationTest) {
                     ((MSeparationTest) wrapper).setGraph(getSourceGraph());
+                }
+                if (wrapper instanceof BlockIndependenceWrapper) {
+                    ((BlockIndependenceWrapper) wrapper).setBlockSpec(blockSpec);
                 }
             }
 
@@ -414,7 +692,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
             if (this.algorithm instanceof HasKnowledge) {
                 Knowledge knowledge1 = TsUtils.getKnowledge(getSourceGraph());
-
                 if (this.knowledge.isEmpty() && !knowledge1.isEmpty()) {
                     ((HasKnowledge) algo).setKnowledge(knowledge1);
                 } else {
@@ -422,23 +699,28 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 }
             }
 
-
-            Graph graph = null;
+            Graph graph;
             try {
                 graph = algo.search(null, this.parameters);
+                graphSubtitle.put(graph, null);
+                resultNames.add("Oracle Result");
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
             LayoutUtil.defaultLayout(graph);
-
             graphList.add(graph);
-        } else {
+            graphSubtitle.put(graph, "");
+        }
+        // ===== CASE 2: There ARE datasets =====
+        else {
+            // ----- 2A) Multi-dataset algorithms: one combined graph from a subset (possibly randomized), possibly repeated -----
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
                 for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
-                    Knowledge knowledge1 = getDataModelList().getFirst().getKnowledge();
-                    List<DataModel> dataSets = new ArrayList<>(getDataModelList());
+                    Knowledge knowledge1 = dataModelList.getFirst().getKnowledge();
+                    List<DataModel> dataSets = new ArrayList<>(dataModelList);
                     for (DataModel dataSet : dataSets) dataSet.setKnowledge(knowledge1);
+
                     int randomSelectionSize = this.parameters.getInt("randomSelectionSize");
                     if (randomSelectionSize == 0) {
                         randomSelectionSize = dataSets.size();
@@ -464,124 +746,87 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                     try {
                         graphList.add(((MultiDataSetAlgorithm) algo).search(sub, this.parameters));
+                        graphSubtitle.put(graphList.getLast(), noteForAggregate(sub));
+                        resultNames.add("Multi-dataset Algorithm");
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 }
-            } else if (getAlgorithm() instanceof ClusterAlgorithm) {
-                for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
-                    getDataModelList().forEach(dataModel -> {
-                        if (dataModel instanceof ICovarianceMatrix dataSet) {
+            }
+            // ----- 2B) Standard algorithms: NEW â run once PER DATASET and collect graphs -----
+            else { // NEW
+                // (Removed the old single-dataset assertion; now we iterate all datasets.)
+                for (int i = 0; i < dataModelList.size(); i++) {
+                    DataModel data = dataModelList.get(i);
 
-                            if (algo instanceof TakesGraph) {
-                                ((TakesGraph) algo).setGraph(this.sourceGraph);
-                            }
+                    // Prefer knowledge embedded in each dataset if present
+                    Knowledge knowledgeFromData = data.getKnowledge();
+                    if (knowledgeFromData != null && !knowledgeFromData.getVariables().isEmpty()) {
+                        this.knowledge = knowledgeFromData;
+                    }
 
-                            if (this.algorithm instanceof HasKnowledge) {
-                                ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
-                            }
-
-                            Graph graph = null;
-                            try {
-                                graph = this.algorithm.search(dataSet, this.parameters);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-
-                            LayoutUtil.defaultLayout(graph);
-
-                            graphList.add(graph);
-                        } else if (dataModel instanceof DataSet dataSet) {
-
-                            if (!dataSet.isContinuous()) {
-                                throw new IllegalArgumentException("Sorry, you need a continuous dataset for a cluster algorithm.");
-                            }
-
-                            if (algo instanceof TakesGraph) {
-                                ((TakesGraph) algo).setGraph(this.sourceGraph);
-                            }
-
-                            if (this.algorithm instanceof HasKnowledge) {
-                                ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
-                            }
-
-                            Graph graph = null;
-                            try {
-                                graph = this.algorithm.search(dataSet, this.parameters);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                            LayoutUtil.defaultLayout(graph);
-
-                            graphList.add(graph);
+                    // Wire score/test wrappers with BlockSpec if applicable
+                    if (algo instanceof TakesScoreWrapper) {
+                        ScoreWrapper scoreWrapper = ((TakesScoreWrapper) algo).getScoreWrapper();
+                        if (scoreWrapper instanceof BlockScoreWrapper) {
+                            ((BlockScoreWrapper) scoreWrapper).setBlockSpec(blockSpec);
                         }
-                    });
-                }
-            } else {
-                if (getDataModelList().size() != 1) {
-                    throw new IllegalArgumentException("Expecting a single dataset here.");
-                }
+                    }
 
-                if (algo != null) {
-                    getDataModelList().forEach(data -> {
-                        Knowledge knowledgeFromData = data.getKnowledge();
-                        if (!(knowledgeFromData == null || knowledgeFromData.getVariables().isEmpty())) {
-                            this.knowledge = knowledgeFromData;
+                    if (algo instanceof TakesIndependenceWrapper) {
+                        IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
+                        if (wrapper instanceof BlockIndependenceWrapper) {
+                            ((BlockIndependenceWrapper) wrapper).setBlockSpec(blockSpec);
                         }
+                    }
 
-                        DataType algDataType = algo.getDataType();
+                    DataType algDataType = algo.getDataType();
 
-                        if (algo instanceof TakesGraph) {
-                            ((TakesGraph) algo).setGraph(this.sourceGraph);
-                        }
+                    if (algo instanceof TakesGraph) {
+                        ((TakesGraph) algo).setGraph(this.sourceGraph);
+                    }
 
-                        if (this.algorithm instanceof HasKnowledge) {
-                            ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
-                        }
+                    if (this.algorithm instanceof HasKnowledge) {
+                        ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                    }
 
-                        if (data instanceof ICovarianceMatrix && parameters.getInt(Params.NUMBER_RESAMPLING) > 0) {
-                            throw new IllegalArgumentException("Sorry, you need a tabular dataset in order to do bootstrapping.");
-                        }
+                    // Guard: bootstrapping requires tabular, not covariance
+                    if (data instanceof ICovarianceMatrix && parameters.getInt(Params.NUMBER_RESAMPLING) > 0) {
+                        throw new IllegalArgumentException("Sorry, you need a tabular dataset in order to do bootstrapping.");
+                    }
 
-                        if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
-                            Graph graph = null;
-                            try {
-                                graph = algo.search(data, this.parameters);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                            LayoutUtil.defaultLayout(graph);
-                            graphList.add(graph);
-                        } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
-                            Graph graph = null;
-                            try {
-                                graph = algo.search(data, this.parameters);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                            LayoutUtil.defaultLayout(graph);
-                            graphList.add(graph);
-                        } else if (data.isMixed() && algDataType == DataType.Mixed) {
-                            Graph graph = null;
-                            try {
-                                graph = algo.search(data, this.parameters);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                            LayoutUtil.defaultLayout(graph);
-                            graphList.add(graph);
-                        } else {
-                            throw new IllegalArgumentException("The algorithm was not expecting that type of data.");
-                        }
-                    });
+                    // Type compatibility checks & run
+                    boolean ok =
+                            (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) ||
+                            (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) ||
+                            (data.isMixed() && algDataType == DataType.Mixed);
+
+                    if (!ok) {
+                        throw new IllegalArgumentException("The algorithm was not expecting that type of data.");
+                    }
+
+                    Graph graph;
+                    try {
+                        graph = algo.search(data, this.parameters);
+                        LayoutUtil.defaultLayout(graph);
+                        graphList.add(graph);
+                        graphSubtitle.put(graph, noteFor(data));
+
+                        // Name = dataset/covariance name, if present
+                        String nm = data.getName() != null ? data.getName() : "Result" + (i + 1);
+                        resultNames.add(nm);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
 
+            // elapsed time for dataset branch
             long stop = System.currentTimeMillis();
-
             this.elapsedTime = stop - start;
         }
 
+        // Final layout pass by knowledge tiers (if any)
         if (knowledge != null && knowledge.getNumTiers() > 0) {
             for (Graph graph : graphList) {
                 GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
@@ -592,7 +837,32 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
         }
 
-        this.graphList = graphList;
+//        this.graphList = graphList;
+    }
+
+    public String getGraphSubtitle(Graph g, int indexHint) {
+        // Prefer the paired data model when available and aligned by index.
+        DataModelList dml = getDataModelList();
+        if (dml != null && indexHint >= 0 && indexHint < dml.size()) {
+            DataModel dm = dml.get(indexHint);
+            if (dm instanceof ICovarianceMatrix) {
+                int n = ((ICovarianceMatrix) dm).getSampleSize();
+                return "n = " + n;
+            } else if (dm instanceof DataSet) {
+                int n = ((DataSet) dm).getNumRows();
+                return "n = " + n;
+            }
+        }
+
+        // Fallbacks (in case graphs outnumber datasets or source-only runs):
+        if (getDataModel() instanceof ICovarianceMatrix) {
+            return "n = " + ((ICovarianceMatrix) getDataModel()).getSampleSize();
+        }
+        if (getDataModel() instanceof DataSet) {
+            return "n = " + ((DataSet) getDataModel()).getNumRows();
+        }
+
+        return ""; // No subtitle
     }
 
     /**
@@ -623,6 +893,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     @Override
     public boolean supportsKnowledge() {
         return false;
+    }
+
+    public List<String> getResultNames() {
+        return resultNames;
     }
 
     /**
@@ -761,8 +1035,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.
@@ -813,16 +1087,24 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     this.independenceTests = new ArrayList<>();
                 }
 
+                if (indTestWrapper instanceof BlockIndependenceWrapper) {
+                    ((BlockIndependenceWrapper) indTestWrapper).setBlockSpec(blockSpec);
+                }
+
                 // Grabbing this independence test for the independence tests interface. JR 2020.8.24
                 IndependenceTest test = indTestWrapper.getTest(getDataModelList().get(0), this.parameters);
                 this.independenceTests.add(test);
             }
-        } else if (algo instanceof UsesScoreWrapper) {
+        } else if (algo instanceof TakesScoreWrapper) {
             if (getDataModelList().size() == 1) {
-                ScoreWrapper wrapper = ((UsesScoreWrapper) getAlgorithm()).getScoreWrapper();
+                ScoreWrapper wrapper = ((TakesScoreWrapper) getAlgorithm()).getScoreWrapper();
 
                 if (this.independenceTests == null) {
                     this.independenceTests = new ArrayList<>();
+                }
+
+                if (wrapper instanceof BlockScoreWrapper) {
+                    ((BlockScoreWrapper) wrapper).setBlockSpec(blockSpec);
                 }
 
                 // Grabbing this independence score for the independence tests interface. JR 2020.8.24
@@ -861,6 +1143,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * @return a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
      */
     public Algorithm getAlgorithm() {
+        if (this.algorithm instanceof ExtraLatentStructureAlgorithm) {
+            ((ExtraLatentStructureAlgorithm) this.algorithm).setBlockSpec(blockSpec);
+        }
+
         return this.algorithm;
     }
 
@@ -936,6 +1222,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return this.graphList;
     }
 
+    public void setResultGraphs(List<Graph> gs) {
+        this.graphList = gs;
+    }
+
     /**
      * <p>Getter for the field <code>knowledge</code>.</p>
      *
@@ -1007,4 +1297,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     public long getElapsedTime() {
         return elapsedTime;
     }
+
+    public BlockSpec getBlockSpec() {
+        return blockSpec;
+    }
+
+    public void setBlockSpec(BlockSpec blockSpec) {
+        this.blockSpec = blockSpec;
+    }
 }
+

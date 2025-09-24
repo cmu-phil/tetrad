@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.BoxDataSet;
@@ -40,16 +60,16 @@ import java.util.stream.IntStream;
  * In either case, we choose random functions fi using multilayer perceptrons from R to R with one hidden layer and tanh
  * activation functions. The number of hidden neurons is a parameter.
  * <p>
- * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., &amp; Schölkopf, B. (2008). Nonlinear causal discovery with
+ * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., &amp; SchÃ¶lkopf, B. (2008). Nonlinear causal discovery with
  * additive noise models. Advances in neural information processing systems, 21.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
  * <p>
- * Bühlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
+ * BÃ¼hlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
  * penalized regression". The Annals of Statistics.
  * <p>
- * Peters, J., Mooij, J. M., Janzing, D., &amp; Schölkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
+ * Peters, J., Mooij, J. M., Janzing, D., &amp; SchÃ¶lkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
  * Models". Journal of Machine Learning Research.
  * <p>
  * Zhang, K., &amp; Hyvarinen, A. (2012). On the identifiability of the post-nonlinear causal model. arXiv preprint
@@ -161,19 +181,22 @@ public class NonlinearFunctionOfLinear {
     private DistortionType distortionType = DistortionType.POST_NONLINEAR;
 
     /**
-     * Constructs a NonlinearFunctionOfLinear instance, which generates synthetic data based on a directed acyclic
-     * graph (DAG) using post-nonlinear causal relationships and associated modeling parameters.
+     * Constructs a NonlinearFunctionOfLinear instance, which generates synthetic data based on a directed acyclic graph
+     * (DAG) using post-nonlinear causal relationships and associated modeling parameters.
      *
-     * @param graph The directed acyclic graph defining causal relationships between variables. Must not contain cycles.
-     * @param numSamples The number of samples to be generated. Must be a positive integer.
+     * @param graph             The directed acyclic graph defining causal relationships between variables. Must not
+     *                          contain cycles.
+     * @param numSamples        The number of samples to be generated. Must be a positive integer.
      * @param noiseDistribution The distribution from which the random noise will be sampled.
-     * @param rescaleMin The minimum value for rescaling the generated data. Must be less than or equal to rescaleMax.
-     * @param rescaleMax The maximum value for rescaling the generated data. Must be greater than or equal to rescaleMin.
-     * @param coefLow The lower bound for the uniform sampling of coefficients.
-     * @param coefHigh The upper bound for the uniform sampling of coefficients.
-     * @param coefSymmetric Indicates whether coefficient sampling should be symmetric around zero.
-     * @param hiddenDimension The dimensionality of hidden variables in the model.
-     * @param inputScale A scaling factor applied to the inputs of the nonlinear functions.
+     * @param rescaleMin        The minimum value for rescaling the generated data. Must be less than or equal to
+     *                          rescaleMax.
+     * @param rescaleMax        The maximum value for rescaling the generated data. Must be greater than or equal to
+     *                          rescaleMin.
+     * @param coefLow           The lower bound for the uniform sampling of coefficients.
+     * @param coefHigh          The upper bound for the uniform sampling of coefficients.
+     * @param coefSymmetric     Indicates whether coefficient sampling should be symmetric around zero.
+     * @param hiddenDimension   The dimensionality of hidden variables in the model.
+     * @param inputScale        A scaling factor applied to the inputs of the nonlinear functions.
      */
     public NonlinearFunctionOfLinear(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                      double rescaleMin, double rescaleMax, double coefLow, double coefHigh, boolean coefSymmetric,
@@ -343,3 +366,4 @@ public class NonlinearFunctionOfLinear {
         POST_NONLINEAR
     }
 }
+

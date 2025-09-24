@@ -1,10 +1,30 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
@@ -54,9 +74,9 @@ public class SvarSetEndpointStrategy implements SetEndpointStrategy {
     /**
      * Sets the endpoint of a graph given the two nodes and the desired endpoint.
      *
-     * @param graph the graph in which the endpoint is being set
-     * @param a the starting node of the endpoint
-     * @param b the ending node of the endpoint
+     * @param graph    the graph in which the endpoint is being set
+     * @param a        the starting node of the endpoint
+     * @param b        the ending node of the endpoint
      * @param endpoint the desired endpoint value
      */
     @Override
@@ -68,11 +88,11 @@ public class SvarSetEndpointStrategy implements SetEndpointStrategy {
     /**
      * Orients similar pairs of nodes in a graph based on knowledge about their tier structure.
      *
-     * @param graph the graph in which the pairs are being oriented
-     * @param knowledge the knowledge used for causal discovery
-     * @param x the first node in the pair
-     * @param y the second node in the pair
-     * @param mark the desired endpoint value
+     * @param graph            the graph in which the pairs are being oriented
+     * @param knowledge        the knowledge used for causal discovery
+     * @param x                the first node in the pair
+     * @param y                the second node in the pair
+     * @param mark             the desired endpoint value
      * @param independenceTest the independence test used for conditional independence testing
      */
     private void orientSimilarPairs(Graph graph, Knowledge knowledge, Node x, Node y, Endpoint mark, IndependenceTest independenceTest) {
@@ -149,3 +169,4 @@ public class SvarSetEndpointStrategy implements SetEndpointStrategy {
         return TsUtils.getNameNoLag(obj);
     }
 }
+

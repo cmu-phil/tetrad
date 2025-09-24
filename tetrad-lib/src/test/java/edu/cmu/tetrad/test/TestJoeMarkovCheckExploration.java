@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.statistic.BicDiff;
@@ -29,6 +49,51 @@ public class TestJoeMarkovCheckExploration {
         new TestJoeMarkovCheckExploration().test1();
     }
 
+    private static @NotNull Pair<List<Pair<IndependenceFact, Double>>, Graph> getPValues(Graph cpdag, DataSet dataSet) {
+        IndTestFisherZ test = new IndTestFisherZ(dataSet, 0.05);
+        List<Pair<IndependenceFact, Double>> pValues = new ArrayList<>();
+
+        List<Integer> all = new ArrayList<>();
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            all.add(i);
+        }
+
+        test.setRows(all);
+
+        Set<IndependenceFact> facts = new HashSet<>();
+
+        MsepTest msepTest = new MsepTest(cpdag);
+
+        for (Node x : cpdag.getNodes()) {
+            for (Node y : cpdag.getNodes()) {
+                if (x.equals(y)) {
+                    continue;
+                }
+
+                IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(cpdag.getParents(x)));
+
+                if (!facts.contains(fact)) {
+                    boolean msep = msepTest.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent();
+
+                    if (msep) {
+                        Collections.shuffle(all);
+
+                        List<Integer> rows = all.subList(0, (int) (dataSet.getNumRows() * 0.8));
+                        test.setRows(rows);
+
+                        double pValue = test.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).getPValue();
+                        pValues.add(Pair.of(fact, pValue));
+                    }
+                }
+
+                facts.add(fact);
+            }
+        }
+
+        return Pair.of(pValues, cpdag);
+    }
+
     public void test1() {
         Graph trueGraph = RandomGraph.randomGraph(15, 0, 30, 100,
                 100, 100, false);
@@ -39,8 +104,8 @@ public class TestJoeMarkovCheckExploration {
         DataSet dataSet = im.simulateData(1000, false);
 
 //        for (double penalty = 0.01; penalty <= .2; penalty += 0.1) {
-            for (double penalty = 0.5; penalty <= 10; penalty += 0.1) {
-                penalty = Math.round(penalty * 10) / 10.0;
+        for (double penalty = 0.5; penalty <= 10; penalty += 0.1) {
+            penalty = Math.round(penalty * 10) / 10.0;
             SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
             score.setPenaltyDiscount(penalty);
 
@@ -106,51 +171,6 @@ public class TestJoeMarkovCheckExploration {
                            + cpdag.getNumEdges() + " bicDiff = " + nf.format(bicDiffValue));
     }
 
-    private static @NotNull Pair<List<Pair<IndependenceFact, Double>>, Graph> getPValues(Graph cpdag, DataSet dataSet) {
-        IndTestFisherZ test = new IndTestFisherZ(dataSet, 0.05);
-        List<Pair<IndependenceFact, Double>> pValues = new ArrayList<>();
-
-        List<Integer> all = new ArrayList<>();
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            all.add(i);
-        }
-
-        test.setRows(all);
-
-        Set<IndependenceFact> facts = new HashSet<>();
-
-        MsepTest msepTest = new MsepTest(cpdag);
-
-        for (Node x : cpdag.getNodes()) {
-            for (Node y : cpdag.getNodes()) {
-                if (x.equals(y)) {
-                    continue;
-                }
-
-                IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(cpdag.getParents(x)));
-
-                if (!facts.contains(fact)) {
-                    boolean msep = msepTest.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).isIndependent();
-
-                    if (msep) {
-                        Collections.shuffle(all);
-
-                        List<Integer> rows = all.subList(0, (int) (dataSet.getNumRows() * 0.8));
-                        test.setRows(rows);
-
-                        double pValue = test.checkIndependence(fact.getX(), fact.getY(), fact.getZ()).getPValue();
-                        pValues.add(Pair.of(fact, pValue));
-                    }
-                }
-
-                facts.add(fact);
-            }
-        }
-
-        return Pair.of(pValues, cpdag);
-    }
-
     public Double checkAgainstAndersonDarlingTest(List<Double> pValues) {
         double min = pValues.stream().min(Double::compareTo).orElseThrow(NoSuchElementException::new);
         double max = pValues.stream().max(Double::compareTo).orElseThrow(NoSuchElementException::new);
@@ -169,3 +189,4 @@ public class TestJoeMarkovCheckExploration {
         return UniformityTest.getKsPValue(pValues, 0.0, 1.0);
     }
 }
+

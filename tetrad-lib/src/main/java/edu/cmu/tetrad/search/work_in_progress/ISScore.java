@@ -1,3 +1,23 @@
+/// ////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+/// ////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.DataSet;
@@ -6,7 +26,38 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Interface for a score suitable for FGES
+ * Instance-Specific BIC (IS-BIC) score for discrete data.
+ *
+ * <p>This score adapts the standard Bayesian Information Criterion (BIC) to the
+ * instance-specific setting. As with the population version, the likelihood term
+ * is based on empirical counts, and the penalty term is proportional to the number
+ * of free parameters in the local conditional distribution:</p>
+ *
+ * <pre>
+ *   BIC = log-likelihood – 0.5 * penaltyDiscount * (numParams) * log(N)
+ * </pre>
+ *
+ * <p>where {@code numParams = r_p * (K – 1)}, with {@code r_p} equal to the product
+ * of category counts of the parent set and {@code K} the number of categories of the
+ * child variable.</p>
+ *
+ * <p>The instance-specific contribution does not alter the likelihood computation
+ * itself. Instead, it is incorporated through a structure prior that rewards or
+ * penalizes local modifications (addition, removal, or reversal of parents) relative
+ * to the baseline population model. In this way, IS-BIC balances population-wide fit
+ * with adjustments that highlight edges most relevant to the chosen test case.</p>
+ *
+ * <p>This score is intended for use by search algorithms such as IS-FGES and IS-GFCI,
+ * providing a lightweight alternative to IS-BDeu when a BIC-style criterion is
+ * preferred.</p>
+ *
+ * <h4>Usage Notes</h4>
+ * <ul>
+ *   <li>Currently supports <strong>discrete variables only</strong>.</li>
+ *   <li>Continuous data should be discretized before applying this score.</li>
+ * </ul>
+ *
+ * @author fattaneh
  */
 public interface ISScore {
 
@@ -129,4 +180,5 @@ public interface ISScore {
      */
     DataSet getDataSet();
 }
+
 

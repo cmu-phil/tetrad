@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,9 +15,8 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.util;
 
@@ -2730,160 +2729,8 @@ public final class StatUtils {
 
         return SimpleMatrix.wrap(chol.getT(null));
     }
-
-    /**
-     * Computes the p-value for Canonical Correlation Analysis (CCA) based on a rank-d hypothesis. This method
-     * calculates the test statistic using the last d singular values of a product matrix derived from the input
-     * covariance matrix and performs a chi-squared test to return the p-value.
-     *
-     * @param S        The input covariance matrix represented as a SimpleMatrix object.
-     * @param xIndices The indices representing the subset of variables in the first group.
-     * @param yIndices The indices representing the subset of variables in the second group.
-     * @param n        The sample size used in the analysis.
-     * @param d        The hypothesized rank which defines the number of singular values to consider.
-     * @return The calculated p-value of the test based on the given inputs.
-     */
-//    public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
-//
-//        // Check inputs.
-//
-//        if (xIndices.length == 0 || yIndices.length == 0) {
-//            throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
-//        }
-//
-//        for (int xIndex : xIndices) {
-//            if (xIndex < 0 || xIndex >= S.getNumRows()) {
-//                throw new IllegalArgumentException("xIndices out of bounds.");
-//            }
-//        }
-//
-//        for (int yIndex : yIndices) {
-//            if (yIndex < 0 || yIndex >= S.getNumRows()) {
-//                throw new IllegalArgumentException("yIndices out of bounds.");
-//            }
-//        }
-//
-//        if (n <= 0) {
-//            throw new IllegalArgumentException("n must be positive.");
-//        }
-//
-//        if (d <= 0) {
-//            throw new IllegalArgumentException("d must be positive.");
-//        }
-//
-//        // Step 1: Extract submatrices based on given indices
-//        SimpleMatrix XX = extractSubMatrix(S, xIndices, xIndices);
-//        SimpleMatrix YY = extractSubMatrix(S, yIndices, yIndices);
-//        SimpleMatrix XY = extractSubMatrix(S, xIndices, yIndices);
-//
-//        // Step 2: Perform Cholesky decompositions and their inverses
-//        SimpleMatrix XXir = chol(XX).invert();
-//        SimpleMatrix YYir = chol(YY).invert();
-//        SimpleMatrix product = XXir.mult(XY).mult(YYir);
-//
-//        // Step 3: Get singular values of product
-//        double[] singularValues = product.svd().getSingularValues();
-//
-//        // Step 4: Compute test statistic using last d singular values
-//        double stat = 0.0;
-//        for (int i = singularValues.length - d; i < singularValues.length; i++) {
-//            double adjustedValue = 1 - Math.pow(singularValues[i], 2);
-//            adjustedValue = Math.max(adjustedValue, 1e-6);  // Clip to avoid log(0)
-//            stat += adjustedValue;
-//        }
-//        stat *= (d + 3.0 / 2.0 - n) * Math.log(stat);
-//
-//        // Step 5: Chi-squared test for current d
-//        ChiSquaredDistribution chi2 = new ChiSquaredDistribution((xIndices.length + 1 - d) * (yIndices.length + 1 - d));
-//        return 1 - chi2.cumulativeProbability(stat);
-//    }
-
-    public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
-        if (xIndices.length == 0 || yIndices.length == 0) {
-            throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
-        }
-
-        int p = xIndices.length;
-        int q = yIndices.length;
-        int r = Math.min(p, q);
-
-        if (d < 0 || d >= r) {
-            throw new IllegalArgumentException("d must be in [0, min(p, q) - 1]");
-        }
-
-        if (n <= p + q + 1) {
-            throw new IllegalArgumentException("Sample size too small for reliable test.");
-        }
-
-        // Step 1: Extract submatrices
-        SimpleMatrix XX = extractSubMatrix(S, xIndices, xIndices);
-        SimpleMatrix YY = extractSubMatrix(S, yIndices, yIndices);
-        SimpleMatrix XY = extractSubMatrix(S, xIndices, yIndices);
-
-        // Step 2: Cholesky inverses
-        SimpleMatrix XXinvSqrt = chol(XX).invert();
-        SimpleMatrix YYinvSqrt = chol(YY).invert();
-        SimpleMatrix product = XXinvSqrt.mult(XY).mult(YYinvSqrt);
-
-        // Step 3: SVD
-        double[] s = product.svd().getSingularValues();
-
-        // Step 4: Compute stat from the LAST (r - d) singular values
-        double stat = 0.0;
-        for (int i = d; i < r; i++) {
-            double val = s[i];
-            val = Math.min(1.0, Math.max(0.0, val)); // clip to [0, 1]
-            double adjusted = 1.0 - val * val;
-            adjusted = Math.max(adjusted, 1e-6); // avoid log(0)
-            stat += Math.log(adjusted);
-        }
-
-        // Step 5: Scale
-        double scale = n - 0.5 * (p + q + 1);
-        stat *= -scale;
-
-        // Step 6: Chi-squared test
-        int df = (p - d) * (q - d);
-        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
-        return 1.0 - chi2.cumulativeProbability(stat);
-    }
-
-    /**
-     * Estimates the rank of a matrix based on a statistical hypothesis testing approach. The method evaluates singular
-     * values and uses a chi-squared distribution to determine the highest rank that satisfies a predefined significance
-     * threshold.
-     *
-     * @param S          The input matrix for which the rank is to be estimated.
-     * @param xIndices   The indices representing the subset of variables in the first group.
-     * @param yIndices   The indices representing the subset of variables in the second group.
-     * @param maxRank    The maximum rank to test for the matrix.
-     * @param n          The sample size used in the analysis.
-     * @param pThreshold The significance threshold for the hypothesis test.
-     * @return The estimated rank of the input matrix, which is the highest rank that satisfies the significance
-     * threshold. Returns maxRank if all ranks pass the test.
-     */
-    public int estimateRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int maxRank, int n, double pThreshold) {
-
-        if (maxRank <= 0) {
-            throw new IllegalArgumentException("maxRank must be positive.");
-        }
-
-        if (pThreshold <= 0 || pThreshold >= 1) {
-            throw new IllegalArgumentException("pThreshold must be between 0 and 1.");
-        }
-
-        for (int d = 1; d <= maxRank; d++) {
-            double pValue = getCcaPValueRankD(S, xIndices, yIndices, n, d);
-
-            // Step 6: Stop when p-value is below the threshold
-            if (pValue < pThreshold) {
-                return d - 1;  // Return the highest rank that passed the test
-            }
-        }
-
-        return maxRank;  // If all ranks pass, return the maximum rank
-    }
 }
+
 
 
 

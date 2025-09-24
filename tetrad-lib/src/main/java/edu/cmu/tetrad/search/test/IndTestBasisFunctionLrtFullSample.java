@@ -1,12 +1,31 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -28,6 +47,7 @@ import java.util.*;
  * @author bryanandrews
  * @see IndTestBasisFunctionLrt
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
     /**
      * The `dataSet` field holds a reference to the DataSet object used as the primary data structure for representing
@@ -78,6 +98,12 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      */
     private final List<Integer> allRows;
     /**
+     * The sample size used in computations within the class. This variable may represent an effective sample size that
+     * differs from the original dataset size, depending on configurations or preprocessing steps. It is particularly
+     * relevant to statistical and independence testing procedures where the sample size influences the results.
+     */
+    private final int sampleSize;
+    /**
      * Represents the significance level (alpha) used for statistical tests in the IndTestBasisFunctionLrt class. This
      * value determines the threshold for rejecting the null hypothesis in conditional independence testing, where lower
      * values indicate stricter criteria for rejecting the null hypothesis.
@@ -99,12 +125,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      * verbose output is suppressed.
      */
     private boolean verbose = false;
-    /**
-     * The sample size used in computations within the class. This variable may represent an effective sample size that
-     * differs from the original dataset size, depending on configurations or preprocessing steps. It is particularly
-     * relevant to statistical and independence testing procedures where the sample size influences the results.
-     */
-    private int sampleSize;
+    private int nEff;
     /**
      * Represents the specific rows being utilized during the independence test. This field holds a list of integers
      * corresponding to the indices of the rows from the data set. If not explicitly set, all rows without missing
@@ -153,6 +174,8 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
         this.allRows = listRows();
+
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -186,7 +209,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      * Computes variance of residuals: Var(R) = sum(R^2) / N
      */
     private double computeVariance(SimpleMatrix residuals) {
-        return residuals.elementMult(residuals).elementSum() / this.sampleSize;
+        return residuals.elementMult(residuals).elementSum() / this.nEff;
     }
 
     /**
@@ -362,7 +385,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
 
         // Compute Likelihood Ratio Statistic
         double epsilon = 1e-10;
-        double LR_stat = this.sampleSize * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
+        double LR_stat = this.nEff * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
 
         // Compute p-value using chi-square distribution
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
@@ -386,6 +409,11 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
         this.lambda = lambda;
     }
 
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
+    }
+
     /**
      * Sets the sample size to use for the independence test, which may be different from the sample size of the data
      * set or covariance matrix. If not set, the sample size of the data set or covariance matrix is used.
@@ -394,11 +422,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      */
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
-        if (effectiveSampleSize < 1) {
-            throw new IllegalArgumentException("Sample size must be positive.");
-        }
-
-        this.sampleSize = effectiveSampleSize;
+        this.nEff = effectiveSampleSize < 0 ? this.sampleSize : effectiveSampleSize;
     }
 
     /**
@@ -458,3 +482,4 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
         this.doOneEquationOnly = doOneEquationOnly;
     }
 }
+

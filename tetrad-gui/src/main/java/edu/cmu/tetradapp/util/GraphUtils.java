@@ -1,10 +1,29 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.util;
 
-import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.PointXy;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.editor.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.jetbrains.annotations.NotNull;
@@ -13,8 +32,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.*;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * Created by jdramsey on 12/8/15.
@@ -43,12 +64,14 @@ public class GraphUtils {
         boolean randomGraphConnected = parameters.getBoolean("randomGraphConnected", connected);
         int randomGraphMaxDegree = parameters.getInt("randomGraphMaxDegree", 6);
         boolean graphChooseFixed = parameters.getBoolean("graphChooseFixed", false);
-        int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
-        int maxStructuralEdges = parameters.getInt("numStructuralEdges", 3);
-        int measurementModelDegree = parameters.getInt("measurementModelDegree", 3);
-        int numLatentMeasuredImpureParents = parameters.getInt("latentMeasuredImpureParents", 0);
-        int numMeasuredMeasuredImpureParents = parameters.getInt("measuredMeasuredImpureParents", 0);
-        int numMeasuredMeasuredImpureAssociations = parameters.getInt("measuredMeasuredImpureAssociations", 0);
+        int numStructuralNodes = parameters.getInt("mimNumStructuralNodes", 3);
+        int numStructuralEdges = parameters.getInt("mimNumStructuralEdges", 3);
+        int metaEdgeConnectionType = parameters.getInt(Params.META_EDGE_CONNECTION_TYPE);
+        int measurementModelDegree = parameters.getInt("mimNumChildrenPerLatents", 3);
+        String latentGroupSpecs = parameters.getString("mimLatentGroupSpecs");
+        int numLatentMeasuredImpureParents = parameters.getInt("mimLatentMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureAssociations = parameters.getInt("mimMeasuredMeasuredImpureAssociations", 0);
         double alpha = parameters.getDouble("scaleFreeAlpha", 0.2);
         double beta = parameters.getDouble("scaleFreeBeta", 0.6);
         double deltaIn = parameters.getDouble("scaleFreeDeltaIn", 0.2);
@@ -66,115 +89,20 @@ public class GraphUtils {
                     randomGraphMaxIndegree,
                     randomGraphMaxOutdegree,
                     false);
-            case "Mim" ->
-                    GraphUtils.makeRandomMim(numFactors, numStructuralNodes, maxStructuralEdges, measurementModelDegree,
-                            numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
-                            numMeasuredMeasuredImpureAssociations);
+            case "Mim" -> {
+                List<RandomMim.LatentGroupSpec> specs = RandomMim.parseLatentGroupSpecs(
+                        parameters.getString("mimLatentGroupSpecs"));
+                yield RandomMim.constructRandomMim(specs, numStructuralEdges,
+                        numLatentMeasuredImpureParents,
+                        numMeasuredMeasuredImpureParents,
+                        numMeasuredMeasuredImpureAssociations,
+                        RandomMim.LatentLinkMode.values()[metaEdgeConnectionType - 1],
+                        new Random());
+            }
             case "ScaleFree" -> GraphUtils.makeRandomScaleFree(newGraphNumMeasuredNodes,
                     newGraphNumLatents, alpha, beta, deltaIn, deltaOut);
             default -> throw new IllegalStateException("Unrecognized graph type: " + type);
         };
-
-    }
-
-    private static Graph makeRandomDag(Graph _graph, int newGraphNumMeasuredNodes,
-                                       int newGraphNumLatents,
-                                       int newGraphNumEdges, int randomGraphMaxDegree,
-                                       int randomGraphMaxIndegree,
-                                       int randomGraphMaxOutdegree,
-//                                       boolean graphRandomFoward,
-//                                       boolean graphUniformlySelected,
-                                       boolean randomGraphConnected,
-//                                       boolean graphChooseFixed,
-                                       boolean addCycles, Parameters parameters) {
-        Graph graph = null;
-
-
-        int numNodes = newGraphNumMeasuredNodes + newGraphNumLatents;
-
-        while (graph == null) {
-
-            List<Node> nodes = new ArrayList<>();
-
-            for (int i = 0; i < numNodes; i++) {
-                nodes.add(new GraphNode("X" + (i + 1)));
-            }
-
-//            if (true) {
-                graph = RandomGraph.randomGraph(nodes, newGraphNumLatents,
-                        newGraphNumEdges, randomGraphMaxDegree, randomGraphMaxIndegree, randomGraphMaxOutdegree,
-                        randomGraphConnected);
-                LayoutUtil.arrangeBySourceGraph(graph, _graph);
-                HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
-                LayoutUtil.arrangeByLayout(graph, layout);
-//            } else {
-//                if (graphUniformlySelected) {
-//
-//                    graph = RandomGraph.randomGraphUniform(nodes,
-//                            newGraphNumLatents,
-//                            newGraphNumEdges,
-//                            randomGraphMaxDegree,
-//                            randomGraphMaxIndegree,
-//                            randomGraphMaxOutdegree,
-//                            randomGraphConnected, 50000);
-//                    LayoutUtil.arrangeBySourceGraph(graph, _graph);
-//                    HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
-//                    LayoutUtil.arrangeByLayout(graph, layout);
-//                } else {
-//                    if (graphChooseFixed) {
-//                        do {
-//                            graph = RandomGraph.randomGraph(nodes,
-//                                    newGraphNumLatents,
-//                                    newGraphNumEdges,
-//                                    randomGraphMaxDegree,
-//                                    randomGraphMaxIndegree,
-//                                    randomGraphMaxOutdegree,
-//                                    randomGraphConnected);
-//                            LayoutUtil.arrangeBySourceGraph(graph, _graph);
-//                            HashMap<String, PointXy> layout = GraphSaveLoadUtils.grabLayout(nodes);
-//                            LayoutUtil.arrangeByLayout(graph, layout);
-//                        } while (graph.getNumEdges() < newGraphNumEdges);
-//                    }
-//                }
-//            }
-
-            if (addCycles) {
-                graph = RandomGraph.randomCyclicGraph2(numNodes, newGraphNumEdges, 8);
-            } else {
-                graph = new EdgeListGraph(graph);
-            }
-
-            int randomGraphMinNumCycles = parameters.getInt("randomGraphMinNumCycles", 0);
-            RandomGraph.addTwoCycles(graph, randomGraphMinNumCycles);
-        }
-
-        return graph;
-    }
-
-    private static Graph makeRandomMim(int numFactors, int numStructuralNodes, int maxStructuralEdges, int measurementModelDegree,
-                                       int numLatentMeasuredImpureParents, int numMeasuredMeasuredImpureParents,
-                                       int numMeasuredMeasuredImpureAssociations) {
-
-        Graph graph;
-
-        if (numFactors == 1) {
-            graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
-                    maxStructuralEdges, measurementModelDegree,
-                    numLatentMeasuredImpureParents,
-                    numMeasuredMeasuredImpureParents,
-                    numMeasuredMeasuredImpureAssociations);
-        } else if (numFactors == 2) {
-            graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
-                    maxStructuralEdges, measurementModelDegree,
-                    numLatentMeasuredImpureParents,
-                    numMeasuredMeasuredImpureParents,
-                    numMeasuredMeasuredImpureAssociations);
-        } else {
-            throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
-                                               "sorry dude.");
-        }
-
-        return graph;
     }
 
     private static Graph makeRandomScaleFree(int numNodes, int numLatents, double alpha,
@@ -227,7 +155,8 @@ public class GraphUtils {
         highlightMenu.add(new SelectCliquesAction(workbench));
         highlightMenu.add(new SelectEdgesInCyclicPaths(workbench));
         highlightMenu.add(new SelectEdgesInAlmostCyclicPaths(workbench));
-        highlightMenu.addSeparator();;
+        highlightMenu.addSeparator();
+        ;
 
         highlightMenu.add(new SelectLatentsAction(workbench));
         highlightMenu.add(new SelectMeasuredNodesAction(workbench));
@@ -406,3 +335,4 @@ public class GraphUtils {
         return (JScrollPane) component;
     }
 }
+

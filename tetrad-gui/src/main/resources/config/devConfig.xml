@@ -72,7 +72,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.GraphSelectionEditor
                 </editor-class>
             </model>
-            <model name="Choose DAG in CPDAG" acronym="Dag in CPDAG"
+            <model name="Choose Dag in CPDAG" acronym="DAG in CPDAG"
                    help="graph" category="Graph Manipulations">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -241,9 +241,9 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.BayesPmEditor
                 </editor-class>
-                <params-editor-class>
-                    edu.cmu.tetradapp.editor.BayesPmParamsEditor
-                </params-editor-class>
+                <!--                <params-editor-class>-->
+                <!--                    edu.cmu.tetradapp.editor.BayesPmParamsEditor-->
+                <!--                </params-editor-class>-->
             </model>
             <model name="SEM Parametric Model" acronym="SEM PM" help="sem_im">
                 <logger>
@@ -252,6 +252,16 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.SemPmWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.SemPmEditor
+                </editor-class>
+            </model>
+            <model name="Hybrid CG Parametric Model" acronym="Hybrid CG PM" help="hybrid_cg_pm">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="pm" description="Parametric Model" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.HybridCgPmWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.HybridCgPmEditor
                 </editor-class>
             </model>
             <model name="Generalized SEM Parametric Model" acronym="Gen. SEM PM" help="sem_im">
@@ -327,6 +337,19 @@
                 <model-class>edu.cmu.tetradapp.model.StandardizedSemImWrapper</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.StandardizedSemImEditor</editor-class>
             </model>
+            <model name="Hybrid CG Instantiated Model" acronym="Hybrid CG IM" help="hybrid_cg_im">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="pm" description="Parametric Model" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.HybridCgImWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.HybridCgImEditor
+                </editor-class>
+                <!--                <params-editor-class>-->
+                <!--                    edu.cmu.tetradapp.editor.BayesPmParamsEditor-->
+                <!--                </params-editor-class>-->
+            </model>
             <model name="Generalized SEM Instantiated Model" acronym="Gen. SEM IM" help="gen_sem_im">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -395,6 +418,20 @@
                     edu.cmu.tetradapp.model.datamanip.ConvertNumericalDiscreteToContinuousWrapper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+            </model>
+            <model name="Causal Unmix" acronym="Causal Unmix" help="causalunmix"
+                   category="Manipulation of Data">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>
+                    edu.cmu.tetradapp.model.datamanip.CausalUnmix
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.datamanip.UnmixParamsEditor
+                </params-editor-class>
             </model>
             <model name="Expand Discrete Columns" acronym="Expand Columns" help="expandColumns"
                    category="Manipulation of Data">
@@ -975,6 +1012,14 @@
                 <editor-class>edu.cmu.tetradapp.editor.EmBayesEstimatorEditor</editor-class>
                 <params-editor-class>edu.cmu.tetradapp.editor.EMBayesEstimatorParamsEditor</params-editor-class>
             </model>
+            <model name="Hybrid CG Estimator" acronym="Hybrid CG Est" help="hybrid_cg_estimator">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="im" description="Estimated Model"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.HybridCgEstimatorWrapper</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.HybridCgEstimatorEditor</editor-class>
+            </model>
         </models>
         <display-component image="estimatorIcon.gif"/>
         <model-chooser title="Types of Estimators"/>
@@ -1071,6 +1116,58 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.GeneralAlgorithmRunner</model-class>
                 <editor-class>edu.cmu.tetradapp.editor.GeneralAlgorithmEditor
+                </editor-class>
+            </model>
+        </models>
+        <display-component image="searchIcon.gif"/>
+        <model-chooser title="Types of Search Algorithms">
+            edu.cmu.tetradapp.app.CategorizingModelChooser
+        </model-chooser>
+        <node-specific-message>
+            <![CDATA[
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
+                 <br> (1) Data or Simulation, OR
+                 <br> (2) Graph (searches directly over graph) OR
+                 <br> Note that for the parent boxes, models need to have been created.
+               </html>
+            ]]>
+        </node-specific-message>
+    </session-node>
+    <session-node id="Latent_Clusters">
+        <models>
+            <model name="Algorithms that Generate Clusters" acronym="Latent_Clusters" help="latent_clusters"
+                   category="General">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.LatentClustersRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.LatentClustersEditor
+                </editor-class>
+            </model>
+        </models>
+        <display-component image="searchIcon.gif"/>
+        <model-chooser title="Types of Search Algorithms">
+            edu.cmu.tetradapp.app.CategorizingModelChooser
+        </model-chooser>
+        <node-specific-message>
+            <![CDATA[
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
+                 <br> (1) Data or Simulation, OR
+                 <br> (2) Graph (searches directly over graph) OR
+                 <br> Note that for the parent boxes, models need to have been created.
+               </html>
+            ]]>
+        </node-specific-message>
+    </session-node>
+    <session-node id="Latent_Structure">
+        <models>
+            <model name="Algorithms that Generate Graphs" acronym="Latent Structure" help="latent_structure"
+                   category="General">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.LatentStructureRunner</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.LatentStructureEditor
                 </editor-class>
             </model>
         </models>
@@ -1220,16 +1317,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.IdaEditor</editor-class>
             </model>
-<!--            <model name="Grid Search" acronym="Grid Search"-->
-<!--                   help="indep_facts" category="Independence Facts Comparison">-->
-<!--                <logger>-->
-<!--                    <event id="info" description="Information" default="on"/>-->
-<!--                    <event id="comparison" description="Comparison" default="on"/>-->
-<!--                </logger>-->
-<!--                <model-class>edu.cmu.tetradapp.model.GridSearchModel-->
-<!--                </model-class>-->
-<!--                <editor-class>edu.cmu.tetradapp.editor.GridSearchEditor</editor-class>-->
-<!--            </model>-->
+            <!--            <model name="Grid Search" acronym="Grid Search"-->
+            <!--                   help="indep_facts" category="Independence Facts Comparison">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="comparison" description="Comparison" default="on"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.GridSearchModel-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.GridSearchEditor</editor-class>-->
+            <!--            </model>-->
             <model name="Edge Weight Similarity Comparison" acronym="EdgeWeightSim"
                    help="tabular_comparison" category="SEM IM-SEM IM Comparisons">
                 <logger>
@@ -1347,31 +1444,13 @@
                 <model-class>edu.cmu.tetradapp.model.RemoveNonSkeletonEdgesModel</model-class>
                 <editor-class>edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor</editor-class>
             </model>
-            <model name="FASK Forbidden Graph" acronym="FASK-Forb-Graph" help="forb.graph">
+            <model name="Pairwise Forbidden Graph" acronym="PW-Forb-Graph" help="pw-forb.graph">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="knowledge" description="Knowledge" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.FaskForbiddenGraphModel</model-class>
+                <model-class>edu.cmu.tetradapp.model.PairwiseForbiddenGraphModel</model-class>
                 <editor-class>edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor</editor-class>
-            </model>
-            <!--            <model name="Independence Facts" acronym="IndFacts" help="indfacts">-->
-            <!--                <logger>-->
-            <!--                    <event id="info" description="Information" default="on"/>-->
-            <!--                    <event id="knowledge" description="Knowledge" default="on"/>-->
-            <!--                </logger>-->
-            <!--                <model-class>edu.cmu.tetradapp.model.IndependenceFactsModel</model-class>-->
-            <!--                <editor-class>edu.cmu.tetradapp.knowledge_editor.IndependenceFactsEditor</editor-class>-->
-            <!--            </model>-->
-            <model name="Measurement Model" acronym="Meas. Model" help="mm"
-                   category="Multiple Indicator Model searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Misc Fine Details" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.MeasurementModelWrapper</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.ClusterEditor
-                </editor-class>
             </model>
         </models>
         <display-component image="searchIcon.gif"/>

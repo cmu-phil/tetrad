@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.BoxDataSet;
@@ -6,11 +26,8 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.LinearFunctionND;
 import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunction1D;
 import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionND;
-import edu.cmu.tetrad.search.utils.RandomMonotonicPiecewiseLinear;
-import edu.cmu.tetrad.util.RandomPiecewiseLinearBijective;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -31,10 +48,10 @@ import java.util.stream.IntStream;
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
  * <p>
- * Bühlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
+ * BÃ¼hlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
  * penalized regression". The Annals of Statistics.
  * <p>
- * Peters, J., Mooij, J. M., Janzing, D., &amp; Schölkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
+ * Peters, J., Mooij, J. M., Janzing, D., &amp; SchÃ¶lkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
  * Models". Journal of Machine Learning Research.
  * <p>
  * Hastie, T., &amp; Tibshirani, R. (1986). "Generalized Additive Models".
@@ -111,26 +128,26 @@ public class PostnonlinearCausalModel {
     private boolean coefSymmetric = false;
 
     /**
-     * Constructs a PostnonlinearCausalModel object. This model generates synthetic data based on a directed
-     * acyclic graph (DAG) with causal relationships, utilizing post-nonlinear causal mechanisms. The model
-     * allows for various parameter configurations to control noise, rescaling, dimensionality, and coefficient
-     * properties.
+     * Constructs a PostnonlinearCausalModel object. This model generates synthetic data based on a directed acyclic
+     * graph (DAG) with causal relationships, utilizing post-nonlinear causal mechanisms. The model allows for various
+     * parameter configurations to control noise, rescaling, dimensionality, and coefficient properties.
      *
-     * @param graph The directed acyclic graph (DAG) containing the causal structure for the model.
-     *              Must be acyclic; otherwise, an exception will be thrown.
-     * @param numSamples The number of samples to generate for the synthetic data. Must be positive.
-     * @param noiseDistribution The distribution from which noise values are generated. Often a standard
-     *                          distribution, such as Gaussian, but can be user-defined.
-     * @param rescaleMin The minimum value for rescaling the data. Must be less than or equal to rescaleMax.
-     * @param rescaleMax The maximum value for rescaling the data. Must be greater than or equal to rescaleMin.
-     * @param hiddenDimension The dimensionality of the hidden variables affecting the model's behavior.
-     * @param inputScale A scaling factor applied to the input variables before applying post-nonlinear operations.
-     * @param coefLow The lower bound for randomly selected coefficients used in the model.
-     * @param coefHigh The upper bound for randomly selected coefficients used in the model.
-     * @param coefSymmetric A boolean flag indicating whether the randomly selected coefficients should be symmetric
-     *                      around zero.
-     * @throws IllegalArgumentException If the provided graph is not acyclic, the number of samples is less than one,
-     *                                  or rescaleMin is greater than rescaleMax.
+     * @param graph             The directed acyclic graph (DAG) containing the causal structure for the model. Must be
+     *                          acyclic; otherwise, an exception will be thrown.
+     * @param numSamples        The number of samples to generate for the synthetic data. Must be positive.
+     * @param noiseDistribution The distribution from which noise values are generated. Often a standard distribution,
+     *                          such as Gaussian, but can be user-defined.
+     * @param rescaleMin        The minimum value for rescaling the data. Must be less than or equal to rescaleMax.
+     * @param rescaleMax        The maximum value for rescaling the data. Must be greater than or equal to rescaleMin.
+     * @param hiddenDimension   The dimensionality of the hidden variables affecting the model's behavior.
+     * @param inputScale        A scaling factor applied to the input variables before applying post-nonlinear
+     *                          operations.
+     * @param coefLow           The lower bound for randomly selected coefficients used in the model.
+     * @param coefHigh          The upper bound for randomly selected coefficients used in the model.
+     * @param coefSymmetric     A boolean flag indicating whether the randomly selected coefficients should be symmetric
+     *                          around zero.
+     * @throws IllegalArgumentException If the provided graph is not acyclic, the number of samples is less than one, or
+     *                                  rescaleMin is greater than rescaleMax.
      */
     public PostnonlinearCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                     double rescaleMin, double rescaleMax,
@@ -249,3 +266,4 @@ public class PostnonlinearCausalModel {
         this.activationFunction = activationFunction;
     }
 }
+

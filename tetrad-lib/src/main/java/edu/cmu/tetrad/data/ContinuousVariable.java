@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,9 +15,9 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
@@ -75,6 +75,10 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
+    /**
+     * The rank, or -1 if none is set. If set, just be >= 9,
+     */
+    private int rank = -1;
 
     /**
      * Constructs a new continuous variable with the given name.
@@ -196,8 +200,27 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     public boolean equals(Object o) {
         if (o == null) return false;
         if (!(o instanceof ContinuousVariable)) return false;
-        if (!getName().equals(((Node) o).getName()))  return false;
+        if (!getName().equals(((Node) o).getName())) return false;
         return getNodeType() == ((ContinuousVariable) o).getNodeType();
+    }
+
+    @Override
+    public int getRank() {
+        return this.rank == -1 ? super.getRank() : this.rank;
+    }
+
+    /**
+     * Sets the rank for this variable. The rank must be either -1 (indicating no rank is set)
+     * or a non-negative integer value.
+     *
+     * @param rank the rank to set; must be -1 or greater than or equal to 0
+     * @throws IllegalArgumentException if the rank is less than -1
+     */
+    public void setRank(int rank) {
+        if (rank < -1) {
+            throw new IllegalArgumentException("Rank must be -1, if no rank is set, or >= 0.");
+        }
+        this.rank = rank;
     }
 
     /**
@@ -377,3 +400,4 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     }
 
 }
+

@@ -1,8 +1,23 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.editor.datamanip;
 
 import edu.cmu.tetrad.data.*;
@@ -17,8 +32,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.Serial;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Feb 11, 2019 4:17:17 PM
@@ -310,7 +325,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         List<Node> nodeList = new LinkedList<>();
         Map<Node, Integer> origIndexMap = new HashMap<>();
         this.sourceDataSetCopy.getVariables().forEach(node -> {
-            int columnIndex = this.sourceDataSetCopy.getColumnIndex(node);
+            int columnIndex = this.sourceDataSetCopy.getColumn(node);
             // Skip these columns when creating the new dataset
             if (!toBeRemovedColumns.contains(columnIndex)) {
                 nodeList.add(node);
@@ -347,8 +362,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         if ((x instanceof DiscreteVariable) && (y instanceof DiscreteVariable)) {
             Map<Object, Object> map = new HashMap<>();
 
-            int xColumnIndex = this.sourceDataSet.getColumnIndex(x);
-            int yColumnIndex = this.sourceDataSet.getColumnIndex(y);
+            int xColumnIndex = this.sourceDataSet.getColumn(x);
+            int yColumnIndex = this.sourceDataSet.getColumn(y);
             int numRows = this.sourceDataSet.getNumRows();
 
             for (int i = 0; i < numRows; i++) {
@@ -456,3 +471,4 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         return new BoxDataSet(new VerticalIntDataBox(data), nodeList);
     }
 }
+

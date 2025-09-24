@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
@@ -5,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
@@ -32,7 +52,7 @@ import static edu.cmu.tetrad.util.Params.*;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper,
+public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesScoreWrapper,
         TakesExternalGraph {
     @Serial
     private static final long serialVersionUID = 23L;
@@ -76,7 +96,7 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * @return the resulting graph from the search
      * @throws IllegalStateException    if the data model is not a DataSet or if there are missing values
      * @throws IllegalArgumentException if there are missing values in the data set
-     * @throws InterruptedException if any
+     * @throws InterruptedException     if any
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
@@ -92,37 +112,39 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             }
         }
 
-        edu.cmu.tetrad.search.Fask search = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters));
+        edu.cmu.tetrad.search.Fask fask = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters));
 
         int lrRule = parameters.getInt(FASK_LEFT_RIGHT_RULE);
 
         if (lrRule == 1) {
-            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
         } else if (lrRule == 2) {
-            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
         } else if (lrRule == 3) {
-            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
         } else if (lrRule == 4) {
-            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
         } else if (lrRule == 5) {
-            search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
+            fask.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
         } else {
             throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
         }
 
-        search.setDepth(parameters.getInt(DEPTH));
-        search.setAlpha(parameters.getDouble(ALPHA));
-        search.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
-        search.setDelta(parameters.getDouble(FASK_DELTA));
-        search.setUseFasAdjacencies(true);
-        search.setUseSkewAdjacencies(true);
+        fask.setDepth(parameters.getInt(DEPTH));
+        fask.setAlpha(parameters.getDouble(ALPHA));
+        fask.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
+        edu.cmu.tetrad.search.Fask.setDelta(parameters.getDouble(FASK_DELTA));
+        fask.setUseFasAdjacencies(true);
+        fask.setUseSkewAdjacencies(true);
+
+        fask.setAlpha(0.05);                    // a bit looser than 1e-5
 
         if (algorithm != null) {
-            search.setExternalGraph(algorithm.search(dataSet, parameters));
+            fask.setExternalGraph(algorithm.search(dataSet, parameters));
         }
 
-        search.setKnowledge(this.knowledge);
-        return search.search();
+        fask.setKnowledge(this.knowledge);
+        return fask.search();
     }
 
     /**
@@ -230,3 +252,4 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         this.score = score;
     }
 }
+

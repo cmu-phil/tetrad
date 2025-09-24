@@ -1,11 +1,31 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import java.util.Random;
 
 /**
- * GaussianProcessRBF simulates a Gaussian Process (GP) with a Radial Basis Function (RBF) kernel.
- * It provides functionality for generating simulated function values based on the covariance matrix
- * of the RBF kernel and evaluating the function at arbitrary points using interpolation.
+ * GaussianProcessRBF simulates a Gaussian Process (GP) with a Radial Basis Function (RBF) kernel. It provides
+ * functionality for generating simulated function values based on the covariance matrix of the RBF kernel and
+ * evaluating the function at arbitrary points using interpolation.
  */
 public class GaussianProcessRBF {
     private final double[] xValues;        // Input points
@@ -40,9 +60,9 @@ public class GaussianProcessRBF {
     }
 
     /**
-     * The main method serves as the entry point for the Gaussian Process simulation demonstration.
-     * It creates a series of input points, initializes the simulation parameters,
-     * and uses those to create and evaluate a Gaussian Process with an RBF kernel.
+     * The main method serves as the entry point for the Gaussian Process simulation demonstration. It creates a series
+     * of input points, initializes the simulation parameters, and uses those to create and evaluate a Gaussian Process
+     * with an RBF kernel.
      *
      * @param args Command-line arguments passed to the program, not used in this demonstration.
      */
@@ -148,3 +168,4 @@ public class GaussianProcessRBF {
         return evaluate(x) - zeroValue;
     }
 }
+

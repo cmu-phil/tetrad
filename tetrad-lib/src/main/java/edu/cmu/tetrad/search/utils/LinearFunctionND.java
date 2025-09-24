@@ -1,11 +1,30 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import java.util.Random;
 
 /**
- * Represents a linear function in an n-dimensional space (R^n -> R).
- * The function is defined as f(x) = c1*x1 + c2*x2 + ... + cn*xn + intercept,
- * where c1, c2, ..., cn are the coefficients, and intercept is a constant.
+ * Represents a linear function in an n-dimensional space (R^n -> R). The function is defined as f(x) = c1*x1 + c2*x2 +
+ * ... + cn*xn + intercept, where c1, c2, ..., cn are the coefficients, and intercept is a constant.
  */
 public class LinearFunctionND {
 
@@ -48,8 +67,8 @@ public class LinearFunctionND {
     }
 
     /**
-     * The main method demonstrates the creation of a linear function with specified parameters,
-     * prints its coefficients and intercept, and evaluates the function for a set of sample inputs.
+     * The main method demonstrates the creation of a linear function with specified parameters, prints its coefficients
+     * and intercept, and evaluates the function for a set of sample inputs.
      *
      * @param args Command-line arguments (not used in this demonstration).
      */
@@ -139,3 +158,4 @@ public class LinearFunctionND {
         return intercept;
     }
 }
+

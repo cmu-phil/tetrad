@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.special.Gamma;
@@ -61,6 +81,43 @@ public class TaylorSeries {
      */
     private static double logGamma(int n) {
         return logGammaCache.computeIfAbsent(n, Gamma::logGamma);
+    }
+
+    /**
+     * Calculates the nth term of center Taylor series at center given point x, based on the derivatives provided and
+     * the expansion point center.
+     *
+     * @param derivatives An array of derivatives, where the nth element represents the nth derivative at a center
+     *                    point.
+     * @param x           The value at which the Taylor series term is evaluated.
+     * @param center      The point about which the Taylor series is expanded.
+     * @param n           The index of the term in the Taylor series to calculate.
+     * @return The nth term of the Taylor series.
+     * @throws IllegalArgumentException If n is greater than or equal to the length of the derivative array.
+     */
+    private static double taylorTerm(double[] derivatives, double x, double center, int n) {
+        if (n >= derivatives.length) {
+            throw new IllegalArgumentException("Index exceeds the number of derivatives provided.");
+        }
+
+        double derivative = derivatives[n]; // f^(n)(center)
+
+        if (derivative == 0) {
+            return 0;
+        }
+
+        if (x == center && n > 0) {
+            return 0.0; // Higher-order terms vanish when x = the center
+        }
+
+        if (x == center && n == 0) {
+            return derivative; // f(center) = f^(0)(center)
+        }
+
+        double logTerm = Math.log(Math.abs(derivative)) + n * Math.log(Math.abs(x - center)) - logGamma(n + 1);
+
+        // Restore sign of derivative to avoid log of negatives
+        return Math.exp(logTerm) * Math.signum(derivative);
     }
 
     /**
@@ -145,41 +202,5 @@ public class TaylorSeries {
         System.out.println(builder);
     }
 
-    /**
-     * Calculates the nth term of center Taylor series at center given point x, based on the derivatives provided and
-     * the expansion point center.
-     *
-     * @param derivatives An array of derivatives, where the nth element represents the nth derivative at a center
-     *                    point.
-     * @param x           The value at which the Taylor series term is evaluated.
-     * @param center      The point about which the Taylor series is expanded.
-     * @param n           The index of the term in the Taylor series to calculate.
-     * @return The nth term of the Taylor series.
-     * @throws IllegalArgumentException If n is greater than or equal to the length of the derivative array.
-     */
-    private static double taylorTerm(double[] derivatives, double x, double center, int n) {
-        if (n >= derivatives.length) {
-            throw new IllegalArgumentException("Index exceeds the number of derivatives provided.");
-        }
-
-        double derivative = derivatives[n]; // f^(n)(center)
-
-        if (derivative == 0) {
-            return 0;
-        }
-
-        if (x == center && n > 0) {
-            return 0.0; // Higher-order terms vanish when x = the center
-        }
-
-        if (x == center && n == 0) {
-            return derivative; // f(center) = f^(0)(center)
-        }
-
-        double logTerm = Math.log(Math.abs(derivative)) + n * Math.log(Math.abs(x - center)) - logGamma(n + 1);
-
-        // Restore sign of derivative to avoid log of negatives
-        return Math.exp(logTerm) * Math.signum(derivative);
-    }
-
 }
+

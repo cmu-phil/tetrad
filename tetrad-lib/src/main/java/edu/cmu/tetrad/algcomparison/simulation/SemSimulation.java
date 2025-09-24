@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
@@ -157,20 +177,31 @@ public class SemSimulation implements Simulation {
                 graph = this.randomGraph.createGraph(parameters);
             }
 
-            SemPm pm = this.pm;
+//            SemPm pm = this.pm;
             SemIm im = this.im;
 
-            if (this.pm == null) {
-                pm = new SemPm(graph);
-            }
+//            if (this.pm == null) {
+//                pm = new SemPm(graph);
+//            }
+
+//            if (this.semIm == null) {
+//                semIm = new SemIm(pm, parameters);
+//            }
+
+            SemIm.Result result = SemIm.simulatePossibleShrinkage(parameters, graph);
+
+            DataSet dataSet = result.dataSet();// simulate(semIm, parameters);
 
             if (this.im == null) {
-                im = new SemIm(pm, parameters);
+                im = result.im();
             }
 
-            DataSet dataSet = simulate(im, parameters);
+            if (this.pm == null) {
+                pm = im.getSemPm();
+            }
+
             dataSet = postProcess(parameters, dataSet);
-            dataSet.setName("" + (i + 1));
+            dataSet.setName("Run" + (i + 1));
 
             this.graphs.add(graph);
             this.ims.add(im);
@@ -261,7 +292,10 @@ public class SemSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        parameters.addAll(SemIm.getParameterNames());
+        if (this.im == null) {
+            parameters.addAll(SemIm.getParameterNames());
+        }
+
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
@@ -299,3 +333,4 @@ public class SemSimulation implements Simulation {
         return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
     }
 }
+

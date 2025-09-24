@@ -1,7 +1,26 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -45,9 +64,9 @@ public class RecursiveBlocking {
     }
 
     /**
-     * Identifies and returns a subset of nodes that blocks all blockable paths between two given nodes (x and y)
-     * within a graph under specified constraints. This method considers the inclusion of certain nodes,
-     * avoidance of specific nodes, and limits on path lengths while performing the analysis.
+     * Identifies and returns a subset of nodes that blocks all blockable paths between two given nodes (x and y) within
+     * a graph under specified constraints. This method considers the inclusion of certain nodes, avoidance of specific
+     * nodes, and limits on path lengths while performing the analysis.
      *
      * @param graph         the graph to analyze
      * @param x             the starting node
@@ -56,8 +75,8 @@ public class RecursiveBlocking {
      * @param notFollowed   the set of nodes that should not be traversed along the path
      * @param maxPathLength the maximum allowable length for a path between x and y
      * @param knowledge     additional knowledge constraints that inform the path blocking process
-     * @return a set of nodes that blocks the paths between x and y based on the specified conditions, or null if
-     * no blocking subset can be determined
+     * @return a set of nodes that blocks the paths between x and y based on the specified conditions, or null if no
+     * blocking subset can be determined
      * @throws InterruptedException if the operation is interrupted during execution
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
@@ -127,9 +146,9 @@ public class RecursiveBlocking {
             return Blockable.INDETERMINATE;
         }
 
-//        if (notFollowed.contains(y)) {
-//            return Blockable.UNBLOCKABLE;
-//        }
+        if (notFollowed.contains(y)) {
+            return Blockable.UNBLOCKABLE;
+        }
 
         path.add(b);
 
@@ -297,3 +316,4 @@ public class RecursiveBlocking {
         INDETERMINATE
     }
 }
+

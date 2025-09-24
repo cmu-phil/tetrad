@@ -1,536 +1,373 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.ntad_test.Cca;
-import edu.cmu.tetrad.search.utils.ClusterSignificance;
-import edu.cmu.tetrad.sem.ReidentifyVariables;
-import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.util.TetradLogger;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static java.lang.Math.sqrt;
 
 /**
- * The Gin class implements an algorithm for causal discovery, leveraging
- * statistical independence tests and clustering techniques to infer
- * latent structures and build a graphical representation of causal relationships.
- *
- * This class executes a multi-step process including the identification of
- * causal clusters, creation of latent nodes linked to observed variables,
- * and orientation of directed edges among the latent variables.
- *
- * Key functionalities:
- * - Use of a raw marginal independence test to compute p-values for
- *   independence checks.
- * - Identification of causal clusters using FOFC (fast orientation for causation)
- *   and further refinement via statistical tests.
- * - Construction of a causal graph accommodating both observed and latent nodes.
- *
- * The algorithm relies heavily on covariance matrices and additional statistical
- * procedures such as Fisher's method for p-value combination and singular value
- * decomposition (SVD).
- *
- * The algorithm is tailored for use with time-series or multivariate datasets,
- * where causal inference in the presence of latent confounding variables is necessary.
- *
- * Thread-safety: Not guaranteed. This class is not designed to be thread-safe.
+ * Minimal GIN: 1) Get clusters from TSC. 2) Add one latent per cluster, connect to its observed children. 3) For each
+ * unordered latent pair {i,j}: - Compute smallest-Ï projection for i->j (Y=j, Z=i) and for j->i (Y=i, Z=j) - p_ij =
+ * p(e(Y|Z) â Z) via RawMarginalIndependenceTest - If max(p_ij, p_ji) >= alpha, add ONLY the better direction.
+ * <p>
+ * Notes: â¢ Allows cliques/cycles intentionally (no gates, no acyclicity checks). â¢ Uses covariance (matches centering).
+ * â¢ Whitening enabled by default; small ridge helps stability.
  */
 public class Gin {
 
-    /**
-     * The significance level threshold used in statistical tests to determine causal
-     * relationships or dependencies within the data. This parameter typically ranges
-     * between 0 and 1, where a smaller value indicates stricter criteria for significance.
-     */
+    // ----------------------------- Params -----------------------------
     private final double alpha;
-    /**
-     * An instance of {@link RawMarginalIndependenceTest} used to perform tests
-     * for marginal independence between variables during computations within
-     * the {@code Gin} class.
-     *
-     * This field encapsulates the logic for evaluating statistical independence
-     * between pairs of variables, which is a foundational operation for the
-     * methods provided by the enclosing class.
-     */
     private final RawMarginalIndependenceTest test;
-    private CorrelationMatrix corr;
-    private SimpleMatrix S;
-    private DataSet dataSet;
-    private List<Node> variables;
-    private final NormalDistribution normal = new NormalDistribution(0, 1);
+    private final List<Node> nodes;           // for pretty logging names
+    private boolean verbose = false;
+    private boolean whitenBeforeSVD = true;   // numerical guard (default ON)
+    private double ridge = 3e-8;              // tiny ridge for whitening
+    // ----------------------------- State -----------------------------
+    private DataSet data;
+    private SimpleMatrix cov;                 // covariance of observed
+    private List<Node> vars;                  // observed nodes
+    private List<List<Integer>> clusters;     // TSC clusters (indices into vars)
+
+    // ----------------------------- Ctors -----------------------------
 
     /**
-     * Constructs a Gin object with the specified significance level and marginal independence test.
+     * Constructs a Gin instance with the specified significance level and independence test.
      *
-     * @param alpha the significance level to be used for the hypothesis tests; must be a value between 0 and 1
-     * @param test an implementation of the {@code RawMarginalIndependenceTest} interface to perform variable independence testing
+     * @param alpha the significance level to be used for statistical tests, typically in the range [0, 1]
+     * @param test the raw marginal independence test instance, used to compute p-values for independence testing
+     * @throws NullPointerException if the provided test is null
      */
     public Gin(double alpha, RawMarginalIndependenceTest test) {
         this.alpha = alpha;
-        this.test = test;
+        this.test = Objects.requireNonNull(test, "test");
+        this.nodes = ((IndependenceTest) test).getVariables();
+    }
+
+    private static boolean hasVariance(double[] e) {
+        int n = e.length;
+        if (n <= 1) return false;
+        double m = 0.0;
+        for (double v : e) m += v;
+        m /= n;
+        double s2 = 0.0;
+        for (double v : e) {
+            double d = v - m;
+            s2 += d * d;
+        }
+        return s2 > 0.0;
     }
 
     /**
-     * Executes a causal discovery algorithm on the provided dataset to construct
-     * a graph representing the causal relationships between variables.
+     * Symmetric inverse square-root via EVD with ridge.
+     */
+    private static SimpleMatrix invSqrtSym(SimpleMatrix A, double ridge) {
+        SimpleMatrix Ar = A.copy();
+        if (ridge > 0) {
+            DMatrixRMaj d = Ar.getDDRM();
+            int n = d.getNumRows();
+            for (int i = 0; i < n; i++) d.add(i, i, ridge);
+        }
+        SimpleEVD<SimpleMatrix> evd = Ar.eig();
+        int n = Ar.getNumRows();
+        SimpleMatrix U = new SimpleMatrix(n, n);
+        SimpleMatrix Dm = new SimpleMatrix(n, n);
+        for (int i = 0; i < n; i++) {
+            double ev = evd.getEigenvalue(i).getReal();
+            SimpleMatrix ui = evd.getEigenVector(i);
+            if (ui == null) {
+                ui = new SimpleMatrix(n, 1);
+                ui.set(i, 0, 1.0);
+            }
+            double norm = ui.normF();
+            if (norm > 0) ui = ui.divide(norm);
+            U.insertIntoThis(0, i, ui);
+            double v = (ev > 1e-12) ? 1.0 / sqrt(ev) : 0.0;
+            Dm.set(i, i, v);
+        }
+        return U.mult(Dm).mult(U.transpose());
+    }
+
+    // ----------------------------- Options ---------------------------
+
+    /**
+     * Sets the verbose mode for logging or output. When enabled, additional
+     * details may be provided for debugging or informational purposes.
      *
-     * @param data the dataset containing variables and their associated covariance matrix;
-     *             must contain sufficient information for causal analysis.
-     * @return a graph structure representing causal relationships, including observed
-     *         and latent variables, derived from the input dataset.
+     * @param v true to enable verbose mode, false to disable it
+     */
+    public void setVerbose(boolean v) {
+        this.verbose = v;
+    }
+
+    /**
+     * Sets whether whitening should be applied before performing Singular Value Decomposition (SVD).
+     *
+     * @param w true if whitening should be applied before SVD, false otherwise
+     */
+    public void setWhitenBeforeSVD(boolean w) {
+        this.whitenBeforeSVD = w;
+    }
+
+    /**
+     * Sets the ridge value for regularization. The ridge value is used as a
+     * regularization parameter to ensure numerical stability in computations.
+     * It is constrained to be non-negative.
+     *
+     * @param r the ridge value to set. If the provided value is negative, it
+     *          will be set to 0.0.
+     */
+    public void setRidge(double r) {
+        this.ridge = Math.max(0.0, r);
+    }
+
+    // ---------------------- Orientation (basic) ----------------------
+
+    // ----------------------------- API -------------------------------
+
+    /**
+     * Searches and constructs a causal graph representation using the provided dataset.
+     * The method identifies clusters, builds the latent measurement structure,
+     * and performs basic GIN (Generalized Independent Noise) orientation.
+     *
+     * @param data the dataset containing variables and their covariance information,
+     *             used to construct the graph.
+     * @return a graphical representation (Graph) that includes both observed and
+     *         latent variables with directed edges based on relationships derived
+     *         from the analysis.
      */
     public Graph search(DataSet data) {
-        SimpleMatrix cov = new SimpleMatrix(data.getCovarianceMatrix().getDataCopy());
-        SimpleMatrix rawData = new SimpleMatrix(data.getDoubleData().getDataCopy());
+        this.data = data;
+        // Use covariance (not correlation) to match the centered Y used to form e
+        this.cov = new SimpleMatrix(data.getCovarianceMatrix().getSimpleMatrix());
+        this.vars = data.getVariables();
 
-        this.corr = new CorrelationMatrix(data);
-        this.S = corr.getMatrix().getDataCopy();
-        this.dataSet = data;
-        this.variables = data.getVariables();
+        // 1) TSC clusters
+        this.clusters = findClustersTSC();
+        if (clusters.isEmpty()) {
+            clusters = new ArrayList<>();
+            for (int i = 0; i < vars.size(); i++) clusters.add(List.of(i));
+            if (verbose) TetradLogger.getInstance().log("[GIN] No clusters; using singletons.");
+        }
+        if (verbose) {
+            TetradLogger.getInstance().log("[GIN] clusters=" + clustersAsNames(clusters));
+        }
 
-        List<Node> variables = data.getVariables();
+        // 2) Build latent measurement structure
+        Graph g = new EdgeListGraph();
+        for (Node v : vars) g.addNode(v);
 
-        // Step 1: Find causal clusters
-        List<List<Integer>> clusters = findCausalClusters(data, cov, rawData);
-
-        // Step 2: Create latent nodes and build cluster graph
-        Graph graph = new EdgeListGraph();
         List<Node> latents = new ArrayList<>();
-        for (Node node : variables) graph.addNode(node);
-
-        int latentId = 0;
-        for (List<Integer> cluster : clusters) {
-            Node latent = new GraphNode("L" + (++latentId));
-            latent.setNodeType(NodeType.LATENT);
-            graph.addNode(latent);
-            latents.add(latent);
-            for (int idx : cluster) {
-                graph.addDirectedEdge(latent, variables.get(idx));
-            }
-        }
-
-        Map<Double, Pair<List<Integer>, List<Integer>>> pValues = new HashMap<>();
-
-        // Step 3: Orient latent variables
         for (int i = 0; i < clusters.size(); i++) {
-            for (int j = 0; j < clusters.size(); j++) {
-                if (i == j) continue;
-
-                List<Integer> Z = clusters.get(i); // cause candidates
-                List<Integer> Y = clusters.get(j); // effect candidates
-
-                if (Z.isEmpty() || Y.isEmpty()) continue;
-
-                double[] e = computeE(data, cov, Y, Z);
-                List<Double> pvals = new ArrayList<>();
-
-
-                for (int z : Z) {
-                    double[] zData = rawData.extractVector(false, z).getDDRM().getData();
-                    double pval = 0;
-                    try {
-                        pval = test.computePValue(e, zData);
-                    } catch (InterruptedException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                    pvals.add(Math.min(pval, 1 - 1e-5));
-                }
-
-                double p = fisher(pvals);
-                pValues.put(p, Pair.of(Z, Y));
-
-                if (p > alpha && !graph.isAncestorOf(latents.get(j), latents.get(i))) {
-                    graph.addDirectedEdge(latents.get(i), latents.get(j));
-                }
-            }
+            Node L = new GraphNode("L" + (i + 1));
+            L.setNodeType(NodeType.LATENT);
+            g.addNode(L);
+            latents.add(L);
+            for (int idx : clusters.get(i)) g.addDirectedEdge(L, vars.get(idx));
         }
 
-        List<Double> keys = new ArrayList<>(pValues.keySet());
-        keys.sort(Collections.reverseOrder());
+        // 3) Basic GIN orientation (no gates)
+        orientBasicGIN(g, clusters, latents);
+        return g;
+    }
 
-        for (double p : keys) {
-            if (p > alpha) {
-                Pair<List<Integer>, List<Integer>> pair = pValues.get(p);
-                List<Integer> Z = pair.getLeft();
-                List<Integer> Y = pair.getRight();
-                Node latentZ = latents.get(clusters.indexOf(Z));
-                Node latentY = latents.get(clusters.indexOf(Y));
+    // ---------------------- Projection e = Yc * Ï --------------------
 
-                if (!graph.isAncestorOf(latentY, latentZ)) {
-                    graph.addDirectedEdge(latentZ, latentY);
-                }
-            }
+    // ---------------------- TSC clusters -----------------------------
+    private List<List<Integer>> findClustersTSC() {
+        Tsc tsc = new Tsc(data.getVariables(), new CorrelationMatrix(data));
+        tsc.setAlpha(alpha);
+        tsc.setMinRedundancy(0);
+
+        List<List<Integer>> out = new ArrayList<>();
+        for (Set<Integer> seed : tsc.findClusters().keySet()) {
+            out.add(new ArrayList<>(seed));
         }
-
-        return graph;
+        return out;
     }
 
     /**
-     * Computes the result of a matrix operation based on the provided dataset, covariance matrix,
-     * and specified subsets of variables. This method extracts specific rows and columns
-     * based on the provided indices and performs singular value decomposition (SVD)
-     * to compute the resulting array.
-     *
-     * @param data the dataset containing observations and values for variables
-     * @param cov the covariance matrix of the dataset
-     * @param X a list of indices indicating a subset of variables from the dataset
-     * @param Z a list of indices identifying another subset of variables from the dataset
-     * @return an array of computed double values resulting from the matrix operations
+     * For each unordered {i,j}: p_ij = p(e(Y=j | Z=i) â Z=i), p_ji = p(e(Y=i | Z=j) â Z=j). If max(p_ij, p_ji) >=
+     * alpha, add the larger direction (ties broken toward i->j).
      */
-    private double[] computeE(DataSet data, SimpleMatrix cov, List<Integer> X, List<Integer> Z) {
-        SimpleMatrix covM = new SimpleMatrix(Z.size(), X.size());
-        for (int i = 0; i < Z.size(); i++) {
-            for (int j = 0; j < X.size(); j++) {
-                covM.set(i, j, cov.get(Z.get(i), X.get(j)));
-            }
-        }
-        SimpleSVD<SimpleMatrix> svd = covM.svd();
-        SimpleMatrix v = svd.getV();
-        SimpleMatrix omega = v.extractVector(false, v.getNumCols() - 1);
+    private void orientBasicGIN(Graph g, List<List<Integer>> clusters, List<Node> latents) {
+        final int m = clusters.size();
 
-        SimpleMatrix subData = new SimpleMatrix(data.getNumRows(), X.size());
-        for (int i = 0; i < data.getNumRows(); i++) {
-            for (int j = 0; j < X.size(); j++) {
-                subData.set(i, j, data.getDouble(i, X.get(j)));
+        for (int i = 0; i < m; i++) {
+            for (int j = i + 1; j < m; j++) {
+                if (Thread.currentThread().isInterrupted()) return;
+
+                List<Integer> Zi = clusters.get(i);
+                List<Integer> Yj = clusters.get(j);
+                List<Integer> Zj = clusters.get(j);
+                List<Integer> Yi = clusters.get(i);
+
+                // i -> j
+                ProjResult proj_ij = computeProjection(Yj, Zi);
+                double p_ij = (proj_ij.ok) ? pValueEvsZ(proj_ij.e, Zi) : 0.0;
+
+                // j -> i
+                ProjResult proj_ji = computeProjection(Yi, Zj);
+                double p_ji = (proj_ji.ok) ? pValueEvsZ(proj_ji.e, Zj) : 0.0;
+
+                if (verbose) {
+                    TetradLogger.getInstance().log(String.format(
+                            "[GIN] L%dâL%d  p_ij=%.4g (Ïmin=%.3g) | p_ji=%.4g (Ïmin=%.3g)",
+                            i + 1, j + 1, p_ij, proj_ij.sigmaMin, p_ji, proj_ji.sigmaMin));
+                }
+
+                if (p_ij >= alpha || p_ji >= alpha) {
+                    if (p_ij >= p_ji) g.addDirectedEdge(latents.get(i), latents.get(j));
+                    else g.addDirectedEdge(latents.get(j), latents.get(i));
+                }
             }
         }
-        return subData.mult(omega).getDDRM().getData();
     }
 
     /**
-     * Computes the Fisher's combined probability test statistic for a list of p-values
-     * and returns the cumulative probability from the chi-squared distribution.
-     *
-     * @param pvals a list of p-values to combine; should not contain zero or NaN values.
-     * @return the cumulative probability resulting from the Fisher's test, or 0 if the
-     *         input list is empty or contains invalid values.
+     * Compute smallest-Ï right singular direction: A = Î£_ZZ^{-1/2} Î£_ZY Î£_YY^{-1/2}   (if whitening), else A = Î£_ZY.
+     * Return e = Yc * Ï, where Ï = Î£_YY^{-1/2} v_min (or v_min if no whitening).
      */
-    private double fisher(List<Double> pvals) {
-        if (pvals.isEmpty()) return 0;
-        for (Double pval : pvals) {
-            if (pval == 0 || Double.isNaN(pval)) return 0;
+    private ProjResult computeProjection(List<Integer> Y, List<Integer> Z) {
+        final int n = data.getNumRows();
+        if (Y == null || Z == null || Y.isEmpty() || Z.isEmpty()) {
+            return new ProjResult(new double[n], Double.NaN, false);
         }
-        double stat = -2 * pvals.stream().mapToDouble(Math::log).sum();
-        int df = 2 * pvals.size();
-        return new ChiSquaredDistribution(df).cumulativeProbability(stat);
+
+        // Î£ blocks
+        SimpleMatrix Syy = subCov(cov, Y, Y);
+        SimpleMatrix Szz = subCov(cov, Z, Z);
+        SimpleMatrix Szy = subCov(cov, Z, Y);
+
+        // Center Y
+        SimpleMatrix Yc = new SimpleMatrix(n, Y.size());
+        for (int j = 0; j < Y.size(); j++) {
+            int col = Y.get(j);
+            double mean = 0.0;
+            for (int i = 0; i < n; i++) mean += data.getDouble(i, col);
+            mean /= n;
+            for (int i = 0; i < n; i++) Yc.set(i, j, data.getDouble(i, col) - mean);
+        }
+
+        // A and mapBack
+        SimpleMatrix A, mapBack;
+        if (whitenBeforeSVD) {
+            SimpleMatrix SzzInvH = invSqrtSym(Szz, ridge);
+            SimpleMatrix SyyInvH = invSqrtSym(Syy, ridge);
+            A = SzzInvH.mult(Szy).mult(SyyInvH);
+            mapBack = SyyInvH;
+        } else {
+            A = Szy;
+            mapBack = SimpleMatrix.identity(Syy.getNumRows());
+        }
+
+        SimpleSVD<SimpleMatrix> svd = A.svd();
+        SimpleMatrix W = svd.getW();
+        SimpleMatrix V = svd.getV();
+
+        int r = Math.min(Math.min(W.getNumRows(), W.getNumCols()), V.getNumCols());
+        if (r <= 0) return new ProjResult(new double[n], Double.NaN, false);
+
+        // find smallest singular value index
+        int minIdx = 0;
+        double sigmaMin = W.get(0, 0);
+        for (int k = 1; k < r; k++) {
+            double sv = W.get(k, k);
+            if (sv < sigmaMin) {
+                sigmaMin = sv;
+                minIdx = k;
+            }
+        }
+
+        SimpleMatrix vmin = V.extractVector(false, minIdx);
+        SimpleMatrix omega = mapBack.mult(vmin);
+        double[] e = Yc.mult(omega).getDDRM().getData();
+
+        // Minimal sanity: require some variance (avoid all-zero e)
+        boolean ok = hasVariance(e);
+        return new ProjResult(e, sigmaMin, ok);
     }
 
-    private Set<List<Integer>> estimateClusters() {
-        List<Integer> variables = allVariables();
-        if (new HashSet<>(variables).size() != variables.size()) {
-            throw new IllegalArgumentException("Variables must be unique.");
+    private double pValueEvsZ(double[] e, List<Integer> Z) {
+        final int n = e.length;
+        if (Z == null || Z.isEmpty()) return 1.0;
+
+        double[][] Zcols = new double[n][Z.size()];
+        for (int j = 0; j < Z.size(); j++) {
+            int col = Z.get(j);
+            for (int i = 0; i < n; i++) Zcols[i][j] = data.getDouble(i, col);
         }
 
-        Set<List<Integer>> clusters = new HashSet<>();
-        Set<Integer> usedVariables = new HashSet<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            for (int j = i + 1; j < variables.size(); j++) {
-                if (usedVariables.contains(variables.get(i)) && usedVariables.contains(variables.get(j))) {
-                    continue;
-                }
-
-                int[] yIndices = new int[]{variables.get(i), variables.get(j)};
-                int[] xIndices = new int[variables.size() - 2];
-
-                int index = 0;
-
-                for (int k = 0; k < variables.size(); k++) {
-                    if (k != i && k != j) {
-                        xIndices[index++] = variables.get(k);
-                    }
-                }
-
-                double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, dataSet.getNumRows(), 1);
-
-                System.out.println("p = " + p);
-
-                if (p >= alpha) {
-                    List<Integer> _cluster = new ArrayList<>();
-                    _cluster.add(variables.get(i));
-                    _cluster.add(variables.get(j));
-
-                    if (clusterDependent(_cluster)) {
-                        clusters.add(_cluster);
-                        usedVariables.add(variables.get(i));
-                        usedVariables.add(variables.get(j));
-                    }
-                }
-            }
+        try {
+            double p = test.computePValue(e, Zcols);
+            if (!Double.isFinite(p)) return 1.0;
+            if (p < 0) return 0.0;
+            if (p > 1) return 1.0;
+            return p;
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
         }
-
-        clusters = mergeOverlappingClusters(clusters);
-
-        System.out.println("final clusters = " + ClusterSignificance.variablesForIndices(clusters, this.variables));
-
-        return clusters;
     }
 
-    private Set<List<Integer>> mergeOverlappingClusters(Set<List<Integer>> clusters) {
-        boolean merged;
-        do {
-            merged = false;
-            Set<List<Integer>> newClusters = new HashSet<>();
-            Set<List<Integer>> used = new HashSet<>();
-
-            for (List<Integer> cluster1 : clusters) {
-                if (used.contains(cluster1)) continue;
-
-                List<Integer> mergedCluster = new ArrayList<>(cluster1);
-
-                for (List<Integer> cluster2 : clusters) {
-                    if (cluster1 == cluster2 || used.contains(cluster2)) continue;
-
-                    Set<Integer> intersection = new HashSet<>(cluster1);
-                    intersection.retainAll(cluster2);
-
-                    if (!intersection.isEmpty()) {
-                        mergedCluster.addAll(cluster2);
-                        used.add(cluster2);
-                        merged = true;
-                    }
-                }
-
-                used.add(cluster1);
-                newClusters.add(mergedCluster);
+    // ---------------------- Utilities ---------------------------
+    private SimpleMatrix subCov(SimpleMatrix S, List<Integer> rows, List<Integer> cols) {
+        SimpleMatrix out = new SimpleMatrix(rows.size(), cols.size());
+        for (int i = 0; i < rows.size(); i++) {
+            for (int j = 0; j < cols.size(); j++) {
+                out.set(i, j, S.get(rows.get(i), cols.get(j)));
             }
-
-            clusters = newClusters;
-        } while (merged);
-
-        return clusters;
+        }
+        return out;
     }
 
-    private boolean clusterDependent(List<Integer> cluster) {
-        int numDependencies = 0;
-        int all = 0;
-
-        for (int i = 0; i < cluster.size(); i++) {
-            for (int j = i + 1; j < cluster.size(); j++) {
-                double r = this.corr.getValue(cluster.get(i), cluster.get(j));
-
-                if (Double.isNaN(r)) {
-                    continue;
-                }
-
-                int n = this.corr.getSampleSize();
-                int zSize = 0; // Unconditional check.
-
-                double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
-                double df = n - 3. - zSize;
-
-                double fisherZ = sqrt(df) * q;
-
-                if (2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ))) < alpha) {
-                    numDependencies++;
-                }
-
-                all++;
-            }
-        }
-
-        return numDependencies == all;
+    private String clustersAsNames(List<List<Integer>> cl) {
+        return cl.stream()
+                .map(c -> c.stream().map(i -> vars.get(i).getName()).toList().toString())
+                .collect(Collectors.joining(" | "));
     }
 
+    // --------------------------- Helper types -----------------------
+    private static final class ProjResult {
+        final double[] e;
+        final double sigmaMin;
+        final boolean ok;
 
-
-
-    private List<Integer> allVariables() {
-        List<Integer> _variables = new ArrayList<>();
-        for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
-        return _variables;
-    }
-
-    private List<List<Integer>> findCausalClusters(DataSet data, SimpleMatrix cov, SimpleMatrix rawData) {
-        Fofc fofc = new Fofc(data, new Cca(data.getDoubleData().getDataCopy(), false), alpha);
-        Graph fofcGraph = fofc.search();
-        List<Node> vars = data.getVariables();
-
-        List<Node> fofcLatents = ReidentifyVariables.getLatents(fofcGraph);
-
-        List<List<Integer>> clusters = new ArrayList<>();
-
-        for (Node l : fofcLatents) {
-            List<Node> children = fofcGraph.getChildren(l);
-            List<Integer> cluster = new ArrayList<>();
-            for (Node n : children) {
-                int e = vars.indexOf(n);
-                cluster.add(e);
-            }
-
-            clusters.add(cluster);
+        ProjResult(double[] e, double sigmaMin, boolean ok) {
+            this.e = e;
+            this.sigmaMin = sigmaMin;
+            this.ok = ok;
         }
-
-        int numVars = data.getNumColumns();
-        Set<Integer> candidates = new HashSet<>();
-        for (int i = 0; i < numVars; i++) candidates.add(i);
-        List<Node> nodes = data.getVariables();
-
-        for (List<Integer> cluster : clusters) {
-            cluster.forEach(candidates::remove);
-        }
-
-        for (List<Integer> cluster : new ArrayList<>(clusters)) {
-            Set<Integer> remainder = new HashSet<>(candidates);
-            cluster.forEach(remainder::remove);
-
-            double[] e = computeE(data, cov, cluster, new ArrayList<>(remainder));
-            List<Double> pvals = new ArrayList<>();
-            for (int z : remainder) {
-                double[] zData = rawData.extractVector(false, z).getDDRM().getData();
-                try {
-                    pvals.add(Math.max(test.computePValue(e, zData), 1e-5));
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-            if (fisher(pvals) < alpha) continue;
-
-            // Greedy grow
-            boolean grown;
-            do {
-                grown = false;
-                K:
-                for (int k : new HashSet<>(remainder)) {
-                    List<Integer> candidate = new ArrayList<>(cluster);
-                    candidate.add(k);
-
-                    for (int k1 = 0; k1 < cluster.size(); k1++) {
-                        for (int l1 = k1 + 1; l1 < cluster.size(); l1++) {
-                            try {
-                                if (!((IndependenceTest) test).checkIndependence(nodes.get(cluster.get(k1)), nodes.get(cluster.get(l1))).isDependent()) {
-                                    continue K;
-                                }
-                            } catch (InterruptedException ex) {
-                                throw new RuntimeException(ex);
-                            }
-                        }
-                    }
-
-                    Set<Integer> rest = new HashSet<>(candidates);
-                    candidate.forEach(rest::remove);
-                    if (rest.isEmpty()) continue;
-
-                    e = computeE(data, cov, candidate, new ArrayList<>(rest));
-                    pvals = new ArrayList<>();
-                    for (int z : rest) {
-                        double[] zData = rawData.extractVector(false, z).getDDRM().getData();
-                        try {
-                            pvals.add(Math.max(test.computePValue(e, zData), 1e-5));
-                        } catch (InterruptedException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    }
-                    if (fisher(pvals) >= alpha) {
-                        cluster = candidate;
-                        remainder.remove(k);
-                        grown = true;
-                        break;
-                    }
-                }
-            } while (grown);
-
-            clusters.add(cluster);
-            cluster.forEach(candidates::remove);
-        }
-
-        for (List<Integer> cluster : clusters) {
-            candidates.removeAll(cluster);
-        }
-
-        for (int i = 0; i < numVars; i++) {
-            J:
-            for (int j = i + 1; j < numVars; j++) {
-                if (!candidates.contains(i) || !candidates.contains(j)) continue;
-
-                List<Integer> cluster = new ArrayList<>(List.of(i, j));
-
-                for (int k = 0; k < cluster.size(); k++) {
-                    for (int l = k + 1; l < cluster.size(); l++) {
-                        try {
-                            if (!((IndependenceTest) test).checkIndependence(nodes.get(cluster.get(k)), nodes.get(cluster.get(l))).isDependent()) {
-                                continue J;
-                            }
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-
-                Set<Integer> remainder = new HashSet<>(candidates);
-                cluster.forEach(remainder::remove);
-
-                double[] e = computeE(data, cov, cluster, new ArrayList<>(remainder));
-                List<Double> pvals = new ArrayList<>();
-                for (int z : remainder) {
-                    double[] zData = rawData.extractVector(false, z).getDDRM().getData();
-                    try {
-                        pvals.add(Math.max(test.computePValue(e, zData), 1e-5));
-                    } catch (InterruptedException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-                if (fisher(pvals) < alpha) continue;
-
-                // Greedy grow
-                boolean grown;
-                do {
-                    grown = false;
-                    K:
-                    for (int k : new HashSet<>(remainder)) {
-                        List<Integer> candidate = new ArrayList<>(cluster);
-                        candidate.add(k);
-
-                        for (int k1 = 0; k1 < cluster.size(); k1++) {
-                            for (int l1 = k1 + 1; l1 < cluster.size(); l1++) {
-                                try {
-                                    if (!((IndependenceTest) test).checkIndependence(nodes.get(cluster.get(k1)), nodes.get(cluster.get(l1))).isDependent()) {
-                                        continue K;
-                                    }
-                                } catch (InterruptedException ex) {
-                                    throw new RuntimeException(ex);
-                                }
-                            }
-                        }
-
-                        Set<Integer> rest = new HashSet<>(candidates);
-                        candidate.forEach(rest::remove);
-                        if (rest.isEmpty()) continue;
-
-                        e = computeE(data, cov, candidate, new ArrayList<>(rest));
-                        pvals = new ArrayList<>();
-                        for (int z : rest) {
-                            double[] zData = rawData.extractVector(false, z).getDDRM().getData();
-                            try {
-                                pvals.add(Math.max(test.computePValue(e, zData), 1e-5));
-                            } catch (InterruptedException ex) {
-                                throw new RuntimeException(ex);
-                            }
-                        }
-                        if (fisher(pvals) >= alpha) {
-                            cluster = candidate;
-                            remainder.remove(k);
-                            grown = true;
-                            break;
-                        }
-                    }
-                } while (grown);
-
-                clusters.add(cluster);
-                cluster.forEach(candidates::remove);
-            }
-        }
-
-
-        return clusters;
     }
 }

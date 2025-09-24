@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import java.util.Random;
@@ -17,11 +37,11 @@ public class MultiLayerPerceptronFunctionND {
     /**
      * Constructor to initialize a random function.
      *
-     * @param inputDim   Number of input dimensions (R^n).
-     * @param hiddenDimension  Number of neurons in the hidden layer.
-     * @param activation Activation function (e.g., Math::sin or Math::tanh).
-     * @param inputScale Scaling factor for the input to create bumpiness.
-     * @param seed       Random seed for reproducibility.
+     * @param inputDim        Number of input dimensions (R^n).
+     * @param hiddenDimension Number of neurons in the hidden layer.
+     * @param activation      Activation function (e.g., Math::sin or Math::tanh).
+     * @param inputScale      Scaling factor for the input to create bumpiness.
+     * @param seed            Random seed for reproducibility.
      */
     public MultiLayerPerceptronFunctionND(int inputDim, int hiddenDimension, Function<Double, Double> activation, double inputScale, long seed) {
         Random random = new Random(seed);
@@ -44,10 +64,9 @@ public class MultiLayerPerceptronFunctionND {
     }
 
     /**
-     * The main method demonstrating the creation and evaluation of a multi-layer perceptron
-     * function with random initialization and specific parameters.
-     * It defines the function, evaluates the function on given sample inputs, and
-     * prints the results to the console.
+     * The main method demonstrating the creation and evaluation of a multi-layer perceptron function with random
+     * initialization and specific parameters. It defines the function, evaluates the function on given sample inputs,
+     * and prints the results to the console.
      *
      * @param args Command-line arguments passed to the program.
      */
@@ -112,15 +131,16 @@ public class MultiLayerPerceptronFunctionND {
     }
 
     /**
-     * Evaluates the adjusted output of the function for a given input vector.
-     * The adjustment involves subtracting the output when the input is a zero-filled vector.
+     * Evaluates the adjusted output of the function for a given input vector. The adjustment involves subtracting the
+     * output when the input is a zero-filled vector.
      *
      * @param doubles Input vector in R^n.
-     * @return The adjusted output value in R, calculated by subtracting the output of the zero-filled vector from
-     *         the output of the provided input vector.
+     * @return The adjusted output value in R, calculated by subtracting the output of the zero-filled vector from the
+     * output of the provided input vector.
      */
     public Double evaluateAdjusted(double[] doubles) {
         double zero = evaluate(new double[doubles.length]);
         return evaluate(doubles) - zero;
     }
 }
+

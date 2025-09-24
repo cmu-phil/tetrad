@@ -1,9 +1,28 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Matrix;
@@ -27,8 +46,8 @@ import java.util.*;
  *
  * @author josephramsey
  * @author bryanandrews
- * @see IndTestBasisFunctionLrtFullSample
  */
+@Deprecated(since = "7.9", forRemoval = false)
 public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalIndependenceTest {
     /**
      * Represents the dataset used within the class for statistical analyses and computations.
@@ -124,7 +143,37 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
 
-        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getDataCopy());
+        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getSimpleMatrix());
+    }
+
+    /**
+     * Computes the variance of residuals given the indices of predictors.
+     */
+    private static double computeResidualVariance(int[] xIndices, int[] predictorIndices,
+                                                  SimpleMatrix covarianceMatrix, double lambda) {
+        if (predictorIndices.length == 0) {
+            return StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices).trace() / xIndices.length;
+        }
+
+        SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
+        SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
+        SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
+//        Sigma_PP = StatUtils.chooseMatrix(Sigma_PP, lambda);
+
+        // Compute OLS estimate of X given predictors P
+        SimpleMatrix beta = new Matrix(Sigma_PP).chooseInverse(lambda).getData().mult(Sigma_XP.transpose());
+
+        // Compute residual variance
+        return Sigma_XX.minus(Sigma_XP.mult(beta)).trace() / xIndices.length;
+    }
+
+    /**
+     * Concatenates two integer arrays.
+     */
+    private static int[] concatArrays(int[] first, int[] second) {
+        int[] result = Arrays.copyOf(first, first.length + second.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        return result;
     }
 
     /**
@@ -145,8 +194,8 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
     }
 
     private double getPValue(Node x, Node y, Set<Node> z, Map<Node, Integer> nodeHash,
-                                    Map<Integer, List<Integer>> embedding, boolean doOneEquationOnly,
-                                    double lambda, SimpleMatrix covarianceMatrix, int sampleSize) {
+                             Map<Integer, List<Integer>> embedding, boolean doOneEquationOnly,
+                             double lambda, SimpleMatrix covarianceMatrix, int sampleSize) {
         List<Node> zList = new ArrayList<>(z);
         Collections.sort(zList);
 
@@ -216,36 +265,6 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
 
         return test.getPValue(_x, _y, new HashSet<>(), test.nodeHash, test.embedding, test.doOneEquationOnly,
                 test.lambda, test.covarianceMatrix, test.sampleSize);
-    }
-
-    /**
-     * Computes the variance of residuals given the indices of predictors.
-     */
-    private static double computeResidualVariance(int[] xIndices, int[] predictorIndices,
-                                                  SimpleMatrix covarianceMatrix, double lambda) {
-        if (predictorIndices.length == 0) {
-            return StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices).trace() / xIndices.length;
-        }
-
-        SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
-        SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
-        SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
-//        Sigma_PP = StatUtils.chooseMatrix(Sigma_PP, lambda);
-
-        // Compute OLS estimate of X given predictors P
-        SimpleMatrix beta = new Matrix(Sigma_PP).chooseInverse(lambda).getData().mult(Sigma_XP.transpose());
-
-        // Compute residual variance
-        return Sigma_XX.minus(Sigma_XP.mult(beta)).trace() / xIndices.length;
-    }
-
-    /**
-     * Concatenates two integer arrays.
-     */
-    private static int[] concatArrays(int[] first, int[] second) {
-        int[] result = Arrays.copyOf(first, first.length + second.length);
-        System.arraycopy(second, 0, result, first.length, second.length);
-        return result;
     }
 
     /**
@@ -324,3 +343,4 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
         this.doOneEquationOnly = doOneEquationOnly;
     }
 }
+

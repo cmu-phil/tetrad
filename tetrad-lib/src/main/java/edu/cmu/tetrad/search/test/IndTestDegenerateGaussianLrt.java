@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,9 +15,8 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
@@ -25,8 +24,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -48,7 +47,7 @@ import static java.lang.Double.NaN;
  * @author Joseph Ramsey refactoring 2024-12-26
  * @version $Id: $Id
  */
-public class IndTestDegenerateGaussianLrt implements IndependenceTest {
+public class IndTestDegenerateGaussianLrt implements IndependenceTest, EffectiveSampleSizeSettable {
     /**
      * A hash of nodes to indices.
      */
@@ -90,6 +89,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      * True if verbose output should be printed.
      */
     private boolean verbose;
+    private int nEff;
 
     /**
      * Constructs the test using the given (mixed) data set.
@@ -118,7 +118,8 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
                 dataSet, 1, 1, -1);
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
-        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getDataCopy());
+        setEffectiveSampleSize(-1);
+        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getSimpleMatrix());
         this.setLambda(lambda);
     }
 
@@ -189,7 +190,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         double sigma1_sq = Math.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices)));
 
         // Log-likelihood ratio statistic
-        double LR_stat = sampleSize * Math.log(sigma0_sq / sigma1_sq);
+        double LR_stat = nEff * Math.log(sigma0_sq / sigma1_sq);
 
         // Degrees of freedom is the number of additional basis columns in Y
         int df = yIndices.length;
@@ -318,4 +319,15 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     public void setLambda(double lambda) {
         this.lambda = lambda;
     }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return this.nEff;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? sampleSize : nEff;
+    }
 }
+

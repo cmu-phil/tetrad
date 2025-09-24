@@ -1,12 +1,33 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.DiscriminatingPath;
-import edu.cmu.tetrad.search.utils.PreserveMarkov;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.PreserveMarkov;
 import edu.cmu.tetrad.util.SublistGenerator;
 import org.jetbrains.annotations.NotNull;
 
@@ -46,7 +67,7 @@ public class RecursiveDiscriminatingPathRule {
      * @param fciOrient             An orientation helper object used to apply FCI rules to edges in the graph.
      * @param maxBlockingPathLength The maximum allowable length of a blocking path for the analysis.
      * @param maxDdpPathLength      The maximum allowable discriminating path length considered for the analysis.
-     * @param preserveMarkovHelper    A helper object for additional Markov property checks during the independence
+     * @param preserveMarkovHelper  A helper object for additional Markov property checks during the independence
      *                              tests.
      * @param depth                 The maximum subset depth allowed during subset evaluations; a value of -1 allows all
      *                              subsets.
@@ -156,3 +177,4 @@ public class RecursiveDiscriminatingPathRule {
         return _vNodes;
     }
 }
+

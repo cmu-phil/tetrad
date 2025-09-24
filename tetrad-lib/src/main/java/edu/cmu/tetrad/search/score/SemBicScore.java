@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,9 +15,8 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.score;
 
@@ -27,6 +26,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -71,7 +71,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @see edu.cmu.tetrad.search.Grasp
  * @see edu.cmu.tetrad.search.Boss
  */
-public class SemBicScore implements Score {
+public class SemBicScore implements Score, EffectiveSampleSizeSettable {
 
     /**
      * The sample size of the covariance matrix.
@@ -129,6 +129,7 @@ public class SemBicScore implements Score {
      * Singularity lambda.
      */
     private double lambda = 0.0;
+    private int nEff;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -143,8 +144,9 @@ public class SemBicScore implements Score {
         setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
+        setEffectiveSampleSize(-1);
         this.indexMap = indexMap(this.variables);
-        this.logN = log(sampleSize);
+        this.logN = log(nEff);
         penaltyDiscount = 1.0;
     }
 
@@ -166,8 +168,9 @@ public class SemBicScore implements Score {
         setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
+        setEffectiveSampleSize(-1);
         this.indexMap = indexMap(this.variables);
-        this.logN = log(sampleSize);
+        this.logN = log(nEff);
         this.penaltyDiscount = penaltyDiscount;
     }
 
@@ -191,17 +194,19 @@ public class SemBicScore implements Score {
 
             this.variables = this.covariances.getVariables();
             this.sampleSize = this.covariances.getSampleSize();
+            setEffectiveSampleSize(-1);
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
-            this.logN = log(sampleSize);
+            this.logN = log(nEff);
             return;
         }
 
         this.variables = dataSet.getVariables();
         this.sampleSize = dataSet.getNumRows();
+        setEffectiveSampleSize(-1);
         this.indexMap = indexMap(this.variables);
         this.calculateRowSubsets = true;
-        this.logN = log(sampleSize);
+        this.logN = log(nEff);
         this.penaltyDiscount = 1.0;
     }
 
@@ -230,18 +235,20 @@ public class SemBicScore implements Score {
 
             this.variables = this.covariances.getVariables();
             this.sampleSize = this.covariances.getSampleSize();
+            setEffectiveSampleSize(-1);
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
-            this.logN = log(sampleSize);
+            this.logN = log(nEff);
             this.penaltyDiscount = penaltyDiscount;
             return;
         }
 
         this.variables = dataSet.getVariables();
         this.sampleSize = dataSet.getNumRows();
+        setEffectiveSampleSize(-1);
         this.indexMap = indexMap(this.variables);
         this.calculateRowSubsets = true;
-        this.logN = log(sampleSize);
+        this.logN = log(nEff);
         this.penaltyDiscount = penaltyDiscount;
     }
 
@@ -582,7 +589,7 @@ public class SemBicScore implements Score {
 
         double c = getPenaltyDiscount();
 
-        return -this.sampleSize * log(1.0 - r * r) - c * log(this.sampleSize) - 2.0 * (sp1 - sp2);
+        return -this.nEff * log(1.0 - r * r) - c * log(this.nEff) - 2.0 * (sp1 - sp2);
     }
 
     /**
@@ -643,10 +650,10 @@ public class SemBicScore implements Score {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
             System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
-            return new LikelihoodResult(Double.NaN, -1, penaltyDiscount, sampleSize);
+            return new LikelihoodResult(Double.NaN, -1, penaltyDiscount, nEff);
         }
 
-        return new LikelihoodResult(lik, k, penaltyDiscount, sampleSize);
+        return new LikelihoodResult(lik, k, penaltyDiscount, nEff);
     }
 
     /**
@@ -701,8 +708,8 @@ public class SemBicScore implements Score {
      */
     public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
         double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets, lambda);
-        return -0.5 * this.sampleSize * (Math.log(2 * Math.PI * sigmaSquared) + 1);
-//        return -(double) (this.sampleSize / 2.0) * log(sigmaSquared);
+        return -0.5 * this.nEff * (Math.log(2 * Math.PI * sigmaSquared) + 1);
+//        return -(double) (this.nEff / 2.0) * log(sigmaSquared);
     }
 
     /**
@@ -833,7 +840,7 @@ public class SemBicScore implements Score {
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(log(this.sampleSize));
+        return (int) FastMath.ceil(log(this.nEff));
     }
 
     /**
@@ -977,6 +984,16 @@ public class SemBicScore implements Score {
         return SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
     }
 
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+    }
+
     /**
      * Gives two options for calculating the BIC score, one describe by Chickering and the other due to Nandy et al.
      */
@@ -1014,5 +1031,6 @@ public class SemBicScore implements Score {
     public record CovAndCoefs(Matrix cov, Matrix b) {
     }
 }
+
 
 

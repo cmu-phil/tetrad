@@ -1,12 +1,12 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,16 +15,17 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.CachingIndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsSet;
+import edu.cmu.tetrad.search.utils.SepsetsMaxP;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -32,329 +33,324 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * Implemented the Cyclic Causal Discovery (CCD) algorithm by Thomas Richardson. A reference to this is here:
- * <p>
- * Richardson, T. S. (2013). A discovery algorithm for directed cyclic graphs. arXiv preprint arXiv:1302.3599.
- * <p>
- * See also Chapter 7 of:
- * <p>
- * Glymour, C. N., &amp; Cooper, G. F. (Eds.). (1999). Computation, causation, and discovery. AAAI Press.
- * <p>
- * The graph takes continuous data from a cyclic model as input and returns a cyclic PAG graphs, with various types of
- * underlining, that represents a Markov equivalence of the true DAG.
- * <p>
- * This class is not configured to respect knowledge of forbidden and required edges (nor will be).
+ * Cyclic Causal Discovery (CCD) after Richardson.
  *
- * @author Frank C. Wimberly
- * @author josephramsey
- * @version $Id: $Id
+ * <p>Richardson, T. S. (2013). A discovery algorithm for directed cyclic graphs. arXiv:1302.3599.</p>
+ * <p>See also Chapter 7 of: Glymour &amp; Cooper (1999), <i>Computation, Causation, and Discovery</i>.</p>
+ *
+ * <p>Input: a conditional independence oracle/test for data from a directed cyclic model (DCG).
+ * Output: a cyclic PAG (with underline/dotted-underline annotations) representing the Markov equivalence class.</p>
+ *
+ * <p>Note: Background knowledge is supported as <b>forbidden directed edges only</b>. Required edges are
+ * intentionally ignored (and should not be supplied) to avoid forcing orientations not justified by CCD.</p>
  */
 public final class Ccd implements IGraphSearch {
-    /**
-     * The independence test to be used.
-     */
-    private final IndependenceTest independenceTest;
-    /**
-     * The nodes in the graph.
-     */
-    private final List<Node> nodes;
-    /**
-     * Whether the R1 rule should be applied.
-     */
-    private boolean applyR1;
 
     /**
-     * Construct a CCD algorithm with the given independence test.
+     * Fixed node list from the test.
+     */
+    private final List<Node> nodes;
+
+    /**
+     * Cached independence test.
+     */
+    private IndependenceTest test;
+
+    /**
+     * Whether to apply R1 push-away rule (default: true).
+     */
+    private boolean applyR1 = true;
+
+    /**
+     * Verbose logging toggle.
+     */
+    private boolean verbose;
+
+    /**
+     * Maximum conditioning depth; -1 means unlimited.
+     */
+    private int depth = -1;
+
+    /**
+     * Background knowledge: only forbidden directed edges are honored.
+     */
+    private Knowledge knowledge = new Knowledge();
+
+    /**
+     * Constructs a Ccd object with the given independence test.
      *
-     * @param test The test to be used.
-     * @see IndependenceTest
+     * @param test the IndependenceTest to be used within the CCD algorithm. If the test is not an instance of
+     *             {@code CachingIndependenceTest}, a caching wrapper will be applied to the provided test. Must not be
+     *             null.
+     * @throws NullPointerException if the provided test is null.
      */
     public Ccd(IndependenceTest test) {
         if (test == null) throw new NullPointerException("Test is not provided");
-        this.independenceTest = test;
-        this.nodes = test.getVariables();
+        this.test = (test instanceof CachingIndependenceTest) ? test : new CachingIndependenceTest(test);
+        this.nodes = this.test.getVariables();
     }
 
-
     /**
-     * The search method assumes that the IndependenceTest provided to the constructor is a conditional independence
-     * oracle for the SEM (or Bayes network) which describes the causal structure of the population. The method returns
-     * a PAG instantiated as a Tetrad GaSearchGraph which represents the equivalence class of digraphs which are
-     * m-separation equivalent to the digraph of the underlying model (SEM or BN). Although they are not returned by the
-     * search method, it also computes two lists of triples which, respectively, store the underlines and dotted
-     * underlines of the PAG.
+     * Executes the CCD search algorithm to infer a causal graph based on statistical independence tests. The algorithm
+     * applies a series of steps, including adjacency search, orientation rules, and edge propagation, while taking into
+     * account background knowledge (if provided) and specific algorithm configurations (e.g., depth). A verbose logging
+     * option is available for detailed execution monitoring.
+     * <p>
+     * The resulting graph is modified with orientations and additional structures based on statistical properties and
+     * algorithmic rules. These modifications include reoriented endpoints, the addition of non-collider and collider
+     * triples, and propagation of orientation changes to ensure consistency with the underlying causal structure. A
+     * final step attempts to direct edges where permissible according to the background knowledge.
      *
-     * @return The CCD cyclic PAG for the data.
+     * @return the inferred causal graph as a {@code Graph} object after applying the CCD search algorithm.
+     * @throws InterruptedException if the process is interrupted during execution.
      */
     public Graph search() throws InterruptedException {
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
-        // Step A.
-        Fas fas = new Fas(this.independenceTest);
+        if (verbose) TetradLogger.getInstance().log("CCD: Step A — Fast Adjacency Search (FAS)");
+        Fas fas = new Fas(this.test);
         Graph psi = fas.search();
         psi.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetProducer sepsets = new SepsetsSet(fas.getSepsets(), this.independenceTest);
+        // Use Max-P sepsets (depth-aware) for stability downstream.
+        SepsetProducer sepsets = new SepsetsMaxP(psi, test, depth);
 
-        stepB(psi);
+        stepB(psi, sepsets);
         stepC(psi, sepsets);
         stepD(psi, sepsets, supSepsets);
         stepE(supSepsets, psi);
         stepF(psi, sepsets, supSepsets);
 
         orientAwayFromArrow(psi);
-
         return psi;
     }
 
+    // ------------------------- Public configuration --------------------------
+
     /**
-     * Returns true iff the R1 rule should be applied.
+     * Retrieves the current independence test being used.
      *
-     * @return True if the case.
+     * @return the current IndependenceTest instance.
+     */
+    public IndependenceTest getTest() {
+        return test;
+    }
+
+    /**
+     * Sets the independence test to be used during the algorithm's execution. The provided test must have the same
+     * variable set as the current test. A caching wrapper will be applied to the test if it is not already cached.
+     *
+     * @param test the new independence test to be set. Must not be null and must have the same variable set as the
+     *             existing test.
+     * @throws NullPointerException     if the provided test is null.
+     * @throws IllegalArgumentException if the variable set of the new test differs from the variable set of the current
+     *                                  test.
+     */
+    public void setTest(IndependenceTest test) {
+        Objects.requireNonNull(test, "test");
+        Set<Node> oldSet = new HashSet<>(this.test.getVariables());
+        Set<Node> newSet = new HashSet<>(test.getVariables());
+        if (!oldSet.equals(newSet)) {
+            throw new IllegalArgumentException("New test must have the same variable set as the existing test.");
+        }
+        this.test = (test instanceof CachingIndependenceTest) ? test : new CachingIndependenceTest(test);
+    }
+
+    /**
+     * Determines whether the R1 orientation rule is set to be applied during the search process.
+     *
+     * @return true if the R1 orientation rule is enabled; false otherwise.
      */
     public boolean isApplyR1() {
         return this.applyR1;
     }
 
     /**
-     * Sets whether the R1 rule should be applied.
+     * Sets whether the R1 orientation rule should be applied during the search process.
      *
-     * @param applyR1 True if the case.
+     * @param applyR1 a boolean indicating whether to apply the R1 rule. If true, the R1 rule will be applied;
+     *                otherwise, it will not.
      */
     public void setApplyR1(boolean applyR1) {
         this.applyR1 = applyR1;
     }
 
     /**
-     * Orients the edges of the graph away from the arrow direction.
+     * Sets whether verbose output should be enabled for the current process.
      *
-     * @param graph The graph to orient.
+     * @param verbose a boolean indicating whether verbose output is enabled. If true, detailed logs or messages may be
+     *                printed. If false, minimal or no verbose output will be shown.
      */
-    private void orientAwayFromArrow(Graph graph) {
-        for (Edge edge : graph.getEdges()) {
-            Node n1 = edge.getNode1();
-            Node n2 = edge.getNode2();
-
-            edge = graph.getEdge(n1, n2);
-
-            if (edge.pointsTowards(n1)) {
-                orientAwayFromArrow(n2, n1, graph);
-            } else if (edge.pointsTowards(n2)) {
-                orientAwayFromArrow(n1, n2, graph);
-            }
-        }
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+        test.setVerbose(verbose);
     }
 
     /**
-     * Perform step B of the CCD algorithm on the given graph.
+     * Sets the depth parameter, which may affect the algorithm's behavior during its operation.
      *
-     * @param graph The graph on which step B is performed.
+     * @param depth an integer representing the depth limit or level of recursion to be applied. A higher value
+     *              typically increases the scope or complexity taken into account.
      */
-    private void stepB(Graph graph) throws InterruptedException {
-        Map<Triple, Double> colliders = new HashMap<>();
-        Map<Triple, Double> noncolliders = new HashMap<>();
-
-        for (Node node : this.nodes) {
-            doNodeCollider(graph, colliders, noncolliders, node);
-        }
-
-        List<Triple> collidersList = new ArrayList<>(colliders.keySet());
-        List<Triple> noncollidersList = new ArrayList<>(noncolliders.keySet());
-
-        for (Triple triple : collidersList) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            graph.removeEdge(a, b);
-            graph.removeEdge(c, b);
-            graph.addDirectedEdge(a, b);
-            graph.addDirectedEdge(c, b);
-        }
-
-        for (Triple triple : noncollidersList) {
-            Node a = triple.getX();
-            Node b = triple.getY();
-            Node c = triple.getZ();
-
-            graph.addUnderlineTriple(a, b, c);
-        }
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 
     /**
-     * Performs the node collider algorithm on a given graph.
+     * Set background knowledge (forbidden edges). Required edges are not supported.
      *
-     * @param graph        The graph on which to perform the algorithm.
-     * @param colliders    The map to store the colliders and their scores.
-     * @param noncolliders The map to store the non-colliders and their scores.
-     * @param b            The node to consider as the collider node.
+     * @param knowledge the knowledge to be set
      */
-    private void doNodeCollider(Graph graph, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) throws InterruptedException {
-        List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge == null) throw new NullPointerException("knowledge must not be null");
 
-        if (adjacentNodes.size() < 2) {
-            return;
+        if (!knowledge.getListOfRequiredEdges().isEmpty()) {
+            throw new IllegalArgumentException("Required edges are not supported for CCD.");
         }
 
-        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-        int[] combination;
+        this.knowledge = knowledge;
+    }
 
-        while ((combination = cg.next()) != null) {
-            Node a = adjacentNodes.get(combination[0]);
-            Node c = adjacentNodes.get(combination[1]);
+    // ------------------------------ Algorithm --------------------------------
 
-            // Skip triples that are shielded.
-            if (graph.isAdjacentTo(a, c)) {
-                continue;
-            }
+    /**
+     * Step B — Add underlines (non-colliders) and colliders for unshielded triples.
+     */
+    private void stepB(Graph psi, SepsetProducer sepsets) throws InterruptedException {
+        if (verbose) TetradLogger.getInstance().log("CCD: Step B — Underlines & Colliders");
 
-            List<Node> adja = new ArrayList<>(graph.getAdjacentNodes(a));
-            double score = Double.POSITIVE_INFINITY;
-            Set<Node> S = null;
+        for (Node b : this.nodes) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 
-            SublistGenerator cg2 = new SublistGenerator(adja.size(), -1);
-            int[] comb2;
+            List<Node> adj = new ArrayList<>(psi.getAdjacentNodes(b));
+            if (adj.size() < 2) continue;
 
-            while ((comb2 = cg2.next()) != null) {
-                Set<Node> s = GraphUtils.asSet(comb2, adja);
-                IndependenceResult result = this.independenceTest.checkIndependence(a, c, s);
-                double _score = result.getScore();
+            ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
+            int[] idx;
+            while ((idx = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 
-                if (_score < score) {
-                    score = _score;
-                    S = s;
+                Node a = adj.get(idx[0]);
+                Node c = adj.get(idx[1]);
+
+                // Only unshielded triples
+                if (psi.isAdjacentTo(a, c)) continue;
+
+                Set<Node> S = sepsets.getSepset(a, c, -1, null);
+                if (S == null) continue;
+
+                if (S.contains(b)) {
+                    // non-collider at b
+                    psi.addUnderlineTriple(a, b, c);
+                    if (verbose)
+                        TetradLogger.getInstance().log("StepB: underline (non-collider) " + a + "-" + b + "-" + c + " ; S(a,c)=" + S);
+                } else {
+                    // collider at b: attempt a->b and c->b, each vetoable by knowledge
+                    boolean ok1 = addDirectedIfAllowed(psi, a, b);
+                    boolean ok2 = addDirectedIfAllowed(psi, c, b);
+
+                    if (verbose) {
+                        if (ok1 && ok2)
+                            TetradLogger.getInstance().log("StepB: collider " + a + "->" + b + "<-" + c + " ; S(a,c)=" + S);
+                        else if (ok1 ^ ok2)
+                            TetradLogger.getInstance().log("StepB: half-collider (knowledge veto) at " + b + " from " +
+                                                           (ok1 ? a : c) + " ; S(a,c)=" + S);
+                        else
+                            TetradLogger.getInstance().log("StepB: collider semantic recorded but both incoming arrows vetoed by knowledge at " + b);
+                    }
+                    // Even if both arrows vetoed, the collider semantic is effectively known to Steps D–F via CCD logic.
                 }
             }
-
-            List<Node> adjc = new ArrayList<>(graph.getAdjacentNodes(c));
-
-            SublistGenerator cg3 = new SublistGenerator(adjc.size(), -1);
-            int[] comb3;
-
-            while ((comb3 = cg3.next()) != null) {
-                Set<Node> s = GraphUtils.asSet(comb3, adjc);
-                IndependenceResult result = this.independenceTest.checkIndependence(c, a, s);
-                double _score = result.getScore();
-
-                if (_score < score) {
-                    score = _score;
-                    S = s;
-                }
-            }
-
-            // This could happen if there are undefined values and such.
-            if (S == null) {
-                continue;
-            }
-
-            if (S.contains(b)) {
-                noncolliders.put(new Triple(a, b, c), score);
-            } else {
-                colliders.put(new Triple(a, b, c), score);
-            }
         }
     }
 
     /**
-     * Performs step C of the CCD algorithm on the given graph.
-     *
-     * @param psi     The graph on which step C is performed.
-     * @param sepsets The sepsets used for conditional independence tests.
+     * Step C — Propagate some orientations (with change-flag until quiescence).
      */
     private void stepC(Graph psi, SepsetProducer sepsets) throws InterruptedException {
-        TetradLogger.getInstance().log("\nStep C");
+        if (verbose) TetradLogger.getInstance().log("CCD: Step C — Orientation propagation");
 
-        EDGE:
-        for (Edge edge : psi.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+        boolean changed;
+        do {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+            changed = false;
 
-            // x and y are adjacent.
+            for (Edge edge : new ArrayList<>(psi.getEdges())) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 
-            List<Node> adjx = psi.getAdjacentNodes(x);
-            List<Node> adjy = psi.getAdjacentNodes(y);
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
-            for (Node node : adjx) {
-                if (psi.getEdge(node, x).getProximalEndpoint(x) == Endpoint.ARROW
-                    && psi.isUnderlineTriple(y, x, node)) {
-                    continue EDGE;
+                List<Node> adjx = psi.getAdjacentNodes(x);
+                List<Node> adjy = psi.getAdjacentNodes(y);
+
+                // Skip if some node->x and underline(y, x, node)
+                boolean skip = false;
+                for (Node node : new ArrayList<>(adjx)) {
+                    Edge ex = psi.getEdge(node, x);
+                    if (ex != null && ex.getProximalEndpoint(x) == Endpoint.ARROW && psi.isUnderlineTriple(y, x, node)) {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (skip) continue;
+
+                for (Node a : this.nodes) {
+                    if (a == x || a == y) continue;
+                    if (adjx.contains(a) || adjy.contains(a)) continue;
+
+                    // Orientable? require o? at y-x side
+                    if (!(psi.getEndpoint(y, x) == Endpoint.CIRCLE &&
+                          (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
+                        continue;
+                    }
+
+                    Set<Node> sepset = sepsets.getSepset(a, y, -1, null);
+                    if (sepset == null) continue;
+                    if (sepset.contains(x)) continue;
+
+                    if (!sepsets.isIndependent(a, x, new HashSet<>(sepset))) {
+                        // Attempt y -> x (vetoable)
+                        if (addDirectedIfAllowed(psi, y, x)) {
+                            orientAwayFromArrow(y, x, psi);
+                            changed = true;
+                        }
+                        break;
+                    }
                 }
             }
-
-            // Check each A
-            for (Node a : this.nodes) {
-                if (a == x) continue;
-                if (a == y) continue;
-
-                //...A is not adjacent to X and A is not adjacent to Y...
-                if (adjx.contains(a)) continue;
-                if (adjy.contains(a)) continue;
-
-                // Orientable...
-                if (!(psi.getEndpoint(y, x) == Endpoint.CIRCLE &&
-                      (psi.getEndpoint(x, y) == Endpoint.CIRCLE || psi.getEndpoint(x, y) == Endpoint.TAIL))) {
-                    continue;
-                }
-
-                //...X is not in sepset<A, Y>...
-                Set<Node> sepset = sepsets.getSepset(a, y, -1, null);
-
-                if (sepset == null) {
-                    continue;
-                }
-
-                if (sepset.contains(x)) continue;
-
-                if (!sepsets.isIndependent(a, x, sepset)) {
-                    psi.removeEdge(x, y);
-                    psi.addDirectedEdge(y, x);
-                    orientAwayFromArrow(y, x, psi);
-                    break;
-                }
-            }
-        }
+        } while (changed);
     }
 
     /**
-     * Performs step D of the CCD algorithm on the given graph.
-     *
-     * @param psi        The graph on which step D is performed.
-     * @param sepsets    The sepsets used for conditional independence tests.
-     * @param supSepsets The map of sepsets.
+     * Step D — Add dotted-underline triples and compute supSepsets.
      */
     private void stepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) throws InterruptedException {
-        Map<Node, List<Node>> local = new HashMap<>();
+        if (verbose) TetradLogger.getInstance().log("CCD: Step D — Dotted underlines");
 
+        Map<Node, List<Node>> local = new HashMap<>();
         for (Node node : psi.getNodes()) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
             local.put(node, local(psi, node));
         }
 
         for (Node node : this.nodes) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
             doNodeStepD(psi, sepsets, supSepsets, local, node);
         }
     }
 
-    /**
-     * Performs step D of the CCD algorithm on the given graph.
-     *
-     * @param psi        The graph on which step D is performed.
-     * @param sepsets    The sepsets used for conditional independence tests.
-     * @param supSepsets The map of sepsets.
-     * @param local      The map of local nodes.
-     * @param b          The node to consider.
-     */
     private void doNodeStepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets,
                              Map<Node, List<Node>> local, Node b) throws InterruptedException {
         List<Node> adj = new ArrayList<>(psi.getAdjacentNodes(b));
-
-        if (adj.size() < 2) {
-            return;
-        }
+        if (adj.size() < 2) return;
 
         ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
         int[] choice;
 
         while ((choice = gen.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
             List<Node> _adj = GraphUtils.asList(choice, adj);
             Node a = _adj.get(0);
             Node c = _adj.get(1);
@@ -363,15 +359,19 @@ public final class Ccd implements IGraphSearch {
 
             Set<Node> S = sepsets.getSepset(a, c, -1, null);
             if (S == null) continue;
-            ArrayList<Node> TT = new ArrayList<>(local.get(a));
+
+            ArrayList<Node> TT = new ArrayList<>(local.getOrDefault(a, Collections.emptyList()));
             TT.removeAll(S);
             TT.remove(b);
             TT.remove(c);
 
-            SublistGenerator gen2 = new SublistGenerator(TT.size(), -1);
+            int kMax = (depth < 0) ? -1 : Math.min(depth, TT.size());
+            SublistGenerator gen2 = new SublistGenerator(TT.size(), kMax);
             int[] choice2;
 
             while ((choice2 = gen2.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
                 Set<Node> T = GraphUtils.asSet(choice2, TT);
                 Set<Node> B = new HashSet<>(T);
                 B.addAll(S);
@@ -387,205 +387,171 @@ public final class Ccd implements IGraphSearch {
     }
 
     /**
-     * Performs step E of the CCD algorithm on the given graph.
-     *
-     * @param supSepset The map containing the sepsets.
-     * @param psi       The graph on which step E is performed.
+     * Step E — Use supSepsets to orient edges out of b towards neighbors in A∪C neighborhoods.
      */
-    private void stepE(Map<Triple, Set<Node>> supSepset, Graph psi) {
-        TetradLogger.getInstance().log("\nStep E");
+    private void stepE(Map<Triple, Set<Node>> supSepset, Graph psi) throws InterruptedException {
+        if (verbose) TetradLogger.getInstance().log("CCD: Step E — Orientation propagation via supSepsets");
 
-        for (Triple triple : psi.getDottedUnderlines()) {
+        for (Triple triple : new ArrayList<>(psi.getDottedUnderlines())) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+            Set<Node> sup = supSepset.get(triple);
+            if (sup == null) continue;
+
             Node a = triple.getX();
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            List<Node> aAdj = psi.getAdjacentNodes(a);
-
-            for (Node d : aAdj) {
+            // Neighbors of a
+            for (Node d : new ArrayList<>(psi.getAdjacentNodes(a))) {
                 if (d == b) continue;
+                if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) continue;
 
-                if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
-                    continue;
-                }
-
-                if (supSepset.get(triple).contains(d)) {
-
-                    // Orient B*-oD as B*-D
+                if (sup.contains(d)) {
+                    // B*-oD -> B*-D (tail placement only; always allowed)
                     psi.setEndpoint(b, d, Endpoint.TAIL);
-                } else {
-                    if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
-                        continue;
-                    }
-
-                    // Or orient Bo-oD or B-oD as B->D...
-                    psi.removeEdge(b, d);
-                    psi.addDirectedEdge(b, d);
-                    orientAwayFromArrow(b, d, psi);
+                } else if (psi.getEndpoint(d, b) != Endpoint.ARROW) {
+                    // Try B -> D (vetoable)
+                    addDirectedIfAllowed(psi, b, d); // if vetoed, leave as-is
                 }
             }
-
-            List<Node> cAdj = psi.getAdjacentNodes(c);
-
-            for (Node d : cAdj) {
+            // Neighbors of c
+            for (Node d : new ArrayList<>(psi.getAdjacentNodes(c))) {
                 if (d == b) continue;
+                if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) continue;
 
-                if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
-                    continue;
-                }
-
-                if (supSepset.get(triple).contains(d)) {
-
-                    // Orient B*-oD as B*-D
+                if (sup.contains(d)) {
                     psi.setEndpoint(b, d, Endpoint.TAIL);
-                } else {
-                    if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
-                        continue;
-                    }
-
-                    // Or orient Bo-oD or B-oD as B->D...
-                    psi.removeEdge(b, d);
-                    psi.addDirectedEdge(b, d);
-                    orientAwayFromArrow(b, d, psi);
+                } else if (psi.getEndpoint(d, b) != Endpoint.ARROW) {
+                    addDirectedIfAllowed(psi, b, d);
                 }
             }
         }
     }
 
     /**
-     * Performs step F of the CCD algorithm on the given graph.
-     *
-     * @param psi        The graph on which step F is performed.
-     * @param sepsets    The sepsets used for conditional independence tests.
-     * @param supSepsets The map of sepsets.
+     * Step F — Further propagation using d-connection given supSepset ∪ {d}.
      */
     private void stepF(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) throws InterruptedException {
-        for (Triple triple : psi.getDottedUnderlines()) {
+        if (verbose) TetradLogger.getInstance().log("CCD: Step F — More orientations via d-connection checks");
+
+        for (Triple triple : new ArrayList<>(psi.getDottedUnderlines())) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
             Node a = triple.getX();
             Node b = triple.getY();
             Node c = triple.getZ();
+
+            Set<Node> sup = supSepsets.get(triple);
+            if (sup == null) continue;
 
             Set<Node> adj = new HashSet<>(psi.getAdjacentNodes(a));
             adj.addAll(psi.getAdjacentNodes(c));
 
-            for (Node d : adj) {
-                if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) {
-                    continue;
-                }
+            for (Node d : new ArrayList<>(adj)) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 
-                if (psi.getEndpoint(d, b) == Endpoint.ARROW) {
-                    continue;
-                }
+                if (psi.getEndpoint(b, d) != Endpoint.CIRCLE) continue;
+                if (psi.getEndpoint(d, b) == Endpoint.ARROW) continue;
+                if (psi.isAdjacentTo(a, d) && psi.isAdjacentTo(c, d)) continue;
+                if (!psi.isAdjacentTo(b, d)) continue;
 
-                //...and D is not adjacent to both A and C in psi...
-                if (psi.isAdjacentTo(a, d) && psi.isAdjacentTo(c, d)) {
-                    continue;
-                }
-
-                //...and B and D are adjacent...
-                if (!psi.isAdjacentTo(b, d)) {
-                    continue;
-                }
-
-                Set<Node> supSepUnionD = new HashSet<>();
+                Set<Node> supSepUnionD = new HashSet<>(sup);
                 supSepUnionD.add(d);
-                supSepUnionD.addAll(supSepsets.get(triple));
-                Set<Node> listSupSepUnionD = new HashSet<>(supSepUnionD);
 
-                //If A and C are a pair of vertices d-connected given
-                //SupSepset<A, B, C> union {D} then orient Bo-oD or B-oD
-                //as B->D in psi.
-                if (!sepsets.isIndependent(a, c, listSupSepUnionD)) {
-                    psi.removeEdge(b, d);
-                    psi.addDirectedEdge(b, d);
-                    orientAwayFromArrow(b, d, psi);
-                }
-            }
-        }
-    }
-
-    /**
-     * Performs the local algorithm for finding the nodes adjacent to a given node in a graph.
-     *
-     * @param psi The graph in which to perform the local algorithm.
-     * @param x   The node for which to find the adjacent nodes.
-     * @return The list of adjacent nodes to the given node.
-     */
-    private List<Node> local(Graph psi, Node x) {
-        Set<Node> nodes = new HashSet<>(psi.getAdjacentNodes(x));
-
-        for (Node y : new HashSet<>(nodes)) {
-            for (Node z : psi.getAdjacentNodes(y)) {
-                if (psi.isDefCollider(x, y, z)) {
-                    if (z != x) {
-                        nodes.add(z);
+                if (!sepsets.isIndependent(a, c, new HashSet<>(supSepUnionD))) {
+                    // Try B -> D (vetoable)
+                    if (addDirectedIfAllowed(psi, b, d)) {
+                        orientAwayFromArrow(b, d, psi);
                     }
                 }
             }
         }
+    }
 
+    // ------------------------------- Helpers ---------------------------------
+
+    /**
+     * Attempt to orient u -> v if not forbidden by knowledge. Returns true if applied; false if vetoed (or if the edge
+     * vanished concurrently).
+     */
+    private boolean addDirectedIfAllowed(Graph g, Node u, Node v) {
+        // Knowledge forbids orientation u->v?
+        if (knowledge != null && knowledge.isForbidden(u.getName(), v.getName())) return false;
+
+        // Proceed with orientation
+        g.removeEdge(u, v);            // idempotent remove
+        g.addDirectedEdge(u, v);       // tail at u, arrow at v
+        return true;
+    }
+
+    /**
+     * Local expansion around x: adj(x) plus z where x-y-z is a definite collider.
+     */
+    private List<Node> local(Graph psi, Node x) {
+        Set<Node> nodes = new HashSet<>(psi.getAdjacentNodes(x));
+        for (Node y : new HashSet<>(nodes)) {
+            for (Node z : psi.getAdjacentNodes(y)) {
+                if (psi.isDefCollider(x, y, z) && z != x) {
+                    nodes.add(z);
+                }
+            }
+        }
         return new ArrayList<>(nodes);
     }
 
     /**
-     * Orients the edges of the graph away from the arrow direction.
-     *
-     * @param a     The node A.
-     * @param b     The node B.
-     * @param graph The graph to orient.
+     * Top-level push-away pass over all arrowheads (iterate over snapshot).
+     */
+    private void orientAwayFromArrow(Graph graph) throws InterruptedException {
+        for (Edge e : new ArrayList<>(graph.getEdges())) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+            Node n1 = e.getNode1();
+            Node n2 = e.getNode2();
+            Edge cur = graph.getEdge(n1, n2);
+            if (cur == null) continue;
+
+            if (cur.pointsTowards(n1)) {
+                orientAwayFromArrow(n2, n1, graph);
+            } else if (cur.pointsTowards(n2)) {
+                orientAwayFromArrow(n1, n2, graph);
+            }
+        }
+    }
+
+    /**
+     * Apply R1 push-away from a->b to b's nondirected neighbors, recursively (veto-aware).
      */
     private void orientAwayFromArrow(Node a, Node b, Graph graph) {
         if (!isApplyR1()) return;
-
-        for (Node c : graph.getAdjacentNodes(b)) {
+        for (Node c : new ArrayList<>(graph.getAdjacentNodes(b))) {
             if (c == a) continue;
             orientAwayFromArrowVisit(a, b, c, graph);
         }
     }
 
     /**
-     * Orients the edges of the graph away from the arrow direction.
-     *
-     * @param a     The node A.
-     * @param b     The node B.
-     * @param c     The node C.
-     * @param graph The graph to orient.
-     * @return True if the edges are successfully oriented away from the arrow direction, otherwise false.
+     * DFS-style push-away with backtracking safety and knowledge veto.
      */
     private boolean orientAwayFromArrowVisit(Node a, Node b, Node c, Graph graph) {
-        if (!Edges.isNondirectedEdge(graph.getEdge(b, c))) {
-            return false;
-        }
+        Edge bc = graph.getEdge(b, c);
+        if (bc == null || !Edges.isNondirectedEdge(bc)) return false;
+        if (!graph.isUnderlineTriple(a, b, c)) return false;
+        if (bc.pointsTowards(b)) return false;
 
-        if (!(graph.isUnderlineTriple(a, b, c))) {
-            return false;
-        }
+        // Try b -> c (vetoable)
+        if (!addDirectedIfAllowed(graph, b, c)) return false;
 
-
-        if (graph.getEdge(b, c).pointsTowards(b)) {
-            return false;
-        }
-
-        graph.removeEdge(b, c);
-        graph.addDirectedEdge(b, c);
-
-        for (Node d : graph.getAdjacentNodes(c)) {
+        for (Node d : new ArrayList<>(graph.getAdjacentNodes(c))) {
             if (d == b) return true;
-
-            Edge bc = graph.getEdge(b, c);
-
+            Edge cur = graph.getEdge(b, c);
+            if (cur == null) return true; // edge removed elsewhere
             if (!orientAwayFromArrowVisit(b, c, d, graph)) {
                 graph.removeEdge(b, c);
-                graph.addEdge(bc);
+                graph.addEdge(cur);
             }
         }
-
         return true;
     }
 }
-
-
-
-
-
-

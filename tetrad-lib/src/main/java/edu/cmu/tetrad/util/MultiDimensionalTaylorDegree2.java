@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.util;
 
 /**
@@ -5,7 +25,7 @@ package edu.cmu.tetrad.util;
  * provides functionality to construct the Taylor expansion based on input parameters such as the expansion point,
  * function value, gradient, and Hessian, and to evaluate it at a given point.
  * <p>
- * The Taylor series is represented as: f(x) ≈ fA + Σ(∂f/∂x_i * (x_i - a_i)) + 1/2 ΣΣ(∂²f/∂x_i∂x_j * (x_i - a_i) * (x_j
+ * The Taylor series is represented as: f(x) â fA + Î£(âf/âx_i * (x_i - a_i)) + 1/2 Î£Î£(âÂ²f/âx_iâx_j * (x_i - a_i) * (x_j
  * - a_j))
  */
 public class MultiDimensionalTaylorDegree2 {
@@ -84,4 +104,5 @@ public class MultiDimensionalTaylorDegree2 {
         return result;
     }
 }
+
 

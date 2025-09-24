@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.bayes.*;
@@ -152,7 +172,7 @@ public class Hsim {
                     int nodeIndex = evidence.getNodeIndex(i.getName());
                     //how do i get the category index from a value in the data?
                     //int catIndex =
-                    int nodeColumn = this.data.getColumnIndex(i);
+                    int nodeColumn = this.data.getColumn(i);
                     //Pray to whoever you can think of that the CategoryIndex is just the int in the data
                     //According to this comment in the DataSet class, for the getInt method, we can do this:
                     //"For discrete variables, this returns the category index of the datum for the variable at that column."
@@ -212,7 +232,7 @@ public class Hsim {
                 }
                 //then set the value of nodeX to newXvalue for this row
                 //if (verbose) System.out.println(data.getInt(row,data.getColumn(nodeX)) + " old vs new " + newXvalue);
-                this.data.setInt(row, this.data.getColumnIndex(node), newValue);
+                this.data.setInt(row, this.data.getColumn(node), newValue);
                 //if (verbose) System.out.println(" and again?: " + data.getInt(row,data.getColumn(nodeX)) + " old vs new " + newXvalue);
 
                 //at the end, at this node to the conditioning set
@@ -243,3 +263,4 @@ public class Hsim {
         this.data = thedata;
     }
 }
+

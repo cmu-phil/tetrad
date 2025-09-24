@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.BoxDataSet;
@@ -21,10 +41,10 @@ import java.util.stream.IntStream;
  * <p>
  * The form of the recursive model is Xi = fi(Pa(Xi)) + Ni
  * <p>
- * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., &amp; Schölkopf, B. (2008). Nonlinear causal discovery with additive
- * noise models. Advances in neural information processing systems, 21.
+ * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., &amp; SchÃ¶lkopf, B. (2008). Nonlinear causal discovery with
+ * additive noise models. Advances in neural information processing systems, 21.
  * <p>
- * Zhang, K., &amp; Hyvärinen, A. (2009). Causality discovery with additive disturbances: An information-theoretical
+ * Zhang, K., &amp; HyvÃ¤rinen, A. (2009). Causality discovery with additive disturbances: An information-theoretical
  * perspective. In Machine Learning and Knowledge Discovery in Databases: European Conference, ECML PKDD 2009, Bled,
  * Slovenia, September 7-11, 2009, Proceedings, Part II 20 (pp. 570-585). Springer Berlin Heidelberg.
  * <p>
@@ -34,10 +54,10 @@ import java.util.stream.IntStream;
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
  * <p>
- * Bühlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
+ * BÃ¼hlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
  * penalized regression". The Annals of Statistics.
  * <p>
- * Peters, J., Mooij, J. M., Janzing, D., &amp; Schölkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
+ * Peters, J., Mooij, J. M., Janzing, D., &amp; SchÃ¶lkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
  * Models". Journal of Machine Learning Research.
  * <p>
  * Hastie, T., &amp; Tibshirani, R. (1986). "Generalized Additive Models".
@@ -110,17 +130,19 @@ public class NonlinearAdditiveNoiseModel {
     private Function<Double, Double> activationFunction = Math::tanh;
 
     /**
-     * Constructs a nonlinear additive noise model based on a directed acyclic graph (DAG).
-     * This model is used to generate synthetic data where the relationships in the graph are
-     * affected by additive noise and potentially undergo nonlinear transformations.
+     * Constructs a nonlinear additive noise model based on a directed acyclic graph (DAG). This model is used to
+     * generate synthetic data where the relationships in the graph are affected by additive noise and potentially
+     * undergo nonlinear transformations.
      *
-     * @param graph The directed acyclic graph (DAG) representing the underlying causal structure.
-     * @param numSamples The number of data samples to generate. Must be positive.
+     * @param graph             The directed acyclic graph (DAG) representing the underlying causal structure.
+     * @param numSamples        The number of data samples to generate. Must be positive.
      * @param noiseDistribution The distribution used to sample additive noise for each variable.
-     * @param rescaleMin The minimum value of the range for rescaling the generated data. Must be less than or equal to rescaleMax.
-     * @param rescaleMax The maximum value of the range for rescaling the generated data. Must be greater than or equal to rescaleMin.
-     * @param hiddenDimension The dimensionality of hidden layers or transformations used in data generation.
-     * @param inputScale A scaling factor applied to input data before applying transformations or noise.
+     * @param rescaleMin        The minimum value of the range for rescaling the generated data. Must be less than or
+     *                          equal to rescaleMax.
+     * @param rescaleMax        The maximum value of the range for rescaling the generated data. Must be greater than or
+     *                          equal to rescaleMin.
+     * @param hiddenDimension   The dimensionality of hidden layers or transformations used in data generation.
+     * @param inputScale        A scaling factor applied to input data before applying transformations or noise.
      * @throws IllegalArgumentException If the input graph contains cycles or if the provided parameters are invalid.
      */
     public NonlinearAdditiveNoiseModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
@@ -204,3 +226,4 @@ public class NonlinearAdditiveNoiseModel {
         this.activationFunction = activationFunction;
     }
 }
+

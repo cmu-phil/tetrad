@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
@@ -6,15 +26,14 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.PrintStream;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Implements the Fast Adjacency Search (FAS), which is the adjacency search of the PC algorithm (see). This is a useful
@@ -45,19 +64,19 @@ import java.util.*;
  * @see Fci
  * @see Knowledge
  */
-public class Fas {
-    private static final Logger log = LoggerFactory.getLogger(Fas.class);
-    /**
-     * Represents the core independence test utilized in the FAS algorithm to determine conditional independence
-     * relationships between variables. This test serves as the foundation for building and refining graphs during the
-     * search process.
-     */
-    private final IndependenceTest test;
+public class Fas implements IFas {
+
     /**
      * A separation set map used to store the results of conditional independence tests performed during the graph
      * search process. It holds information about the sets of variables that separate pairs of nodes in the graph.
      */
     private final SepsetMap sepset = new SepsetMap();
+    /**
+     * Represents the core independence test utilized in the FAS algorithm to determine conditional independence
+     * relationships between variables. This test serves as the foundation for building and refining graphs during the
+     * search process.
+     */
+    private IndependenceTest test;
     /**
      * A Knowledge object used to define constraints, such as forbidden or required edges, and other background
      * information necessary for the conditional independence search process.
@@ -66,24 +85,28 @@ public class Fas {
      * results adhere to predetermined conditions or limitations imposed by the user or the context of the analysis.
      */
     private Knowledge knowledge = new Knowledge();
+
     /**
      * Specifies the maximum depth to be considered during the conditional independence search process. The depth
      * determines the maximum number of conditioning variables used in independence tests, where a value of -1 indicates
-     * that no limit is imposed.
+     * that no limit is imposed. Values < -1 are treated as -1 (no cap).
      */
     private int depth = -1;
+
     /**
      * A flag indicating whether the search process will use a stable strategy. When set to {@code true}, the search
-     * follows a stable approach. This flag may influence the behavior or results of certain algorithms in the
-     * conditional independence graph search process.
+     * follows a stable approach (freeze adjacencies per depth). In this implementation, parallelization is only used
+     * when stable = true (decision phase only).
      */
     private boolean stable = true;
+
     /**
      * A flag indicating whether verbose output is enabled during the search process. If true, additional logging or
      * debugging information is printed to the configured output stream. If false, only essential information is
      * displayed.
      */
     private boolean verbose = false;
+
     /**
      * The output stream used for logging or displaying messages during the search process. By default, it is set to
      * {@code System.out}. This stream can be replaced or customized by the user to redirect output messages to
@@ -164,18 +187,20 @@ public class Fas {
      */
     public Graph search(List<Node> nodes) throws InterruptedException {
         if (!new HashSet<>(test.getVariables()).containsAll(nodes)) {
-            throw new InterruptedException("Variables should be a subset of the ones in the test.");
+            throw new IllegalArgumentException("Variables should be a subset of the ones in the test.");
         }
 
         Graph modify = new EdgeListGraph(nodes);
         modify = GraphUtils.completeGraph(modify);
 
+        // Apply forbidden knowledge upfront.
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-                if (knowledge.isForbidden(x.getName(), y.getName()) && knowledge.isForbidden(y.getName(), x.getName())) {
+                if (knowledge.isForbidden(x.getName(), y.getName()) &&
+                    knowledge.isForbidden(y.getName(), x.getName())) {
                     modify.removeEdge(x, y);
 
                     if (verbose) {
@@ -185,56 +210,209 @@ public class Fas {
             }
         }
 
-        int depth_ = depth >= 0 ? depth : Math.max(depth, test.getVariables().size() - 1);
+        // Normalize depth: -1 (or anything < -1) means "no cap" â up to n-1.
+        final int n = test.getVariables().size();
+        final int depthCap = (depth < 0) ? (n - 1) : depth;
 
-        for (int d = 0; d <= depth_; d++) {
+        for (int d = 0; d <= depthCap; d++) {
             if (verbose) {
                 System.out.println("Depth: " + d);
             }
 
+            // Run one depth; stop if nothing was removed at this depth (PC-Stable termination)
+            boolean anyRemovedAtThisDepth;
             if (this.stable) {
+                // Freeze adjacencies for this depth.
                 Graph checkAdj = new EdgeListGraph(modify);
-
-                if (searchAtDepth(checkAdj, modify, d, this.stable)) {
-                    break;
-                }
-
-//                checkAdj = graph_;
+                anyRemovedAtThisDepth = searchAtDepth(checkAdj, modify, d, true);
             } else {
-                if (searchAtDepth(modify, modify, d, this.stable)) {
-                    break;
-                }
+                anyRemovedAtThisDepth = searchAtDepth(modify, modify, d, false);
+            }
+
+            if (!anyRemovedAtThisDepth) {
+                break;
+            }
+
+            // Optional early stop if no larger conditioning sets can exist.
+            if (freeDegree(modify) <= d) {
+                break;
+            }
+
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException("Interrupted");
             }
         }
 
         return modify;
     }
 
+    public IndependenceTest getTest() {
+        return test;
+    }
+
+    public void setTest(IndependenceTest test) {
+        List<Node> nodes = this.test.getVariables();
+        List<Node> _nodes = test.getVariables();
+
+        if (!nodes.equals(_nodes)) {
+            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" +
+                                                             "to the nodes of the existing test."));
+        }
+
+        this.test = test;
+    }
+
     /**
      * Searches for conditional independence relationships in a checkAdj up to a given depth d. If the checkAdj's nodes
      * meet the conditions specified, the edges may be removed based on the provided knowledge.
      *
+     * <p>Stable semantics: parallel decision on frozen adjacency (checkAdj), then sequential application to
+     * modify.</p>
+     * <p>Unstable semantics: sequential mutate-as-you-go on modify.</p>
+     *
      * @param checkAdj The checkAdj on which the search is performed.
      * @param modify   A copy of the checkAdj where changes are applied during the search process.
      * @param d        The maximum depth to consider for conditional independence tests.
-     * @param stable   If true, performs the search using a parallel strategy; otherwise, uses a sequential strategy.
-     * @return True if the maximum free degree of the resulting checkAdj is less than or equal to d, false otherwise.
+     * @param stable   If true, performs the search using a parallel decision strategy; otherwise, a sequential
+     *                 strategy.
+     * @return True iff any edge was removed at this depth.
      */
     private boolean searchAtDepth(Graph checkAdj, Graph modify, int d, boolean stable) {
-        List<Node> nodes = checkAdj.getNodes();
+        boolean anyRemoved = false;
 
         if (stable) {
+            // 1) Decide in parallel on the frozen adjacency.
+            ConcurrentLinkedQueue<EdgeRemoval> removals = new ConcurrentLinkedQueue<>();
+            List<Node> nodes = checkAdj.getNodes();
+
             nodes.parallelStream().forEach(x -> {
-                removeNodesAboutX(checkAdj, modify, d, x);
+                for (Node y : checkAdj.getAdjacentNodes(x)) {
+                    // Process each unordered pair once (canonical order x<y).
+                    if (x.getName().compareTo(y.getName()) >= 0) continue;
+                    decideOnePair(checkAdj, d, x, y, removals);
+                    if (Thread.currentThread().isInterrupted()) return;
+                }
             });
 
-            return freeDegree(modify) <= d;
+//            // 2) Apply sequentially to the live graph and sepsets.
+//            for (EdgeRemoval r : removals) {
+//                if (Thread.currentThread().isInterrupted()) break;
+//
+//                // Respect required-edge knowledge again at apply time.
+//                if (knowledge.noEdgeRequired(r.x.getName(), r.y.getName())) {
+//                    if (modify.isAdjacentTo(r.x, r.y)) {
+//                        modify.removeEdge(r.x, r.y);
+//                        this.sepset.set(r.x, r.y, r.S);
+//                        anyRemoved = true;
+//
+//                        if (verbose) {
+//                            TetradLogger.getInstance().log(
+//                                    LogUtilsSearch.independenceFactMsg(r.x, r.y, r.S, r.pValue));
+//                        }
+//                    }
+//                }
+//            }
+
+            // 2) Apply sequentially to the live graph and sepsets.
+            List<EdgeRemoval> toApply = new ArrayList<>(removals);
+            toApply.sort(Comparator
+                    .comparing((EdgeRemoval r) -> r.x.getName())
+                    .thenComparing(r -> r.y.getName())
+                    .thenComparingInt(r -> r.S.size())); // tie-breaker: smaller S first
+
+            for (EdgeRemoval r : toApply) {
+                if (Thread.currentThread().isInterrupted()) break;
+
+                if (knowledge.noEdgeRequired(r.x.getName(), r.y.getName())) {
+                    if (modify.isAdjacentTo(r.x, r.y)) {
+                        modify.removeEdge(r.x, r.y);
+                        Set<Node> SSaved = new LinkedHashSet<>(r.S);
+                        this.sepset.set(r.x, r.y, SSaved);
+                        anyRemoved = true;
+
+//                        if (verbose) {
+//                            TetradLogger.getInstance().log(
+//                                    LogUtilsSearch.independenceFactMsg(r.x, r.y, r.S, r.pValue));
+//                        }
+                    }
+                }
+            }
         } else {
-            nodes.forEach(x -> {
+            // Classic, sequential/unstable pass: mutates as it goes.
+            for (Node x : checkAdj.getNodes()) {
+                int before = modify.getEdges().size();
                 removeNodesAboutX(modify, modify, d, x);
-            });
+                int after = modify.getEdges().size();
+                if (after < before) anyRemoved = true;
+                if (Thread.currentThread().isInterrupted()) break;
+            }
+        }
 
-            return freeDegree(modify) <= d;
+        return anyRemoved;
+    }
+
+    /**
+     * Decide-only for a single (x, y) pair on the frozen graph (used in stable/parallel decision phase). Adds a
+     * proposed removal to 'out' if an S of size d separates x and y. Tests subsets from adj(x)\{y} and adj(y)\{x} (both
+     * sides).
+     */
+    private void decideOnePair(Graph checkAdj, int d, Node x, Node y,
+                               ConcurrentLinkedQueue<EdgeRemoval> out) {
+        // Side X: subsets of adj(x) \ {y}
+        List<Node> adjx = new ArrayList<>(checkAdj.getAdjacentNodes(x));
+        adjx.remove(y);
+        List<Node> ppx = possibleParents(x, adjx, knowledge, y); // respects knowledge
+
+        if (ppx.size() >= d) {
+            ChoiceGenerator gen = new ChoiceGenerator(ppx.size(), d);
+            int[] choice;
+            while ((choice = gen.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) return;
+
+                Set<Node> S = GraphUtils.asSet(choice, ppx);
+
+                IndependenceResult result;
+                try {
+                    result = test.checkIndependence(x, y, S);
+                } catch (InterruptedException e) {
+                    // Preserve interrupt status and stop working this pair.
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+
+                if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
+                    out.add(new EdgeRemoval(x, y, S, result.getPValue()));
+                    return; // first separating set at this depth is enough
+                }
+            }
+        }
+
+        // Side Y: subsets of adj(y) \ {x}
+        List<Node> adjy = new ArrayList<>(checkAdj.getAdjacentNodes(y));
+        adjy.remove(x);
+        List<Node> ppy = possibleParents(y, adjy, knowledge, x); // respects knowledge
+
+        if (ppy.size() >= d) {
+            ChoiceGenerator gen = new ChoiceGenerator(ppy.size(), d);
+            int[] choice;
+            while ((choice = gen.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) return;
+
+                Set<Node> S = GraphUtils.asSet(choice, ppy);
+
+                IndependenceResult result;
+                try {
+                    result = test.checkIndependence(x, y, S);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+
+                if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
+                    out.add(new EdgeRemoval(x, y, S, result.getPValue()));
+                    return; // first separating set at this depth is enough
+                }
+            }
         }
     }
 
@@ -253,45 +431,45 @@ public class Fas {
                     try {
                         result = test.checkIndependence(x, y, S);
                     } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                        // Preserve interrupt status and stop working this neighborhood.
+                        Thread.currentThread().interrupt();
+                        return;
                     }
+
                     if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
                         modify.removeEdge(x, y);
-                        sepset.set(x, y, S);
+                        Set<Node> sSaved = new LinkedHashSet<>(S);
+                        this.sepset.set(x, y, sSaved);
 
-                        if (verbose) {
-                            TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, S, result.getPValue()));
-                        }
+//                        if (verbose) {
+//                            TetradLogger.getInstance().log(
+//                                    LogUtilsSearch.independenceFactMsg(x, y, S, result.getPValue()));
+//                        }
 
                         break;
                     }
                 }
             }
+
+            if (Thread.currentThread().isInterrupted()) return;
         }
     }
 
     /**
-     * Calculates the maximum free degree among the nodes in the given adjacency map.
+     * Calculates the maximum free degree among the nodes in the given graph. For any node n, the maximum
+     * conditioning-set size needed about n is deg(n) - 1.
      *
      * @param graph The graph.
      * @return The maximum free degree among the nodes.
      */
     private int freeDegree(Graph graph) {
         int max = 0;
-
         for (Node n : graph.getNodes()) {
-            List<Node> opposites = graph.getAdjacentNodes(n);
-
-            for (Node y : opposites) {
-                Set<Node> adjx = new LinkedHashSet<>(opposites);
-                adjx.remove(y);
-
-                if (adjx.size() > max) {
-                    max = adjx.size();
-                }
+            int deg = graph.getAdjacentNodes(n).size();
+            if (deg > 0 && deg - 1 > max) {
+                max = deg - 1;
             }
         }
-
         return max;
     }
 
@@ -332,6 +510,7 @@ public class Fas {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+        test.setVerbose(verbose);
     }
 
     /**
@@ -352,21 +531,19 @@ public class Fas {
         return test.getVariables();
     }
 
-    /**
-     * Retrieves the current output stream used for logging or display purposes.
-     *
-     * @return The output stream instance associated with the logging or output operations.
-     */
-    public PrintStream getOut() {
-        return out;
-    }
+    // ---------------------------------------------------------------------
+    // Helper record for proposed removals (used in stable/parallel decision)
+    // ---------------------------------------------------------------------
+    private static final class EdgeRemoval {
+        final Node x, y;
+        final Set<Node> S;
+        final double pValue;
 
-    /**
-     * Sets the output stream to be used for logging or other display purposes.
-     *
-     * @param out The output stream to which messages or data will be printed.
-     */
-    public void setOut(PrintStream out) {
-        this.out = out;
+        EdgeRemoval(Node x, Node y, Set<Node> S, double pValue) {
+            this.x = x;
+            this.y = y;
+            this.S = S;
+            this.pValue = pValue;
+        }
     }
 }

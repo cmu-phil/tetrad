@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import ai.djl.Device;
@@ -21,9 +41,8 @@ import ai.djl.translate.Translator;
 import java.util.List;
 
 /**
- * The MultiLayerPerceptronDjl class provides a customizable implementation of a
- * Multi-Layer Perceptron (MLP) for tasks like regression or classification using
- * the Deep Java Library (DJL). This class allows the user to define the network
+ * The MultiLayerPerceptronDjl class provides a customizable implementation of a Multi-Layer Perceptron (MLP) for tasks
+ * like regression or classification using the Deep Java Library (DJL). This class allows the user to define the network
  * architecture, including the input dimension, hidden layers, and type of output.
  */
 public class MultiLayerPerceptronDjl {
@@ -33,17 +52,16 @@ public class MultiLayerPerceptronDjl {
     private final NDManager manager;
 
     /**
-     * Constructs a MultiLayerPerceptronDjl object with the specified input dimension, hidden layers,
-     * variable type, and input scaling factor. This builds the architecture of a neural network based
-     * on provided configurations such as the number of input features, hidden layer specifications,
-     * and the output type (e.g., continuous, multinomial, or binary).
+     * Constructs a MultiLayerPerceptronDjl object with the specified input dimension, hidden layers, variable type, and
+     * input scaling factor. This builds the architecture of a neural network based on provided configurations such as
+     * the number of input features, hidden layer specifications, and the output type (e.g., continuous, multinomial, or
+     * binary).
      *
-     * @param inputDim    the number of input features or dimensions.
+     * @param inputDim     the number of input features or dimensions.
      * @param hiddenLayers a list of integers defining the number of neurons in each hidden layer.
-     * @param variableType the type of prediction target, such as "continuous", "binary",
-     *                     or "multinomial". For multinomial, it should specify the number
-     *                     of categories as "multinomial,numCategories".
-     * @param inputScale  a scaling factor applied to the input data.
+     * @param variableType the type of prediction target, such as "continuous", "binary", or "multinomial". For
+     *                     multinomial, it should specify the number of categories as "multinomial,numCategories".
+     * @param inputScale   a scaling factor applied to the input data.
      */
     public MultiLayerPerceptronDjl(int inputDim, List<Integer> hiddenLayers,
                                    String variableType, float inputScale) {
@@ -112,6 +130,7 @@ public class MultiLayerPerceptronDjl {
         return manager;
     }
 }
+
 
 
 

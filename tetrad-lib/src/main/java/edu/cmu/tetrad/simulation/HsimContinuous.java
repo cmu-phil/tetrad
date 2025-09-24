@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.data.DataSet;
@@ -145,7 +165,7 @@ public class HsimContinuous {
             //loop through all the nodes being conditioned upon, and set their values in the evidence prop
             for (Node i : mbAll) {
                 //int nodeIndex = evidence.getNodeIndex(i.getName());
-                int nodeColumn = this.data.getColumnIndex(i);
+                int nodeColumn = this.data.getColumn(i);
                 evidence.getProposition().setValue(i, this.data.getDouble(row, nodeColumn));
             }
 
@@ -160,7 +180,7 @@ public class HsimContinuous {
             //take these new simnodes values and replace the old values in the data set with them
             for (Node node : this.simnodes) {
                 //if (verbose) System.out.println(data.getInt(row,data.getColumn(nodeX)) + " old vs new " + newXvalue);
-                this.data.setDouble(row, this.data.getColumnIndex(node), newValues.getDouble(0, newValues.getColumnIndex(node)));
+                this.data.setDouble(row, this.data.getColumn(node), newValues.getDouble(0, newValues.getColumn(node)));
                 //if (verbose) System.out.println(" and again?: " + data.getInt(row,data.getColumn(nodeX)) + " old vs new " + newXvalue);
             }
         }
@@ -184,3 +204,4 @@ public class HsimContinuous {
         this.data = thedata;
     }
 }
+

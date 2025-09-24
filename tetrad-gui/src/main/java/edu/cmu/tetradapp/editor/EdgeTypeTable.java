@@ -1,21 +1,23 @@
-/*
- * Copyright (C) 2019 University of Pittsburgh.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
- */
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
@@ -47,11 +49,11 @@ public class EdgeTypeTable extends JPanel {
     };
 
     private static final String[] EDGES_WITH_PROPERTIES = {
-        "",
-        "Node 1",
-        "Interaction",
-        "Node 2",
-        "Property"
+            "",
+            "Node 1",
+            "Interaction",
+            "Node 2",
+            "Property"
     };
 
     private static final String[] EDGES_AND_EDGE_TYPES = {
@@ -144,7 +146,7 @@ public class EdgeTypeTable extends JPanel {
             edges.forEach(edge -> {
                 String[] rowData = new String[EdgeTypeTable.EDGES_AND_EDGE_TYPES.length];
                 addEdgeData(edge, rowData);
-                 addEdgeProbabilityData(edge, rowData);
+                addEdgeProbabilityData(edge, rowData);
 
                 tableModel.addRow(rowData);
             });
@@ -262,24 +264,16 @@ public class EdgeTypeTable extends JPanel {
 
         // These should not be flipped.
         String endpoint1Str = switch (endpoint1) {
-            case TAIL ->
-                "-";
-            case ARROW ->
-                "<";
-            case CIRCLE ->
-                "o";
-            default ->
-                "";
+            case TAIL -> "-";
+            case ARROW -> "<";
+            case CIRCLE -> "o";
+            default -> "";
         };
         String endpoint2Str = switch (endpoint2) {
-            case TAIL ->
-                "-";
-            case ARROW ->
-                ">";
-            case CIRCLE ->
-                "o";
-            default ->
-                "";
+            case TAIL -> "-";
+            case ARROW -> ">";
+            case CIRCLE -> "o";
+            default -> "";
         };
         String edgeType = endpoint1Str + "-" + endpoint2Str;
 
@@ -433,3 +427,4 @@ public class EdgeTypeTable extends JPanel {
     }
 
 }
+

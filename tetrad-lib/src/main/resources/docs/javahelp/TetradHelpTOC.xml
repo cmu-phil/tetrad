@@ -63,7 +63,7 @@
                 <tocitem text="LiNGAM" target="lingam"/>
                 <tocitem text="PC-MB" target="pc-mb"/>
                 <tocitem text="MGM" target="mgm"/>
-                <tocitem text="MIMBUILD" target="mimbuild"/>
+                <tocitem text="MIMBUILD" target="mimbuildBollen"/>
                 <tocitem text="PC" target="pc"/>
                 <tocitem text="PCD" target="pcd"/>
                 <tocitem text="PCLocal" target="pclocal"/>

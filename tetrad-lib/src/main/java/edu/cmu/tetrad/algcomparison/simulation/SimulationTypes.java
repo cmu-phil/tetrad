@@ -1,21 +1,23 @@
-/*
- * Copyright (C) 2019 University of Pittsburgh.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
- */
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.simulation;
 
 /**
@@ -50,14 +52,18 @@ public final class SimulationTypes {
      * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
      */
     public static final String POST_NONLINEAR_MODEL = "Post-nonlinear causal Model";
-    /**
-     * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
-     */
-    public static final String NONLINEAR_FUNCTIONS_OF_LINEAR = "Nonlinear Functions of Linear (NFL) Model";
+//    /**
+//     * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
+//     */
+//    public static final String NONLINEAR_FUNCTIONS_OF_LINEAR = "Nonlinear Functions of Linear (NFL) Model";
     /**
      * Constant <code>CAUSAL_PERCEPTRON_NETWORK="Causal Peceptron Network (CPN)"</code>
      */
-    public static final String CAUSAL_PERCEPTRON_NETWORK = "Causal Peceptron Network (CPN)";
+    public static final String CAUSAL_PERCEPTRON_NETWORK = "Nonlinear SEM (Deep Net)";
+    /**
+     * Constant <code>CAUSAL_PERCEPTRON_NETWORK="Causal Peceptron Network (CPN)"</code>
+     */
+    public static final String ADDITIVE_ANM_NETWORK = "Additive Nonlinear SEM";
     /**
      * Constant <code>LG_MNAR_SIMULATION="LG MNAR Simulation"</code>
      */
@@ -95,3 +101,4 @@ public final class SimulationTypes {
     }
 
 }
+

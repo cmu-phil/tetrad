@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.data;
@@ -263,7 +262,7 @@ public class Histogram {
      * @return an array of  objects
      */
     public double[] getContinuousData(String variable) {
-        int index = this.dataSet.getColumnIndex(this.dataSet.getVariable(variable));
+        int index = this.dataSet.getColumn(this.dataSet.getVariable(variable));
         List<Double> _data = new ArrayList<>();
 
         for (int i = 0; i < this.dataSet.getNumRows(); i++) {
@@ -347,7 +346,7 @@ public class Histogram {
     }
 
     private List<Double> getUnconditionedDataContinuous() {
-        int index = this.dataSet.getColumnIndex(this.target);
+        int index = this.dataSet.getColumn(this.target);
 
         List<Double> _data = new ArrayList<>();
 
@@ -361,7 +360,7 @@ public class Histogram {
     private List<Double> getConditionedDataContinuous() {
         List<Integer> rows = getConditionedRows();
 
-        int index = this.dataSet.getColumnIndex(this.target);
+        int index = this.dataSet.getColumn(this.target);
 
         List<Double> _data = new ArrayList<>();
 
@@ -375,7 +374,7 @@ public class Histogram {
     private List<Integer> getConditionedDataDiscrete() {
         List<Integer> rows = getConditionedRows();
 
-        int index = this.dataSet.getColumnIndex(this.target);
+        int index = this.dataSet.getColumn(this.target);
 
         List<Integer> _data = new ArrayList<>();
 
@@ -394,7 +393,7 @@ public class Histogram {
         for (int i = 0; i < this.dataSet.getNumRows(); i++) {
             for (Node node : this.continuousIntervals.keySet()) {
                 double[] range = this.continuousIntervals.get(node);
-                int index = this.dataSet.getColumnIndex(node);
+                int index = this.dataSet.getColumn(node);
                 double value = this.dataSet.getDouble(i, index);
                 if (!(value >= range[0] && value <= range[1])) {
                     continue I;
@@ -403,7 +402,7 @@ public class Histogram {
 
             for (Node node : this.discreteValues.keySet()) {
                 int value = this.discreteValues.get(node);
-                int index = this.dataSet.getColumnIndex(node);
+                int index = this.dataSet.getColumn(node);
                 int _value = this.dataSet.getInt(i, index);
                 if (!(value == _value)) {
                     continue I;
@@ -416,6 +415,7 @@ public class Histogram {
         return rows;
     }
 }
+
 
 
 

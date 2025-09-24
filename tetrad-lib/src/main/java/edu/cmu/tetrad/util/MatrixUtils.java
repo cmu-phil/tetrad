@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,9 +15,9 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.util.FastMath;
@@ -416,7 +416,7 @@ public final class MatrixUtils {
      */
     public static double[][] scalarProduct(double scalar, double[][] m) {
         Matrix _m = new Matrix(m);
-        return _m.scale(scalar).toArray();
+        return _m.scalarMult(scalar).toArray();
     }
 
     /**
@@ -481,7 +481,7 @@ public final class MatrixUtils {
      *                 undefined (NaN) values.
      * @param errCovar the error covariance matrix, representing variances and covariances of errors. Must not contain
      *                 undefined (NaN) values.
-     * @return the implied covariance matrix, computed as ((I - B)⁻¹) Cov(e) ((I - B)⁻¹)ᵀ, where B is the edge
+     * @return the implied covariance matrix, computed as ((I - B)â»Â¹) Cov(e) ((I - B)â»Â¹)áµ, where B is the edge
      * coefficient matrix and Cov(e) is the error covariance matrix.
      * @throws IllegalArgumentException if either the edge coefficient matrix or the error covariance matrix contains
      *                                  undefined (NaN) values.
@@ -677,7 +677,7 @@ public final class MatrixUtils {
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isPositiveDefinite(Matrix matrix) {
-        SimpleEVD<SimpleMatrix> eig = matrix.getDataCopy().eig();
+        SimpleEVD<SimpleMatrix> eig = matrix.getSimpleMatrix().eig();
 
         for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
             if (eig.getEigenvalue(i).getReal() <= 0) {
@@ -696,7 +696,7 @@ public final class MatrixUtils {
      */
     public static Matrix cholesky(Matrix covar) {
         CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-        DMatrixRMaj _M = covar.getDataCopy().getMatrix();
+        DMatrixRMaj _M = covar.getSimpleMatrix().getMatrix();
         DMatrixRMaj L = new DMatrixRMaj(_M.getNumRows(), _M.getNumCols());
         chol.decompose(_M);
         chol.getT(L);
@@ -1154,4 +1154,27 @@ public final class MatrixUtils {
 
         return copy;
     }
+
+    /**
+     * Computes the symmetrized version of the given square matrix. The symmetrized
+     * matrix is calculated as (A + A^T) / 2, where A is the input matrix and A^T is
+     * its transpose. The method does not modify the original matrix.
+     *
+     * @param sigma the input square matrix to be symmetrized; must not be null.
+     *              The matrix must have the same number of rows and columns.
+     * @return the symmetrized matrix computed as (A + A^T) / 2.
+     * @throws NullPointerException if the input matrix is null.
+     * @throws IllegalArgumentException if the input matrix is not square.
+     */
+    public static Matrix symmetrize(Matrix sigma) {
+        if (sigma == null) {
+            throw new NullPointerException("Matrix must not be null.");
+        }
+        if (sigma.getNumRows() != sigma.getNumColumns()) {
+            throw new IllegalArgumentException("Matrix must be square to symmetrize.");
+        }
+        // Return (A + A^T)/2 without mutating the original matrix.
+        return sigma.plus(sigma.transpose()).scalarMult(0.5);
+    }
 }
+

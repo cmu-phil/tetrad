@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.*;
@@ -9,8 +29,31 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Added by Fattaneh Calculates the Instance-Specific BDeu score.
- */
+ * Instance-Specific BDeu (IS-BDeu) score.
+        *
+        * <p>This score extends the standard Bayesian Dirichlet equivalent uniform (BDeu) score
+ * to the instance-specific setting described by Fattaneh Jabbari. In addition to the
+ * usual population-wide likelihood, it incorporates likelihood contributions from a
+ * designated test case (a single row from a dataset). The resulting score therefore
+ * rewards structures that not only fit the overall data but also provide a good
+ * explanation for the chosen instance.</p>
+        *
+        * <p>The score is decomposable, so local score differences can be evaluated for candidate
+ * edge additions, deletions, or reversals. Each local computation blends:</p>
+        * <ul>
+ *   <li><b>Population term</b>: the standard BDeu contribution based on counts over the training dataset.</li>
+        *   <li><b>Instance-specific term</b>: a correction that favors parent configurations consistent with
+ *       the observed values in the test case.</li>
+        * </ul>
+        *
+        * <p>This hybrid design allows search algorithms such as IS-FGES and IS-GFCI to guide
+ * edge orientation using both population regularities and individual evidence, yielding
+ * graphs that may differ across test cases while remaining anchored to the population
+ * model.</p>
+        *
+        * <p><b>References:</b> Fattaneh Jabbari, Ph.D. dissertation, Carnegie Mellon University,
+        * pp. 144–147.</p>
+        */
 public class ISBDeuScore implements ISScore {
     private static final boolean verbose = false;
     private final int[][] data;
@@ -29,14 +72,18 @@ public class ISBDeuScore implements ISScore {
     /**
      * Initializes the ISBDeuScore with the given dataset and test case.
      *
-     * @param dataSet the dataset to be used for scoring. Must not be null.
+     * @param dataSet  the dataset to be used for scoring. Must not be null.
      * @param testCase the test case to evaluate. Must not be null.
      * @throws NullPointerException if either dataSet or testCase is null.
      */
     public ISBDeuScore(DataSet dataSet, DataSet testCase) {
 
-        if (dataSet == null || testCase == null) {
-            throw new NullPointerException("Dataset or test case was not provided.");
+        if (dataSet == null) {
+            throw new NullPointerException("Dataset was not provided.");
+        }
+
+        if (testCase == null) {
+            throw new NullPointerException("Test case was not provided.");
         }
 
         if (dataSet instanceof BoxDataSet) {
@@ -121,6 +168,16 @@ public class ISBDeuScore implements ISScore {
         return (DiscreteVariable) variables.get(i);
     }
 
+    /**
+     * Calculates the local scoring for a given node in a Bayesian Network
+     * based on the provided parent and child configurations.
+     *
+     * @param node The index of the node for which the score is being calculated.
+     * @param parents_is An array of indices representing the context-specific parents of the node.
+     * @param parents_pop An array of indices representing the population-wide parents of the node.
+     * @param children_pop An array of indices representing the children of the node in the population-wide model.
+     * @return The computed local score as a double value.
+     */
     @Override
     public double localScore(int node, int[] parents_is, int[] parents_pop, int[] children_pop) {
 
@@ -204,11 +261,6 @@ public class ISBDeuScore implements ISScore {
 
         // compute IS score
         if (parents_is.length > 0) {
-
-            // K2 prior
-//			double rowPrior_i = getSamplePrior() * K;
-//			double cellPrior_i = getSamplePrior();
-
             double rowPrior_i = computeRowPrior(parents_is, parentValuesTest, parents_all, row_priors);
             rowPrior_i = getSamplePrior() * rowPrior_i;
             double cellPrior_i = rowPrior_i / K;
@@ -233,21 +285,15 @@ public class ISBDeuScore implements ISScore {
             if (rowPrior_p > 0) {
                 scorePop -= Gamma.logGamma(rowPrior_p + np_j[j]);
                 for (int k = 0; k < K; k++) {
-//					if(np_jk[j][k] > 0){
                     scorePop += Gamma.logGamma(cellPrior_p + np_jk[j][k]);
-//					}
                     scorePop -= Gamma.logGamma(cellPrior_p);
                 }
                 scorePop += Gamma.logGamma(rowPrior_p);
             }
         }
 
-//		System.out.println("scoreIS: " + scoreIS);
         scoreIS += getPriorForStructure(node, parents_is, parents_pop, children_pop);
-//		System.out.println("scoreIS prior: " + getPriorForStructure(node, parents_is, parents_pop, children_pop));
-//		System.out.println("scorePop: " + scorePop);
 
-//		scorePop += getPriorForStructure(parents_pop.length);
         score = scorePop + scoreIS;
         return score;
     }
@@ -763,3 +809,4 @@ public class ISBDeuScore implements ISScore {
         return score;
     }
 }
+

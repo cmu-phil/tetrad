@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,14 +15,15 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -51,6 +52,7 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     /**
      * Constant <code>serialVersionUID=23L</code>
      */
+    @Serial
     long serialVersionUID = 23L;
 
     /**
@@ -66,6 +68,35 @@ public interface Node extends TetradSerializable, Comparable<Node> {
      * @param name the name of this node.
      */
     void setName(String name);
+
+    /**
+     * Returns the rank, or -1 if no rank is set.
+     *
+     * @return the rank of the node
+     */
+    default int getRank() {
+        return -1;
+    }
+
+    /**
+     * Sets the rank, or -1 if no rank is set.
+     *
+     * @param rank the rank to set
+     * @throws UnsupportedOperationException if the node type does not support setting a rank.
+     */
+    default void setRank(int rank) {
+        throw new UnsupportedOperationException("Rank is not supported for this node type.");
+    }
+
+    /**
+     * Returns the display name.
+     *
+     * @return the display name
+     */
+    default String getDisplayName() {
+        boolean displayRank = !(getRank() == -1); // || getRank() == 1);
+        return getName() + (displayRank ? "(" + getRank() + ")" : "");
+    }
 
     /**
      * Returns the node type for this node.
@@ -84,16 +115,16 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     /**
      * Returns the selection bias status for this node.
      *
-     * @param selectionBias the selection bias status for this node.
+     * @return the selection bias status for this node.
      */
-    void setSelectionBias(boolean selectionBias);
+    boolean getSelectionBias();
 
     /**
      * Returns the selection bias status for this node.
      *
-     * @return the selection bias status for this node.
+     * @param selectionBias the selection bias status for this node.
      */
-    boolean getSelectionBias();
+    void setSelectionBias(boolean selectionBias);
 
     /**
      * Returns the node shape for this node.
@@ -271,3 +302,4 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     void addAttribute(String key, Object value);
 
 }
+

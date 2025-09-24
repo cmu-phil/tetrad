@@ -1,3 +1,23 @@
+/// ////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
@@ -7,7 +27,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -182,7 +201,7 @@ public class CausalPerceptronNetwork implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Causal Perceptron Network (CPN) using " + this.randomGraph.getDescription();
+        return "Nonlinear SEM (Neural Net)";
     }
 
     /**
@@ -272,21 +291,22 @@ public class CausalPerceptronNetwork implements Simulation {
 
         Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
 
-//        edu.cmu.tetrad.sem.CausalPerceptronNetwork generator = new edu.cmu.tetrad.sem.CausalPerceptronNetwork(
-//                graph, parameters.getInt(Params.SAMPLE_SIZE),
-//                new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
-//                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
-//                hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
-
-        // Convert hidden dimsnions to List<Integer>
-        List<Integer> hiddenDimensionsList = MathUtils.getInts(hiddenDimensions);
-
-        edu.cmu.tetrad.sem.CausalPerceptronNetworkDjl generator = new edu.cmu.tetrad.sem.CausalPerceptronNetworkDjl(
+        edu.cmu.tetrad.sem.CausalPerceptronNetwork generator = new edu.cmu.tetrad.sem.CausalPerceptronNetwork(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
-                hiddenDimensionsList, parameters.getDouble(Params.INPUT_SCALE), activation);
+                hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
+
+//        // Convert hidden dimsnions to List<Integer>
+//        List<Integer> hiddenDimensionsList = MathUtils.getInts(hiddenDimensions);
+//
+//        edu.cmu.tetrad.sem.CausalPerceptronNetworkDjl generator = new edu.cmu.tetrad.sem.CausalPerceptronNetworkDjl(
+//                graph, parameters.getInt(Params.SAMPLE_SIZE),
+//                new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
+//                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
+//                hiddenDimensionsList, parameters.getDouble(Params.INPUT_SCALE), activation);
 
         return generator.generateData();
     }
 }
+

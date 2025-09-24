@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.data;
@@ -321,7 +320,7 @@ public class Discretizer {
                     String name = variable.getName();
 
                     double[] trimmedData = new double[newDataSet.getNumRows()];
-                    int col = newDataSet.getColumnIndex(variable);
+                    int col = newDataSet.getColumn(variable);
 
                     for (int j = 0; j < this.sourceDataSet.getNumRows(); j++) {
                         trimmedData[j] = this.sourceDataSet.getDouble(j, col);
@@ -329,7 +328,7 @@ public class Discretizer {
                     Discretization discretization = Discretizer.discretize(trimmedData,
                             breakpoints, name, categories);
 
-                    int _col = newDataSet.getColumnIndex(variable);
+                    int _col = newDataSet.getColumn(variable);
                     int[] _data = discretization.getData();
                     for (int j = 0; j < _data.length; j++) {
                         newDataSet.setInt(j, _col, _data[j]);
@@ -340,13 +339,13 @@ public class Discretizer {
                     int[] remap = spec.getRemap();
 
                     int[] trimmedData = new int[newDataSet.getNumRows()];
-                    int col = newDataSet.getColumnIndex(variable);
+                    int col = newDataSet.getColumn(variable);
 
                     for (int j = 0; j < this.sourceDataSet.getNumRows(); j++) {
                         trimmedData[j] = this.sourceDataSet.getInt(j, col);
                     }
 
-                    int _col = newDataSet.getColumnIndex(variable);
+                    int _col = newDataSet.getColumn(variable);
 
                     for (int j = 0; j < trimmedData.length; j++) {
                         try {
@@ -423,6 +422,7 @@ public class Discretizer {
         }
     }
 }
+
 
 
 

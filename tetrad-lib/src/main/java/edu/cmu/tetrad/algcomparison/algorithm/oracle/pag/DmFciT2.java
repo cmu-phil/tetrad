@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
@@ -8,19 +28,16 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fcit;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.MsepVertexCutFinder;
@@ -36,10 +53,10 @@ import java.util.*;
 
 /**
  * This class represents the Detect-Mimic-FCIT (DM-FCIT) algorithm, a specialized variant of the DM-PC and FCIT
- * algorithms designed to identify intermediate latent variables. DM-FCIT enhances accuracy and computational
- * efficiency by recursively maintaining complete PAG orientations during the search process. At each step, it uses
- * these orientations to substantially reduce the required size of conditioning sets when testing independence. This
- * approach leads to more precise identification of latent variables and better orientation accuracy overall.
+ * algorithms designed to identify intermediate latent variables. DM-FCIT enhances accuracy and computational efficiency
+ * by recursively maintaining complete PAG orientations during the search process. At each step, it uses these
+ * orientations to substantially reduce the required size of conditioning sets when testing independence. This approach
+ * leads to more precise identification of latent variables and better orientation accuracy overall.
  *
  * @author josephramsey
  */
@@ -50,7 +67,7 @@ import java.util.*;
 //)
 //@Bootstrapping
 //@Experimental
-public class DmFciT2 extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
+public class DmFciT2 extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -72,8 +89,8 @@ public class DmFciT2 extends AbstractBootstrapAlgorithm implements Algorithm, Us
      * This class represents a DM-FCIT algorithm.
      *
      * <p>
-     * The DM-FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on
-     * a given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
+     * The DM-FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
      *
@@ -88,8 +105,8 @@ public class DmFciT2 extends AbstractBootstrapAlgorithm implements Algorithm, Us
      * Represents a DM-FCIT algorithm.
      *
      * <p>
-     * The DM-FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on
-     * a given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
+     * The DM-FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
      *
@@ -486,4 +503,5 @@ public class DmFciT2 extends AbstractBootstrapAlgorithm implements Algorithm, Us
         this.test = independenceWrapper;
     }
 }
+
 

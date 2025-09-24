@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.util;
 
 import java.util.*;
@@ -16,25 +36,25 @@ public class RandomPiecewiseLinearBijective {
      */
     private final List<double[]> controlPoints;
     /**
-     * Represents the minimum value for the x-axis in the piecewise linear bijective function.
-     * This value defines the lower bound for scaling and evaluating the function and serves
-     * as a reference point for determining the input range.
+     * Represents the minimum value for the x-axis in the piecewise linear bijective function. This value defines the
+     * lower bound for scaling and evaluating the function and serves as a reference point for determining the input
+     * range.
      */
     private double xMin = 0;
     /**
-     * Represents the maximum value for the x-axis in the range for scaling and evaluating the
-     * piecewise linear bijective function. This value defines the upper limit of the x-domain
-     * within which inputs are valid when evaluating or transforming the function.
+     * Represents the maximum value for the x-axis in the range for scaling and evaluating the piecewise linear
+     * bijective function. This value defines the upper limit of the x-domain within which inputs are valid when
+     * evaluating or transforming the function.
      */
     private double xMax = 1;
     /**
-     * Represents the minimum value for the y-axis in the context of scaling a piecewise linear bijective function.
-     * This value defines the lower bound of the function's output range after scaling.
+     * Represents the minimum value for the y-axis in the context of scaling a piecewise linear bijective function. This
+     * value defines the lower bound of the function's output range after scaling.
      */
     private double yMin = 0;
     /**
-     * Represents the maximum value for the y-axis in the piecewise linear bijective function.
-     * This value determines the upper bound of the output range for the function after scaling.
+     * Represents the maximum value for the y-axis in the piecewise linear bijective function. This value determines the
+     * upper bound of the output range for the function after scaling.
      */
     private double yMax = 1;
 
@@ -217,3 +237,4 @@ public class RandomPiecewiseLinearBijective {
         return Collections.unmodifiableList(controlPoints);
     }
 }
+

@@ -50,6 +50,14 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                </configuration>
+            </plugin>
         </plugins>
         <extensions>
             <extension>
@@ -69,12 +77,12 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
+            <version>4.5.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.11.0</version>
+            <version>1.14.0</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
@@ -99,12 +107,12 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.10.1</version>
+            <version>2.13.1</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20231013</version>
+            <version>20250517</version>
             <scope>compile</scope>
         </dependency>
 
@@ -112,7 +120,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.15.4</version>
+            <version>1.21.1</version>
         </dependency>
         <dependency>
             <groupId>io.github.cmu-phil</groupId>
@@ -122,58 +130,73 @@
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>24.0.1</version>
+            <version>26.0.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.ejml</groupId>
             <artifactId>ejml-ddense</artifactId>
-            <version>0.43</version>
+            <version>0.44.0</version>
         </dependency>
         <dependency>
             <groupId>org.ejml</groupId>
             <artifactId>ejml-core</artifactId>
-            <version>0.43</version>
+            <version>0.44.0</version>
         </dependency>
         <dependency>
             <groupId>org.ejml</groupId>
             <artifactId>ejml-all</artifactId>
-            <version>0.43</version>
+            <version>0.44.0</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.pytorch</groupId>-->
-<!--            <artifactId>pytorch_android</artifactId> &lt;!&ndash; Works on desktops too &ndash;&gt;-->
-<!--            <version>1.10.0</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.pytorch</groupId>-->
+        <!--            <artifactId>pytorch_android</artifactId> &lt;!&ndash; Works on desktops too &ndash;&gt;-->
+        <!--            <version>1.10.0</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>api</artifactId>
-            <version>0.32.0</version>
+            <version>0.33.0</version>
         </dependency>
         <dependency>
             <groupId>ai.djl.pytorch</groupId>
             <artifactId>pytorch-engine</artifactId>
-            <version>0.32.0</version>
+            <version>0.33.0</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>ai.djl.pytorch</groupId>-->
-<!--            <artifactId>pytorch-engine</artifactId>-->
-<!--            <version>0.24.0</version> &lt;!&ndash; Use the latest version &ndash;&gt;-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>ai.djl.pytorch</groupId>-->
-<!--            <artifactId>pytorch-native-auto</artifactId>-->
-<!--            <version>2.0.0</version> &lt;!&ndash; Metal support &ndash;&gt;-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>ai.djl.pytorch</groupId>-->
+        <!--            <artifactId>pytorch-engine</artifactId>-->
+        <!--            <version>0.24.0</version> &lt;!&ndash; Use the latest version &ndash;&gt;-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>ai.djl.pytorch</groupId>-->
+        <!--            <artifactId>pytorch-native-auto</artifactId>-->
+        <!--            <version>2.0.0</version> &lt;!&ndash; Metal support &ndash;&gt;-->
+        <!--        </dependency>-->
 
 
+        <!--        &lt;!&ndash; Optional: If using PyTorch native bindings for macOS &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>ai.djl.pytorch</groupId>-->
+        <!--            <artifactId>pytorch-native-auto</artifactId>-->
+        <!--            <version>2.0.0</version>-->
+        <!--        </dependency>-->
 
-<!--        &lt;!&ndash; Optional: If using PyTorch native bindings for macOS &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>ai.djl.pytorch</groupId>-->
-<!--            <artifactId>pytorch-native-auto</artifactId>-->
-<!--            <version>2.0.0</version>-->
-<!--        </dependency>-->
+        <!-- JUnit 5 API (compile/test compile) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JUnit 5 Engine (runtime for test execution) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <properties>

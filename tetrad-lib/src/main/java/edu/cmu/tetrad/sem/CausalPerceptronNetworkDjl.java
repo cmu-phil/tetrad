@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.sem;
 
 import ai.djl.ndarray.NDArray;
@@ -42,17 +62,17 @@ import java.util.stream.IntStream;
  * causal models with generative neural networks. Explainable and interpretable models in computer vision and machine
  * learning, 39-80.
  * <p>
- * Zhang, K., Wang, Z., Zhang, J., &amp; Schölkopf, B. (2015). On estimation of functional causal models: general
+ * Zhang, K., Wang, Z., Zhang, J., &amp; SchÃ¶lkopf, B. (2015). On estimation of functional causal models: general
  * results and application to the post-nonlinear causal model. ACM Transactions on Intelligent Systems and Technology
  * (TIST), 7(2), 1-22.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
  * <p>
- * Bühlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
+ * BÃ¼hlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
  * penalized regression". The Annals of Statistics.
  * <p>
- * Peters, J., Mooij, J. M., Janzing, D., &amp; Schölkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
+ * Peters, J., Mooij, J. M., Janzing, D., &amp; SchÃ¶lkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
  * Models". Journal of Machine Learning Research.
  * <p>
  * Zhang, K., &amp; Hyvarinen, A. (2012). On the identifiability of the post-nonlinear causal model. arXiv preprint
@@ -184,55 +204,122 @@ public class CausalPerceptronNetworkDjl {
      * @return A DataSet object containing the generated synthetic data, with samples and variables defined by the
      * structure of the provided graph and simulation parameters.
      */
+//    public DataSet generateData() {
+//        DataSet data = new BoxDataSet(new DoubleDataBox(numSamples, graph.getNodes().size()), graph.getNodes());
+//
+//        List<Node> nodes = graph.getNodes();
+//        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size()).boxed().collect(Collectors.toMap(nodes::get, i -> i));
+//
+//        List<Node> validOrder = graph.paths().getValidOrder(graph.getNodes(), true);
+//
+//        for (Node node : validOrder) {
+//            List<Node> parents = graph.getParents(node);
+//
+//            MultiLayerPerceptronDjl randomFunction = new MultiLayerPerceptronDjl(
+//                    parents.size() + 1, // Input dimension (R^3 -> R)
+//                    hiddenDimensions, // Number of hidden neurons
+////                    this.activationFunction, // Activation function
+//                    "continuous", // variable type.
+//                    this.inputScale // Input scale for bumpiness
+////                    -1 // Random seed
+//            );
+//
+//            for (int sample = 0; sample < numSamples; sample++) {
+//                int _sample = sample;
+//
+//                List<Float> parentsList = new java.util.ArrayList<>(parents.stream().map(parent
+//                        -> (float) data.getDouble(_sample, nodeToIndex.get(parent))).toList());
+//                parentsList.add((float) noiseDistribution.sample());
+//
+////                float[] array = parents.stream().mapToDouble(parent -> data.getDouble(_sample, nodeToIndex.get(parent))).toArray();
+////                float[] array2 = new double[array.length + 1];
+////                System.arraycopy(array, 0, array2, 0, array.length);
+////                array2[array.length] = noiseDistribution.sample();
+//
+//                // Convert parentsList to float[] array.
+//                float[] array = new float[parentsList.size()];
+//                for (int i = 0; i < parentsList.size(); i++) {
+//                    array[i] = parentsList.get(i);
+//                }
+//
+//                NDArray input = randomFunction.getManager().create(array);
+//
+//                try {
+//                    data.setDouble(sample, nodeToIndex.get(node),
+//                            randomFunction.forward(randomFunction.getManager(),
+//                                    input).toFloatArray()[0]);
+//                } catch (TranslateException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//
+//            if (rescaleMin < rescaleMax) {
+//                DataTransforms.scale(data, rescaleMin, rescaleMax, node);
+//            }
+//        }
+//
+//        return data;
+//    }
+
     public DataSet generateData() {
         DataSet data = new BoxDataSet(new DoubleDataBox(numSamples, graph.getNodes().size()), graph.getNodes());
 
         List<Node> nodes = graph.getNodes();
-        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size()).boxed().collect(Collectors.toMap(nodes::get, i -> i));
+        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size()).boxed()
+                .collect(Collectors.toMap(nodes::get, i -> i));
 
-        List<Node> validOrder = graph.paths().getValidOrder(graph.getNodes(), true);
+        List<Node> topo = graph.paths().getValidOrder(nodes, true);
 
-        for (Node node : validOrder) {
+        for (Node node : topo) {
             List<Node> parents = graph.getParents(node);
 
-            MultiLayerPerceptronDjl randomFunction = new MultiLayerPerceptronDjl(
-                    parents.size() + 1, // Input dimension (R^3 -> R)
-                    hiddenDimensions, // Number of hidden neurons
-//                    this.activationFunction, // Activation function
-                    "continuous", // variable type.
-                    this.inputScale // Input scale for bumpiness
-//                    -1 // Random seed
+            // Build one random MLP per node
+            MultiLayerPerceptronDjl mlp = new MultiLayerPerceptronDjl(
+                    parents.size() + 1,            // input dim (parents + noise)
+                    this.hiddenDimensions,         // hidden dims
+                    "continuous",
+                    (float) this.inputScale
             );
 
-            for (int sample = 0; sample < numSamples; sample++) {
-                int _sample = sample;
+            // Prepare a single batched input: shape (numSamples, Din)
+            int Din = parents.size() + 1;
+            float[] batch = new float[numSamples * Din];
 
-                List<Float> parentsList = new java.util.ArrayList<>(parents.stream().map(parent
-                        -> (float) data.getDouble(_sample, nodeToIndex.get(parent))).toList());
-                parentsList.add((float) noiseDistribution.sample());
-
-//                float[] array = parents.stream().mapToDouble(parent -> data.getDouble(_sample, nodeToIndex.get(parent))).toArray();
-//                float[] array2 = new double[array.length + 1];
-//                System.arraycopy(array, 0, array2, 0, array.length);
-//                array2[array.length] = noiseDistribution.sample();
-
-                // Convert parentsList to float[] array.
-                float[] array = new float[parentsList.size()];
-                for (int i = 0; i < parentsList.size(); i++) {
-                    array[i] = parentsList.get(i);
+            // Fill parent columns
+            for (int s = 0; s < numSamples; s++) {
+                int base = s * Din;
+                for (int p = 0; p < parents.size(); p++) {
+                    int col = nodeToIndex.get(parents.get(p));
+                    batch[base + p] = (float) data.getDouble(s, col);
                 }
-
-                NDArray input = randomFunction.getManager().create(array);
-
-                try {
-                    data.setDouble(sample, nodeToIndex.get(node),
-                            randomFunction.forward(randomFunction.getManager(),
-                                    input).toFloatArray()[0]);
-                } catch (TranslateException e) {
-                    throw new RuntimeException(e);
-                }
+                // noise as last column
+                batch[base + Din - 1] = (float) noiseDistribution.sample();
             }
 
+            // One NDArray for the whole batch; single forward call
+            try (var mgr = mlp.getManager()) {
+//                NDArray X = mgr.create(batch, new long[]{numSamples, Din});
+                // old:
+                // NDArray X = mgr.create(batch, new long[]{numSamples, Din});
+
+                // replace with either:
+                //                NDArray X = mgr.create(batch, new Shape(numSamples, Din));
+                // or:
+                NDArray X = mgr.create(batch).reshape(numSamples, Din);
+
+                NDArray Y = mlp.forward(mgr, X);           // shape (numSamples, 1)
+                float[] out = Y.toFloatArray();            // length numSamples
+
+                // Write column back
+                int j = nodeToIndex.get(node);
+                for (int s = 0; s < numSamples; s++) {
+                    data.setDouble(s, j, out[s]);
+                }
+            } catch (ai.djl.translate.TranslateException e) {
+                throw new RuntimeException(e);
+            }
+
+            // Optional per-column rescale
             if (rescaleMin < rescaleMax) {
                 DataTransforms.scale(data, rescaleMin, rescaleMax, node);
             }
@@ -241,3 +328,4 @@ public class CausalPerceptronNetworkDjl {
         return data;
     }
 }
+

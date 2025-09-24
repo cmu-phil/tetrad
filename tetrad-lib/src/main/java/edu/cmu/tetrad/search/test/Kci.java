@@ -1,514 +1,592 @@
+/// ////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+/// ////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.GammaDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
+import org.ejml.interfaces.linsol.LinearSolverDense;
 import org.ejml.simple.SimpleMatrix;
-import org.jetbrains.annotations.NotNull;
 
-import java.text.DecimalFormat;
 import java.util.*;
 
-import static edu.cmu.tetrad.util.StatUtils.median;
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.sqrt;
-
 /**
- * Gives an implementation of the Kernel Independence Test (KCI) by Kun Zhang, which is a general test of conditional
- * independence. The reference is here:
- * <p>
- * Zhang, K., Peters, J., Janzing, D., and Schölkopf, B. (2012). Kernel-based conditional independence test and
- * application in causal discovery. arXiv preprint arXiv:1202.3775.
- * <p>
- * Please see that paper, especially Theorem 4 and Proposition 5.
- * <p>
- * Using optimal kernel bandwidths suggested by Silverman:
- *
- * @author kunzhang
- * @author Vineet Raghu on 7/3/2016
- * @author josephramsey refactoring 7/4/2018, 12/6/2024
- * @version $Id: $Id
+ * The Kci class implements the Kernel-based Conditional Independence (KCI) test for statistical independence between
+ * variables. It supports various kernel types (e.g., Gaussian, Polynomial, Linear) and provides both Gamma
+ * approximation as well as permutation-based p-value computation. This class utilizes kernel matrices and bandwidth
+ * selection heuristics for efficient statistical test computation.
  */
-public class Kci implements IndependenceTest, RowsSettable, RawMarginalIndependenceTest {
-
+public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     /**
-     * A static final map that stores precomputed instances of {@link SimpleMatrix} where each matrix is filled with
-     * ones. The map's keys are {@link Integer} values representing the size or dimension of the matrix, and the values
-     * are the corresponding {@link SimpleMatrix} objects.
+     * Data matrix in "variables x samples" layout.
+     */
+    private final SimpleMatrix dataVxN;
+    /**
+     * Optional bandwidth hints (not required).
+     */
+    private final SimpleMatrix hHint;
+    /**
+     * LRU-ish cache for RZ matrices keyed by (Z, rows, eps).
+     */
+    private final Map<String, DMatrixRMaj> rzCache = new LinkedHashMap<>(128, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, DMatrixRMaj> e) {
+            return size() > 64;
+        }
+    };
+    /**
+     * Optional small cache for Ky per Y (helps inside PC/FCI loops).
+     */
+    private final Map<Integer, SimpleMatrix> kyCache = new LinkedHashMap<>(64, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Integer, SimpleMatrix> e) {
+            return size() > 64;
+        }
+    };
+    /**
+     * RNG for permutations; can be null (seeded later).
+     */
+    public Random rng = new Random(0);
+    /**
+     * Specifies the degree of the polynomial in the polynomial kernel function.
      * <p>
-     * This map is designed to cache commonly used matrices of ones to improve performance and avoid redundant
-     * calculations or memory allocation.
-     */
-    private static final Map<Integer, SimpleMatrix> onesHash = new HashMap<>();
-    /**
-     * A static final map that serves as a cache for storing identity matrices. The map uses an integer as the key,
-     * representing the size of the matrix, and a {@code SimpleMatrix} as the value, representing the identity matrix of
-     * the corresponding size.
+     * The polynomial kernel is defined as: k(u, v) = (polyGamma * (u · v) + polyCoef0) ^ polyDegree. This variable
+     * determines the exponent applied to the kernel computation.
      * <p>
-     * This caching mechanism is employed to avoid redundant computation of identity matrices, improving performance in
-     * scenarios where identity matrices of various sizes are frequently requested.
+     * A higher degree increases the capacity of the kernel to model relationships between data points but may also
+     * increase the risk of overfitting.
+     * <p>
+     * By default, polyDegree is initialized to 2, which represents a quadratic polynomial kernel.
      */
-    private static final Map<Integer, SimpleMatrix> identityMap = new HashMap<>();
+    private int polyDegree = 2;
     /**
-     * A static and final map that associates an integer key with a SimpleMatrix value. This map is used to store and
-     * retrieve SimpleMatrix objects based on their corresponding integer identifiers. It is initialized as an empty
-     * HashMap and designed to be immutable after its creation.
+     * Represents the polynomial coefficient "coef0" used in the polynomial kernel function. It is an additive constant
+     * in the kernel formula defined as: k(u, v) = (polyGamma * (u · v) + polyCoef0)^polyDegree. This value influences
+     * the behavior of the kernel, particularly its non-linearity. The default value is initialized to 1.0.
      */
-    private static final Map<Integer, SimpleMatrix> hMap = new HashMap<>();
+    private double polyCoef0 = 1.0;
     /**
-     * The dataset to analyze.
+     * The scaling factor for the polynomial kernel in the form k(u, v) = (polyGamma * u·v + polyCoef0)^polyDegree.
+     * <p>
+     * This parameter acts as a multiplier for the dot product of the two vectors (u and v) in the polynomial kernel
+     * computation. Adjusting this value changes the influence of the inner product in the overall kernel function.
+     * <p>
+     * Default value is 1.0, but it can be set for automatic scaling (e.g., 1.0/d, where d is the dimension of the input
+     * space).
      */
-    private final DataSet dataSet;
+    private double polyGamma = 1.0;   // set yourself (e.g., 1.0/d) if you want automatic scaling
     /**
-     * The supplied data set, standardized and as a SimpleMatrix.
+     * Specifies the type of kernel function used for kernel-based computations in the Kci class. The kernel type
+     * determines how input data is transformed or modeled to compute similarity or relationships between data points.
+     * By default, it is set to the Gaussian (RBF) kernel.
      */
-    private final SimpleMatrix data;
+    private KernelType kernelType = KernelType.GAUSSIAN;
     /**
-     * Variables in data
+     * A small constant value used to add jitter before the inversion of a kernel matrix (e.g., KZ). This parameter is
+     * essential to ensure numerical stability in computations, particularly when matrices are close to singular or have
+     * extremely small eigenvalues.
+     * <p>
+     * The default value for this constant is set to 1e-3.
      */
-    private final List<Node> variables;
+    private double epsilon = 1e-3;
+    // ---------------------- configuration hooks ----------------------
     /**
-     * The bandwidth vector.
-     */
-    private final Vector h;
-    /**
-     * A normal distribution with 1 degree of freedom.
-     */
-    private final NormalDistribution normal = new NormalDistribution(0, 1);
-    /**
-     * Convenience map from nodes to their indices in the list of variables.
-     */
-    private final Map<Node, Integer> hash;
-    /**
-     * The main thread. We are trying to paranoid about stopping FAS when the user wants to stop it. This is not
-     * foolproof, but it's better than nothing.
-     */
-    private final Thread mainThread;
-    /**
-     * Epsilon for Proposition 5. We are fixing this to 0.001.
-     */
-    private final static double epsilon = 0.001;
-    /**
-     * The alpha level of the test.
-     */
-    private double alpha;
-    /**
-     * True if the approximation algorithms should be used instead of Theorems 3 or 4.
-     */
-    private boolean approximate = true;
-    /**
-     * Eigenvalues greater than this time, the maximum will be kept.
-     */
-    private double threshold = 0.001;
-    /**
-     * Number of bootstraps for Theorem 4 and Proposition 5.
-     */
-    private int numBootstraps = 5000;
-    /**
-     * Azzalini optimal kernel widths will be multiplied by this.
+     * A scaling factor used to modify the bandwidth in Gaussian kernel calculations by scaling it multiplicatively
+     * (sigma *= scalingFactor). This value is primarily utilized within the Gaussian bandwidth heuristic to adjust the
+     * spread or sensitivity of the kernel.
+     * <p>
+     * The default value is 1.0, meaning no scaling is applied to the bandwidth unless explicitly modified. A
+     * user-specified value can be set to customize the scaling behavior for specific kernels or data sets.
      */
     private double scalingFactor = 1.0;
     /**
-     * True if verbose output is enabled.
+     * Indicates whether the Gamma approximation should be used for statistical tests. If set to true, the Gamma
+     * approximation is employed to compute p-values. If set to false, a permutation test is performed as an alternative
+     * method.
      */
-    private boolean verbose = true;
+    private boolean approximate = true;
     /**
-     * The kernel type.
+     * Specifies the number of permutations to be used in permutation-based statistical tests. This variable is used
+     * when conducting tests that involve random shuffling of data to approximate a distribution. It determines the
+     * number of random permutations to perform during the computation.
      */
-    private KernelType kernelType = KernelType.POLYNOMIAL;
+    private int numPermutations = 1000;
     /**
-     * Polynomial kernel degree.
+     * Represents the dataset used for analysis within the Kci class. It contains the data matrix and associated
+     * information required to perform conditional independence tests, build kernel matrices, and compute statistical
+     * measures. The `dataSet` field is a core data structure that drives the computations and algorithms implemented in
+     * the Kci class.
      */
-    private double polyDegree = 1.0;
+    private DataSet dataSet;
     /**
-     * Polynomial kernel constant.
+     * A list of Node objects representing variables in the context of the Kci class. These variables are used in
+     * various kernel computation tasks, independence testing, and other statistical analysis procedures within the KCI
+     * framework.
      */
-    private double polyConst = 1.0;
+    private List<Node> variables;
     /**
-     * The rows used in the test.
+     * Indicates whether verbose output is enabled for the Kci class. When set to true, additional debugging or
+     * informational messages may be logged or displayed to provide more detailed insights into the computations and
+     * processes within the class.
      */
-    private List<Integer> rows = null;
+    private boolean verbose = false;
 
+    // ---------------------- data / indices ----------------------
     /**
-     * Constructor.
+     * The significance level (alpha) used in statistical hypothesis testing
+     * to determine the threshold for rejecting the null hypothesis.
+     * A smaller value indicates a stricter threshold.
      *
-     * @param data  The dataset to analyze. Must be continuous.
-     * @param alpha The alpha value of the test.
+     * Default value is 0.01.
      */
-    public Kci(DataSet data, double alpha) {
-        this.dataSet = data;
-        this.data = standardizeData(new SimpleMatrix(dataSet.getDoubleData().toArray()));
-
-        this.variables = data.getVariables();
-        this.hash = getNodeIntegerMap();
-
-        this.h = getH(this.data);
-
-        this.alpha = alpha;
-
-        this.mainThread = Thread.currentThread();
-    }
+    private double alpha = 0.01;
+    /**
+     * Map variable Node -> column index in dataVxN (row in matrix terms).
+     */
+    private Map<Node, Integer> varToRow;
+    /**
+     * Active row indices (samples) used in this test run.
+     */
+    private List<Integer> rows;
 
     /**
-     * Standardizes the data by centering (subtracting the mean) and scaling
-     * (dividing by the standard deviation) each column of the input matrix.
+     * Constructs a Kci instance with the given DataSet.
      *
-     * @param data the input matrix where standardization will be applied column-wise
-     * @return a new matrix with the standardized data
+     * @param dataSet the dataset containing the data to be analyzed. It is used to initialize the data matrix, variable
+     *                list, and other attributes.
      */
-    public static SimpleMatrix standardizeData(SimpleMatrix data) {
-        SimpleMatrix data2 = data.copy();
+    public Kci(DataSet dataSet) {
+        this.dataSet = dataSet;
 
-        for (int j = 0; j < data.getNumCols(); j++) {
-            double sum = 0.0;
-
-            for (int i = 0; i < data.getNumRows(); i++) {
-                sum += data2.get(i, j);
-            }
-
-            double mean = sum / data2.getNumRows();
-
-            for (int i = 0; i < data2.getNumRows(); i++) {
-                data2.set(i, j, data2.get(i, j) - mean);
-            }
-
-            double norm = 0.0;
-
-            for (int i = 0; i < data2.getNumRows(); i++) {
-                double v = data2.get(i, j);
-                norm += v * v;
-            }
-
-            norm = sqrt(norm / (data2.getNumRows() - 1));
-
-            for (int i = 0; i < data2.getNumRows(); i++) {
-                data2.set(i, j, data2.get(i, j) / norm);
-            }
+        this.varToRow = new HashMap<>();
+        this.rows = new ArrayList<>();
+        this.dataVxN = dataSet.getDoubleData().getData().transpose();
+        this.variables = dataSet.getVariables();
+        this.varToRow = new HashMap<>();
+        for (int i = 0; i < variables.size(); i++) {
+            varToRow.put(variables.get(i), i);
         }
-
-        return data2;
-    }
-
-    /**
-     * Generates and returns a mapping of Node objects to their respective indices in the provided list.
-     *
-     * @param allVars a list of Node objects for which the hash map is to be created
-     * @return a map where each Node in the list is associated with its index position
-     */
-    private static @NotNull Map<Node, Integer> getHash(List<Node> allVars) {
-        Map<Node, Integer> hash = new HashMap<>();
-        for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
-        return hash;
-    }
-
-    /**
-     * Collects and returns a list of all variables, including the provided nodes and all elements of a given set.
-     *
-     * @param x the first node to be added to the list
-     * @param y the second node to be added to the list
-     * @param z a set of nodes to be added to the list
-     * @return a list containing the nodes x, y, and all elements of the set z
-     */
-    private static @NotNull List<Node> getAllVars(Node x, Node y, Set<Node> z) {
-        List<Node> allVars = new ArrayList<>();
-        allVars.add(x);
-        allVars.add(y);
-        allVars.addAll(z);
-        return allVars;
-    }
-
-    /**
-     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) rule of thumb suggested by
-     * Silverman.
-     *
-     * @param x         The node for which the optimal bandwidth is calculated.
-     * @param data      The dataset from which the node's values are extracted.
-     * @param nodesHash A map that maps each node in the dataset to its corresponding index.
-     * @return The optimal bandwidth for node x.
-     */
-    private static double h(Node x, SimpleMatrix data, Map<Node, Integer> nodesHash) {
-        var _x = data.getColumn(nodesHash.get(x));
-        var N = _x.getNumRows();
-        var central = median(_x);
-        for (var j = 0; j < N; j++) _x.set(j, abs(_x.get(j) - central));
-        var mad = median(_x);
-        var sigmaRobust = 1.4826 * mad;
-        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
-    }
-
-    /**
-     * Retrieves an identity matrix of size N. If the matrix is not already cached, it creates a new identity matrix,
-     * caches it, and then returns it.
-     *
-     * @param N the size of the identity matrix to retrieve or create
-     * @return the identity matrix of size N
-     */
-    private static @NotNull SimpleMatrix getI(int N) {
-        SimpleMatrix I = identityMap.get(N);
-
-        if (I == null) {
-            I = SimpleMatrix.identity(N);
-            identityMap.put(N, I);
-        }
-
-        return I;
-    }
-
-    /**
-     * Retrieves or computes a specific matrix H based on the input value N. If the matrix is already cached, it will
-     * return the cached value. Otherwise, it computes the matrix, stores it in the cache, and returns it.
-     *
-     * @param N the dimension used to compute the matrix H
-     * @return the computed or cached SimpleMatrix H
-     */
-    private static SimpleMatrix getH(int N) {
-        SimpleMatrix H = hMap.get(N);
-
-        if (H == null) {
-            H = getI(N).minus(getOnes(N).mult(getOnes(N).transpose()).scale(1.0 / N));
-            hMap.put(N, H);
-        }
-
-        return H;
-    }
-
-    /**
-     * Creates a column vector of size n filled with ones.
-     *
-     * @param n the size of the column vector to be created
-     * @return a SimpleMatrix object representing the column vector of ones
-     */
-    @NotNull
-    private static SimpleMatrix getOnes(int n) {
-        SimpleMatrix ones = onesHash.get(n);
-
-        if (ones == null) {
-            ones = new SimpleMatrix(n, 1);
-            for (int j = 0; j < n; j++) ones.set(j, 0, 1);
-            onesHash.put(n, ones);
-        }
-
-        return ones;
-    }
-
-    /**
-     * @throws UnsupportedOperationException since not implemented.
-     */
-    public IndependenceTest indTestSubset(List<Node> vars) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    /**
-     * Checks the independence between two nodes given a set of conditioning variables.
-     *
-     * @param x The first node.
-     * @param y The second node.
-     * @param z The set of conditioning variables.
-     * @return The result of the independence test.
-     * @throws InterruptedException if any
-     */
-    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) {
-            mainThread.interrupt();
-            throw new InterruptedException();
-        }
-
-        if (mainThread.isInterrupted()) {
-            Thread.currentThread().interrupt();
-            throw new InterruptedException();
-        }
-
-        try {
-            List<Node> allVars = getAllVars(x, y, z);
-            IndependenceFact fact = new IndependenceFact(x, y, z);
-            SimpleMatrix _data = getSubsetMatrix(allVars);
-            Map<Node, Integer> hash = getHash(allVars);
-            SimpleMatrix h = getH(allVars);
-            IndependenceResult result;
-
-            if (z.isEmpty()) {
-                result = isIndependentUnconditional(x, y, fact, _data, h, hash);
-            } else {
-                result = isIndependentConditional(x, y, z, fact, _data, h, hash);
-            }
-
-            double p = result.getPValue();
-
-            if (Thread.currentThread().isInterrupted()) {
-                mainThread.interrupt();
-                throw new InterruptedException();
-            }
-
-            if (mainThread.isInterrupted()) {
-                Thread.currentThread().interrupt();
-                throw new InterruptedException();
-            }
-
-            if (result.isIndependent()) {
-                TetradLogger.getInstance().log(fact + " INDEPENDENT p = " + p);
-
-            } else {
-                TetradLogger.getInstance().log(fact + " dependent p = " + p);
-            }
-
-            return new IndependenceResult(fact, result.isIndependent(), result.getPValue(), getAlpha() - result.getPValue());
-        } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity encountered when testing " + LogUtilsSearch.independenceFact(x, y, z));
-        } catch (Exception e) {
-            TetradLogger.getInstance().log(e.getMessage());
-            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN, Double.NaN);
+        this.hHint = null;
+        this.rows = new ArrayList<>();
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            rows.add(i);
         }
     }
 
     /**
-     * Returns the list of variables over which this independence checker is capable of determinining independence
-     * relations.
+     * Constructs a Kci instance using specified data, variable-to-row mapping, an optional hint matrix,
+     * and a list of row indices.
+     * This constructor initializes the internal fields required for kernel-based independence testing.
      *
-     * @return This list.
+     * @param dataVxN a SimpleMatrix representing the data matrix where rows correspond to variables
+     *                and columns correspond to observations.
+     * @param varToRow a map from Node instances to integer indices, specifying the row mapping for variables.
+     * @param hHint a SimpleMatrix used as a hint for the kernel computation, often representing
+     *              precomputed or auxiliary data; can be null if not applicable.
+     * @param rows a list of integers representing the indices of rows to be used in the computation.
      */
-    public List<Node> getVariables() {
-        return this.variables;
+    public Kci(SimpleMatrix dataVxN, Map<Node, Integer> varToRow, SimpleMatrix hHint, List<Integer> rows) {
+        this.dataVxN = dataVxN;
+        this.varToRow = varToRow;
+        this.hHint = hHint;
+        this.rows = rows;
     }
 
     /**
-     * Returns the variable of the given name.
-     *
-     * @param name a {@link String} object representing the name of the variable to retrieve
-     * @return the Node object representing the variable with the given name
+     * O(n^2) centering: Kc = K - rowMean - colMean + grandMean.
      */
-    public Node getVariable(String name) {
-        return this.dataSet.getVariable(name);
+    private static SimpleMatrix centerKernel(SimpleMatrix K) {
+        DMatrixRMaj A = K.getDDRM();
+        int n = A.getNumRows();
+        double[] a = A.data;
+
+        double[] rowSum = new double[n];
+        double[] colSum = new double[n];
+        double grand = 0.0;
+
+        int idx = 0;
+        for (int i = 0; i < n; i++) {
+            double rs = 0.0;
+            for (int j = 0; j < n; j++, idx++) {
+                double v = a[idx];
+                rs += v;
+                colSum[j] += v;
+                grand += v;
+            }
+            rowSum[i] = rs;
+        }
+
+        double invN = 1.0 / n;
+        double invN2 = invN * invN;
+
+        DMatrixRMaj C = new DMatrixRMaj(n, n);
+        double[] c = C.data;
+        idx = 0;
+        for (int i = 0; i < n; i++) {
+            double ri = rowSum[i] * invN;
+            for (int j = 0; j < n; j++, idx++) {
+                double cj = colSum[j] * invN;
+                c[idx] = a[idx] - ri - cj + grand * invN2;
+            }
+        }
+        return SimpleMatrix.wrap(C);
+    }
+
+    // ---------------------- ctor ----------------------
+
+    /**
+     * Simple numeric symmetrization: (A + Aáµ)/2.
+     */
+    private static SimpleMatrix symmetrize(SimpleMatrix A) {
+        return A.plus(A.transpose()).scale(0.5);
     }
 
     /**
-     * Returns the significance level of the independence test.
-     *
-     * @return This alpha.
+     * Cache key for RZ using sorted Z variable rows + n + eps.
      */
+    private static String keyForZ(List<Node> z, List<Integer> rows, Map<Node, Integer> varToRow, double eps) {
+        int[] cols = new int[z.size()];
+        for (int i = 0; i < z.size(); i++) cols[i] = varToRow.get(z.get(i));
+        Arrays.sort(cols);
+        StringBuilder sb = new StringBuilder(64);
+        sb.append("eps=").append(eps).append("|c=");
+        for (int c : cols) sb.append(c).append(',');
+        sb.append("|n=").append(rows.size());
+        return sb.toString();
+    }
+
+    private static int[] uniformSample(int n, int m, Random rng) {
+        int[] idx = new int[n];
+        for (int i = 0; i < n; i++) idx[i] = i;
+        // Partial FisherâYates
+        for (int i = 0; i < m; i++) {
+            int j = i + rng.nextInt(n - i);
+            int t = idx[i];
+            idx[i] = idx[j];
+            idx[j] = t;
+        }
+        return Arrays.copyOf(idx, m);
+    }
+
+    /**
+     * Gamma-approx p-value for conditional KCI statistic. S = (1/n) * tr(RX * RY) ~ Gamma(k, theta) by moment
+     * matching.
+     */
+    private static double pValueGammaConditional(SimpleMatrix RX, SimpleMatrix RY, double stat, int n) {
+        if (stat <= 0.0 || n <= 1) return 1.0;
+
+        final int N = n;
+        final double[] rx = RX.getDDRM().data;
+        final double[] ry = RY.getDDRM().data;
+
+        // --- 1) Estimate null mean and variance via a small number of permutations
+        final int Bmom = 200;               // 128â512 is a good range
+        final Random rng = new Random(7);   // fixed seed for stability in tests
+
+        double mean = 0.0, m2 = 0.0;
+        int[] idx = new int[N];
+        for (int i = 0; i < N; i++) idx[i] = i;
+
+        for (int b = 0; b < Bmom; b++) {
+            // FisherâYates shuffle of idx
+            for (int i = N - 1; i > 0; i--) {
+                int j = rng.nextInt(i + 1);
+                int t = idx[i];
+                idx[i] = idx[j];
+                idx[j] = t;
+            }
+            // s_b = (1/N) * sum_{i,j} RX[i,j] * RY[idx[i], idx[j]]
+            double sb = 0.0;
+            int base_i = 0;
+            for (int i = 0; i < N; i++, base_i += N) {
+                final int ii = idx[i] * N;
+                for (int j = 0; j < N; j++) {
+                    sb += rx[base_i + j] * ry[ii + idx[j]];
+                }
+            }
+            sb /= N;
+
+            // Welford update for mean/variance
+            double delta = sb - mean;
+            mean += delta / (b + 1);
+            m2 += delta * (sb - mean);
+        }
+        double var = (Bmom > 1) ? m2 / (Bmom - 1) : 1e-12;
+
+        // --- 2) Moment-matched Gamma(k, theta) with guards
+        final double EPS = 1e-12;
+        if (!(mean > 0.0) || !Double.isFinite(mean)) mean = EPS;
+        if (!(var > 0.0) || !Double.isFinite(var)) var = EPS * mean * mean;
+
+        double k = (mean * mean) / var;   // shape
+        double theta = var / mean;        // scale
+        if (!Double.isFinite(k) || k <= 0.0) k = 1e-6;
+        if (!Double.isFinite(theta) || theta <= 0.0) theta = EPS;
+
+        // --- 3) Right-tail p-value under fitted Gamma
+        GammaDistribution gd = new GammaDistribution(k, theta);
+        double p = 1.0 - gd.cumulativeProbability(stat);
+        if (p < 0.0) p = 0.0;
+        if (p > 1.0) p = 1.0;
+        return p;
+    }
+
+    /**
+     * Permutation p-value for conditional KCI. Permute Y (equivalently, conjugate RY by P) and recompute S_perm = (1/n)
+     * tr(RX * P RY Páµ).
+     */
+    private static double permutationPValueConditional(SimpleMatrix RX, SimpleMatrix RY, double stat, int n, int numPermutations, Random rng) {
+        if (n <= 1 || numPermutations <= 0) return 1.0;
+        if (rng == null) rng = new Random(0);
+
+        final int N = n;
+        final double[] rx = RX.getDDRM().data;
+        final double[] ry = RY.getDDRM().data;
+
+        int[] idx = new int[N];
+        for (int i = 0; i < N; i++) idx[i] = i;
+
+        int geCount = 0;
+
+        for (int b = 0; b < numPermutations; b++) {
+            // Shuffle idx
+            for (int i = N - 1; i > 0; i--) {
+                int j = rng.nextInt(i + 1);
+                int t = idx[i];
+                idx[i] = idx[j];
+                idx[j] = t;
+            }
+
+            // stat_perm = (1/N) * sum_{i,j} RX[i,j] * RY[idx[i], idx[j]]
+            double s = 0.0;
+            int base_i = 0;
+            for (int i = 0; i < N; i++, base_i += N) {
+                final int ii = idx[i] * N;
+                for (int j = 0; j < N; j++) {
+                    s += rx[base_i + j] * ry[ii + idx[j]];
+                }
+            }
+            s /= N;
+
+            if (s >= stat) geCount++;
+        }
+
+        return (geCount + 1.0) / (numPermutations + 1.0); // +1 smoothing
+    }
+
+    private static DataSet twoColumnDataSet(String nameX, double[] x, String nameY, double[] y) {
+        int n = x.length;
+        double[][] m = new double[n][2];
+        for (int i = 0; i < n; i++) {
+            m[i][0] = x[i];
+            m[i][1] = y[i];
+        }
+        List<Node> vars = new ArrayList<>(2);
+        vars.add(new ContinuousVariable(nameX));
+        vars.add(new ContinuousVariable(nameY));
+
+        DoubleDataBox dataBox = new DoubleDataBox(m);
+
+        return new BoxDataSet(dataBox, vars);
+    }
+
+    // Gaussian (RBF) kernel for a single vector
+    private static SimpleMatrix gaussianKernel1D(double[] v, double sigma) {
+        int n = v.length;
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        double[] kd = K.data;
+        double inv2s2 = 1.0 / Math.max(2.0 * sigma * sigma, 1e-24);
+        int p = 0;
+        for (int i = 0; i < n; i++) {
+            double vi = v[i];
+            for (int j = 0; j < n; j++, p++) {
+                double d = vi - v[j];
+                kd[p] = Math.exp(-(d * d) * inv2s2);
+            }
+        }
+        return SimpleMatrix.wrap(K);
+    }
+
+    // ---------------------- public API ----------------------
+
+    // Linear kernel for a single vector: K = v v^T
+    private static SimpleMatrix linearKernel1D(double[] v) {
+        int n = v.length;
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        double[] kd = K.data;
+        int p = 0;
+        for (int i = 0; i < n; i++) {
+            double vi = v[i];
+            for (int j = 0; j < n; j++, p++) {
+                kd[p] = vi * v[j];
+            }
+        }
+        return SimpleMatrix.wrap(K);
+    }
+
+    // ---------------------- kernels & helpers ----------------------
+
+    // Polynomial kernel for a single vector: K = (gamma * (v v^T) + coef0)^degree
+    private static SimpleMatrix polynomialKernel1D(double[] v, double gamma, double coef0, int degree) {
+        int n = v.length;
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        double[] kd = K.data;
+        int p = 0;
+        if (degree == 1) {
+            for (int i = 0; i < n; i++) {
+                double vi = v[i];
+                for (int j = 0; j < n; j++, p++) {
+                    kd[p] = gamma * (vi * v[j]) + coef0;
+                }
+            }
+        } else if (degree == 2) {
+            for (int i = 0; i < n; i++) {
+                double vi = v[i];
+                for (int j = 0; j < n; j++, p++) {
+                    double base = gamma * (vi * v[j]) + coef0;
+                    kd[p] = base * base;
+                }
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                double vi = v[i];
+                for (int j = 0; j < n; j++, p++) {
+                    kd[p] = Math.pow(gamma * (vi * v[j]) + coef0, degree);
+                }
+            }
+        }
+        return SimpleMatrix.wrap(K);
+    }
+
+    // Median-distance bandwidth for 1-D vectors (Silverman-ish but robust)
+    private static double bandwidth1D(double[] v) {
+        int n = v.length;
+        if (n < 2) return 1.0;
+        // Collect pairwise squared distances (can sample for large n)
+        // For simplicity, subsample up to 512 points to keep O(n^2) modest
+        int m = Math.min(n, 512);
+        // uniform sub-sample without replacement
+        int[] idx = new int[n];
+        for (int i = 0; i < n; i++) idx[i] = i;
+        Random r = new Random(7);
+        for (int i = 0; i < m; i++) {
+            int j = i + r.nextInt(n - i);
+            int t = idx[i];
+            idx[i] = idx[j];
+            idx[j] = t;
+        }
+        List<Double> d2 = new ArrayList<>(m * (m - 1) / 2);
+        for (int a = 0; a < m; a++) {
+            int i = idx[a];
+            for (int b = a + 1; b < m; b++) {
+                int j = idx[b];
+                double d = v[i] - v[j];
+                d2.add(d * d);
+            }
+        }
+        if (d2.isEmpty()) return 1.0;
+        Collections.sort(d2);
+        double med2 = d2.get(d2.size() / 2);
+        double sigma = Math.sqrt(med2 / 2.0);
+        if (!(sigma > 0.0) || !Double.isFinite(sigma)) sigma = 1.0;
+        return sigma;
+    }
+
+    /**
+     * Retrieves the value of the alpha threshold, which is generally used for
+     * statistical tests to determine the significance or rejection criteria.
+     *
+     * @return the value of alpha as a double.
+     */
+    @Override
     public double getAlpha() {
-        return this.alpha;
+        return alpha;
     }
 
     /**
-     * Sets the alpha level for the test.
+     * Sets the value of the alpha threshold, which is typically used for statistical testing
+     * to determine the significance level or rejection criteria.
      *
-     * @param alpha The alpha level to be set.
+     * @param alpha the value of alpha to set, represented as a double.
      */
+    @Override
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
     /**
-     * Returns a string representation of this test.
+     * Tests the conditional independence of two given variables (x and y) with respect to a set of conditioning
+     * variables (z) using the KCI (Kernel-based Conditional Independence) method. This method evaluates
+     * whether x and y are independent given z by calculating a p-value and comparing it against the alpha threshold.
      *
-     * @return This string.
+     * @param x the first variable to be tested for independence, represented as a Node.
+     * @param y the second variable to be tested for independence, represented as a Node.
+     * @param z the set of conditioning variables, represented as a Set of Node objects.
+     * @return an IndependenceResult object containing the results of the independence test, including the
+     *         independence fact, the p-value, and additional statistical details.
+     * @throws InterruptedException if the thread executing the method is interrupted during execution.
      */
-    public String toString() {
-        return "KCI, alpha = " + new DecimalFormat("0.0###").format(getAlpha());
+    @Override
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
+
+        try {
+            double p = isIndependenceConditional(x, y, new ArrayList<>(z), this.getAlpha());
+            return new IndependenceResult(new IndependenceFact(x, y, z), p > alpha, p, getAlpha() - p);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
-     * Returns The data model for the independence test.
+     * Retrieves the list of variables associated with the current instance.
+     * This method returns a new list containing the variables, ensuring
+     * that modifications to the returned list do not affect the original list.
      *
-     * @return This data.
+     * @return a List of Node objects representing the variables.
      */
+    @Override
+    public List<Node> getVariables() {
+        return new ArrayList<>(variables);
+    }
+
+    /**
+     * Retrieves the data model associated with the current instance.
+     *
+     * @return the DataModel object representing the dataset being analyzed.
+     */
+    @Override
     public DataModel getData() {
         return this.dataSet;
     }
 
     /**
-     * Returns the covariance matrix.
+     * Indicates whether verbose mode is enabled.
      *
-     * @return The covariance matrix.
-     */
-    public ICovarianceMatrix getCov() {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    /**
-     * Returns a list consisting of the dataset for this test.
-     *
-     * @return This dataset in a list.
-     */
-    public List<DataSet> getDataSets() {
-        LinkedList<DataSet> L = new LinkedList<>();
-        L.add(this.dataSet);
-        return L;
-    }
-
-    /**
-     * Returns the sample size.
-     *
-     * @return This size.
-     */
-    public int getSampleSize() {
-        return this.data.getNumRows();
-    }
-
-    /**
-     * Returns alpha - p.
-     *
-     * @param result a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
-     * @return This number.
-     */
-    public double getScore(IndependenceResult result) {
-        return getAlpha() - result.getPValue();
-    }
-
-    /**
-     * Sets whether the approximate algorithm should be used.
-     *
-     * @param approximate True, if so.
-     */
-    public void setApproximate(boolean approximate) {
-        this.approximate = approximate;
-    }
-
-    /**
-     * Sets the width multiplier.
-     *
-     * @param scalingFactor This multipler.
-     */
-    public void setScalingFactor(double scalingFactor) {
-        if (scalingFactor <= 0) throw new IllegalStateException("Scaling factor must be > 0");
-        this.scalingFactor = scalingFactor;
-    }
-
-    /**
-     * Sets the number of bootstraps to do.
-     *
-     * @param numBootstraps This number.
-     */
-    public void setNumBootstraps(int numBootstraps) {
-        if (numBootstraps < 1) throw new IllegalArgumentException("Num bootstraps should be >= 1: " + numBootstraps);
-        this.numBootstraps = numBootstraps;
-    }
-
-    /**
-     * Sets the threshold.
-     *
-     * @param threshold This number.
-     */
-    public void setThreshold(double threshold) {
-        if (threshold < 0.0) throw new IllegalArgumentException("Threshold must be >= 0.0: " + threshold);
-        this.threshold = threshold;
-    }
-
-    /**
-     * Returns the value of the verbose flag.
-     *
-     * @return The value of the verbose flag.
+     * @return true if verbose mode is enabled, false otherwise
      */
     @Override
     public boolean isVerbose() {
@@ -516,694 +594,589 @@ public class Kci implements IndependenceTest, RowsSettable, RawMarginalIndepende
     }
 
     /**
-     * Sets the verbosity of the method.
+     * Sets the verbose mode for the current instance.
      *
-     * @param verbose True if verbosity is enabled, false otherwise.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    /**
-     * Calculates the approximate independence result using provided kernel matrices and parameters.
-     *
-     * @param kx   The kernel matrix for variable x.
-     * @param ky   The kernel matrix for variable y.
-     * @param kx1  A scaling factor related to the first dimension of kernel matrix kx.
-     * @param kx2  A scaling factor related to the second dimension of kernel matrix kx.
-     * @param fact The independence fact used to contextualize the test result.
-     * @return An IndependenceResult object that encapsulates the result of the independence test, including whether the
-     * variables are considered independent and the associated p-value.
-     * @throws InterruptedException if any
-     */
-    private @NotNull IndependenceResult getIndependenceResultApproximate(SimpleMatrix kx, SimpleMatrix ky, double kx1, double kx2, IndependenceFact fact) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) {
-            mainThread.interrupt();
-            throw new InterruptedException();
-        }
-
-        if (mainThread.isInterrupted()) {
-            Thread.currentThread().interrupt();
-            throw new InterruptedException();
-        }
-
-        double sta = kx.mult(ky).trace();
-        double k_appr = kx1 * kx1 / kx2;
-        double theta_appr = kx2 / kx1;
-        double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
-        boolean indep = p > getAlpha();
-        return new IndependenceResult(fact, indep, p, getAlpha() - p);
-    }
+    // ---------------------- bandwidth heuristic ----------------------
 
     /**
-     * Returns the KCI independence result for the unconditional case. Uses Theorem 4 from the paper.
+     * Tests for conditional independence between two variables given a set of conditioning variables.
+     * This method computes a test statistic and its corresponding p-value using either an approximate
+     * method or a permutation-based method depending on the configuration.
      *
-     * @return true, just in case independence holds.
-     * @throws InterruptedException if any
+     * @param x The first variable to test for independence.
+     * @param y The second variable to test for independence.
+     * @param z The list of conditioning variables.
+     * @param alpha The significance level used for the independence test.
+     * @return The p-value of the conditional independence test. A small p-value (less than alpha)
+     * indicates that x and y are not conditionally independent given z.
+     * @throws NullPointerException If x or y is null.
      */
-    private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, SimpleMatrix _data, SimpleMatrix _h, Map<Node, Integer> hash) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) {
-            mainThread.interrupt();
-            throw new InterruptedException();
+    public double isIndependenceConditional(Node x, Node y, List<Node> z, double alpha) {
+        Objects.requireNonNull(x, "x");
+        Objects.requireNonNull(y, "y");
+        if (z == null) z = Collections.emptyList();
+        if (rows == null || rows.isEmpty()) {
+            return 1.0;
+        }
+        final int n = rows.size();
+        if (n < 2) {
+            return 1.0;
         }
 
-        if (mainThread.isInterrupted()) {
-            Thread.currentThread().interrupt();
-            throw new InterruptedException();
-        }
+        // 1) Centered KZ
+        SimpleMatrix KZ = centerKernel(kernelMatrix(/*x*/ null, /*z*/ z));
 
-        List<Integer> _rows = listRows();
-        int N = _rows.size();
-        SimpleMatrix H = getH(N);
-        SimpleMatrix k1 = kernelMatrix(_data, x, null, this.scalingFactor, hash, _h, _rows);
-        SimpleMatrix kx = H.mult(k1).mult(H);
-        SimpleMatrix k = kernelMatrix(_data, y, null, this.scalingFactor, hash, _h, _rows);
-        SimpleMatrix ky = H.mult(k).mult(H);
-
-        return isIndepententUnconditionFromCenteredMatrices(fact, kx, ky, N);
-    }
-
-    private @NotNull IndependenceResult isIndepententUnconditionFromCenteredMatrices(IndependenceFact fact, SimpleMatrix kx, SimpleMatrix ky, int N) {
-        try {
-            if (this.approximate) {
-                return getIndependenceResultApproximate(kx, ky, kx.trace() * ky.trace() / N, 2 * kx.mult(kx).trace() * ky.mult(ky).trace() / (N * N), fact);
+        // 2) RZ = eps * (KZ + eps I)^-1  (cache by Z+rows+eps)
+        final String zKey = keyForZ(z, rows, varToRow, getEpsilon());
+        DMatrixRMaj RZ_d = rzCache.get(zKey);
+        if (RZ_d == null) {
+            // KZ + eps I
+            DMatrixRMaj KzEps = KZ.copy().plus(SimpleMatrix.identity(n).scale(getEpsilon())).getDDRM();
+            // Invert via Cholesky
+            LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.chol(n);
+            if (!solver.setA(KzEps)) {
+                // Fallback to generic inverse if Cholesky fails (should be rare because of +eps I)
+                CommonOps_DDRM.invert(KzEps);
             } else {
-                return theorem4(kx, ky, fact, N);
+                DMatrixRMaj Inv = CommonOps_DDRM.identity(n);
+                solver.invert(Inv);
+                KzEps = Inv;
             }
-        } catch (Exception e) {
-            TetradLogger.getInstance().log(e.getMessage());
-            return new IndependenceResult(fact, false, Double.NaN, Double.NaN);
+            CommonOps_DDRM.scale(getEpsilon(), KzEps);
+            RZ_d = KzEps;
+            rzCache.put(zKey, RZ_d);
         }
-    }
+        final SimpleMatrix RZ = SimpleMatrix.wrap(RZ_d);
 
-    public double computePValue(double[] x, double[] y) {
-        int n = x.length;
-        if (y.length != n) throw new IllegalArgumentException("Length mismatch");
+        // 3) Centered kernels for [X,Z] and Y
+        SimpleMatrix KXZ = centerKernel(kernelMatrix(x, z));
+        SimpleMatrix KY = getCenteredKy(y); // cached per Y
 
-        SimpleMatrix kx = computeGaussianKernel(x, this.scalingFactor);
-        SimpleMatrix ky = computeGaussianKernel(y, this.scalingFactor);
+        // 4) Residualized kernels
+        SimpleMatrix RX = RZ.mult(KXZ).mult(RZ);
+        RX = symmetrize(RX);
 
-        SimpleMatrix centeredKx = centerKernel(kx);
-        SimpleMatrix centeredKy = centerKernel(ky);
+        SimpleMatrix RY = RZ.mult(KY).mult(RZ);
+        RY = symmetrize(RY);
 
-        return computePValueFromCenteredKernels(centeredKx, centeredKy);
-    }
+        // 5) Test statistic
+        final double stat = RX.elementMult(RY).elementSum() / n;
 
-    private SimpleMatrix computeGaussianKernel(double[] data, double sigma) {
-        int n = data.length;
-        SimpleMatrix K = new SimpleMatrix(n, n);
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                double diff = data[i] - data[j];
-                double val = Math.exp(-diff * diff / (2 * sigma * sigma));
-                K.set(i, j, val);
-            }
-        }
-        return K;
-    }
-
-    private double computePValueFromCenteredKernels(SimpleMatrix kx, SimpleMatrix ky) {
-        int n = kx.getNumRows();
-//        double hsicStat = kx.elementMult(ky).elementSum() / (double) (n * n);
-
-        return isIndepententUnconditionFromCenteredMatrices(null, kx, ky, n).getPValue();
-
-//        double varHsic = estimateVariance(hsicStat, kx, ky); // existing method or approximation
-//        double meanHsic = estimateMean(hsicStat);            // possibly also fixed or empirical
-//
-//        GammaDistribution gamma = fitGamma(meanHsic, varHsic);
-//        return 1.0 - gamma.cumulativeProbability(hsicStat);
-    }
-
-    private SimpleMatrix centerKernel(SimpleMatrix K) {
-        int n = K.numRows();
-        SimpleMatrix I = SimpleMatrix.identity(n);
-        SimpleMatrix oneN = new SimpleMatrix(n, n);
-        oneN.fill(1.0 / n);
-        return I.minus(oneN).mult(K).mult(I.minus(oneN));
-    }
-
-    /*
-     * Returns the KCI independence result for the conditional case. Uses Theorem 3 from the paper.
-     *
-     * @return true just in case independence holds.
-     * @throws InterruptedException if any
-     */
-    private IndependenceResult isIndependentConditional(Node x, Node y, Set<Node> _z, IndependenceFact fact, SimpleMatrix _data, SimpleMatrix _h, Map<Node, Integer> hash) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) {
-            mainThread.interrupt();
-            throw new InterruptedException();
-        }
-
-        if (mainThread.isInterrupted()) {
-            Thread.currentThread().interrupt();
-            throw new InterruptedException();
-        }
-
-        List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
-        List<Integer> _rows = listRows();
-        int N = _rows.size();
-        SimpleMatrix I = getI(N);
-        SimpleMatrix H = getH(N);
-
-        try {
-            SimpleMatrix k4 = kernelMatrix(_data, x, z, this.scalingFactor, hash, _h, _rows);
-            SimpleMatrix KXZ = H.mult(k4).mult(H);
-            SimpleMatrix k3 = kernelMatrix(_data, y, null, this.scalingFactor, hash, _h, _rows);
-            SimpleMatrix Ky = H.mult(k3).mult(H);
-            SimpleMatrix k2 = kernelMatrix(_data, null, z, this.scalingFactor, hash, _h, _rows);
-            SimpleMatrix KZ = H.mult(k2).mult(H);
-            SimpleMatrix Rz = (KZ.plus(I.scale(this.epsilon)).invert().scale(this.epsilon));
-            SimpleMatrix k1 = Rz.mult(KXZ).mult(Rz.transpose());
-            SimpleMatrix kx = k1.plus(k1.transpose()).scale(0.5);
-            SimpleMatrix k = Rz.mult(Ky).mult(Rz.transpose());
-            SimpleMatrix ky = k.plus(k.transpose()).scale(0.5);
-
-            return proposition5(kx, ky, fact, N);
-        } catch (Exception e) {
-            TetradLogger.getInstance().log(e.getMessage());
-            boolean indep = false;
-            return new IndependenceResult(fact, indep, Double.NaN, Double.NaN);
-        }
-    }
-
-    /**
-     * Calculates the independence result using Theorem 4 from the paper.
-     *
-     * @param kernx The kernel matrix for node x.
-     * @param kerny The kernel matrix for node y.
-     * @param fact  The independence fact.
-     * @param N     The sample size.
-     * @return The independence result.
-     * @throws InterruptedException if any
-     */
-    private IndependenceResult theorem4(SimpleMatrix kernx, SimpleMatrix kerny, IndependenceFact fact, int N) throws InterruptedException {
-
-        if (Thread.currentThread().isInterrupted()) {
-            mainThread.interrupt();
-            throw new InterruptedException();
-        }
-
-        if (mainThread.isInterrupted()) {
-            Thread.currentThread().interrupt();
-            throw new InterruptedException();
-        }
-
-        double T = (1.0 / N) * (kernx.mult(kerny).trace());
-
-        // Eigen decomposition of kernx and kerny.
-        EigenReturn eigendecompositionx = new TopEigenvalues(kernx).invoke(false, threshold);
-        List<Double> evx = eigendecompositionx.topEigenvalues();
-
-        EigenReturn eigendecompositiony = new TopEigenvalues(kerny).invoke(false, threshold);
-        List<Double> evy = eigendecompositiony.topEigenvalues();
-
-        // Calculate formula (9).
-        int sum = 0;
-
-        for (int j = 0; j < this.numBootstraps; j++) {
-            double tui = 0.0;
-
-            for (double lambdax : evx) {
-                for (double lambday : evy) {
-                    tui += lambdax * lambday * getChisqSample();
-                }
-            }
-
-            tui /= N * N;
-
-            if (tui > T) sum++;
-        }
-
-        // Calculate p.
-        double p = sum / (double) this.numBootstraps;
-        boolean indep = p > getAlpha();
-        return new IndependenceResult(fact, indep, p, getAlpha() - p);
-    }
-
-    /**
-     * Calculates the independence test result for Proposition 5.
-     *
-     * @param kx   The matrix kx.
-     * @param ky   The matrix ky.
-     * @param fact The independence fact.
-     * @param N    The size of the input dataset.
-     * @return The independence result.
-     * @throws InterruptedException if any
-     */
-    private IndependenceResult proposition5(SimpleMatrix kx, SimpleMatrix ky, IndependenceFact fact, int N) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) {
-            mainThread.interrupt();
-            throw new InterruptedException();
-        }
-
-        if (mainThread.isInterrupted()) {
-            Thread.currentThread().interrupt();
-            throw new InterruptedException();
-        }
-
-        double T = (1.0 / N) * kx.mult(ky).trace();
-
-        EigenReturn eigendecompositionx = new TopEigenvalues(kx).invoke(true, threshold);
-        SimpleMatrix vx = eigendecompositionx.V();
-        SimpleMatrix dx = eigendecompositionx.D();
-
-        EigenReturn eigendecompositiony = new TopEigenvalues(ky).invoke(true, threshold);
-        SimpleMatrix vy = eigendecompositiony.V();
-        SimpleMatrix dy = eigendecompositiony.D();
-
-        // VD
-        SimpleMatrix vdx = vx.mult(dx);
-        SimpleMatrix vdy = vy.mult(dy);
-
-        int prod = vx.getNumCols() * vy.getNumCols();
-        SimpleMatrix UU = new SimpleMatrix(N, prod);
-
-        // stack
-        for (int i = 0; i < vx.getNumCols(); i++) {
-            for (int j = 0; j < vy.getNumCols(); j++) {
-                for (int k = 0; k < N; k++) {
-                    UU.set(k, i * dy.getNumCols() + j, vdx.get(k, i) * vdy.get(k, j));
-                }
-            }
-        }
-
-        SimpleMatrix uuprod = prod > N ? UU.mult(UU.transpose()) : UU.transpose().mult(UU);
-
-        if (this.approximate) {
-            return getIndependenceResultApproximate(kx, ky, uuprod.trace(), 2.0 * uuprod.mult(uuprod).trace(), fact);
+        double p;
+        if (isApproximate()) {
+            p = pValueGammaConditional(RX, RY, stat, n);
         } else {
+            p = permutationPValueConditional(RX, RY, stat, n, getNumPermutations(), rng);
+        }
 
-            // Get top eigenvalues of that.
-            EigenReturn eigendecompositionu = new TopEigenvalues(uuprod).invoke(false, threshold);
-            List<Double> top = eigendecompositionu.topEigenvalues();
+        if (verbose) {
+            TetradLogger.getInstance().log(new IndependenceFact(x, y, new HashSet<>(z)) + " p = " + p);
+        }
 
-            // Calculate formulas (13) and (14).
-            int sum = 0;
+        return p;
+    }
 
-            for (int j = 0; j < this.numBootstraps; j++) {
+    /**
+     * Computes and returns the centered kernel matrix for the given node.
+     *
+     * @param y the input node for which the centered kernel matrix is computed
+     * @return the centered kernel matrix corresponding to the specified node
+     */
+    private SimpleMatrix getCenteredKy(Node y) {
+        int ry = varToRow.get(y);
+        SimpleMatrix cached = kyCache.get(ry);
+        if (cached != null) return cached;
+        SimpleMatrix ky = centerKernel(kernelMatrixSingle(ry));
+        kyCache.put(ry, ky);
+        return ky;
+    }
+
+    // ---------------------- p-values ----------------------
+
+    /**
+     * Build K for [x]+z (if x==null, it's just Kz).
+     */
+    private SimpleMatrix kernelMatrix(Node x, List<Node> z) {
+        List<Integer> cols = new ArrayList<>((x == null ? 0 : 1) + z.size());
+        if (x != null) cols.add(varToRow.get(x));
+        for (Node nz : z) cols.add(varToRow.get(nz));
+
+        switch (getKernelType()) {
+            case GAUSSIAN -> {
+                double sigma = bandwidthGaussian(cols);
+                return gaussianKernelMatrix(cols, sigma);
+            }
+            case LINEAR -> {
+                return linearKernelMatrix(cols);
+            }
+            case POLYNOMIAL -> {
+                return polynomialKernelMatrix(cols, getPolyGamma(), getPolyCoef0(), getPolyDegree());
+            }
+            default -> throw new IllegalStateException("Unknown kernel: " + getKernelType());
+        }
+    }
+
+    /**
+     * Computes the kernel matrix for a single row index using the specified kernel type.
+     *
+     * @param rowIdx the index of the row for which the kernel matrix is computed
+     * @return the computed kernel matrix for the given row index
+     */
+    private SimpleMatrix kernelMatrixSingle(int rowIdx) {
+        switch (getKernelType()) {
+            case GAUSSIAN -> {
+                double sigma = bandwidthGaussian(Collections.singletonList(rowIdx));
+                return gaussianKernelMatrix(Collections.singletonList(rowIdx), sigma);
+            }
+            case LINEAR -> {
+                return linearKernelMatrix(Collections.singletonList(rowIdx));
+            }
+            case POLYNOMIAL -> {
+                return polynomialKernelMatrix(Collections.singletonList(rowIdx), getPolyGamma(), getPolyCoef0(), getPolyDegree());
+            }
+            default -> throw new IllegalStateException("Unknown kernel: " + getKernelType());
+        }
+    }
+
+    /**
+     * Computes the Gaussian kernel matrix for the given rows and bandwidth parameter sigma.
+     * The Gaussian kernel matrix is calculated using the Radial Basis Function (RBF) kernel,
+     * which measures similarity between data points in a multidimensional feature space.
+     *
+     * @param varRows A list of indices representing the selected variable rows to include in the computation.
+     * @param sigma The bandwidth parameter of the Gaussian kernel. It controls the width of the kernel function.
+     * @return A SimpleMatrix representing the computed Gaussian kernel matrix, where each entry (i, j) corresponds
+     *         to the kernel similarity between the i-th and j-th data points.
+     */
+    private SimpleMatrix gaussianKernelMatrix(List<Integer> varRows, double sigma) {
+        final int n = rows.size();
+        final int d = varRows.size();
+
+        // Edge case: no variables â constant kernel (all ones).
+        if (d == 0) {
+            DMatrixRMaj K = new DMatrixRMaj(n, n);
+            Arrays.fill(K.data, 1.0);
+            return SimpleMatrix.wrap(K);
+        }
+
+        // Build X (n x d): each row is a sample restricted to selected variable rows
+        DMatrixRMaj X = new DMatrixRMaj(n, d);
+        for (int c = 0; c < d; c++) {
+            int vr = varRows.get(c);
+            for (int r = 0; r < n; r++) {
+                int col = rows.get(r);              // sample index (column in dataVxN)
+                X.set(r, c, dataVxN.get(vr, col));  // vr = variable row
+            }
+        }
+
+        // G = X * X^T  (n x n)   <-- correct EJML call
+        DMatrixRMaj G = new DMatrixRMaj(n, n);
+        CommonOps_DDRM.multTransB(X, X, G);
+
+        // dist^2_ij = G_ii + G_jj - 2 G_ij
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        double[] kd = K.data;
+        double[] diag = new double[n];
+        for (int i = 0; i < n; i++) diag[i] = G.get(i, i);
+
+        double inv2s2 = 1.0 / Math.max(2.0 * sigma * sigma, 1e-24);
+        int p = 0;
+        for (int i = 0; i < n; i++) {
+            double di = diag[i];
+            for (int j = 0; j < n; j++, p++) {
+                double v = di + diag[j] - 2.0 * G.get(i, j);
+                kd[p] = Math.exp(-v * inv2s2);
+            }
+        }
+        return SimpleMatrix.wrap(K);
+    }
+
+    /**
+     * Computes the linear kernel matrix for the given rows of variables.
+     *
+     * @param varRows a list of integers representing the indices of the variables to include
+     *                in the linear kernel computation.
+     * @return a SimpleMatrix object representing the linear kernel matrix, where each entry
+     *         is computed as the dot product of the corresponding rows of the variable subset.
+     */
+    private SimpleMatrix linearKernelMatrix(List<Integer> varRows) {
+        final int n = rows.size();
+        final int d = varRows.size();
+
+        // Edge case: no variables â linear kernel is identically 0
+        if (d == 0) {
+            return SimpleMatrix.wrap(new DMatrixRMaj(n, n)); // all zeros
+        }
+
+        // Build X (n Ã d)
+        DMatrixRMaj X = new DMatrixRMaj(n, d);
+        for (int c = 0; c < d; c++) {
+            int vr = varRows.get(c);
+            for (int r = 0; r < n; r++) {
+                X.set(r, c, dataVxN.get(vr, rows.get(r)));
+            }
+        }
+
+        // K = X Xáµ  (n Ã n)
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        CommonOps_DDRM.multTransB(X, X, K);  // <-- correct call for X * X^T
+
+        return SimpleMatrix.wrap(K);
+    }
+
+// === 1-D kernel builders (fast and allocation-light) ===
+
+    /**
+     * Computes the polynomial kernel matrix for a given set of variable rows, using the specified
+     * kernel parameters gamma, coef0, and degree. The kernel matrix is calculated as
+     * (gamma * G + coef0) ^ degree, where G = X * Xᵀ, and X is constructed from the input variable rows.
+     *
+     * @param varRows A list of indices representing the variable rows used to construct the matrix X.
+     * @param gamma The scalar factor by which the dot product matrix G is scaled within the kernel computation.
+     * @param coef0 An additive constant applied before raising the result to the specified degree.
+     * @param degree The degree of the polynomial kernel.
+     * @return A SimpleMatrix representing the computed polynomial kernel matrix.
+     */
+    private SimpleMatrix polynomialKernelMatrix(List<Integer> varRows, double gamma, double coef0, int degree) {
+        final int n = rows.size();
+        final int d = varRows.size();
+
+        // Edge case: no variables â constant kernel (coef0^degree) * 1
+        if (d == 0) {
+            DMatrixRMaj K = new DMatrixRMaj(n, n);
+            Arrays.fill(K.data, Math.pow(coef0, degree));
+            return SimpleMatrix.wrap(K);
+        }
+
+        // Build X (n Ã d)
+        DMatrixRMaj X = new DMatrixRMaj(n, d);
+        for (int c = 0; c < d; c++) {
+            int vr = varRows.get(c);
+            for (int r = 0; r < n; r++) {
+                X.set(r, c, dataVxN.get(vr, rows.get(r)));
+            }
+        }
+
+        // G = X Xáµ (n Ã n)
+        DMatrixRMaj G = new DMatrixRMaj(n, n);
+        CommonOps_DDRM.multTransB(X, X, G);
+
+        // K = (gamma * G + coef0)^degree  (elementwise power)
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        double[] gd = G.data, kd = K.data;
+        final double a = gamma;
+        final double b = coef0;
+        if (degree == 1) {
+            // Fast path: linear + bias
+            for (int i = 0; i < kd.length; i++) kd[i] = a * gd[i] + b;
+        } else if (degree == 2) {
+            for (int i = 0; i < kd.length; i++) {
+                double v = a * gd[i] + b;
+                kd[i] = v * v;
+            }
+        } else {
+            for (int i = 0; i < kd.length; i++) {
+                kd[i] = Math.pow(a * gd[i] + b, degree);
+            }
+        }
+        return SimpleMatrix.wrap(K);
+    }
+
+    /**
+     * Computes the Gaussian kernel bandwidth based on a subset of the pairwise distances between data points.
+     * The method estimates the bandwidth using the median of the pairwise squared distances,
+     * following a subsampling approach for computational efficiency when the dataset is large.
+     *
+     * @param varRows a list of integer indices representing the variable rows to be included in the calculation.
+     * @return the computed Gaussian kernel bandwidth (standard deviation), adjusted by a scaling factor.
+     */
+    private double bandwidthGaussian(List<Integer> varRows) {
+        // If a hint matrix is provided and you have your own convention, you can read it here.
+        // Otherwise compute from data.
+        final int n = rows.size();
+        final int d = varRows.size();
+
+        // Build X (n x d)
+        DMatrixRMaj X = new DMatrixRMaj(n, d);
+        for (int c = 0; c < d; c++) {
+            int vr = varRows.get(c);
+            for (int r = 0; r < n; r++) {
+                X.set(r, c, dataVxN.get(vr, rows.get(r)));
+            }
+        }
+
+        // Subsample if n is large
+        int m = Math.min(n, 256);
+        int[] idx = uniformSample(n, m, rng);
+
+        // Collect pairwise squared distances for the subsample
+        List<Double> dists = new ArrayList<>(m * (m - 1) / 2);
+        for (int a = 0; a < m; a++) {
+            int i = idx[a];
+            for (int b = a + 1; b < m; b++) {
+                int j = idx[b];
                 double s = 0.0;
-
-                for (double lambdaStar : top) {
-                    s += lambdaStar * getChisqSample();
+                for (int c = 0; c < d; c++) {
+                    double diff = X.get(i, c) - X.get(j, c);
+                    s += diff * diff;
                 }
-
-                s *= 1.0 / N;
-                if (s > T) sum++;
-            }
-
-            double p = sum / (double) this.numBootstraps;
-            boolean indep = p > getAlpha();
-            return new IndependenceResult(fact, indep, p, getAlpha() - p);
-        }
-    }
-
-    /**
-     * Returns the Chi-square sample value.
-     *
-     * @return The Chi-square sample value.
-     */
-    private double getChisqSample() {
-        double z = this.normal.sample();
-        return z * z;
-    }
-
-    /**
-     * Calculates the kernel matrix based on the given parameters.
-     *
-     * @param _data         the data matrix
-     * @param x             the target node
-     * @param z             the list of other nodes
-     * @param scalingFactor the scaling factor for the kernel
-     * @param hash          the map of nodes to their indices
-     * @param _h            the bandwidth vector
-     * @param _rows         the list of rows to use
-     * @return the calculated kernel matrix
-     * @throws InterruptedException if any
-     */
-    private SimpleMatrix kernelMatrix(SimpleMatrix _data, Node x, List<Node> z, double scalingFactor, Map<Node, Integer> hash, SimpleMatrix _h, List<Integer> _rows) throws InterruptedException {
-
-        if (Thread.currentThread().isInterrupted()) {
-            mainThread.interrupt();
-            throw new InterruptedException();
-        }
-
-        if (mainThread.isInterrupted()) {
-            Thread.currentThread().interrupt();
-            throw new InterruptedException();
-        }
-
-        List<Integer> _z = new ArrayList<>();
-        if (x != null) _z.add(hash.get(x));
-        if (z != null) z.forEach(node -> _z.add(hash.get(node)));
-        double h = getH(_z, _h); // For Gaussian.
-        double width = scalingFactor * h; // For Gaussian.
-        SimpleMatrix result = new SimpleMatrix(_rows.size(), _rows.size());
-
-        for (int i = 0; i < _rows.size(); i++) {
-            for (int j = i; j < _rows.size(); j++) {
-                if (kernelType == KernelType.GAUSSIAN) {
-                    double k = getGaussianKernel(_data, _z, _rows.get(i), _rows.get(j), width);
-                    result.set(i, j, k);
-                    result.set(j, i, k);
-                } else if (kernelType == KernelType.LINEAR) {
-                    double k = getLinearKernel(_data, _z, _rows.get(i), _rows.get(j));
-                    result.set(i, j, k);
-                    result.set(j, i, k);
-                } else if (kernelType == KernelType.POLYNOMIAL) {
-                    double k = getPolynomialKernel(_data, _z, _rows.get(i), _rows.get(j), polyDegree, polyConst);
-                    result.set(i, j, k);
-                    result.set(j, i, k);
-                } else {
-                    throw new IllegalStateException("Unknown kernel type: " + kernelType);
-                }
+                dists.add(s);
             }
         }
+        if (dists.isEmpty()) return 1.0; // degenerate
 
-        return result;
+        Collections.sort(dists);
+        double med2 = dists.get(dists.size() / 2); // median of squared distance
+        double sigma = Math.sqrt(med2 / 2.0);
+        if (!(sigma > 0.0) || !Double.isFinite(sigma)) sigma = 1.0;
+        sigma *= getScalingFactor();
+        return sigma;
     }
 
     /**
-     * Computes the Gaussian kernel value between the i-th and j-th elements using the provided data matrix and list of
-     * indices. The Gaussian kernel is a measure of similarity that decreases exponentially with the distance between
-     * the points, scaled by the specified width.
+     * Computes the p-value for testing the independence of two variables
+     * represented by the input arrays. The method utilizes a kernel-based
+     * conditional independence test (KCI) provided by BFIT.
      *
-     * @param _data The matrix containing the data points.
-     * @param _z    The list of indices mapping to specific data points in the matrix.
-     * @param i     The index of the first point.
-     * @param j     The index of the second point.
-     * @param width The bandwidth parameter of the Gaussian kernel, controlling the spread.
-     * @return The computed Gaussian kernel value, a double representing the similarity.
+     * @param x the first array of observed values representing one variable.
+     *          It must not be null and should contain at least three elements.
+     * @param y the second array of observed values representing another variable.
+     *          It must not be null, should contain at least three elements,
+     *          and have the same length as the first array.
+     * @return the computed p-value as a double. A result closer to 0 suggests
+     *         stronger evidence against the null hypothesis of independence,
+     *         while a value close to 1 supports independence. If the input
+     *         arrays are invalid or if an error occurs, the method returns 1.0.
      */
-    private double getGaussianKernel(SimpleMatrix _data, List<Integer> _z, int i, int j, double width) {
-        double d = distance(_data, _z, i, j);
-        d /= 2 * width;
-        return Math.exp(-d);
-    }
+    public double computePValue(double[] x, double[] y) {
+        if (x == null || y == null) return 1.0;
+        int n = x.length;
+        if (y.length != n || n < 3) return 1.0;
 
-    /**
-     * Computes the linear kernel between two data points from the input matrix.
-     *
-     * @param _data The matrix containing the data points.
-     * @param _z    A list of integer indices corresponding to the data points.
-     * @param i     The index of the first data point.
-     * @param j     The index of the second data point.
-     * @return The computed linear kernel value for the data points at indices i and j.
-     */
-    private double getLinearKernel(SimpleMatrix _data, List<Integer> _z, int i, int j) {
-        return dot(_data, _z, i, j);
-    }
+        // Build a tiny 2-column dataset for BFIT
+        DataSet ds = twoColumnDataSet("X", x, "Y", y);
 
-    /**
-     * Computes the polynomial kernel between two data points identified by their indices.
-     *
-     * @param _data        The data matrix containing all data points.
-     * @param _z           A list of indices representing a subset of data points.
-     * @param i            Index of the first data point in the subset list.
-     * @param j            Index of the second data point in the subset list.
-     * @param polyDegree   The degree of the polynomial kernel.
-     * @param polyConstant The constant term added to the dot product before applying the power function.
-     * @return The polynomial kernel value between the two specified data points.
-     */
-    private double getPolynomialKernel(SimpleMatrix _data, List<Integer> _z, int i, int j, double polyDegree, double polyConstant) {
-        double d = dot(_data, _z, i, j);
-        return Math.pow(d + polyConstant, polyDegree);
-    }
+        // Build the BFIT test bound to this dataset
+        Kci test = new Kci(ds);
+        test.setAlpha(alpha);
+        test.setVerbose(verbose);
 
-    /**
-     * Returns the value of h calculated based on the given list of indices and bandwidth vector.
-     *
-     * @param _z The list of indices.
-     * @param _h The bandwidth vector.
-     * @return The calculated h value.
-     */
-    private double getH(List<Integer> _z, SimpleMatrix _h) {
-        double h = 0;
+        // Resolve nodes and run the marginal test
+        Node X = ds.getVariable("X");
+        Node Y = ds.getVariable("Y");
 
-        for (int c : _z) {
-            if (_h.get(c) > h) {
-                h = _h.get(c);
-            }
+        IndependenceResult r = null;
+        try {
+            r = test.checkIndependence(X, Y, Collections.emptySet());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
+        double p = (r != null) ? r.getPValue() : 1.0;
 
-        h *= sqrt(_z.size());
-        return h;
+        // Clamp for numeric robustness
+        if (!Double.isFinite(p)) return 1.0;
+        return Math.max(0.0, Math.min(p, 1.0));
+
+//        throw new UnsupportedOperationException(
+//                "Use checkIndependence(Node,Node,Set) with the dataset; array version is unsupported for block tests.");
     }
 
+    // === Optional: if you like your previous factoring ===
+
     /**
-     * Calculate the Euclidean distance between two data points based on specified columns.
+     * Computes the p-value from two centered kernel matrices using statistical methods.
+     * Depending on whether an approximate or exact method is specified, it calculates
+     * the p-value using a gamma distribution or a permutation test.
      *
-     * @param data The data matrix containing the data points.
-     * @param cols The list of column indices to be used for distance calculation.
-     * @param i    The index of the first data point.
-     * @param j    The index of the second data point.
-     * @return The Euclidean distance between the two data points.
+     * @param centeredKx A centered kernel matrix (n x n) representing one dataset.
+     * @param centeredKy A centered kernel matrix (n x n) representing another dataset.
+     * @return The computed p-value indicating the statistical relationship between the two datasets.
+     * @throws IllegalArgumentException If the provided matrices are not square and of the same dimensions (n x n).
      */
-    private double distance(SimpleMatrix data, List<Integer> cols, int i, int j) {
-        double sum = 0.0;
-
-        for (int col : cols) {
-            double d = data.get(col, i) - data.get(col, j);
-            sum += d * d;
+    public double computePValueFromCenteredKernels(SimpleMatrix centeredKx, SimpleMatrix centeredKy) {
+        int n = centeredKx.getNumRows();
+        if (n != centeredKx.getNumCols() || n != centeredKy.getNumRows() || n != centeredKy.getNumCols())
+            throw new IllegalArgumentException("Centered kernels must be nÃn");
+        double stat = centeredKx.elementMult(centeredKy).elementSum() / n;
+        if (isApproximate()) {
+            return pValueGammaConditional(centeredKx, centeredKy, stat, n);
+        } else {
+            return permutationPValueConditional(centeredKx, centeredKy, stat, n, getNumPermutations(), rng);
         }
-
-        return sum;
     }
 
     /**
-     * Calculate the dot product between two data points based on specified columns.
+     * Retrieves the degree of the polynomial.
      *
-     * @param data The data matrix containing the data points.
-     * @param cols The list of column indices to be used for dot product calculation.
-     * @param i    The index of the first data point.
-     * @param j    The index of the second data point.
-     * @return The dot product between the two data points.
+     * @return the degree of the polynomial as an integer
      */
-    private double dot(SimpleMatrix data, List<Integer> cols, int i, int j) {
-        double sum = 0.0;
-
-        for (int col : cols) {
-            double d = data.get(col, i) * data.get(col, j);
-            sum += d;
-        }
-
-        return sum;
+    public int getPolyDegree() {
+        return polyDegree;
     }
 
     /**
-     * Computes the vector h based on the given data columns from a SimpleMatrix object.
+     * Sets the degree of the polynomial.
      *
-     * @param data the SimpleMatrix object containing data columns used to compute the vector h
-     * @return a Vector object representing the computed values
+     * @param polyDegree the degree of the polynomial to be set
      */
-    private Vector getH(SimpleMatrix data) {
-        Vector h = new Vector(variables.size());
-
-        for (int i = 0; i < this.data.getNumCols(); i++) {
-            h.set(i, h(variables.get(i), data, hash));
-        }
-
-        return h;
+    public void setPolyDegree(int polyDegree) {
+        this.polyDegree = polyDegree;
     }
 
     /**
-     * Constructs a map associating each Node in the variables list with its corresponding index in the list. Each entry
-     * in the map corresponds to a Node as the key and its index position as the value.
+     * Retrieves the coefficient of the polynomial for the term of degree 0.
      *
-     * @return a map where each Node from the variables list is mapped to its index.
+     * @return the value of the polynomial coefficient for the term of degree 0
      */
-    private Map<Node, Integer> getNodeIntegerMap() {
-        Map<Node, Integer> hash = new HashMap<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            hash.put(variables.get(i), i);
-        }
-
-        return hash;
+    public double getPolyCoef0() {
+        return polyCoef0;
     }
 
     /**
-     * Computes and returns a SimpleMatrix object based on the provided list of nodes. Each node in the list corresponds
-     * to a row in the resulting matrix. If a node's value is zero, it is replaced with the average of non-zero values.
+     * Sets the value of the polynomial coefficient at index 0.
      *
-     * @param allVars a list of Node objects representing variables that determine the rows in the resulting
-     *                SimpleMatrix. Each node is used to retrieve a corresponding value from an internal structure.
-     * @return a SimpleMatrix object where each row corresponds to a node in the input list and contains either its
-     * associated value or an averaged value.
+     * @param polyCoef0 the value to set for the polynomial coefficient at index 0
      */
-    private @NotNull SimpleMatrix getH(List<Node> allVars) {
-        SimpleMatrix h = new SimpleMatrix(allVars.size(), data.getNumRows());
-        int count = 0;
-
-        double sum = 0.0;
-        for (int i = 0; i < allVars.size(); i++) {
-            h.set(i, this.h.get(this.hash.get(allVars.get(i))));
-
-            if (h.get(i) != 0) {
-                sum += h.get(i);
-                count++;
-            }
-        }
-
-        double avg = sum / count;
-
-        for (int i = 0; i < h.getNumRows(); i++) {
-            if (h.get(i) == 0) h.set(i, avg);
-        }
-        return h;
+    public void setPolyCoef0(double polyCoef0) {
+        this.polyCoef0 = polyCoef0;
     }
 
     /**
-     * Retrieves an array of column indices corresponding to the provided list of nodes.
+     * Retrieves the gamma parameter for the polynomial kernel.
      *
-     * @param allVars a list of Node objects for which corresponding column indices are to be retrieved
-     * @return an array of integers representing the column indices associated with each Node in the list
+     * @return the gamma parameter for the polynomial kernel
      */
-    private int @NotNull [] getCols(List<Node> allVars) {
-        int[] _cols = new int[allVars.size()];
-
-        for (int i = 0; i < allVars.size(); i++) {
-            Node key = allVars.get(i);
-            _cols[i] = this.hash.get(key);
-        }
-        return _cols;
+    public double getPolyGamma() {
+        return polyGamma;
     }
 
     /**
-     * Constructs and returns a simple matrix that is a subset of the original dataset, based on the given list of
-     * variables.
+     * Sets the polyGamma value.
      *
-     * @param allVars the list of nodes representing the variables to include in the subset matrix.
-     * @return a SimpleMatrix object containing the subset of data corresponding to the specified variables.
+     * @param polyGamma the value to set for the polyGamma property
      */
-    private SimpleMatrix getSubsetMatrix(List<Node> allVars) {
-
-        // TODO See if this is a bottleneck and if so optimize
-        DataSet data = this.dataSet.subsetColumns(getCols(allVars));
-        return new SimpleMatrix(data.getDoubleData().transpose().toArray());
+    public void setPolyGamma(double polyGamma) {
+        this.polyGamma = polyGamma;
     }
 
     /**
-     * Retrieves the rows from the dataSet that contain valid values for all variables.
+     * Retrieves the kernel type.
      *
-     * @return a list of row indices that contain valid values for all variables
+     * @return the kernel type
      */
-    private List<Integer> listRows() {
-        if (this.rows != null) {
-            return this.rows;
-        }
-
-        List<Integer> rows = new ArrayList<>();
-
-        for (int k = 0; k < this.dataSet.getNumRows(); k++) {
-            rows.add(k);
-        }
-
-        return rows;
+    public KernelType getKernelType() {
+        return kernelType;
     }
 
     /**
-     * Sets the type of kernel to be used in computations.
+     * Sets the kernel type.
      *
-     * @param kernelType the KernelType to set
+     * @param kernelType the kernel type to set
      */
     public void setKernelType(KernelType kernelType) {
         this.kernelType = kernelType;
     }
 
     /**
-     * Sets the degree of the polynomial kernel, if used
+     * Retrieves the epsilon value.
      *
-     * @param polyDegree the degree of the polynomial kernel to set
+     * @return the epsilon value
      */
-    public void setPolyDegree(double polyDegree) {
-        this.polyDegree = polyDegree;
+    public double getEpsilon() {
+        return epsilon;
     }
 
     /**
-     * Sets the constant of the polynomial kernel, if used
+     * Sets the epsilon value.
      *
-     * @param polyConst the constant of the polynomial kernel to set
+     * @param epsilon the epsilon value to set
      */
-    public void setPolyConst(double polyConst) {
-        this.polyConst = polyConst;
+    public void setEpsilon(double epsilon) {
+        this.epsilon = epsilon;
     }
 
     /**
-     * Returns the rows used in the test.
+     * Retrieves the scaling factor for the Gaussian bandwidth heuristic.
      *
-     * @return The rows used in the test.
+     * @return the scaling factor
      */
-    public List<Integer> getRows() {
-        return rows;
+    public double getScalingFactor() {
+        return scalingFactor;
     }
 
     /**
-     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
-     * values.
+     * Sets the scaling factor for the Gaussian bandwidth heuristic. The scaling factor is used to modify the bandwidth
+     * by scaling it multiplicatively (sigma *= scalingFactor).
+     *
+     * @param scalingFactor the scaling factor to set; a multiplier for the Gaussian bandwidth heuristic.
      */
-    public void setRows(List<Integer> rows) {
-        if (dataSet == null) {
-            return;
-        }
-        if (rows == null) {
-            this.rows = null;
-        } else {
-            for (int i = 0; i < rows.size(); i++) {
-                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
-                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
-            }
-
-            this.rows = rows;
-        }
+    public void setScalingFactor(double scalingFactor) {
+        this.scalingFactor = scalingFactor;
     }
 
     /**
-     * Represents the type of kernel to be used in a computation.
+     * Retrieves whether the method should use an approximate approach or a permutation test.
      *
-     * <ul>
-     * <li>GAUSSIAN: Indicates the use of a Gaussian kernel, commonly used in various machine learning algorithms for its smooth and bell-shaped curve characteristics.</li>
-     * <li>POLYNOMIAL: Represents a polynomial kernel, which is useful for problems requiring the representation of the input data in a higher-dimensional space.</li>
-     * </ul>
+     * @return true if approximate method is used, false if permutation test is used
+     */
+    public boolean isApproximate() {
+        return approximate;
+    }
+
+    /**
+     * Sets whether the method should use an approximate approach or a permutation test.
+     *
+     * @param approximate true to use approximate method, false to use permutation test
+     */
+    public void setApproximate(boolean approximate) {
+        this.approximate = approximate;
+    }
+
+    /**
+     * Retrieves the number of permutations to be used in permutation tests.
+     *
+     * @return the number of permutations to be used in permutation tests
+     */
+    public int getNumPermutations() {
+        return numPermutations;
+    }
+
+    /**
+     * Sets the number of permutations to be used in permutation tests.
+     *
+     * @param numPermutations the number of permutations to set, typically used when conducting statistical tests that
+     *                        involve random shuffling of data to approximate a distribution.
+     */
+    public void setNumPermutations(int numPermutations) {
+        this.numPermutations = numPermutations;
+    }
+
+    /**
+     * Enum representing the type of kernel function used in kernel-based computations. The kernel type determines how
+     * the input data is transformed or structured to measure similarity or relationships.
      */
     public enum KernelType {
+
         /**
-         * Indicates the use of a Gaussian kernel, commonly used in various machine learning algorithms for its smooth
-         * and bell-shaped curve characteristics.
+         * Represents the Gaussian (RBF) kernel, commonly used for non-linear transformations.
          */
         GAUSSIAN,
 
         /**
-         * Represents the use of a linear kernel, typically employed when data is linearly separable or for problems
-         * that require linear decision boundaries.
+         * Represents the linear kernel, useful for linear relationships.
          */
         LINEAR,
 
         /**
-         * Represents a polynomial kernel, which is useful for situations requiring the transformation of input data
-         * into a higher-dimensional space. This type of kernel computes the similarity between data points as a
-         * polynomial function of their attributes, allowing for the modeling of more complex patterns or structures in
-         * the data.
+         * Represents the polynomial kernel, which generalizes the linear kernel by introducing polynomial terms.
          */
         POLYNOMIAL
-    }
-
-    /**
-     * A record representing the result of an eigenvalue decomposition.
-     * <p>
-     * The EigenReturn record encapsulates the diagonal matrix of eigenvalues (D), the matrix of eigenvectors (V), and a
-     * list containing the top eigenvalues.
-     *
-     * @param D              A SimpleMatrix containing the eigenvalues in its diagonal. The order of the eigenvalues
-     *                       corresponds to the columns of the matrix V.
-     * @param V              A SimpleMatrix where each column is an eigenvector of the original matrix. The columns are
-     *                       ordered to match the eigenvalues in D.
-     * @param topEigenvalues A list of doubles representing the top eigenvalues. This might be a subset of the
-     *                       eigenvalues in D, typically those with the largest magnitude or the most significance for a
-     *                       particular application.
-     */
-    public record EigenReturn(SimpleMatrix D, SimpleMatrix V, List<Double> topEigenvalues) {
     }
 }

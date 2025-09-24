@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
@@ -174,7 +194,7 @@ public class ConditionalGaussianSimulation implements Simulation {
             this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
-            dataSet.setName("" + (i + 1));
+            dataSet.setName("Run " + (i + 1));
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
                 dataSet = DataTransforms.shuffleColumns(dataSet);
@@ -374,7 +394,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                         ContinuousVariable orig = erstatzNodesReverse.get(_parent.getName());
 
                         if (orig != null) {
-                            int mixedParentColumn = mixedData.getColumnIndex(orig);
+                            int mixedParentColumn = mixedData.getColumn(orig);
                             double d = mixedData.getDouble(i, mixedParentColumn);
                             double[] breakpoints = breakpointsMap.get(mixedParentColumn);
 
@@ -392,7 +412,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                                 }
                             }
                         } else {
-                            int mixedColumn = mixedData.getColumnIndex(bayesParent);
+                            int mixedColumn = mixedData.getColumn(bayesParent);
                             value = mixedData.getInt(i, mixedColumn);
                         }
 
@@ -435,8 +455,8 @@ public class ConditionalGaussianSimulation implements Simulation {
                     Combination muComb = new Combination(muParam);
 
                     for (DiscreteVariable v : discreteParents) {
-                        varComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumnIndex(v)));
-                        muComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumnIndex(v)));
+                        varComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumn(v)));
+                        muComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumn(v)));
                     }
 
                     double value = RandomUtil.getInstance().nextGaussian(0, getParamValue(varComb, paramValues));
@@ -446,7 +466,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                         Combination coefComb = new Combination(coefParam);
 
                         for (DiscreteVariable v : discreteParents) {
-                            coefComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumnIndex(v)));
+                            coefComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumn(v)));
                         }
 
                         int parent = nodes.indexOf(x);
@@ -632,3 +652,4 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
     }
 }
+

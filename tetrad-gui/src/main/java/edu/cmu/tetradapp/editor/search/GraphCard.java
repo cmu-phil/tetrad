@@ -1,21 +1,23 @@
-/*
- * Copyright (C) 2019 University of Pittsburgh.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
- */
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.data.Knowledge;
@@ -85,32 +87,99 @@ public class GraphCard extends JPanel {
     /**
      * <p>refresh.</p>
      */
+//    public void refresh() {
+//        removeAll();
+//
+//        setBorder(BorderFactory.createTitledBorder(this.algorithmRunner.getAlgorithm().getDescription()));
+//
+//        Graph graph = this.algorithmRunner.getGraph();
+//
+//        PaddingPanel graphPanel = new PaddingPanel(createGraphPanel(graph));
+//        EdgeTypeTable edgePanel = createEdgeTypeTable(graph);
+//
+//        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
+//        tabbedPane.addTab("Graph", graphPanel);
+//        tabbedPane.addTab("Edges", edgePanel);
+//        tabbedPane.addChangeListener(event -> {
+//            // update edgetype table with new graph
+//            if (tabbedPane.getSelectedComponent() == edgePanel) {
+//                Graph workbenchGraph = this.workbench.getGraph();
+//                Graph edgePanelGraph = edgePanel.getGraph();
+//                if (edgePanelGraph != workbenchGraph) {
+//                    edgePanel.update(workbenchGraph);
+//                }
+//            }
+//        });
+//        add(tabbedPane, BorderLayout.CENTER);
+//
+//        add(menuBar(), BorderLayout.NORTH);
+//
+//        revalidate();
+//        repaint();
+//    }
     public void refresh() {
         removeAll();
-
         setBorder(BorderFactory.createTitledBorder(this.algorithmRunner.getAlgorithm().getDescription()));
 
-        Graph graph = this.algorithmRunner.getGraph();
+        java.util.List<Graph> graphs = this.algorithmRunner.getGraphs();
+        java.util.List<String> names = this.algorithmRunner.getResultNames();
 
-        PaddingPanel graphPanel = new PaddingPanel(createGraphPanel(graph));
-        EdgeTypeTable edgePanel = createEdgeTypeTable(graph);
+        if (graphs != null && graphs.size() > 1) {
+            // Multi-graph UI
+            JTabbedPane tabs = new JTabbedPane(SwingConstants.LEFT);
+            tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
-        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
-        tabbedPane.addTab("Graph", graphPanel);
-        tabbedPane.addTab("Edges", edgePanel);
-        tabbedPane.addChangeListener(event -> {
-            // update edgetype table with new graph
-            if (tabbedPane.getSelectedComponent() == edgePanel) {
-                Graph workbenchGraph = this.workbench.getGraph();
-                Graph edgePanelGraph = edgePanel.getGraph();
-                if (edgePanelGraph != workbenchGraph) {
-                    edgePanel.update(workbenchGraph);
+            for (int i = 0; i < graphs.size(); i++) {
+                Graph g = graphs.get(i);
+                String title = (names != null && i < names.size()) ? names.get(i) : ("Result " + (i + 1));
+
+                // Reuse your existing single-graph panel builder
+                JPanel graphPanel = new PaddingPanel(createGraphPanel(g));
+
+                Graph graph = this.algorithmRunner.getGraphs().get(i);
+
+
+                EdgeTypeTable edgePanel = createEdgeTypeTable(g);
+
+                JTabbedPane inner = new JTabbedPane(SwingConstants.RIGHT);
+                inner.addTab("Graph", graphPanel);
+                inner.addTab("Edges", edgePanel);
+                inner.addChangeListener(ev -> {
+                    if (inner.getSelectedComponent() == edgePanel) {
+                        Graph wbGraph = this.workbench.getGraph();
+                        if (edgePanel.getGraph() != wbGraph) edgePanel.update(wbGraph);
+                    }
+                });
+
+                String sub = algorithmRunner.getGraphSubtitle(g, i);
+                if (!sub.isBlank()) {
+                    inner.setBorder(BorderFactory.createTitledBorder(sub));
                 }
-            }
-        });
-        add(tabbedPane, BorderLayout.CENTER);
 
-        add(menuBar(), BorderLayout.NORTH);
+                tabs.addTab(title, inner);
+            }
+
+            add(menuBar(), BorderLayout.NORTH);
+            add(tabs, BorderLayout.CENTER);
+        } else {
+            // Legacy single-graph UI (unchanged)
+            Graph graph = (graphs != null && !graphs.isEmpty()) ? graphs.get(0) : this.algorithmRunner.getGraph();
+            PaddingPanel graphPanel = new PaddingPanel(createGraphPanel(graph));
+            EdgeTypeTable edgePanel = createEdgeTypeTable(graph);
+
+            JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
+            tabbedPane.addTab("Graph", graphPanel);
+            tabbedPane.addTab("Edges", edgePanel);
+            tabbedPane.addChangeListener(event -> {
+                if (tabbedPane.getSelectedComponent() == edgePanel) {
+                    Graph wbGraph = this.workbench.getGraph();
+                    if (edgePanel.getGraph() != wbGraph) edgePanel.update(wbGraph);
+                }
+            });
+
+            add(menuBar(), BorderLayout.NORTH);
+            add(tabbedPane, BorderLayout.CENTER);
+        }
 
         revalidate();
         repaint();
@@ -232,3 +301,4 @@ public class GraphCard extends JPanel {
     }
 
 }
+

@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
@@ -24,9 +23,8 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -96,6 +94,7 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
      */
     private List<Integer> rows = null;
     private int sampleSize;
+    private int nEff;
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -120,6 +119,7 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.sampleSize = dataSet.getNumRows();
+        setEffectiveSampleSize(-1);
 
         this.variables = new ArrayList<>(dataSet.getVariables());
         setup(dataSet, alpha, null);
@@ -128,6 +128,7 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
     private void setup(DataSet dataSet, double alpha, List<Integer> rows) {
         this.rows = rows == null ? getAllRows(dataSet.getNumRows()) : rows;
         this.sampleSize = this.rows.size();
+        setEffectiveSampleSize(-1);
         this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE, this.rows);
         this.gSquareTest.setMinCountPerCell(minCountPerCell);
     }
@@ -405,19 +406,21 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
         }
     }
 
+    @Override
+    public int getEffectiveSampleSize() {
+        return this.nEff;
+    }
+
     /**
-     * Sets the sample size if the sample size of the data or covariance matrix is not the sample size that the test
-     * should use.
+     * Sets the effective sample size for the test. If the provided sample size is -1, it sets it directly;
+     * otherwise, it sets the sample size to the default sample size for the dataset.
      *
-     * @param sampleSize The sample size to use.
+     * @param nEff the effective sample size to be set. If -1 is passed, it uses this value directly;
+     *             otherwise, the sample size is set to the default dataset sample size.
      */
     @Override
-    public void setEffectiveSampleSize(int sampleSize) {
-        if (sampleSize < 1) {
-            throw new IllegalArgumentException("Sample size must be at least 1.");
-        }
-
-        this.sampleSize = sampleSize;
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? nEff : this.sampleSize;
     }
 
     /**
@@ -429,6 +432,7 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
         this.gSquareTest.setCellTableType(cellTableType);
     }
 }
+
 
 
 

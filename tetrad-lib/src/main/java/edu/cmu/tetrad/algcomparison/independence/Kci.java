@@ -1,11 +1,31 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -20,7 +40,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "KCI-Test (Kernel Conditional Independence Test)",
+        name = "KCI (Kernel Conditional Independence Test)",
         command = "kci-test",
         dataType = DataType.Continuous
 )
@@ -44,9 +64,13 @@ public class Kci implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.Kci kci = new edu.cmu.tetrad.search.test.Kci(SimpleDataLoader.getContinuousDataSet(dataSet),
-                parameters.getDouble(Params.ALPHA));
+        edu.cmu.tetrad.search.test.Kci kci = new edu.cmu.tetrad.search.test.Kci((DataSet) dataSet);
+        kci.setAlpha(parameters.getDouble(Params.ALPHA));
 
+        kci.setEpsilon(parameters.getDouble(Params.KCI_EPSILON));
+        kci.setScalingFactor(parameters.getDouble(Params.SCALING_FACTOR));     // tune if you like
+        kci.setApproximate(parameters.getBoolean(Params.KCI_USE_APPROXIMATION));      // fast by default
+        kci.setNumPermutations(parameters.getInt(Params.KCI_NUM_BOOTSTRAPS));  // only used if approximate=false
         switch (parameters.getInt(Params.KERNEL_TYPE)) {
             case 1:
                 kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.GAUSSIAN);
@@ -57,16 +81,14 @@ public class Kci implements IndependenceWrapper {
             case 3:
                 kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.POLYNOMIAL);
                 break;
+            default:
+                throw new IllegalArgumentException("Unknown kernel type: " + parameters.getInt(Params.KERNEL_TYPE));
         }
 
         kci.setPolyDegree(parameters.getInt(Params.POLYNOMIAL_DEGREE));
-        kci.setPolyConst(parameters.getDouble(Params.POLYNOMIAL_CONSTANT));
+        kci.setPolyCoef0(parameters.getDouble(Params.POLYNOMIAL_CONSTANT));
+        kci.setPolyGamma(1.0 / ((DataSet) dataSet).getNumColumns());
 
-        kci.setApproximate(parameters.getBoolean(Params.KCI_USE_APPROXIMATION));
-        kci.setScalingFactor(parameters.getDouble(Params.SCALING_FACTOR));
-        kci.setNumBootstraps(parameters.getInt(Params.KCI_NUM_BOOTSTRAPS));
-        kci.setThreshold(parameters.getDouble(Params.THRESHOLD_FOR_NUM_EIGENVALUES));
-//        kci.setEpsilon(parameters.getDouble(Params.KCI_EPSILON));
         return kci;
     }
 
@@ -104,11 +126,11 @@ public class Kci implements IndependenceWrapper {
         params.add(Params.ALPHA);
         params.add(Params.SCALING_FACTOR);
         params.add(Params.KCI_NUM_BOOTSTRAPS);
-        params.add(Params.THRESHOLD_FOR_NUM_EIGENVALUES);
-//        params.add(Params.KCI_EPSILON);
+        params.add(Params.KCI_EPSILON);
         params.add(Params.KERNEL_TYPE);
         params.add(Params.POLYNOMIAL_DEGREE);
         params.add(Params.POLYNOMIAL_CONSTANT);
         return params;
     }
 }
+
