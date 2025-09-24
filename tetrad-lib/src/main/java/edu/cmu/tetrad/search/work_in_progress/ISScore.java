@@ -26,31 +26,38 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Defines the contract for an instance-specific score used in FGES-style search. Unlike a standard population score
- * (e.g., BIC or BDeu), an {@code ISScore} evaluates parent sets for each node with respect to both the global dataset
- * and a specific test case (a single row of values).
- * <p>
- * The score is decomposable: each node contributes a local score based on its candidate parents. The local score is
- * computed as the sum of two components:
- * <ul>
- *   <li><b>Population component:</b> the usual likelihood (or marginal
- *   likelihood) over all rows of the dataset, conditioned on the population
- *   parent set.</li>
- *   <li><b>Instance-specific component:</b> a likelihood term restricted to
- *   rows of the dataset whose parent values match those of the test case,
- *   conditioned on the instance-specific parent set.</li>
- * </ul>
- * <p>
- * To control overfitting, the score also includes structure priors that
- * penalize instance-specific deviations from the population structure,
- * such as additions, deletions, or reversals of edges around a node.
- * <p>
- * In practice, FGES (or a variant) uses this interface to compute local
- * score differences when evaluating add/delete/reverse operators. As a
- * result, the search can produce different graphs for different test cases,
- * even when applied to the same population dataset.
+ * Instance-Specific BIC (IS-BIC) score for discrete data.
  *
- * @author Fattaneh
+ * <p>This score adapts the standard Bayesian Information Criterion (BIC) to the
+ * instance-specific setting. As with the population version, the likelihood term
+ * is based on empirical counts, and the penalty term is proportional to the number
+ * of free parameters in the local conditional distribution:</p>
+ *
+ * <pre>
+ *   BIC = log-likelihood – 0.5 * penaltyDiscount * (numParams) * log(N)
+ * </pre>
+ *
+ * <p>where {@code numParams = r_p * (K – 1)}, with {@code r_p} equal to the product
+ * of category counts of the parent set and {@code K} the number of categories of the
+ * child variable.</p>
+ *
+ * <p>The instance-specific contribution does not alter the likelihood computation
+ * itself. Instead, it is incorporated through a structure prior that rewards or
+ * penalizes local modifications (addition, removal, or reversal of parents) relative
+ * to the baseline population model. In this way, IS-BIC balances population-wide fit
+ * with adjustments that highlight edges most relevant to the chosen test case.</p>
+ *
+ * <p>This score is intended for use by search algorithms such as IS-FGES and IS-GFCI,
+ * providing a lightweight alternative to IS-BDeu when a BIC-style criterion is
+ * preferred.</p>
+ *
+ * <h4>Usage Notes</h4>
+ * <ul>
+ *   <li>Currently supports <strong>discrete variables only</strong>.</li>
+ *   <li>Continuous data should be discretized before applying this score.</li>
+ * </ul>
+ *
+ * @author fattaneh
  */
 public interface ISScore {
 

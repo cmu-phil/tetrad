@@ -29,8 +29,31 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Added by Fattaneh Calculates the Instance-Specific BDeu score.
- */
+ * Instance-Specific BDeu (IS-BDeu) score.
+        *
+        * <p>This score extends the standard Bayesian Dirichlet equivalent uniform (BDeu) score
+ * to the instance-specific setting described by Fattaneh Jabbari. In addition to the
+ * usual population-wide likelihood, it incorporates likelihood contributions from a
+ * designated test case (a single row from a dataset). The resulting score therefore
+ * rewards structures that not only fit the overall data but also provide a good
+ * explanation for the chosen instance.</p>
+        *
+        * <p>The score is decomposable, so local score differences can be evaluated for candidate
+ * edge additions, deletions, or reversals. Each local computation blends:</p>
+        * <ul>
+ *   <li><b>Population term</b>: the standard BDeu contribution based on counts over the training dataset.</li>
+        *   <li><b>Instance-specific term</b>: a correction that favors parent configurations consistent with
+ *       the observed values in the test case.</li>
+        * </ul>
+        *
+        * <p>This hybrid design allows search algorithms such as IS-FGES and IS-GFCI to guide
+ * edge orientation using both population regularities and individual evidence, yielding
+ * graphs that may differ across test cases while remaining anchored to the population
+ * model.</p>
+        *
+        * <p><b>References:</b> Fattaneh Jabbari, Ph.D. dissertation, Carnegie Mellon University,
+        * pp. 144–147.</p>
+        */
 public class ISBDeuScore implements ISScore {
     private static final boolean verbose = false;
     private final int[][] data;

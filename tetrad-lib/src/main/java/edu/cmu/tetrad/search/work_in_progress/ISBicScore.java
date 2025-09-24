@@ -28,13 +28,30 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Instance-specific discrete BIC score for FGES-like local scoring.
- * <p>
- * Uses standard discrete BIC: log-likelihood from counts minus 0.5 * penaltyDiscount * (#params) * log(N),
- * where #params = r_p * (K - 1), r_p the product of category counts of POP parents, K child categories.
+ * Instance-Specific BIC (IS-BIC) score for discrete data.
  *
- * The instance-specific component affects structure prior (added/removed/reversed parents vs population)
- * but does not change the BIC likelihood formula itself.
+ * <p>This score adapts the standard Bayesian Information Criterion (BIC) to the
+ * instance-specific setting. As with the population version, the likelihood term
+ * is based on empirical counts, and the penalty term is proportional to the number
+ * of free parameters in the local conditional distribution:</p>
+ *
+ * <pre>
+ *   BIC = log-likelihood – 0.5 * penaltyDiscount * (numParams) * log(N)
+ * </pre>
+ *
+ * <p>where {@code numParams = r_p * (K – 1)}, with {@code r_p} equal to the product
+ * of category counts of the parent set and {@code K} the number of categories of the
+ * child variable.</p>
+ *
+ * <p>The instance-specific contribution does not alter the likelihood computation
+ * itself. Instead, it is incorporated through a structure prior that rewards or
+ * penalizes local modifications (addition, removal, or reversal of parents) relative
+ * to the baseline population model. In this way, IS-BIC balances population-wide fit
+ * with adjustments that highlight edges most relevant to the chosen test case.</p>
+ *
+ * <p>This score is intended for use by search algorithms such as IS-FGES and IS-GFCI,
+ * providing a lightweight alternative to IS-BDeu when a BIC-style criterion is
+ * preferred.</p>
  */
 public class ISBicScore implements ISScore {
 
