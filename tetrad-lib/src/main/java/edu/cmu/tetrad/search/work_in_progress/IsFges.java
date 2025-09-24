@@ -13,8 +13,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Instance-Specific FGES: overrides just the bump computations to use ISScore,
- * while the FGES base still runs the rest of the algorithm (caching, Meek, BES).
+ * Instance-Specific FGES: overrides just the bump computations to use ISScore, while the FGES base still runs the rest
+ * of the algorithm (caching, Meek, BES).
  */
 public class IsFges extends Fges {
 
@@ -31,7 +31,20 @@ public class IsFges extends Fges {
         this.isScore = isScore;
     }
 
-    /** Optionally provide a population graph; nodes are realigned to FGES's variables. */
+    private static int[] asIdxArray(Collection<Node> nodes, ConcurrentMap<Node, Integer> idx) {
+        int[] a = new int[nodes.size()];
+        int i = 0;
+        for (Node n : nodes) a[i++] = idx.get(n);
+        return a;
+    }
+
+    // -------------------------------------------------------------------------
+    // Hook overrides: instance-specific bumps
+    // -------------------------------------------------------------------------
+
+    /**
+     * Optionally provide a population graph; nodes are realigned to FGES's variables.
+     */
     public void setPopulationGraph(Graph pop) {
         if (pop == null) {
             this.populationGraph = null;
@@ -40,10 +53,6 @@ public class IsFges extends Fges {
             this.populationGraph = GraphUtils.replaceNodes(pop, getSearchVariables());
         }
     }
-
-    // -------------------------------------------------------------------------
-    // Hook overrides: instance-specific bumps
-    // -------------------------------------------------------------------------
 
     @Override
     protected double initialPairBump(Node parent, Node child,
@@ -82,28 +91,13 @@ public class IsFges extends Fges {
         return isScore.localScoreDiff(idx.get(x), idx.get(y), parentIdx, popPa, popCh);
     }
 
-    // -------------------------------------------------------------------------
-    // Optional: make BES instance-specific too (future)
-    // -------------------------------------------------------------------------
-    // If you want the backward phase to also use ISScore, create an ISBes and
-    // override newBes(...) here to return it.
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    /** Ensure a population graph exists and uses FGES's node identities. */
+    /**
+     * Ensure a population graph exists and uses FGES's node identities.
+     */
     private Graph ensurePop() {
         if (populationGraph == null) {
             populationGraph = new EdgeListGraph(getSearchVariables());
         }
         return populationGraph;
-    }
-
-    private static int[] asIdxArray(Collection<Node> nodes, ConcurrentMap<Node, Integer> idx) {
-        int[] a = new int[nodes.size()];
-        int i = 0;
-        for (Node n : nodes) a[i++] = idx.get(n);
-        return a;
     }
 }

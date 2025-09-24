@@ -114,24 +114,6 @@ public final class IsGFci implements IGraphSearch {
         this.independenceTest = test;
     }
 
-//    /**
-//     * Constructs an instance of IGFci with the provided independence test, score, and population graph.
-//     *
-//     * @param test            the IndependenceTest instance to be used; must not be null.
-//     * @param score           the ISScore instance to be used; must not be null.
-//     * @param populationGraph the Graph representing the population.
-//     * @throws NullPointerException if the provided score is null.
-//     */
-//    public IGFci(IndependenceTest test, ISScore score, Graph populationGraph) {
-//        if (score == null) {
-//            throw new NullPointerException();
-//        }
-//        this.sampleSize = score.getSampleSize();
-//        this.score = score;
-//        this.independenceTest = test;
-//        this.populationGraph = populationGraph;
-//    }
-
     //========================PUBLIC METHODS==========================//
 
     /**
@@ -142,76 +124,6 @@ public final class IsGFci implements IGraphSearch {
      *
      * @return the final oriented graph obtained after applying the FCI algorithm.
      */
-//    public Graph search() throws InterruptedException {
-//        long time1 = System.currentTimeMillis();
-//
-//        List<Node> nodes = getIndependenceTest().getVariables();
-//
-//        logger.log("Starting FCI algorithm.");
-//        logger.log("Independence test = " + getIndependenceTest() + ".");
-//
-//        this.graph = new EdgeListGraph(nodes);
-//
-//        ISFges fges = new ISFges(score);
-//        fges.setPopulationGraph(this.populationGraph);
-//        fges.setInitialGraph(this.populationGraph);
-//
-//
-//        graph = fges.search();
-//        Graph fgesGraph = new EdgeListGraph(graph);
-//        sepsets = new SepsetsGreedy(fgesGraph, independenceTest, -1);
-//
-//        for (Node b : nodes) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                break;
-//            }
-//
-//            List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
-//
-//            if (adjacentNodes.size() < 2) {
-//                continue;
-//            }
-//
-//            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-//            int[] combination;
-//
-//            while ((combination = cg.next()) != null) {
-//                if (Thread.currentThread().isInterrupted()) {
-//                    break;
-//                }
-//
-//                Node a = adjacentNodes.get(combination[0]);
-//                Node c = adjacentNodes.get(combination[1]);
-//
-//                if (graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
-//                    if (sepsets.getSepset(a, c, -1, null) != null) {
-//                        graph.removeEdge(a, c);
-//                    }
-//                }
-//            }
-//        }
-//
-//        modifiedR0(fgesGraph);
-//
-//        R0R4Strategy r0r4 = new R0R4StrategyTestBased(independenceTest);
-//
-//        FciOrient fciOrient = new FciOrient(r0r4);
-//        fciOrient.setVerbose(verbose);
-//        fciOrient.setKnowledge(getKnowledge());
-//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-//        fciOrient.setMaxDiscriminatingPathLength(maxPathLength);
-//        fciOrient.finalOrientation(graph);
-//
-//        GraphUtils.replaceNodes(graph, independenceTest.getVariables());
-//
-//        long time2 = System.currentTimeMillis();
-//
-//        elapsedTime = time2 - time1;
-//
-//        return graph;
-//    }
-
-    // --- in IGFci -------------------------------------------------------------
     public Graph search() throws InterruptedException {
         long t0 = System.currentTimeMillis();
 
@@ -604,65 +516,6 @@ public final class IsGFci implements IGraphSearch {
         this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
-    //===========================================PRIVATE METHODS=======================================//
-
-//    /**
-//     * Orients according to background knowledge
-//     */
-//    private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
-//        logger.log("Starting BK Orientation.");
-//
-//        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
-//            KnowledgeEdge edge = it.next();
-//
-//            //match strings to variables in the graph.
-//            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
-//            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
-//
-//            if (from == null || to == null) {
-//                continue;
-//            }
-//
-//            if (graph.getEdge(from, to) == null) {
-//                continue;
-//            }
-//
-//            // Orient to*->from
-//            graph.setEndpoint(to, from, Endpoint.ARROW);
-//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-//            logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-//        }
-//
-//        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
-//            KnowledgeEdge edge = it.next();
-//
-//            //match strings to variables in this graph
-//            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
-//            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
-//
-//            if (from == null || to == null) {
-//                continue;
-//            }
-//
-//            if (graph.getEdge(from, to) == null) {
-//                continue;
-//            }
-//
-//            graph.setEndpoint(to, from, Endpoint.TAIL);
-//            graph.setEndpoint(from, to, Endpoint.ARROW);
-//            logger.log(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-//        }
-//
-//        logger.log("Finishing BK Orientation.");
-//    }
-
-    // Put this as a private static helper inside IGfci, or in a small utility class.
-//
-// Align columns in `instance` to match the variable ORDER and NAMES of `train`.
-// - Throws if a train variable is missing in `instance`.
-// - If variables are discrete in both, checks category label sets (order-insensitive);
-//   if labels are the same but orders differ, it remaps instance ints to train’s order.
-//
     private static DataSet alignColumnsByName(DataSet instance, DataSet train) {
         // 1) Build column index mapping from train variable names -> instance column index.
         final List<edu.cmu.tetrad.graph.Node> trainVars = train.getVariables();
