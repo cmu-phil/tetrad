@@ -91,16 +91,11 @@ public class Ricf {
         // Use S from covMatrix
         DoubleMatrix2D S = new DenseDoubleMatrix2D(covMatrix.getMatrix().toArray());
 
-        // trace(K S)
-//        double trKS = A.trace(A.mult(K, S));
-
-        // tr(K S) == sum_{ij} K_ij * S_ji == sum elementwise of (K .* S^T)
         double trKS = 0.0;
         DoubleMatrix2D ST = A.transpose(S);
         for (int r = 0; r < p; r++) {
             for (int c = 0; c < p; c++) trKS += K.get(r, c) * ST.get(r, c);
         }
-// (Your current A.trace(A.mult(K,S)) is also fine; keep it if you prefer clarity.)
 
         // log|K| via Cholesky with SPD guard and tiny ridge fallback
         double logdetK;
@@ -199,12 +194,6 @@ public class Ricf {
             return new RicfResult(S, S, null, null, 1, Double.NaN, covMatrix);
         }
 
-//        List<Node> nodes = new ArrayList<>();
-//
-//        for (String name : covMatrix.getVariableNames()) {
-//            nodes.add(mag.getNode(name));
-//        }
-
         // Build nodes list in cov order, but validate existence in MAG
         List<Node> nodes = new ArrayList<>(p);
         List<String> missing = new ArrayList<>();
@@ -267,12 +256,6 @@ public class Ricf {
                 int[] spov = spo[_v];
 
                 DoubleMatrix2D bview = B.viewSelection(v, parv);
-
-//                System.out.println("v = " + Arrays.toString(v));
-//                System.out.println("parv = " + Arrays.toString(parv));
-//                System.out.println("bview = " + bview);
-
-//                System.out.println("B = " + B);
 
                 if (spov.length == 0) {
                     if (parv.length != 0) {
@@ -349,8 +332,6 @@ public class Ricf {
                         // Assign to b.
                         DoubleMatrix1D a23 = bview.viewRow(0);
                         DoubleMatrix1D a24 = temp.viewSelection(range1);
-
-//                        System.out.println("B = " + B);
 
                         a23.assign(a24);
                         a23.assign(Mult.mult(-1));
@@ -470,8 +451,6 @@ public class Ricf {
      * @return a {@link Ricf.RicfResult} object
      */
     public RicfResult ricf2(Graph mag, ICovarianceMatrix covMatrix, double tolerance) {
-//        mag.setShowErrorTerms(false);
-
         DoubleFactory2D factory = DoubleFactory2D.dense;
         Algebra algebra = new Algebra();
 
@@ -481,12 +460,6 @@ public class Ricf {
         if (p == 1) {
             return new RicfResult(S, S, null, null, 1, Double.NaN, covMatrix);
         }
-
-//        List<Node> nodes = new ArrayList<>();
-
-//        for (String name : covMatrix.getVariableNames()) {
-//            nodes.add(mag.getNode(name));
-//        }
 
         // Build nodes list in cov order, but validate existence in MAG
         List<Node> nodes = new ArrayList<>(p);
@@ -727,33 +700,6 @@ public class Ricf {
 
         return new RicfResult(sigmahat, lambdahat, bhat, omegahat, i, _diff, covMatrix);
     }
-
-    // Returns the indices in [0, p) that are NOT listed in `a`.
-// Ignores duplicates and any out-of-range entries in `a`.
-//    private static int[] complement(int p, int[] a) {
-//        if (p < 0) throw new IllegalArgumentException("p must be >= 0");
-//        boolean[] excluded = new boolean[p];
-//
-//        if (a != null) {
-//            for (int v : a) {
-//                if (v >= 0 && v < p) {
-//                    excluded[v] = true; // duplicates harmless
-//                }
-//            }
-//        }
-//
-//        int count = 0;
-//        for (int i = 0; i < p; i++) {
-//            if (!excluded[i]) count++;
-//        }
-//
-//        int[] res = new int[count];
-//        int k = 0;
-//        for (int i = 0; i < p; i++) {
-//            if (!excluded[i]) res[k++] = i;
-//        }
-//        return res;
-//    }
 
     /**
      * <p>cliques.</p>
