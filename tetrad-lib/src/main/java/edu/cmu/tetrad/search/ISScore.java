@@ -18,7 +18,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 /// ////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search.work_in_progress;
+package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
@@ -34,10 +34,10 @@ import java.util.List;
  * of free parameters in the local conditional distribution:</p>
  *
  * <pre>
- *   BIC = log-likelihood – 0.5 * penaltyDiscount * (numParams) * log(N)
+ *   BIC = log-likelihood &ndash; 0.5 * penaltyDiscount * (numParams) * log(N)
  * </pre>
  *
- * <p>where {@code numParams = r_p * (K – 1)}, with {@code r_p} equal to the product
+ * <p>where {@code numParams = r_p * (K &ndash; 1)}, with {@code r_p} equal to the product
  * of category counts of the parent set and {@code K} the number of categories of the
  * child variable.</p>
  *

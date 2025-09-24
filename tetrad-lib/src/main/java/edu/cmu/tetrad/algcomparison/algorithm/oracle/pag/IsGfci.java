@@ -38,7 +38,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.work_in_progress.ISBDeuScore;
-import edu.cmu.tetrad.search.work_in_progress.ISScore;
+import edu.cmu.tetrad.search.ISScore;
 import edu.cmu.tetrad.search.IsGFci;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
