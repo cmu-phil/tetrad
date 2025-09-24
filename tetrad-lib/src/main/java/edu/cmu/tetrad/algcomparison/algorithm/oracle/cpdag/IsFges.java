@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,11 +16,14 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
-import edu.cmu.tetrad.algcomparison.algorithm.*;
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -42,25 +45,79 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * IS-FGES (Instance-Specific FGES) wrapper for the algcomparison interface.
- * Uses a discrete instance-specific score (ISBDeuScore) with test=row 0 of train (for now),
- * plus a population BDeu score for the base FGES machinery.
+ * IS-FGES (Instance-Specific FGES) wrapper for the algcomparison interface. Uses a discrete instance-specific score
+ * (ISBDeuScore) with test=row 0 of train (for now), plus a population BDeu score for the base FGES machinery.
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "IS-FGES",
-        command = "is-fges",
-        algoType = AlgType.forbid_latent_common_causes
-)
+@edu.cmu.tetrad.annotation.Algorithm(name = "IS-FGES", command = "is-fges", algoType = AlgType.forbid_latent_common_causes)
 @Bootstrapping
-public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs,
+        TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     private Knowledge knowledge = new Knowledge();
 
-    public IsFges() { }
+    public IsFges() {
+    }
+
+    // --- simple column aligner (order by train variable names, keep train Node objects) ---
+    private static DataSet alignByName(DataSet ref, DataSet other) {
+        // Map ref var names -> column indices in `other`
+        List<Node> refVars = ref.getVariables();
+        int p = refVars.size();
+        int[] cols = new int[p];
+
+        for (int i = 0; i < p; i++) {
+            String name = refVars.get(i).getName();
+            Node instVar = other.getVariable(name);
+            if (instVar == null) {
+                throw new IllegalArgumentException("Instance dataset missing variable: " + name);
+            }
+            cols[i] = other.getColumn(instVar);
+        }
+
+        DataSet projected = other.subsetColumns(cols);
+
+        // Ensure variable *objects* match ref, and (if discrete) remap category indices
+        for (int j = 0; j < p; j++) {
+            Node refVar = refVars.get(j);
+            projected.setVariable(j, refVar); // unify Node identity
+
+            if (refVar instanceof edu.cmu.tetrad.data.DiscreteVariable tv && projected.getVariable(j)
+                    instanceof edu.cmu.tetrad.data.DiscreteVariable iv) {
+
+                List<String> tLabels = tv.getCategories();
+                List<String> iLabels = iv.getCategories();
+
+                if (!tLabels.equals(iLabels)) {
+                    // Same sets?
+                    if (!(new java.util.HashSet<>(tLabels).equals(new java.util.HashSet<>(iLabels)))) {
+                        throw new IllegalArgumentException("Discrete categories differ for '" + tv.getName()
+                                                           + "'. Train=" + tLabels + ", Test=" + iLabels);
+                    }
+                    // Build remap: instanceIndex -> trainIndex
+                    int K = iLabels.size();
+                    int[] remap = new int[K];
+                    java.util.Map<String, Integer> trainIdx = new java.util.HashMap<>();
+                    for (int k = 0; k < K; k++) trainIdx.put(tLabels.get(k), k);
+                    for (int k = 0; k < K; k++) remap[k] = trainIdx.get(iLabels.get(k));
+
+                    for (int r = 0; r < projected.getNumRows(); r++) {
+                        int v = projected.getInt(r, j);
+                        if (v == -99) continue; // preserve your missing sentinel
+                        if (v < 0 || v >= K) {
+                            throw new IllegalArgumentException("Out-of-range category at row " + r + ", var "
+                                                               + tv.getName());
+                        }
+                        projected.setInt(r, j, remap[v]);
+                    }
+                }
+            }
+        }
+
+        return projected;
+    }
 
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
@@ -101,7 +158,8 @@ public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, Has
         Score populationScore = new edu.cmu.tetrad.algcomparison.score.BdeuScore().getScore(dataModel, parameters);
 
         // Driver
-        edu.cmu.tetrad.search.work_in_progress.IsFges alg = new edu.cmu.tetrad.search.work_in_progress.IsFges(isScore, populationScore);
+        edu.cmu.tetrad.search.work_in_progress.IsFges alg = new edu.cmu.tetrad.search.work_in_progress.IsFges(isScore,
+                populationScore);
         alg.setKnowledge(this.knowledge);
         alg.setVerbose(parameters.getBoolean(Params.VERBOSE));
         alg.setOut(System.out);
@@ -121,65 +179,6 @@ public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, Has
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    // --- simple column aligner (order by train variable names, keep train Node objects) ---
-    private static DataSet alignByName(DataSet ref, DataSet other) {
-        // Map ref var names -> column indices in `other`
-        List<Node> refVars = ref.getVariables();
-        int p = refVars.size();
-        int[] cols = new int[p];
-
-        for (int i = 0; i < p; i++) {
-            String name = refVars.get(i).getName();
-            Node instVar = other.getVariable(name);
-            if (instVar == null) {
-                throw new IllegalArgumentException("Instance dataset missing variable: " + name);
-            }
-            cols[i] = other.getColumn(instVar);
-        }
-
-        DataSet projected = other.subsetColumns(cols);
-
-        // Ensure variable *objects* match ref, and (if discrete) remap category indices
-        for (int j = 0; j < p; j++) {
-            Node refVar = refVars.get(j);
-            projected.setVariable(j, refVar); // unify Node identity
-
-            if (refVar instanceof edu.cmu.tetrad.data.DiscreteVariable tv &&
-                projected.getVariable(j) instanceof edu.cmu.tetrad.data.DiscreteVariable iv) {
-
-                List<String> tLabels = tv.getCategories();
-                List<String> iLabels = iv.getCategories();
-
-                if (!tLabels.equals(iLabels)) {
-                    // Same sets?
-                    if (!(new java.util.HashSet<>(tLabels).equals(new java.util.HashSet<>(iLabels)))) {
-                        throw new IllegalArgumentException(
-                                "Discrete categories differ for '" + tv.getName() +
-                                "'. Train=" + tLabels + ", Test=" + iLabels);
-                    }
-                    // Build remap: instanceIndex -> trainIndex
-                    int K = iLabels.size();
-                    int[] remap = new int[K];
-                    java.util.Map<String, Integer> trainIdx = new java.util.HashMap<>();
-                    for (int k = 0; k < K; k++) trainIdx.put(tLabels.get(k), k);
-                    for (int k = 0; k < K; k++) remap[k] = trainIdx.get(iLabels.get(k));
-
-                    for (int r = 0; r < projected.getNumRows(); r++) {
-                        int v = projected.getInt(r, j);
-                        if (v == -99) continue; // preserve your missing sentinel
-                        if (v < 0 || v >= K) {
-                            throw new IllegalArgumentException("Out-of-range category at row " + r +
-                                                               ", var " + tv.getName());
-                        }
-                        projected.setInt(r, j, remap[v]);
-                    }
-                }
-            }
-        }
-
-        return projected;
     }
 
     // ---- Boilerplate required by the framework ----

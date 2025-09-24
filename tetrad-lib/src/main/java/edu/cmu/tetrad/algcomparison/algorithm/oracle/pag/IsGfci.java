@@ -18,7 +18,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 /// ////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
+package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -48,10 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FGES (the heuristic version).
- *
- * @author josephramsey
- * @version $Id: $Id
+ * IS-GFCI (Instance-Specific GFCI) wrapper for the algcomparison interface. Uses a discrete instance-specific score
+ * (ISBDeuScore), a score for FGES, plus a population BDeu score for the base FGES machinery.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "IS-GFCI",
