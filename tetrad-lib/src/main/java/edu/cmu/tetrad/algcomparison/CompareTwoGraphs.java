@@ -152,11 +152,11 @@ public class CompareTwoGraphs {
                 if (edge2 == null) {
                     wrong = true;
                 } else {
-                    if (edge1.getProximalEndpoint(x) == Endpoint.ARROW && edge2.getProximalEndpoint(x) == Endpoint.TAIL) {
+                    if (edge1.getEndpoint(x) == Endpoint.ARROW && edge2.getEndpoint(x) == Endpoint.TAIL) {
                         wrong = true;
                     }
 
-                    if (edge1.getProximalEndpoint(x) == Endpoint.TAIL && edge2.getProximalEndpoint(x) == Endpoint.ARROW) {
+                    if (edge1.getEndpoint(x) == Endpoint.TAIL && edge2.getEndpoint(x) == Endpoint.ARROW) {
                         wrong = true;
                     }
 

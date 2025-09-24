@@ -1603,12 +1603,12 @@ public class Ion {
                 continue;
             }
 
-            if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.TAIL) {
+            if (edge.getEndpoint(x) == Endpoint.ARROW && edge.getEndpoint(y) == Endpoint.TAIL) {
                 return null;
-            } else if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
+            } else if (edge.getEndpoint(x) == Endpoint.ARROW && edge.getEndpoint(y) == Endpoint.CIRCLE) {
                 pag.removeEdge(edge);
                 pag.addEdge(Edges.bidirectedEdge(x, y));
-            } else if (edge.getProximalEndpoint(x) == Endpoint.CIRCLE && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
+            } else if (edge.getEndpoint(x) == Endpoint.CIRCLE && edge.getEndpoint(y) == Endpoint.CIRCLE) {
                 pag.removeEdge(edge);
                 pag.addEdge(Edges.partiallyOrientedEdge(x, y));
             }
@@ -1628,14 +1628,14 @@ public class Ion {
 
             if (edge == null) {
                 return null;
-            } else if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.TAIL) {
+            } else if (edge.getEndpoint(x) == Endpoint.ARROW && edge.getEndpoint(y) == Endpoint.TAIL) {
                 return null;
-            } else if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
+            } else if (edge.getEndpoint(x) == Endpoint.ARROW && edge.getEndpoint(y) == Endpoint.CIRCLE) {
                 return null;
-            } else if (edge.getProximalEndpoint(x) == Endpoint.CIRCLE && edge.getProximalEndpoint(y) == Endpoint.ARROW) {
+            } else if (edge.getEndpoint(x) == Endpoint.CIRCLE && edge.getEndpoint(y) == Endpoint.ARROW) {
                 pag.removeEdge(edge);
                 pag.addEdge(Edges.directedEdge(x, y));
-            } else if (edge.getProximalEndpoint(x) == Endpoint.CIRCLE && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
+            } else if (edge.getEndpoint(x) == Endpoint.CIRCLE && edge.getEndpoint(y) == Endpoint.CIRCLE) {
                 pag.removeEdge(edge);
                 pag.addEdge(Edges.directedEdge(x, y));
             }

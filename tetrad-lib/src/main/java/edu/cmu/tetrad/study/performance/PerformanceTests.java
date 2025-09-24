@@ -2014,7 +2014,7 @@ public class PerformanceTests {
                     correctNonAncestorRelationships++;
                 }
 
-                if (edge1 != null && edge1.getProximalEndpoint(x) == Endpoint.ARROW) {
+                if (edge1 != null && edge1.getEndpoint(x) == Endpoint.ARROW) {
                     correctArrows++;
                 }
 
@@ -2026,7 +2026,7 @@ public class PerformanceTests {
                     correctNonAncestorRelationships++;
                 }
 
-                if (edge1 != null && edge1.getProximalEndpoint(y) == Endpoint.ARROW) {
+                if (edge1 != null && edge1.getEndpoint(y) == Endpoint.ARROW) {
                     correctArrows++;
                 }
 
@@ -2095,7 +2095,7 @@ public class PerformanceTests {
                     correctAncestorRelationships++;
                 }
 
-                if (edge1 != null && edge1.getProximalEndpoint(x) == Endpoint.TAIL) {
+                if (edge1 != null && edge1.getEndpoint(x) == Endpoint.TAIL) {
                     correctTails++;
                 }
 
@@ -2107,7 +2107,7 @@ public class PerformanceTests {
                     correctAncestorRelationships++;
                 }
 
-                if (edge1 != null && edge1.getProximalEndpoint(y) == Endpoint.TAIL) {
+                if (edge1 != null && edge1.getEndpoint(y) == Endpoint.TAIL) {
                     correctTails++;
                 }
 

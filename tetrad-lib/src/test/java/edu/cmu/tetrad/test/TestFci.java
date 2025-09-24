@@ -779,7 +779,7 @@ public class TestFci {
         for (Node n : g.getAdjacentNodes(x)) {
             Edge e = g.getEdge(x, n);
 
-            if (e.getProximalEndpoint(x) == Endpoint.ARROW) continue;
+            if (e.getEndpoint(x) == Endpoint.ARROW) continue;
 
             if (!uncoveredPotentiallyDirectedPathStarts(n, y, g, path).isEmpty()) {
                 pathThrough.add(n);

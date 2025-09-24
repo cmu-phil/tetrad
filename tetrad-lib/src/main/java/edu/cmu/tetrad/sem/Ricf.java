@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.sem;
 
@@ -57,6 +57,127 @@ public class Ricf {
     public Ricf() {
     }
 
+    // Compute constant-free log-likelihood for a fitted (B, Omega, Lambda) given S and n.
+// ug: indices of the undirected-component nodes (consistent with your ricf()).
+    public static double logLikMAG(
+            DoubleMatrix2D B, DoubleMatrix2D Omega, DoubleMatrix2D Lambda,
+            int[] ug, ICovarianceMatrix covMatrix) {
+
+        final Algebra A = new Algebra();
+        final int p = covMatrix.getDimension();
+        final int n = covMatrix.getSampleSize();
+
+        // IMPORTANT: In your Ricf, sigmahat = inv(B) * omega * inv(B^T).
+        // That means 'B' here IS the P matrix (I - B_standard). So use P = B.
+        DoubleMatrix2D P = B;  // NOT I - B
+
+        // D^{-1} = blockdiag(Omega^{-1} on non-UG, Lambda on UG)
+        DoubleMatrix2D Dinv = new DenseDoubleMatrix2D(p, p);
+        int[] ugComp = complement(p, ug);
+
+        if (ugComp.length > 0) {
+            DoubleMatrix2D O = Omega.viewSelection(ugComp, ugComp);
+            DoubleMatrix2D Oinv = A.inverse(O);
+            Dinv.viewSelection(ugComp, ugComp).assign(Oinv);
+        }
+        if (ug.length > 0) {
+            DoubleMatrix2D L = Lambda.viewSelection(ug, ug);
+            Dinv.viewSelection(ug, ug).assign(L); // Lambda (not inverse)
+        }
+
+        // Precision: K = P^T * Dinv * P
+        DoubleMatrix2D K = A.mult(A.transpose(P), A.mult(Dinv, P));
+
+        // Use S from covMatrix
+        DoubleMatrix2D S = new DenseDoubleMatrix2D(covMatrix.getMatrix().toArray());
+
+        // trace(K S)
+//        double trKS = A.trace(A.mult(K, S));
+
+        // tr(K S) == sum_{ij} K_ij * S_ji == sum elementwise of (K .* S^T)
+        double trKS = 0.0;
+        DoubleMatrix2D ST = A.transpose(S);
+        for (int r = 0; r < p; r++) {
+            for (int c = 0; c < p; c++) trKS += K.get(r, c) * ST.get(r, c);
+        }
+// (Your current A.trace(A.mult(K,S)) is also fine; keep it if you prefer clarity.)
+
+        // log|K| via Cholesky with SPD guard and tiny ridge fallback
+        double logdetK;
+        try {
+            cern.colt.matrix.linalg.CholeskyDecomposition chol =
+                    new cern.colt.matrix.linalg.CholeskyDecomposition(K);
+            // Colt's Cholesky doesn't expose isSPD() in all versions; we defensively try again if diag <= 0
+            DoubleMatrix2D L = chol.getL();
+            double sumLogDiag = 0.0;
+            for (int i = 0; i < p; i++) {
+                double d = L.get(i, i);
+                if (!(d > 0.0) || Double.isNaN(d)) throw new RuntimeException("non-SPD");
+                sumLogDiag += Math.log(d);
+            }
+            logdetK = 2.0 * sumLogDiag;
+        } catch (Exception e) {
+            // Symmetrize + tiny ridge, then try again; final fallback to det()
+            // Symmetrize: Ks = 0.5 * (K + K^T)
+            DoubleMatrix2D Ks = K.copy();
+            Ks.assign(K.viewDice(), PlusMult.plusMult(1.0)); // Ks = K + K^T
+            Ks.assign(Mult.mult(0.5));                       // Ks = 0.5 * Ks
+            for (int i = 0; i < p; i++) Ks.set(i, i, Ks.get(i, i) + 1e-8);
+            try {
+                cern.colt.matrix.linalg.CholeskyDecomposition chol2 =
+                        new cern.colt.matrix.linalg.CholeskyDecomposition(Ks);
+                DoubleMatrix2D L2 = chol2.getL();
+                double sumLogDiag2 = 0.0;
+                for (int i = 0; i < p; i++) sumLogDiag2 += Math.log(Math.max(1e-300, L2.get(i, i)));
+                logdetK = 2.0 * sumLogDiag2;
+            } catch (Exception e2) {
+                logdetK = Math.log(Math.max(1e-300, Math.abs(A.det(Ks))));
+            }
+        }
+
+        return -0.5 * n * (trKS - logdetK);
+    }
+
+    private static int[] complement(int p, int[] idx) {
+        boolean[] mark = new boolean[p];
+        if (idx != null) {
+            for (int v : idx) if (0 <= v && v < p) mark[v] = true;
+        }
+        int count = 0;
+        for (int i = 0; i < p; i++) if (!mark[i]) count++;
+        int[] out = new int[count];
+        int k = 0;
+        for (int i = 0; i < p; i++) if (!mark[i]) out[k++] = i;
+        return out;
+    }
+
+    private static DoubleMatrix2D symmetrize(DoubleMatrix2D M) {
+        DoubleMatrix2D Ms = M.copy();
+        Ms.assign(M.viewDice(), PlusMult.plusMult(1.0)); // Ms = M + M^T
+        Ms.assign(Mult.mult(0.5));                        // Ms = 0.5*(M + M^T)
+        return Ms;
+    }
+
+    private static void addRidgeInPlace(DoubleMatrix2D M, double eps) {
+        for (int i = 0; i < M.rows(); i++) {
+            M.set(i, i, M.get(i, i) + eps);
+        }
+    }
+
+    /** Robust inverse for (near-)SPD: symmetrize + ridge then inverse. */
+    private static DoubleMatrix2D invSPD(DoubleMatrix2D M, double eps, Algebra A) {
+        DoubleMatrix2D Ms = symmetrize(M);
+        addRidgeInPlace(Ms, eps);
+        return A.inverse(Ms);
+    }
+
+    /** Generic safe inverse: tiny Tikhonov on diagonal. Use when matrix may not be SPD. */
+    private static DoubleMatrix2D invSafe(DoubleMatrix2D M, double eps, Algebra A) {
+        DoubleMatrix2D Ms = M.copy();
+        addRidgeInPlace(Ms, eps);
+        return A.inverse(Ms);
+    }
+
     /**
      * Calculates the Restricted Information Criterion Fusion (RICF) for a given SemGraph.
      *
@@ -78,10 +199,25 @@ public class Ricf {
             return new RicfResult(S, S, null, null, 1, Double.NaN, covMatrix);
         }
 
-        List<Node> nodes = new ArrayList<>();
+//        List<Node> nodes = new ArrayList<>();
+//
+//        for (String name : covMatrix.getVariableNames()) {
+//            nodes.add(mag.getNode(name));
+//        }
+
+        // Build nodes list in cov order, but validate existence in MAG
+        List<Node> nodes = new ArrayList<>(p);
+        List<String> missing = new ArrayList<>();
 
         for (String name : covMatrix.getVariableNames()) {
-            nodes.add(mag.getNode(name));
+            Node v = mag.getNode(name);
+            if (v == null) missing.add(name);
+            nodes.add(v);
+        }
+
+        if (!missing.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "RICF: Graph is missing variables from covariance matrix: " + missing);
         }
 
         DoubleMatrix2D omega = factory.diagonal(factory.diagonal(S));
@@ -92,14 +228,15 @@ public class Ricf {
 
         if (ug.length > 0) {
             List<Node> _ugNodes = new LinkedList<>();
-
-            for (int i : ug) {
-                _ugNodes.add(nodes.get(i));
-            }
+            for (int i : ug) _ugNodes.add(nodes.get(i));
 
             Graph ugGraph = mag.subgraph(_ugNodes);
             ICovarianceMatrix ugCov = covMatrix.getSubmatrix(ug);
-            DoubleMatrix2D lambdaInv = fitConGraph(ugGraph, ugCov, p + 1, tolerance).shat;
+
+            // FitConGraph returns Σ_hat (covariance). For UG block we actually need Λ⁻¹,
+            // since Ricf keeps Omega as a *precision* on non-UG nodes. So invert here.
+            DoubleMatrix2D lambdaInv = invSPD(fitConGraph(ugGraph, ugCov, p + 1, tolerance).shat, 1e-10, algebra);
+
             omega.viewSelection(ug, ug).assign(lambdaInv);
         }
 
@@ -142,7 +279,7 @@ public class Ricf {
                         if (i == 1) {
                             DoubleMatrix2D a1 = S.viewSelection(parv, parv);
                             DoubleMatrix2D a2 = S.viewSelection(v, parv);
-                            DoubleMatrix2D a3 = algebra.inverse(a1);
+                            DoubleMatrix2D a3 = invSPD(a1, 1e-10, algebra);//  algebra.inverse(a1);
                             DoubleMatrix2D a4 = algebra.mult(a2, a3);
                             a4.assign(Mult.mult(-1));
                             bview.assign(a4);
@@ -159,7 +296,8 @@ public class Ricf {
                     if (parv.length != 0) {
                         DoubleMatrix2D oInv = new DenseDoubleMatrix2D(p, p);
                         DoubleMatrix2D a2 = omega.viewSelection(vcomp, vcomp);
-                        DoubleMatrix2D a3 = algebra.inverse(a2);
+                        DoubleMatrix2D a3 = invSPD(a2, 1e-10, algebra);
+                        ;//algebra.inverse(a2);
                         oInv.viewSelection(vcomp, vcomp).assign(a3);
 
                         DoubleMatrix2D Z = algebra.mult(oInv.viewSelection(spov, vcomp),
@@ -205,7 +343,7 @@ public class Ricf {
                         a19.assign(a21);
 
                         // Temp
-                        DoubleMatrix2D a22 = algebra.inverse(XX);
+                        DoubleMatrix2D a22 = invSPD(XX, 1e-10, algebra);// algebra.inverse(XX);
                         DoubleMatrix1D temp = algebra.mult(algebra.transpose(a22), YX);
 
                         // Assign to b.
@@ -235,7 +373,7 @@ public class Ricf {
                     } else {
                         DoubleMatrix2D oInv = new DenseDoubleMatrix2D(p, p);
                         DoubleMatrix2D a2 = omega.viewSelection(vcomp, vcomp);
-                        DoubleMatrix2D a3 = algebra.inverse(a2);
+                        DoubleMatrix2D a3 = invSPD(a2, 1e-10, algebra);// algebra.inverse(a2);
                         oInv.viewSelection(vcomp, vcomp).assign(a3);
 
                         DoubleMatrix2D a4 = oInv.viewSelection(spov, vcomp);
@@ -251,7 +389,8 @@ public class Ricf {
                         DoubleMatrix1D YX = algebra.mult(a20, doubleMatrix2D1).viewRow(0);
 
                         // Temp
-                        DoubleMatrix2D a22 = algebra.inverse(XX);
+                        DoubleMatrix2D a22 = invSPD(XX, 1e-10, algebra);
+                        ;// algebra.inverse(XX);
                         DoubleMatrix1D a23 = algebra.mult(algebra.transpose(a22), YX);
 
                         // Assign to omega.
@@ -279,28 +418,44 @@ public class Ricf {
             double diff1 = algebra.norm1(a32);
             DoubleMatrix2D a33 = B.copy();
             a33.assign(bOld, PlusMult.plusMult(-1));
-            double diff2 = algebra.norm1(a32);
+            double diff2 = algebra.norm1(a33);
 
             double diff = diff1 + diff2;
             _diff = diff;
 
             if (diff < tolerance) break;
-//            break;
         }
 
-        DoubleMatrix2D a34 = algebra.inverse(B);
-        DoubleMatrix2D a35 = algebra.inverse(B.viewDice());
+        DoubleMatrix2D a34 = invSPD(B, 1e-10, algebra); // algebra.inverse(B);
+        DoubleMatrix2D a35 = invSPD(B.viewDice(), 1e-10, algebra);// algebra.inverse(B.viewDice());
+
+        // ensure symmetry + tiny positive diagonal
+        DoubleMatrix2D sym = omega.copy();
+        sym.assign(omega.viewDice(), PlusMult.plusMult(1));
+        sym.assign(Mult.mult(0.5));
+        for (int ii = 0; ii < sym.rows(); ii++) {
+            double d = sym.get(ii, ii);
+            if (!(d > 0.0)) sym.set(ii, ii, 1e-8);
+        }
+        omega = sym;
 
         DoubleMatrix2D sigmahat = algebra.mult(algebra.mult(a34, omega), a35);
 
-        DoubleMatrix2D lambdahat = omega.copy();
-        DoubleMatrix2D a36 = lambdahat.viewSelection(ugComp, ugComp);
-        a36.assign(factory.make(ugComp.length, ugComp.length, 0.0));
+        // Build Λ̂ as the UG *precision* block and zeros elsewhere.
+        // Recall omega[ug,ug] stores Λ^{-1} (UG covariance). We invert it here to get Λ on UG,
+        // and leave the complement zero to indicate “no Λ outside UG”.
+        DoubleMatrix2D lambdahat = new DenseDoubleMatrix2D(p, p);
+        if (ug.length > 0) {
+            DoubleMatrix2D omegaUG = omega.viewSelection(ug, ug).copy(); // = Λ^{-1}
+            DoubleMatrix2D LambdaUG = invSPD(omegaUG, 1e-10, algebra);    // -> Λ
+            lambdahat.viewSelection(ug, ug).assign(LambdaUG);
+        }
 
+        // Omega_hat = omega with UG block zeroed (as you already intended)
         DoubleMatrix2D omegahat = omega.copy();
-        DoubleMatrix2D a37 = omegahat.viewSelection(ug, ug);
-        a37.assign(factory.make(ug.length, ug.length, 0.0));
+        omegahat.viewSelection(ug, ug).assign(factory.make(ug.length, ug.length, 0.0));
 
+        // B_hat unchanged
         DoubleMatrix2D bhat = B.copy();
 
         return new RicfResult(sigmahat, lambdahat, bhat, omegahat, i, _diff, covMatrix);
@@ -327,17 +482,31 @@ public class Ricf {
             return new RicfResult(S, S, null, null, 1, Double.NaN, covMatrix);
         }
 
-        List<Node> nodes = new ArrayList<>();
+//        List<Node> nodes = new ArrayList<>();
+
+//        for (String name : covMatrix.getVariableNames()) {
+//            nodes.add(mag.getNode(name));
+//        }
+
+        // Build nodes list in cov order, but validate existence in MAG
+        List<Node> nodes = new ArrayList<>(p);
+        List<String> missing = new ArrayList<>();
 
         for (String name : covMatrix.getVariableNames()) {
-            nodes.add(mag.getNode(name));
+            Node v = mag.getNode(name);
+            if (v == null) missing.add(name);
+            nodes.add(v);
+        }
+
+        if (!missing.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "RICF: Graph is missing variables from covariance matrix: " + missing);
         }
 
         DoubleMatrix2D omega = factory.diagonal(factory.diagonal(S));
         DoubleMatrix2D B = factory.identity(p);
 
         int[] ug = ugNodes(mag, nodes);
-        int[] ugComp = complement(p, ug);
 
         if (ug.length > 0) {
             List<Node> _ugNodes = new LinkedList<>();
@@ -348,6 +517,9 @@ public class Ricf {
 
             Graph ugGraph = mag.subgraph(_ugNodes);
             ICovarianceMatrix ugCov = covMatrix.getSubmatrix(ug);
+
+            // FitConGraph returns Σ_hat (covariance). For UG block we actually need Λ⁻¹,
+            // since Ricf keeps Omega as a *precision* on non-UG nodes. So invert here.
             DoubleMatrix2D lambdaInv = fitConGraph(ugGraph, ugCov, p + 1, tolerance).shat;
             omega.viewSelection(ug, ug).assign(lambdaInv);
         }
@@ -384,7 +556,7 @@ public class Ricf {
                         if (i == 1) {
                             DoubleMatrix2D a1 = S.viewSelection(parv, parv);
                             DoubleMatrix2D a2 = S.viewSelection(v, parv);
-                            DoubleMatrix2D a3 = algebra.inverse(a1);
+                            DoubleMatrix2D a3 = invSPD(a1, 1e-10, algebra); // algebra.inverse(a1);
                             DoubleMatrix2D a4 = algebra.mult(a2, a3);
                             a4.assign(Mult.mult(-1));
                             a6.assign(a4);
@@ -401,7 +573,7 @@ public class Ricf {
                     if (parv.length != 0) {
                         DoubleMatrix2D oInv = new DenseDoubleMatrix2D(p, p);
                         DoubleMatrix2D a2 = omega.viewSelection(vcomp, vcomp);
-                        DoubleMatrix2D a3 = algebra.inverse(a2);
+                        DoubleMatrix2D a3 = invSPD(a2, 1e-10, algebra); //algebra.inverse(a2);
                         oInv.viewSelection(vcomp, vcomp).assign(a3);
 
                         DoubleMatrix2D Z = algebra.mult(oInv.viewSelection(spov, vcomp),
@@ -446,7 +618,7 @@ public class Ricf {
                         a19.assign(a21);
 
                         // Temp
-                        DoubleMatrix2D a22 = algebra.inverse(XX);
+                        DoubleMatrix2D a22 = invSPD(XX, 1e-10, algebra); // algebra.inverse(XX);
                         DoubleMatrix1D temp = algebra.mult(algebra.transpose(a22), YX);
 
                         // Assign to b.
@@ -471,7 +643,7 @@ public class Ricf {
                     } else {
                         DoubleMatrix2D oInv = new DenseDoubleMatrix2D(p, p);
                         DoubleMatrix2D a2 = omega.viewSelection(vcomp, vcomp);
-                        DoubleMatrix2D a3 = algebra.inverse(a2);
+                        DoubleMatrix2D a3 = invSPD(a2, 1e-10, algebra); // algebra.inverse(a2);
                         oInv.viewSelection(vcomp, vcomp).assign(a3);
 
                         DoubleMatrix2D a4 = oInv.viewSelection(spov, vcomp);
@@ -486,7 +658,7 @@ public class Ricf {
                         DoubleMatrix1D YX = algebra.mult(a20, Z.viewDice()).viewRow(0);
 
                         // Temp
-                        DoubleMatrix2D a22 = algebra.inverse(XX);
+                        DoubleMatrix2D a22 = invSPD(XX, 1e-10, algebra); // algebra.inverse(XX);
                         DoubleMatrix1D a23 = algebra.mult(algebra.transpose(a22), YX);
 
                         // Assign to omega.
@@ -514,7 +686,7 @@ public class Ricf {
 
             DoubleMatrix2D a33 = B.copy();
             a33.assign(bOld, PlusMult.plusMult(-1));
-            double diff2 = algebra.norm1(a32);
+            double diff2 = algebra.norm1(a33);
 
             double diff = diff1 + diff2;
             _diff = diff;
@@ -522,22 +694,66 @@ public class Ricf {
             if (diff < tolerance) break;
         }
 
-        DoubleMatrix2D a34 = algebra.inverse(B);
-        DoubleMatrix2D a35 = algebra.inverse(B.viewDice());
+        DoubleMatrix2D a34 = invSPD(B, 1e-10, algebra); // algebra.inverse(B);
+        DoubleMatrix2D a35 = invSPD(B.viewDice(), 1e-10, algebra); // algebra.inverse(B.viewDice());
+
+        DoubleMatrix2D sym = omega.copy();
+        sym.assign(omega.viewDice(), PlusMult.plusMult(1));
+        sym.assign(Mult.mult(0.5));
+        for (int ii = 0; ii < sym.rows(); ii++) {
+            double d = sym.get(ii, ii);
+            if (!(d > 0.0)) sym.set(ii, ii, 1e-8);
+        }
+        omega = sym;
+
         DoubleMatrix2D sigmahat = algebra.mult(algebra.mult(a34, omega), a35);
 
-        DoubleMatrix2D lambdahat = omega.copy();
-        DoubleMatrix2D a36 = lambdahat.viewSelection(ugComp, ugComp);
-        a36.assign(factory.make(ugComp.length, ugComp.length, 0.0));
+        // Build Lambda_hat = precision on UG; zeros elsewhere
+        DoubleMatrix2D lambdahat = new DenseDoubleMatrix2D(p, p);
+        if (ug.length > 0) {
+            // omega[ug,ug] currently stores Lambda^{-1} (UG covariance)
+            DoubleMatrix2D omegaUG = omega.viewSelection(ug, ug).copy();
+            // robust inverse to get precision
+            DoubleMatrix2D LambdaUG = invSPD(omegaUG, 1e-10, algebra);
+            lambdahat.viewSelection(ug, ug).assign(LambdaUG);
+        }
 
+        // Omega_hat = omega with UG block zeroed (as you already intended)
         DoubleMatrix2D omegahat = omega.copy();
-        DoubleMatrix2D a37 = omegahat.viewSelection(ug, ug);
-        a37.assign(factory.make(ug.length, ug.length, 0.0));
+        omegahat.viewSelection(ug, ug).assign(factory.make(ug.length, ug.length, 0.0));
 
+        // B_hat unchanged
         DoubleMatrix2D bhat = B.copy();
 
         return new RicfResult(sigmahat, lambdahat, bhat, omegahat, i, _diff, covMatrix);
     }
+
+    // Returns the indices in [0, p) that are NOT listed in `a`.
+// Ignores duplicates and any out-of-range entries in `a`.
+//    private static int[] complement(int p, int[] a) {
+//        if (p < 0) throw new IllegalArgumentException("p must be >= 0");
+//        boolean[] excluded = new boolean[p];
+//
+//        if (a != null) {
+//            for (int v : a) {
+//                if (v >= 0 && v < p) {
+//                    excluded[v] = true; // duplicates harmless
+//                }
+//            }
+//        }
+//
+//        int count = 0;
+//        for (int i = 0; i < p; i++) {
+//            if (!excluded[i]) count++;
+//        }
+//
+//        int[] res = new int[count];
+//        int k = 0;
+//        for (int i = 0; i < p; i++) {
+//            if (!excluded[i]) res[k++] = i;
+//        }
+//        return res;
+//    }
 
     /**
      * <p>cliques.</p>
@@ -613,7 +829,8 @@ public class Ricf {
         int it = 0;
 
         // Only coding alg #2 here.
-        DoubleMatrix2D K = algebra.inverse(factory.diagonal(factory.diagonal(S)));
+        DoubleMatrix2D diagonal = factory.diagonal(factory.diagonal(S));
+        DoubleMatrix2D K = invSPD(diagonal, 1e-10, algebra); // algebra.inverse(diagonal);
 
         int[] all = range(0, k - 1);
 
@@ -625,10 +842,10 @@ public class Ricf {
                 int[] a = asIndices(aCli, nodes);
                 int[] b = complement(all, a);
                 DoubleMatrix2D a1 = S.viewSelection(a, a);
-                DoubleMatrix2D a2 = algebra.inverse(a1);
+                DoubleMatrix2D a2 = invSPD(a1, 1e-10, algebra);;//algebra.inverse(a1);
                 DoubleMatrix2D a3 = K.viewSelection(a, b);
                 DoubleMatrix2D a4 = K.viewSelection(b, b);
-                DoubleMatrix2D a5 = algebra.inverse(a4);
+                DoubleMatrix2D a5 = invSPD(a4, 1e-10, algebra);//algebra.inverse(a4);
                 DoubleMatrix2D a6 = K.viewSelection(b, a).copy();
                 DoubleMatrix2D a7 = algebra.mult(a3, a5);
                 DoubleMatrix2D a8 = algebra.mult(a7, a6);
@@ -644,11 +861,15 @@ public class Ricf {
             if (diff < tol) break;
         }
 
-        DoubleMatrix2D V = algebra.inverse(K);
+        DoubleMatrix2D V = invSPD(K, 1e-10, algebra);// algebra.inverse(K);
 
         int numNodes = graph.getNumNodes();
         int df = numNodes * (numNodes - 1) / 2 - graph.getNumEdges();
-        double dev = lik(algebra.inverse(V), S, n, k);
+//        DoubleMatrix2D inverse = algebra.inverse(V);
+//        double dev = lik(invSPD(inverse, 1e-10, algebra), S, n, k);
+        double dev = lik(invSPD(algebra.inverse(V), 1e-10, algebra), S, n, k);
+
+        invSPD(diagonal, 1e-10, algebra);
 
         return new FitConGraphResult(V, dev, df, it);
     }
@@ -683,20 +904,6 @@ public class Ricf {
         return range;
     }
 
-    private int[] complement(int p, int[] a) {
-        Arrays.sort(a);
-        int[] vcomp = new int[p - a.length];
-
-        int k = -1;
-
-        for (int j = 0; j < p; j++) {
-            if (Arrays.binarySearch(a, j) >= 0) continue;
-            vcomp[++k] = j;
-        }
-
-        return vcomp;
-    }
-
     private int[] complement(int[] all, int[] remove) {
         Arrays.sort(remove);
         int[] vcomp = new int[all.length - remove.length];
@@ -710,7 +917,6 @@ public class Ricf {
 
         return vcomp;
     }
-
 
     private int[] ugNodes(Graph mag, List<Node> nodes) {
         List<Node> ugNodes = new LinkedList<>();
@@ -766,7 +972,6 @@ public class Ricf {
 
         return spo;
     }
-
 
     private int moveLastBack(SortedSet<Integer> L1, SortedSet<Integer> L2) {
         if (L1.size() == 1) {

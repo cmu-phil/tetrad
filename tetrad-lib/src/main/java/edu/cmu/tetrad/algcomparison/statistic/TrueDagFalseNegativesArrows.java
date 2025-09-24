@@ -85,7 +85,7 @@ public class TrueDagFalseNegativesArrows implements Statistic {
                 if (!trueGraph.paths().isAncestorOf(x, y)) {
                     Edge e = estGraph.getEdge(x, y);
 
-                    if (e != null && e.getProximalEndpoint(x) != Endpoint.ARROW) {
+                    if (e != null && e.getEndpoint(x) != Endpoint.ARROW) {
                         fn++;
                     }
                 }

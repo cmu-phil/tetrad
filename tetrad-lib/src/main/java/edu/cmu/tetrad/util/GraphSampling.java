@@ -310,8 +310,8 @@ public final class GraphSampling {
     }
 
     private static EdgeType getEdgeType(Edge edge, Node node1, Node node2) {
-        Endpoint node1Endpoint = edge.getProximalEndpoint(node1);
-        Endpoint node2Endpoint = edge.getProximalEndpoint(node2);
+        Endpoint node1Endpoint = edge.getEndpoint(node1);
+        Endpoint node2Endpoint = edge.getEndpoint(node2);
 
         if (node1Endpoint == Endpoint.TAIL && node2Endpoint == Endpoint.ARROW) {
             return EdgeType.ta;

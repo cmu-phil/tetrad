@@ -124,8 +124,8 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
 
                 Edge edge = graph.getEdge(n0, n1);
 
-                Endpoint endpoint0 = edge.getProximalEndpoint(n0);
-                Endpoint endpoint1 = edge.getProximalEndpoint(n1);
+                Endpoint endpoint0 = edge.getEndpoint(n0);
+                Endpoint endpoint1 = edge.getEndpoint(n1);
 
                 textArea.append(endpoint0 == Endpoint.ARROW ? "<" : "-");
                 textArea.append("-");

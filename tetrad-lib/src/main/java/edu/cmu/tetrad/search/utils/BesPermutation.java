@@ -328,7 +328,7 @@ public class BesPermutation {
 
         for (Edge edge : graph.getEdges(x)) {
             if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
-            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
+            if (edge.getEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
         }
 
         while (!neighbors.isEmpty()) {

@@ -134,8 +134,8 @@ public class LocalGraphConfusion {
             Endpoint ep1Est = null;
             Endpoint ep2Est = null;
             if (ele != null) {
-                ep1Est = ele.getProximalEndpoint(tle.getNode1());
-                ep2Est = ele.getProximalEndpoint(tle.getNode2());
+                ep1Est = ele.getEndpoint(tle.getNode1());
+                ep2Est = ele.getEndpoint(tle.getNode2());
             }
 
             // STEP2.1.2: Get corresponding endpoint in true graph lookup
@@ -149,8 +149,8 @@ public class LocalGraphConfusion {
             Endpoint ep1True = null;
             Endpoint ep2True = null;
             if (tle2 != null) {
-                ep1True = tle2.getProximalEndpoint(tle.getNode1());
-                ep2True = tle2.getProximalEndpoint(tle.getNode2());
+                ep1True = tle2.getEndpoint(tle.getNode1());
+                ep2True = tle2.getEndpoint(tle.getNode2());
             }
 
             // STEP2.1.3: Compare the endpoints
@@ -192,8 +192,8 @@ public class LocalGraphConfusion {
             Endpoint ep1Est = null;
             Endpoint ep2Est = null;
             if (ele2 != null) {
-                ep1Est = ele2.getProximalEndpoint(ele.getNode1());
-                ep2Est = ele2.getProximalEndpoint(ele.getNode2());
+                ep1Est = ele2.getEndpoint(ele.getNode1());
+                ep2Est = ele2.getEndpoint(ele.getNode2());
             }
 
             List<Edge> trueGraphLookupEdges = trueGraphLookup.getEdges(ele.getNode1(), ele.getNode1());
@@ -206,8 +206,8 @@ public class LocalGraphConfusion {
             Endpoint ep1True = null;
             Endpoint ep2True = null;
             if (tle != null) {
-                ep1True = tle.getProximalEndpoint(ele.getNode1());
-                ep2True = tle.getProximalEndpoint(ele.getNode2());
+                ep1True = tle.getEndpoint(ele.getNode1());
+                ep2True = tle.getEndpoint(ele.getNode2());
             }
 
             boolean connected = trueGraph.isAdjacentTo(ele.getNode1(), ele.getNode2());

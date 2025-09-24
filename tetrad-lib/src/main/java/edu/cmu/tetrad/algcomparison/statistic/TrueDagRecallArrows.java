@@ -80,7 +80,7 @@ public class TrueDagRecallArrows implements Statistic {
                     Edge edge2 = estGraph.getEdge(x, y);
 
                     if (edge2 != null) {
-                        if (edge2.getProximalEndpoint(y) == Endpoint.ARROW) {
+                        if (edge2.getEndpoint(y) == Endpoint.ARROW) {
                             tp++;
                         } else {
                             fn++;

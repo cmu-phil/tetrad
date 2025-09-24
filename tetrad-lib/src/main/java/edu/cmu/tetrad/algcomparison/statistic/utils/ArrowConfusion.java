@@ -152,8 +152,8 @@ public class ArrowConfusion {
             Endpoint e2Est = null;
 
             if (edge1 != null) {
-                e1Est = edge1.getProximalEndpoint(edge.getNode1());
-                e2Est = edge1.getProximalEndpoint(edge.getNode2());
+                e1Est = edge1.getEndpoint(edge.getNode1());
+                e2Est = edge1.getEndpoint(edge.getNode2());
             }
 
             List<Edge> edges2 = truth1.getEdges(edge.getNode1(), edge.getNode2());
@@ -172,8 +172,8 @@ public class ArrowConfusion {
             Endpoint e2True = null;
 
             if (edge2 != null) {
-                e1True = edge2.getProximalEndpoint(edge.getNode1());
-                e2True = edge2.getProximalEndpoint(edge.getNode2());
+                e1True = edge2.getEndpoint(edge.getNode1());
+                e2True = edge2.getEndpoint(edge.getNode2());
             }
 
 
@@ -245,8 +245,8 @@ public class ArrowConfusion {
             Endpoint e2Est = null;
 
             if (edge1 != null) {
-                e1Est = edge1.getProximalEndpoint(edge.getNode1());
-                e2Est = edge1.getProximalEndpoint(edge.getNode2());
+                e1Est = edge1.getEndpoint(edge.getNode1());
+                e2Est = edge1.getEndpoint(edge.getNode2());
             }
 
 
@@ -266,8 +266,8 @@ public class ArrowConfusion {
             Endpoint e2True = null;
 
             if (edge2 != null) {
-                e1True = edge2.getProximalEndpoint(edge.getNode1());
-                e2True = edge2.getProximalEndpoint(edge.getNode2());
+                e1True = edge2.getEndpoint(edge.getNode1());
+                e2True = edge2.getEndpoint(edge.getNode2());
             }
 
             if (isTruthAdj()) {
