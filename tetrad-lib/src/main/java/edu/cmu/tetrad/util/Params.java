@@ -1166,6 +1166,10 @@ public final class Params {
      * Constant <code>ANM_NOISE_STRENGTH="anmNoiseStrength"</code>
      */
     public static final String ANM_NOISE_STRENGTH = "anmNoiseStrength";
+    /**
+     * Constant <code>INSTANCE_ROW="instanceRow"</code>
+     */
+    public static final String INSTANCE_ROW = "instanceRow";
 
 
     // All parameters that are found in HTML manual documentation

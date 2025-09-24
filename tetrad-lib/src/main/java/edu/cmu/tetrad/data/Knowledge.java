@@ -95,9 +95,11 @@ public final class Knowledge implements TetradSerializable {
      * The default to knowledge layout.
      */
     private boolean defaultToKnowledgeLayout;
-
-    // in Knowledge.java
-    private final Map<String, String> meta = new HashMap<>();
+    /**
+     * Represents an ancillary dataset associated with this knowledge object, which can be used, e.g.,
+     * for testing purposes. Can be null.
+     */
+    private edu.cmu.tetrad.data.DataSet testingData = null;
 
     /**
      * <p>Constructor for Knowledge.</p>
@@ -999,29 +1001,21 @@ public final class Knowledge implements TetradSerializable {
         }
     }
 
-    /**
-     * Sets a metadata key-value pair in the meta storage.
-     *
-     * @param key the key for the metadata entry
-     * @param value the value associated with the metadata key
-     */
-    public void setMeta(String key, String value) { meta.put(key, value); }
+    // --- IS helpers ---
 
     /**
-     * Retrieves the value associated with a metadata key.
+     * Sets the testing data for this instance. Can be null.
      *
-     * @param key the key for the metadata entry
-     * @return the value associated with the metadata key, or null if not found
+     * @param ds the DataSet object to be used as testing data
      */
-    public String getMeta(String key) { return meta.get(key); }
+    public void setTestingData(DataSet ds) { this.testingData = ds; }
 
     /**
-     * Checks if a metadata key exists in the storage.
+     * Retrieves the testing dataset. Can be null.
      *
-     * @param key the key for the metadata entry
-     * @return true if the key exists, false otherwise
+     * @return the DataSet object representing the testing data
      */
-    public boolean hasMeta(String key) { return meta.containsKey(key); }
+    public DataSet getTestingData() { return testingData; }
 
     /**
      * Computes a hashcode.

@@ -417,6 +417,14 @@ public interface DataSet extends DataModel {
      * @return a dataset with the same dimensions as this dataset, but with no data.
      */
     DataSet like();
+
+    /**
+     * Sets the value of a variable to the provided instance.
+     *
+     * @param j the index or identifier associated with the variable
+     * @param variable the instance of Variable to be set
+     */
+    void setVariable(int j, Node variable);
 }
 
 

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -80,7 +80,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Sp
  * @see Knowledge
  */
-public final class Fges implements IGraphSearch, DagScorer {
+public class Fges implements IGraphSearch, DagScorer {
     /**
      * Used to find semidirected paths for cycle checking.
      */
@@ -558,12 +558,17 @@ public final class Fges implements IGraphSearch, DagScorer {
      *
      * @see Bes
      */
-    private void bes() throws InterruptedException {
-        Bes bes = new Bes(score);
+    protected void bes() throws InterruptedException {
+        Bes bes = newBes(score);
         bes.setDepth(depth);
         bes.setVerbose(verbose);
         bes.setKnowledge(knowledge);
         bes.bes(graph, variables);
+    }
+
+    /** Subclasses can override to supply a custom Bes. */
+    protected Bes newBes(Score score) {
+        return new Bes(score);
     }
 
     /**
@@ -731,7 +736,8 @@ public final class Fges implements IGraphSearch, DagScorer {
             public EvalPair call() throws InterruptedException {
                 for (int k = from; k < to; k++) {
                     if (Thread.currentThread().isInterrupted()) break;
-                    double _bump = insertEval(a, b, Ts.get(k), naYX, parents, this.hashIndices);
+//                    double _bump = insertEval(a, b, Ts.get(k), naYX, parents, this.hashIndices);
+                    double _bump = insertBump(a, b, Ts.get(k), naYX, parents, this.hashIndices);
 
                     if (_bump > maxBump) {
                         maxT = Ts.get(k);
@@ -1299,6 +1305,40 @@ public final class Fges implements IGraphSearch, DagScorer {
         this.initialGraph = initialGraph;
     }
 
+    // --- Protected accessors for subclasses (read-only) ---
+    protected Graph getGraph() {
+        return graph;
+    }
+
+    protected List<Node> getSearchVariables() {
+        return variables;
+    }
+
+    protected ConcurrentMap<Node, Integer> getHashIndices() {
+        return hashIndices;
+    }
+
+    /** First-step bump for pair (parent->child) during empty-graph init. */
+    protected double initialPairBump(Node parent, Node child,
+                                     ConcurrentMap<Node, Integer> idx) {
+        return score.localScoreDiff(idx.get(parent), idx.get(child));
+    }
+
+    /** If symmetricFirstStep==true, reverse-direction bump for (child->parent). */
+    protected double initialPairBumpReverse(Node parent, Node child,
+                                            ConcurrentMap<Node, Integer> idx) {
+        return score.localScoreDiff(idx.get(child), idx.get(parent));
+    }
+
+    /** Insert bump (Definition 12) used inside calculateArrowsForward. */
+    protected double insertBump(Node x, Node y, Set<Node> T, Set<Node> naYX,
+                                Set<Node> parents, ConcurrentMap<Node, Integer> idx) throws InterruptedException {
+        Set<Node> set = new HashSet<>(naYX);
+        set.addAll(T);
+        set.addAll(parents);
+        return scoreGraphChange(x, y, set, idx); // calls existing private method
+    }
+
     /**
      * Enumeration representing the different modes for the Mode class.
      * <p>
@@ -1400,6 +1440,8 @@ public final class Fges implements IGraphSearch, DagScorer {
             return Objects.hash(T, nayx, parents);
         }
     }
+
+    // --- Scoring hooks: subclasses can override these ---
 
     /**
      * Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
@@ -1658,12 +1700,18 @@ public final class Fges implements IGraphSearch, DagScorer {
                         continue;
                     }
 
-                    int child = hashIndices.get(y);
-                    int parent = hashIndices.get(x);
-                    double bump = score.localScoreDiff(parent, child);
+//                    int child = hashIndices.get(y);
+//                    int parent = hashIndices.get(x);
+//                    double bump = score.localScoreDiff(parent, child);
+//
+//                    if (symmetricFirstStep) {
+//                        double bump2 = score.localScoreDiff(child, parent);
+//                        bump = max(bump, bump2);
+//                    }
 
+                    double bump = initialPairBump(x, y, hashIndices);
                     if (symmetricFirstStep) {
-                        double bump2 = score.localScoreDiff(child, parent);
+                        double bump2 = initialPairBumpReverse(x, y, hashIndices);
                         bump = max(bump, bump2);
                     }
 

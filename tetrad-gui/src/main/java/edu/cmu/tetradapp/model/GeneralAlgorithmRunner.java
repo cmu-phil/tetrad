@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -45,6 +45,8 @@ import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsUtils;
+import edu.cmu.tetrad.search.work_in_progress.ISBDeuScore;
+import edu.cmu.tetrad.search.work_in_progress.ISScore;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.ParamsResettable;
 
@@ -363,11 +365,15 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
     }
 
-    private static boolean hasText(String s) {
-        return s != null && !s.isBlank();
+    public GeneralAlgorithmRunner(List<Graph> graphList) {
+        this.graphList = graphList;
     }
 
     //============================PUBLIC METHODS==========================//
+
+    private static boolean hasText(String s) {
+        return s != null && !s.isBlank();
+    }
 
     private static String datasetDisplayName(DataModel dm) {
         // DataSet, CovarianceMatrix, etc. all implement DataModel#getName().
@@ -400,10 +406,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return (k > 0) ? String.format("aggregated over %d datasets, n_total=%d", k, nTot) : null;
     }
 
-    public String getGraphSubtitle(Graph g) {
-        return graphSubtitle.get(g);
-    }
-
 //    // In GeneralAlgorithmRunner (additions/overrides; method names are illustrative)
 //    public void executeSearch() throws InterruptedException {
 //        var algo = getAlgorithm();
@@ -433,6 +435,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 //            setResultNames(names);       // store titles for tabs
 //        }
 //    }
+
+    public String getGraphSubtitle(Graph g) {
+        return graphSubtitle.get(g);
+    }
 
     /**
      * {@inheritDoc}

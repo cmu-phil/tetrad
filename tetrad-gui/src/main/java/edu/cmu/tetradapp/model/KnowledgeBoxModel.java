@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeTransferable;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -152,6 +154,14 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
             }
 
             params.set("__myKnowledge", this.knowledge);
+        }
+
+        if (inputs.length == 1 && inputs[0] instanceof DataWrapper dataWrapper) {
+            DataModel first = dataWrapper.getDataModelList().getFirst();
+
+            if (first instanceof DataSet dataSet) {
+                this.knowledge.setTestingData(dataSet);
+            }
         }
 
         TetradLogger.getInstance().log("Knowledge");

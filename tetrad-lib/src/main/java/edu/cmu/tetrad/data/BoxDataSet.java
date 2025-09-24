@@ -462,8 +462,8 @@ public final class BoxDataSet implements DataSet {
      *
      * <p>getVariable.</p>
      */
-    public Node getVariable(int col) {
-        return this.variables.get(col);
+    public Variable getVariable(int col) {
+        return (Variable) this.variables.get(col);
     }
 
     /**
@@ -1211,6 +1211,17 @@ public final class BoxDataSet implements DataSet {
     @Override
     public DataSet like() {
         return new BoxDataSet(this.dataBox.like(), this.variables);
+    }
+
+    /**
+     * Updates the variable at the specified index in the variables list.
+     *
+     * @param j the index of the variable to be updated
+     * @param variable the new variable to set at the specified index
+     */
+    @Override
+    public void setVariable(int j, Node variable) {
+        variables.set(j, variable);
     }
 
     /**

@@ -55,8 +55,12 @@ public class ISBDeuScore implements ISScore {
      */
     public ISBDeuScore(DataSet dataSet, DataSet testCase) {
 
-        if (dataSet == null || testCase == null) {
-            throw new NullPointerException("Dataset or test case was not provided.");
+        if (dataSet == null) {
+            throw new NullPointerException("Dataset was not provided.");
+        }
+
+        if (testCase == null) {
+            throw new NullPointerException("Test case was not provided.");
         }
 
         if (dataSet instanceof BoxDataSet) {

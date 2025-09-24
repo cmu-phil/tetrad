@@ -1250,6 +1250,17 @@ public final class NumberObjectDataSet implements DataSet {
     }
 
     /**
+     * Sets the variable at the specified index in the list of variables.
+     *
+     * @param j the index at which the variable is to be set
+     * @param variable the variable to be set at the specified index
+     */
+    @Override
+    public void setVariable(int j, Node variable) {
+        variables.set(j, variable);
+    }
+
+    /**
      * {@inheritDoc}
      * <p>
      * Sets the character ('\t', ' ', ',', for instance) that is used to delimit tokens when the data set is printed out
