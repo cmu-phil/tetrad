@@ -34,6 +34,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.work_in_progress.ISBDeuScore;
@@ -94,30 +95,67 @@ public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, Has
      * Aligns 'other' to have exactly the variables and order of 'ref', by name.
      */
     private static DataSet alignByName(DataSet ref, DataSet other) {
-        List<String> refNames = new ArrayList<>();
-        ref.getVariables().forEach(v -> refNames.add(v.getName()));
+        // Map ref var names -> column indices in `other`
+        List<Node> refVars = ref.getVariables();
+        int p = refVars.size();
+        int[] cols = new int[p];
 
-        // Build the list of columns in 'other' corresponding to refNames, in order.
-        List<Integer> cols = new ArrayList<>(refNames.size());
-        for (String name : refNames) {
-            int idx = other.getColumn(other.getVariable(name));
-            if (idx < 0) {
+        for (int i = 0; i < p; i++) {
+            String name = refVars.get(i).getName();
+            Node instVar = other.getVariable(name);
+            if (instVar == null) {
                 throw new IllegalArgumentException("Instance dataset missing variable: " + name);
             }
-            cols.add(idx);
+            cols[i] = other.getColumn(instVar);
         }
 
-        int[] colIdx = cols.stream().mapToInt(i -> i).toArray();
-        DataSet projected = other.subsetColumns(colIdx);
+        DataSet projected = other.subsetColumns(cols);
 
-        // Optional: enforce identical variable objects by replacing nodes from ref.
+        // Ensure variable *objects* match ref, and (if discrete) remap category indices
+        for (int j = 0; j < p; j++) {
+            Node refVar = refVars.get(j);
+            projected.setVariable(j, refVar); // unify Node identity
+
+            if (refVar instanceof edu.cmu.tetrad.data.DiscreteVariable tv &&
+                projected.getVariable(j) instanceof edu.cmu.tetrad.data.DiscreteVariable iv) {
+
+                List<String> tLabels = tv.getCategories();
+                List<String> iLabels = iv.getCategories();
+
+                if (!tLabels.equals(iLabels)) {
+                    // Same sets?
+                    if (!(new java.util.HashSet<>(tLabels).equals(new java.util.HashSet<>(iLabels)))) {
+                        throw new IllegalArgumentException(
+                                "Discrete categories differ for '" + tv.getName() +
+                                "'. Train=" + tLabels + ", Test=" + iLabels);
+                    }
+                    // Build remap: instanceIndex -> trainIndex
+                    int K = iLabels.size();
+                    int[] remap = new int[K];
+                    java.util.Map<String, Integer> trainIdx = new java.util.HashMap<>();
+                    for (int k = 0; k < K; k++) trainIdx.put(tLabels.get(k), k);
+                    for (int k = 0; k < K; k++) remap[k] = trainIdx.get(iLabels.get(k));
+
+                    for (int r = 0; r < projected.getNumRows(); r++) {
+                        int v = projected.getInt(r, j);
+                        if (v == -99) continue; // preserve your missing sentinel
+                        if (v < 0 || v >= K) {
+                            throw new IllegalArgumentException("Out-of-range category at row " + r +
+                                                               ", var " + tv.getName());
+                        }
+                        projected.setInt(r, j, remap[v]);
+                    }
+                }
+            }
+        }
+
         return projected;
     }
 
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (this.test == null) {
-            throw new IllegalStateException("IndependenceWrapper not set for IGfci.");
+            throw new IllegalStateException("IndependenceWrapper not set for IS-GFCI.");
         }
 
         if (!(dataModel instanceof DataSet train)) {
@@ -139,7 +177,7 @@ public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, Has
             throw new IllegalArgumentException("Testing data must be discrete.");
         }
 
-        int row = parameters.getInt(Params.INSTANCE_ROW);
+        int row = parameters.getInt(Params.INSTANCE_ROW, 0);
         if (row < 0 || row >= testDs.getNumRows()) {
             throw new IllegalArgumentException("Instance row out of range: " + row);
         }
