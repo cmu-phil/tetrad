@@ -1,11 +1,11 @@
-package edu.cmu.tetrad.search.work_in_progress;
+package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.work_in_progress.ISScore;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -22,8 +22,12 @@ public class IsFges extends Fges {
     private Graph populationGraph; // optional; may be set by caller
 
     /**
-     * @param isScore         instance-specific score (e.g., ISBDeuScore)
-     * @param populationScore plain population score used by FGES base
+     * Constructs an instance of the IsFges class with the specified instance-specific score
+     * and population score. Ensures that the instance-specific score is not null.
+     *
+     * @param isScore the instance-specific score used for FGES-style search
+     * @param populationScore the population score used for FGES-style search
+     * @throws NullPointerException if the provided instance-specific score is null
      */
     public IsFges(ISScore isScore, Score populationScore) {
         super(populationScore);
@@ -43,7 +47,11 @@ public class IsFges extends Fges {
     // -------------------------------------------------------------------------
 
     /**
-     * Optionally provide a population graph; nodes are realigned to FGES's variables.
+     * Sets the population graph for the current instance. If the provided graph is null,
+     * the population graph is set to null. Otherwise, it ensures that the node identities
+     * in the population graph match those used by FGES.
+     *
+     * @param pop the population graph to be set; null if no graph should be assigned.
      */
     public void setPopulationGraph(Graph pop) {
         if (pop == null) {

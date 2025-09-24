@@ -18,17 +18,17 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 /// ////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search.work_in_progress;
+package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.work_in_progress.ISScore;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -102,6 +102,7 @@ public final class IsGFci implements IGraphSearch {
      *
      * @param test  the IndependenceTest instance to be used; must not be null.
      * @param score the ISScore instance to be used; must not be null.
+     * @param populationScore the population-wide score used for scoring population-wide structures.
      * @throws NullPointerException if the provided score is null.
      */
     public IsGFci(IndependenceTest test, ISScore score, Score populationScore) {
@@ -288,7 +289,11 @@ public final class IsGFci implements IGraphSearch {
         logger.log("Finishing BK Orientation.");
     }
 
-    // Optional: expose elapsed time.
+    /**
+     * Retrieves the elapsed time in milliseconds that the algorithm or search process has taken to execute.
+     *
+     * @return the elapsed time in milliseconds as a long value.
+     */
     public long getElapsedTimeMillis() {
         return elapsedTime;
     }

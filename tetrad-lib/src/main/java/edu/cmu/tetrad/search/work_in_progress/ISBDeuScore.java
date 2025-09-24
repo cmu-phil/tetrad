@@ -145,6 +145,16 @@ public class ISBDeuScore implements ISScore {
         return (DiscreteVariable) variables.get(i);
     }
 
+    /**
+     * Calculates the local scoring for a given node in a Bayesian Network
+     * based on the provided parent and child configurations.
+     *
+     * @param node The index of the node for which the score is being calculated.
+     * @param parents_is An array of indices representing the context-specific parents of the node.
+     * @param parents_pop An array of indices representing the population-wide parents of the node.
+     * @param children_pop An array of indices representing the children of the node in the population-wide model.
+     * @return The computed local score as a double value.
+     */
     @Override
     public double localScore(int node, int[] parents_is, int[] parents_pop, int[] children_pop) {
 
@@ -228,11 +238,6 @@ public class ISBDeuScore implements ISScore {
 
         // compute IS score
         if (parents_is.length > 0) {
-
-            // K2 prior
-//			double rowPrior_i = getSamplePrior() * K;
-//			double cellPrior_i = getSamplePrior();
-
             double rowPrior_i = computeRowPrior(parents_is, parentValuesTest, parents_all, row_priors);
             rowPrior_i = getSamplePrior() * rowPrior_i;
             double cellPrior_i = rowPrior_i / K;
@@ -257,21 +262,15 @@ public class ISBDeuScore implements ISScore {
             if (rowPrior_p > 0) {
                 scorePop -= Gamma.logGamma(rowPrior_p + np_j[j]);
                 for (int k = 0; k < K; k++) {
-//					if(np_jk[j][k] > 0){
                     scorePop += Gamma.logGamma(cellPrior_p + np_jk[j][k]);
-//					}
                     scorePop -= Gamma.logGamma(cellPrior_p);
                 }
                 scorePop += Gamma.logGamma(rowPrior_p);
             }
         }
 
-//		System.out.println("scoreIS: " + scoreIS);
         scoreIS += getPriorForStructure(node, parents_is, parents_pop, children_pop);
-//		System.out.println("scoreIS prior: " + getPriorForStructure(node, parents_is, parents_pop, children_pop));
-//		System.out.println("scorePop: " + scorePop);
 
-//		scorePop += getPriorForStructure(parents_pop.length);
         score = scorePop + scoreIS;
         return score;
     }

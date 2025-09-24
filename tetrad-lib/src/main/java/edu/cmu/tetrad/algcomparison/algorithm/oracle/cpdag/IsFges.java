@@ -56,8 +56,19 @@ public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, Has
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Represents the prior knowledge constraints used by the algorithm. This object
+     * manages structural knowledge such as required edges, forbidden edges, and other
+     * constraints that guide the search process in the algorithm. Should also
+     * contain a test dataset. Needed for reflection.
+     */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * Default constructor for the IsFges class.
+     * Initializes an instance of the IsFges algorithm. This algorithm
+     * is designed for structure learning in causal discovery frameworks.
+     */
     public IsFges() {
     }
 
@@ -158,7 +169,7 @@ public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, Has
         Score populationScore = new edu.cmu.tetrad.algcomparison.score.BdeuScore().getScore(dataModel, parameters);
 
         // Driver
-        edu.cmu.tetrad.search.work_in_progress.IsFges alg = new edu.cmu.tetrad.search.work_in_progress.IsFges(isScore,
+        edu.cmu.tetrad.search.IsFges alg = new edu.cmu.tetrad.search.IsFges(isScore,
                 populationScore);
         alg.setKnowledge(this.knowledge);
         alg.setVerbose(parameters.getBoolean(Params.VERBOSE));

@@ -61,6 +61,20 @@ public class ISBicScore implements ISScore {
     private final double k_deletion  = 0.1;
     private final double k_reorient  = 0.1;
 
+    /**
+     * Constructs an instance of ISBicScore, which evaluates an instance-specific Bayes Information Criterion (BIC) score,
+     * based on a provided training dataset and a single-row test case dataset.
+     *
+     * @param dataSet the training dataset; must not be null and must contain discrete variables for proper analysis.
+     *                If the data is contained within a BoxDataSet, it must utilize a VerticalIntDataBox to represent discrete data.
+     * @param testCase the test dataset; must consist of exactly one row and have the same number of variables as the training dataset.
+     *                 If the test case is represented within a BoxDataSet, it should conform to VerticalIntDataBox format,
+     *                 or it will be coerced into such a format.
+     * @throws NullPointerException if either the training dataset or the test case dataset is null.
+     * @throws IllegalArgumentException if the training dataset contains non-discrete variables,
+     *                                  if the test case variable count does not match the training dataset variable count,
+     *                                  or if the test case does not contain a single row.
+     */
     public ISBicScore(DataSet dataSet, DataSet testCase) {
         if (dataSet == null || testCase == null) {
             throw new NullPointerException("Training dataset and test case must be non-null.");
@@ -126,6 +140,17 @@ public class ISBicScore implements ISScore {
 
     // =========================== ISScore API ===========================
 
+    /**
+     * Calculates the local score for a given node using an instance-specific BIC (Bayesian Information Criterion)
+     * approach. This method evaluates the likelihood and structure penalties with respect to the given dataset and parameters.
+     *
+     * @param node the index of the target node for which the score is being computed; the node must correspond to a discrete variable.
+     * @param parents_is the indices of instance-specific parents of the node; all indices must correspond to discrete variables.
+     * @param parents_pop the indices of population-level parents of the node; all indices must correspond to discrete variables.
+     * @param children_pop the indices of population-level children of the node; used for structural prior calculations.
+     * @return the calculated local score for the node based on the specified BIC components, structure penalties, and priors.
+     * @throws IllegalArgumentException if the node or any of its parents in parents_is or parents_pop is not a discrete variable.
+     */
     @Override
     public double localScore(int node, int[] parents_is, int[] parents_pop, int[] children_pop) {
         // Guards
@@ -198,6 +223,18 @@ public class ISBicScore implements ISScore {
         return bicPop + structIS + structPop;
     }
 
+    /**
+     * Computes the local score difference for a variable when adding a candidate variable `x`
+     * to its instance-specific parent set. The score difference is calculated as the score
+     * with the variable added minus the score without the variable.
+     *
+     * @param x the index of the candidate variable to be added; must correspond to a discrete variable.
+     * @param y the index of the target variable for which the score difference is being computed; must correspond to a discrete variable.
+     * @param z the indices of the current instance-specific parents of the target variable; all indices must correspond to discrete variables.
+     * @param z_pop the indices of population-level parents of the target variable; all indices must correspond to discrete variables.
+     * @param child_pop the indices of population-level children of the target variable; used for structural prior calculations.
+     * @return the computed score difference resulting from adding the variable `x` to the instance-specific parent set of `y`.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z, int[] z_pop, int[] child_pop) {
         double s1 = localScore(y, append(z, x), z_pop, child_pop);
@@ -205,11 +242,25 @@ public class ISBicScore implements ISScore {
         return s1 - s2;
     }
 
+    /**
+     * Retrieves the list of variable nodes associated with this instance.
+     *
+     * @return a list of nodes representing the variables.
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * Sets the list of variable nodes for this instance, ensuring that the names of the input list
+     * match the names of the existing variables in order and size.
+     *
+     * @param variables the list of nodes representing variables to be set; each node must have the
+     *                  same name and remain in the same order as the existing variables.
+     * @throws IllegalArgumentException if there is a mismatch in variable names or if the size
+     *                                  of the input list differs from the existing variables list.
+     */
     public void setVariables(List<Node> variables) {
         for (int i = 0; i < variables.size(); i++) {
             if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
@@ -219,6 +270,11 @@ public class ISBicScore implements ISScore {
         this.variables = variables;
     }
 
+    /**
+     * Returns the sample size used for scoring.
+     *
+     * @return the sample size used for scoring
+     */
     @Override
     public int getSampleSize() {
         return sampleSize;
@@ -263,11 +319,49 @@ public class ISBicScore implements ISScore {
         return localScore(node, parents_is, parents_pop, children_pop);
     }
 
+    /**
+     * Retrieves the penalty discount value associated with the scoring function.
+     * The penalty discount is applied to adjust the penalty term in the score
+     * calculation, influencing regularization or model complexity considerations.
+     *
+     * @return the current penalty discount value as a double
+     */
     public double getPenaltyDiscount() { return penaltyDiscount; }
+
+    /**
+     * Sets the penalty discount value used for the scoring function. The penalty
+     * discount adjusts the penalty term in the score calculation to influence
+     * regularization or considerations of model complexity.
+     *
+     * @param penaltyDiscount the penalty discount value to set; must be a non-negative double
+     */
     public void setPenaltyDiscount(double penaltyDiscount) { this.penaltyDiscount = penaltyDiscount; }
 
+    /**
+     * Retrieves the addition modifier (k_addition) used in the scoring calculations.
+     * This value may influence the scoring function by adjusting or modulating specific
+     * aspects of the score evaluation.
+     *
+     * @return the current addition modifier (k_addition) value as a double
+     */
     public double getKAddition() { return k_addition; }
+
+    /**
+     * Retrieves the deletion modifier (k_deletion) used in the scoring calculations.
+     * This value may influence the scoring function by adjusting or modulating specific
+     * aspects of the score evaluation.
+     *
+     * @return the current deletion modifier (k_deletion) value as a double
+     */
     public double getKDeletion() { return k_deletion; }
+
+    /**
+     * Retrieves the reorientation modifier (k_reorient) used in the scoring calculations.
+     * This value may influence the scoring function by adjusting or modulating specific
+     * aspects of the score evaluation related to reorientation operations.
+     *
+     * @return the current reorientation modifier (k_reorient) value as a double
+     */
     public double getKReorientation() { return k_reorient; }
 
     // =========================== helpers ===========================
@@ -295,6 +389,18 @@ public class ISBicScore implements ISScore {
         return r;
     }
 
+    /**
+     * Computes the values of parent variables in a specific combination
+     * given a row index in a multi-dimensional array and the dimensions
+     * of the array.
+     *
+     * @param rowIndex the index in the flattened multi-dimensional array for which
+     *                 parent values need to be computed
+     * @param dims the dimensions of the multi-dimensional array; an array where
+     *             each element represents the size of a dimension
+     * @return an array of integers where each value corresponds to the parent
+     *         values for the specified rowIndex based on the provided dimensions
+     */
     public int[] getParentValuesForCombination(int rowIndex, int[] dims) {
         int[] values = new int[dims.length];
         for (int i = dims.length - 1; i >= 0; i--) {
