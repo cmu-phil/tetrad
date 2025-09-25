@@ -17,7 +17,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class GpsSmokeTest {
+public class GpsPagSmokeTest {
 
     @Test
     public void runsOnSimpleSPDcovariance() throws Exception {
@@ -45,8 +45,8 @@ public class GpsSmokeTest {
         params.set(Params.VERBOSE, false);
 
         // ---- Run GPS via the AlgComparison wrapper ----
-        Gps gps = new Gps();
-        Graph g = gps.search(cov, params);
+        GpsPag gpsPag = new GpsPag();
+        Graph g = gpsPag.search(cov, params);
 
         // ---- Basic sanity checks ----
         assertNotNull("Graph is null", g);

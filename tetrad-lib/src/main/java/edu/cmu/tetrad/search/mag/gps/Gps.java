@@ -3,8 +3,10 @@ package edu.cmu.tetrad.search.mag.gps;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.R0R4Strategy;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 
 import java.util.*;
 
@@ -15,7 +17,7 @@ public final class Gps {
     private final double ridge;      // if you want to pass through to Ricf later
     private final int restarts;
     private final int maxIters;
-    private final FciOrient orienter;
+    private FciOrient orienter;
 
     public Gps(ICovarianceMatrix cov, double tolerance, double ridge, int restarts, int maxIters) {
         this.cov = cov;
@@ -52,16 +54,6 @@ public final class Gps {
                 g = emptyMag(cov.getVariableNames());
             }
             double s = score.score(g);
-
-//            // start from current best on r==0; otherwise from a random legal MAG
-//            Graph g = (r == 0) ? best.copy() : randomStart(cov.getVariableNames(), rnd);
-//            // ensure random start is legal; regenerate until legal (safety net)
-//            int guard = 0;
-//            while (!g.paths().isLegalMag() && guard++ < 20) {
-//                g = randomStart(cov.getVariableNames(), rnd);
-//            }
-//
-//            double s = score.score(g);
 
             boolean improved;
             int iters = 0;
@@ -101,32 +93,10 @@ public final class Gps {
                     } else {
                         GpsMoves.undo(m, g);
                     }
-
-//                    // hard legality check; revert immediately if illegal
-//                    if (!g.paths().isLegalMag()) {
-//                        GpsMoves.undo(m, g);
-//                        continue;
-//                    }
-//
-//                    // score only legal candidates
-//                    double s2 = score.score(g);
-//
-//                    if (s2 > s) {           // first-improvement
-//                        s = s2;
-//                        improved = true;     // keep the applied move
-//                        break;
-//                    } else {
-//                        GpsMoves.undo(m, g); // discard and try next move
-//                    }
                 }
 
                 iters++;
             } while (improved && iters < maxIters);
-
-//            if (s > bestScore) {
-//                bestScore = s;
-//                best = g.copy();
-//            }
 
             if (s > bestScore) {
 //                if (!g.paths().isLegalMag()) {
@@ -142,13 +112,14 @@ public final class Gps {
         orienter.finalOrientation(result);
         if (!result.paths().isLegalMag()) result = best; // fall back if needed
         return result;
-
-//        return best;
     }
 
-    // inside edu.cmu.tetrad.search.mag.gps.Gps
+    // Search in PAG space.
+    public Graph search(IndependenceTest test) {
+//        R0R4StrategyTestBased rRules = new R0R4StrategyTestBased(test);
+//        rRules.setVerbose(false);
+//        orienter = new FciOrient(rRules);
 
-    public Graph search() {
         // start from empty PAG over the variables
         Graph pag = new EdgeListGraph();
         for (String v : cov.getVariableNames()) pag.addNode(new GraphNode(v));
@@ -171,27 +142,6 @@ public final class Gps {
         for (String v : names) g.addNode(new GraphNode(v));
         return g;
     }
-
-//    private static Graph randomStart(List<String> names, Random rnd) {
-//        Graph g = emptyMag(names);
-//        List<Node> nodes = g.getNodes();
-//        int p = nodes.size();
-//        for (int i = 0; i < p; i++) {
-//            for (int j = i+1; j < p; j++) {
-//                Node x = nodes.get(i), y = nodes.get(j);
-//                int draw = rnd.nextInt(6); // sparse
-//                Move m = switch (draw) {
-//                    case 0 -> new Move(Move.Type.ADD_DIR, x, y);
-//                    case 1 -> new Move(Move.Type.ADD_DIR, y, x);
-//                    case 2 -> new Move(Move.Type.ADD_BI, x, y);
-//                    case 3 -> new Move(Move.Type.ADD_UG, x, y);
-//                    default -> null;
-//                };
-//                if (m != null && GpsMoves.isValid(m, g)) GpsMoves.apply(m, g);
-//            }
-//        }
-//        return g;
-//    }
 
     private static Graph randomStart(List<String> names, Random rnd) {
         Graph g = emptyMag(names);

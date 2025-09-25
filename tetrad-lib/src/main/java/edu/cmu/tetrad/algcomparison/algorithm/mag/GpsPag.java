@@ -2,39 +2,42 @@
 package edu.cmu.tetrad.algcomparison.algorithm.mag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * GPS (score-based MAG search using RICF-BIC).
- * Wraps edu.cmu.tetrad.search.mag.gps.Gps for AlgComparison.
+ * GPS (score-based MAG search using RICF-BIC). Wraps edu.cmu.tetrad.search.mag.gps.Gps for AlgComparison.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "GPS (RICF-BIC)",
-        command = "gps",
+        name = "GPS-PAG",
+        command = "gps-pag",
         algoType = AlgType.allow_latent_common_causes // MAGs allow latents
 )
 @Bootstrapping
-public final class Gps extends AbstractBootstrapAlgorithm implements Algorithm,
+public final class GpsPag extends AbstractBootstrapAlgorithm implements Algorithm,
         HasKnowledge, ReturnsBootstrapGraphs, LatentStructureAlgorithm,
-        TakesCovarianceMatrix {
+        TakesCovarianceMatrix, TakesIndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     private Knowledge knowledge = new Knowledge();
+    private IndependenceWrapper test;
 
-    public Gps() { }
+    public GpsPag() {
+    }
 
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
@@ -62,7 +65,8 @@ public final class Gps extends AbstractBootstrapAlgorithm implements Algorithm,
         edu.cmu.tetrad.search.mag.gps.Gps core =
                 new edu.cmu.tetrad.search.mag.gps.Gps(cov, tolerance, ridge, restarts, maxIters);
 
-        Graph result = core.search();
+        // We use the independence test for the R0 and R4 steps of final orientation.
+        Graph result = core.search(test.getTest(dataModel, parameters));
 
         if (verbose) {
             // small, safe summary
@@ -74,9 +78,8 @@ public final class Gps extends AbstractBootstrapAlgorithm implements Algorithm,
     }
 
     /**
-     * What to compare against in AlgComparison. For MAG algorithms, we typically compare as a MAG.
-     * If your comparison framework expects a PAG (depending on the study), you can convert here.
-     * Keeping identity is the safest default.
+     * What to compare against in AlgComparison. For MAG algorithms, we typically compare as a MAG. If your comparison
+     * framework expects a PAG (depending on the study), you can convert here. Keeping identity is the safest default.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -113,5 +116,15 @@ public final class Gps extends AbstractBootstrapAlgorithm implements Algorithm,
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
+    }
+
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 }
