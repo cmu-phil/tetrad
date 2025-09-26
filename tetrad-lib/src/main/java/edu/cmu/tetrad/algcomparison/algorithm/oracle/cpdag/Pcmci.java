@@ -31,7 +31,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Experimental
-public class Pcmci implements Algorithm, TakesIndependenceWrapper {
+public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -44,6 +44,7 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper {
      * the enclosing {@code Pcmci} algorithm.
      */
     private IndependenceWrapper test;
+    private Knowledge knowledge;
 
     /**
      * Default constructor for the Pcmci class.
@@ -179,5 +180,15 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper {
      */
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
+    }
+
+    @Override
+    public Knowledge getKnowledge() {
+        return knowledge;
+    }
+
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
     }
 }
