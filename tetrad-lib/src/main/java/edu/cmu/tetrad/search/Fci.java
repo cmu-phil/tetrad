@@ -371,6 +371,8 @@ public final class Fci implements IGraphSearch {
         fciOrient.setVerbose(verbose);
 
         if (this.doPossibleDsep) {
+            TetradLogger.getInstance().log("Doing possible dsep search.");
+
             for (Edge edge : new ArrayList<>(pag.getEdges())) {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
