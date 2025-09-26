@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -218,8 +218,7 @@ public final class Fcit implements IGraphSearch {
         return initialColliders;
     }
 
-    private static void redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                            Set<Triple> initialColliders, SepsetMap sepsets, boolean superVerbose) {
+    private static void redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge, Set<Triple> initialColliders, SepsetMap sepsets, boolean superVerbose) {
         // GFCI reorientation...
         GraphUtils.reorientWithCircles(pag, superVerbose);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
@@ -453,12 +452,17 @@ public final class Fcit implements IGraphSearch {
         // optionally check to see if the Zhang MAG in the PAG is a legal MAG, and if not, reset the PAG
         // and any changed sepsets) to the previous state. Repeat until no more edges are removed.
         Set<IndependenceCheck> checks = new HashSet<>();
+        int round = 0;
 
         do {
+            System.out.println("Round: " + (++round) + " legal pag = " + pag.paths().isLegalPag());
+
             if (verbose) {
                 TetradLogger.getInstance().log("===== NEW ROUND =====");
             }
         } while (removeEdgesRecursively(checks));
+
+        System.out.println("Final round: legal pag = " + pag.paths().isLegalPag());
 
         // This (optional) step removes edges based on FCI-style subsets of adjacents reasoning. This is needed
         // for correctness, but can lead to lower accuracies. Again, after every edge removal, the evolving PAG
@@ -588,28 +592,17 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Removes extra edges from a Partial Ancestral Graph (PAG) by analyzing discriminating paths that could not be
-     * oriented using final orientation rules and applying specific conditions to validate the existence of those edges.
-     * This method is part of the causal discovery process.
+     * Attempts to remove additional edges from the current PAG by exploiting discriminating paths that could not be
+     * oriented by the final FCI orientation rules. For each candidate edge, the method:
      * <p>
-     * The method performs several key steps:
+     * 1. Gathers unresolved discriminating paths involving the edge. 2. Uses recursive blocking to propose conditioning
+     * sets that would separate the endpoints. 3. Runs the independence test on those candidate sets. 4. If independence
+     * is found, tries to remove the edge and re-orient the graph accordingly.
      * <p>
-     * 1. Identifies discriminating paths in the PAG that are candidates for edge removals. 2. Creates a map of
-     * discriminating paths organized by their corresponding edge pairs for efficient lookup during subsequent
-     * processing. 3. Iterates over all edges in the PAG to evaluate whether they can be removed based on conditions
-     * derived from discriminating paths and the causal implications of their removal. 4. Considers subsets of nodes for
-     * which paths may not be followed to evaluate blocking conditions recursively and determine m-separation. 5.
-     * Applies independence tests to finalize edge removals when conditions are met.
-     * <p>
-     * The method logs the intermediate steps and decisions if verbose logging is enabled. This includes information on
-     * the discriminating paths, potential collider pairs, blocking sets, and the specific edges being considered for
-     * removal.
-     * <p>
-     * The logic ensures that edges are removed only if doing so maintains the Markov property and aligns with the
-     * causal structure represented by the PAG.
-     * <p>
-     * Exceptions such as `InterruptedException` are caught and wrapped in a runtime exception to ensure proper flow of
-     * execution for asynchronous tasks.
+     * If {@code guaranteeMag} is true, removals that would yield an illegal MAG are reverted; otherwise, illegal PAG
+     * states may persist. Verbose logging records each attempted removal and orientation.
+     *
+     * @return true if at least one edge was removed, false otherwise
      */
     private boolean removeEdgesRecursively(Set<IndependenceCheck> checks) {
         if (superVerbose) {
@@ -620,8 +613,7 @@ public final class Fcit implements IGraphSearch {
 
         // The final orientation rules were applied just before this step, so this should list only
         // discriminating paths that could not be oriented by them...
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag,
-                -1, false);
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag, -1, false);
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
         for (DiscriminatingPath path : discriminatingPaths) {
             Node x = path.getX();
@@ -673,46 +665,31 @@ public final class Fcit implements IGraphSearch {
         }
     }
 
-    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>,
-            Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
-        return new HashSet<>(edges).parallelStream()
-                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
-                .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
-                                || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
-                .map(edge -> {
-                    try {
-                        IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
-                        checks.add(checkResult);
-                        return checkResult != null ? new Result(checkResult.edge(), checkResult.cond()) : null;
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
+        return new HashSet<>(edges).parallelStream().filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge) || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())).map(edge -> {
+            try {
+                IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
+                checks.add(checkResult);
+                return checkResult != null ? new Result(checkResult.edge(), checkResult.cond()) : null;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
-    private List<Result> findIndependenceChecksSubsetOfAdjacents(Set<Edge> edges,
-                                                                 Set<IndependenceCheck> checks) {
-        return new HashSet<>(edges).parallelStream()
-                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
-                .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
-                                || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
-                .map(edge -> {
-                    try {
-                        IndependenceCheck checkResult = findIndependenceCheckSubsetOfAdjacents(edge);
-                        checks.add(checkResult);
-                        return checkResult != null ? new Result(checkResult.edge(), checkResult.cond()) : null;
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+    private List<Result> findIndependenceChecksSubsetOfAdjacents(Set<Edge> edges, Set<IndependenceCheck> checks) {
+        return new HashSet<>(edges).parallelStream().filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge) || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())).map(edge -> {
+            try {
+                IndependenceCheck checkResult = findIndependenceCheckSubsetOfAdjacents(edge);
+                checks.add(checkResult);
+                return checkResult != null ? new Result(checkResult.edge(), checkResult.cond()) : null;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
-    private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>,
-            Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) throws InterruptedException {
+    private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) throws InterruptedException {
         if (verbose) {
             System.out.print(".");
         }
@@ -751,6 +728,10 @@ public final class Fcit implements IGraphSearch {
 
             // Instead of newSingleThreadExecutor(), we use the shared 'executor'
             Set<Node> _b = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1, knowledge);
+
+            if (_b == null) {
+                continue;
+            }
 
             if (superVerbose && !notFollowed.isEmpty()) {
                 TetradLogger.getInstance().log("Not followed set = " + notFollowed + " cond set = " + _b);
@@ -931,8 +912,7 @@ public final class Fcit implements IGraphSearch {
      */
     public void setDepth(int depth) {
         if (depth < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+            throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0: " + depth);
         }
 
         this.depth = depth;
