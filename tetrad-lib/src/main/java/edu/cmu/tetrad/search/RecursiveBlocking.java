@@ -8,19 +8,64 @@ import edu.cmu.tetrad.graph.NodeType;
 import java.util.*;
 
 /**
- * The {@code RecursiveBlocking} class provides methods for constructing a set Z that
- * blocks all blockable paths between x and y under PAG semantics. If any path is
- * determined to be UNBLOCKABLE (or the analysis is INDETERMINATE), no valid separating
- * set exists under the given constraints and the routine returns {@code null}.
+ * The {@code RecursiveBlocking} class implements a recursive procedure for
+ * constructing candidate separating sets between two nodes under PAG semantics.
+ *
+ * <p>Given distinct nodes x and y, the algorithm attempts to build a set Z that
+ * blocks all blockable paths between x and y, starting from an optional seed set
+ * of nodes to include. If such a set is found, it is returned and may later be
+ * tested against the distribution for conditional independence. If any path is
+ * provably un-blockable (or the analysis is interrupted or inconclusive), the
+ * routine returns {@code null}, indicating that no valid graphical separating
+ * set exists.</p>
+ *
+ * <p>Key features:</p>
+ * <ul>
+ *   <li>Respects PAG semantics for colliders, non-colliders, and latent nodes.</li>
+ *   <li>Supports path length limits and "do not follow" constraints.</li>
+ *   <li>Can be run with or without background knowledge (currently unused, but
+ *       supported for extension).</li>
+ *   <li>Returns a candidate blocking set agnostic to adjacency: the presence
+ *       of a direct edge x–y does not preempt construction, but such an edge
+ *       may prevent a valid separator from existing.</li>
+ * </ul>
+ *
+ * <p>In the context of FCIT and related algorithms, the returned set is always
+ * subject to a statistical independence test to confirm whether it functions
+ * as an actual separating set in the distribution.</p>
  */
 public class RecursiveBlocking {
 
-    private RecursiveBlocking() {}
+    private RecursiveBlocking() {
+    }
 
     /**
-     * Retrieves a set that blocks all blockable paths between x and y in the given graph,
-     * where this set contains the given nodes. Returns {@code null} if any path is
-     * un-blockable (or indeterminate), i.e., no valid sepset exists under constraints.
+     * Attempts to construct a candidate blocking set Z between nodes x and y under PAG semantics. The returned set Z
+     * contains the nodes in {@code containing} and is augmented as needed to block all blockable paths from x to y,
+     * ignoring any direct edge x–y on the first step.
+     *
+     * <p>Semantics:</p>
+     * <ul>
+     *   <li>If x and y are adjacent, this method does not produce a separating
+     *       set (returns {@code null}).</li>
+     *   <li>If x and y are not adjacent, the routine returns a candidate
+     *       blocking set Z if all blockable paths can be blocked. This set is
+     *       only a <b>graphical</b> sepset and must be validated with an
+     *       independence test.</li>
+     *   <li>If some path is un-blockable or the recursion is indeterminate
+     *       (e.g., interrupted or exceeds {@code maxPathLength}), the method
+     *       returns {@code null}.</li>
+     * </ul>
+     *
+     * @param graph         the PAG structure
+     * @param x             first endpoint
+     * @param y             second endpoint
+     * @param containing    nodes that must be included in the blocking set
+     * @param notFollowed   nodes that should not be traversed into
+     * @param maxPathLength maximum allowed path length (-1 for unlimited)
+     * @return a candidate blocking set Z if all blockable paths can be blocked, or {@code null} if no valid graphical
+     * separating set exists
+     * @throws InterruptedException if the search is interrupted
      */
     public static Set<Node> blockPathsRecursively(Graph graph,
                                                   Node x,
@@ -35,8 +80,23 @@ public class RecursiveBlocking {
     }
 
     /**
-     * Same as above, honoring (optional) knowledge constraints (currently passed through
-     * to future extensions; not used in this routine).
+     * Variant of {@link #blockPathsRecursively(Graph, Node, Node, Set, Set, int)} that additionally accepts an optional
+     * {@code Knowledge} object.
+     *
+     * <p>Currently, the {@code knowledge} argument is reserved for future
+     * extensions and is not applied in this routine, but it is passed along to maintain compatibility with
+     * knowledge-aware search strategies.</p>
+     *
+     * @param graph         the PAG structure
+     * @param x             first endpoint
+     * @param y             second endpoint
+     * @param containing    nodes that must be included in the blocking set
+     * @param notFollowed   nodes that should not be traversed into
+     * @param maxPathLength maximum allowed path length (-1 for unlimited)
+     * @param knowledge     optional background knowledge (currently unused here)
+     * @return a candidate blocking set Z if all blockable paths can be blocked, or {@code null} if no valid graphical
+     * separating set exists
+     * @throws InterruptedException if the search is interrupted
      */
     public static Set<Node> blockPathsRecursively(Graph graph,
                                                   Node x,
@@ -51,56 +111,137 @@ public class RecursiveBlocking {
         );
     }
 
-    private static Set<Node> blockPathsRecursivelyVisit(Graph graph,
-                                                        Node x,
-                                                        Node y,
-                                                        Set<Node> containing,
-                                                        Set<Node> notFollowed,
-                                                        Map<Node, Set<Node>> descendantsMap,
-                                                        int maxPathLength,
-                                                        Knowledge knowledge) throws InterruptedException {
+    /**
+     * Internal recursive routine for constructing a candidate blocking set Z between nodes x and y under PAG
+     * semantics.
+     *
+     * <p>Semantics:
+     * <ul>
+     *   <li>If x and y are <b>adjacent</b> in the graph, this routine does not
+     *       attempt to certify a separating set (returns {@code null}).</li>
+     *   <li>If x and y are <b>not adjacent</b>, the routine attempts to build
+     *       a set Z (containing the provided {@code containing} nodes) such that
+     *       all <i>blockable</i> paths from x to y are blocked by Z. Direct edge
+     *       x–y is ignored on the first hop so that adjacency can later be tested
+     *       empirically using independence tests.</li>
+     *   <li>If every path is successfully blocked, the accumulated Z is returned
+     *       as a <b>graphical separating set candidate</b>. This set must still be
+     *       validated against the distribution with an independence test.</li>
+     *   <li>If some path is <b>unblockable</b> (or the recursion aborts due to
+     *       interrupt or path-length cap), the routine returns {@code null}.</li>
+     * </ul>
+     *
+     * @param graph          the PAG structure
+     * @param x              first endpoint
+     * @param y              second endpoint
+     * @param containing     nodes that must be included in the blocking set
+     * @param notFollowed    nodes that should not be traversed into
+     * @param descendantsMap precomputed map of node → descendants (for collider tests)
+     * @param maxPathLength  maximum allowed path length (-1 for unlimited)
+     * @param knowledge      optional background knowledge (currently unused here)
+     * @return a candidate blocking set Z if all blockable paths can be blocked, or {@code null} if no valid graphical
+     * separating set exists
+     * @throws InterruptedException if the search is interrupted
+     */
+    private static Set<Node> blockPathsRecursivelyVisit(
+            Graph graph,
+            Node x,
+            Node y,
+            Set<Node> containing,
+            Set<Node> notFollowed,
+            Map<Node, Set<Node>> descendantsMap,
+            int maxPathLength,
+            Knowledge knowledge) throws InterruptedException {
+
         if (x == y) {
             throw new NullPointerException("x and y are equal");
         }
 
-        // Z accumulates nodes that block all blockable paths.
+        // Z accumulates nodes that block all *blockable* paths.
         Set<Node> z = new HashSet<>(containing);
 
         // Maintain visited nodes in the current traversal (cycle guard).
         Set<Node> path = new HashSet<>();
         path.add(x);
 
-        boolean allBlockable = true;
-
         for (Node b : graph.getAdjacentNodes(x)) {
             if (Thread.currentThread().isInterrupted()) {
-                return null;
+                return null; // indeterminate
             }
 
-            // NEW: ignore direct edge x—y if present; we only care about paths that
-            // leave x via a node other than y on the first step.
+            // Ignore the direct edge x—y on the first hop; we only explore paths that
+            // leave x via a node other than y.
             if (b == y) continue;
 
-            Blockable r = findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, descendantsMap);
+            Blockable r = findPathToTarget(
+                    graph, x, b, y, path, z, maxPathLength, notFollowed, descendantsMap
+            );
 
-            // If any traversal is UNBLOCKABLE or INDETERMINATE, we cannot certify a valid sepset.
-            if (r != Blockable.BLOCKED) {
-                allBlockable = false;
-                break;
+            // STRICT: If any branch is UNBLOCKABLE, then no graphical sepset exists.
+            if (r == Blockable.UNBLOCKABLE) {
+                return null;
             }
+            // If analysis is indeterminate anywhere, we cannot certify a sepset.
+            if (r == Blockable.INDETERMINATE) {
+                return null;
+            }
+            // Otherwise r == BLOCKED: continue checking other branches.
         }
 
-        return allBlockable ? z : null;
+        // All explored branches are BLOCKED under Z → candidate sepset found.
+        return z;
     }
 
     /**
-     * Tries to determine whether all paths from a→b onward to y can be blocked by the current Z (possibly
-     * augmented by adding b). Returns:
-     *  - BLOCKED       if all such continuations are blocked under current Z (with or without conditioning on b)
-     *  - UNBLOCKABLE   if some continuation cannot be blocked even after conditioning on b
-     *  - INDETERMINATE if analysis aborted (interrupt / path-length cap) or cannot be decided safely
+     * Evaluates whether all paths from a→b onward to y can be blocked by the current candidate set Z, possibly
+     * augmented with b.
      *
-     * NOTE: After calling path.add(b), this method ALWAYS calls path.remove(b) before returning.
+     * <p>The method explores continuations from the triple (a, b, c) under PAG
+     * semantics and returns one of three outcomes:</p>
+     * <ul>
+     *   <li>{@code BLOCKED} — all continuations through b are blocked given the
+     *       current Z (with or without conditioning on b).</li>
+     *   <li>{@code UNBLOCKABLE} — some continuation cannot be blocked even after
+     *       adding b to Z.</li>
+     *   <li>{@code INDETERMINATE} — traversal was aborted (interrupted or path
+     *       length exceeded) or could not be decided safely.</li>
+     * </ul>
+     *
+     * <p>Special cases:</p>
+     * <ul>
+     *   <li>If b == y, the path immediately certifies as {@code UNBLOCKABLE}.</li>
+     *   <li>If b has already been visited in the current path, it is treated as
+     *       {@code UNBLOCKABLE} (cycle guard).</li>
+     *   <li>If b is in {@code notFollowed}, the branch is aborted as
+     *       {@code INDETERMINATE}.</li>
+     *   <li>If y is in {@code notFollowed}, that branch is treated as
+     *       {@code BLOCKED} (refusing to follow into y cannot make paths less
+     *       blockable).</li>
+     * </ul>
+     *
+     * <p>Traversal policy:</p>
+     * <ol>
+     *   <li>If b is latent or already in Z, traversal continues without
+     *       conditioning on b.</li>
+     *   <li>Otherwise, the method first tries to block without conditioning on
+     *       b. If that fails, it retries with b added to Z, rolling back if
+     *       this does not succeed.</li>
+     * </ol>
+     *
+     * <p>Path bookkeeping: after adding b to the current path, this method
+     * guarantees that b is removed again before returning.</p>
+     *
+     * @param graph          the PAG structure
+     * @param a              predecessor node in the path
+     * @param b              current node under consideration
+     * @param y              target node to be separated from x
+     * @param path           nodes visited so far (cycle guard)
+     * @param z              current candidate blocking set
+     * @param maxPathLength  maximum allowed path length (-1 for unlimited)
+     * @param notFollowed    nodes not to be traversed into
+     * @param descendantsMap precomputed node→descendants map (for collider checks)
+     * @return one of {@code BLOCKED}, {@code UNBLOCKABLE}, or {@code INDETERMINATE}
+     * @throws InterruptedException if the traversal is interrupted
      */
     public static Blockable findPathToTarget(Graph graph,
                                              Node a,

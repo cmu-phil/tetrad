@@ -622,7 +622,7 @@ public final class HybridCgModel {
          */
         private final HybridCgPm pm;
         /**
-         * Continuous child: for node y, params[y] is rows x (m+2) where m = #cont parents; cols = [intercept,
+         * Continuous child: for node y, params[y] is rows x (m+2) where m = #cont parents; cols = [Mean,
          * coeffs..., variance]
          */
         private final double[][][] contParams; // null for discrete children
@@ -780,24 +780,24 @@ public final class HybridCgModel {
         }
 
         /**
-         * Retrieves the intercept value for a continuous child node.
+         * Retrieves the mean value for a continuous child node.
          *
          * @param nodeIndex the index of the continuous child node
          * @param rowIndex  the row index in the local table
-         * @return the intercept value
+         * @return the mean value
          */
-        public double getIntercept(int nodeIndex, int rowIndex) {
+        public double getMean(int nodeIndex, int rowIndex) {
             return contParams[nodeIndex][rowIndex][0];
         }
 
         /**
-         * Sets the intercept value for a continuous child node.
+         * Sets the mean value for a continuous child node.
          *
          * @param nodeIndex the index of the continuous child node
          * @param rowIndex  the row index in the local table
-         * @param v         the intercept value to set
+         * @param v         the mean value to set
          */
-        public void setIntercept(int nodeIndex, int rowIndex, double v) {
+        public void setMean(int nodeIndex, int rowIndex, double v) {
             contParams[nodeIndex][rowIndex][0] = v;
         }
 
@@ -953,7 +953,7 @@ public final class HybridCgModel {
                         int[] discVals = new int[dps[y].length];
                         for (int i = 0; i < dps[y].length; i++) discVals[i] = discCols[dps[y][i]][r];
                         int rowIndex = pm.getRowIndex(y, discVals, null);
-                        double mean = getIntercept(y, rowIndex);
+                        double mean = getMean(y, rowIndex);
                         for (int t = 0; t < cps[y].length; t++)
                             mean += getCoefficient(y, rowIndex, t) * contCols[cps[y][t]][r];
                         double var = getVariance(y, rowIndex);
@@ -1030,7 +1030,7 @@ public final class HybridCgModel {
                                 .append(" more rows)\n");
                     }
                 } else {
-                    sb.append("    columns: [intercept");
+                    sb.append("    columns: [Mean");
                     for (int j = 0; j < cps.length; j++) {
                         sb.append(", ").append(nodes[cps[j]].getName());
                     }
@@ -1229,8 +1229,8 @@ public final class HybridCgModel {
                     SimpleMatrix ym = new SimpleMatrix(n, 1, true, yv);
                     SimpleMatrix beta = Xm.pseudoInverse().mult(ym); // (m+1) x 1
 
-                    double intercept = beta.get(0);
-                    im.setIntercept(y, row, intercept);
+                    double mean = beta.get(0);
+                    im.setMean(y, row, mean);
                     for (int t = 0; t < m; t++)
                         im.setCoefficient(y, row, t, RandomUtil.getInstance().nextUniform(-1, 1));
 
