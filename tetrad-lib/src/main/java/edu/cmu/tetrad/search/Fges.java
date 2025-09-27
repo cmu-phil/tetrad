@@ -1214,7 +1214,8 @@ public class Fges implements IGraphSearch, DagScorer {
 
         // If the Score supports whole-graph scoring, use it.
         if (score instanceof GraphScore) {
-            throw new UnsupportedOperationException("Cannot score using GraphScore.");
+           TetradLogger.getInstance().log("Cannot score using GraphScore.");
+            return Double.NaN;
         }
 
         // Otherwise, sum local (node) scores as before.

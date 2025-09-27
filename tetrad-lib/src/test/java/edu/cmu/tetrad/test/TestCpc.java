@@ -156,7 +156,6 @@ public class TestCpc {
         cpc.setColliderOrientationStyle(Pc.ColliderOrientationStyle.CONSERVATIVE);
 
         // Set up search.
-//        IndependenceTest independence = new IndTestGraph(graph);
         cpc.setKnowledge(knowledge);
 
         // Run search

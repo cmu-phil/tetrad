@@ -38,6 +38,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -137,6 +138,31 @@ public class TestFci {
         }
 
         return unshieldedTriples;
+    }
+
+    @Test
+    public void testFas() {
+        Graph trueGraph = GraphUtils.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Graph expectedFasOutput = GraphUtils.convert("X1---X2,X1---X3,X2---X4,X3---X4");
+
+        TetradLogger.getInstance().log("Testing FAS algorithm");
+        TetradLogger.getInstance().log("True graph: " + trueGraph);
+        TetradLogger.getInstance().log("Expected FAS output: " + expectedFasOutput);
+
+        IndependenceTest independence = new MsepTest(trueGraph);
+
+        Fas fas  = new Fas(independence);
+        fas.setVerbose(true);
+
+        try {
+            Graph actual = fas.search();
+
+            System.out.println(actual);
+
+            assertEquals(expectedFasOutput, actual);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test

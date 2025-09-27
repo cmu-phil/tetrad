@@ -24,12 +24,12 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.ejml.UtilEjml.assertTrue;
 
 public class TestRccaRankEstimator {
 

@@ -845,13 +845,38 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * Solves the linear system represented by this matrix and the given matrix.
+     * Solves the linear system A * X = B where this matrix is A and the argument is B.
+     * <p>
+     * If A is square and nonsingular, uses a direct solver. Otherwise falls back to a
+     * least-squares solution via the Moore–Penrose pseudoinverse.
      *
-     * @param yzCovModel The matrix representing the right-hand side of the linear system.
-     * @return The solution matrix.
+     * @param rhs The right-hand side matrix B.
+     * @return The solution matrix X.
+     * @throws IllegalArgumentException if the row dimensions are incompatible.
      */
-    public Matrix solve(Matrix yzCovModel) {
-        return yzCovModel.solve(this);
+    public Matrix solve(Matrix rhs) {
+        // Conformability: A(m x n) * X(n x k) = B(m x k)
+        if (this.getNumRows() != rhs.getNumRows()) {
+            throw new IllegalArgumentException(
+                    "Incompatible dimensions: A is " + this.getNumRows() + "x" + this.getNumColumns() +
+                    ", B is " + rhs.getNumRows() + "x" + rhs.getNumColumns() +
+                    ". Row counts must match (A.m == B.m).");
+        }
+
+        // Handle empty cases gracefully.
+        if (this.zeroDimension() || rhs.zeroDimension()) {
+            // A is (m x n), B is (m x k) -> X should be (n x k)
+            return new Matrix(this.getNumColumns(), rhs.getNumColumns());
+        }
+
+        // If A is square, try the direct solver; otherwise use pseudoinverse(A) * B
+        if (this.isSquare()) {
+            // SimpleMatrix.solve expects square, non-singular A.
+            return new Matrix(this.getData().solve(rhs.getData()));
+        } else {
+            // Least-squares solution: X = A^+ * B
+            return this.pseudoinverse().times(rhs);
+        }
     }
 }
 

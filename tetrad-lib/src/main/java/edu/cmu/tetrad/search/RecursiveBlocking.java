@@ -1,23 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
@@ -97,6 +77,10 @@ public class RecursiveBlocking {
                 return null;
             }
 
+            // NEW: ignore direct edge x—y if present; we only care about paths that
+            // leave x via a node other than y on the first step.
+            if (b == y) continue;
+
             Blockable r = findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, descendantsMap);
 
             // If any traversal is UNBLOCKABLE or INDETERMINATE, we cannot certify a valid sepset.
@@ -141,9 +125,7 @@ public class RecursiveBlocking {
         if (notFollowed.contains(b)) {
             return Blockable.INDETERMINATE;
         }
-        // IMPORTANT: If y is "not followed", treat as BLOCKED for this branch,
-        // not UNBLOCKABLE. Refusing to traverse into the target cannot make
-        // paths *less* blockable.
+        // IMPORTANT: If y is "not followed", treat as BLOCKED for this branch.
         if (notFollowed.contains(y)) {
             return Blockable.BLOCKED;
         }

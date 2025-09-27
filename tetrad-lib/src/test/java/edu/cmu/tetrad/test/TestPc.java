@@ -199,9 +199,6 @@ public class TestPc {
 
         // Set up search.
         pc.setKnowledge(knowledge);
-//        pc.setGuaranteeCpdag(false);
-//        pc.setVerbose(false);
-        // Run search
         Graph resultGraph = null;
         try {
             resultGraph = pc.search();
@@ -213,7 +210,7 @@ public class TestPc {
         Graph trueGraph = GraphUtils.convert("A---B,B-->C,D");
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
-//        System.out.println("Knowledge = " + knowledge);
+        System.out.println("Knowledge = " + knowledge);
         System.out.println("True graph = " + graph);
         System.out.println("Result graph = " + resultGraph);
 

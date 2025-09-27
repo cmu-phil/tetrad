@@ -123,6 +123,8 @@ public class MeekRules {
         while (oriented) {
             oriented = false;
 
+            if (orientByKnowledge(graph, visited)) oriented = true;
+
             for (Edge edge : graph.getEdges()) {
                 if (!Edges.isUndirectedEdge(edge)) continue;
 
@@ -447,6 +449,28 @@ public class MeekRules {
         Set<Node> adj = new HashSet<>(graph.getAdjacentNodes(x));
         adj.retainAll(graph.getAdjacentNodes(y));
         return adj;
+    }
+
+    // In MeekRules
+    private boolean orientByKnowledge(Graph graph, Set<Node> visited) {
+        boolean changed = false;
+        for (Edge e : new ArrayList<>(graph.getEdges())) {
+            if (!Edges.isUndirectedEdge(e)) continue;
+
+            Node a = e.getNode1();
+            Node b = e.getNode2();
+
+            boolean a_to_b_ok = isArrowheadAllowed(a, b, this.knowledge);
+            boolean b_to_a_ok = isArrowheadAllowed(b, a, this.knowledge);
+
+            // Exactly one direction permitted by knowledge ⇒ orient that way
+            if (a_to_b_ok && !b_to_a_ok) {
+                if (direct(a, b, graph, visited)) changed = true;
+            } else if (b_to_a_ok && !a_to_b_ok) {
+                if (direct(b, a, graph, visited)) changed = true;
+            }
+        }
+        return changed;
     }
 }
 
