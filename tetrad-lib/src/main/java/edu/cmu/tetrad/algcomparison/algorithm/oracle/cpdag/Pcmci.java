@@ -37,18 +37,27 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge 
     private static final long serialVersionUID = 23L;
 
     /**
-     * An instance of {@link IndependenceWrapper} used to perform independence tests
-     * and provide associated functionality such as obtaining descriptions, data type,
-     * and required parameters specific to the test.
-     * This serves as the core element for determining conditional independence in
-     * the enclosing {@code Pcmci} algorithm.
+     * An instance of {@link IndependenceWrapper} used to perform independence tests and provide associated
+     * functionality such as obtaining descriptions, data type, and required parameters specific to the test. This
+     * serves as the core element for determining conditional independence in the enclosing {@code Pcmci} algorithm.
      */
     private IndependenceWrapper test;
+    /**
+     * Represents the instance of {@link Knowledge} associated with the PCMCI algorithm. This variable contains
+     * domain-specific causal information that can guide or constrain the search process in the PCMCI causal discovery
+     * algorithm.
+     * <p>
+     * The {@link Knowledge} object can store both prior knowledge and structure constraints, including forbidden and
+     * required edges in the causal graph.
+     * <p>
+     * It is used by methods to retrieve or set domain-specific knowledge to influence the behavior and outcomes of the
+     * algorithm.
+     */
     private Knowledge knowledge;
 
     /**
-     * Default constructor for the Pcmci class.
-     * Initializes an instance of Pcmci without any dependencies or parameters.
+     * Default constructor for the Pcmci class. Initializes an instance of Pcmci without any dependencies or
+     * parameters.
      */
     public Pcmci() {
     }
@@ -56,26 +65,25 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge 
     /**
      * Constructs an instance of the Pcmci class with a specified independence test.
      *
-     * @param test The {@link IndependenceWrapper} instance representing a specific independence test
-     *             implementation to be used in PCMCI algorithm.
+     * @param test The {@link IndependenceWrapper} instance representing a specific independence test implementation to
+     *             be used in PCMCI algorithm.
      */
     public Pcmci(IndependenceWrapper test) {
         this.test = test;
     }
 
     /**
-     * Executes the PCMCI (Peter and Clark Momentary Conditional Independence) causal discovery algorithm
-     * on a given data model using specified parameters. The method relies on the assumption that the input
-     * data model is a {@link DataSet} and includes handling of lagged datasets, parameterized independence
-     * tests, and configurable search options.
+     * Executes the PCMCI (Peter and Clark Momentary Conditional Independence) causal discovery algorithm on a given
+     * data model using specified parameters. The method relies on the assumption that the input data model is a
+     * {@link DataSet} and includes handling of lagged datasets, parameterized independence tests, and configurable
+     * search options.
      *
-     * @param dataModel The input data model to perform the PCMCI search on. Must be an instance of {@link DataSet}.
-     *                  If the provided data model is not of this type, an {@link IllegalArgumentException} is thrown.
-     * @param parameters The set of parameters to configure the PCMCI search. These include:
-     *                   - TIME_LAG (default: 1): Maximum time lag for lagged variables.
-     *                   - DEPTH (default: 3): Maximum size of conditioning sets in conditional independence tests.
-     *                   - ALPHA (default: 0.05): Significance level for independence tests.
-     *                   - VERBOSE (default: false): Toggle for detailed output logs.
+     * @param dataModel  The input data model to perform the PCMCI search on. Must be an instance of {@link DataSet}. If
+     *                   the provided data model is not of this type, an {@link IllegalArgumentException} is thrown.
+     * @param parameters The set of parameters to configure the PCMCI search. These include: - TIME_LAG (default: 1):
+     *                   Maximum time lag for lagged variables. - DEPTH (default: 3): Maximum size of conditioning sets
+     *                   in conditional independence tests. - ALPHA (default: 0.05): Significance level for independence
+     *                   tests. - VERBOSE (default: false): Toggle for detailed output logs.
      * @return A {@link Graph} representing the causal structure learned from the input data model.
      * @throws InterruptedException If the thread executing the method is interrupted during processing.
      */
@@ -109,11 +117,11 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge 
     }
 
     /**
-     * Generates a comparison causal graph derived from the input graph by converting
-     * it to a completed partially directed acyclic graph (CPDAG).
+     * Generates a comparison causal graph derived from the input graph by converting it to a completed partially
+     * directed acyclic graph (CPDAG).
      *
-     * @param graph The input {@link Graph} that represents the initial structure
-     *              from which the comparison graph is derived.
+     * @param graph The input {@link Graph} that represents the initial structure from which the comparison graph is
+     *              derived.
      * @return A {@link Graph} that represents the CPDAG obtained from the input graph.
      */
     @Override
@@ -123,11 +131,10 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge 
     }
 
     /**
-     * Provides a description for the PCMCI algorithm, including the configured
-     * independence test, if applicable.
+     * Provides a description for the PCMCI algorithm, including the configured independence test, if applicable.
      *
-     * @return A string describing the PCMCI algorithm and the independence test being used.
-     *         If no test is provided, the description will indicate a "configured test".
+     * @return A string describing the PCMCI algorithm and the independence test being used. If no test is provided, the
+     * description will indicate a "configured test".
      */
     @Override
     public String getDescription() {
@@ -135,11 +142,11 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge 
     }
 
     /**
-     * Retrieves the data type of the dataset required for the PCMCI algorithm.
-     * This can be continuous, discrete, mixed, or other specific types defined in {@link DataType}.
+     * Retrieves the data type of the dataset required for the PCMCI algorithm. This can be continuous, discrete, mixed,
+     * or other specific types defined in {@link DataType}.
      *
-     * @return The {@link DataType} instance representing the type required or handled by the PCMCI algorithm,
-     * as provided by the associated {@code IndependenceWrapper}.
+     * @return The {@link DataType} instance representing the type required or handled by the PCMCI algorithm, as
+     * provided by the associated {@code IndependenceWrapper}.
      */
     @Override
     public DataType getDataType() {
@@ -147,8 +154,7 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge 
     }
 
     /**
-     * Retrieves a list of parameter names used to configure the PCMCI algorithm.
-     * The parameters include:
+     * Retrieves a list of parameter names used to configure the PCMCI algorithm. The parameters include:
      *
      * @return A list of parameter names as strings that are applicable for the PCMCI algorithm.
      */
@@ -165,8 +171,8 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge 
     /**
      * Retrieves the current instance of {@link IndependenceWrapper} associated with this object.
      *
-     * @return The {@link IndependenceWrapper} instance representing the current independence test
-     *         implementation used in the PCMCI algorithm.
+     * @return The {@link IndependenceWrapper} instance representing the current independence test implementation used
+     * in the PCMCI algorithm.
      */
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
@@ -175,8 +181,8 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, HasKnowledge 
     /**
      * Sets the {@link IndependenceWrapper} instance to be used for the PCMCI algorithm.
      *
-     * @param test The {@link IndependenceWrapper} instance representing a specific
-     *             implementation of an independence test to be associated with this object.
+     * @param test The {@link IndependenceWrapper} instance representing a specific implementation of an independence
+     *             test to be associated with this object.
      */
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;

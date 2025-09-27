@@ -57,8 +57,17 @@ public class Ricf {
     public Ricf() {
     }
 
-    // Compute constant-free log-likelihood for a fitted (B, Omega, Lambda) given S and n.
-// ug: indices of the undirected-component nodes (consistent with your ricf()).
+    /**
+     * Calculates the log-likelihood for a Mixed Ancestral Graph (MAG) model given the input matrices
+     * and provides a measure of model fit.
+     *
+     * @param B         The matrix representing the structural causal relationships in the MAG model.
+     * @param Omega     The covariance matrix for the observed variables in the non-latent part of the model.
+     * @param Lambda    The precision matrix for the latent variables in the model.
+     * @param ug        An array of indices representing the latent (unobserved) variables in the model.
+     * @param covMatrix The covariance matrix of the observed data, represented as an {@link ICovarianceMatrix} object.
+     * @return The computed log-likelihood value as a double.
+     */
     public static double logLikMAG(
             DoubleMatrix2D B, DoubleMatrix2D Omega, DoubleMatrix2D Lambda,
             int[] ug, ICovarianceMatrix covMatrix) {

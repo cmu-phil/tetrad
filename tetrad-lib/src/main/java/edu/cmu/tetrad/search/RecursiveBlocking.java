@@ -407,9 +407,22 @@ public class RecursiveBlocking {
         }
     }
 
+    /**
+     * The Blockable enum represents the state of an entity in relation to its
+     * ability to be blocked. It defines three possible states:
+     */
     public enum Blockable {
+        /**
+         * Indicates that the entity is currently blocked.
+         */
         BLOCKED,
+        /**
+         * Indicates that the entity cannot be blocked.
+         */
         UNBLOCKABLE,
+        /**
+         * Indicates that the blockable state of the entity is unclear or undefined.
+         */
         INDETERMINATE
     }
 }
