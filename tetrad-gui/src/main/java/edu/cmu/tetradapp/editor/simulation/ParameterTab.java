@@ -271,7 +271,6 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.ADDITIVE_NOISE_SEM:
                         this.simulation.setSimulation(new AdditiveNoiseSimulation(randomGraph), this.simulation.getParams());
                         break;
-
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
                         break;
