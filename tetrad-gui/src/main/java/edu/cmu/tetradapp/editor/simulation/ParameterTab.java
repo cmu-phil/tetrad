@@ -72,16 +72,6 @@ public class ParameterTab extends JPanel {
             SimulationTypes.TIME_SERIES
     };
 
-
-    //                    public static final String[] MODEL_TYPE_ITEMS = {
-//                            SimulationTypes.BAYS_NET,
-//                            SimulationTypes.STRUCTURAL_EQUATION_MODEL,
-//                            SimulationTypes.LINEAR_FISHER_MODEL,
-//                            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
-//                            SimulationTypes.CAUSAL_PERCEPTRON_NETWORK,
-//                            SimulationTypes.LEE_AND_HASTIE,
-//                            SimulationTypes.CONDITIONAL_GAUSSIAN,
-//                            SimulationTypes.TIME_SERIES
     public static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
     @Serial
     private static final long serialVersionUID = 7074205549192562786L;
@@ -240,17 +230,6 @@ public class ParameterTab extends JPanel {
                     default:
                         throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
-
-                //                    public static final String[] MODEL_TYPE_ITEMS = {
-//                            SimulationTypes.BAYS_NET,
-//                            SimulationTypes.STRUCTURAL_EQUATION_MODEL,
-//                            SimulationTypes.LINEAR_FISHER_MODEL,
-//                            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
-//                            SimulationTypes.CAUSAL_PERCEPTRON_NETWORK,
-//                            SimulationTypes.LEE_AND_HASTIE,
-//                            SimulationTypes.CONDITIONAL_GAUSSIAN,
-//                            SimulationTypes.TIME_SERIES
-
             } else {
                 switch (simulationItem) {
                     case SimulationTypes.BAYS_NET:
