@@ -116,10 +116,9 @@ public class RecursiveDiscriminatingPathRule {
                 // (A) blockPathsRecursively
                 Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength);
 
-                // This is set up to always return a set.
-//                if (blocking == null) {
-//                    continue;
-//                }
+                if (blocking == null) {
+                    continue;
+                }
 
                 for (Node f : vNodes) {
                     if (!vNodesNotFollowed.contains(f)) {

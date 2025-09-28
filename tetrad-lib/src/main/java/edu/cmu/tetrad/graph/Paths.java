@@ -257,7 +257,7 @@ public class Paths implements TetradSerializable {
 
         for (Edge edge : graph.getEdges(x)) {
             if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
-            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
+            if (edge.getEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
         }
 
         while (!neighbors.isEmpty()) {
@@ -273,7 +273,7 @@ public class Paths implements TetradSerializable {
 
         for (Edge edge : graph.getEdges(x)) {
 //            if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
-            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) {
+            if (edge.getEndpoint(x) == Endpoint.TAIL) {
                 return true;
 //                neighbors.add(edge.getDistalNode(x));
             }
@@ -1320,7 +1320,7 @@ public class Paths implements TetradSerializable {
         Node b = e1.getDistalNode(a);
         Node c = e2.getDistalNode(b);
 
-        boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW && e2.getProximalEndpoint(b) == Endpoint.ARROW;
+        boolean collider = e1.getEndpoint(b) == Endpoint.ARROW && e2.getEndpoint(b) == Endpoint.ARROW;
 
         if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
@@ -1335,7 +1335,7 @@ public class Paths implements TetradSerializable {
         Node b = e1.getDistalNode(a);
         Node c = e2.getDistalNode(b);
 
-        boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW && e2.getProximalEndpoint(b) == Endpoint.ARROW;
+        boolean collider = e1.getEndpoint(b) == Endpoint.ARROW && e2.getEndpoint(b) == Endpoint.ARROW;
 
         boolean ancestor = false;
 
@@ -2084,7 +2084,7 @@ public class Paths implements TetradSerializable {
                     // "virtual edges" that are directed in the direction of the arrow, so that the reachability
                     // algorithm can eventually find any colliders along the path that may be implied.
                     // jdramsey 2024-04-14
-                    if (!allowSelectionBias && edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                    if (!allowSelectionBias && edge1.getEndpoint(b) == Endpoint.ARROW) {
                         if (Edges.isUndirectedEdge(edge2)) {
                             edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                         } else if (Edges.isNondirectedEdge(edge2)) {
@@ -2136,7 +2136,7 @@ public class Paths implements TetradSerializable {
             // "virtual edges" that are directed in the direction of the arrow, so that the reachability
             // algorithm can eventually find any colliders along the path that may be implied.
             // jdramsey 2024-04-14
-            if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+            if (edge1.getEndpoint(b) == Endpoint.ARROW) {
                 if (!isPag && Edges.isUndirectedEdge(edge2)) {
                     edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                 } else if (isPag && Edges.isNondirectedEdge(edge2)) {
@@ -2194,7 +2194,7 @@ public class Paths implements TetradSerializable {
             // "virtual edges" that are directed in the direction of the arrow, so that the reachability
             // algorithm can eventually find any colliders along the path that may be implied.
             // jdramsey 2024-04-14
-            if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+            if (edge1.getEndpoint(b) == Endpoint.ARROW) {
                 if (!allowSelectionBias && Edges.isUndirectedEdge(edge2)) {
                     edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                 } else if (allowSelectionBias && Edges.isNondirectedEdge(edge2)) {
@@ -2290,13 +2290,13 @@ public class Paths implements TetradSerializable {
                     // algorithm can eventually find any colliders along the path that may be implied.
                     // jdramsey 2024-04-14
                     if (isPag) {
-                        if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                        if (edge1.getEndpoint(b) == Endpoint.ARROW) {
                             if (Edges.isNondirectedEdge(edge2)) {
                                 edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
                             }
                         }
                     } else {
-                        if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                        if (edge1.getEndpoint(b) == Endpoint.ARROW) {
                             if (Edges.isNondirectedEdge(edge2)) {
                                 edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
                             }

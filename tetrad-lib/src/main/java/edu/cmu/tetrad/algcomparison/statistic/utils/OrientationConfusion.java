@@ -76,8 +76,8 @@ public class OrientationConfusion {
             }
 
             Edge other = est.getEdge(a, b);
-            boolean m1 = edge.getEndpoint1() == other.getProximalEndpoint(a);
-            boolean m2 = edge.getEndpoint2() == other.getProximalEndpoint(b);
+            boolean m1 = edge.getEndpoint1() == other.getEndpoint(a);
+            boolean m2 = edge.getEndpoint2() == other.getEndpoint(b);
 
             if (m1 && m2) {
                 this.tp++;

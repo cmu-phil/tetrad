@@ -585,7 +585,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * {@inheritDoc}
      */
     public Endpoint getEndpoint(Node node1, Node node2) {
-        return getEdge(node1, node2).getProximalEndpoint(node2);
+        return getEdge(node1, node2).getEndpoint(node2);
     }
 
     /**

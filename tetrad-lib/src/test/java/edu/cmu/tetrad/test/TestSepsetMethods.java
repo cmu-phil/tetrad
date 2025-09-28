@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -344,6 +344,10 @@ public class TestSepsetMethods {
                     try {
                         Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(),
                                 Set.of(), -1);
+
+                        if (blocking == null) {
+                            continue;
+                        }
 
                         if (new MsepTest(pag, false).checkIndependence(x, y, blocking).isIndependent()) {
 

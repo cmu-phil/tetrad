@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.search.utils.TsDagToPag;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import org.jetbrains.annotations.NotNull;
 
@@ -477,6 +478,16 @@ public class GraphTransforms {
             }
         }
         return _graph;
+    }
+
+    /**
+     * Converts a maximal ancestral graph (MAG) into a partial ancestral graph (PAG).
+     *
+     * @param mag the maximal ancestral graph (MAG) to be converted
+     * @return the resulting partial ancestral graph (PAG)
+     */
+    public static Graph magToPag(Graph mag) {
+        return new MagToPag(mag).convert();
     }
 }
 

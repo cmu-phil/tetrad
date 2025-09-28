@@ -137,8 +137,6 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         fask.setUseFasAdjacencies(true);
         fask.setUseSkewAdjacencies(true);
 
-        fask.setAlpha(0.05);                    // a bit looser than 1e-5
-
         if (algorithm != null) {
             fask.setExternalGraph(algorithm.search(dataSet, parameters));
         }

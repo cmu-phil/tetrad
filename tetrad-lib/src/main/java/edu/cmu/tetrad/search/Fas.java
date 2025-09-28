@@ -229,12 +229,7 @@ public class Fas implements IFas {
                 anyRemovedAtThisDepth = searchAtDepth(modify, modify, d, false);
             }
 
-            if (!anyRemovedAtThisDepth) {
-                break;
-            }
-
-            // Optional early stop if no larger conditioning sets can exist.
-            if (freeDegree(modify) <= d) {
+            if (!anyRemovedAtThisDepth && freeDegree(modify) <= d) {
                 break;
             }
 

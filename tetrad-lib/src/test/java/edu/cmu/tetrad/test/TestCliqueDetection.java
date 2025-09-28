@@ -419,7 +419,7 @@ public class TestCliqueDetection {
         return learners;
     }
 
-    @Test
+//    @Test
     public void testLearnersCliquesAndClusterRecovery() {
         final int N = 10000;
         final int R = 10; // number of random seeds

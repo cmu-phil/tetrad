@@ -569,9 +569,7 @@ public class TestFges {
         System.out.println(CPDAG);
 
         final String trueString = """
-                Graph Nodes:
-                Graph Nodes:
-                Graph Nodes:;ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS
+                Graph Nodes:ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS
                 
                 Graph Edges:
                 1. ABILITY --> GPQ

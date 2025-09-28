@@ -183,7 +183,7 @@ public class MisclassificationUtils {
                 true1 = new Edge(x, y, Endpoint.NULL, Endpoint.NULL);
             }
 
-            Edge trueConvert = new Edge(x, y, true1.getProximalEndpoint(x), true1.getProximalEndpoint(y));
+            Edge trueConvert = new Edge(x, y, true1.getEndpoint(x), true1.getEndpoint(y));
 
             int m = MisclassificationUtils.getTypeLeft(trueConvert, est1);
             int n = MisclassificationUtils.getTypeTop(est1);
@@ -201,7 +201,7 @@ public class MisclassificationUtils {
                 est1 = new Edge(x, y, Endpoint.NULL, Endpoint.NULL);
             }
 
-            Edge estConvert = new Edge(x, y, est1.getProximalEndpoint(x), est1.getProximalEndpoint(y));
+            Edge estConvert = new Edge(x, y, est1.getEndpoint(x), est1.getEndpoint(y));
 
             int m = MisclassificationUtils.getTypeLeft(true1, estConvert);
             int n = MisclassificationUtils.getTypeTop(estConvert);

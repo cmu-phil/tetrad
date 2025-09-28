@@ -764,7 +764,7 @@ public class Pc implements IGraphSearch {
         return true;
     }
 
-    private void applyMeekRules(Graph g) throws InterruptedException {
+    private void applyMeekRules(Graph g) {
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(knowledge);
         meekRules.orientImplied(g);

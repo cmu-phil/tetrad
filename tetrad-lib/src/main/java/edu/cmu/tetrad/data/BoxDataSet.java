@@ -462,8 +462,8 @@ public final class BoxDataSet implements DataSet {
      *
      * <p>getVariable.</p>
      */
-    public Variable getVariable(int col) {
-        return (Variable) this.variables.get(col);
+    public Node getVariable(int col) {
+        return this.variables.get(col);
     }
 
     /**

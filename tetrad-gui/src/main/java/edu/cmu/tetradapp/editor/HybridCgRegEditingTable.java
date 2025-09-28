@@ -1,6 +1,5 @@
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
 
@@ -10,14 +9,13 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * JTable to edit all regression rows (strata) for a continuous child Y in a Hybrid CG IM.
  *
  * Columns:
- *   [discrete parent 1] ... [discrete parent d] | Intercept | (coeffs for continuous parents) | Variance
+ *   [discrete parent 1] ... [discrete parent d] | Mean | (coeffs for continuous parents) | Variance
  *
  * Rows:
  *   One per combination of discrete-parent categories (pm.getNumRows(y)).
@@ -58,7 +56,7 @@ final class HybridCgRegEditingTable extends JTable {
                     String maxLabel = m.maxParentLabelWidthSample(c);
                     w = Math.max(80, fm.stringWidth(maxLabel) + pad);
                 } else if (c == d) {
-                    w = fm.stringWidth("Intercept") + pad;
+                    w = fm.stringWidth("mean") + pad;
                 } else if (c == d + 1 + mcoeff) {
                     w = fm.stringWidth("Variance") + pad;
                 } else {
@@ -133,7 +131,7 @@ final class HybridCgRegEditingTable extends JTable {
         }
 
         @Override public int getColumnCount() {
-            // [d discrete parents] + [Intercept] + [cont coeffs] + [Variance]
+            // [d discrete parents] + [mean] + [cont coeffs] + [Variance]
             return discParents.size() + 1 + contParents.size() + 1;
         }
 
@@ -142,7 +140,7 @@ final class HybridCgRegEditingTable extends JTable {
             if (col < d) {
                 return pm.getNodes()[discParents.get(col)].getName();
             } else if (col == d) {
-                return "Intercept";
+                return "Mean";
             } else if (col == d + 1 + contParents.size()) {
                 return "Variance";
             } else {
@@ -169,7 +167,7 @@ final class HybridCgRegEditingTable extends JTable {
                 int idx = vals[col];
                 return (idx >= 0 && idx < labels.size()) ? labels.get(idx) : "";
             } else if (col == d) {
-                return im.getIntercept(y, row);
+                return im.getMean(y, row);
             } else if (col == d + 1 + contParents.size()) {
                 return im.getVariance(y, row);
             } else {
@@ -187,7 +185,7 @@ final class HybridCgRegEditingTable extends JTable {
             catch (Exception e) { v = Double.NaN; }
 
             if (col == d) {
-                if (Double.isFinite(v)) im.setIntercept(y, row, v);
+                if (Double.isFinite(v)) im.setMean(y, row, v);
             } else if (col == d + 1 + contParents.size()) {
                 if (!Double.isFinite(v) || v <= 0) v = 1e-12;
                 im.setVariance(y, row, v);

@@ -328,7 +328,7 @@ public final class HybridCgImEditor extends JPanel {
         int rows = pm.getNumRows(y);
         int m = pm.getContinuousParents(y).length;
         for (int r = 0; r < rows; r++) {
-            im.setIntercept(y, r, rng.nextGaussian() * 0.25);
+            im.setMean(y, r, rng.nextGaussian() * 0.25);
             for (int j = 0; j < m; j++) im.setCoefficient(y, r, j, RandomUtil.getInstance().nextUniform(-1, 1));
             im.setVariance(y, r, 0.25 + 0.75 * rng.nextDouble());
         }
