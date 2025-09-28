@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionND;
+import edu.cmu.tetrad.search.utils.MultiLayerPerceptron;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -37,19 +37,32 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Represents a nonlinear additive noise causal model (Hoyer et al., 2008).
+ * Represents a Causal Perceptron Network (CPN) for generating synthetic data based on a directed acyclic graph (DAG),
+ * simulated recursively.
  * <p>
- * The form of the recursive model is Xi = fi(Pa(Xi)) + Ni
+ * The form of the model is Xi = fi(Pa(Xi), ei), ei _||_ Pa(Xi).
  * <p>
- * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., &amp; SchÃ¶lkopf, B. (2008). Nonlinear causal discovery with
- * additive noise models. Advances in neural information processing systems, 21.
+ * By default, the independent noise is assumed to be distributed as Beta(2, 5), though this can be adjusted. It is
+ * assumed that the noise distribution is the same for all variables. In the future, this may be relaxed.
  * <p>
- * Zhang, K., &amp; HyvÃ¤rinen, A. (2009). Causality discovery with additive disturbances: An information-theoretical
- * perspective. In Machine Learning and Knowledge Discovery in Databases: European Conference, ECML PKDD 2009, Bled,
- * Slovenia, September 7-11, 2009, Proceedings, Part II 20 (pp. 570-585). Springer Berlin Heidelberg.
+ * The activation function is assumed to be tanh, though this can be adjusted.
  * <p>
- * Zhang, K., &amp; Hyvarinen, A. (2012). On the identifiability of the post-nonlinear causal model. arXiv preprint
- * arXiv:1205.2599.
+ * A good default for hidden dimension is 20; a good default for input scale it 5.0.
+ * <p>
+ * A good default for rescaling is to scale into the [-1, 1] interval, though rescaling can be turned off by setting the
+ * min and max to be equal.
+ * <p>
+ * If is assumed that the random functions may be represented as shallow multi-layer perceptrons (MLPs).
+ * <p>
+ * See Zhang et al. (2015) for a reference discussion.
+ * <p>
+ * Goudet, O., Kalainathan, D., Caillou, P., Guyon, I., Lopez-Paz, D., &amp; Sebag, M. (2018). Learning functional
+ * causal models with generative neural networks. Explainable and interpretable models in computer vision and machine
+ * learning, 39-80.
+ * <p>
+ * Zhang, K., Wang, Z., Zhang, J., &amp; SchÃ¶lkopf, B. (2015). On estimation of functional causal models: general
+ * results and application to the post-nonlinear causal model. ACM Transactions on Intelligent Systems and Technology
+ * (TIST), 7(2), 1-22.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
@@ -60,12 +73,15 @@ import java.util.stream.IntStream;
  * Peters, J., Mooij, J. M., Janzing, D., &amp; SchÃ¶lkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
  * Models". Journal of Machine Learning Research.
  * <p>
+ * Zhang, K., &amp; Hyvarinen, A. (2012). On the identifiability of the post-nonlinear causal model. arXiv preprint
+ * arXiv:1205.2599.
+ * <p>
  * Hastie, T., &amp; Tibshirani, R. (1986). "Generalized Additive Models".
  * <p>
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class NonlinearAdditiveNoiseModel {
+public class AdditiveNoiseSimulationOld {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -107,7 +123,7 @@ public class NonlinearAdditiveNoiseModel {
      * dimensionality of the hidden layer, which can affect the model's capacity to approximate complex functions in the
      * causal simulation.
      */
-    private final int hiddenDimension;
+    private final int[] hiddenDimensions;
     /**
      * A scaling factor applied to the input data in the simulation, used to introduce variability and adjust the
      * "bumpiness" of the generated causal relationships. This parameter determines how sensitive the inputs are when
@@ -118,35 +134,34 @@ public class NonlinearAdditiveNoiseModel {
      */
     private final double inputScale;
     /**
-     * Represents the non-linear activation function used in the model for applying transformations to the data during
-     * the simulation. This function operates on Double inputs and outputs, and defines a mathematical operation that
-     * introduces non-linearity to the model.
+     * Represents the activation function used in the simulation process within the CGNN.
      * <p>
-     * The default activation function is set to `Math::tanh`.
-     * <p>
-     * This field can be customized by using the provided setter method to apply other non-linear transformations based
-     * on the requirements of the model simulation.
+     * The activation function is applied to intermediate computations or transformations during the simulation,
+     * providing a non-linear mapping that influences the resulting synthetic causal data. By default, the tangent
+     * hyperbolic function (tanh) is used, though it can be customized through a setter method to support other
+     * non-linear functions.
      */
     private Function<Double, Double> activationFunction = Math::tanh;
 
     /**
-     * Constructs a nonlinear additive noise model based on a directed acyclic graph (DAG). This model is used to
-     * generate synthetic data where the relationships in the graph are affected by additive noise and potentially
-     * undergo nonlinear transformations.
+     * Constructs an AdditiveNoiseSimulation that operates on a directed acyclic graph (DAG) to model causal
+     * relationships with post-nonlinear causal mechanisms and custom activation functions.
      *
-     * @param graph             The directed acyclic graph (DAG) representing the underlying causal structure.
-     * @param numSamples        The number of data samples to generate. Must be positive.
-     * @param noiseDistribution The distribution used to sample additive noise for each variable.
-     * @param rescaleMin        The minimum value of the range for rescaling the generated data. Must be less than or
-     *                          equal to rescaleMax.
-     * @param rescaleMax        The maximum value of the range for rescaling the generated data. Must be greater than or
-     *                          equal to rescaleMin.
-     * @param hiddenDimension   The dimensionality of hidden layers or transformations used in data generation.
-     * @param inputScale        A scaling factor applied to input data before applying transformations or noise.
-     * @throws IllegalArgumentException If the input graph contains cycles or if the provided parameters are invalid.
+     * @param graph              The directed acyclic graph (DAG) representing the causal structure.
+     * @param numSamples         The number of synthetic data samples to generate.
+     * @param noiseDistribution  The noise distribution used for simulating random noise in the causal relationships.
+     * @param rescaleMin         The minimum value for rescaling the generated data.
+     * @param rescaleMax         The maximum value for rescaling the generated data.
+     * @param hiddenDimensions   An array specifying the number of units in each hidden layer of the perceptron
+     *                           network.
+     * @param inputScale         A scaling factor to adjust the input to the network.
+     * @param activationFunction The activation function applied within the perceptron network for nonlinearity.
+     * @throws IllegalArgumentException If the graph contains cycles, numSamples is less than 1, rescaleMin is greater
+     *                                  than rescaleMax, or any value in hiddenDimensions is less than 1.
      */
-    public NonlinearAdditiveNoiseModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                       double rescaleMin, double rescaleMax, int hiddenDimension, double inputScale) {
+    public AdditiveNoiseSimulationOld(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                      double rescaleMin, double rescaleMax, int[] hiddenDimensions, double inputScale,
+                                      Function<Double, Double> activationFunction) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -163,12 +178,19 @@ public class NonlinearAdditiveNoiseModel {
             TetradLogger.getInstance().log("Rescale min and rescale max are equal. No rescaling will be applied.");
         }
 
+        for (int hiddenDimension : hiddenDimensions) {
+            if (hiddenDimension < 1) {
+                throw new IllegalArgumentException("Hidden dimensions must be positive integers.");
+            }
+        }
+
         this.graph = graph;
         this.numSamples = numSamples;
         this.noiseDistribution = noiseDistribution;
         this.rescaleMin = rescaleMin;
         this.rescaleMax = rescaleMax;
-        this.hiddenDimension = hiddenDimension;
+        this.activationFunction = activationFunction;
+        this.hiddenDimensions = hiddenDimensions;
         this.inputScale = inputScale;
     }
 
@@ -191,10 +213,9 @@ public class NonlinearAdditiveNoiseModel {
         for (Node node : validOrder) {
             List<Node> parents = graph.getParents(node);
 
-            // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
-            var f = new MultiLayerPerceptronFunctionND(
-                    parents.size(), // Input dimension (R^N -> R)
-                    this.hiddenDimension, // Number of hidden neurons
+            MultiLayerPerceptron randomFunction = new MultiLayerPerceptron(
+                    parents.size() + 1, // Input dimension (R^3 -> R)
+                    hiddenDimensions, // Number of hidden neurons
                     this.activationFunction, // Activation function
                     this.inputScale, // Input scale for bumpiness
                     -1 // Random seed
@@ -203,8 +224,10 @@ public class NonlinearAdditiveNoiseModel {
             for (int sample = 0; sample < numSamples; sample++) {
                 int _sample = sample;
                 double[] array = parents.stream().mapToDouble(parent -> data.getDouble(_sample, nodeToIndex.get(parent))).toArray();
-                double value = f.evaluate(array) + noiseDistribution.sample();
-                data.setDouble(sample, nodeToIndex.get(node), value);
+                double[] array2 = new double[array.length + 1];
+                System.arraycopy(array, 0, array2, 0, array.length);
+                array2[array.length] = noiseDistribution.sample();
+                data.setDouble(sample, nodeToIndex.get(node), randomFunction.evaluate(array2));
             }
 
             if (rescaleMin < rescaleMax) {
@@ -213,17 +236,6 @@ public class NonlinearAdditiveNoiseModel {
         }
 
         return data;
-    }
-
-    /**
-     * Sets the activation function for the model. The activation function defines a non-linear transformation applied
-     * to the data during the simulation.
-     *
-     * @param activationFunction A function that takes a Double as input and returns a Double as output, representing
-     *                           the non-linear activation function to be applied.
-     */
-    public void setActivationFunction(Function<Double, Double> activationFunction) {
-        this.activationFunction = activationFunction;
     }
 }
 

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -36,13 +36,14 @@ import org.apache.commons.math3.util.FastMath;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
- * This class represents a continuous additive noise model.
+ * This class represents a Causal Perceptron Network.
  *
  * @author josephramsey
  */
-public class NonlinearAdditiveNoiseModel implements Simulation {
+public class AdditiveNoiseSimulation implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -67,7 +68,7 @@ public class NonlinearAdditiveNoiseModel implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public NonlinearAdditiveNoiseModel(RandomGraph graph) {
+    public AdditiveNoiseSimulation(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -200,7 +201,7 @@ public class NonlinearAdditiveNoiseModel implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Continuous Additive Noise Model Simulation using " + this.randomGraph.getDescription();
+        return "Additive Noise SEM (Deep Net)";
     }
 
     /**
@@ -209,7 +210,7 @@ public class NonlinearAdditiveNoiseModel implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "Continuous Additive Noise Model Simulation";
+        return "CPN";
     }
 
     /**
@@ -229,7 +230,7 @@ public class NonlinearAdditiveNoiseModel implements Simulation {
         parameters.add(Params.AM_RESCALE_MAX);
         parameters.add(Params.AM_BETA_ALPHA);
         parameters.add(Params.AM_BETA_BETA);
-        parameters.add(Params.HIDDEN_DIMENSION);
+        parameters.add(Params.HIDDEN_DIMENSIONS);
         parameters.add(Params.INPUT_SCALE);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
@@ -281,11 +282,29 @@ public class NonlinearAdditiveNoiseModel implements Simulation {
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runModel(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.NonlinearAdditiveNoiseModel generator = new edu.cmu.tetrad.sem.NonlinearAdditiveNoiseModel(
+        String hiddenDimensionsString = parameters.getString(Params.HIDDEN_DIMENSIONS);
+        String[] hiddenDimensionsSplit = hiddenDimensionsString.split(",");
+        int[] hiddenDimensions = new int[hiddenDimensionsSplit.length];
+        for (int i = 0; i < hiddenDimensionsSplit.length; i++) {
+            hiddenDimensions[i] = Integer.parseInt(hiddenDimensionsSplit[i].trim());
+        }
+
+        Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
+
+        edu.cmu.tetrad.sem.AdditiveNoiseSimulation generator = new edu.cmu.tetrad.sem.AdditiveNoiseSimulation(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
-                parameters.getInt(Params.HIDDEN_DIMENSION), parameters.getDouble(Params.INPUT_SCALE));
+                hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
+
+//        // Convert hidden dimsnions to List<Integer>
+//        List<Integer> hiddenDimensionsList = MathUtils.getInts(hiddenDimensions);
+//
+//        edu.cmu.tetrad.sem.AdditiveNoiseSimulationDjl generator = new edu.cmu.tetrad.sem.AdditiveNoiseSimulationDjl(
+//                graph, parameters.getInt(Params.SAMPLE_SIZE),
+//                new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
+//                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
+//                hiddenDimensionsList, parameters.getDouble(Params.INPUT_SCALE), activation);
 
         return generator.generateData();
     }

@@ -23,7 +23,7 @@ import java.util.function.Function;
  * constructed through a random MLP. The MLP structure, activation function, and other
  * parameters can be customized in the constructor.
  */
-public class CausalPerceptronNetwork {
+public class AdditiveNoiseSimulation {
 
     private final Graph graph;
     private final int numSamples;
@@ -38,7 +38,7 @@ public class CausalPerceptronNetwork {
     private final Random seeder = new Random();
 
     /**
-     * Creates a CausalPerceptronNetwork for generating data with a causal structure based on the provided graph.
+     * Creates a AdditiveNoiseSimulation for generating data with a causal structure based on the provided graph.
      *
      * @param graph The acyclic graph representing the causal structure of the network.
      * @param numSamples The number of samples to generate by the network. Must be greater than 0.
@@ -53,7 +53,7 @@ public class CausalPerceptronNetwork {
      *                                  than rescaleMax, or if any hidden dimensions are less than 1.
      * @throws NullPointerException If noiseDistribution, hiddenDimensions, or activationFunction are null.
      */
-    public CausalPerceptronNetwork(Graph graph,
+    public AdditiveNoiseSimulation(Graph graph,
                                    int numSamples,
                                    RealDistribution noiseDistribution,
                                    double rescaleMin,

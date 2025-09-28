@@ -24,6 +24,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.simulation.AdditiveNoiseSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -2194,7 +2195,7 @@ public class GridSearchEditor extends JPanel {
                 case 3:
                     yield edu.cmu.tetrad.algcomparison.simulation.GpSemSimulation.class;
                 case 4:
-                    yield edu.cmu.tetrad.algcomparison.simulation.CausalPerceptronNetwork.class;
+                    yield AdditiveNoiseSimulation.class;
                 case 5:
                     yield edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation.class;
                 case 6:
