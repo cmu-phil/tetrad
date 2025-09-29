@@ -533,7 +533,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                     if (knowledge == null) {
 
-                        // Prefer knowledge embedded in each dataset if present
+                        // If knowledge is not set, use knowledge embedded in each dataset if present
                         Knowledge knowledgeFromData = data.getKnowledge();
                         if (knowledgeFromData != null && !knowledgeFromData.getVariables().isEmpty()) {
                             this.knowledge = knowledgeFromData;
