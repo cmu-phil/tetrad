@@ -119,8 +119,9 @@ public class SvarBossFfci extends AbstractBootstrapAlgorithm implements Algorith
         }
 
         dataModel.setKnowledge(this.knowledge);
-        edu.cmu.tetrad.search.SvarBossFci search = new edu.cmu.tetrad.search.SvarBossFci(this.test.getTest(dataModel, parameters),
+        edu.cmu.tetrad.search.BossFci search = new edu.cmu.tetrad.search.BossFci(this.test.getTest(dataModel, parameters),
                 this.score.getScore(dataModel, parameters));
+        search.setReplicatingGraph(true);
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 

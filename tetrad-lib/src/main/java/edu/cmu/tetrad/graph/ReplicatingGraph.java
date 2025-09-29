@@ -26,14 +26,14 @@ public class ReplicatingGraph extends EdgeListGraph {
     }
 
     /** Copies nodes+edges from g and installs the policy. */
-    public ReplicatingGraph(Graph g, EdgeReplicationPolicy policy) {
+    public ReplicatingGraph(ReplicatingGraph g) {
         super();
-        this.policy = Objects.requireNonNull(policy, "policy");
-        transferNodesAndEdges(g);
-        transferAttributes(g);
-        this.setUnderLineTriples(g.getUnderLines());
-        this.setDottedUnderLineTriples(g.getDottedUnderlines());
-        this.setAmbiguousTriples(g.getAmbiguousTriples());
+        this.policy = Objects.requireNonNull(g.policy, "policy");
+        super.transferNodesAndEdges(g);
+        super.transferAttributes(g);
+        super.setUnderLineTriples(g.getUnderLines());
+        super.setDottedUnderLineTriples(g.getDottedUnderlines());
+        super.setAmbiguousTriples(g.getAmbiguousTriples());
     }
 
     /** Creates a graph over 'nodes' and installs the policy. */
@@ -42,10 +42,10 @@ public class ReplicatingGraph extends EdgeListGraph {
         this.policy = Objects.requireNonNull(policy, "policy");
     }
 
-    /** Convenience: SVAR-style lag mirroring. */
-    public static ReplicatingGraph svar(Graph g) {
-        return new ReplicatingGraph(g, new LagReplicationPolicy());
-    }
+//    /** Convenience: SVAR-style lag mirroring. */
+//    public static ReplicatingGraph svar(Graph g) {
+//        return new ReplicatingGraph(g, new LagReplicationPolicy());
+//    }
     public static ReplicatingGraph svar(List<Node> nodes) {
         return new ReplicatingGraph(nodes, new LagReplicationPolicy());
     }

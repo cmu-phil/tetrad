@@ -125,6 +125,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
 
         edu.cmu.tetrad.search.BossFci search = new edu.cmu.tetrad.search.BossFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
+        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -187,6 +188,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
+        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.SEED);
         params.add(Params.NUM_THREADS);
         params.add(Params.GUARANTEE_PAG);

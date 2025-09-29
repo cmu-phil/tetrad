@@ -98,6 +98,7 @@ public abstract class StarFci implements IGraphSearch {
      * algorithm. The default value is {@code true}, enabling the heuristic by default.
      */
     private boolean useMaxP = false;
+    private boolean replicatingGraph = false;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -284,7 +285,8 @@ public abstract class StarFci implements IGraphSearch {
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         Graph cpdag = getMarkovCpdag();
-        Graph pag = new EdgeListGraph(cpdag);
+//        Graph pag = new EdgeListGraph(cpdag);
+        Graph pag = wrapWorkingGraph(cpdag);
         Set<Triple> unshieldedColliders = new HashSet<>();
         SepsetMap sepsetMap = new SepsetMap();
 
@@ -400,6 +402,18 @@ public abstract class StarFci implements IGraphSearch {
         return pag;
     }
 
+    private Graph wrapWorkingGraph(Graph cpdag) {
+        if (replicatingGraph) {
+            // SVAR/lag mirroring via endpoint add/remove/orient
+            ReplicatingGraph _cpdag = new ReplicatingGraph(cpdag.getNodes(), new LagReplicationPolicy());
+            for (Edge e : cpdag.getEdges()) {
+                _cpdag.addEdge(e);
+            }
+            return _cpdag;
+        }
+        return new EdgeListGraph(cpdag);
+    }
+
     /**
      * Returns the knowledge used in search.
      *
@@ -497,5 +511,9 @@ public abstract class StarFci implements IGraphSearch {
      * @throws InterruptedException if interrupted.
      */
     public abstract Graph getMarkovCpdag() throws InterruptedException;
+
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
+    }
 }
 

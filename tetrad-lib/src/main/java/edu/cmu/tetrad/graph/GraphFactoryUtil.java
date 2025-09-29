@@ -17,7 +17,7 @@ public class GraphFactoryUtil {
 
     public static Graph newGraph(Graph graph) {
         if (graph instanceof ReplicatingGraph) {
-            return new ReplicatingGraph(graph.getNodes(), ((ReplicatingGraph) graph).getReplicationPolicy());
+            return new ReplicatingGraph((ReplicatingGraph) graph);
         } else {
             return new EdgeListGraph(graph.getNodes());
         }

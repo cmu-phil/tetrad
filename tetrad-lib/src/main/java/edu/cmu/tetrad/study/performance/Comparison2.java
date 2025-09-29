@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.study.performance;
 
@@ -24,7 +24,10 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fci;
+import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.FgesFci;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
@@ -34,7 +37,6 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.search.utils.TsDagToPag;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.ScoreType;
@@ -195,14 +197,6 @@ public class Comparison2 {
                 FgesFci search = new FgesFci(test, score);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
-            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
-                SvarFci search = new SvarFci(test);
-                Knowledge knowledge = getKnowledge(trueDag);
-                search.setKnowledge(knowledge);
-                result.setResultGraph(search.search());
-                result.setCorrectResult(new TsDagToPag(trueDag).convert());
-                System.out.println("Correct result for trial = " + result.getCorrectResult());
-                System.out.println("Search result for trial = " + result.getResultGraph());
             } else {
                 throw new IllegalArgumentException("Unrecognized algorithm.");
             }
@@ -446,16 +440,6 @@ public class Comparison2 {
             FgesFci search = new FgesFci(test, score);
             result.setResultGraph(search.search());
             result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
-            if (test == null) {
-                throw new IllegalArgumentException("Test not set.");
-            }
-            SvarFci search = new SvarFci(test);
-            assert trueDag != null;
-            Knowledge knowledge = Comparison2.getKnowledge(trueDag);
-            search.setKnowledge(knowledge);
-            result.setResultGraph(search.search());
-            result.setCorrectResult(new TsDagToPag(trueDag).convert());
         } else {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }

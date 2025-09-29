@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.graph;
 
@@ -243,11 +243,7 @@ public final class GraphUtils {
     public static Graph completeGraph(Graph graph) {
         Graph graph2;
 
-        if (graph instanceof SvarEdgeListGraph) {
-            graph2 = new SvarEdgeListGraph(graph.getNodes());
-        } else {
-            graph2 = GraphFactoryUtil.newGraph(graph.getNodes(), graph instanceof ReplicatingGraph);
-        }
+        graph2 = GraphFactoryUtil.newGraph(graph.getNodes(), graph instanceof ReplicatingGraph);
 
         graph2.removeEdges(new ArrayList<>(graph2.getEdges()));
 
