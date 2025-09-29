@@ -21,8 +21,8 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphFactoryUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
@@ -92,6 +92,7 @@ public class PermutationSearch {
     private boolean cpdag = true;
 
     private long seed = -1;
+    private boolean replicatingGraph = false;
 
     /**
      * Constructs a new PermutationSearch using the given SuborderSearch.
@@ -137,12 +138,45 @@ public class PermutationSearch {
      * @param cpDag     Whether a CPDAG is wanted, if false, a DAG.
      * @return The construted graph.
      */
-    public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, Knowledge knowledge, boolean cpDag) {
-        Graph graph = new EdgeListGraph(nodes);
+//    public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, Knowledge knowledge, boolean cpDag) {
+//        Graph graph = new EdgeListGraph(nodes);
+//
+//        for (Node a : nodes) {
+//            for (Node b : parents.get(a)) {
+//                graph.addDirectedEdge(b, a);
+//            }
+//        }
+//
+//        if (cpDag) {
+//            MeekRules rules = new MeekRules();
+//            if (knowledge != null) rules.setKnowledge(knowledge);
+//            rules.setVerbose(false);
+//            rules.orientImplied(graph);
+//        }
+//
+//        return graph;
+//    }
 
-        for (Node a : nodes) {
-            for (Node b : parents.get(a)) {
-                graph.addDirectedEdge(b, a);
+    // existing method stays, delegates to the new one with default (no replication)
+    public static Graph getGraph(List<Node> nodes,
+                                 Map<Node, Set<Node>> parents,
+                                 Knowledge knowledge,
+                                 boolean cpDag) {
+        return getGraph(nodes, parents, knowledge, cpDag, /*replicating*/ false);
+    }
+
+    // new overload with replicating switch
+    public static Graph getGraph(List<Node> nodes,
+                                 Map<Node, Set<Node>> parents,
+                                 Knowledge knowledge,
+                                 boolean cpDag,
+                                 boolean replicating) {
+        Graph graph = GraphFactoryUtil.newGraph(nodes, replicating);
+
+        // materialize edges (ReplicatingGraph will mirror on add)
+        for (Node child : nodes) {
+            for (Node par : parents.get(child)) {
+                graph.addDirectedEdge(par, child);
             }
         }
 
@@ -150,7 +184,7 @@ public class PermutationSearch {
             MeekRules rules = new MeekRules();
             if (knowledge != null) rules.setKnowledge(knowledge);
             rules.setVerbose(false);
-            rules.orientImplied(graph);
+            rules.orientImplied(graph); // setEndpoint/edge ops mirror automatically if replicating
         }
 
         return graph;
@@ -219,7 +253,7 @@ public class PermutationSearch {
             this.suborderSearch.searchSuborder(prefix, this.order, this.gsts);
         }
 
-        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, cpdag);
+        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, cpdag, replicatingGraph);
     }
 
     /**
@@ -308,6 +342,10 @@ public class PermutationSearch {
      */
     public void setSeed(long seed) {
         this.seed = seed;
+    }
+
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
     }
 }
 
