@@ -404,14 +404,10 @@ public abstract class StarFci implements IGraphSearch {
 
     private Graph wrapWorkingGraph(Graph cpdag) {
         if (replicatingGraph) {
-            // SVAR/lag mirroring via endpoint add/remove/orient
-            ReplicatingGraph _cpdag = new ReplicatingGraph(cpdag.getNodes(), new LagReplicationPolicy());
-            for (Edge e : cpdag.getEdges()) {
-                _cpdag.addEdge(e);
-            }
-            return _cpdag;
+            return new ReplicatingGraph(cpdag, new LagReplicationPolicy());
+        } else {
+            return new EdgeListGraph(cpdag);
         }
-        return new EdgeListGraph(cpdag);
     }
 
     /**

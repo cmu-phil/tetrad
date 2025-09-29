@@ -531,10 +531,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 for (int i = 0; i < dataModelList.size(); i++) {
                     DataModel data = dataModelList.get(i);
 
-                    // Prefer knowledge embedded in each dataset if present
-                    Knowledge knowledgeFromData = data.getKnowledge();
-                    if (knowledgeFromData != null && !knowledgeFromData.getVariables().isEmpty()) {
-                        this.knowledge = knowledgeFromData;
+                    if (knowledge == null) {
+
+                        // Prefer knowledge embedded in each dataset if present
+                        Knowledge knowledgeFromData = data.getKnowledge();
+                        if (knowledgeFromData != null && !knowledgeFromData.getVariables().isEmpty()) {
+                            this.knowledge = knowledgeFromData;
+                        }
                     }
 
                     // Wire score/test wrappers with BlockSpec if applicable

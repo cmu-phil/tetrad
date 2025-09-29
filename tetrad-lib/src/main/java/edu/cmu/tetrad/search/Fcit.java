@@ -155,6 +155,7 @@ public final class Fcit implements IGraphSearch {
      * process but could result in outputs that are not strictly valid as PAGs.
      */
     private boolean guaranteeMag = false;
+    private boolean replicatingGraph = false;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -350,6 +351,7 @@ public final class Fcit implements IGraphSearch {
             long start = MillisecondTimes.wallTimeMillis();
 
             Grasp grasp = getGraspSearch();
+            grasp.setReplicatingGraph(replicatingGraph);
             best = grasp.bestOrder(nodes);
             dag = grasp.getGraph(false);
 
@@ -563,6 +565,7 @@ public final class Fcit implements IGraphSearch {
         subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
         subAlg.setVerbose(superVerbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
+        alg.setReplicatingGraph(replicatingGraph);
         alg.setKnowledge(knowledge);
         return alg;
     }
