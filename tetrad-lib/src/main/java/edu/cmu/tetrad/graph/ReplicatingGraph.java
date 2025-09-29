@@ -29,11 +29,34 @@ public class ReplicatingGraph extends EdgeListGraph {
     public ReplicatingGraph(ReplicatingGraph g) {
         super();
         this.policy = Objects.requireNonNull(g.policy, "policy");
-        super.transferNodesAndEdges(g);
-        super.transferAttributes(g);
-        super.setUnderLineTriples(g.getUnderLines());
-        super.setDottedUnderLineTriples(g.getDottedUnderlines());
-        super.setAmbiguousTriples(g.getAmbiguousTriples());
+        try {
+            IN_REPLICATION.set(Boolean.TRUE);         // avoid re-mirroring during copy
+            super.transferNodesAndEdges(g);
+            super.transferAttributes(g);
+            super.setUnderLineTriples(g.getUnderLines());
+            super.setDottedUnderLineTriples(g.getDottedUnderlines());
+            super.setAmbiguousTriples(g.getAmbiguousTriples());
+        } finally {
+            IN_REPLICATION.set(Boolean.FALSE);
+        }
+    }
+
+    /** Copies nodes+edges from any Graph and installs the policy. */
+    public ReplicatingGraph(Graph g, EdgeReplicationPolicy policy) {
+        super();
+        this.policy = Objects.requireNonNull(policy, "policy");
+        try {
+            IN_REPLICATION.set(Boolean.TRUE);         // raw copy, no mirroring
+            super.transferNodesAndEdges(g);
+            super.transferAttributes(g);
+            if (g instanceof EdgeListGraph elg) {
+                super.setUnderLineTriples(elg.getUnderLines());
+                super.setDottedUnderLineTriples(elg.getDottedUnderlines());
+                super.setAmbiguousTriples(elg.getAmbiguousTriples());
+            }
+        } finally {
+            IN_REPLICATION.set(Boolean.FALSE);
+        }
     }
 
     /** Creates a graph over 'nodes' and installs the policy. */
@@ -42,10 +65,6 @@ public class ReplicatingGraph extends EdgeListGraph {
         this.policy = Objects.requireNonNull(policy, "policy");
     }
 
-//    /** Convenience: SVAR-style lag mirroring. */
-//    public static ReplicatingGraph svar(Graph g) {
-//        return new ReplicatingGraph(g, new LagReplicationPolicy());
-//    }
     public static ReplicatingGraph svar(List<Node> nodes) {
         return new ReplicatingGraph(nodes, new LagReplicationPolicy());
     }
@@ -146,22 +165,10 @@ public class ReplicatingGraph extends EdgeListGraph {
         return ok;
     }
 
-    /**
-     * Keep the bulk reorientation consistent by delegating to setEndpoint,
-     * guarded so we don’t explode work quadratically.
-     */
     @Override
     public void reorientAllWith(Endpoint ep) {
-        if (Boolean.TRUE.equals(IN_REPLICATION.get())) {
-            super.reorientAllWith(ep);
-            return;
-        }
-        try {
-            IN_REPLICATION.set(Boolean.TRUE);
-            super.reorientAllWith(ep);
-        } finally {
-            IN_REPLICATION.set(Boolean.FALSE);
-        }
+        // Let super remove/add; our addEdge will mirror as needed.
+        super.reorientAllWith(ep);
     }
 
     public EdgeReplicationPolicy getReplicationPolicy() {
