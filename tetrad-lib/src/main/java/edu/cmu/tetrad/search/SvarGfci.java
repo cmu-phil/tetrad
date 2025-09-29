@@ -120,10 +120,11 @@ public final class SvarGfci implements IGraphSearch {
             chooseScore();
         }
 
-        SvarFges fges = new SvarFges(this.score);
+        Fges fges = new Fges(this.score);
+        fges.setRepeating(true);
         fges.setKnowledge(this.knowledge);
         fges.setVerbose(this.verbose);
-        fges.setNumCPDAGsToStore(0);
+//        fges.setNumCPDAGsToStore(0);
         // True, iff one-edge faithfulness is assumed. Speed up the algorithm for very large searches.
         // By default, false.
         boolean faithfulnessAssumed = true;

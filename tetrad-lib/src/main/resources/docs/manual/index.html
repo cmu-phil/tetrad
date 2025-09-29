@@ -7639,7 +7639,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             </span></li>
             <li>Long Description: <span
                     id="hiddenDimension_long_desc">
-                For Nonlinear Additive Model, the number of nodes per edge
+                For a shallow multilayer perception (MLP), the number of nodes in the hidden layer
         </span></li>
             <li>Default
                 Value: <span
@@ -10722,8 +10722,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="timeLag_short_desc">A time lag for time series data,
-                    automatically applied (zero if none)</span></li>
+                    id="timeLag_short_desc">
+                For time lag searches,`a time lag,
+                automatically applied (zero if none)</span></li>
             <li>Long Description: <span
                     id="timeLag_long_desc">Automatically applies the time lag
                     transform to the data, creating additional lagged variables. If
@@ -10734,6 +10735,31 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 Bound: <span id="timeLag_upper_bound">2147483647</span></li>
             <li>Value Type: <span
                     id="timeLag_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="timeLagReplicatingGraph">timeLagReplicatingGraph</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="timeLagReplicatingGraph_short_desc">
+                    For time lag searches, whether to make the graph replicate edges across time lags
+        </span></li>
+            <li>Long Description: <span
+                    id="timeLagReplicatingGraph_long_desc">
+                    For time lag searches, whether to make the graph replicate edges across time lags
+                    <option class="" value=""></option>
+        </span></li>
+            <li>Default Value: <span
+                    id="timeLagReplicatingGraph_default_value">true</span></li>
+            <li>Lower Bound: <span
+                    id="timeLagReplicatingGraph_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="timeLagReplicatingGraph_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="timeLagReplicatingGraph_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="useGap">useGap</h3>

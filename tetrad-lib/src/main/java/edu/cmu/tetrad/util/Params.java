@@ -1279,6 +1279,10 @@ public final class Params {
      * regression and HSIC.
      */
     public static String RCIT_CENTER_FEATURES = "rcit.centerFeatures";
+    /**
+     * Constant <code>REPEATING_GRAPH="repeatingGraph"</code> Whether to use a repeating graph for time lag search.
+     */
+    public static String TIME_LAG_REPLICATING_GRAPH = "timeLagReplicatingGraph";
 
     private Params() {
     }
