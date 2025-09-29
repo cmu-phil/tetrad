@@ -117,6 +117,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         Graph graph;
 
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(test);
+        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
@@ -178,6 +179,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         parameters.add(Params.DEPTH);
         parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.VERBOSE);
         return parameters;
     }

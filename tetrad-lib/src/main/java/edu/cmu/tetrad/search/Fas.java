@@ -21,10 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -113,6 +110,7 @@ public class Fas implements IFas {
      * alternative destinations.
      */
     private PrintStream out = System.out;
+    private boolean replicatingGraph;
 
     /**
      * Constructs a new instance of the Fas algorithm using the specified independence test.
@@ -190,7 +188,8 @@ public class Fas implements IFas {
             throw new IllegalArgumentException("Variables should be a subset of the ones in the test.");
         }
 
-        Graph modify = new EdgeListGraph(nodes);
+//        Graph modify = new EdgeListGraph(nodes);
+        Graph modify = GraphFactoryUtil.newGraph(nodes, replicatingGraph);
         modify = GraphUtils.completeGraph(modify);
 
         // Apply forbidden knowledge upfront.
@@ -515,6 +514,11 @@ public class Fas implements IFas {
      */
     public void setStable(boolean stable) {
         this.stable = stable;
+    }
+
+    @Override
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
     }
 
     /**

@@ -163,4 +163,8 @@ public class ReplicatingGraph extends EdgeListGraph {
             IN_REPLICATION.set(Boolean.FALSE);
         }
     }
+
+    public EdgeReplicationPolicy getReplicationPolicy() {
+        return policy;
+    }
 }

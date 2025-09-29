@@ -268,6 +268,7 @@ public final class SvarFci implements IGraphSearch {
      */
     private static final class SvarWrapperFas implements IFas {
         private final IFas base;
+        private boolean replicatingGraph;
 
         /**
          * Constructs a SvarWrapperFas that wraps the given IFas.
@@ -354,6 +355,11 @@ public final class SvarFci implements IGraphSearch {
         @Override
         public void setStable(boolean stable) {
             base.setStable(stable);
+        }
+
+        @Override
+        public void setReplicatingGraph(boolean replicatingGraph) {
+            this.replicatingGraph = replicatingGraph;
         }
     }
 }

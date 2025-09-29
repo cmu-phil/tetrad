@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -246,7 +246,7 @@ public final class GraphUtils {
         if (graph instanceof SvarEdgeListGraph) {
             graph2 = new SvarEdgeListGraph(graph.getNodes());
         } else {
-            graph2 = new EdgeListGraph(graph.getNodes());
+            graph2 = GraphFactoryUtil.newGraph(graph.getNodes(), graph instanceof ReplicatingGraph);
         }
 
         graph2.removeEdges(new ArrayList<>(graph2.getEdges()));
@@ -3407,8 +3407,8 @@ public final class GraphUtils {
 
     private static void strongConnect(Node v,
                                       Graph g,
-                                      Map<Node,Integer> index,
-                                      Map<Node,Integer> lowlink,
+                                      Map<Node, Integer> index,
+                                      Map<Node, Integer> lowlink,
                                       Deque<Node> stack,
                                       Set<Node> onStack,
                                       int[] counter,

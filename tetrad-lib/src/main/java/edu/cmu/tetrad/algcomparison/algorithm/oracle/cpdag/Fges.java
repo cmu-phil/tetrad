@@ -105,7 +105,7 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         Graph graph;
 
         edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(myScore);
-        search.setRepeating(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
+        search.setReplicating(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));

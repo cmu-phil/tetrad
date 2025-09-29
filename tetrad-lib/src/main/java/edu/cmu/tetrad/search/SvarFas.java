@@ -102,6 +102,7 @@ public class SvarFas implements IFas {
      * The output stream for printing.
      */
     private transient PrintStream out;
+    private boolean replicatingGraph;
 
     /**
      * Constructs a new FastAdjacencySearch.
@@ -233,6 +234,11 @@ public class SvarFas implements IFas {
     @Override
     public void setStable(boolean stable) {
 
+    }
+
+    @Override
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
     }
 
     /**

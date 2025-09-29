@@ -76,4 +76,6 @@ public interface IFas extends IGraphSearch {
      *               process.
      */
     void setStable(boolean stable);
+
+    void setReplicatingGraph(boolean replicatingGraph);
 }

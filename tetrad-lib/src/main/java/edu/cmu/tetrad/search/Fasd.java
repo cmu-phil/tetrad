@@ -96,6 +96,7 @@ public class Fasd implements IFas {
      * The output stream.
      */
     private transient PrintStream out = System.out;
+    private boolean replicatingGraph;
 
     /**
      * Constructs a new FastAdjacencySearch.
@@ -244,6 +245,11 @@ public class Fasd implements IFas {
     @Override
     public void setStable(boolean stable) {
 
+    }
+
+    @Override
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
     }
 
     /**

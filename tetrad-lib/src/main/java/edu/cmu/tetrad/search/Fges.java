@@ -188,7 +188,7 @@ public class Fges implements IGraphSearch, DagScorer {
      * The number of threads to use to run the algorithm.
      */
     private int numThreads = 1;
-    private boolean repeating = false;
+    private boolean replicating = false;
 
     /**
      * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
@@ -235,7 +235,7 @@ public class Fges implements IGraphSearch, DagScorer {
         long start = MillisecondTimes.timeMillis();
         topGraphs.clear();
 
-        graph = GraphFactoryUtil.newGraph(getVariables(), repeating);
+        graph = GraphFactoryUtil.newGraph(getVariables(), replicating);
 
         if (boundGraph != null) {
             boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
@@ -1341,8 +1341,8 @@ public class Fges implements IGraphSearch, DagScorer {
         return scoreGraphChange(x, y, set, idx); // calls existing private method
     }
 
-    public void setRepeating(boolean repeating) {
-        this.repeating = repeating;
+    public void setReplicating(boolean replicating) {
+        this.replicating = replicating;
     }
 
     /**

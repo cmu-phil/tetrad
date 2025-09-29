@@ -121,7 +121,7 @@ public final class SvarGfci implements IGraphSearch {
         }
 
         Fges fges = new Fges(this.score);
-        fges.setRepeating(true);
+        fges.setReplicating(true);
         fges.setKnowledge(this.knowledge);
         fges.setVerbose(this.verbose);
 //        fges.setNumCPDAGsToStore(0);
