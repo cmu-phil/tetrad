@@ -525,7 +525,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
                 }
             }
-            // ----- 2B) Standard algorithms: NEW â run once PER DATASET and collect graphs -----
+            // ----- 2B) Standard algorithms: run once PER DATASET and collect graphs -----
             else { // NEW
                 // (Removed the old single-dataset assertion; now we iterate all datasets.)
                 for (int i = 0; i < dataModelList.size(); i++) {
