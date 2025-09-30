@@ -55,6 +55,7 @@ import java.util.stream.IntStream;
         * <p><b>References:</b> Fattaneh Jabbari, Ph.D. dissertation, Carnegie Mellon University,
         * pp. 144–147.</p>
         */
+@Deprecated
 public class ISBDeuScore implements ISScore {
     private static final boolean verbose = false;
     private final int[][] data;

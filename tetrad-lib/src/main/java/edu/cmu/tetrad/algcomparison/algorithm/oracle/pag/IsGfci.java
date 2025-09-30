@@ -57,6 +57,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
+@Deprecated
 public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 

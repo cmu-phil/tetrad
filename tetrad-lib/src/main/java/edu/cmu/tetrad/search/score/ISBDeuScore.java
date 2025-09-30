@@ -29,6 +29,7 @@ import java.util.Objects;
  * Assumes the instance DataSet is a single row, already aligned to the training schema
  * (same variable names and category label sets).
  */
+@Deprecated
 public final class ISBDeuScore implements Score {
 
     // sentinel used by Tetrad discrete tables; adjust if your build differs

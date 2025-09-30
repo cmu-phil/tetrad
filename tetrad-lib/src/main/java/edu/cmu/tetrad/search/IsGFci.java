@@ -56,6 +56,7 @@ import java.util.Set;
  *
  * @author Fattaneh
  */
+@Deprecated
 public final class IsGFci implements IGraphSearch {
 
     private final Score populationScore;

@@ -50,6 +50,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Algorithm(name = "IS-FGES", command = "is-fges", algoType = AlgType.forbid_latent_common_causes)
 @Bootstrapping
+@Deprecated
 public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix {
 

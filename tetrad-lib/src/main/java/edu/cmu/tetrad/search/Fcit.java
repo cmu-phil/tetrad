@@ -145,16 +145,16 @@ public final class Fcit implements IGraphSearch {
      * instantiated to an empty graph structure.
      */
     private @NotNull Graph pag = new EdgeListGraph();
-    /**
-     * Indicates whether the search algorithm guarantees that the output graph is a valid Partial Ancestral Graph (PAG).
-     * If set to true, the algorithm ensures the validity of the PAG by making necessary adjustments and conforming to
-     * PAG-specific rules.
-     * <p>
-     * This flag is useful for scenarios where a valid PAG is a mandatory requirement for further causal inference or
-     * analysis. If false, the algorithm does not enforce this guarantee, which might allow more freedom in the search
-     * process but could result in outputs that are not strictly valid as PAGs.
-     */
-    private boolean guaranteeMag = false;
+//    /**
+//     * Indicates whether the search algorithm guarantees that the output graph is a valid Partial Ancestral Graph (PAG).
+//     * If set to true, the algorithm ensures the validity of the PAG by making necessary adjustments and conforming to
+//     * PAG-specific rules.
+//     * <p>
+//     * This flag is useful for scenarios where a valid PAG is a mandatory requirement for further causal inference or
+//     * analysis. If false, the algorithm does not enforce this guarantee, which might allow more freedom in the search
+//     * process but could result in outputs that are not strictly valid as PAGs.
+//     */
+//    private boolean guaranteeMag = false;
     private boolean replicatingGraph = false;
 
     /**
@@ -800,13 +800,13 @@ public final class Fcit implements IGraphSearch {
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
 
-        if (guaranteeMag) {
-            if (!GraphTransforms.zhangMagFromPag(pag).paths().isLegalMag()) {
-                this.pag = _pag;
-                sepsets.set(x, y, sepset);
-                return false;
-            }
-        }
+//        if (guaranteeMag) {
+//            if (!GraphTransforms.zhangMagFromPag(pag).paths().isLegalMag()) {
+//                this.pag = _pag;
+//                sepsets.set(x, y, sepset);
+//                return false;
+//            }
+//        }
 
         if (verbose) {
             TetradLogger.getInstance().log("Removing " + _edge + " for " + type + " reasons.");
@@ -915,15 +915,15 @@ public final class Fcit implements IGraphSearch {
         this.checkAdjacencySepsets = checkAdjacencySepsets;
     }
 
-    /**
-     * Sets the flag indicating whether the algorithm should guarantee the generation of a valid Partial Ancestral Graph
-     * (PAG).
-     *
-     * @param guaranteeMag true to guarantee a valid PAG, false otherwise
-     */
-    public void setGuaranteeMag(boolean guaranteeMag) {
-        this.guaranteeMag = guaranteeMag;
-    }
+//    /**
+//     * Sets the flag indicating whether the algorithm should guarantee the generation of a valid Partial Ancestral Graph
+//     * (PAG).
+//     *
+//     * @param guaranteeMag true to guarantee a valid PAG, false otherwise
+//     */
+//    public void setGuaranteeMag(boolean guaranteeMag) {
+//        this.guaranteeMag = guaranteeMag;
+//    }
 
     /**
      * Enumeration representing different start options.
