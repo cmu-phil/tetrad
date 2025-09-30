@@ -42,7 +42,7 @@ import java.util.List;
  * @version $Id: $Id
  * @see BdeScore
  */
-public class BdeuScore implements DiscreteScore {
+public class BDeuScore implements DiscreteScore {
 
     /**
      * The discrete dataset.
@@ -67,7 +67,7 @@ public class BdeuScore implements DiscreteScore {
     /**
      * The sample prior.
      */
-    private double samplePrior = 1d;
+    private double priorEquivalentSampleSize = 1d;
     /**
      * The structure prior.
      */
@@ -78,7 +78,7 @@ public class BdeuScore implements DiscreteScore {
      *
      * @throws UnsupportedOperationException The BdeuScore class does not support the no-arg constructor.
      */
-    private BdeuScore() {
+    private BDeuScore() {
         throw new UnsupportedOperationException("The BdeuScore class does not support the no-arg constructor.");
     }
 
@@ -87,7 +87,7 @@ public class BdeuScore implements DiscreteScore {
      *
      * @param dataSet A discrete dataset.
      */
-    public BdeuScore(DataSet dataSet) {
+    public BDeuScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException("Data was not provided.");
         }
@@ -194,7 +194,7 @@ public class BdeuScore implements DiscreteScore {
                 continue;
             }
 
-            int rowIndex = BdeuScore.getRowIndex(dims, parentValues);
+            int rowIndex = BDeuScore.getRowIndex(dims, parentValues);
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;
@@ -206,8 +206,8 @@ public class BdeuScore implements DiscreteScore {
 
         score += getPriorForStructure(parents.length, N);
 
-        double cellPrior = getSamplePrior() / (c * r);
-        double rowPrior = getSamplePrior() / r;
+        double cellPrior = getPriorEquivalentSampleSize() / (c * r);
+        double rowPrior = getPriorEquivalentSampleSize() / r;
 
         for (int j = 0; j < r; j++) {
             score -= Gamma.logGamma(rowPrior + n_j[j]);
@@ -302,8 +302,8 @@ public class BdeuScore implements DiscreteScore {
      *
      * @return This prior.
      */
-    public double getSamplePrior() {
-        return this.samplePrior;
+    public double getPriorEquivalentSampleSize() {
+        return this.priorEquivalentSampleSize;
     }
 
     /**
@@ -312,8 +312,8 @@ public class BdeuScore implements DiscreteScore {
      * @param samplePrior The sample prior to be set.
      */
     @Override
-    public void setSamplePrior(double samplePrior) {
-        this.samplePrior = samplePrior;
+    public void setPriorEquivalentSampleSize(double samplePrior) {
+        this.priorEquivalentSampleSize = samplePrior;
     }
 
     /**
@@ -324,7 +324,7 @@ public class BdeuScore implements DiscreteScore {
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
-        return "BDeu Score Sample prior = " + nf.format(this.samplePrior) + " Structure prior = " + nf.format(this.structurePrior);
+        return "BDeu Score Sample prior = " + nf.format(this.priorEquivalentSampleSize) + " Structure prior = " + nf.format(this.structurePrior);
     }
 
     /**

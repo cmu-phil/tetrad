@@ -25,7 +25,7 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -1059,9 +1059,9 @@ public class PerformanceTests {
 
                 long time3 = MillisecondTimes.timeMillis();
 
-                BdeuScore score = new BdeuScore(data);
+                BDeuScore score = new BDeuScore(data);
                 score.setStructurePrior(1);
-                score.setSamplePrior(1);
+                score.setPriorEquivalentSampleSize(1);
 
                 System.out.println(new Date());
                 System.out.println("\nStarting FGES");
@@ -1298,9 +1298,9 @@ public class PerformanceTests {
 
             long time3 = MillisecondTimes.timeMillis();
 
-            BdeuScore score = new BdeuScore(data);
+            BDeuScore score = new BDeuScore(data);
             score.setStructurePrior(structurePrior);
-            score.setSamplePrior(samplePrior);
+            score.setPriorEquivalentSampleSize(samplePrior);
 
             System.out.println(new Date());
             System.out.println("\nStarting FGES");

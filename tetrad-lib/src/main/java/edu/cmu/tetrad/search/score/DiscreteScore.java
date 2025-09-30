@@ -42,7 +42,7 @@ public interface DiscreteScore extends Score {
      *
      * @param samplePrior Ibid.
      */
-    void setSamplePrior(double samplePrior);
+    void setPriorEquivalentSampleSize(double samplePrior);
 
     /**
      * Returns the dataset.

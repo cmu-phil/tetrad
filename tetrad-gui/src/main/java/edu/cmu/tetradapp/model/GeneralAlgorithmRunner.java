@@ -546,12 +546,18 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         if (scoreWrapper instanceof BlockScoreWrapper) {
                             ((BlockScoreWrapper) scoreWrapper).setBlockSpec(blockSpec);
                         }
+                        if (scoreWrapper instanceof HasKnowledge) {
+                            ((HasKnowledge) scoreWrapper).setKnowledge(knowledge);
+                        }
                     }
 
                     if (algo instanceof TakesIndependenceWrapper) {
                         IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
                         if (wrapper instanceof BlockIndependenceWrapper) {
                             ((BlockIndependenceWrapper) wrapper).setBlockSpec(blockSpec);
+                        }
+                        if (wrapper instanceof HasKnowledge) {
+                            ((HasKnowledge) wrapper).setKnowledge(knowledge);
                         }
                     }
 

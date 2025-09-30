@@ -26,7 +26,7 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FgesFci;
-import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
@@ -275,8 +275,8 @@ public class TestFgesFci {
         DataSet data = bayesIm.simulateData(sampleSize, false);
 
         IndependenceTest test = new IndTestChiSquare(data, 0.05);
-        BdeuScore bDeuScore = new BdeuScore(data);
-        bDeuScore.setSamplePrior(1.0);
+        BDeuScore bDeuScore = new BDeuScore(data);
+        bDeuScore.setPriorEquivalentSampleSize(1.0);
         bDeuScore.setStructurePrior(1.0);
 
         FgesFci fgesFci = new FgesFci(test, bDeuScore);
@@ -306,9 +306,9 @@ public class TestFgesFci {
 
         IndependenceTest indTest = new IndTestChiSquare(dataSet, alpha);
 
-        BdeuScore score = new BdeuScore(dataSet);
+        BDeuScore score = new BDeuScore(dataSet);
         score.setStructurePrior(1.0);
-        score.setSamplePrior(1.0);
+        score.setPriorEquivalentSampleSize(1.0);
 
         FgesFci fgesFci = new FgesFci(indTest, score);
         fgesFci.setFaithfulnessAssumed(true);

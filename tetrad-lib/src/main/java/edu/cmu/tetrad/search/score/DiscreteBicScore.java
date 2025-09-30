@@ -377,7 +377,7 @@ public class DiscreteBicScore implements DiscreteScore {
      * This method is not used for this score.
      */
     @Override
-    public void setSamplePrior(double samplePrior) {
+    public void setPriorEquivalentSampleSize(double samplePrior) {
         throw new UnsupportedOperationException("This method is not used.");
     }
 

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
@@ -173,7 +173,7 @@ public class TsUtils {
         Score score;
 
         if (timeLags.isDiscrete()) {
-            score = new BdeuScore(timeLags);
+            score = new BDeuScore(timeLags);
         } else if (timeLags.isContinuous()) {
             SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(timeLags));
             semBicScore.setPenaltyDiscount(2.0);
