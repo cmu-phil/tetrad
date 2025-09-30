@@ -929,7 +929,7 @@ public class TestFci {
                 Fcit fcit = new Fcit(test, score);
                 fcit.setVerbose(true);
                 fcit.setUseBes(true);
-                fcit.setGuaranteeMag(true);
+//                fcit.setGuaranteeMag(true);
                 fcit.setDepth(-1);
                 fcit.setCompleteRuleSetUsed(true);
                 fcit.setCheckAdjacencySepsets(false);

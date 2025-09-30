@@ -3,7 +3,7 @@ package edu.cmu.tetrad.algcomparison.score;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.ISBDeuScore;
+import edu.cmu.tetrad.search.score.IsBDeuScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -19,7 +19,7 @@ import java.util.*;
         command = "is-bdeu-score",
         dataType = {DataType.Discrete}
 )
-public final class ISBDeuScoreWrapper implements ScoreWrapper, HasKnowledge {
+public final class IsBDeuScoreWrapper implements ScoreWrapper, HasKnowledge {
 
     private Knowledge knowledge = new Knowledge();
 
@@ -46,7 +46,7 @@ public final class ISBDeuScoreWrapper implements ScoreWrapper, HasKnowledge {
         // One-row instance dataset
         DataSet instanceOneRow = alignedTesting.subsetRows(new int[]{row});
 
-        ISBDeuScore score = new ISBDeuScore(train, instanceOneRow);
+        IsBDeuScore score = new IsBDeuScore(train, instanceOneRow);
 
         // isAlpha
         double isAlpha = parameters.getDouble(Params.INSTANCE_SPECIFIC_ALPHA, 1.0);

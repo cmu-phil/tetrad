@@ -29,8 +29,8 @@ import java.util.Objects;
  * Assumes the instance DataSet is a single row, already aligned to the training schema
  * (same variable names and category label sets).
  */
-@Deprecated
-public final class ISBDeuScore implements Score {
+//@Deprecated
+public final class IsBDeuScore implements Score {
 
     // sentinel used by Tetrad discrete tables; adjust if your build differs
     private static final int MISSING = -99;
@@ -42,9 +42,9 @@ public final class ISBDeuScore implements Score {
 
     /**
      * @param train discrete training data
-     * @param instanceOneRow discrete dataset with exactly 1 row, aligned by name & categories to 'train'
+     * @param instanceOneRow discrete dataset with exactly 1 row, aligned by name &amp; categories to 'train'
      */
-    public ISBDeuScore(DataSet train, DataSet instanceOneRow) {
+    public IsBDeuScore(DataSet train, DataSet instanceOneRow) {
         if (!Objects.requireNonNull(train, "train").isDiscrete()) {
             throw new IllegalArgumentException("Training data must be discrete.");
         }

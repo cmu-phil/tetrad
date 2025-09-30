@@ -43,7 +43,7 @@ import java.util.Set;
  * <p>
  * Standard FGES searches for a population-wide graph by evaluating candidate edge additions, deletions, and reversals
  * with a decomposable score such as BIC or BDeu. Instance-specific FGES modifies this process by using an
- * {@link ISScore}, which augments the usual population likelihood with instance-specific likelihood terms that
+ * {@link IsScore}, which augments the usual population likelihood with instance-specific likelihood terms that
  * condition on the values of the test case. In this way, the score rewards structures that explain not only the data
  * overall but also the observed values for the instance in question. A structure prior further penalizes deviations
  * from the population model (e.g., instance-only additions, deletions, or reversals).
@@ -56,7 +56,7 @@ import java.util.Set;
  *
  * @author Fattaneh
  */
-@Deprecated
+//@Deprecated
 public final class IsGFci implements IGraphSearch {
 
     private final Score populationScore;
@@ -87,7 +87,7 @@ public final class IsGFci implements IGraphSearch {
     private boolean faithfulnessAssumed = true;
 
     // The instance-specific score.
-    private ISScore score;
+    private IsScore score;
 
     // The population-wide graph
     private Graph populationGraph;
@@ -105,7 +105,7 @@ public final class IsGFci implements IGraphSearch {
      * @param populationScore the population-wide score used for scoring population-wide structures.
      * @throws NullPointerException if the provided score is null.
      */
-    public IsGFci(IndependenceTest test, ISScore score, Score populationScore) {
+    public IsGFci(IndependenceTest test, IsScore score, Score populationScore) {
         if (score == null) {
             throw new NullPointerException();
         }

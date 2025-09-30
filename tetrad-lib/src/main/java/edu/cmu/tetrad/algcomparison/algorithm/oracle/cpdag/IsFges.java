@@ -35,8 +35,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.work_in_progress.ISBDeuScore;
-import edu.cmu.tetrad.search.ISScore;
+import edu.cmu.tetrad.search.work_in_progress.IsBDeuScore;
+import edu.cmu.tetrad.search.IsScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -50,7 +50,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Algorithm(name = "IS-FGES", command = "is-fges", algoType = AlgType.forbid_latent_common_causes)
 @Bootstrapping
-@Deprecated
+//@Deprecated
 public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix {
 
@@ -164,7 +164,7 @@ public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, Has
         if (train.isContinuous()) {
             throw new IllegalArgumentException("ISBDeuScore requires discrete data; got continuous.");
         }
-        ISScore isScore = new ISBDeuScore(train, testCase);
+        IsScore isScore = new IsBDeuScore(train, testCase);
 
         // Population score (discrete BDeu).
         Score populationScore = new edu.cmu.tetrad.algcomparison.score.BdeuScore().getScore(dataModel, parameters);
