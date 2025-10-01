@@ -386,7 +386,7 @@ public class FciOrient {
                 // Let DiscriminatingPath judge validity; we’re just enumerating paths with enforced collider-at-interior.
                 DiscriminatingPath dp = new DiscriminatingPath(x, w, v, y, colliderPath, checkEcNonadjacency);
 //                discriminatingPaths.add(dp); // existsIn(graph) may be called inside its equals/hash or later by caller
-Fi
+
                 if (dp.existsIn(graph)) {
                     discriminatingPaths.add(dp);
                 }
