@@ -185,6 +185,7 @@ public final class MagToPag {
         FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
+        fciOrient.setMaxDiscriminatingPathLength(-1);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
 
         for (Node y : pag.getNodes()) {
