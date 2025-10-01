@@ -145,16 +145,16 @@ public final class Fcit implements IGraphSearch {
      * instantiated to an empty graph structure.
      */
     private @NotNull Graph pag = new EdgeListGraph();
-//    /**
-//     * Indicates whether the search algorithm guarantees that the output graph is a valid Partial Ancestral Graph (PAG).
-//     * If set to true, the algorithm ensures the validity of the PAG by making necessary adjustments and conforming to
-//     * PAG-specific rules.
-//     * <p>
-//     * This flag is useful for scenarios where a valid PAG is a mandatory requirement for further causal inference or
-//     * analysis. If false, the algorithm does not enforce this guarantee, which might allow more freedom in the search
-//     * process but could result in outputs that are not strictly valid as PAGs.
-//     */
-//    private boolean guaranteeMag = false;
+    /**
+     * Indicates whether the search algorithm guarantees that the output graph is a valid Partial Ancestral Graph (PAG).
+     * If set to true, the algorithm ensures the validity of the PAG by making necessary adjustments and conforming to
+     * PAG-specific rules.
+     * <p>
+     * This flag is useful for scenarios where a valid PAG is a mandatory requirement for further causal inference or
+     * analysis. If false, the algorithm does not enforce this guarantee, which might allow more freedom in the search
+     * process but could result in outputs that are not strictly valid as PAGs.
+     */
+    private boolean guaranteePag = true;
     private boolean replicatingGraph = false;
 
     /**
@@ -668,30 +668,19 @@ public final class Fcit implements IGraphSearch {
         }
     }
 
-    private List<Result> findIndependenceChecksRecursive(
-            Set<Edge> edges,
-            Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge,
-            Set<IndependenceCheck> checks
-    ) {
-        return new HashSet<>(edges).parallelStream()
-                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
-                .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
-                                || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
-                .map(edge -> {
-                    try {
-                        IndependenceCheck checkResult =
-                                findIndependenceCheckRecursive(edge, pathsByEdge, checks);
-                        if (checkResult != null) {
-                            checks.add(checkResult); // guard against null
-                            return new Result(checkResult.edge(), checkResult.cond());
-                        }
-                        return null;
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
+        return new HashSet<>(edges).parallelStream().filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge) || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())).map(edge -> {
+            try {
+                IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
+                if (checkResult != null) {
+                    checks.add(checkResult); // guard against null
+                    return new Result(checkResult.edge(), checkResult.cond());
+                }
+                return null;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     private List<Result> findIndependenceChecksSubsetOfAdjacents(Set<Edge> edges, Set<IndependenceCheck> checks) {
@@ -706,11 +695,7 @@ public final class Fcit implements IGraphSearch {
         }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
-    private IndependenceCheck findIndependenceCheckRecursive(
-            Edge edge,
-            Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge,
-            Set<IndependenceCheck> checks
-    ) throws InterruptedException {
+    private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) throws InterruptedException {
         if (verbose) System.out.print(".");
 
         final Node x = edge.getNode1();
@@ -739,9 +724,7 @@ public final class Fcit implements IGraphSearch {
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
 
             // Use recursive blocking to propose a blocking set B; null => no sepset under this NF
-            Set<Node> B = RecursiveBlocking.blockPathsRecursively(
-                    this.pag, x, y, Set.of(), notFollowed, -1, this.knowledge
-            );
+            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1, this.knowledge);
             if (B == null) {
                 continue; // No separating set possible for this NF; try another NF
             }
@@ -800,13 +783,13 @@ public final class Fcit implements IGraphSearch {
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
 
-//        if (guaranteeMag) {
-//            if (!GraphTransforms.zhangMagFromPag(pag).paths().isLegalMag()) {
-//                this.pag = _pag;
-//                sepsets.set(x, y, sepset);
-//                return false;
-//            }
-//        }
+        if (guaranteePag) {
+            if (!GraphTransforms.zhangMagFromPag(pag).paths().isLegalMag()) {
+                this.pag = _pag;
+                sepsets.set(x, y, sepset);
+                return false;
+            }
+        }
 
         if (verbose) {
             TetradLogger.getInstance().log("Removing " + _edge + " for " + type + " reasons.");
@@ -915,15 +898,19 @@ public final class Fcit implements IGraphSearch {
         this.checkAdjacencySepsets = checkAdjacencySepsets;
     }
 
-//    /**
-//     * Sets the flag indicating whether the algorithm should guarantee the generation of a valid Partial Ancestral Graph
-//     * (PAG).
-//     *
-//     * @param guaranteeMag true to guarantee a valid PAG, false otherwise
-//     */
-//    public void setGuaranteeMag(boolean guaranteeMag) {
-//        this.guaranteeMag = guaranteeMag;
-//    }
+    /**
+     * Sets the flag indicating whether the algorithm should guarantee the generation of a valid Partial Ancestral Graph
+     * (PAG).
+     *
+     * @param guaranteePag true to guarantee a valid PAG, false otherwise
+     */
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
+    }
+
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
+    }
 
     /**
      * Enumeration representing different start options.
