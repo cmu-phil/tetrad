@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.utils.LegalGraphCheck;
+import edu.cmu.tetrad.search.utils.GraphLegalityCheck;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -79,7 +79,7 @@ public class ImpliesLegalMag implements Statistic {
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         Graph mag = GraphTransforms.zhangMagFromPag(estGraph);
-        LegalGraphCheck.LegalMagRet legalPag = LegalGraphCheck.isLegalMag(estGraph, new HashSet<>(selection));
+        GraphLegalityCheck.LegalMagRet legalPag = GraphLegalityCheck.isLegalMag(estGraph, new HashSet<>(selection));
 
         if (legalPag.isLegalMag()) {
             return 1.0;

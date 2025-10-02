@@ -32,7 +32,7 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.LegalGraphCheck;
+import edu.cmu.tetrad.search.utils.GraphLegalityCheck;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -92,7 +92,7 @@ public class TestFci {
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        LegalGraphCheck.LegalMagRet legalMag = LegalGraphCheck.isLegalMag(graph, new HashSet<>(selection));
+        GraphLegalityCheck.LegalMagRet legalMag = GraphLegalityCheck.isLegalMag(graph, new HashSet<>(selection));
 
         if (!legalMag.isLegalMag()) {
             System.out.println("Not legal mag, reason = " + legalMag.getReason());
@@ -105,7 +105,7 @@ public class TestFci {
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        LegalGraphCheck.LegalPagRet legalMag = LegalGraphCheck.isLegalPag(graph, new HashSet<>(selection));
+        GraphLegalityCheck.LegalPagRet legalMag = GraphLegalityCheck.isLegalPag(graph, new HashSet<>(selection));
 
         if (!legalMag.isLegalPag()) {
             System.out.println("Not legal pag, reason = " + legalMag.getReason());
@@ -944,7 +944,7 @@ public class TestFci {
                 List<Node> selection = graph.getNodes().stream()
                         .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-                LegalGraphCheck.LegalPagRet ret = LegalGraphCheck.isLegalPag(pag, new HashSet<>(selection));
+                GraphLegalityCheck.LegalPagRet ret = GraphLegalityCheck.isLegalPag(pag, new HashSet<>(selection));
 
                 if (mag.paths().isLegalMag() && !pag.paths().isLegalPag()) {
                     List<Node> nodes = pag.getNodes();

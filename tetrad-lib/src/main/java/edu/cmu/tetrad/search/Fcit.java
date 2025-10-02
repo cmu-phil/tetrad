@@ -785,6 +785,9 @@ public final class Fcit implements IGraphSearch {
 
         if (guaranteePag) {
             if (!pag.paths().isLegalPag()) {
+                TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
+                                               + " reasons, but it didn't lead to a PAG");
+
                 this.pag = _pag;
                 sepsets.set(x, y, sepset);
                 return false;

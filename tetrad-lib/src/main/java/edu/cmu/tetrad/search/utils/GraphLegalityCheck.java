@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class LegalGraphCheck {
+public class GraphLegalityCheck {
     /**
      * Checks if the provided Directed Acyclic Graph (PAG) is a legal PAG.
      *

@@ -24,7 +24,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.utils.LegalGraphCheck;
+import edu.cmu.tetrad.search.utils.GraphLegalityCheck;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -48,7 +48,7 @@ public class CheckGraphForMagAction extends AbstractAction {
     /**
      * Stores the result of the legal MAG check.
      */
-    private volatile LegalGraphCheck.LegalMagRet legalMag = null;
+    private volatile GraphLegalityCheck.LegalMagRet legalMag = null;
 
     /**
      * Highlights all latent variables in the given display graph.
@@ -86,7 +86,7 @@ public class CheckGraphForMagAction extends AbstractAction {
                         .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
                 Graph _graph = new EdgeListGraph(workbench.getGraph());
-                legalMag = LegalGraphCheck.isLegalMag(_graph, new HashSet<>(selection));
+                legalMag = GraphLegalityCheck.isLegalMag(_graph, new HashSet<>(selection));
             }
         }
 

@@ -22,7 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.LegalGraphCheck;
+import edu.cmu.tetrad.search.utils.GraphLegalityCheck;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -44,7 +44,7 @@ public class CheckGraphForPagAction extends AbstractAction {
     /**
      * The legal PAG result.
      */
-    private volatile LegalGraphCheck.LegalPagRet legalPag = null;
+    private volatile GraphLegalityCheck.LegalPagRet legalPag = null;
 
     /**
      * Highlights all latent variables in the given display graph.
@@ -79,7 +79,7 @@ public class CheckGraphForPagAction extends AbstractAction {
             @Override
             public void watch() {
                 Graph _graph = new EdgeListGraph(workbench.getGraph());
-                legalPag = LegalGraphCheck.isLegalPag(_graph, new HashSet<>());
+                legalPag = GraphLegalityCheck.isLegalPag(_graph, new HashSet<>());
             }
         }
 

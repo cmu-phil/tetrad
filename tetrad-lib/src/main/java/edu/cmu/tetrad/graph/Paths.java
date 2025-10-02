@@ -448,7 +448,7 @@ public class Paths implements TetradSerializable {
     public boolean isLegalMag() {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        return LegalGraphCheck.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
+        return GraphLegalityCheck.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
     }
 
     /**
@@ -458,7 +458,7 @@ public class Paths implements TetradSerializable {
      */
     public boolean isLegalPag() {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-        return LegalGraphCheck.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
+        return GraphLegalityCheck.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
     }
 
     /**
