@@ -199,7 +199,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      */
     @Override
     public String getDescription() {
-        return "FCIT (FCI Targeted Testing) using " + this.score.getDescription();
+        return "FCIT (FCI Targeted Testing) using "+ this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**

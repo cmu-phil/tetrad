@@ -784,7 +784,7 @@ public final class Fcit implements IGraphSearch {
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
 
         if (guaranteePag) {
-            if (!GraphTransforms.zhangMagFromPag(pag).paths().isLegalMag()) {
+            if (!pag.paths().isLegalPag()) {
                 this.pag = _pag;
                 sepsets.set(x, y, sepset);
                 return false;

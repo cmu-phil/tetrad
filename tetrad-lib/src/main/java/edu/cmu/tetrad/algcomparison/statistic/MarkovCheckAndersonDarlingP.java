@@ -108,6 +108,7 @@ public class MarkovCheckAndersonDarlingP implements Statistic, MarkovCheckerStat
 
         IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
         MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
+        markovCheck.setParallelized(false);
         markovCheck.generateResults(true, true);
         return markovCheck.getAndersonDarlingP(true);
     }

@@ -47,7 +47,7 @@ public class LegalCpdag implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "LegalCPDAG";
+        return "CPDAG";
     }
 
     /**
@@ -55,7 +55,7 @@ public class LegalCpdag implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "1 if the estimated graph is Legal CPPAG, 0 if not";
+        return "1 if the estimated graph is Legal CPDAG, 0 if not";
     }
 
     /**

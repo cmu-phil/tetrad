@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.LegalGraphCheck;
 
 import java.util.*;
 
@@ -55,7 +55,7 @@ public class OrderedLocalMarkovProperty {
         if (!paths.isLegalMag()) {
             List<Node> selection = mag.getNodes().stream()
                     .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-            GraphSearchUtils.LegalMagRet ret = GraphSearchUtils.isLegalMag(mag, new HashSet<>(selection));
+            LegalGraphCheck.LegalMagRet ret = LegalGraphCheck.isLegalMag(mag, new HashSet<>(selection));
 //            throw new IllegalArgumentException("MAG not valid, reason = " + ret.getReason());
         }
 
