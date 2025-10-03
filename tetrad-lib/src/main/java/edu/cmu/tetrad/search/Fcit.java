@@ -900,15 +900,16 @@ public final class Fcit implements IGraphSearch {
 //        this.checkAdjacencySepsets = checkAdjacencySepsets;
 //    }
 
-    /**
-     * Sets the flag indicating whether the algorithm should guarantee the generation of a valid Partial Ancestral Graph
-     * (PAG).
-     *
-     * @param guaranteePag true to guarantee a valid PAG, false otherwise
-     */
-    public void setGuaranteePag(boolean guaranteePag) {
-        this.guaranteePag = guaranteePag;
-    }
+    // This must be true.
+//    /**
+//     * Sets the flag indicating whether the algorithm should guarantee the generation of a valid Partial Ancestral Graph
+//     * (PAG).
+//     *
+//     * @param guaranteePag true to guarantee a valid PAG, false otherwise
+//     */
+//    public void setGuaranteePag(boolean guaranteePag) {
+//        this.guaranteePag = guaranteePag;
+//    }
 
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
