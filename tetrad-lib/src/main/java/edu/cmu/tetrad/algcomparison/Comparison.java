@@ -739,7 +739,6 @@ public class Comparison implements TetradSerializable {
                     }
 
 
-
                     if (isSavePags()) {
                         Graph pag = GraphTransforms.dagToPag(graph);
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");

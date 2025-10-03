@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -83,10 +83,12 @@ public class BidirectedLatentPrecision implements Statistic {
 
         if (trueGraph.paths().isLegalDag()) {
             dag = trueGraph;
-        } else if (trueGraph.paths().isLegalPag()) {
-            dag = PagCache.getInstance().getDag(trueGraph);
         } else {
-            throw new IllegalStateException("Graph is not legal dag or pag");
+            dag = PagCache.getInstance().getDag(trueGraph);
+        }
+
+        if (dag == null) {
+            throw new IllegalArgumentException("Dag is null");
         }
 
         int tp = 0;

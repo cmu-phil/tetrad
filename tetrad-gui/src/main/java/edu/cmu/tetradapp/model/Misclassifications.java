@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.session.DoNotAddOldModel;
@@ -131,7 +132,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
             return GraphTransforms.dagToCpdag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
-            return GraphTransforms.dagToPag(graph);
+            return PagCache.getInstance().getPag(graph);
         } else {
             params.set("graphComparisonType", "DAG");
             return new EdgeListGraph(graph);

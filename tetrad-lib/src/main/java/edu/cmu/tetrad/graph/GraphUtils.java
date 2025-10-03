@@ -2620,7 +2620,7 @@ public final class GraphUtils {
 
         MagToPag dagToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
         dagToPag.setKnowledge(knowledge);
-        Graph pag2 = dagToPag.convert();
+        Graph pag2 = dagToPag.convert(true);
 
         if (pag2.equals(orig)) {
             if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");

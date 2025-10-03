@@ -442,11 +442,13 @@ public final class Fcit implements IGraphSearch {
 
         // The main procedure.
 
-        MagToPag dagToPag = new MagToPag(GraphTransforms.dagToMag(dag));
-        dagToPag.setKnowledge(knowledge);
-        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-        dagToPag.setVerbose(superVerbose);
-        this.pag = dagToPag.convert();
+//        MagToPag dagToPag = new MagToPag(GraphTransforms.dagToMag(dag));
+//        dagToPag.setKnowledge(knowledge);
+//        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
+//        dagToPag.setVerbose(superVerbose);
+//        this.pag = dagToPag.convert(true);
+
+        this.pag = GraphTransforms.dagToPag(dag);
 
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
@@ -778,8 +780,9 @@ public final class Fcit implements IGraphSearch {
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
 
         if (guaranteePag) {
-            if (!pag.paths().isLegalPag()) {
-                if (verbose) {
+            if (!GraphLegalityCheck.isLegalPagQuiet(this.pag, Set.of())) {
+//                if (!GraphLegalityCheck.isLegalPag(this.pag, Set.of()).isLegalPag()) {
+                    if (verbose) {
                     TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
                                                    + " reasons, but it didn't lead to a PAG");
                 }

@@ -125,11 +125,13 @@ public final class BossPod implements IGraphSearch {
             TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
         }
 
-        MagToPag dagToPag = new MagToPag(GraphTransforms.dagToMag(dag));
-        dagToPag.setVerbose(verbose);
-        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-        dagToPag.setKnowledge(knowledge);
-        Graph pag = dagToPag.convert();
+//        MagToPag dagToPag = new MagToPag(GraphTransforms.dagToMag(dag));
+//        dagToPag.setVerbose(verbose);
+//        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
+//        dagToPag.setKnowledge(knowledge);
+//        Graph pag = dagToPag.convert(true);
+
+        Graph pag = GraphTransforms.dagToPag(dag);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished calculating PAG from CPDAG.");

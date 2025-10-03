@@ -84,10 +84,12 @@ public class TrueDagPrecisionArrow implements Statistic {
 
         if (trueGraph.paths().isLegalDag()) {
             dag = trueGraph;
-        } else if (trueGraph.paths().isLegalPag()) {
-            dag = PagCache.getInstance().getDag(trueGraph);
         } else {
-            throw new IllegalStateException("Graph is not legal dag or pag");
+            dag = PagCache.getInstance().getDag(trueGraph);
+        }
+
+        if (dag == null) {
+            throw new IllegalArgumentException("Dag is null");
         }
 
         List<Node> nodes = estGraph.getNodes();

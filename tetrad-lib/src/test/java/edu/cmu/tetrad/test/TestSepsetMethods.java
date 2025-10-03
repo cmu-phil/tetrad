@@ -292,7 +292,7 @@ public class TestSepsetMethods {
         Graph dag = RandomGraph.randomDag(20, 10, 40, 100,
                 100, 100, false);
 
-        Graph pag = new MagToPag(dag).convert();
+        Graph pag = new MagToPag(dag).convert(true);
 
         for (Node x : pag.getNodes()) {
             for (Node y : pag.getNodes()) {
@@ -332,7 +332,7 @@ public class TestSepsetMethods {
             Graph dag = RandomGraph.randomDag(15, 5, 40, 100,
                     100, 100, false);
 
-            Graph pag = new MagToPag(GraphTransforms.dagToMag(dag)).convert();
+            Graph pag = new MagToPag(GraphTransforms.dagToMag(dag)).convert(true);
 
 
             for (Node x : pag.getNodes()) {

@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.MagToPag;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -75,7 +76,7 @@ public class PagCache {
      * @return the corresponding PAG of the input DAG
      * @throws IllegalArgumentException if the input graph is not a DAG
      */
-    public Graph getPag(Graph graph) {
+    public @NotNull Graph getPag(Graph graph) {
 
         // This caching caused problems at one point, turning it off for now. jdramsey 2025-06-14
         if (!(graph.paths().isLegalDag() || graph.paths().isLegalMag())) {
@@ -92,17 +93,14 @@ public class PagCache {
 
             if (graph.paths().isLegalMag()) {
                 MagToPag magToPag = new MagToPag(graph);
-                pag = magToPag.convert();
-//                return magToPag.convert();
+                pag = magToPag.convert(false);
             } else if (graph.paths().isLegalDag()) {
                 MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(graph));
-                pag = magToPag.convert();
-//                return magToPag.convert();
+                pag = magToPag.convert(false);
             } else {
                 Graph mag = GraphTransforms.zhangMagFromPag(graph);
                 MagToPag magToPag = new MagToPag(mag);
-                pag = magToPag.convert();
-//                return magToPag.convert();
+                pag = magToPag.convert(true);
             }
 
 //            MagToPag dagToPag = new MagToPag(graph);
@@ -134,10 +132,7 @@ public class PagCache {
         if (pagCache.containsKey(graph)) {
             return pagCache.get(graph);
         } else {
-            MagToPag dagToPag = new MagToPag(graph);
-            dagToPag.setKnowledge(knowledge);
-            dagToPag.setVerbose(verbose);
-            Graph pag = dagToPag.convert();
+            Graph pag = GraphTransforms.dagToPag(graph);
             pagCache.put(graph, pag);
 
             if (graph.paths().isLegalDag()) {

@@ -150,6 +150,97 @@ public class GraphLegalityCheck {
     }
 
     /**
+     * Determines whether the given PAG (Partial Ancestral Graph) is legal. This method performs checks on the PAG and
+     * its corresponding transformed structures to verify its legality while suppressing detailed outputs.
+     * <p>
+     * For this quiet version, verbose commenting is not generated.
+     *
+     * @param pag       the Partial Ancestral Graph (PAG) to be evaluated
+     * @param selection the set of nodes to be conditioned on
+     * @return true if the PAG is legal, false otherwise
+     */
+    public static boolean isLegalPagQuiet(Graph pag, Set<Node> selection) {
+        // All nodes must be measured.
+        for (Node n : pag.getNodes()) {
+            if (n.getNodeType() != NodeType.MEASURED) return false;
+        }
+
+        // Implied MAG must be legal.
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        if (!isLegalMagFast(mag, selection)) return false;
+
+        // Recover PAG from implied MAG and require equality with original.
+        Graph pag2 = GraphTransforms.dagToPag(mag);
+        return pag.equals(pag2);
+    }
+
+    /**
+     * Fast, non-verbose MAG legality check.
+     */
+    public static boolean isLegalMagFast(Graph mag, Set<Node> selection) {
+        // No latent nodes allowed in a MAG over measured variables.
+        for (Node n : mag.getNodes()) {
+            if (n.getNodeType() == NodeType.LATENT) return false;
+        }
+
+        // Edge sanity: at most one edge per pair; only allowed types.
+        for (Edge e : mag.getEdges()) {
+            Node x = e.getNode1();
+            Node y = e.getNode2();
+            if (!mag.isAdjacentTo(x, y)) continue;
+            if (mag.getEdges(x, y).size() > 1) return false;
+            if (!(Edges.isDirectedEdge(e) || Edges.isBidirectedEdge(e) || Edges.isUndirectedEdge(e))) return false;
+        }
+
+        // Acyclicity of directed part.
+        for (Node n : mag.getNodes()) {
+            if (mag.paths().existsDirectedPath(n, n)) return false;
+        }
+
+        // Bidirected semantics: no directed path in either direction between endpoints.
+        for (Edge e : mag.getEdges()) {
+            if (!Edges.isBidirectedEdge(e)) continue;
+            Node x = e.getNode1();
+            Node y = e.getNode2();
+            if (!mag.paths().directedPaths(x, y, 1).isEmpty()) return false;
+            if (!mag.paths().directedPaths(y, x, 1).isEmpty()) return false;
+        }
+
+        // Maximality: no inducing path between non-adjacent nodes given selection.
+        Set<Node> sel = (selection == null) ? Collections.emptySet() : new HashSet<>(selection);
+        List<Node> nodes = mag.getNodes();
+        for (int i = 0; i < nodes.size(); i++) {
+            Node x = nodes.get(i);
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node y = nodes.get(j);
+                if (!mag.isAdjacentTo(x, y) && mag.paths().existsInducingPath(x, y, sel)) return false;
+            }
+        }
+
+        // Undirected edge constraint: endpoints have no parents/spouses.
+        for (Edge e : mag.getEdges()) {
+            if (!Edges.isUndirectedEdge(e)) continue;
+            Node x = e.getNode1();
+            Node y = e.getNode2();
+
+            for (Node z : mag.getAdjacentNodes(x)) {
+                Edge zx = mag.getEdge(z, x);
+                if (mag.isParentOf(z, x) || (zx != null && Edges.isBidirectedEdge(zx))) return false;
+            }
+            for (Node z : mag.getAdjacentNodes(y)) {
+                Edge zy = mag.getEdge(z, y);
+                if (mag.isParentOf(z, y) || (zy != null && Edges.isBidirectedEdge(zy))) return false;
+            }
+        }
+
+        return true;
+    }
+
+    // =========================
+    // FAST (non-verbose) CHECKS
+    // =========================
+
+    /**
      * Stores a result for checking whether a graph is a legal MAG--(a) whether it is (a boolean), and (b) the reason
      * why it is not, if it is not (a String).
      */

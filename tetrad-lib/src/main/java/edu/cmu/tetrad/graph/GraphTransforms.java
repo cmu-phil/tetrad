@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.utils.MeekRules;
-import edu.cmu.tetrad.search.utils.TsDagToPag;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.PagCache;
 import org.jetbrains.annotations.NotNull;
@@ -488,7 +487,7 @@ public class GraphTransforms {
      * @return the resulting partial ancestral graph (PAG)
      */
     public static Graph magToPag(Graph mag) {
-        return new MagToPag(mag).convert();
+        return new MagToPag(mag).convert(true);
     }
 }
 
