@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -79,12 +80,22 @@ public class TrueDagPrecisionArrow implements Statistic {
         int tp = 0;
         int fp = 0;
 
+        Graph dag;
+
+        if (trueGraph.paths().isLegalDag()) {
+            dag = trueGraph;
+        } else if (trueGraph.paths().isLegalPag()) {
+            dag = PagCache.getInstance().getDag(trueGraph);
+        } else {
+            throw new IllegalStateException("Graph is not legal dag or pag");
+        }
+
         List<Node> nodes = estGraph.getNodes();
 
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (estGraph.isAdjacentTo(x, y) && estGraph.getEndpoint(x, y) == Endpoint.ARROW) {
-                    if (!trueGraph.paths().isAncestorOf(y, x)) {
+                    if (!dag.paths().isAncestorOf(y, x)) {
                         tp++;
                     } else {
 //                        System.out.println("Shouldn't be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));

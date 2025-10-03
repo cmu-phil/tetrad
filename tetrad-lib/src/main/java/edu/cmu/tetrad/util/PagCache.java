@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.util;
 
@@ -37,7 +37,7 @@ public class PagCache {
      * A singleton instance of the PagCache class. This ensures that only one instance of the cache exists at any given
      * time.
      */
-    private static final PagCache instance = new PagCache();
+    private static transient PagCache instance = null;
     /**
      * A map that stores the PAGs corresponding to the DAGs.
      */
@@ -59,6 +59,10 @@ public class PagCache {
      * @return the singleton instance of PagCache.
      */
     public static PagCache getInstance() {
+        if (instance == null) {
+            instance = new PagCache();
+        }
+
         return instance;
     }
 
@@ -74,34 +78,39 @@ public class PagCache {
     public Graph getPag(Graph graph) {
 
         // This caching caused problems at one point, turning it off for now. jdramsey 2025-06-14
-//        if (!(graph.paths().isLegalDag() || graph.paths().isLegalMag())) {
-//            throw new IllegalArgumentException("Graph must be a DAG or a MAG.");
-//        }
-//
-//        // If the graph is already in the cache, return it; otherwise, call GraphTransforms.dagToPag(graph)
-//        // to get the PAG and put it into the cache.
-//        if (pagCache.containsKey(graph)) {
-//            return pagCache.get(graph);
-//        } else {
-
-        if (graph.paths().isLegalMag()) {
-            MagToPag magToPag = new MagToPag(graph);
-            return magToPag.convert();
-        } else if (graph.paths().isLegalDag()) {
-            MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(graph));
-            return magToPag.convert();
-        } else {
-            Graph mag = GraphTransforms.zhangMagFromPag(graph);
-            MagToPag magToPag = new MagToPag(mag);
-            return magToPag.convert();
+        if (!(graph.paths().isLegalDag() || graph.paths().isLegalMag())) {
+            throw new IllegalArgumentException("Graph must be a DAG or a MAG.");
         }
-//
-//        MagToPag dagToPag = new MagToPag(graph);
-//        Graph pag = dagToPag.convert();
-//        pagCache.put(graph, pag);
-//        dagCache.put(pag, graph);
-//        return pag;
-////        }
+
+        // If the graph is already in the cache, return it; otherwise, call GraphTransforms.dagToPag(graph)
+        // to get the PAG and put it into the cache.
+        if (pagCache.containsKey(graph)) {
+            return pagCache.get(graph);
+        } else {
+
+            Graph pag = null;
+
+            if (graph.paths().isLegalMag()) {
+                MagToPag magToPag = new MagToPag(graph);
+                pag = magToPag.convert();
+//                return magToPag.convert();
+            } else if (graph.paths().isLegalDag()) {
+                MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(graph));
+                pag = magToPag.convert();
+//                return magToPag.convert();
+            } else {
+                Graph mag = GraphTransforms.zhangMagFromPag(graph);
+                MagToPag magToPag = new MagToPag(mag);
+                pag = magToPag.convert();
+//                return magToPag.convert();
+            }
+
+//            MagToPag dagToPag = new MagToPag(graph);
+//            Graph pag = dagToPag.convert();
+            pagCache.put(graph, pag);
+            dagCache.put(pag, graph);
+            return pag;
+        }
     }
 
     /**

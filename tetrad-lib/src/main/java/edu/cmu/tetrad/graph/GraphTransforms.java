@@ -26,6 +26,7 @@ import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsDagToPag;
 import edu.cmu.tetrad.util.CombinationGenerator;
+import edu.cmu.tetrad.util.PagCache;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -342,8 +343,8 @@ public class GraphTransforms {
      */
     @NotNull
     public static Graph dagToPag(Graph graph) {
-//        return PagCache.getInstance().getPag(graph);
-        return new MagToPag(GraphTransforms.dagToMag(graph)).convert();
+        return PagCache.getInstance().getPag(graph);
+//        return new MagToPag(GraphTransforms.dagToMag(graph)).convert();
     }
 
     /**
