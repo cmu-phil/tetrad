@@ -595,7 +595,6 @@ public class TestFci {
 
             Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
             fcit.setStartWith(Fcit.START_WITH.GRASP);
-            fcit.setCheckAdjacencySepsets(true);
             fcit.setVerbose(true);
             Graph estPag3 = fcit.search();
 
@@ -866,7 +865,6 @@ public class TestFci {
                 alg.setUseBes(true); // Guarantees correct CPDAG under Faithfulness.
 
                 alg.setCompleteRuleSetUsed(true);
-                alg.setCheckAdjacencySepsets(true);
                 alg.setVerbose(true);
 
                 Graph pag = alg.search();
@@ -932,7 +930,6 @@ public class TestFci {
 //                fcit.setGuaranteeMag(true);
                 fcit.setDepth(-1);
                 fcit.setCompleteRuleSetUsed(true);
-                fcit.setCheckAdjacencySepsets(false);
                 Graph pag = fcit.search();
 
                 Graph mag = GraphTransforms.zhangMagFromPag(pag);

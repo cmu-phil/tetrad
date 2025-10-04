@@ -551,6 +551,11 @@ public final class Rfci implements IGraphSearch {
         }
     }
 
+    /**
+     * Sets the state of whether the graph is set to replicate or not during the search process.
+     *
+     * @param replicatingGraph If true, the graph is in a replicating state. If false, it is not.
+     */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
     }

@@ -516,6 +516,12 @@ public class Fas implements IFas {
         this.stable = stable;
     }
 
+    /**
+     * Sets the flag indicating whether the graph is in a replicating state.
+     *
+     * @param replicatingGraph A boolean value; if true, the graph is considered to be in a replicating state.
+     *                         Otherwise, it is not.
+     */
     @Override
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;

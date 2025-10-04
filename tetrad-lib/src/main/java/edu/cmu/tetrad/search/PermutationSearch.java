@@ -165,7 +165,16 @@ public class PermutationSearch {
         return getGraph(nodes, parents, knowledge, cpDag, /*replicating*/ false);
     }
 
-    // new overload with replicating switch
+    /**
+     * Constructs a graph given a specification of the parents for each node.
+     *
+     * @param nodes      The list of nodes to include in the graph.
+     * @param parents    A map specifying the parents for each node. Each key is a node, and its value is the set of parent nodes.
+     * @param knowledge  The knowledge object, if any, to guide the orientation of edges in the graph.
+     * @param cpDag      A flag indicating whether a CPDAG (partially directed acyclic graph) is desired. If false, a DAG (directed acyclic graph) is constructed.
+     * @param replicating A flag indicating whether graph replication is enabled, allowing mirrored changes in replicated graphs.
+     * @return The constructed graph, which may be a DAG or CPDAG depending on the value of the cpDag flag.
+     */
     public static Graph getGraph(List<Node> nodes,
                                  Map<Node, Set<Node>> parents,
                                  Knowledge knowledge,
@@ -344,6 +353,11 @@ public class PermutationSearch {
         this.seed = seed;
     }
 
+    /**
+     * Sets the flag indicating whether graph replication is enabled or not.
+     *
+     * @param replicatingGraph The value indicating whether graph replication is enabled.
+     */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
     }

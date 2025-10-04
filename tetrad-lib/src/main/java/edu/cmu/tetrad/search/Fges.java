@@ -1341,6 +1341,11 @@ public class Fges implements IGraphSearch, DagScorer {
         return scoreGraphChange(x, y, set, idx); // calls existing private method
     }
 
+    /**
+     * Sets the replicating status of the current object.
+     *
+     * @param replicating the new replicating status to set; true to enable replication, false to disable it
+     */
     public void setReplicating(boolean replicating) {
         this.replicating = replicating;
     }

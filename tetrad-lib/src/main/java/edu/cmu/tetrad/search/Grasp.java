@@ -191,12 +191,28 @@ public class Grasp {
 //        return this.scorer.getGraph(cpDag);
 //    }
 
-    // existing method stays, delegates to the new one with default (no replication)
+    /**
+     * Retrieves a graph based on specified parameters.
+     *
+     * @param cpDag True if a CPDAG (Completed Partially Directed Acyclic Graph) should be returned.
+     *              If false, a DAG (Directed Acyclic Graph) will be returned.
+     * @return A non-null Graph object, either a CPDAG or DAG depending on the input parameter.
+     */
     public @NotNull Graph getGraph(boolean cpDag) {
         return getGraph(cpDag, /*replicating*/ false);
     }
 
-    // new overload with replicating switch
+    /**
+     * Returns the graph based on the specified parameters. If the parameter `replicating` is true,
+     * a replicating graph is returned; otherwise, a regular graph is returned.
+     *
+     * @param cpDag      True if a CPDAG (Completed Partially Directed Acyclic Graph) should be returned,
+     *                   false if a DAG (Directed Acyclic Graph) should be returned.
+     * @param replicating True if a replicating graph, which applies a lag replication policy,
+     *                    should be returned.
+     * @return The generated graph, either a CPDAG or DAG, wrapped in a replicating graph
+     *         if `replicating` is true.
+     */
     public Graph getGraph(boolean cpDag, boolean replicating) {
         Graph g = this.scorer.getGraph(cpDag);
         return new ReplicatingGraph(g, new LagReplicationPolicy());
@@ -645,6 +661,12 @@ public class Grasp {
         this.seed = seed;
     }
 
+    /**
+     * Sets the replicatingGraph flag to determine if graph replication is enabled.
+     *
+     * @param replicatingGraph the boolean value to set the replicatingGraph flag.
+     *                         If true, replication is enabled; otherwise, it is disabled.
+     */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
     }

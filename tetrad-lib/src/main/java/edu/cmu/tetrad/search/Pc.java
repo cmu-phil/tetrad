@@ -796,6 +796,12 @@ public class Pc implements IGraphSearch {
         return fas;
     }
 
+    /**
+     * Sets the flag indicating whether the graph is in a replicating state.
+     *
+     * @param replicatingGraph a boolean value where {@code true} denotes that the graph is replicating and
+     *                         {@code false} denotes that it is not.
+     */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
     }

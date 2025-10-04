@@ -742,6 +742,11 @@ public final class Fci implements IGraphSearch {
         return set;
     }
 
+    /**
+     * Sets the state of the replicatingGraph flag.
+     *
+     * @param replicatingGraph a boolean value indicating whether the graph should be in a replicating state.
+     */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
     }

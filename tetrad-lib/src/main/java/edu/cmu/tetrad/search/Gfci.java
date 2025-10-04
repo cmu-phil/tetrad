@@ -745,6 +745,11 @@ public class Gfci implements IGraphSearch {
         this.useMaxP = useMaxP;
     }
 
+    /**
+     * Sets the state of the replicatingGraph property.
+     *
+     * @param replicatingGraph a boolean value indicating whether the graph is in a replicating state.
+     */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
     }

@@ -7,12 +7,10 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.DiscreteBicScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
@@ -22,16 +20,13 @@ import java.util.List;
 
 /**
  * Modernized translation of the legacy TestIGFCI_TCGA harness.
- *
- * What it does (TL;DR):
- *  - Loads a TCGA-style CSV (continuous or discrete).
- *  - Optionally applies tiered knowledge (e.g., omics -> phenotype).
- *  - Configures GFCI (or IGFCI if present) with INSTANCE-SPECIFIC score/test knobs.
- *  - Runs the search and writes the resulting PAG to .txt and .graphml.
- *
- * How to run:
- *  - As a unit-style runner from IntelliJ or CLI, adjust the MAIN_* constants below.
- *  - Or integrate into your existing test suite.
+ * <p>
+ * What it does (TL;DR): - Loads a TCGA-style CSV (continuous or discrete). - Optionally applies tiered knowledge (e.g.,
+ * omics -> phenotype). - Configures GFCI (or IGFCI if present) with INSTANCE-SPECIFIC score/test knobs. - Runs the
+ * search and writes the resulting PAG to .txt and .graphml.
+ * <p>
+ * How to run: - As a unit-style runner from IntelliJ or CLI, adjust the MAIN_* constants below. - Or integrate into
+ * your existing test suite.
  */
 public class TestIGFCI_TCGA_Modern {
 
@@ -46,8 +41,8 @@ public class TestIGFCI_TCGA_Modern {
 
     // Knowledge tiers (optional). Example: omics -> clinical.
     private static final boolean USE_KNOWLEDGE = false;
-    private static final String[] TIER0 = new String[] { /* e.g., "Gene_*", "CNV_*", "Methyl_*" */ };
-    private static final String[] TIER1 = new String[] { /* e.g., "Age", "Stage", "SurvivalMonths" */ };
+    private static final String[] TIER0 = new String[]{ /* e.g., "Gene_*", "CNV_*", "Methyl_*" */};
+    private static final String[] TIER1 = new String[]{ /* e.g., "Age", "Stage", "SurvivalMonths" */};
 
     // Instance-specific knobs (plumbed for your IS classes)
     private static final boolean USE_INSTANCE_SPECIFIC = true; // flips to IS variants if present on classpath
@@ -57,6 +52,22 @@ public class TestIGFCI_TCGA_Modern {
     private static final double PENALTY_DISCOUNT = 2.0; // For (S)EM-BIC / discrete BIC
     private static final int MAX_DEGREE = 3;      // limit search complexity if desired
 
+    /**
+     * Private constructor for the TestIGFCI_TCGA_Modern class. This constructor is used to prevent instantiation of the
+     * class. Methods and functionality of this class are designed to be used statically.
+     */
+    private TestIGFCI_TCGA_Modern() {
+
+    }
+
+    /**
+     * Main entry point for the application. Executes the workflow that includes loading data, configuring knowledge
+     * tiers, setting parameters, running a search algorithm, and saving outputs.
+     *
+     * @param args Command line arguments. These can be used to configure various aspects of the process if needed.
+     * @throws Exception If any errors occur during the execution of the workflow, such as reading data, configuring
+     *                   parameters, or saving the outputs.
+     */
     public static void main(String[] args) throws Exception {
 
         // 1) Read data
@@ -124,16 +135,12 @@ public class TestIGFCI_TCGA_Modern {
         }
     }
 
-    private record ScoreAndTest(Object score, IndependenceTest test) {}
-
     /**
-     * Wires up either standard scores/tests or your instance-specific variants if present.
-     * Drop your IS classes on the classpath and toggle USE_INSTANCE_SPECIFIC.
-     *
-     * Expected IS classes (examples you mentioned recently):
-     *  - edu.cmu.tetrad.search.score.ISBicScore (continuous)
-     *  - edu.cmu.tetrad.search.score.ISBdeuScore (discrete)
-     *  - Optional IS independence tests if you have them
+     * Wires up either standard scores/tests or your instance-specific variants if present. Drop your IS classes on the
+     * classpath and toggle USE_INSTANCE_SPECIFIC.
+     * <p>
+     * Expected IS classes (examples you mentioned recently): - edu.cmu.tetrad.search.score.ISBicScore (continuous) -
+     * edu.cmu.tetrad.search.score.ISBdeuScore (discrete) - Optional IS independence tests if you have them
      */
     @SuppressWarnings("unchecked")
     private static ScoreAndTest buildScoreAndTest(DataSet data, boolean discrete,
@@ -192,8 +199,8 @@ public class TestIGFCI_TCGA_Modern {
     }
 
     /**
-     * Uses GFci from the modern package. If an IGfci class exists in your build, prefer it.
-     * (Some distributions provide IGfci as a thin wrapper around GFci that activates IS logic.)
+     * Uses GFci from the modern package. If an IGfci class exists in your build, prefer it. (Some distributions provide
+     * IGfci as a thin wrapper around GFci that activates IS logic.)
      */
     private static Graph runGfciOrIgfci(DataModel data,
                                         ScoreAndTest st,
@@ -238,5 +245,8 @@ public class TestIGFCI_TCGA_Modern {
         for (int i = 0; i < Math.min(k, nodes.size()); i++) {
             System.out.println("  " + nodes.get(i).getName());
         }
+    }
+
+    private record ScoreAndTest(Object score, IndependenceTest test) {
     }
 }

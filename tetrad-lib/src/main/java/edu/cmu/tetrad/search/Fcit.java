@@ -289,9 +289,9 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
-        fciOrient.setParallel(true);
-        fciOrient.setCompleteRuleSetUsed(true);
-        fciOrient.setKnowledge(knowledge);
+        fciOrient.setParallel(false);
+//        fciOrient.setCompleteRuleSetUsed(true);
+//        fciOrient.setKnowledge(knowledge);
 
         Graph dag;
         List<Node> best;
@@ -498,7 +498,7 @@ public final class Fcit implements IGraphSearch {
         grasp.setUseScore(true);
         grasp.setUseRaskuttiUhler(false);
         grasp.setUseDataOrder(useDataOrder);
-        grasp.setAllowInternalRandomness(true);
+        grasp.setAllowInternalRandomness(false);
         grasp.setVerbose(superVerbose);
         grasp.setNumStarts(numStarts);
         grasp.setKnowledge(this.knowledge);
@@ -559,7 +559,11 @@ public final class Fcit implements IGraphSearch {
     }
 
     private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
-        return new HashSet<>(edges).parallelStream().filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge) || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())).map(edge -> {
+        return new HashSet<>(edges).parallelStream().
+                filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(
+                edge -> knowledge == null || !Edges.isDirectedEdge(edge)
+                        || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
+        ).map(edge -> {
             try {
                 IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
                 if (checkResult != null) {
@@ -768,6 +772,11 @@ public final class Fcit implements IGraphSearch {
         this.depth = depth;
     }
 
+    /**
+     * Sets the flag indicating whether the graph should be replicated during the search process.
+     *
+     * @param replicatingGraph true to enable graph replication, false otherwise.
+     */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
     }

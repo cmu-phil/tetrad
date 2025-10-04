@@ -11,9 +11,12 @@ import java.util.regex.Pattern;
  */
 public interface EdgeReplicationPolicy {
     /**
-     * @param g the current graph (read-only usage expected)
-     * @param e the seed edge whose mirrors are requested
-     * @return a set of edges to sync (may include e)
+     * Returns a set of mirrored edges in the given graph that should be kept in sync
+     * with the specified edge. The returned set may include the specified edge if appropriate.
+     *
+     * @param g the graph containing the edge
+     * @param e the seed edge for which mirrored edges are to be determined
+     * @return a set of edges that should be synchronized with the specified edge
      */
     Set<Edge> mirrorsFor(EdgeListGraph g, Edge e);
 }

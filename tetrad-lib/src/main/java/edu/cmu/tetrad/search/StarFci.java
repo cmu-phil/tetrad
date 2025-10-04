@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -508,6 +508,13 @@ public abstract class StarFci implements IGraphSearch {
      */
     public abstract Graph getMarkovCpdag() throws InterruptedException;
 
+    /**
+     * Sets the flag indicating whether the graph is being replicated.
+     *
+     * @param replicatingGraph A boolean value where {@code true} indicates that
+     *                         the graph is being replicated, and {@code false}
+     *                         otherwise.
+     */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
     }
