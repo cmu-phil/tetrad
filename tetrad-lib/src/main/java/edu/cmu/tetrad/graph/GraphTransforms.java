@@ -343,7 +343,6 @@ public class GraphTransforms {
     @NotNull
     public static Graph dagToPag(Graph graph) {
         return PagCache.getInstance().getPag(graph);
-//        return new MagToPag(GraphTransforms.dagToMag(graph)).convert();
     }
 
     /**
