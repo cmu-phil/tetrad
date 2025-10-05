@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,9 +15,9 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.algcomparison.CompareTwoGraphs;
@@ -26,8 +26,8 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.MultiKeyMap;
@@ -126,7 +126,7 @@ public final class GraphSearchUtils {
      * as X--&gt;W&lt;--Y if W is *determined by* the sepset of (X, Y), rather than W just being *in* the sepset of (X,
      * Y).
      *
-     * @param test      a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test      a {@link IndependenceTest} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @throws java.lang.InterruptedException if any.
@@ -388,147 +388,6 @@ public final class GraphSearchUtils {
             graph.removeEdge(nextUndirected);
             graph.addUndirectedEdge(node1, node2);
         }
-    }
-
-    /**
-     * Checks if the provided Directed Acyclic Graph (PAG) is a legal PAG.
-     *
-     * @param pag       The Directed Acyclic Graph (PAG) to be checked
-     * @param selection The set of nodes to be conditioned on
-     * @return A LegalPagRet object indicating whether the PAG is legal or not, along with a reason if it is not legal.
-     */
-    public static LegalPagRet isLegalPag(Graph pag, Set<Node> selection) {
-        for (Node n : pag.getNodes()) {
-            if (n.getNodeType() != NodeType.MEASURED) {
-                return new LegalPagRet(false, "Node " + n + " is not measured");
-            }
-        }
-
-        Graph mag = GraphTransforms.zhangMagFromPag(pag);
-        LegalMagRet legalMag = isLegalMag(mag, selection);
-
-        if (!legalMag.isLegalMag()) {
-            return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
-        }
-
-        Graph pag2 = GraphTransforms.dagToPag(mag);
-
-        if (!pag.equals(pag2)) {
-            String edgeMismatch = "";
-
-            for (Edge e : pag.getEdges()) {
-                Edge e2 = pag2.getEdge(e.getNode1(), e.getNode2());
-                if (!e.equals(e2)) {
-                    edgeMismatch = "For example, the original PAG has edge " + e + " whereas the reconstituted graph has edge " + e2;
-                    break;
-                }
-            }
-
-            String reason = legalMag.isLegalMag() ? "The MAG implied by this graph was a legal MAG, but one cannot recover the original graph " + "by finding the PAG of an implied MAG — this graph may lie between a MAG and a PAG" : "The MAG implied by this graph was not legal, and one cannot recover the original graph from its implied PAG";
-
-            if (!edgeMismatch.isEmpty()) {
-                reason += ". " + edgeMismatch;
-            }
-
-            if (!edgeMismatch.isEmpty()) {
-                return new LegalPagRet(false, reason);
-            }
-        }
-
-        return new LegalPagRet(true, "This is a legal PAG");
-    }
-
-    /**
-     * Determines whether the given graph is a legal Mixed Ancestral Graph (MAG).
-     *
-     * @param mag       the graph to be checked
-     * @param selection the set of nodes to be conditioned on
-     * @return a LegalMagRet object indicating whether the graph is legal and providing an error message if it is not
-     */
-    public static LegalMagRet isLegalMag(Graph mag, Set<Node> selection) {
-        for (Node n : mag.getNodes()) {
-            if (n.getNodeType() == NodeType.LATENT) {
-                return new LegalMagRet(false, "Node " + n + " is not measured");
-            }
-        }
-
-        List<Node> nodes = mag.getNodes();
-
-        for (Edge edge : mag.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            if (!mag.isAdjacentTo(x, y)) continue;
-
-            if (mag.getEdges(x, y).size() > 1) {
-                return new LegalMagRet(false, "There is more than one edge between " + x + " and " + y);
-            }
-
-            if (!(Edges.isDirectedEdge(edge) || Edges.isBidirectedEdge(edge) || Edges.isUndirectedEdge(edge))) {
-                return new LegalMagRet(false, "Edge " + edge + " should be directed, bidirected, or undirected.");
-            }
-        }
-
-        for (Node n : mag.getNodes()) {
-            if (mag.paths().existsDirectedPath(n, n)) {
-                return new LegalMagRet(false, "Acyclicity violated: There is a directed cyclic path from " + n + " to itself");
-            }
-        }
-
-        for (Edge e : mag.getEdges()) {
-            Node x = e.getNode1();
-            Node y = e.getNode2();
-
-            if (Edges.isBidirectedEdge(e)) {
-                List<List<Node>> forwardPaths = mag.paths().directedPaths(x, y, 1);
-                if (!forwardPaths.isEmpty()) {
-                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y + ". An example path is " + GraphUtils.pathString(mag, forwardPaths.getFirst(), false));
-                }
-
-                List<List<Node>> backwardPaths = mag.paths().directedPaths(y, x, 1);
-                if (!backwardPaths.isEmpty()) {
-                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x + ". An example path is " + GraphUtils.pathString(mag, backwardPaths.getFirst(), false));
-                }
-            }
-        }
-
-        Set<Node> sel = (selection == null) ? Collections.emptySet() : new HashSet<>(selection);
-
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
-
-                if (!mag.isAdjacentTo(x, y)) {
-                    if (mag.paths().existsInducingPath(x, y, sel)) {
-                        return new LegalMagRet(false, "Not maximal: Inducing path exists between non-adjacent " + x + " and " + y);
-                    }
-                }
-            }
-        }
-
-        for (Edge edge : mag.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            if (Edges.isUndirectedEdge(edge)) {
-                for (Node z : mag.getAdjacentNodes(x)) {
-                    Edge zx = mag.getEdge(z, x);
-                    if (mag.isParentOf(z, x) || Edges.isBidirectedEdge(zx)) {
-                        return new LegalMagRet(false, "Undirected edge constraint violated: " + z + " is a parent or spouse of " + x);
-                    }
-                }
-
-                for (Node z : mag.getAdjacentNodes(y)) {
-                    Edge zy = mag.getEdge(z, y);
-                    if (mag.isParentOf(z, y) || Edges.isBidirectedEdge(zy)) {
-                        return new LegalMagRet(false, "Undirected edge constraint violated: " + z + " is a parent or spouse of " + y);
-                    }
-                }
-            }
-        }
-
-        return new LegalMagRet(true, "This is a legal MAG");
     }
 
 
@@ -934,7 +793,7 @@ public final class GraphSearchUtils {
      * @param x     a {@link edu.cmu.tetrad.graph.Node} object
      * @param y     a {@link edu.cmu.tetrad.graph.Node} object
      * @param z     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param test  a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test  a {@link IndependenceTest} object
      * @param depth a int
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link edu.cmu.tetrad.search.utils.GraphSearchUtils.CpcTripleType} object
@@ -1013,8 +872,8 @@ public final class GraphSearchUtils {
      * Originally, Tsamardinos, I., Brown, L. E., and Aliferis, C. F. (2006). The max-min hill-climbing Bayesian network
      * structure learning algorithm. Machine learning, 65(1), 31-78.
      * <p>
-     * But using the formulation in Peters, J., &amp; Bühlmann, P. (2015). Structural intervention distance for evaluating
-     * causal graphs. Neural computation, 27(3), 771-799.
+     * But using the formulation in Peters, J., &amp; BÃ¼hlmann, P. (2015). Structural intervention distance for
+     * evaluating causal graphs. Neural computation, 27(3), 771-799.
      * <p>
      * Converts each graph (DAG or CPDAG) into its CPDAG before scoring.
      *
@@ -1147,8 +1006,8 @@ public final class GraphSearchUtils {
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = targetGraph.getEdge(x, y);
 
-                boolean existsArrow = edge != null && edge.getProximalEndpoint(y) == Endpoint.ARROW;
-                boolean _existsArrow = _edge != null && _edge.getProximalEndpoint(y) == Endpoint.ARROW;
+                boolean existsArrow = edge != null && edge.getEndpoint(y) == Endpoint.ARROW;
+                boolean _existsArrow = _edge != null && _edge.getEndpoint(y) == Endpoint.ARROW;
 
                 if (existsArrow && !_existsArrow) {
                     arrowptFn++;
@@ -1205,10 +1064,10 @@ public final class GraphSearchUtils {
             Node node2 = edge.getNode2();
 
             for (Edge _edge : targetGraph.getEdges(node1, node2)) {
-                Endpoint e1a = edge.getProximalEndpoint(node1);
-                Endpoint e1b = edge.getProximalEndpoint(node2);
-                Endpoint e2a = _edge.getProximalEndpoint(node1);
-                Endpoint e2b = _edge.getProximalEndpoint(node2);
+                Endpoint e1a = edge.getEndpoint(node1);
+                Endpoint e1b = edge.getEndpoint(node2);
+                Endpoint e2a = _edge.getEndpoint(node1);
+                Endpoint e2b = _edge.getEndpoint(node2);
 
                 if (!((e1a != Endpoint.CIRCLE && e2a != Endpoint.CIRCLE && e1a != e2a) || (e1b != Endpoint.CIRCLE && e2b != Endpoint.CIRCLE && e1b != e2b))) {
                     continue;
@@ -1401,100 +1260,6 @@ public final class GraphSearchUtils {
     }
 
     /**
-     * Stores a result for checking whether a graph is a legal PAG--(a) whether it is (a boolean), and (b) the reason
-     * why it is not, if it is not (a String).
-     */
-    public static class LegalPagRet {
-
-        /**
-         * Whether the graph is a legal PAG.
-         */
-        private final boolean legalPag;
-
-        /**
-         * The reason why the graph is not a legal PAG, if not.
-         */
-        private final String reason;
-
-        /**
-         * Constructs a new LegalPagRet object.
-         *
-         * @param legalPag Whether the graph is a legal PAG.
-         * @param reason   The reason why the graph is not a legal PAG, if not.
-         */
-        public LegalPagRet(boolean legalPag, String reason) {
-            if (reason == null) throw new NullPointerException("Reason must be given.");
-            this.legalPag = legalPag;
-            this.reason = reason;
-        }
-
-        /**
-         * Returns whether the graph is a legal PAG.
-         *
-         * @return Whether the graph is a legal PAG.
-         */
-        public boolean isLegalPag() {
-            return legalPag;
-        }
-
-        /**
-         * Returns the reason why the graph is not a legal PAG, if not.
-         *
-         * @return The reason why the graph is not a legal PAG, if not.
-         */
-        public String getReason() {
-            return reason;
-        }
-    }
-
-    /**
-     * Stores a result for checking whether a graph is a legal MAG--(a) whether it is (a boolean), and (b) the reason
-     * why it is not, if it is not (a String).
-     */
-    public static class LegalMagRet {
-
-        /**
-         * Whether the graph is a legal MAG.
-         */
-        private final boolean legalMag;
-
-        /**
-         * The reason why the graph is not a legal MAG, if not.
-         */
-        private final String reason;
-
-        /**
-         * Constructs a new LegalMagRet object.
-         *
-         * @param legalPag Whether the graph is a legal MAG.
-         * @param reason   The reason why the graph is not a legal MAG, if not.
-         */
-        public LegalMagRet(boolean legalPag, String reason) {
-            if (reason == null) throw new NullPointerException("Reason must be given.");
-            this.legalMag = legalPag;
-            this.reason = reason;
-        }
-
-        /**
-         * Returns whether the graph is a legal MAG.
-         *
-         * @return Whether the graph is a legal MAG.
-         */
-        public boolean isLegalMag() {
-            return legalMag;
-        }
-
-        /**
-         * Returns the reason why the graph is not a legal MAG, if not.
-         *
-         * @return The reason why the graph is not a legal MAG, if not.
-         */
-        public String getReason() {
-            return reason;
-        }
-    }
-
-    /**
      * Simple class to store edges for the reachability search.
      *
      * @author josephramsey
@@ -1535,3 +1300,4 @@ public final class GraphSearchUtils {
         }
     }
 }
+

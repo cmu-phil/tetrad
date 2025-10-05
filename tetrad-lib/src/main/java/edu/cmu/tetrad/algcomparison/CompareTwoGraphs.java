@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -132,11 +152,11 @@ public class CompareTwoGraphs {
                 if (edge2 == null) {
                     wrong = true;
                 } else {
-                    if (edge1.getProximalEndpoint(x) == Endpoint.ARROW && edge2.getProximalEndpoint(x) == Endpoint.TAIL) {
+                    if (edge1.getEndpoint(x) == Endpoint.ARROW && edge2.getEndpoint(x) == Endpoint.TAIL) {
                         wrong = true;
                     }
 
-                    if (edge1.getProximalEndpoint(x) == Endpoint.TAIL && edge2.getProximalEndpoint(x) == Endpoint.ARROW) {
+                    if (edge1.getEndpoint(x) == Endpoint.TAIL && edge2.getEndpoint(x) == Endpoint.ARROW) {
                         wrong = true;
                     }
 
@@ -344,6 +364,7 @@ public class CompareTwoGraphs {
         statistics.add(new TrueDagPrecisionTails());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new BidirectedLatentPrecision());
+        statistics.add(new LegalCpdag());
         statistics.add(new LegalPag());
         statistics.add(new Maximal());
 
@@ -370,3 +391,4 @@ public class CompareTwoGraphs {
                MisclassificationUtils.endpointMisclassification(targetGraph, trueGraph);
     }
 }
+

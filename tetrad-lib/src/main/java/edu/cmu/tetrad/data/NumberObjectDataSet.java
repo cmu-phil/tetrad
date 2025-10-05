@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.data;
@@ -74,8 +73,7 @@ import java.util.*;
  * @see edu.cmu.tetrad.data.Variable
  * @see Knowledge
  */
-public final class NumberObjectDataSet
-        implements DataSet {
+public final class NumberObjectDataSet implements DataSet {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -183,6 +181,30 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * Attempts to translate <code>element</code> into a double value, returning it if successful, otherwise throwing an
+     * exception. To be successful, the object must be either a Number or a String.
+     *
+     * @throws IllegalArgumentException if the translation cannot be made. The reason is in the message.
+     */
+    private static double getValueFromObjectContinuous(Object element) {
+        if ("*".equals(element) || "".equals(element)) {
+            return ContinuousVariable.getDoubleMissingValue();
+        } else if (element instanceof Number) {
+            return ((Number) element).doubleValue();
+        } else if (element instanceof String) {
+            try {
+                return Double.parseDouble((String) element);
+            } catch (NumberFormatException e) {
+                return ContinuousVariable.getDoubleMissingValue();
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "The argument 'element' must be " +
+                    "either a Number or a String.");
+        }
+    }
+
+    /**
      * Writes the object to the specified ObjectOutputStream.
      *
      * @param out The ObjectOutputStream to write the object to.
@@ -215,30 +237,6 @@ public final class NumberObjectDataSet
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
                                            + ", " + e.getMessage());
             throw e;
-        }
-    }
-
-    /**
-     * Attempts to translate <code>element</code> into a double value, returning it if successful, otherwise throwing an
-     * exception. To be successful, the object must be either a Number or a String.
-     *
-     * @throws IllegalArgumentException if the translation cannot be made. The reason is in the message.
-     */
-    private static double getValueFromObjectContinuous(Object element) {
-        if ("*".equals(element) || "".equals(element)) {
-            return ContinuousVariable.getDoubleMissingValue();
-        } else if (element instanceof Number) {
-            return ((Number) element).doubleValue();
-        } else if (element instanceof String) {
-            try {
-                return Double.parseDouble((String) element);
-            } catch (NumberFormatException e) {
-                return ContinuousVariable.getDoubleMissingValue();
-            }
-        } else {
-            throw new IllegalArgumentException(
-                    "The argument 'element' must be " +
-                    "either a Number or a String.");
         }
     }
 
@@ -503,7 +501,7 @@ public final class NumberObjectDataSet
     /**
      * {@inheritDoc}
      */
-    public int getColumnIndex(Node variable) {
+    public int getColumn(Node variable) {
         return this.variables.indexOf(variable);
     }
 
@@ -1106,6 +1104,11 @@ public final class NumberObjectDataSet
         return _data;
     }
 
+    @Override
+    public DataSet subsetRows(List<Integer> rows) {
+        return subsetRows(rows.stream().mapToInt(Integer::intValue).toArray());
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -1244,6 +1247,17 @@ public final class NumberObjectDataSet
     @Override
     public DataSet like() {
         return new NumberObjectDataSet(getNumRows(), this.variables);
+    }
+
+    /**
+     * Sets the variable at the specified index in the list of variables.
+     *
+     * @param j the index at which the variable is to be set
+     * @param variable the variable to be set at the specified index
+     */
+    @Override
+    public void setVariable(int j, Node variable) {
+        variables.set(j, variable);
     }
 
     /**
@@ -1486,5 +1500,6 @@ public final class NumberObjectDataSet
         this.nf = nf;
     }
 }
+
 
 

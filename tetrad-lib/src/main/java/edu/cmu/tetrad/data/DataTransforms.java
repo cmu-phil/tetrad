@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.data;
 
 
@@ -1133,8 +1153,8 @@ public class DataTransforms {
      * @param dest   a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static void copyColumn(Node node, DataSet source, DataSet dest) {
-        int sourceColumn = source.getColumnIndex(node);
-        int destColumn = dest.getColumnIndex(node);
+        int sourceColumn = source.getColumn(node);
+        int destColumn = dest.getColumn(node);
         if (sourceColumn < 0) {
             throw new NullPointerException("The given node was not in the source dataset");
         }
@@ -1266,7 +1286,7 @@ public class DataTransforms {
      * For each continuous column, the method computes the maximum of the absolute values of the minimum and maximum of
      * the column, and divides all values in that column by this maximum value. Discrete columns are not affected.
      *
-     * @param dataSet The DataSet containing variables to be scaled.
+     * @param dataSet  The DataSet containing variables to be scaled.
      * @param scaleMin The minimum value to scale to.
      * @param scaleMax The maximum value to scale to.
      * @return A new DataSet with scaled continuous variables, while discrete variables remain unchanged.
@@ -1285,17 +1305,17 @@ public class DataTransforms {
     }
 
     /**
-     * Scales the values of a specified node in the given dataset to a specified range [scaleMin, scaleMax].
-     * This method only processes nodes that are instances of ContinuousVariable.
+     * Scales the values of a specified node in the given dataset to a specified range [scaleMin, scaleMax]. This method
+     * only processes nodes that are instances of ContinuousVariable.
      *
-     * @param dataSet the dataset containing the values to be scaled
+     * @param dataSet  the dataset containing the values to be scaled
      * @param scaleMin the minimum value of the target range
      * @param scaleMax the maximum value of the target range
-     * @param node the node corresponding to the column in the dataset to be scaled
+     * @param node     the node corresponding to the column in the dataset to be scaled
      */
     public static void scale(DataSet dataSet, double scaleMin, double scaleMax, Node node) {
         if (node instanceof ContinuousVariable) {
-            int j = dataSet.getColumnIndex(node);
+            int j = dataSet.getColumn(node);
 
             double min = Double.POSITIVE_INFINITY;
             double max = Double.NEGATIVE_INFINITY;
@@ -1327,12 +1347,12 @@ public class DataTransforms {
     /**
      * Scales a value from one range to another.
      *
-     * @param value     The value to scale
-     * @param dataMin   The minimum value of the data range
-     * @param dataMax   The maximum value of the data range
-     * @param scaleMin  The minimum value of the scale range
-     * @param scaleMax  The maximum value of the scale range
-     * @return          The scaled value
+     * @param value    The value to scale
+     * @param dataMin  The minimum value of the data range
+     * @param dataMax  The maximum value of the data range
+     * @param scaleMin The minimum value of the scale range
+     * @param scaleMax The maximum value of the scale range
+     * @return The scaled value
      * @throws IllegalArgumentException if dataMin is equal to dataMax
      */
     public static double scale(double value, double dataMin, double dataMax, double scaleMin, double scaleMax) {
@@ -1359,7 +1379,7 @@ public class DataTransforms {
 
         for (Node node : dataSet.getVariables()) {
             if (node instanceof ContinuousVariable) {
-                int j = dataSet.getColumnIndex(node);
+                int j = dataSet.getColumn(node);
 
                 double scale = scales[j];
 
@@ -1373,4 +1393,5 @@ public class DataTransforms {
         return dataSet;
     }
 }
+
 

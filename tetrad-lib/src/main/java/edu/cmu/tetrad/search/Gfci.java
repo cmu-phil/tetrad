@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,15 +15,16 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -133,6 +134,7 @@ public class Gfci implements IGraphSearch {
      * process.
      */
     private boolean useMaxP;
+    private boolean replicatingGraph;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -335,12 +337,32 @@ public class Gfci implements IGraphSearch {
         if (startFromCompleteGraph) {
             TetradLogger.getInstance().log("===Starting with complete graph=== ");
             cpdag = new EdgeListGraph(independenceTest.getVariables());
-            cpdag = GraphUtils.completeGraph(cpdag);
+//            cpdag = GraphUtils.completeGraph(cpdag);
         } else {
             cpdag = getMarkovCpdag();
         }
 
-        Graph pag = new EdgeListGraph(cpdag);
+//        Graph cpdag = startFromCompleteGraph
+//                ? GraphUtils.completeGraph(new EdgeListGraph(independenceTest.getVariables()))
+//                : getMarkovCpdag();
+
+        Graph pag = GraphFactoryUtil.newGraph(cpdag);
+
+//        Graph pag;
+//        if (replicatingGraph) {
+//            // OPTION A: if you added a (Graph, Policy) ctor
+//             pag = new ReplicatingGraph(cpdag, new LagReplicationPolicy());
+//
+////            // OPTION B: generic, works with (List<Node>, Policy)
+////            pag = new ReplicatingGraph(cpdag.getNodes(), new LagReplicationPolicy());
+////            for (Edge e : cpdag.getEdges()) {
+////                pag.addEdge(e);    // will mirror across lags on insert
+////            }
+//        } else {
+//            pag = new EdgeListGraph(cpdag);
+//        }
+
+//        Graph pag = new EdgeListGraph(cpdag);
 
         Set<Triple> unshieldedColliders = new HashSet<>();
 
@@ -401,7 +423,7 @@ public class Gfci implements IGraphSearch {
                         unshieldedColliders.add(new Triple(x, y, z));
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("Copied collider " + x + " → " + y + " ← " + z + " from CPDAG.");
+                            TetradLogger.getInstance().log("Copied collider " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
                         }
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
@@ -417,7 +439,7 @@ public class Gfci implements IGraphSearch {
                             }
 
                             if (verbose) {
-                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " → " + y + " ← " + z);
+                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " *-> " + y + " <-* " + z);
                             }
                         }
                     }
@@ -488,7 +510,7 @@ public class Gfci implements IGraphSearch {
                         unshieldedColliders.add(new Triple(x, y, z));
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("Copied collider " + x + " → " + y + " ← " + z + " from CPDAG.");
+                            TetradLogger.getInstance().log("Copied collider " + x + " â " + y + " â " + z + " from CPDAG.");
                         }
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
@@ -504,7 +526,7 @@ public class Gfci implements IGraphSearch {
                             }
 
                             if (verbose) {
-                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " → " + y + " ← " + z);
+                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " â " + y + " â " + z);
                             }
                         }
                     }
@@ -698,6 +720,7 @@ public class Gfci implements IGraphSearch {
         }
 
         Fges fges = new Fges(this.score);
+        fges.setReplicating(true);
         fges.setKnowledge(getKnowledge());
         fges.setVerbose(isVerbose());
         fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
@@ -721,4 +744,14 @@ public class Gfci implements IGraphSearch {
     public void setUseMaxP(boolean useMaxP) {
         this.useMaxP = useMaxP;
     }
+
+    /**
+     * Sets the state of the replicatingGraph property.
+     *
+     * @param replicatingGraph a boolean value indicating whether the graph is in a replicating state.
+     */
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
+    }
 }
+

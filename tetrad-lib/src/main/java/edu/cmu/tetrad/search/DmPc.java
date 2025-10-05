@@ -1,7 +1,28 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,17 +40,8 @@ import java.util.stream.Collectors;
  * @author murraywaters
  * @author josephramsey
  */
-public class DmPc {
+public class DmPc implements IGraphSearch {
 
-    /**
-     * An instance of {@link IndependenceTest} used to perform conditional independence tests. This variable serves as
-     * the primary testing mechanism within the constraint-based search algorithms of the containing class.
-     * <p>
-     * It is initialized through constructor dependency injection and is expected to implement methods for testing
-     * independence, retrieving variables, and managing the configuration (such as significance level) necessary for the
-     * tests.
-     */
-    private final IndependenceTest test;
     /**
      * A list of input nodes used within the algorithm. These nodes represent the variables that are considered as
      * potential causes or predictors within the graph structure.
@@ -44,6 +56,15 @@ public class DmPc {
      * procedures.
      */
     private final List<Node> outputs = new ArrayList<>();
+    /**
+     * An instance of {@link IndependenceTest} used to perform conditional independence tests. This variable serves as
+     * the primary testing mechanism within the constraint-based search algorithms of the containing class.
+     * <p>
+     * It is initialized through constructor dependency injection and is expected to implement methods for testing
+     * independence, retrieving variables, and managing the configuration (such as significance level) necessary for the
+     * tests.
+     */
+    private IndependenceTest test;
     /**
      * Represents domain-specific knowledge used during the causal discovery process in the DmPc class. This variable is
      * utilized to impose background knowledge and constraints on the structural search process, such as required or
@@ -109,6 +130,22 @@ public class DmPc {
         finalRefinement(latentGraph);
 
         return latentGraph;
+    }
+
+    public IndependenceTest getTest() {
+        return test;
+    }
+
+    public void setTest(IndependenceTest test) {
+        List<Node> nodes = this.test.getVariables();
+        List<Node> _nodes = test.getVariables();
+
+        if (!nodes.equals(_nodes)) {
+            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" +
+                                                             "to the nodes of the existing test."));
+        }
+
+        this.test = test;
     }
 
     /**

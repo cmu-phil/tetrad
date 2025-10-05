@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.ntad_test;
 
 import edu.cmu.tetrad.util.MathUtils;
@@ -13,8 +33,8 @@ import java.util.List;
 
 /**
  * The Ark class extends the NtadTest class and provides a mechanism to perform statistical operations based on tetrads
- * and their probabilities. It leverages covariance computation, sampling, and matrix manipulation to calculate p-values
- * and z-scores for tetrads. This class is specifically designed to operate on instances of SimpleMatrix for
+ * and their probabilities. It leverages correlation computation, sampling, and matrix manipulation to calculate
+ * p-values and z-scores for tetrads. This class is specifically designed to operate on instances of SimpleMatrix for
  * multivariate analysis.
  *
  * @author bryanandrews
@@ -25,44 +45,58 @@ public class Ark extends NtadTest {
     private final double sp;
 
     /**
-     * Constructs an Ark object based on the given data matrix and split proportion. This method initializes the Ark
-     * analysis by splitting the data matrix into two segments based on the given split proportion, and computes the
-     * covariance matrix for each segment.
+     * Constructs an Ark object using the provided data matrix, split proportion, and effective sample size. The data
+     * matrix is divided into two subsets based on the specified split proportion. Correlation matrices are computed for
+     * each subset.
      *
-     * @param df the input data matrix as a SimpleMatrix object, where each row represents an observation and each
-     *           column represents a variable.
-     * @param sp the split proportion, a value between 0 and 1, which determines the proportion of the dataset allocated
-     *           to the first segment of the split. If the given value is not valid, it is adjusted towards the
-     *           complementary split (1 - sp instead of sp). Is the value is 1, the full dataset is used throughout.
+     * @param df  the input data matrix as a SimpleMatrix object, where each row represents an observation and each
+     *            column represents a variable
+     * @param sp  the split proportion for dividing the data matrix into two subsets; values greater than 0 are used
+     *            as-is, while negative values are transformed to 1 - sp
+     * @param ess the effective sample size, which must be -1 or greater than 1
      */
-    public Ark(SimpleMatrix df, double sp) {
-        super(df, false);
+    public Ark(SimpleMatrix df, double sp, int ess) {
+        super(df, false, ess);
         this.sp = sp > 0 ? sp : 1 - sp;
         int splitIndex = (int) (this.sp * df.getNumRows());
 
-        this.S1 = computeCovariance(df.extractMatrix(0, splitIndex, 0, df.getNumCols()));
-        this.S2 = computeCovariance(df.extractMatrix(splitIndex, df.getNumRows(), 0, df.getNumCols()));
+        this.S1 = computeCorrelations(df.extractMatrix(0, splitIndex, 0, df.getNumCols()));
+        this.S2 = computeCorrelations(df.extractMatrix(splitIndex, df.getNumRows(), 0, df.getNumCols()));
     }
 
+    /**
+     * Computes a statistical measure based on the specified indices and correlation matrices. Depending on the
+     * resampling flag, the method either operates on precomputed matrices or recalculates them using a sampled subset
+     * of the data matrix. This method is designed to compute a p-value reflecting the statistical significance of a
+     * correlation pattern.
+     *
+     * @param ntad     a 2D integer array where ntad[0] contains indices for the first group of variables, and ntad[1]
+     *                 contains indices for the second group
+     * @param resample a boolean indicating whether to resample the data matrix for correlation calculation; if true, a
+     *                 subset of rows is selected based on the specified fraction
+     * @param frac     a double representing the fraction of rows to sample if resampling is enabled, where 0.0 &lt;=
+     *                 frac &lt;= 1.0
+     * @return a double representing the p-value for the computed correlation statistics
+     */
     @Override
-    public double tetrad(int[][] tet, boolean resample, double frac) {
+    public double ntad(int[][] ntad, boolean resample, double frac) {
         SimpleMatrix S1, S2;
         int n;
 
         if (resample) {
             SimpleMatrix sampledDf = sampleRows(df, frac);
-            n = sampledDf.getNumRows();
+            n = ess; //sampledDf.getNumRows();
             int splitIndex = (int) (this.sp * n);
-            S1 = computeCovariance(sampledDf.extractMatrix(0, splitIndex, 0, sampledDf.getNumCols()));
-            S2 = computeCovariance(sampledDf.extractMatrix(splitIndex, n, 0, sampledDf.getNumCols()));
+            S1 = computeCorrelations(sampledDf.extractMatrix(0, splitIndex, 0, sampledDf.getNumCols()));
+            S2 = computeCorrelations(sampledDf.extractMatrix(splitIndex, n, 0, sampledDf.getNumCols()));
         } else {
-            n = this.n;
+            n = this.ess;
             S1 = this.S1;
             S2 = this.S2;
         }
 
-        int[] a = tet[0];
-        int[] b = tet[1];
+        int[] a = ntad[0];
+        int[] b = ntad[1];
         int z = a.length;
 
         SimpleMatrix XY = this.sp < 1 ? StatUtils.extractSubMatrix(S2, a, b) : StatUtils.extractSubMatrix(S1, a, b);
@@ -112,24 +146,53 @@ public class Ark extends NtadTest {
         return 2 * normalDist.cumulativeProbability(-Math.abs(z_score));
     }
 
+    /**
+     * Computes a statistical measure using the specified indices and correlation matrices. This method internally
+     * delegates to another overloaded version of the function with additional parameters set to default values.
+     *
+     * @param ntad a 2D integer array where ntad[0] contains indices for the first group of variables, and ntad[1]
+     *             contains indices for the second group
+     * @return a double representing the p-value for the computed correlation statistics
+     */
     @Override
-    public double tetrad(int[][] tet) {
-        return tetrad(tet, false, 1);
+    public double ntad(int[][] ntad) {
+        return ntad(ntad, false, 1);
     }
 
+    /**
+     * Computes a statistical measure based on a variable number of 2D integer arrays, where each array contains tetrad
+     * configurations. This method internally delegates to another overloaded version of the function which accepts a
+     * list of tetrad configurations.
+     *
+     * @param ntads a variable-length array of 2D integer arrays, where each element represents a tetrad configuration.
+     *              Each 2D array is expected to contain two subarrays, each defining a group of node indices.
+     * @return a double value representing the computed statistical measure for the provided tetrads.
+     */
     @Override
-    public double tetrads(int[][]... tets) {
+    public double ntads(int[][]... ntads) {
         List<int[][]> tetList = new ArrayList<>();
-        Collections.addAll(tetList, tets);
-        return tetrads(tetList);
+        Collections.addAll(tetList, ntads);
+        return ntads(tetList);
     }
 
+    /**
+     * Computes a statistical measure based on a list of tetrad configurations. Each tetrad configuration is represented
+     * as a 2D integer array with two subarrays, where each subarray defines a group of node indices. The method
+     * calculates a combined p-value through logarithmic transformations and chi-squared distribution.
+     *
+     * @param ntads a list of 2D integer arrays, where each array represents a tetrad configuration. Each 2D array must
+     *              contain exactly two subarrays with matching lengths, representing two groups of node indices.
+     * @return a double value representing the computed statistical measure for the provided tetrads. The result is a
+     * p-value reflecting the statistical significance of the configurations.
+     * @throws IllegalArgumentException if any tetrad does not contain exactly two subarrays or if the subarrays do not
+     *                                  have the same length.
+     */
     @Override
-    public double tetrads(List<int[][]> tets) {
+    public double ntads(List<int[][]> ntads) {
         double sum = 0.0;
         int count = 0;
 
-        for (int[][] tet : tets) {
+        for (int[][] tet : ntads) {
             if (tet.length != 2) {
                 throw new IllegalArgumentException("Each tetrad must contain two pairs of nodes.");
             }
@@ -137,7 +200,7 @@ public class Ark extends NtadTest {
                 throw new IllegalArgumentException("Each pair of nodes must have the same length.");
             }
 
-            double pValue = this.tetrad(tet);
+            double pValue = this.ntad(tet);
             if (pValue == 0) {
                 sum = Double.NEGATIVE_INFINITY;
             } else {
@@ -151,4 +214,5 @@ public class Ark extends NtadTest {
         return 1.0 - new ChiSquaredDistribution(2 * count).cumulativeProbability(sum);
     }
 }
+
 

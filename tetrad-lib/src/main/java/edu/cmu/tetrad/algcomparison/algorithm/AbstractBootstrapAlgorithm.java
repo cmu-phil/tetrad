@@ -1,21 +1,23 @@
-/*
- * Copyright (C) 2024 University of Pittsburgh.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
- */
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.algorithm;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
@@ -23,7 +25,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
@@ -68,7 +72,8 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
     private Graph runSingleBootstrapSearch(RandomGenerator randomGenerator, int[] selectedColumns, DataModel dataModel, Parameters parameters)
             throws InterruptedException {
         TetradLogger.getInstance().log("Bootstrap count = " + ++count);
-        return runSearch(createDataSample((DataSet) dataModel, randomGenerator, selectedColumns, parameters), parameters);
+        double r = parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE);
+        return runSearch(createDataSample((DataSet) dataModel, randomGenerator, selectedColumns, parameters, r), parameters);
     }
 
     protected abstract Graph runSearch(DataModel dataSet, Parameters parameters) throws InterruptedException;
@@ -88,7 +93,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
             return runSearch(dataModel, parameters);
         }
 
-        // create new random generator if a seed is given
+        // create a new random generator if a seed is given
         long seed = parameters.getLong(Params.SEED);
         RandomGenerator randomGenerator = (seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
 
@@ -111,10 +116,10 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
                 tasks.add(() -> runSearch(dataModel, parameters));
             }
 
-            System.gc();
-
             TaskRunner<Graph> taskRunner = new TaskRunner<>(parameters.getInt(Params.BOOTSTRAPPING_NUM_THREADS));
             List<Graph> graphs = taskRunner.run(tasks);
+
+            System.gc();
 
             if (graphs.isEmpty()) {
                 graph = new EdgeListGraph();
@@ -131,6 +136,23 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
             }
         }
 
+        graph = GraphUtils.fixDirections(graph);
+
+        // Fix the returned graph so that it is a proper display graph. Note that we need to set the "sample graph"
+        // for this graph to the above graph so that ensemble choices can be done using the right click menu in the
+        // interface. A "proper display graph" doesn't include the "..." edges that represent non-adjacency and
+        // are only needed for the sampling graph because they contain bootstrapping information. We return a
+        // graph without these edges so that, e.g., accuracies or other graph operations can be performed on the
+        // graph that is displayed in the interface. jdramsey 2025-6-22
+        ((EdgeListGraph) graph).setAncillaryGraph("samplingGraph", graph);
+
+        Graph displayGraph = GraphSampling.createDisplayGraph(graph, ResamplingEdgeEnsemble.Highest);
+        ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", graph);
+
+        // Make double sure that all directable edges point to the right before returning this graph.
+        // jdramsey 2025-6-21
+        graph = GraphUtils.fixDirections(displayGraph);
+
         return graph;
     }
 
@@ -145,3 +167,4 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
     }
 
 }
+

@@ -1,11 +1,31 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -59,8 +79,7 @@ public class PreserveMarkov {
     }
 
     /**
-     * Creates a new instance of the PreserveMarkov class by copying the fields
-     * from another PreserveMarkov object.
+     * Creates a new instance of the PreserveMarkov class by copying the fields from another PreserveMarkov object.
      *
      * @param preserveMarkov The PreserveMarkov object to be copied. Must not be null.
      */
@@ -74,12 +93,12 @@ public class PreserveMarkov {
      * Adjusts the p-values for a local Markov condition in a given constraint-based partially directed acyclic graph
      * (CPDAG).
      *
-     * @param graph        the constraint-based partially directed acyclic graph (CPDAG) to adjust p-values for
+     * @param graph          the constraint-based partially directed acyclic graph (CPDAG) to adjust p-values for
      * @param preserveMarkov a boolean flag indicating if the Markov condition should be preserved; should be true
-     * @param test         the independence test to be used; must not be null and not an instance of MsepTest
-     * @param pValues      a map of node pairs to sets of p-values used for adjustment
-     * @param withoutPair  a pair of nodes for which adjustments are calculated without considering the edge between
-     *                     them
+     * @param test           the independence test to be used; must not be null and not an instance of MsepTest
+     * @param pValues        a map of node pairs to sets of p-values used for adjustment
+     * @param withoutPair    a pair of nodes for which adjustments are calculated without considering the edge between
+     *                       them
      * @return a map of node pairs to sets of adjusted p-values
      * @throws IllegalArgumentException if preserveMarkov is false or if the test is null or an instance of MsepTest
      * @throws InterruptedException     if any
@@ -200,3 +219,4 @@ public class PreserveMarkov {
         return false;
     }
 }
+

@@ -1,26 +1,28 @@
-/*
- * Copyright (C) 2019 University of Pittsburgh.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
- */
+/// ////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+/// ////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.util;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 
 import java.util.Arrays;
@@ -341,6 +343,10 @@ public final class Params {
      */
     public static final String KERNEL_WIDTH = "kernelWidth";
     /**
+     * Constant <code>LATENT_GROUP_SPECTS="latentGroupSpecs"</code>
+     */
+    public static final String LATENT_GROUP_SPECS = "latentGroupSpecs";
+    /**
      * Constant <code>LATENT_MEASURED_IMPURE_PARENTS="latentMeasuredImpureParents"</code>
      */
     public static final String LATENT_MEASURED_IMPURE_PARENTS = "latentMeasuredImpureParents";
@@ -465,13 +471,17 @@ public final class Params {
      */
     public static final String NUM_RUNS = "numRuns";
     /**
-     * Constant <code>NUM_STRUCTURAL_EDGES="numStructuralEdges"</code>
+     * Constant <code>NUM_STRUCTURAL_EDGES="mimNumStructuralEdges"</code>
      */
-    public static final String NUM_STRUCTURAL_EDGES = "numStructuralEdges";
+    public static final String NUM_STRUCTURAL_EDGES = "mimNumStructuralEdges";
     /**
-     * Constant <code>NUM_STRUCTURAL_NODES="numStructuralNodes"</code>
+     * Constant <code>NUM_STRUCTURAL_NODES="mimNumStructuralNodes"</code>
      */
-    public static final String NUM_STRUCTURAL_NODES = "numStructuralNodes";
+    public static final String NUM_STRUCTURAL_NODES = "mimNumStructuralNodes";
+    /**
+     * Constant <code>META_EDGE_CONNECTION_TYPE="mimMetaEdgeConnectionType"</code>
+     */
+    public static final String META_EDGE_CONNECTION_TYPE = "mimMetaEdgeConnectionType";
     /**
      * Constant <code>NUMBER_RESAMPLING="numberResampling"</code>
      */
@@ -513,9 +523,9 @@ public final class Params {
      */
     public static final String PERCENT_DISCRETE = "percentDiscrete";
     /**
-     * Constant <code>FRACTION_RESAMPLE_SIZE="fractionResampleSize"</code>
+     * Constant <code>PERCENT_RESAMPLE_SIZE="percentResampleSize"</code>
      */
-    public static final String FRACTION_RESAMPLE_SIZE = "fractionResampleSize";
+    public static final String PERCENT_RESAMPLE_SIZE = "percentResampleSize";
     /**
      * Constant <code>POSSIBLE_DSEP_DONE="doPossibleDsep"</code>
      */
@@ -900,6 +910,18 @@ public final class Params {
      */
     public static final String SINGULARITY_LAMBDA = "singularityLambda";
     /**
+     * Constant <code>SHRINKAGE_MODE="shrinkageMode"</code>
+     */
+    public static final String SHRINKAGE_MODE = "shrinkageMode";
+    /**
+     * Constant <code>REGULARIZATION_LAMBDA="regularizationLambda"</code>
+     */
+    public static final String REGULARIZATION_LAMBDA = "regularizationLambda";
+    /**
+     * Constant <code>CONDITIONING_THRESHOLD="conditioningThreshold"</code>
+     */
+    public static final String CONDITIONING_THRESHOLD = "conditioningThreshold";
+    /**
      * Constant <code>COMPARE_GRAPH_ALGCOMP="compareGraphAlgcomp"</code>
      */
     public static final String COMPARE_GRAPH_ALGCOMP = "compareGraphAlgcomp";
@@ -1035,9 +1057,127 @@ public final class Params {
      * Constant <code>DO_ONE_EQUATION_ONLY="doOneEquationOnly"</code>
      */
     public static final String DO_ONE_EQUATION_ONLY = "doOneEquationOnly";
+    /**
+     * Constant <code>MIMBUILD_TYPE="mimbuildType"</code>
+     */
+    public static final String MIMBUILD_TYPE = "mimbuildType";
+    /**
+     * Constant <code>EFFECTIVE_SAMPLE_SIZE="effectiveSampleSize"</code>
+     */
+    public static final String EFFECTIVE_SAMPLE_SIZE = "effectiveSampleSize";
+    /**
+     * Constant <code>CLUSTER_SIZES="clusterSizes"</code>
+     */
+    public static final String CLUSTER_SIZES = "clusterSizes";
+    /**
+     * Constant <code>TSC_MODE="tscMode"</code>
+     */
+    public static final String TSC_MODE = "tscMode";
+    /**
+     * Constant <code>TSC_CLUSTER_SIZE="tscClusterSize"</code>
+     */
+    public static final String TSC_CLUSTER_SIZE = "tscClusterSize";
+    /**
+     * Constant <code>TSC_CLUSTER_RANK="tscClusterRank"</code>
+     */
+    public static final String TSC_CLUSTER_RANK = "tscClusterRank";
+    /**
+     * Constant <code>TSC_PC_USE_BOSS="tscPcUseBoss"</code>
+     */
+    public static final String TSC_PC_USE_BOSS = "tscPcUseBoss";
+    /**
+     * Constant <code>TSC_SINGLETON_POLICY="tscSingletonPolicy"</code>
+     */
+    public static final String TSC_SINGLETON_POLICY = "tscSingletonPolicy";
+    /**
+     * Constant <code>TSC_ENABLE_HIERARCHY="tscEnableHierarchy"</code>
+     */
+    public static final String TSC_ENABLE_HIERARCHY = "tscEnableHierarchy";
+    /**
+     * Constant <code>TSC_MIN_RANK_DROP="tscMinRankDrop"</code>
+     */
+    public static final String TSC_MIN_RANK_DROP = "tscMinRankDrop";
+    /**
+     * Constant <code>TSC_MIN_REDUNDANCY="tscMinRedundancy"</code>
+     */
+    public static final String TSC_MIN_REDUNDANCY = "tscMinRedundancy";
+    /**
+     * Constant <code>GFFC_R_MAX="gffc_r_max"</code>
+     */
+    public static final String MAX_RANK = "maxRank";
+    /**
+     * Constant <code>ALLOW_BIDIRECTED="allowBidirected"</code>
+     */
+    public static final String ALLOW_BIDIRECTED = "allowBidirected";
+    /**
+     * Constant <code>COLLIDER_ORIENTATION_STYLE="colliderOrientationStyle"</code>
+     */
+    public static final String COLLIDER_ORIENTATION_STYLE = "colliderOrientationStyle";
+    /**
+     * Constant <code>CYCLIC_COEF_LOW="cyclicCoefLow"</code>
+     */
+    public static final String CYCLIC_COEF_LOW = "cyclicCoefLow";
+    /**
+     * Constant <code>CYCLIC_COEF_HIGH="cyclicCoefHigh"</code>
+     */
+    public static final String CYCLIC_COEF_HIGH = "cyclicCoefHigh";
+    /**
+     * Constant <code>CYCLIC_RADIUS="cyclicRadius"</code>
+     */
+    public static final String CYCLIC_RADIUS = "cyclicRadius";
+    /**
+     * Constant <code>CYCLIC_MAX_PROD="cyclicMaxProd"</code>
+     */
+    public static final String CYCLIC_MAX_PROD = "cyclicMaxProd";
+    /**
+     * Constant <code>CYCLIC_COEF_STYLE="cyclicCoefStyle"</code>
+     */
+    public static final String CYCLIC_COEF_STYLE = "cyclicCoefStyle";
+    /**
+     * Constant <code>FDR_Q="fdrQ"</code>
+     */
+    public static final String FDR_Q = "fdrQ";
+    /**
+     * Constant <code>GIN_BACKEND="ginBackend"</code>
+     */
+    public static final String GIN_BACKEND = "ginBackend";
+    /**
+     * Constant <code>GIN_PERMUTATIONS="ginPermutations"</code>
+     */
+    public static final String GIN_PERMUTATIONS = "ginPermutations";
+    /**
+     * Constant <code>GIN_RIDGE="ginRidge"</code>
+     */
+    public static final String GIN_RIDGE = "ginRidge";
+
+    /**
+     * Constant <code>ANM_PRESET="anmPreset"</code>
+     */
+    public static final String ANM_PRESET = "anmPreset";
+    /**
+     * Constant <code>ANM_NONLINEARITY="anmNonlinearity"</code>
+     */
+    public static final String ANM_NONLINEARITY = "anmNonlinearity";
+    /**
+     * Constant <code>ANM_NOISE_KIND="anmNoiseKind"</code>
+     */
+    public static final String ANM_NOISE_KIND = "anmNoiseKind";
+    /**
+     * Constant <code>ANM_NOISE_STRENGTH="anmNoiseStrength"</code>
+     */
+    public static final String ANM_NOISE_STRENGTH = "anmNoiseStrength";
+    /**
+     * Constant <code>INSTANCE_ROW="instanceRow"</code>
+     */
+    public static final String INSTANCE_ROW = "instanceRow";
+    /**
+     * Constant <code>IS_ALPHA="isAlpha"</code>
+     */
+    public static final String INSTANCE_SPECIFIC_ALPHA = "instanceSpecificAlpha";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
+
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,
             Params.CCI_SCORE_ALPHA, Params.CG_EXACT, Params.COEF_HIGH, Params.COEF_LOW, Params.COEF_SYMMETRIC,
             Params.COLLIDER_DISCOVERY_RULE, Params.COMPLETE_RULE_SET_USED, Params.CONCURRENT_FAS,
@@ -1062,7 +1202,7 @@ public final class Params {
             Params.NUM_LATENTS, Params.NUM_MEASURES, Params.NUM_RANDOMIZED_SEARCH_MODELS, Params.NUM_RUNS,
             Params.NUM_STRUCTURAL_EDGES, Params.NUM_STRUCTURAL_NODES, Params.NUMBER_RESAMPLING,
             Params.ORIENT_TOWARD_DCONNECTIONS, Params.ORIENT_VISIBLE_FEEDBACK_LOOPS, Params.OUTPUT_RBD,
-            Params.PENALTY_DISCOUNT, Params.PERCENT_DISCRETE, Params.FRACTION_RESAMPLE_SIZE, Params.DO_POSSIBLE_DSEP,
+            Params.PENALTY_DISCOUNT, Params.PERCENT_DISCRETE, Params.PERCENT_RESAMPLE_SIZE, Params.DO_POSSIBLE_DSEP,
             Params.PROB_CYCLE, Params.PROB_TWO_CYCLE, Params.RANDOM_SELECTION_SIZE, Params.RANDOMIZE_COLUMNS,
             Params.RCIT_NUM_FEATURES, Params.RESAMPLING_ENSEMBLE, Params.RESAMPLING_WITH_REPLACEMENT, Params.PRIOR_EQUIVALENT_SAMPLE_SIZE,
             Params.SAMPLE_SIZE, Params.SAVE_LATENT_VARS, Params.SCALE_FREE_ALPHA, Params.SCALE_FREE_BETA, Params.SCALE_FREE_DELTA_IN,
@@ -1076,7 +1216,7 @@ public final class Params {
     private static final Set<String> BOOTSTRAPPING_PARAMS = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET,
             Params.NUMBER_RESAMPLING,
-            Params.FRACTION_RESAMPLE_SIZE,
+            Params.PERCENT_RESAMPLE_SIZE,
 //            Params.RESAMPLING_ENSEMBLE,
             Params.RESAMPLING_WITH_REPLACEMENT,
             Params.BOOTSTRAPPING_NUM_THREADS,
@@ -1103,6 +1243,50 @@ public final class Params {
      * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
      */
     public static String MC_ALPHA = "mcAlpha";
+
+    /**
+     * Constant <code>RCIT_MODE="rcit.rcitMode"</code> Whether to use RCIT (true) or RCoT (false).
+     */
+    public static String RCIT_MODE = "rcit.rcitMode";
+
+    /**
+     * Constant <code>RCIT_NUM_FEATURES_Z="rcit.numFeaturesZ"</code> Number of random Fourier features for the
+     * conditioning set Z (num_f).
+     */
+    public static String RCIT_NUM_FEATURES_Z = "rcit.numFeaturesZ";
+
+    /**
+     * Constant <code>RCIT_NUM_FEATURES_XY="rcit.numFeaturesXY"</code> Number of random Fourier features for the test
+     * variables X and Y (num_f2).
+     */
+    public static String RCIT_NUM_FEATURES_XY = "rcit.numFeaturesXY";
+
+    /**
+     * Constant <code>RCIT_LAMBDA="rcit.lambda"</code> Ridge regularization parameter (λ) used during residualization.
+     */
+    public static String RCIT_LAMBDA = "rcit.lambda";
+
+    /**
+     * Constant <code>RCIT_APPROX="rcit.approx"</code> Approximation method for the null distribution: one of {"lpd4",
+     * "hbe", "gamma", "chi2", "perm"}.
+     */
+    public static String RCIT_APPROX = "rcit.approx";
+
+    /**
+     * Constant <code>RCIT_PERMUTATIONS="rcit.permutations"</code> Number of permutations used when RCIT_APPROX is
+     * "perm".
+     */
+    public static String RCIT_PERMUTATIONS = "rcit.permutations";
+
+    /**
+     * Constant <code>RCIT_CENTER_FEATURES="rcit.centerFeatures"</code> Whether to center feature matrices before
+     * regression and HSIC.
+     */
+    public static String RCIT_CENTER_FEATURES = "rcit.centerFeatures";
+    /**
+     * Constant <code>REPEATING_GRAPH="repeatingGraph"</code> Whether to use a repeating graph for time lag search.
+     */
+    public static String TIME_LAG_REPLICATING_GRAPH = "timeLagReplicatingGraph";
 
     private Params() {
     }
@@ -1136,8 +1320,8 @@ public final class Params {
      * @return a {@link java.util.Set} object
      */
     public static Set<String> getScoreParameters(Algorithm algorithm) {
-        return (algorithm instanceof UsesScoreWrapper)
-                ? new HashSet<>(((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters())
+        return (algorithm instanceof TakesScoreWrapper)
+                ? new HashSet<>(((TakesScoreWrapper) algorithm).getScoreWrapper().getParameters())
                 : Collections.emptySet();
     }
 
@@ -1163,3 +1347,4 @@ public final class Params {
     }
 
 }
+

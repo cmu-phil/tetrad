@@ -1,9 +1,26 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
-import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -15,7 +32,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.utils.PcCommon;
+import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -36,7 +53,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class Fas extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -77,7 +94,19 @@ public class Fas extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-        return search.search();
+        Graph graph;
+        double fdrQ = parameters.getDouble(Params.FDR_Q);
+
+        if (fdrQ == 0.0) {
+            graph = search.search();
+        } else {
+            boolean negativelyCorrelated = true;
+            boolean verbose = parameters.getBoolean(Params.VERBOSE);
+            double alpha = parameters.getDouble(Params.ALPHA);
+            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
+        }
+
+        return graph;
     }
 
     /**
@@ -112,6 +141,7 @@ public class Fas extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
+        parameters.add(Params.FDR_Q);
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.VERBOSE);
         return parameters;
@@ -150,3 +180,4 @@ public class Fas extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
 }
+

@@ -1,9 +1,26 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
-import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -16,6 +33,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -37,7 +55,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -89,8 +107,17 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
             knowledge = timeSeries.getKnowledge();
         }
 
+        edu.cmu.tetrad.search.Fci.ColliderRule colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
+            case 1 -> edu.cmu.tetrad.search.Fci.ColliderRule.SEPSETS;
+            case 2 -> edu.cmu.tetrad.search.Fci.ColliderRule.CONSERVATIVE;
+            case 3 -> edu.cmu.tetrad.search.Fci.ColliderRule.MAX_P;
+            default -> throw new IllegalArgumentException("Invalid collider orientation style");
+        };
+
         edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(this.test.getTest(dataModel, parameters));
+        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setR0ColliderRule(colliderOrientationStyle);
         search.setKnowledge(this.knowledge);
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -99,7 +126,19 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
-        return search.search();
+        Graph graph;
+        double fdrQ = parameters.getDouble(Params.FDR_Q);
+
+        if (fdrQ == 0.0) {
+            graph = search.search();
+        } else {
+            boolean negativelyCorrelated = true;
+            boolean verbose = parameters.getBoolean(Params.VERBOSE);
+            double alpha = parameters.getDouble(Params.ALPHA);
+            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
+        }
+
+        return graph;
     }
 
     /**
@@ -144,10 +183,13 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.STABLE_FAS);
+        parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.DO_POSSIBLE_DSEP);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
+        parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.GUARANTEE_PAG);
 
         parameters.add(Params.VERBOSE);
@@ -196,3 +238,4 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         this.test = test;
     }
 }
+

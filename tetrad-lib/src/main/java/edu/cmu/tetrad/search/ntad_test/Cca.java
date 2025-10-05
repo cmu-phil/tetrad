@@ -1,14 +1,33 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.ntad_test;
 
-import edu.cmu.tetrad.util.StatUtils;
-import org.ejml.data.DMatrixRMaj;
-import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
-import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
+import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static edu.cmu.tetrad.util.RankTests.rankLeByWilks;
 
 /**
  * The Cca class extends the NtadTest class and provides a mechanism to perform Canonical Correlation Analysis (CCA) as
@@ -25,62 +44,119 @@ import java.util.List;
 public class Cca extends NtadTest {
 
     /**
-     * Constructs a new Cca object based on the provided data matrix and covariance option.
+     * Constructs a Cca object with the provided data matrix, covariance flag, and sample size.
      *
-     * @param df          the input data matrix as a SimpleMatrix object, where each row represents an observation and
-     *                    each column represents a variable.
-     * @param covariances a boolean indicating whether the provided data matrix represents covariances (true) or raw
-     *                    data (false). If false, the covariance matrix will be computed from the raw data.
+     * @param df           the input data matrix as a SimpleMatrix object, where each row represents an observation and
+     *                     each column represents a variable
+     * @param correlations a boolean flag indicating whether the provided matrix is a covariance matrix (true) or raw
+     *                     data requiring covariance computation (false)
+     * @param ess          the effective sample size (ess), which should be -1 or greater than 1. If -1, the sample size
+     *                     of the data matrix is used.
      */
-    public Cca(SimpleMatrix df, boolean covariances) {
-        super(df, covariances);
+    public Cca(SimpleMatrix df, boolean correlations, int ess) {
+        super(df, correlations, ess);
     }
 
+    /**
+     * Computes the aggregate statistical measure based on a list of tetrad configurations. Each configuration specifies
+     * sets of indices representing structural relationships among variables. This method evaluates and combines results
+     * for all provided configurations, with optional resampling.
+     *
+     * @param ntad     a list of 2D integer arrays where each array contains multiple tetrad configurations. Each
+     *                 configuration defines sets of indices representing structural relationships among variables.
+     * @param resample a boolean indicating whether resampling should be applied to the data matrix for the
+     *                 computation.
+     * @param frac     a double value representing the fraction of data to use during resampling, ignored if resample is
+     *                 false.
+     * @return a double value representing the sum of the statistical measures for all provided tetrad configurations.
+     */
     @Override
-    public double tetrad(int[][] tet, boolean resample, double frac) {
-        // Determine S (either resample or use the default covariance matrix)
-        SimpleMatrix S = resample ? computeCovariance(sampleRows(df, frac)) : this.S;
-        int[] a = tet[0];
-        int[] b = tet[1];
-        int n = resample ? (int) (frac * this.n) : this.n;
+    public double ntad(int[][] ntad, boolean resample, double frac) {
+        // Determine S (either resample or use the default correlation matrix)
+        SimpleMatrix S = resample ? computeCorrelations(sampleRows(df, frac)) : this.S;
+        int[] a = ntad[0];
+        int[] b = ntad[1];
+        int n = resample ? (int) (frac * this.ess) : this.ess;
 
-        // Use the getCcaPValueRankD method for rank d = 1 (or make d configurable if needed)
-        int d = 1;  // You can adjust this if you want to explore larger rank tests
-        return StatUtils.getCcaPValueRankD(S, a, b, n, d);
+        // Use the getCcaPValueRankD method for rank r = 1 (or make r configurable if needed)
+        int r = Math.min(a.length, b.length) - 1;
+        return RankTests.rankLeByWilks(S, a, b, n, r);
     }
 
+    /**
+     * Determines the smallest rank value for which the hypothesis test returns a result
+     * below the specified alpha threshold using Wilks' lambda test.
+     *
+     * @param ntad a 2D integer array where ntad[0] represents an array of indices for the x-block variables,
+     *             and ntad[1] represents an array of indices for the y-block variables.
+     * @param alpha a double value representing the significance level threshold to evaluate the hypothesis test.
+     * @return the smallest integer rank value for which the hypothesis test fails to reject the null hypothesis.
+     *         If no such rank is found, returns the minimum of the lengths of the two index arrays.
+     */
+    public int rank(int[][] ntad, double alpha) {
+        SimpleMatrix S = this.S;
+        int[] a = ntad[0];
+        int[] b = ntad[1];
+
+        int minpq = Math.min(a.length, b.length);
+        int n = this.ess;
+
+        for (int r = 0; r < a.length; r++) {
+            if (r >= minpq) {
+                continue;
+            }
+
+            if (rankLeByWilks(S, a, b, n, r) > alpha) {
+                return r;
+            }
+        }
+
+        return minpq;
+    }
+
+    /**
+     * Computes the aggregate statistical measure based on a list of tetrad configurations. Each configuration specifies
+     * sets of indices representing structural relationships among variables. This method internally calls the
+     * overloaded version of `ntad` with optional resampling set to false and uses a default fraction of 1 for
+     * processing.
+     *
+     * @param ntad a list of 2D integer arrays where each array contains multiple tetrad configurations. Each
+     *             configuration defines sets of indices representing structural relationships among variables.
+     * @return a double value representing the sum of the statistical measures for all provided tetrad configurations.
+     */
     @Override
-    public double tetrad(int[][] tet) {
-        return tetrad(tet, false, 1);
+    public double ntad(int[][] ntad) {
+        return ntad(ntad, false, 1);
     }
 
     /**
      * Returns the p-value for the tetrad. This constructor is required by the interface, though in truth it will throw
      * and exception if more than one tetrad is provided.
      *
-     * @param tets A single tetrad.
+     * @param ntads A single tetrad.
      * @return The p-value for the tetrad.
      */
     @Override
-    public double tetrads(int[][]... tets) {
+    public double ntads(int[][]... ntads) {
         List<int[][]> tetList = new ArrayList<>();
-        Collections.addAll(tetList, tets);
-        return tetrads(tetList);
+        Collections.addAll(tetList, ntads);
+        return ntads(tetList);
     }
 
     /**
      * Returns the p-value for the tetrad. This constructor is required by the interface, though in truth it will throw
      * and exception if more than one tetrad is provided.
      *
-     * @param tets A single tetrad.
+     * @param ntads A single tetrad.
      * @return The p-value for the tetrad.
      */
     @Override
-    public double tetrads(List<int[][]> tets) {
-        if (tets.size() != 1) {
+    public double ntads(List<int[][]> ntads) {
+        if (ntads.size() != 1) {
             throw new IllegalArgumentException("Only one tetrad is allowed for the CCA test.");
         }
 
-        return tetrad(tets.getFirst());
+        return ntad(ntads.getFirst());
     }
 }
+

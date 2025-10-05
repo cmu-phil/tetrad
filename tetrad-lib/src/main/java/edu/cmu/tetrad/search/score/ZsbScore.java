@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.score;
@@ -28,6 +27,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -40,7 +40,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Implements an unpublished score based on a risk bound due to Zhang and Shen. It adapts Theorem 1 in the following
  * reference:
  * <p>
- * Zhang, Y., &amp; Shen, X. (2010). Model selection procedure for high‐dimensional data. Statistical Analysis and Data
+ * Zhang, Y., &amp; Shen, X. (2010). Model selection procedure for highâdimensional data. Statistical Analysis and Data
  * Mining: The ASA Data Science Journal, 3(5), 350-358
  * <p>
  * The score uses Theorem 1 in the above to numerically search for a lambda value that is bounded by a given probability
@@ -59,7 +59,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class ZsbScore implements Score {
+public class ZsbScore implements Score, EffectiveSampleSizeSettable {
 
     // The variables of the covariance matrix.
     private final List<Node> variables;
@@ -81,6 +81,7 @@ public class ZsbScore implements Score {
     private Matrix data;
     // Singularity lambda
     private double lambda = 0.0;
+    private int nEff;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -95,6 +96,7 @@ public class ZsbScore implements Score {
         setCovariances(covMatrix);
         this.variables = covMatrix.getVariables();
         this.sampleSize = covMatrix.getSampleSize();
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -170,7 +172,7 @@ public class ZsbScore implements Score {
 
         int m0 = estMaxParents[i];
 
-        double score = -(0.5 * sampleSize * log(varRy) + getLambda(m0, pn) * pi);
+        double score = -(0.5 * nEff * log(varRy) + getLambda(m0, pn) * pi);
 
         if (score >= maxScores[i]) {
             maxScores[i] = score;
@@ -224,6 +226,7 @@ public class ZsbScore implements Score {
         }
 
         this.sampleSize = covariances.getSampleSize();
+        setEffectiveSampleSize(-1);
     }
 
     /**
@@ -266,7 +269,7 @@ public class ZsbScore implements Score {
      */
     @Override
     public int getMaxDegree() {
-        return (int) ceil(log(sampleSize));
+        return (int) ceil(log(nEff));
     }
 
     /**
@@ -323,6 +326,17 @@ public class ZsbScore implements Score {
     public void setLambda(double lambda) {
         this.lambda = lambda;
     }
+
+    @Override
+    public int getEffectiveSampleSize() {
+        return nEff;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+    }
 }
+
 
 

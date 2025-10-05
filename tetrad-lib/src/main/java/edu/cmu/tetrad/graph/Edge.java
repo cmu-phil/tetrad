@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,13 +15,13 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
+import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 
@@ -100,6 +100,22 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * @param endpoint2 the endpoint at the second node
      */
     public Edge(Node node1, Node node2, Endpoint endpoint1, Endpoint endpoint2) {
+        this(node1, node2, endpoint1, endpoint2, true);
+    }
+
+    /**
+     * Constructs an Edge by specifying two nodes, their corresponding endpoints, and whether to flip the direction of
+     * the edge if it is pointing backwards.
+     *
+     * @param node1           the first node of the edge; must not be null
+     * @param node2           the second node of the edge; must not be null
+     * @param endpoint1       the endpoint type for the first node; must not be null
+     * @param endpoint2       the endpoint type for the second node; must not be null
+     * @param flipIfBackwards a boolean indicating whether to flip the nodes and endpoints if the edge is considered to
+     *                        be pointing backwards
+     * @throws NullPointerException if any of the nodes or endpoints are null
+     */
+    public Edge(Node node1, Node node2, Endpoint endpoint1, Endpoint endpoint2, boolean flipIfBackwards) {
         if (node1 == null || node2 == null) {
             throw new NullPointerException("Nodes must not be null. node1 = " + node1 + " node2 = " + node2);
         }
@@ -108,8 +124,9 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
             throw new NullPointerException("Endpoints must not be null.");
         }
 
-        // Flip edges pointing left the other way.
-        if (pointingLeft(endpoint1, endpoint2)) {
+        // At the moment, flipping only needs to be avoided for the bootstrapping API. Please don't use
+        // wantonly.
+        if (flipIfBackwards && pointingLeft(endpoint1, endpoint2)) {
             this.node1 = node2;
             this.node2 = node1;
             this.endpoint1 = endpoint2;
@@ -212,7 +229,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * @return the endpoint nearest to the given node.
      * @throws java.lang.IllegalArgumentException if the given node is not along the edge.
      */
-    public final Endpoint getProximalEndpoint(Node node) {
+    public final Endpoint getEndpoint(Node node) {
         if (this.node1 == node) {
             return getEndpoint1();
         } else if (this.node2 == node) {
@@ -274,18 +291,40 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * @return true just in case the edge is pointing toward the given node-- that is, x --&gt; node or x o--&gt; node.
      */
     public boolean pointsTowards(Node node) {
-        Endpoint proximal = getProximalEndpoint(node);
+        Endpoint proximal = getEndpoint(node);
         Endpoint distal = getDistalEndpoint(node);
         return (proximal == Endpoint.ARROW && (distal == Endpoint.TAIL || distal == Endpoint.CIRCLE));
     }
 
     /**
-     * <p>reverse.</p>
+     * Reverses the edge, so that it if was X->Y it's now Y->X, or vice-versa.
      *
      * @return the edge with endpoints reversed.
      */
     public Edge reverse() {
         return new Edge(getNode2(), getNode1(), getEndpoint1(), getEndpoint2());
+    }
+
+    /**
+     * Flips this edge, so that if it's X-&gt;Y it's now Y&lt;-X, or vice-versa.
+     *
+     * @return The flipped edge.
+     */
+    public Edge sameEdgeFlippedDirection() {
+        Edge _edge = new Edge(getNode2(), getNode1(), getEndpoint2(), getEndpoint1(), false);
+        _edge.lineColor = lineColor;
+        _edge.bold = bold;
+        _edge.highlighted = highlighted;
+        _edge.properties = new ArrayList<>(properties);
+        _edge.edgeTypeProbabilities = new ArrayList<>();
+
+        for (EdgeTypeProbability etp : edgeTypeProbabilities) {
+            EdgeType reversedEdgeType = GraphSampling.getReversed(etp.getEdgeType());
+            _edge.edgeTypeProbabilities.add(new EdgeTypeProbability(reversedEdgeType, etp.getProbability()));
+        }
+
+        _edge.probability = probability;
+        return _edge;
     }
 
     /**
@@ -615,3 +654,4 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
 
 }
+

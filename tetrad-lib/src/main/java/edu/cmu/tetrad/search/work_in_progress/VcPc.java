@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.work_in_progress;
@@ -25,7 +24,7 @@ import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -103,7 +102,7 @@ public final class VcPc implements IGraphSearch {
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
      *
-     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param independenceTest a {@link IndependenceTest} object
      */
     public VcPc(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -118,8 +117,8 @@ public final class VcPc implements IGraphSearch {
     //    Constraints to guarantee future path conditions met. After traversing the entire path,
 //    returns last node on path when satisfied, stops otherwise.
     private static Node traverseFuturePath(Node node, Edge edge1, Edge edge2) {
-        Endpoint E1 = edge1.getProximalEndpoint(node);
-        Endpoint E2 = edge2.getProximalEndpoint(node);
+        Endpoint E1 = edge1.getEndpoint(node);
+        Endpoint E2 = edge2.getEndpoint(node);
         Endpoint E3 = edge2.getDistalEndpoint(node);
         Endpoint E4 = edge1.getDistalEndpoint(node);
         if (E1 == Endpoint.ARROW && E2 == Endpoint.ARROW && E3 == Endpoint.TAIL) {
@@ -646,7 +645,7 @@ public final class VcPc implements IGraphSearch {
      * @param x       a {@link edu.cmu.tetrad.graph.Node} object
      * @param y       a {@link edu.cmu.tetrad.graph.Node} object
      * @param z       a {@link edu.cmu.tetrad.graph.Node} object
-     * @param test    a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test    a {@link IndependenceTest} object
      * @param depth   a int
      * @param graph   a {@link edu.cmu.tetrad.graph.Graph} object
      * @param verbose a boolean
@@ -813,4 +812,5 @@ public final class VcPc implements IGraphSearch {
         AMBIGUOUS
     }
 }
+
 

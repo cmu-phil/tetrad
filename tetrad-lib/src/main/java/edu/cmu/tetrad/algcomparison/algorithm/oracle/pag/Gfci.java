@@ -1,14 +1,31 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
-import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
@@ -34,8 +51,8 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper,
-        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesScoreWrapper,
+        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -94,6 +111,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         }
 
         edu.cmu.tetrad.search.Gfci search = new edu.cmu.tetrad.search.Gfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setKnowledge(this.knowledge);
@@ -122,8 +140,8 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Returns a description of the GFCI algorithm using the description of the independence test and score
-     * associated with it.
+     * Returns a description of the GFCI algorithm using the description of the independence test and score associated
+     * with it.
      *
      * @return The description of the algorithm.
      */
@@ -156,6 +174,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.GUARANTEE_PAG);
         parameters.add(Params.USE_MAX_P_HEURISTIC);
         parameters.add(Params.NUM_THREADS);
@@ -225,3 +244,4 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         this.test = test;
     }
 }
+

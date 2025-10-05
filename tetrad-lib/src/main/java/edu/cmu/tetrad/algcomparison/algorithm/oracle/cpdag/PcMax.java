@@ -1,9 +1,26 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
-import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -16,7 +33,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.utils.PcCommon;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -43,9 +60,10 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
         command = "pc-max",
         algoType = AlgType.forbid_latent_common_causes
 )
+@Deprecated(since = "7.9", forRemoval = false)
 @Bootstrapping
 public class PcMax extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
-        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -90,24 +108,16 @@ public class PcMax extends AbstractBootstrapAlgorithm implements Algorithm, HasK
             knowledge = timeSeries.getKnowledge();
         }
 
-        PcCommon.ConflictRule conflictRule = switch (parameters.getInt(Params.CONFLICT_RULE)) {
-            case 1 -> PcCommon.ConflictRule.PRIORITIZE_EXISTING;
-            case 2 -> PcCommon.ConflictRule.ORIENT_BIDIRECTED;
-            case 3 -> PcCommon.ConflictRule.OVERWRITE_EXISTING;
-            default ->
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-        };
-
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
-        search.setUseMaxPOrientation(true);
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxPOrientationHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
-        search.setMaxPOrientationHeuristicMaxLength(parameters.getInt(Params.MaX_PAX_P_ORIENTATION_HEURISTIC_MAX_LENGTH));
-        search.setGuaranteeCpdag(parameters.getBoolean(Params.GUARANTEE_CPDAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
-        search.setStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setConflictRule(conflictRule);
+        search.setFasStable(parameters.getBoolean(Params.STABLE_FAS));
+        search.setColliderOrientationStyle(Pc.ColliderOrientationStyle.MAX_P);
+        search.setAllowBidirected(parameters.getBoolean(Params.ALLOW_BIDIRECTED) ? Pc.AllowBidirected.ALLOW : Pc.AllowBidirected.DISALLOW);
+        search.setLogMaxPTies(true);
+        search.setMaxPGlobalOrder(false);
+        search.setMaxPDepthStratified(false);
         Graph graph = search.search();
         stampWithBic(graph, dataModel);
 
@@ -146,10 +156,7 @@ public class PcMax extends AbstractBootstrapAlgorithm implements Algorithm, HasK
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
-        parameters.add(Params.CONFLICT_RULE);
-        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
-        parameters.add(Params.MaX_PAX_P_ORIENTATION_HEURISTIC_MAX_LENGTH);
-        parameters.add(Params.GUARANTEE_CPDAG);
+        parameters.add(Params.ALLOW_BIDIRECTED);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.VERBOSE);
@@ -189,3 +196,4 @@ public class PcMax extends AbstractBootstrapAlgorithm implements Algorithm, HasK
     }
 
 }
+

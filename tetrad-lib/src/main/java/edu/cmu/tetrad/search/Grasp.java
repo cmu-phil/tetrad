@@ -1,10 +1,31 @@
+/// ////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -120,6 +141,7 @@ public class Grasp {
      * Represents the seed used for random number generation or shuffling.
      */
     private long seed = -1;
+    private boolean replicatingGraph = false;
 
     /**
      * Constructor for a score.
@@ -155,6 +177,45 @@ public class Grasp {
         this.test = test;
         this.score = score;
         this.variables = getVariables(test, score);
+    }
+
+    /**
+     * Returns the graph implied by the discovered permutation.
+     *
+     * @param cpDag True if a CPDAG should be returned, false if a DAG should be returned.
+     * @return This graph.
+     */
+//    @NotNull
+//    public Graph getGraph(boolean cpDag) {
+//        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
+//        return this.scorer.getGraph(cpDag);
+//    }
+
+    /**
+     * Retrieves a graph based on specified parameters.
+     *
+     * @param cpDag True if a CPDAG (Completed Partially Directed Acyclic Graph) should be returned.
+     *              If false, a DAG (Directed Acyclic Graph) will be returned.
+     * @return A non-null Graph object, either a CPDAG or DAG depending on the input parameter.
+     */
+    public @NotNull Graph getGraph(boolean cpDag) {
+        return getGraph(cpDag, /*replicating*/ false);
+    }
+
+    /**
+     * Returns the graph based on the specified parameters. If the parameter `replicating` is true,
+     * a replicating graph is returned; otherwise, a regular graph is returned.
+     *
+     * @param cpDag      True if a CPDAG (Completed Partially Directed Acyclic Graph) should be returned,
+     *                   false if a DAG (Directed Acyclic Graph) should be returned.
+     * @param replicating True if a replicating graph, which applies a lag replication policy,
+     *                    should be returned.
+     * @return The generated graph, either a CPDAG or DAG, wrapped in a replicating graph
+     *         if `replicating` is true.
+     */
+    public Graph getGraph(boolean cpDag, boolean replicating) {
+        Graph g = this.scorer.getGraph(cpDag);
+        return new ReplicatingGraph(g, new LagReplicationPolicy());
     }
 
     private List<Node> getVariables(IndependenceTest test, Score score) {
@@ -243,18 +304,6 @@ public class Grasp {
      */
     public int getNumEdges() {
         return this.scorer.getNumEdges();
-    }
-
-    /**
-     * Returns the graph implied by the discovered permutation.
-     *
-     * @param cpDag True if a CPDAG should be returned, false if a DAG should be returned.
-     * @return This graph.
-     */
-    @NotNull
-    public Graph getGraph(boolean cpDag) {
-        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-        return this.scorer.getGraph(cpDag);
     }
 
     /**
@@ -611,4 +660,15 @@ public class Grasp {
     public void setSeed(long seed) {
         this.seed = seed;
     }
+
+    /**
+     * Sets the replicatingGraph flag to determine if graph replication is enabled.
+     *
+     * @param replicatingGraph the boolean value to set the replicatingGraph flag.
+     *                         If true, replication is enabled; otherwise, it is disabled.
+     */
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
+    }
 }
+

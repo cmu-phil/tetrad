@@ -1,11 +1,31 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.regression.RegressionDataset;
-import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.OrderedPair;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.util.SublistGenerator;
 
 import java.util.*;
 
@@ -17,7 +37,7 @@ import java.util.*;
  * calculated as the abolute values of the total effects; the minimum values for these across possible parent sets is
  * reported as suggested in this paper:
  * <p>
- * Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann. "Estimating high-dimensional intervention effects from
+ * Maathuis, Marloes H., Markus Kalisch, and Peter BÃ¼hlmann. "Estimating high-dimensional intervention effects from
  * observational data." The Annals of Statistics 37.6A (2009): 3133-3164.
  * <p>
  * Additionally, if a linear SEM model is supplied over the same variables, a minimum squared distance is calculated of
@@ -373,3 +393,4 @@ public class IdaCheck {
         return OrderedPairs;
     }
 }
+

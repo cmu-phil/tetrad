@@ -1,12 +1,12 @@
 /// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,21 +15,21 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 /// ////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.DagToPag;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -147,6 +147,38 @@ public final class GraphUtils {
     }
 
     /**
+     * Calculates the subgraph over the parents of a target node for a DAG, CPDAG, MAG, or PAG. This is not necessarily
+     * minimal (i.e. not necessarily a Markov Boundary). Target Node is included in the result graph's nodes list. Edges
+     * including the target node is included in the result graph's edges list.
+     *
+     * @param target a node in the given graph.
+     * @param graph  a DAG, CPDAG, MAG, or PAG.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public static Graph getParentsSubgraphWithTargetNode(Graph graph, Node target) {
+        EdgeListGraph g = new EdgeListGraph(graph);
+        List<Node> parents = graph.getParents(target);
+        parents.add(target);
+        return g.subgraph(parents);
+    }
+
+    /**
+     * Calculates the subgraph over the adjacency of a target node for a DAG, CPDAG, MAG, or PAG. This is not
+     * necessarily minimal (i.e. not necessarily a Markov Boundary). Target Node is included in the result graph's nodes
+     * list. Edges including the target node is included in the result graph's edges list.
+     *
+     * @param target a node in the given graph.
+     * @param graph  a DAG, CPDAG, MAG, or PAG.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public static Graph getAdjacencySubgraphWithTargetNode(Graph graph, Node target) {
+        EdgeListGraph g = new EdgeListGraph(graph);
+        List<Node> adjs = graph.getAdjacentNodes(target);
+        adjs.add(target);
+        return g.subgraph(adjs);
+    }
+
+    /**
      * <p>removeBidirectedOrientations.</p>
      *
      * @param estCpdag a {@link edu.cmu.tetrad.graph.Graph} object
@@ -209,7 +241,9 @@ public final class GraphUtils {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph completeGraph(Graph graph) {
-        Graph graph2 = new EdgeListGraph(graph.getNodes());
+        Graph graph2;
+
+        graph2 = GraphFactoryUtil.newGraph(graph.getNodes(), graph instanceof ReplicatingGraph);
 
         graph2.removeEdges(new ArrayList<>(graph2.getEdges()));
 
@@ -338,7 +372,7 @@ public final class GraphUtils {
             buf.append(path.getFirst().toString());
         }
 
-        String conditioningSymbol = "✔";
+        String conditioningSymbol = "â";
 
         if (conditioningVars.contains(path.getFirst())) {
             buf.append(conditioningSymbol);
@@ -360,8 +394,8 @@ public final class GraphUtils {
             } else if (graph.getEdges(n0, n1).size() == 2) {
                 buf.append("<=>");
             } else {
-                Endpoint endpoint0 = edge.getProximalEndpoint(n0);
-                Endpoint endpoint1 = edge.getProximalEndpoint(n1);
+                Endpoint endpoint0 = edge.getEndpoint(n0);
+                Endpoint endpoint1 = edge.getEndpoint(n1);
 
                 if (endpoint0 == Endpoint.ARROW) {
                     buf.append("<");
@@ -413,54 +447,56 @@ public final class GraphUtils {
      * @return A new, converted, graph.
      */
     public static Graph replaceNodes(Graph originalGraph, List<Node> newVariables) {
-        Map<String, Node> newNodes = new HashMap<>();
-        List<Node> _newNodes = new ArrayList<>();
-
+        // Map of name -> replacement node (keep your "no latents" rule)
+        Map<String, Node> replacements = new HashMap<>();
         for (Node node : newVariables) {
             if (node.getNodeType() != NodeType.LATENT) {
-                newNodes.put(node.getName(), node);
-                _newNodes.add(node);
+                replacements.put(node.getName(), node);
             }
         }
 
-        Graph convertedGraph = new EdgeListGraph(_newNodes);
+        // Build converted graph with ALL original nodes, but replaced by name when possible.
+        Graph convertedGraph = new EdgeListGraph();
+        // Ensure we reuse the same Node instance for each name in the converted graph
+        Map<String, Node> nameToConverted = new HashMap<>();
 
+        for (Node orig : originalGraph.getNodes()) {
+            Node rep = replacements.getOrDefault(orig.getName(), orig);
+            // Reuse a single instance per name in the new graph
+            Node toAdd = nameToConverted.computeIfAbsent(rep.getName(), k -> rep);
+            if (!convertedGraph.containsNode(toAdd)) {
+                convertedGraph.addNode(toAdd);
+            }
+        }
+
+        // Recreate edges with mapped endpoints
         for (Edge edge : originalGraph.getEdges()) {
-            Node node1 = newNodes.get(edge.getNode1().getName());
-            Node node2 = newNodes.get(edge.getNode2().getName());
-
-            if (node1 == null) {
-                node1 = edge.getNode1();
-            }
-
-            if (!convertedGraph.containsNode(node1)) {
-                convertedGraph.addNode(node1);
-            }
-
-            if (node2 == null) {
-                node2 = edge.getNode2();
-            }
-
-            if (!convertedGraph.containsNode(node2)) {
-                convertedGraph.addNode(node2);
-            }
-
-            Endpoint endpoint1 = edge.getEndpoint1();
-            Endpoint endpoint2 = edge.getEndpoint2();
-            Edge newEdge = new Edge(node1, node2, endpoint1, endpoint2);
+            Node a = nameToConverted.getOrDefault(edge.getNode1().getName(), edge.getNode1());
+            Node b = nameToConverted.getOrDefault(edge.getNode2().getName(), edge.getNode2());
+            Edge newEdge = new Edge(a, b, edge.getEndpoint1(), edge.getEndpoint2());
             convertedGraph.addEdge(newEdge);
         }
 
-        for (Triple triple : originalGraph.getUnderLines()) {
-            convertedGraph.addUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
+        // Copy triples using mapped nodes (safe lookups)
+        for (Triple t : originalGraph.getUnderLines()) {
+            Node x = nameToConverted.get(t.getX().getName());
+            Node y = nameToConverted.get(t.getY().getName());
+            Node z = nameToConverted.get(t.getZ().getName());
+            convertedGraph.addUnderlineTriple(x, y, z);
         }
 
-        for (Triple triple : originalGraph.getDottedUnderlines()) {
-            convertedGraph.addDottedUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
+        for (Triple t : originalGraph.getDottedUnderlines()) {
+            Node x = nameToConverted.get(t.getX().getName());
+            Node y = nameToConverted.get(t.getY().getName());
+            Node z = nameToConverted.get(t.getZ().getName());
+            convertedGraph.addDottedUnderlineTriple(x, y, z);
         }
 
-        for (Triple triple : originalGraph.getAmbiguousTriples()) {
-            convertedGraph.addAmbiguousTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
+        for (Triple t : originalGraph.getAmbiguousTriples()) {
+            Node x = nameToConverted.get(t.getX().getName());
+            Node y = nameToConverted.get(t.getY().getName());
+            Node z = nameToConverted.get(t.getZ().getName());
+            convertedGraph.addAmbiguousTriple(x, y, z);
         }
 
         return convertedGraph;
@@ -1840,11 +1876,11 @@ public final class GraphUtils {
         Node x = edge1.getNode1();
         Node y = edge1.getNode2();
 
-        Endpoint ex1 = edge1.getProximalEndpoint(x);
-        Endpoint ey1 = edge1.getProximalEndpoint(y);
+        Endpoint ex1 = edge1.getEndpoint(x);
+        Endpoint ey1 = edge1.getEndpoint(y);
 
-        Endpoint ex2 = edge2.getProximalEndpoint(x);
-        Endpoint ey2 = edge2.getProximalEndpoint(y);
+        Endpoint ex2 = edge2.getEndpoint(x);
+        Endpoint ey2 = edge2.getEndpoint(y);
 
         return (ex1 == Endpoint.CIRCLE || (ex1 == ex2 || ex2 == Endpoint.CIRCLE)) && (ey1 == Endpoint.CIRCLE || (ey1 == ey2 || ey2 == Endpoint.CIRCLE));
     }
@@ -2577,14 +2613,14 @@ public final class GraphUtils {
             changed = false;
 
             changed |= removeAlmostCycles(pag, knownColliders, verbose);
-            changed |= repairMaximality(pag, verbose, selection);
+            changed |= repairMaximality(pag, verbose, selection, fciOrient, knowledge, knownColliders);
             changed |= removeCycles(pag, verbose);
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
         } while (changed);
 
-        DagToPag dagToPag = new DagToPag(GraphTransforms.zhangMagFromPag(pag));
+        MagToPag dagToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
         dagToPag.setKnowledge(knowledge);
-        Graph pag2 = dagToPag.convert();
+        Graph pag2 = dagToPag.convert(true);
 
         if (pag2.equals(orig)) {
             if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
@@ -2653,16 +2689,20 @@ public final class GraphUtils {
     }
 
     /**
-     * Repairs the maximality of a PAG (Partial Ancestral Graph) by ensuring that
-     * any inducing path between two nodes not currently adjacent in the graph
-     * results in an added non-directed edge. The method modifies the graph in-place.
+     * Repairs the maximality of a PAG (Partial Ancestral Graph) by ensuring that any inducing path between two nodes
+     * not currently adjacent in the graph results in an added non-directed edge. The method modifies the graph
+     * in-place.
      *
-     * @param pag the Partial Ancestral Graph to be repaired for maximality
-     * @param verbose if true, logs the actions performed during the repair process
-     * @param selection a set of nodes to be considered during the inducing path check
+     * @param pag            the Partial Ancestral Graph to be repaired for maximality
+     * @param verbose        if true, logs the actions performed during the repair process
+     * @param selection      a set of nodes to be considered during the inducing path check
+     * @param fciOrient      The Fci orientation procedure.
+     * @param knowledge      The knowledge.
+     * @param knownColliders Known colliders.
      * @return true if the graph was modified during the repair process; false otherwise
      */
-    public static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection) {
+    public static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection, FciOrient fciOrient,
+                                           Knowledge knowledge, Set<Triple> knownColliders) {
         boolean changed = false;
         for (Node x : pag.getNodes()) {
             for (Node y : pag.getNodes()) {
@@ -2673,6 +2713,8 @@ public final class GraphUtils {
                         if (verbose) TetradLogger.getInstance().log("Maximality repair: added edge " + x + " o-o " + y);
                     }
                 }
+
+//                reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
             }
         }
         return changed;
@@ -3144,7 +3186,7 @@ public final class GraphUtils {
      * @param knowledge        the knowledge object.
      */
     public static void recallInitialColliders(Graph pag, Set<Triple> initialColliders, Knowledge knowledge) {
-        for (Triple triple: new HashSet<>(initialColliders)) {
+        for (Triple triple : new HashSet<>(initialColliders)) {
             Node x = triple.getX();
             Node b = triple.getY();
             Node y = triple.getZ();
@@ -3208,10 +3250,10 @@ public final class GraphUtils {
     /**
      * Initializes and evaluates p-values for local Markov properties in a given graph.
      *
-     * @param dag          The input graph, a DAG (Directed Acyclic Graph).
+     * @param dag            The input graph, a DAG (Directed Acyclic Graph).
      * @param preserveMarkov Flag indicating that the method should proceed only if set to true.
-     * @param test         The statistical test instance used to check for conditional independence.
-     * @param pValues      A map to store the p-values, indexed by pairs of nodes.
+     * @param test           The statistical test instance used to check for conditional independence.
+     * @param pValues        A map to store the p-values, indexed by pairs of nodes.
      * @return The percentage of p-values that are less than the significance level (alpha) used in the test. Returns
      * 0.0 if the number of p-values is less than 5 or if preserveMarkov is false or test instance is invalid.
      * @throws IllegalArgumentException if preserveMarkov is false.
@@ -3289,6 +3331,110 @@ public final class GraphUtils {
 
         AndersonDarlingTest _test = new AndersonDarlingTest(pValuesArray);
         return _test.getP();
+    }
+
+    /**
+     * Processes the given graph by fixing the directions of edges to ensure consistency, flipping edges where
+     * necessary, and optionally preserving ancillary graph information.
+     *
+     * @param graph the input graph whose edge directions are to be fixed
+     * @return a new graph with corrected edge directions, preserving ancillary graph information if present
+     */
+    public static @NotNull Graph fixDirections(Graph graph) {
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
+        EdgeListGraph fixedDirections = new EdgeListGraph(graph.getNodes());
+
+        for (Edge edge : edges) {
+            if (edge.pointsTowards(edge.getNode1())) {
+                fixedDirections.addEdge(edge.sameEdgeFlippedDirection());
+            } else {
+                fixedDirections.addEdge(edge);
+            }
+        }
+
+        Graph samplingGraph = ((EdgeListGraph) graph).getAncillaryGraph("samplingGraph");
+
+        if (samplingGraph != null) {
+            fixedDirections.setAncillaryGraph("samplingGraph", samplingGraph);
+        }
+
+        return fixedDirections;
+    }
+
+    /**
+     * Orients the edges of the given graph by setting both specified nodes
+     * as arrow endpoints directed towards the specified target node.
+     *
+     * @param g The graph in which the edges will be oriented.
+     * @param x The first node to be set as an arrow endpoint directed towards the target node z.
+     * @param z The target node towards which both nodes x and y will be oriented.
+     * @param y The second node to be set as an arrow endpoint directed towards the target node z.
+     */
+    public static void orientCollider(Graph g, Node x, Node z, Node y) {
+        g.setEndpoint(x, z, Endpoint.ARROW);
+        g.setEndpoint(y, z, Endpoint.ARROW);
+    }
+
+
+    /**
+     * Compute strongly connected components (SCCs) of a directed graph.
+     * Uses Tarjan's algorithm. Each SCC is returned as a Set.
+     *
+     * @param g The graph.
+     * @return List of SCCs, each represented as a Set of Nodes.
+     */
+    public static List<Set<Node>> stronglyConnectedComponents(Graph g) {
+        Objects.requireNonNull(g, "graph");
+        List<Node> nodes = g.getNodes();
+        Map<Node, Integer> index = new HashMap<>();
+        Map<Node, Integer> lowlink = new HashMap<>();
+        Deque<Node> stack = new ArrayDeque<>();
+        Set<Node> onStack = new HashSet<>();
+        List<Set<Node>> sccs = new ArrayList<>();
+        int[] counter = {0};
+
+        for (Node v : nodes) {
+            if (!index.containsKey(v)) {
+                strongConnect(v, g, index, lowlink, stack, onStack, counter, sccs);
+            }
+        }
+        return sccs;
+    }
+
+    private static void strongConnect(Node v,
+                                      Graph g,
+                                      Map<Node, Integer> index,
+                                      Map<Node, Integer> lowlink,
+                                      Deque<Node> stack,
+                                      Set<Node> onStack,
+                                      int[] counter,
+                                      List<Set<Node>> sccs) {
+        index.put(v, counter[0]);
+        lowlink.put(v, counter[0]);
+        counter[0]++;
+        stack.push(v);
+        onStack.add(v);
+
+        for (Node w : g.getChildren(v)) {  // outgoing edges only
+            if (!index.containsKey(w)) {
+                strongConnect(w, g, index, lowlink, stack, onStack, counter, sccs);
+                lowlink.put(v, Math.min(lowlink.get(v), lowlink.get(w)));
+            } else if (onStack.contains(w)) {
+                lowlink.put(v, Math.min(lowlink.get(v), index.get(w)));
+            }
+        }
+
+        // root of an SCC
+        if (lowlink.get(v).equals(index.get(v))) {
+            Set<Node> comp = new LinkedHashSet<>();
+            Node w;
+            do {
+                w = stack.pop();
+                onStack.remove(w);
+                comp.add(w);
+            } while (!w.equals(v));
+            sccs.add(comp);
+        }
     }
 
     /**
@@ -3654,3 +3800,4 @@ public final class GraphUtils {
         }
     }
 }
+

@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,12 +15,13 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.TetradDesktop;
@@ -28,6 +29,7 @@ import edu.cmu.tetradapp.editor.search.AlgorithmCard;
 import edu.cmu.tetradapp.editor.search.GraphCard;
 import edu.cmu.tetradapp.editor.search.ParameterCard;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
+import edu.cmu.tetradapp.model.LatentStructureRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -105,6 +107,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
      * The JSON result.
      */
     private String jsonResult;
+    private BlockSpec blockSpec = null;
 
     /**
      * <p>Constructor for GeneralAlgorithmEditor.</p>
@@ -114,9 +117,30 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     public GeneralAlgorithmEditor(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
-        this.algorithmCard = new AlgorithmCard(algorithmRunner);
+        this.algorithmCard = new AlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec());
         this.parameterCard = new ParameterCard(algorithmRunner);
         this.graphCard = new GraphCard(algorithmRunner);
+
+        initComponents();
+        initListeners();
+
+        // repopulate all the previous selections if reopen the search box
+        if (algorithmRunner.getGraphs() != null && !algorithmRunner.getGraphs().isEmpty()) {
+            this.algorithmCard.refresh();
+            this.parameterCard.refresh();
+            this.graphCard.refresh();
+
+            showGraphCard();
+        }
+    }
+
+    public GeneralAlgorithmEditor(LatentStructureRunner algorithmRunner) {
+        this.algorithmRunner = algorithmRunner;
+        this.desktop = (TetradDesktop) DesktopController.getInstance();
+        this.algorithmCard = new AlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec());
+        this.parameterCard = new ParameterCard(algorithmRunner);
+        this.graphCard = new GraphCard(algorithmRunner);
+        this.blockSpec = algorithmRunner.getBlockSpec();
 
         initComponents();
         initListeners();
@@ -280,6 +304,10 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         return true;
     }
 
+    public void setBlockSpec(BlockSpec blockSpec) {
+        this.blockSpec = blockSpec;
+    }
+
     private static class SingleButtonCard extends JPanel {
 
         @Serial
@@ -410,3 +438,4 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     }
 
 }
+

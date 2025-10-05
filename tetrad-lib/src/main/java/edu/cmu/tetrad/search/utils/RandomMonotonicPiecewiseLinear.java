@@ -1,11 +1,30 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 /**
- * A class that generates and evaluates a monotonic piecewise linear function
- * defined over a specified domain and range. The y-values of the function are
- * randomly generated while ensuring monotonicity. The function supports both
+ * A class that generates and evaluates a monotonic piecewise linear function defined over a specified domain and range.
+ * The y-values of the function are randomly generated while ensuring monotonicity. The function supports both
  * interpolation within the range and extrapolation outside the range.
  */
 public class RandomMonotonicPiecewiseLinear {
@@ -55,9 +74,8 @@ public class RandomMonotonicPiecewiseLinear {
     }
 
     /**
-     * The main method serves as the entry point for testing the functionality
-     * of the RandomMonotonicPiecewiseLinear class. It initializes parameters for
-     * creating an instance of the class, generates a monotonic piecewise linear
+     * The main method serves as the entry point for testing the functionality of the RandomMonotonicPiecewiseLinear
+     * class. It initializes parameters for creating an instance of the class, generates a monotonic piecewise linear
      * function, and evaluates the function over a specified range of x-values.
      *
      * @param args Command-line arguments passed to the program. Not used in this method.
@@ -114,3 +132,4 @@ public class RandomMonotonicPiecewiseLinear {
         return interpolate(x, i, j);
     }
 }
+

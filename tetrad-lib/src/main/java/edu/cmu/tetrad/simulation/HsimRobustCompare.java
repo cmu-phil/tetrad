@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.bayes.*;
@@ -5,7 +25,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
@@ -73,7 +93,7 @@ public class HsimRobustCompare {
         //System.out.println(odag);
 
         //then run FGES
-        BdeuScore oscore = new BdeuScore(oData);
+        BDeuScore oscore = new BDeuScore(oData);
         Fges fges = new Fges(oscore);
         fges.setVerbose(false);
         Graph oGraphOut = fges.search();
@@ -103,7 +123,7 @@ public class HsimRobustCompare {
 
         //calculate errors for all simulated output graphs
         ////full simulation errors first
-        BdeuScore simscore = new BdeuScore(simData);
+        BDeuScore simscore = new BDeuScore(simData);
         Fges simfges = new Fges(simscore);
         simfges.setVerbose(false);
         Graph simGraphOut = simfges.search();
@@ -129,3 +149,4 @@ public class HsimRobustCompare {
         return output;
     }
 }
+

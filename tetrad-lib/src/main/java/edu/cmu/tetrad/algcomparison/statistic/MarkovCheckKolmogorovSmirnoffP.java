@@ -1,11 +1,31 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -20,20 +40,19 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic, MarkovCheckerS
     @Serial
     private static final long serialVersionUID = 23L;
     /**
-     * An instance of the IndependenceWrapper interface that encapsulates the independence test logic.
-     * Used for generating and applying independence tests within the context of statistical calculations.
-     * The independenceWrapper field supplies a way to determine whether variables in data are independent,
-     * conditional on a provided conditioning set, and produces relevant test results.
+     * An instance of the IndependenceWrapper interface that encapsulates the independence test logic. Used for
+     * generating and applying independence tests within the context of statistical calculations. The
+     * independenceWrapper field supplies a way to determine whether variables in data are independent, conditional on a
+     * provided conditioning set, and produces relevant test results.
      */
     private final IndependenceWrapper independenceWrapper;
     /**
-     * Specifies the type of conditioning set used in the Markov check.
-     * Determines how independence tests are conducted based on the graph structure
-     * by conditioning on a specific set of variables. The choice of the conditioning
-     * set type impacts the assessment of conditional independence and derived dependencies.
-     *
-     * This field is immutable and initialized during the instantiation of the
-     * {@code MarkovCheckKolmogorovSmirnoffP} class.
+     * Specifies the type of conditioning set used in the Markov check. Determines how independence tests are conducted
+     * based on the graph structure by conditioning on a specific set of variables. The choice of the conditioning set
+     * type impacts the assessment of conditional independence and derived dependencies.
+     * <p>
+     * This field is immutable and initialized during the instantiation of the {@code MarkovCheckKolmogorovSmirnoffP}
+     * class.
      */
     private final ConditioningSetType conditioningSetType;
 
@@ -107,3 +126,4 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic, MarkovCheckerS
         return value;
     }
 }
+

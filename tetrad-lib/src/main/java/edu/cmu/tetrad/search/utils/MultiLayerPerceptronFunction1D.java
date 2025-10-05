@@ -1,13 +1,32 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import java.util.Random;
 import java.util.function.Function;
 
 /**
- * This class implements a 1-dimensional Multi-Layer Perceptron (MLP) function. It consists of
- * a single hidden layer and scales the input to introduce variability or "bumpiness" as needed.
- * The activation function for the hidden layer and weights/biases for the neural network
- * are initialized during construction.
+ * This class implements a 1-dimensional Multi-Layer Perceptron (MLP) function. It consists of a single hidden layer and
+ * scales the input to introduce variability or "bumpiness" as needed. The activation function for the hidden layer and
+ * weights/biases for the neural network are initialized during construction.
  */
 public class MultiLayerPerceptronFunction1D {
     private final double[][] W1; // Weights for input to hidden layer
@@ -20,10 +39,10 @@ public class MultiLayerPerceptronFunction1D {
     /**
      * Constructor to initialize a random function.
      *
-     * @param hiddenDimension  Number of neurons in the hidden layer.
-     * @param inputScale Scaling factor for the input to create bumpiness.
-     * @param activation Activation function (e.g., Math::sin or Math::tanh).
-     * @param seed       Random seed for reproducibility.
+     * @param hiddenDimension Number of neurons in the hidden layer.
+     * @param inputScale      Scaling factor for the input to create bumpiness.
+     * @param activation      Activation function (e.g., Math::sin or Math::tanh).
+     * @param seed            Random seed for reproducibility.
      */
     public MultiLayerPerceptronFunction1D(int hiddenDimension, double inputScale, Function<Double, Double> activation, long seed) {
         Random random;
@@ -50,9 +69,8 @@ public class MultiLayerPerceptronFunction1D {
     }
 
     /**
-     * The entry point of the application that demonstrates the usage of the
-     * MultiLayerPerceptronFunction1D class by defining a random function with specific
-     * parameters and evaluating it over a range of inputs.
+     * The entry point of the application that demonstrates the usage of the MultiLayerPerceptronFunction1D class by
+     * defining a random function with specific parameters and evaluating it over a range of inputs.
      *
      * @param args Command-line arguments passed to the program.
      */
@@ -96,3 +114,4 @@ public class MultiLayerPerceptronFunction1D {
         return output;
     }
 }
+

@@ -1,21 +1,43 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
-import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +53,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm, HasKnowledge {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -39,6 +61,12 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      * The independence test to use.
      */
     private IndependenceWrapper test;
+    /**
+     * Represents the knowledge structure associated with the CCD (Cyclic Causal Discovery) algorithm.
+     * The knowledge object typically holds domain-specific constraints or background knowledge
+     * that is used to guide the search process in the algorithm.
+     */
+    private Knowledge knowledge;
 
     /**
      * Constructs a new CCD algorithm.
@@ -65,11 +93,25 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
-        edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
-                test.getTest(dataModel, parameters));
+        IndependenceTest _test = test.getTest(dataModel, parameters);
+        edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(_test);
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setKnowledge(knowledge);
 
-        return search.search();
+        Graph graph;
+        double fdrQ = parameters.getDouble(Params.FDR_Q);
+
+        if (fdrQ == 0.0) {
+            graph = search.search();
+        } else {
+            boolean negativelyCorrelated = true;
+            boolean verbose = parameters.getBoolean(Params.VERBOSE);
+            double alpha = _test.getAlpha();
+            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
+        }
+
+        return graph;
     }
 
     /**
@@ -111,14 +153,13 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      */
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.APPLY_R1);
-
+        parameters.add(Params.FDR_Q);
         parameters.add(Params.VERBOSE);
         return parameters;
     }
-
 
     /**
      * Returns the IndependenceWrapper object associated with this instance.
@@ -139,4 +180,31 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
     }
+
+    /**
+     * Retrieves the knowledge object associated with this instance.
+     * The knowledge object typically contains prior knowledge or constraints
+     * to guide the algorithm's behavior.
+     *
+     * @return the {@code Knowledge} object associated with this instance
+     */
+    @Override
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    /**
+     * Sets the knowledge object for this instance.
+     * The knowledge object typically contains prior assumptions or constraints
+     * to guide the algorithm's behavior.
+     *
+     * @param knowledge the {@code Knowledge} object to set; this object
+     *                  encapsulates domain-specific knowledge or constraints
+     *                  relevant to the algorithm.
+     */
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
 }
+

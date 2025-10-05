@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.data.BoxDataSet;
@@ -6,7 +26,7 @@ import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -100,7 +120,7 @@ public class HsimAutoRun {
             //DataWriter.writeRectangularData(dataSet, new FileWriter("dataOut2.txt"), '\t');
             //apply Hsim to data, with whatever parameters
             //========first make the Dag for Hsim==========
-            BdeuScore score = new BdeuScore(this.data);
+            BDeuScore score = new BDeuScore(this.data);
 
             //ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
             final double penaltyDiscount = 2.0;
@@ -178,7 +198,7 @@ public class HsimAutoRun {
             }
             //=======Run FGES on the output data, and compare it to the original learned graph
 
-            BdeuScore newscore = new BdeuScore(newDataSet);
+            BDeuScore newscore = new BDeuScore(newDataSet);
             Fges fgesOut = new Fges(newscore);
             fgesOut.setVerbose(false);
 
@@ -245,3 +265,4 @@ public class HsimAutoRun {
         this.delimiter = delim;
     }
 }
+

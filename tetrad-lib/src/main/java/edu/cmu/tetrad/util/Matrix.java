@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,9 +15,8 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.util;
 
@@ -404,7 +403,7 @@ public class Matrix implements TetradSerializable {
         for (int i = 0; i < getData().getNumRows(); i++) {
             for (int j = 0; j < getData().getNumCols(); j++) {
                 if (Double.isNaN(getData().get(i, j))) {
-                    throw new IllegalArgumentException("Cannot invert a matrix with non-NaN values.");
+                    throw new IllegalArgumentException("Cannot invert a matrix with NaN values.");
                 }
             }
         }
@@ -430,7 +429,7 @@ public class Matrix implements TetradSerializable {
      */
     public Matrix regularize(double lambda) {
         Matrix identity = Matrix.identity(getNumRows());
-        return this.plus(identity.scale(lambda));
+        return this.plus(identity.scalarMult(lambda));
     }
 
     /**
@@ -566,7 +565,7 @@ public class Matrix implements TetradSerializable {
      * @param scalar a double
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
-    public Matrix scale(double scalar) {
+    public Matrix scalarMult(double scalar) {
         Matrix newMatrix = copy();
         for (int i = 0; i < getNumRows(); i++) {
             for (int j = 0; j < getNumColumns(); j++) {
@@ -832,7 +831,7 @@ public class Matrix implements TetradSerializable {
      *
      * @return A new SimpleMatrix instance that is a copy of the internal data.
      */
-    public SimpleMatrix getDataCopy() {
+    public SimpleMatrix getSimpleMatrix() {
         return getData().copy();
     }
 
@@ -844,7 +843,43 @@ public class Matrix implements TetradSerializable {
     public SimpleMatrix getData() {
         return data;
     }
+
+    /**
+     * Solves the linear system A * X = B where this matrix is A and the argument is B.
+     * <p>
+     * If A is square and nonsingular, uses a direct solver. Otherwise falls back to a
+     * least-squares solution via the Moore–Penrose pseudoinverse.
+     *
+     * @param rhs The right-hand side matrix B.
+     * @return The solution matrix X.
+     * @throws IllegalArgumentException if the row dimensions are incompatible.
+     */
+    public Matrix solve(Matrix rhs) {
+        // Conformability: A(m x n) * X(n x k) = B(m x k)
+        if (this.getNumRows() != rhs.getNumRows()) {
+            throw new IllegalArgumentException(
+                    "Incompatible dimensions: A is " + this.getNumRows() + "x" + this.getNumColumns() +
+                    ", B is " + rhs.getNumRows() + "x" + rhs.getNumColumns() +
+                    ". Row counts must match (A.m == B.m).");
+        }
+
+        // Handle empty cases gracefully.
+        if (this.zeroDimension() || rhs.zeroDimension()) {
+            // A is (m x n), B is (m x k) -> X should be (n x k)
+            return new Matrix(this.getNumColumns(), rhs.getNumColumns());
+        }
+
+        // If A is square, try the direct solver; otherwise use pseudoinverse(A) * B
+        if (this.isSquare()) {
+            // SimpleMatrix.solve expects square, non-singular A.
+            return new Matrix(this.getData().solve(rhs.getData()));
+        } else {
+            // Least-squares solution: X = A^+ * B
+            return this.pseudoinverse().times(rhs);
+        }
+    }
 }
+
 
 
 

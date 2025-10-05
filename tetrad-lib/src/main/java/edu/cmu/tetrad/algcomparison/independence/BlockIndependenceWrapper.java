@@ -1,0 +1,78 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
+package edu.cmu.tetrad.algcomparison.independence;
+
+import edu.cmu.tetrad.algcomparison.utils.HasParameters;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
+
+import java.io.Serial;
+import java.util.List;
+
+/**
+ * An interface that extends functionality of the {@link IndependenceWrapper} and {@link HasParameters} interfaces by
+ * adding support for block-specific configuration in independence testing.
+ *
+ * <p>Implementations of this interface provide the ability to configure block structures,
+ * perform independence tests based on these structures, and retrieve descriptions, data types, and parameter
+ * requirements of the respective tests.</p>
+ * <p>
+ * Defines methods for configuring block-specific independence tests and retrieving meta-details about the test such as
+ * its description, required data type, and associated parameters.
+ */
+public interface BlockIndependenceWrapper extends IndependenceWrapper, HasParameters {
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
+    @Serial
+    long serialVersionUID = 23L;
+
+    /**
+     * Configures the block specification for the independence test. The block specification describes the structure and
+     * attributes of the blocks relevant for performing a block-specific independence test.
+     *
+     * @param blockSpec the block specification to be applied, which defines the dataset, block structure, and block
+     *                  variables.
+     */
+    void setBlockSpec(BlockSpec blockSpec);
+
+    /**
+     * Returns a short of this independence test.
+     *
+     * @return This description.
+     */
+    String getDescription();
+
+    /**
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
+     *
+     * @return This type.
+     */
+    DataType getDataType();
+
+    /**
+     * Returns the parameters that this search uses.
+     *
+     * @return A list of String names of parameters.
+     */
+    List<String> getParameters();
+}
+

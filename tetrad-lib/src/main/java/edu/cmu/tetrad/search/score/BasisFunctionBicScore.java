@@ -1,5 +1,26 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.score;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
@@ -23,6 +44,7 @@ import static java.lang.Math.log;
  * @author josephramsey
  * @see DegenerateGaussianScore
  */
+//@Deprecated(since = "7.9", forRemoval = false)
 public class BasisFunctionBicScore implements Score {
     /**
      * A list containing nodes that represent the variables in the basis function score.
@@ -69,7 +91,7 @@ public class BasisFunctionBicScore implements Score {
         DataSet embeddedData = result.embeddedData();
 
         // We will zero out the correlations that are very close to zero.
-        CovarianceMatrix correlationMatrix = new CovarianceMatrix(embeddedData);
+        CorrelationMatrix correlationMatrix = new CorrelationMatrix(embeddedData);
 
         this.bic = new SemBicScore(correlationMatrix);
         this.bic.setPenaltyDiscount(penaltyDiscount);
@@ -82,7 +104,7 @@ public class BasisFunctionBicScore implements Score {
         this.bic.setStructurePrior(0);
 
     }
-
+    
     /**
      * Calculates the local score for a given node and its parent nodes.
      *
@@ -211,3 +233,4 @@ public class BasisFunctionBicScore implements Score {
         this.doOneEquationOnly = doOneEquationOnly;
     }
 }
+

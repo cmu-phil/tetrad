@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.BoxDataSet;
@@ -21,10 +41,10 @@ public class MissingnessIndicatorAdder {
 
     /**
      * Utility class for handling operations related to adding missingness indicators to datasets.
-     *
-     * This class cannot be instantiated and is designed to group all related static methods
-     * for handling missingness indicator functionality. The constructor throws an
-     * {@link IllegalStateException} to enforce the utility class pattern.
+     * <p>
+     * This class cannot be instantiated and is designed to group all related static methods for handling missingness
+     * indicator functionality. The constructor throws an {@link IllegalStateException} to enforce the utility class
+     * pattern.
      */
     private MissingnessIndicatorAdder() {
         throw new IllegalStateException("Utility class");
@@ -93,9 +113,8 @@ public class MissingnessIndicatorAdder {
     }
 
     /**
-     * The main method demonstrating the process of adding missingness indicators to a dataset.
-     * This example uses a mock dataset, defines variables, and invokes the method to expand
-     * the dataset with missingness indicators.
+     * The main method demonstrating the process of adding missingness indicators to a dataset. This example uses a mock
+     * dataset, defines variables, and invokes the method to expand the dataset with missingness indicators.
      *
      * @param args Command-line arguments provided during the execution of the program.
      */
@@ -122,4 +141,5 @@ public class MissingnessIndicatorAdder {
         System.out.println(expandedDataSet);
     }
 }
+
 

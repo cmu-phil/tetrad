@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.util;
@@ -59,12 +58,7 @@ public class TetradSerializableUtils {
      * to vouch for their safety. Unfortunately, such safety cannot be automatically checked. Class, for instance, <p>We
      * will move to JDK 1.5 as soon as it becomes available for Macs.&gt; 0
      */
-    private static final Class<?>[] safelySerializableTypes = {
-            String.class, Class.class, Date.class, Collection.class, Map.class,
-            Matrix.class, Document.class,
-            Vector.class, Number.class, SimpleMatrix.class,
-            SimpleMatrix.class, NumberFormat.class
-    };
+    private static final Class<?>[] safelySerializableTypes = {String.class, Class.class, Date.class, Collection.class, Map.class, Matrix.class, Document.class, Vector.class, Number.class, SimpleMatrix.class, SimpleMatrix.class, NumberFormat.class};
 
     /**
      * The highest directory inside build/tetrad/classes that contains all the TetradSerializable classes.
@@ -89,8 +83,7 @@ public class TetradSerializableUtils {
      * @param currentDirectory  a {@link java.lang.String} object
      * @param archiveDirectory  a {@link java.lang.String} object
      */
-    public TetradSerializableUtils(String serializableScope,
-                                   String currentDirectory, String archiveDirectory) {
+    public TetradSerializableUtils(String serializableScope, String currentDirectory, String archiveDirectory) {
         if (serializableScope == null) {
             throw new NullPointerException();
         }
@@ -109,6 +102,60 @@ public class TetradSerializableUtils {
     }
 
     /**
+     * Checks all classes in the specified serialization scope that implement TetradSerializable to ensure proper usage
+     * of the `serialVersionUID` field. This method:
+     * <p>
+     * 1. Processes all classes assignable from the `TetradSerializable` type found in the serialization scope. 2. Skips
+     * interfaces and abstract classes. 3. Verifies the presence of a `serialVersionUID` field in each class. 4. Ensures
+     * the `serialVersionUID` field is declared as `static`, `final`, and of type `long`. 5. Confirms that the value of
+     * the `serialVersionUID` field is set to `23L`.
+     * <p>
+     * If any of these conditions are not met, the method throws a `RuntimeException` indicating the violation.
+     * Additionally, it handles cases where the `serialVersionUID` field is missing or inaccessible.
+     * <p>
+     * This method is intended to enforce serialization compatibility and consistency within a system where classes are
+     * expected to adhere to specific serialization conventions.
+     *
+     * @throws RuntimeException if: - `serialVersionUID` is missing in a class. - `serialVersionUID` is not declared as
+     *                          `static final long`. - `serialVersionUID` has a value different from `23L`. -
+     *                          `serialVersionUID` is inaccessible due to security restrictions.
+     */
+    public void checkSerialVersionUid() {
+        System.out.println("Checking serialVersionUID values...");
+
+        List<Class> classes = getAssignableClasses(new File(getSerializableScope()), TetradSerializable.class);
+
+        for (Class<?> clazz : classes) {
+            // Skip interfaces and abstract classes
+            if (Modifier.isAbstract(clazz.getModifiers()) || clazz.isInterface()) {
+                continue;
+            }
+
+            try {
+                Field field = clazz.getDeclaredField("serialVersionUID");
+
+                // Must be static, final, and long
+                int mods = field.getModifiers();
+                if (!(Modifier.isStatic(mods) && Modifier.isFinal(mods) && field.getType() == long.class)) {
+                    throw new RuntimeException("serialVersionUID in " + clazz.getName() + " must be static final long.");
+                }
+
+                field.setAccessible(true);
+                long value = field.getLong(null); // static field, so null instance
+
+                if (value != 23L) {
+                    throw new RuntimeException("serialVersionUID for class " + clazz.getName() + " must be 23L, but is " + value);
+                }
+
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException("Missing serialVersionUID in class " + clazz.getName(), e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Cannot access serialVersionUID in class " + clazz.getName(), e);
+            }
+        }
+    }
+
+    /**
      * Checks all of the classes in the serialization scope that implement TetradSerializable to make sure all of their
      * fields are either themselves (a) primitive, (b) TetradSerializable, or (c) assignable from types designated as
      * safely serializable by virtue of being included in the safelySerializableTypes array (see), or are arrays whose
@@ -121,8 +168,7 @@ public class TetradSerializableUtils {
      * @see #safelySerializableTypes
      */
     public void checkNestingOfFields() {
-        List classes = getAssignableClasses(new File(getSerializableScope()),
-                TetradSerializable.class);
+        List classes = getAssignableClasses(new File(getSerializableScope()), TetradSerializable.class);
 
         boolean foundUnsafeField = false;
 
@@ -161,9 +207,7 @@ public class TetradSerializableUtils {
                     continue;
                 }
 
-                if (TetradSerializable.class.isAssignableFrom(type) &&
-                    !TetradSerializableExcluded.class.isAssignableFrom(
-                            clazz)) {
+                if (TetradSerializable.class.isAssignableFrom(type) && !TetradSerializableExcluded.class.isAssignableFrom(clazz)) {
                     continue;
                 }
 
@@ -184,9 +228,7 @@ public class TetradSerializableUtils {
         }
 
         if (foundUnsafeField) {
-            throw new RuntimeException(
-                    "Unsafe serializable fields found. Please " +
-                    "fix immediately.");
+            throw new RuntimeException("Unsafe serializable fields found. Please " + "fix immediately.");
         }
     }
 
@@ -209,18 +251,13 @@ public class TetradSerializableUtils {
      */
     public void serializeCurrentDirectory() throws RuntimeException {
         clearCurrentDirectory();
-        @SuppressWarnings("Convert2Diamond") Map<String, List<String>> classFields =
-                new TreeMap<>();
+        @SuppressWarnings("Convert2Diamond") Map<String, List<String>> classFields = new TreeMap<>();
 
         // Get the classes that implement SerializationCanonicalizer.
-        List classes = getAssignableClasses(new File(getSerializableScope()),
-                TetradSerializable.class);
+        List classes = getAssignableClasses(new File(getSerializableScope()), TetradSerializable.class);
 
-        System.out.println(
-                "Serializing exemplars of instantiable TetradSerializable " +
-                "in " + getSerializableScope() + ".");
-        System.out.println(
-                "Writing serialized examplars to " + getCurrentDirectory());
+        System.out.println("Serializing exemplars of instantiable TetradSerializable " + "in " + getSerializableScope() + ".");
+        System.out.println("Writing serialized examplars to " + getCurrentDirectory());
 
         int index = -1;
 
@@ -333,15 +370,11 @@ public class TetradSerializableUtils {
      *                          originally thrown exception as root cause.
      * @see #getCurrentDirectory()
      */
-    private void serializeClass(Class clazz, Map<String, List<String>> classFields)
-            throws RuntimeException {
+    private void serializeClass(Class clazz, Map<String, List<String>> classFields) throws RuntimeException {
         File current = new File(getCurrentDirectory());
 
         if (!current.exists() || !current.isDirectory()) {
-            throw new IllegalStateException("There is no " +
-                                            current.getAbsolutePath() + " directory. " +
-                                            "\nThis is where the serialized classes should be. " +
-                                            "Please run serializeCurrentDirectory() first.");
+            throw new IllegalStateException("There is no " + current.getAbsolutePath() + " directory. " + "\nThis is where the serialized classes should be. " + "Please run serializeCurrentDirectory() first.");
         }
 
         try {
@@ -353,9 +386,7 @@ public class TetradSerializableUtils {
             field.setAccessible(true);
 
             if (!_static || !_final || !(23L == field.getLong(null))) {
-                throw new RuntimeException(
-                        "Class " + clazz + " does not define static final " +
-                        "long serialVersionUID = 23L");
+                throw new RuntimeException("Class " + clazz + " does not define static final " + "long serialVersionUID = 23L");
             }
 
             int numFields = getNumNonSerialVersionUIDFields(clazz);
@@ -388,8 +419,7 @@ public class TetradSerializableUtils {
             }
 
             // Make entry in list of class fields.
-            ObjectStreamClass objectStreamClass =
-                    ObjectStreamClass.lookup(clazz);
+            ObjectStreamClass objectStreamClass = ObjectStreamClass.lookup(clazz);
             String className = objectStreamClass.getName();
             ObjectStreamField[] fields = objectStreamClass.getFields();
             @SuppressWarnings("Convert2Diamond") List<String> fieldList = new ArrayList<>();
@@ -401,17 +431,11 @@ public class TetradSerializableUtils {
 
             classFields.put(className, fieldList);
         } catch (NoSuchFieldException e) {
-            throw new RuntimeException(("There is no static final long field " +
-                                        "'serialVersionUID' in " + clazz +
-                                        ". Please make one and set it " + "to 23L."));
+            throw new RuntimeException(("There is no static final long field " + "'serialVersionUID' in " + clazz + ". Please make one and set it " + "to 23L."));
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("The method serializableInstance() of " +
-                                       "class " + clazz + " is not public.", e);
+            throw new RuntimeException("The method serializableInstance() of " + "class " + clazz + " is not public.", e);
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Could not create a new, writeable file " + "in " +
-                    getCurrentDirectory() +
-                    " when trying to serialize " + clazz + ".", e);
+            throw new RuntimeException("Could not create a new, writeable file " + "in " + getCurrentDirectory() + " when trying to serialize " + clazz + ".", e);
         }
     }
 
@@ -427,8 +451,7 @@ public class TetradSerializableUtils {
         File directory = new File(getCurrentDirectory());
 
         if (!directory.exists() || !directory.isDirectory()) {
-            throw new IllegalArgumentException(
-                    "There is no " + directory + " directory.");
+            throw new IllegalArgumentException("There is no " + directory + " directory.");
         }
 
         String[] listing = directory.list();
@@ -442,8 +465,7 @@ public class TetradSerializableUtils {
             deserializeClass(file);
         }
 
-        System.out.println("Finished deserializing classes in " +
-                           getCurrentDirectory() + ".");
+        System.out.println("Finished deserializing classes in " + getCurrentDirectory() + ".");
     }
 
     /**
@@ -459,15 +481,9 @@ public class TetradSerializableUtils {
             Object o = objIn.readObject();
             in.close();
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("There is no class in the model API " +
-                                       "to deserialize the object in " + file + ". Perhaps the " +
-                                       "class was renamed, moved to another package, or removed. " +
-                                       "In any case, please put it back where it was.", e);
+            throw new RuntimeException("There is no class in the model API " + "to deserialize the object in " + file + ". Perhaps the " + "class was renamed, moved to another package, or removed. " + "In any case, please put it back where it was.", e);
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "There was an I/O error associated with " +
-                    "the process of deserializing the file " + file +
-                    ".", e);
+            throw new RuntimeException("There was an I/O error associated with " + "the process of deserializing the file " + file + ".", e);
         }
     }
 
@@ -481,23 +497,17 @@ public class TetradSerializableUtils {
      * @see #getArchiveDirectory()
      */
     public void archiveCurrentDirectory() throws RuntimeException {
-        System.out.println("Making zip archive of files in " +
-                           getCurrentDirectory() + ", putting it in " +
-                           getArchiveDirectory() + ".");
+        System.out.println("Making zip archive of files in " + getCurrentDirectory() + ", putting it in " + getArchiveDirectory() + ".");
 
         File current = new File(getCurrentDirectory());
 
         if (!current.exists() || !current.isDirectory()) {
-            throw new IllegalArgumentException("There is no " +
-                                               current.getAbsolutePath() + " directory. " +
-                                               "\nThis is where the serialized classes should be. " +
-                                               "Please run serializeCurrentDirectory() first.");
+            throw new IllegalArgumentException("There is no " + current.getAbsolutePath() + " directory. " + "\nThis is where the serialized classes should be. " + "Please run serializeCurrentDirectory() first.");
         }
 
         File archive = new File(getArchiveDirectory());
         if (archive.exists() && !archive.isDirectory()) {
-            throw new IllegalArgumentException("Output directory " +
-                                               archive.getAbsolutePath() + " is not a directory.");
+            throw new IllegalArgumentException("Output directory " + archive.getAbsolutePath() + " is not a directory.");
         }
 
         if (!archive.exists()) {
@@ -547,13 +557,9 @@ public class TetradSerializableUtils {
             // Complete the ZIP file
             out.close();
 
-            System.out.println(
-                    "Finished writing zip file " + outFilename + ".");
+            System.out.println("Finished writing zip file " + outFilename + ".");
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "There was an I/O error associated with " +
-                    "the process of zipping up files in " +
-                    getCurrentDirectory() + ".", e);
+            throw new RuntimeException("There was an I/O error associated with " + "the process of zipping up files in " + getCurrentDirectory() + ".", e);
         }
     }
 
@@ -565,8 +571,7 @@ public class TetradSerializableUtils {
      * @see #getArchiveDirectory()
      */
     public void deserializeArchivedVersions() throws RuntimeException {
-        System.out.println("Deserializing archived instances in " +
-                           getArchiveDirectory() + ".");
+        System.out.println("Deserializing archived instances in " + getArchiveDirectory() + ".");
 
         File archive = new File(getArchiveDirectory());
 
@@ -587,8 +592,7 @@ public class TetradSerializableUtils {
                 ZipEntry entry = zipFile.getEntry("class_fields.ser");
                 InputStream inputStream = zipFile.getInputStream(entry);
                 ObjectInputStream objectIn = new ObjectInputStream(inputStream);
-                Map<String, List<String>> classFields =
-                        (Map<String, List<String>>) objectIn.readObject();
+                Map<String, List<String>> classFields = (Map<String, List<String>>) objectIn.readObject();
                 zipFile.close();
 
                 for (String className : classFields.keySet()) {
@@ -597,8 +601,7 @@ public class TetradSerializableUtils {
 
                     List<String> fieldNames = classFields.get(className);
                     Class<?> clazz = Class.forName(className);
-                    ObjectStreamClass streamClass =
-                            ObjectStreamClass.lookup(clazz);
+                    ObjectStreamClass streamClass = ObjectStreamClass.lookup(clazz);
 
                     if (streamClass == null) {
                         System.out.println();
@@ -606,29 +609,20 @@ public class TetradSerializableUtils {
 
                     for (String fieldName : fieldNames) {
                         assert streamClass != null;
-                        ObjectStreamField field =
-                                streamClass.getField(fieldName);
+                        ObjectStreamField field = streamClass.getField(fieldName);
 
                         if (field == null) {
-                            throw new RuntimeException("Field '" + fieldName +
-                                                       "' was dropped from class '" + className +
-                                                       "' as a serializable field! Please " +
-                                                       "put it back!!!" + "\nIt used to be in " +
-                                                       className + " in this archive: " +
-                                                       archiveName + ".");
+                            throw new RuntimeException("Field '" + fieldName + "' was dropped from class '" + className + "' as a serializable field! Please " + "put it back!!!" + "\nIt used to be in " + className + " in this archive: " + archiveName + ".");
                         }
                     }
                 }
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException(
-                        "Could not read class_fields.ser in archive + " + archiveName + " .", e);
+                throw new RuntimeException("Could not read class_fields.ser in archive + " + archiveName + " .", e);
             } catch (IOException e) {
-                throw new RuntimeException("Problem reading archive" +
-                                           archiveName + "; see cause.", e);
+                throw new RuntimeException("Problem reading archive" + archiveName + "; see cause.", e);
             }
 
-            System.out.println(
-                    "...Deserializing instances in " + archiveName + "...");
+            System.out.println("...Deserializing instances in " + archiveName + "...");
             ZipEntry zipEntry = null;
 
             try {
@@ -641,24 +635,16 @@ public class TetradSerializableUtils {
                         continue;
                     }
 
-                    ObjectInputStream objectIn =
-                            new ObjectInputStream(zipinputstream);
+                    ObjectInputStream objectIn = new ObjectInputStream(zipinputstream);
                     objectIn.readObject();
                     zipinputstream.closeEntry();
                 }
 
                 zipinputstream.close();
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException(
-                        "Could not read object zipped file " +
-                        zipEntry.getName() + " in archive " +
-                        archiveName + ". " +
-                        "Perhaps the class was renamed, moved to another package, or " +
-                        "removed. In any case, please put it back where it was.",
-                        e);
+                throw new RuntimeException("Could not read object zipped file " + zipEntry.getName() + " in archive " + archiveName + ". " + "Perhaps the class was renamed, moved to another package, or " + "removed. In any case, please put it back where it was.", e);
             } catch (IOException e) {
-                throw new RuntimeException("Problem reading archive" +
-                                           archiveName + "; see cause.", e);
+                throw new RuntimeException("Problem reading archive" + archiveName + "; see cause.", e);
             }
         }
 
@@ -757,6 +743,7 @@ public class TetradSerializableUtils {
         return this.archiveDirectory;
     }
 }
+
 
 
 

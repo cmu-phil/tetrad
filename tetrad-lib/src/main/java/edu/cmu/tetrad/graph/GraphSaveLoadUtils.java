@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.DataSet;
@@ -10,7 +30,6 @@ import nu.xom.*;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -141,9 +160,9 @@ public class GraphSaveLoadUtils {
 
                 if (edge == null) {
                     m[i][j] = 0;
-                } else if (edge.getProximalEndpoint(x1) == Endpoint.ARROW) {
+                } else if (edge.getEndpoint(x1) == Endpoint.ARROW) {
                     m[i][j] = 1;
-                } else if (edge.getProximalEndpoint(x1) == Endpoint.TAIL) {
+                } else if (edge.getEndpoint(x1) == Endpoint.TAIL) {
                     m[i][j] = -1;
                 }
             }
@@ -981,10 +1000,10 @@ public class GraphSaveLoadUtils {
             siblings.put(a, new ArrayList<>());
             for (Edge e : g.getEdges(a)) {
                 Node b = e.getDistalNode(a);
-                if (e.getProximalEndpoint(a) != Endpoint.ARROW) continue;
-                if (e.getProximalEndpoint(b) == Endpoint.TAIL) parents.get(a).add(b);
+                if (e.getEndpoint(a) != Endpoint.ARROW) continue;
+                if (e.getEndpoint(b) == Endpoint.TAIL) parents.get(a).add(b);
                 if (siblings.containsKey(b)) continue;
-                if (e.getProximalEndpoint(b) == Endpoint.ARROW) siblings.get(a).add(b);
+                if (e.getEndpoint(b) == Endpoint.ARROW) siblings.get(a).add(b);
             }
         }
 
@@ -1471,8 +1490,8 @@ public class GraphSaveLoadUtils {
             Node x = adj.get(choice[0]);
             Node z = adj.get(choice[1]);
 
-            Endpoint endpt1 = graph.getEdge(x, node).getProximalEndpoint(node);
-            Endpoint endpt2 = graph.getEdge(z, node).getProximalEndpoint(node);
+            Endpoint endpt1 = graph.getEdge(x, node).getEndpoint(node);
+            Endpoint endpt2 = graph.getEdge(z, node).getEndpoint(node);
 
             if (endpt1 == Endpoint.ARROW && endpt2 == Endpoint.ARROW) {
                 colliders.add(new Triple(x, node, z));
@@ -1531,3 +1550,4 @@ public class GraphSaveLoadUtils {
         return fmt.toString();
     }
 }
+

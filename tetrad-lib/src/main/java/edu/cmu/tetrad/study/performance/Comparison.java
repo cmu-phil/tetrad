@@ -1,15 +1,39 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.study.performance;
 
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.Fci;
+import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.FgesFci;
+import edu.cmu.tetrad.search.Pc;
+import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.ScoreType;
@@ -179,9 +203,9 @@ public class Comparison {
                 throw new IllegalArgumentException("Structure prior not set.");
             }
 
-            score = new BdeuScore(dataSet);
-            ((BdeuScore) score).setSamplePrior(params.getSamplePrior());
-            ((BdeuScore) score).setStructurePrior(params.getStructurePrior());
+            score = new BDeuScore(dataSet);
+            ((BDeuScore) score).setPriorEquivalentSampleSize(params.getSamplePrior());
+            ((BDeuScore) score).setStructurePrior(params.getStructurePrior());
 
             params.setDataType(ComparisonParameters.DataType.Discrete);
 
@@ -202,7 +226,8 @@ public class Comparison {
             result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
-            Cpc search = new Cpc(test);
+            Pc search = new Pc(test);
+            search.setColliderOrientationStyle(Pc.ColliderOrientationStyle.CONSERVATIVE);
             result.setResultGraph(search.search());
             Graph dag = new EdgeListGraph(trueDag);
             result.setCorrectResult(GraphTransforms.dagToCpdag(dag));
@@ -439,3 +464,4 @@ public class Comparison {
         Elapsed
     }
 }
+

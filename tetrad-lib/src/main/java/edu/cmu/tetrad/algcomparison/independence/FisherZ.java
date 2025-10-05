@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.LinearGaussian;
@@ -6,8 +26,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -22,7 +42,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "Fisher Z Test",
+        name = "Fisher Z",
         command = "fisher-z-test",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
@@ -60,7 +80,13 @@ public class FisherZ implements IndependenceWrapper {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
 
-        test.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        IndTestFisherZ.ShrinkageMode shrinkageMode
+                = IndTestFisherZ.ShrinkageMode.values()[(parameters.getInt(Params.SHRINKAGE_MODE) - 1)];
+
+        test.setShrinkageMode(shrinkageMode);
+        test.setRidge(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
+        test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+
         return test;
     }
 
@@ -71,7 +97,7 @@ public class FisherZ implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Fisher Z test";
+        return "Fisher Z";
     }
 
     /**
@@ -93,7 +119,10 @@ public class FisherZ implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
-        params.add(Params.SINGULARITY_LAMBDA);
+        params.add(Params.SHRINKAGE_MODE);
+        params.add(Params.REGULARIZATION_LAMBDA);
+        params.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return params;
     }
 }
+

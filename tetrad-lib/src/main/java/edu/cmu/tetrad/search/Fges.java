@@ -1,12 +1,12 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,9 +15,9 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
@@ -37,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static org.apache.commons.math3.util.FastMath.max;
@@ -79,7 +80,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Sp
  * @see Knowledge
  */
-public final class Fges implements IGraphSearch, DagScorer {
+public class Fges implements IGraphSearch, DagScorer {
     /**
      * Used to find semidirected paths for cycle checking.
      */
@@ -108,6 +109,12 @@ public final class Fges implements IGraphSearch, DagScorer {
      * Map from edges to arrows.
      */
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
+    /**
+     * Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows. The ordering
+     * doesn't matter; it just has to be transitive.
+     */
+    // private int arrowIndex = 0;
+    private final AtomicInteger arrowIndex = new AtomicInteger(0);
     /**
      * The fork join pool.
      */
@@ -161,11 +168,6 @@ public final class Fges implements IGraphSearch, DagScorer {
      */
     private Graph graph;
     /**
-     * Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows. The ordering
-     * doesn't matter; it just has to be transitive.
-     */
-    private int arrowIndex = 0;
-    /**
      * The score of the model.
      */
     private double modelScore;
@@ -186,6 +188,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      * The number of threads to use to run the algorithm.
      */
     private int numThreads = 1;
+    private boolean replicating = false;
 
     /**
      * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
@@ -223,7 +226,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges till the model is significant. Then start
+     * Greedy equivalence search: Start from the empty graph, add edges tillsetre the model is significant. Then start
      * deleting edges till a minimum is achieved.
      *
      * @return the resulting Pattern.
@@ -232,7 +235,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         long start = MillisecondTimes.timeMillis();
         topGraphs.clear();
 
-        graph = new EdgeListGraph(getVariables());
+        graph = GraphFactoryUtil.newGraph(getVariables(), replicating);
 
         if (boundGraph != null) {
             boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
@@ -264,6 +267,7 @@ public final class Fges implements IGraphSearch, DagScorer {
             fes();
             bes();
         }
+
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
@@ -416,13 +420,13 @@ public final class Fges implements IGraphSearch, DagScorer {
     private void setScore(Score score) {
         this.score = score;
 
-        this.variables = new ArrayList<>();
+        this.variables = score.getVariables();// new ArrayList<>();
 
-        for (Node node : score.getVariables()) {
-            if (node.getNodeType() == NodeType.MEASURED) {
-                this.variables.add(node);
-            }
-        }
+//        for (Node node : score.getVariables()) {
+//            if (node.getNodeType() == NodeType.MEASURED) {
+//                this.variables.add(node);
+//            }
+//        }
 
         buildIndexing(score.getVariables());
 
@@ -555,12 +559,17 @@ public final class Fges implements IGraphSearch, DagScorer {
      *
      * @see Bes
      */
-    private void bes() throws InterruptedException {
-        Bes bes = new Bes(score);
+    protected void bes() throws InterruptedException {
+        Bes bes = newBes(score);
         bes.setDepth(depth);
         bes.setVerbose(verbose);
         bes.setKnowledge(knowledge);
         bes.bes(graph, variables);
+    }
+
+    /** Subclasses can override to supply a custom Bes. */
+    protected Bes newBes(Score score) {
+        return new Bes(score);
     }
 
     /**
@@ -728,7 +737,8 @@ public final class Fges implements IGraphSearch, DagScorer {
             public EvalPair call() throws InterruptedException {
                 for (int k = from; k < to; k++) {
                     if (Thread.currentThread().isInterrupted()) break;
-                    double _bump = insertEval(a, b, Ts.get(k), naYX, parents, this.hashIndices);
+//                    double _bump = insertEval(a, b, Ts.get(k), naYX, parents, this.hashIndices);
+                    double _bump = insertBump(a, b, Ts.get(k), naYX, parents, this.hashIndices);
 
                     if (_bump > maxBump) {
                         maxT = Ts.get(k);
@@ -791,8 +801,14 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @param parents    the set of parent nodes
      * @param bump       the bump value of the arrow
      */
-    private void addArrowForward(Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors, Set<Node> naYX, Set<Node> parents, double bump) {
-        Arrow arrow = new Arrow(bump, a, b, hOrT, TNeighbors, naYX, parents, arrowIndex++);
+//    private void addArrowForward(Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors, Set<Node> naYX, Set<Node> parents, double bump) {
+//        Arrow arrow = new Arrow(bump, a, b, hOrT, TNeighbors, naYX, parents, arrowIndex++);
+//        sortedArrows.add(arrow);
+//    }
+    private void addArrowForward(Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors,
+                                 Set<Node> naYX, Set<Node> parents, double bump) {
+        Arrow arrow = new Arrow(bump, a, b, hOrT, TNeighbors, naYX, parents,
+                arrowIndex.getAndIncrement());
         sortedArrows.add(arrow);
     }
 
@@ -1163,20 +1179,55 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @param recordScores Indicates whether or not to record the scores for each node in the graph.
      * @return The total score of the DAG.
      */
+//    private double scoreDag(Graph dag, boolean recordScores) {
+//        if (score instanceof GraphScore) return 0.0;
+//        dag = GraphUtils.replaceNodes(dag, getVariables());
+//
+//        double _score = 0;
+//
+//        for (Node node : getVariables()) {
+//            List<Node> x = dag.getParents(node);
+//
+//            int[] parentIndices = new int[x.size()];
+//
+//            int count = 0;
+//            for (Node parent : x) {
+//                parentIndices[count++] = hashIndices.get(parent);
+//            }
+//
+//            final double nodeScore = score.localScore(hashIndices.get(node), parentIndices);
+//
+//            if (recordScores) {
+//                node.addAttribute("Score", nodeScore);
+//            }
+//
+//            _score += nodeScore;
+//        }
+//
+//        if (recordScores) {
+//            graph.addAttribute("Score", _score);
+//        }
+//
+//        return _score;
+//    }
     private double scoreDag(Graph dag, boolean recordScores) {
-        if (score instanceof GraphScore) return 0.0;
         dag = GraphUtils.replaceNodes(dag, getVariables());
 
-        double _score = 0;
+        // If the Score supports whole-graph scoring, use it.
+        if (score instanceof GraphScore) {
+           TetradLogger.getInstance().log("Cannot score using GraphScore.");
+            return Double.NaN;
+        }
+
+        // Otherwise, sum local (node) scores as before.
+        double _score = 0.0;
 
         for (Node node : getVariables()) {
-            List<Node> x = dag.getParents(node);
-
-            int[] parentIndices = new int[x.size()];
-
-            int count = 0;
-            for (Node parent : x) {
-                parentIndices[count++] = hashIndices.get(parent);
+            List<Node> parentsList = dag.getParents(node);
+            int[] parentIndices = new int[parentsList.size()];
+            int c = 0;
+            for (Node p : parentsList) {
+                parentIndices[c++] = hashIndices.get(p);
             }
 
             final double nodeScore = score.localScore(hashIndices.get(node), parentIndices);
@@ -1254,6 +1305,49 @@ public final class Fges implements IGraphSearch, DagScorer {
      */
     public void setInitialGraph(Graph initialGraph) {
         this.initialGraph = initialGraph;
+    }
+
+    // --- Protected accessors for subclasses (read-only) ---
+    protected Graph getGraph() {
+        return graph;
+    }
+
+    protected List<Node> getSearchVariables() {
+        return variables;
+    }
+
+    protected ConcurrentMap<Node, Integer> getHashIndices() {
+        return hashIndices;
+    }
+
+    /** First-step bump for pair (parent->child) during empty-graph init. */
+    protected double initialPairBump(Node parent, Node child,
+                                     ConcurrentMap<Node, Integer> idx) {
+        return score.localScoreDiff(idx.get(parent), idx.get(child));
+    }
+
+    /** If symmetricFirstStep==true, reverse-direction bump for (child->parent). */
+    protected double initialPairBumpReverse(Node parent, Node child,
+                                            ConcurrentMap<Node, Integer> idx) {
+        return score.localScoreDiff(idx.get(child), idx.get(parent));
+    }
+
+    /** Insert bump (Definition 12) used inside calculateArrowsForward. */
+    protected double insertBump(Node x, Node y, Set<Node> T, Set<Node> naYX,
+                                Set<Node> parents, ConcurrentMap<Node, Integer> idx) throws InterruptedException {
+        Set<Node> set = new HashSet<>(naYX);
+        set.addAll(T);
+        set.addAll(parents);
+        return scoreGraphChange(x, y, set, idx); // calls existing private method
+    }
+
+    /**
+     * Sets the replicating status of the current object.
+     *
+     * @param replicating the new replicating status to set; true to enable replication, false to disable it
+     */
+    public void setReplicating(boolean replicating) {
+        this.replicating = replicating;
     }
 
     /**
@@ -1357,6 +1451,8 @@ public final class Fges implements IGraphSearch, DagScorer {
             return Objects.hash(T, nayx, parents);
         }
     }
+
+    // --- Scoring hooks: subclasses can override these ---
 
     /**
      * Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
@@ -1615,12 +1711,18 @@ public final class Fges implements IGraphSearch, DagScorer {
                         continue;
                     }
 
-                    int child = hashIndices.get(y);
-                    int parent = hashIndices.get(x);
-                    double bump = score.localScoreDiff(parent, child);
+//                    int child = hashIndices.get(y);
+//                    int parent = hashIndices.get(x);
+//                    double bump = score.localScoreDiff(parent, child);
+//
+//                    if (symmetricFirstStep) {
+//                        double bump2 = score.localScoreDiff(child, parent);
+//                        bump = max(bump, bump2);
+//                    }
 
+                    double bump = initialPairBump(x, y, hashIndices);
                     if (symmetricFirstStep) {
-                        double bump2 = score.localScoreDiff(child, parent);
+                        double bump2 = initialPairBumpReverse(x, y, hashIndices);
                         bump = max(bump, bump2);
                     }
 
@@ -1640,3 +1742,4 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
     }
 }
+

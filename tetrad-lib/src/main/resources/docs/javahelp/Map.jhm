@@ -99,7 +99,7 @@
     <mapID target="lingam" url="manual/boxes/search/lingam.html"/>
     <mapID target="pc-mb" url="manual/boxes/search/pc-mb.html"/>
     <mapID target="mgm" url="manual/boxes/search/mgm.html"/>
-    <mapID target="mimbuild" url="manual/boxes/search/mimbuild.html"/>
+    <mapID target="mimbuildBollen" url="manual/boxes/search/mimbuildBollen.html"/>
     <mapID target="pc" url="manual/boxes/search/pc.html"/>
     <mapID target="pcd" url="manual/boxes/search/pcd.html"/>
     <mapID target="pclocal" url="manual/boxes/search/pclocal.html"/>

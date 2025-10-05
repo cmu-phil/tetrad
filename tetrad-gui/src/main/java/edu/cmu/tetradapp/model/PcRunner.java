@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,16 +15,15 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Pc;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Parameters;
@@ -33,7 +32,9 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IndTestType;
 
 import java.io.Serial;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
@@ -46,24 +47,8 @@ public class PcRunner extends AbstractAlgorithmRunner
     @Serial
     private static final long serialVersionUID = 23L;
 
-    /**
-     * The external graph, if any, to use as a starting point for the search.
-     */
-    private Graph externalGraph;
-
-    /**
-     * The set of edges that are adjacent in the PC graph.
-     */
-    private Set<Edge> pcAdjacent;
-
-    /**
-     * The set of edges that are non-adjacent in the PC graph.
-     */
-    private Set<Edge> pcNonadjacent;
-
 
     //============================CONSTRUCTORS============================//
-
 
     /**
      * Constructs a wrapper for the given DataWrapper. The DataWrapper must contain a DataSet that is either a DataSet
@@ -85,33 +70,6 @@ public class PcRunner extends AbstractAlgorithmRunner
      */
     public PcRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-    }
-
-    // Starts PC from the given graph.
-
-    /**
-     * <p>Constructor for PcRunner.</p>
-     *
-     * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
-     */
-    public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
-        super(dataWrapper, params, null);
-        this.externalGraph = graphWrapper.getGraph();
-    }
-
-    /**
-     * <p>Constructor for PcRunner.</p>
-     *
-     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param graphWrapper      a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     */
-    public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(dataWrapper, params, knowledgeBoxModel);
-        this.externalGraph = graphWrapper.getGraph();
     }
 
     /**
@@ -230,7 +188,6 @@ public class PcRunner extends AbstractAlgorithmRunner
         Graph graph;
         Pc pc = new Pc(getIndependenceTest());
         pc.setKnowledge(knowledge);
-        pc.setGuaranteeCpdag(isGuaranteeCpdag());
         pc.setDepth(depth);
         try {
             graph = pc.search();
@@ -249,13 +206,12 @@ public class PcRunner extends AbstractAlgorithmRunner
         }
 
         setResultGraph(graph);
-        setPcFields(pc);
     }
 
     /**
      * <p>getIndependenceTest.</p>
      *
-     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @return a {@link IndependenceTest} object
      */
     public IndependenceTest getIndependenceTest() {
         Object dataModel = getDataModel();
@@ -294,24 +250,6 @@ public class PcRunner extends AbstractAlgorithmRunner
     }
 
     /**
-     * <p>getAdj.</p>
-     *
-     * @return a {@link java.util.Set} object
-     */
-    public Set<Edge> getAdj() {
-        return new HashSet<>(this.pcAdjacent);
-    }
-
-    /**
-     * <p>getNonAdj.</p>
-     *
-     * @return a {@link java.util.Set} object
-     */
-    public Set<Edge> getNonAdj() {
-        return new HashSet<>(this.pcNonadjacent);
-    }
-
-    /**
      * <p>supportsKnowledge.</p>
      *
      * @return a boolean
@@ -336,12 +274,8 @@ public class PcRunner extends AbstractAlgorithmRunner
         return getParams().getBoolean(Params.GUARANTEE_CPDAG, false);
     }
 
-    private void setPcFields(Pc pc) {
-        this.pcAdjacent = pc.getAdjacencies();
-        this.pcNonadjacent = pc.getNonadjacencies();
-        List<Node> pcNodes = getGraph().getNodes();
-    }
 }
+
 
 
 

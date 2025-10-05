@@ -1,25 +1,45 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import java.util.Arrays;
 import java.util.Random;
 
 /**
- * Represents a piecewise linear function with randomly generated breakpoints and values.
- * This class allows computation of values at any x within or outside the defined range of breakpoints.
+ * Represents a piecewise linear function with randomly generated breakpoints and values. This class allows computation
+ * of values at any x within or outside the defined range of breakpoints.
  */
 public class RandomPiecewiseLinear {
     private final double[] xPoints; // Breakpoints for the x-axis
     private final double[] yPoints; // Corresponding values for the y-axis
 
     /**
-     * Constructs a RandomPiecewiseLinear instance. This method generates a piecewise linear
-     * function based on the specified number of points, with x-coordinates randomly distributed
-     * within a specified range and y-coordinates randomly assigned in the range [-2, 2].
+     * Constructs a RandomPiecewiseLinear instance. This method generates a piecewise linear function based on the
+     * specified number of points, with x-coordinates randomly distributed within a specified range and y-coordinates
+     * randomly assigned in the range [-2, 2].
      *
-     * @param numPoints the number of breakpoints to generate for the piecewise linear function;
-     *                  must be greater than or equal to 2
-     * @param minX the minimum value in the range for the x-coordinates of the breakpoints
-     * @param maxX the maximum value in the range for the x-coordinates of the breakpoints
+     * @param numPoints the number of breakpoints to generate for the piecewise linear function; must be greater than or
+     *                  equal to 2
+     * @param minX      the minimum value in the range for the x-coordinates of the breakpoints
+     * @param maxX      the maximum value in the range for the x-coordinates of the breakpoints
      * @throws IllegalArgumentException if numPoints is less than 2
      */
     public RandomPiecewiseLinear(int numPoints, double minX, double maxX) {
@@ -45,10 +65,9 @@ public class RandomPiecewiseLinear {
     }
 
     /**
-     * The main method serves as the entry point of the program. It demonstrates the usage
-     * of the RandomPiecewiseLinear class by creating an instance and computing the values
-     * of a piecewise linear function at various points within a specified range. The results
-     * are printed to the console with formatted output for each computed value.
+     * The main method serves as the entry point of the program. It demonstrates the usage of the RandomPiecewiseLinear
+     * class by creating an instance and computing the values of a piecewise linear function at various points within a
+     * specified range. The results are printed to the console with formatted output for each computed value.
      *
      * @param args the command-line arguments, which are not used in this implementation
      */
@@ -68,9 +87,9 @@ public class RandomPiecewiseLinear {
     }
 
     /**
-     * Computes the value of the piecewise linear function for a given x-value.
-     * If the x-value falls outside the defined range of xPoints, the method performs extrapolation.
-     * Otherwise, it determines the appropriate segment and performs interpolation.
+     * Computes the value of the piecewise linear function for a given x-value. If the x-value falls outside the defined
+     * range of xPoints, the method performs extrapolation. Otherwise, it determines the appropriate segment and
+     * performs interpolation.
      *
      * @param x the x-coordinate for which to compute the corresponding y-value
      * @return the computed y-value corresponding to the given x-coordinate
@@ -105,3 +124,4 @@ public class RandomPiecewiseLinear {
         return interpolate(x, i, j);
     }
 }
+

@@ -3,7 +3,7 @@
   <parent>
     <artifactId>tetrad</artifactId>
     <groupId>io.github.cmu-phil</groupId>
-    <version>7.6.8</version>
+    <version>7.6.9-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>tetrad-gui</artifactId>
@@ -68,7 +68,6 @@
     </plugins>
   </build>
   <properties>
-    <java.version>17</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>

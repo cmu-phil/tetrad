@@ -1,11 +1,31 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -20,18 +40,16 @@ public class McGetNumTestsH1 implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
     /**
-     * An instance of the IndependenceWrapper interface used to perform independence tests
-     * in the context of statistical computations and graph evaluations. It provides the
-     * necessary methods to retrieve and configure independence tests, as well as to
-     * obtain a description of the specific independence testing algorithm being employed.
+     * An instance of the IndependenceWrapper interface used to perform independence tests in the context of statistical
+     * computations and graph evaluations. It provides the necessary methods to retrieve and configure independence
+     * tests, as well as to obtain a description of the specific independence testing algorithm being employed.
      */
     private final IndependenceWrapper independenceWrapper;
     /**
      * Specifies the type of conditioning set used in the Markov check for evaluating independence or dependence
-     * relationships. This variable is associated with the configuration of the independence tests and determines
-     * how the conditioning set is constructed based on the selected type from the {@link ConditioningSetType} enum.
-     * The conditioning set influences the statistical properties of the independence tests performed during
-     * Markov checks.
+     * relationships. This variable is associated with the configuration of the independence tests and determines how
+     * the conditioning set is constructed based on the selected type from the {@link ConditioningSetType} enum. The
+     * conditioning set influences the statistical properties of the independence tests performed during Markov checks.
      */
     private final ConditioningSetType conditioningSetType;
 
@@ -105,3 +123,4 @@ public class McGetNumTestsH1 implements Statistic, MarkovCheckerStatistic {
         return value;
     }
 }
+

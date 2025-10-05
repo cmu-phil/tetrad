@@ -1,11 +1,30 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import java.util.Random;
 
 /**
- * A class that represents a Random Radial Basis Function (RBF) system.
- * This implementation generates RBFs using randomly chosen centers and amplitudes,
- * with a specified width parameter (sigma).
+ * A class that represents a Random Radial Basis Function (RBF) system. This implementation generates RBFs using
+ * randomly chosen centers and amplitudes, with a specified width parameter (sigma).
  */
 public class RandomRBF {
     private final double[] centers;
@@ -16,7 +35,7 @@ public class RandomRBF {
      * Constructs a RandomRBF instance with randomly initialized centers and amplitudes.
      *
      * @param numCenters the number of centers for the radial basis functions.
-     * @param sigma the width parameter of the radial basis functions, controlling the spread.
+     * @param sigma      the width parameter of the radial basis functions, controlling the spread.
      */
     public RandomRBF(int numCenters, double sigma) {
         this.centers = new double[numCenters];
@@ -31,10 +50,9 @@ public class RandomRBF {
     }
 
     /**
-     * The entry point of the application. Demonstrates the usage of the RandomRBF class by
-     * creating an instance with specified parameters and printing computed outputs for a
-     * range of input values. Also includes a verification step to ensure that the adjusted
-     * RBF function satisfies f(0) ≈ 0.
+     * The entry point of the application. Demonstrates the usage of the RandomRBF class by creating an instance with
+     * specified parameters and printing computed outputs for a range of input values. Also includes a verification step
+     * to ensure that the adjusted RBF function satisfies f(0) â 0.
      *
      * @param args command-line arguments passed to the program. Not used in this implementation.
      */
@@ -57,8 +75,8 @@ public class RandomRBF {
     }
 
     /**
-     * Computes the Radial Basis Function (RBF) value for the given input using pre-initialized
-     * centers, amplitudes, and width parameter (sigma).
+     * Computes the Radial Basis Function (RBF) value for the given input using pre-initialized centers, amplitudes, and
+     * width parameter (sigma).
      *
      * @param x the input value for which the RBF value is to be computed
      * @return the computed RBF value for the given input
@@ -73,8 +91,8 @@ public class RandomRBF {
     }
 
     /**
-     * Computes the adjusted value of the Radial Basis Function (RBF) for the given input.
-     * The adjustment ensures that the RBF value is relative to its value at x = 0.
+     * Computes the adjusted value of the Radial Basis Function (RBF) for the given input. The adjustment ensures that
+     * the RBF value is relative to its value at x = 0.
      *
      * @param x the input value for which the adjusted RBF value is to be computed
      * @return the adjusted RBF value for the given input
@@ -84,4 +102,5 @@ public class RandomRBF {
         return compute(x) - fAtZero; // Subtract f(0) to adjust the function
     }
 }
+
 

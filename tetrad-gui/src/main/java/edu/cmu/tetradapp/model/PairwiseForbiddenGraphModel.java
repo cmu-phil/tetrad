@@ -1,0 +1,122 @@
+/// ////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
+package edu.cmu.tetradapp.model;
+
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.util.Parameters;
+
+import java.io.Serial;
+import java.util.List;
+
+/**
+ * The FaskForbiddenGraphModel class is a subclass of KnowledgeBoxModel and represents a model for a graph with
+ * forbidden edges. It creates a graph to which the forbidden edges are added based on the given data set and
+ * parameters.
+ */
+public class PairwiseForbiddenGraphModel extends KnowledgeBoxModel {
+
+    @Serial
+    private static final long serialVersionUID = 23L;
+
+    /**
+     * The graph to which the forbidden edges are to be added.
+     */
+    private Graph resultGraph = new EdgeListGraph();
+
+    /**
+     * <p>Constructor for ForbiddenGraphModel.</p>
+     *
+     * @param wrapper a {@link DataWrapper} object
+     * @param params  a {@link Parameters} object
+     */
+    public PairwiseForbiddenGraphModel(DataWrapper wrapper, Parameters params) {
+        super(params);
+        createKnowledge((DataSet) wrapper.getSelectedDataModel(), params);
+    }
+
+    private void createKnowledge(DataSet dataSet, Parameters params) {
+        if (!dataSet.isContinuous()) {
+            throw new IllegalArgumentException("FaskForbiddenGraphModel only works with continuous data.");
+        }
+
+        DataSet _dataSet = DataTransforms.standardizeData(dataSet);
+        double[][] data = _dataSet.getDoubleData().transpose().toArray();
+        List<Node> nodes = _dataSet.getVariables();
+
+        Knowledge knowledge = getKnowledge();
+
+        if (knowledge == null) {
+            return;
+        }
+
+        knowledge.clear();
+
+        Score score = new SemBicScore(new CovarianceMatrix(dataSet));
+
+        Fask fask = new Fask(dataSet, score);
+        Graph graph = null;
+        try {
+            graph = fask.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                double[] _x = data[i];
+                double[] _y = data[j];
+
+                double diff = Fask.leftRightDiff(_x, _y, 3);
+
+                if (diff > 0) {
+                    knowledge.setForbidden(y.getName(), x.getName());
+                } else {
+                    knowledge.setForbidden(x.getName(), y.getName());
+                }
+            }
+        }
+
+        resultGraph = graph;
+    }
+
+    /**
+     * <p>Getter for the field <code>resultGraph</code>.</p>
+     *
+     * @return a {@link Graph} object
+     */
+    public Graph getResultGraph() {
+        return this.resultGraph;
+    }
+
+}
+

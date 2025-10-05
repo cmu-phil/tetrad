@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.util;
 
 import edu.cmu.tetrad.graph.*;
@@ -40,12 +60,12 @@ public final class GraphSampling {
     /**
      * Create a graph for displaying and print out.
      *
-     * @param graph    a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
+     * @param graph    a {@link Graph} object
+     * @param ensemble a {@link ResamplingEdgeEnsemble} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph createDisplayGraph(Graph graph, ResamplingEdgeEnsemble ensemble) {
-        Graph ensembleGraph = new EdgeListGraph(graph.getNodes());
+        EdgeListGraph ensembleGraph = new EdgeListGraph(graph.getNodes());
 
         for (Edge edge : graph.getEdges()) {
             List<EdgeTypeProbability> edgeTypeProbabilities = edge.getEdgeTypeProbabilities();
@@ -64,26 +84,24 @@ public final class GraphSampling {
                     ensembleGraph.addEdge(highestProbEdge);
                 }
             }
-
         }
 
         setEdgeProbabilitiesOfNonNullEdges(ensembleGraph);
-
         return ensembleGraph;
     }
 
-    /**
-     * <p>createGraphWithHighProbabilityEdges.</p>
-     *
-     * @param graphs   a {@link java.util.List} object
-     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public static Graph createGraphWithHighProbabilityEdges(List<Graph> graphs, ResamplingEdgeEnsemble ensemble) {
-        Graph graph = createGraphWithHighProbabilityEdges(graphs);
-
-        return createDisplayGraph(graph, ensemble);
-    }
+//    /**
+//     * <p>createGraphWithHighProbabilityEdges.</p>
+//     *
+//     * @param graphs   a {@link java.util.List} object
+//     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
+//     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+//     */
+//    public static Graph createGraphWithHighProbabilityEdges(List<Graph> graphs, ResamplingEdgeEnsemble ensemble) {
+//        Graph graph = createGraphWithHighProbabilityEdges(graphs);
+//
+//        return createDisplayGraph(graph, ensemble);
+//    }
 
     /**
      * Combine all the edges from the list of graphs onto one graph with the edge type that has the highest frequency
@@ -158,14 +176,14 @@ public final class GraphSampling {
         }
 
         return switch (edgeTypeProbability.getEdgeType()) {
-            case ta -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
-            case at -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
-            case ca -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
-            case ac -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
-            case cc -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
-            case aa -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
-            case tt -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
-            default -> new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL);
+            case ta -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW, false);
+            case at -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL, false);
+            case ca -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW, false);
+            case ac -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE, false);
+            case cc -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE, false);
+            case aa -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW, false);
+            case tt -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL, false);
+            default -> new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL, false);
         };
     }
 
@@ -272,7 +290,16 @@ public final class GraphSampling {
         return Arrays.asList(etps);
     }
 
-    private static EdgeType getReversed(EdgeType edgeType) {
+    /**
+     * Returns the reversed counterpart of the specified edge type. The reversal mapping is defined as follows: -
+     * EdgeType.ac is reversed to EdgeType.ca - EdgeType.at is reversed to EdgeType.ta - EdgeType.ca is reversed to
+     * EdgeType.ac - EdgeType.ta is reversed to EdgeType.at For any other edge type, the method returns the input edge
+     * type unchanged.
+     *
+     * @param edgeType the edge type to be reversed
+     * @return the reversed edge type, or the input edge type if no reversal is defined
+     */
+    public static EdgeType getReversed(EdgeType edgeType) {
         return switch (edgeType) {
             case ac -> EdgeType.ca;
             case at -> EdgeType.ta;
@@ -283,8 +310,8 @@ public final class GraphSampling {
     }
 
     private static EdgeType getEdgeType(Edge edge, Node node1, Node node2) {
-        Endpoint node1Endpoint = edge.getProximalEndpoint(node1);
-        Endpoint node2Endpoint = edge.getProximalEndpoint(node2);
+        Endpoint node1Endpoint = edge.getEndpoint(node1);
+        Endpoint node2Endpoint = edge.getEndpoint(node2);
 
         if (node1Endpoint == Endpoint.TAIL && node2Endpoint == Endpoint.ARROW) {
             return EdgeType.ta;
@@ -397,3 +424,4 @@ public final class GraphSampling {
     }
 
 }
+

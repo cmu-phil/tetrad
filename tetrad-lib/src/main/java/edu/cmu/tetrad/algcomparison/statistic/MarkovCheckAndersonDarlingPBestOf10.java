@@ -1,11 +1,31 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -21,15 +41,15 @@ public class MarkovCheckAndersonDarlingPBestOf10 implements Statistic, MarkovChe
     private static final long serialVersionUID = 23L;
     /**
      * An instance of the IndependenceWrapper interface, which provides methods to assess statistical independence
-     * relationships in datasets. This wrapper is used in conjunction with various tests to evaluate dependencies
-     * and supports the execution of algorithms that rely on independence test results. Its specific implementation
+     * relationships in datasets. This wrapper is used in conjunction with various tests to evaluate dependencies and
+     * supports the execution of algorithms that rely on independence test results. Its specific implementation
      * determines the behavior of the test and the parameters required for its execution.
      */
     private final IndependenceWrapper independenceWrapper;
     /**
-     * Specifies the type of conditioning set used for Markov checks in statistical tests. This variable determines
-     * how the independence tests are conducted, influencing the set of variables considered to condition on when
-     * evaluating independence relationships in a graph.
+     * Specifies the type of conditioning set used for Markov checks in statistical tests. This variable determines how
+     * the independence tests are conducted, influencing the set of variables considered to condition on when evaluating
+     * independence relationships in a graph.
      */
     private final ConditioningSetType conditioningSetType;
 
@@ -113,3 +133,4 @@ public class MarkovCheckAndersonDarlingPBestOf10 implements Statistic, MarkovChe
         return value;
     }
 }
+

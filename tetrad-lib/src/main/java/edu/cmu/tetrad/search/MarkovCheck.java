@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -130,12 +150,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private double binomialPDep = Double.NaN;
     /**
      * The percentage of all samples to use when resampling for each conditional independence test.
-     *
-     * @deprecated 2025-6-8 Changed to fraction resample.
-     */
-    private double percentResample = Double.NaN;
-    /**
-     * The percentage of all samples to use when resampling for each conditional independence test.
      */
     private double fractionResample = 1.0;
     /**
@@ -170,6 +184,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * Whether verbose output should be printed.
      */
     private boolean verbose = false;
+
+    /**
+     * The most recent list of all independence facts used by the generate results method.
+     */
+    private Set<IndependenceFact> allIndependenceFacts = null;
 
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
@@ -245,21 +264,20 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @return The list of local independence facts for the given node.
      */
     public List<IndependenceFact> checkIndependenceForTargetNode(Node x) {
-        Set<Node> parents = new HashSet<>(graph.getParents(x));
+        List<IndependenceFact> facts = new ArrayList<>();
 
-        // Remove all parent nodes and x node itself from the graph
-        List<Node> graphNodes_others = graph.getNodes();
-        graphNodes_others.remove(x);
-        for (Node p : parents) graphNodes_others.remove(p);
-
-        List<IndependenceFact> factList = new ArrayList<>();
-        for (Node y : graphNodes_others) {
-            // Make a new MsepTest based on the true graph.
-            MsepTest msepTest = new MsepTest(graph);
-            IndependenceResult testRes = msepTest.checkIndependence(x, y, parents);
-            if (testRes.isIndependent()) factList.add(testRes.getFact());
+        if (allIndependenceFacts == null) {
+            generateAllResults();
         }
-        return factList;
+
+        for (IndependenceFact fact : allIndependenceFacts) {
+            if (this.setType == ConditioningSetType.ORDERED_LOCAL_MARKOV) {
+                if (x.equals((fact.getX()))) facts.add(fact);
+            } else {
+                if (x.equals((fact.getX())) || x.equals(fact.getY())) facts.add(fact);
+            }
+        }
+        return facts;
     }
 
     /**
@@ -351,7 +369,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
             // All local nodes' p-values for node x
             List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold);
-            // TODO VBC: what should we do for cases when ADTest is NaN and ∞ ?
+            // TODO VBC: what should we do for cases when ADTest is NaN and â ?
             List<Double> flatList = shuffledlocalPValues.stream()
                     .flatMap(List::stream)
                     .collect(Collectors.toList());
@@ -675,6 +693,123 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     }
 
     /**
+     * Calculates and prints precision and recall metrics for the whole graph, comparing an estimated graph to the true
+     * graph. Metrics include adjacency precision and recall, arrowhead precision and recall, tail precision and recall,
+     * and circle precision and recall.
+     *
+     * @param estimatedGraph the graph generated through estimation or inference methods
+     * @param trueGraph      the ground truth graph to which the estimated graph is compared
+     */
+    public void getPrecisionAndRecallWholeGraph(Graph estimatedGraph, Graph trueGraph) {
+        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+
+        double ap = new AdjacencyPrecision().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double ar = new AdjacencyRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double ahp = new ArrowheadPrecision().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double ahr = new ArrowheadRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double tp = new TailPrecision().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double tr = new TailRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double cp = new CirclePrecision().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double cr = new CircleRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+
+        NumberFormat nf = new DecimalFormat("0.00");
+        System.out.println("Whole graph statistics: " + " \n" +
+                           " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
+                           " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr) + " \n" +
+                           " TailPrecision = " + nf.format(tp) + " TailRecall = " + nf.format(tr) + " \n" +
+                           " CirclePrecision = " + nf.format(cp) + " CircleRecall = " + nf.format(cr) + " \n");
+    }
+
+    /**
+     * Calculates the F1 statistics for the entire graph by comparing an estimated graph to the true graph. The method
+     * computes F1 scores for different graph components, including adjacency, arrows, circles, and tails.
+     *
+     * @param estimatedGraph the graph that represents the estimated structure
+     * @param trueGraph      the graph that represents the true structure
+     * @return a list of F1 statistics in the following order: adjacency F1 score, arrow F1 score, circle F1 score, and
+     * tail F1 score
+     */
+    public List<Double> getF1StatsForWholeGraph(Graph estimatedGraph, Graph trueGraph) {
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        double f1Adj = new F1Adj().getValue(lookupGraph, estimatedGraph);
+        double f1Arrow = new F1Arrow().getValue(lookupGraph, estimatedGraph);
+        double f1Circle = new F1Circle().getValue(lookupGraph, estimatedGraph);
+        double f1Tail = new F1Tail().getValue(lookupGraph, estimatedGraph);
+
+        return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
+    }
+
+    /**
+     * Computes the F1 statistics for the Markov blanket subgraph with the target node in the given estimated graph and
+     * true graph. The F1 statistics include F1 scores for adjacency, arrow, circle, and tail relationships.
+     *
+     * @param x              the target node for which the Markov blanket subgraph will be evaluated.
+     * @param estimatedGraph the graph that represents the estimated structure.
+     * @param trueGraph      the graph that represents the true structure of the data.
+     * @return a list of F1 statistics, where the elements are, in order: F1 score for adjacency, F1 score for arrow, F1
+     * score for circle, and F1 score for tail relationships.
+     */
+    public List<Double> getF1StatsForTargetNodeMBSubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
+        Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
+
+        double f1Adj = new F1Adj().getValue(xMBLookupGraph, xMBEstimatedGraph);
+        double f1Arrow = new F1Arrow().getValue(xMBLookupGraph, xMBEstimatedGraph);
+        double f1Circle = new F1Circle().getValue(xMBLookupGraph, xMBEstimatedGraph);
+        double f1Tail = new F1Tail().getValue(xMBLookupGraph, xMBEstimatedGraph);
+
+        return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
+    }
+
+    /**
+     * Computes the F1 statistics (F1-Adjacency, F1-Arrow, F1-Circle, F1-Tail) between the parents subgraph of a given
+     * target node in the estimated graph and the corresponding parents subgraph in the true graph.
+     *
+     * @param x              the target node for which the parents subgraph is analyzed
+     * @param estimatedGraph the graph containing the estimated structure
+     * @param trueGraph      the graph containing the true structure
+     * @return a list of F1 statistics where the elements are, in order: F1-Adjacency, F1-Arrow, F1-Circle, and F1-Tail
+     */
+    public List<Double> getF1StatsForTargetNodeParentsSubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xParentsLookupGraph = GraphUtils.getParentsSubgraphWithTargetNode(lookupGraph, x);
+        Graph xParentsEstimatedGraph = GraphUtils.getParentsSubgraphWithTargetNode(estimatedGraph, x);
+
+        double f1Adj = new F1Adj().getValue(xParentsLookupGraph, xParentsEstimatedGraph);
+        double f1Arrow = new F1Arrow().getValue(xParentsLookupGraph, xParentsEstimatedGraph);
+        double f1Circle = new F1Circle().getValue(xParentsLookupGraph, xParentsEstimatedGraph);
+        double f1Tail = new F1Tail().getValue(xParentsLookupGraph, xParentsEstimatedGraph);
+
+        return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
+    }
+
+    /**
+     * Calculates F1 statistics for a target node's adjacency subgraph in terms of adjacency, arrow types, circle types,
+     * and tail types. This is done by comparing the adjacency subgraph of the target node in the estimated graph
+     * against the corresponding adjacency subgraph in the reference (true) graph.
+     *
+     * @param x              The target node for which the adjacency subgraph's F1 statistics are calculated.
+     * @param estimatedGraph The estimated graph whose adjacency subgraph will be evaluated.
+     * @param trueGraph      The reference (true) graph used for comparison.
+     * @return A list of F1 scores, where the elements represent F1 statistics in the order: adjacency (f1Adj), arrow
+     * type (f1Arrow), circle type (f1Circle), and tail type (f1Tail).
+     */
+    public List<Double> getF1StatsForTargetNodeAdjacencySubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xAdjacencyLookupGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(lookupGraph, x);
+        Graph xAdjacencyEstimatedGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(estimatedGraph, x);
+
+        double f1Adj = new F1Adj().getValue(xAdjacencyLookupGraph, xAdjacencyEstimatedGraph);
+        double f1Arrow = new F1Arrow().getValue(xAdjacencyLookupGraph, xAdjacencyEstimatedGraph);
+        double f1Circle = new F1Circle().getValue(xAdjacencyLookupGraph, xAdjacencyEstimatedGraph);
+        double f1Tail = new F1Tail().getValue(xAdjacencyLookupGraph, xAdjacencyEstimatedGraph);
+
+        return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
+    }
+
+    /**
      * Calculates the precision and recall on the Markov Blanket graph for a given node. Prints the statistics to the
      * console.
      *
@@ -723,6 +858,64 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double ar = new AdjacencyRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
         double ahp = new ArrowheadPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
         double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
+        return Arrays.asList(ap, ar, ahp, ahr);
+    }
+
+//    /**
+//     *
+//     * Calculates the precision and recall on the general definition of local sub graph of a target node, plot data.
+//     * @param x
+//     * @param estimatedGraph
+//     * @param trueGraph
+//     * @param conditioningSetType
+//     * @param subgraphFeature features of a subgraph, can be either parents, adjacencies, or MB.
+//     * @return
+//     */
+
+    /**
+     * Computes the precision and recall values for a specified subgraph structure between an estimated graph and a true
+     * graph. The method supports various subgraph features such as Markov Blanket, parent relationships, and
+     * adjacency.
+     *
+     * @param x                   The target node for which the precision and recall are calculated.
+     * @param estimatedGraph      The estimated graph being evaluated.
+     * @param trueGraph           The true graph used as ground truth for evaluation.
+     * @param conditioningSetType The type of conditioning set used in the evaluation process.
+     * @param subgraphFeature     The specific subgraph feature to evaluate precision and recall on, e.g., "MB" (Markov
+     *                            Blanket), "parents", or "adjacency".
+     * @return A list containing the following four values in order: 1. Adjacency Precision 2. Adjacency Recall 3.
+     * Arrowhead Precision 4. Arrowhead Recall
+     */
+    public List<Double> getPrecisionAndRecallGraphPlotData(Node x, Graph estimatedGraph, Graph trueGraph, ConditioningSetType conditioningSetType, String subgraphFeature) {
+        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xConditioningSetTypeLookupGraph = null;
+        Graph xConditioningSetTypeEstimatedGraph = null;
+
+        // A more general definition of what "local subgraph" means
+        if (subgraphFeature.equals("MB")) { // TODO VBC: create a enum for subgraph features
+            xConditioningSetTypeLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
+            System.out.println("xMBLookupGraph:" + xConditioningSetTypeLookupGraph);
+            xConditioningSetTypeEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
+            System.out.println("xMBEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
+        } else if (subgraphFeature.equals("parents")) {
+            xConditioningSetTypeLookupGraph = GraphUtils.getParentsSubgraphWithTargetNode(lookupGraph, x);
+            System.out.println("xParentsLookupGraph:" + xConditioningSetTypeLookupGraph);
+            xConditioningSetTypeEstimatedGraph = GraphUtils.getParentsSubgraphWithTargetNode(estimatedGraph, x);
+            System.out.println("xParentsEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
+        } else if (subgraphFeature.equals("adjacency")) {
+            xConditioningSetTypeLookupGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(lookupGraph, x);
+            System.out.println("xParentsLookupGraph:" + xConditioningSetTypeLookupGraph);
+            xConditioningSetTypeEstimatedGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(estimatedGraph, x);
+            System.out.println("xParentsEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
+
+        } else {
+            throw new IllegalArgumentException("Unsupported subgraph feature: " + subgraphFeature);
+        }
+        double ap = new AdjacencyPrecision().getValue(xConditioningSetTypeLookupGraph, xConditioningSetTypeEstimatedGraph, null, new Parameters());
+        double ar = new AdjacencyRecall().getValue(xConditioningSetTypeLookupGraph, xConditioningSetTypeEstimatedGraph, null, new Parameters());
+        double ahp = new ArrowheadPrecision().getValue(xConditioningSetTypeLookupGraph, xConditioningSetTypeEstimatedGraph, null, new Parameters());
+        double ahr = new ArrowheadRecall().getValue(xConditioningSetTypeLookupGraph, xConditioningSetTypeEstimatedGraph, null, new Parameters());
         return Arrays.asList(ap, ar, ahp, ahr);
     }
 
@@ -938,6 +1131,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     }
                 }
             }
+            this.allIndependenceFacts = allIndependenceFacts;
 
             try {
                 generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
@@ -1201,7 +1395,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public void setFractionResample(double fractionResample) {
         this.fractionResample = fractionResample;
-        this.percentResample = fractionResample;
     }
 
     /**
@@ -1850,6 +2043,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public void setFindSmallestSubset(boolean findSmallestSubset) {
         this.findSmallestSubset = findSmallestSubset;
+    }
+
+    public int getEffectiveSampleSize() {
+        return ((EffectiveSampleSizeSettable) independenceTest).getEffectiveSampleSize();
     }
 
     @Override

@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.statistic.utils;
 
 import edu.cmu.tetrad.graph.*;
@@ -7,8 +27,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * A confusion matrix for local graph accuracy check --i.e. TP, FP, TN, FN for counts of a combination of
- * arrowhead and precision.
+ * A confusion matrix for local graph accuracy check --i.e. TP, FP, TN, FN for counts of a combination of arrowhead and
+ * precision.
  */
 public class LocalGraphConfusion {
     /**
@@ -33,9 +53,9 @@ public class LocalGraphConfusion {
 
     /**
      * Constructs a new LocalGraphConfusion object from the given graphs.
-     * @param trueGraph The true graph
      *
-     * @param estGraph The estimated graph
+     * @param trueGraph The true graph
+     * @param estGraph  The estimated graph
      */
     public LocalGraphConfusion(Graph trueGraph, Graph estGraph) {
         this.tp = 0;
@@ -61,14 +81,14 @@ public class LocalGraphConfusion {
          */
         // STEP 1.1: Create allUnoriented base on trueGraphLookup and estimatedGraph
         Set<Edge> allUnoriented = new HashSet<>();
-        for (Edge edge: trueGraphLookup.getEdges()) {
+        for (Edge edge : trueGraphLookup.getEdges()) {
             allUnoriented.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
         }
-        for (Edge edge: estGraph.getEdges()) {
+        for (Edge edge : estGraph.getEdges()) {
             allUnoriented.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
         }
         // STEP 1.2: Iterate through allUnoriented to record confusion metrix
-        for (Edge u: allUnoriented) {
+        for (Edge u : allUnoriented) {
             Node node1 = u.getNode1();
             Node node2 = u.getNode2();
             if (estGraph.isAdjacentTo(node1, node2)) { // Est: Y
@@ -102,7 +122,7 @@ public class LocalGraphConfusion {
          *
          */
         // STEP2.1: Check through the true graph
-        for (Edge tle: trueGraphLookup.getEdges()) {
+        for (Edge tle : trueGraphLookup.getEdges()) {
             // STEP2.1.1: Get corresponding endpoint in Est graph lookup
             List<Edge> estGraphLookupEdges = estGraphLookup.getEdges(tle.getNode1(), tle.getNode2());
             Edge ele; // estimated lookup graph edge
@@ -114,8 +134,8 @@ public class LocalGraphConfusion {
             Endpoint ep1Est = null;
             Endpoint ep2Est = null;
             if (ele != null) {
-                ep1Est = ele.getProximalEndpoint(tle.getNode1());
-                ep2Est = ele.getProximalEndpoint(tle.getNode2());
+                ep1Est = ele.getEndpoint(tle.getNode1());
+                ep2Est = ele.getEndpoint(tle.getNode2());
             }
 
             // STEP2.1.2: Get corresponding endpoint in true graph lookup
@@ -129,14 +149,14 @@ public class LocalGraphConfusion {
             Endpoint ep1True = null;
             Endpoint ep2True = null;
             if (tle2 != null) {
-                ep1True = tle2.getProximalEndpoint(tle.getNode1());
-                ep2True = tle2.getProximalEndpoint(tle.getNode2());
+                ep1True = tle2.getEndpoint(tle.getNode1());
+                ep2True = tle2.getEndpoint(tle.getNode2());
             }
 
             // STEP2.1.3: Compare the endpoints
             // we only care the case when the edge exist.
             boolean connected = trueGraph.isAdjacentTo(tle.getNode1(), tle.getNode2())
-                    && estGraph.isAdjacentTo(tle.getNode1(), tle.getNode2());
+                                && estGraph.isAdjacentTo(tle.getNode1(), tle.getNode2());
             if (connected) {
                 if (ep1True == Endpoint.TAIL && ep2True == Endpoint.ARROW) { // True: ->
                     if (ep1Est == Endpoint.TAIL && ep2Est == Endpoint.ARROW) { // Est: ->
@@ -161,7 +181,7 @@ public class LocalGraphConfusion {
         }
         // STEP2: Check through the est graph
         // because est graph can have extra arrowhead that was not in true graph, which should be count as fp.
-        for (Edge ele: estGraphLookup.getEdges()) {
+        for (Edge ele : estGraphLookup.getEdges()) {
             List<Edge> estGraphLookupEdges = estGraphLookup.getEdges(ele.getNode1(), ele.getNode2());
             Edge ele2;
             if (estGraphLookupEdges.size() == 1) {
@@ -172,8 +192,8 @@ public class LocalGraphConfusion {
             Endpoint ep1Est = null;
             Endpoint ep2Est = null;
             if (ele2 != null) {
-                ep1Est = ele2.getProximalEndpoint(ele.getNode1());
-                ep2Est = ele2.getProximalEndpoint(ele.getNode2());
+                ep1Est = ele2.getEndpoint(ele.getNode1());
+                ep2Est = ele2.getEndpoint(ele.getNode2());
             }
 
             List<Edge> trueGraphLookupEdges = trueGraphLookup.getEdges(ele.getNode1(), ele.getNode1());
@@ -186,8 +206,8 @@ public class LocalGraphConfusion {
             Endpoint ep1True = null;
             Endpoint ep2True = null;
             if (tle != null) {
-                ep1True = tle.getProximalEndpoint(ele.getNode1());
-                ep2True = tle.getProximalEndpoint(ele.getNode2());
+                ep1True = tle.getEndpoint(ele.getNode1());
+                ep2True = tle.getEndpoint(ele.getNode2());
             }
 
             boolean connected = trueGraph.isAdjacentTo(ele.getNode1(), ele.getNode2());
@@ -242,3 +262,4 @@ public class LocalGraphConfusion {
         return fn;
     }
 }
+

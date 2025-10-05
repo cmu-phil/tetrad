@@ -1,7 +1,27 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.GraphLegalityCheck;
 
 import java.util.*;
 
@@ -23,10 +43,10 @@ public class OrderedLocalMarkovProperty {
      * Computes the ordered local Markov property for a maximal ancestral graph (MAG). The method generates a set of
      * independence facts representing the conditional independencies implied by the MAG.
      *
-     * @param mag The input maximal ancestral graph (MAG) represented as a graph object.
-     *            Must be a valid legal MAG; otherwise, an {@code IllegalArgumentException} is thrown.
-     * @return A set of {@code IndependenceFact} objects that represent the conditional independencies
-     *         for the given input MAG based on the ordered local Markov property.
+     * @param mag The input maximal ancestral graph (MAG) represented as a graph object. Must be a valid legal MAG;
+     *            otherwise, an {@code IllegalArgumentException} is thrown.
+     * @return A set of {@code IndependenceFact} objects that represent the conditional independencies for the given
+     * input MAG based on the ordered local Markov property.
      * @throws IllegalArgumentException if the graph is not a legal MAG.
      */
     public static Set<IndependenceFact> getModel(Graph mag) {
@@ -35,7 +55,7 @@ public class OrderedLocalMarkovProperty {
         if (!paths.isLegalMag()) {
             List<Node> selection = mag.getNodes().stream()
                     .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-            GraphSearchUtils.LegalMagRet ret = GraphSearchUtils.isLegalMag(mag, new HashSet<>(selection));
+            GraphLegalityCheck.LegalMagRet ret = GraphLegalityCheck.isLegalMag(mag, new HashSet<>(selection));
 //            throw new IllegalArgumentException("MAG not valid, reason = " + ret.getReason());
         }
 

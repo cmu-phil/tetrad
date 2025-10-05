@@ -1,21 +1,23 @@
-/*
- * Copyright (C) 2019 University of Pittsburgh.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
- */
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.editor.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.*;
@@ -51,8 +53,9 @@ public class ParameterTab extends JPanel {
             GraphTypes.ERDOS_RENYI_DAG,
             GraphTypes.SCALE_FREE_DAG,
             GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS,
-            GraphTypes.RANDOM_ONE_FACTOR_MIM,
-            GraphTypes.RANDOM_TWO_FACTOR_MIM
+            GraphTypes.RANDOM_MIM
+//            GraphTypes.RANDOM_ONE_FACTOR_MIM,
+//            GraphTypes.RANDOM_TWO_FACTOR_MIM
     };
     /**
      * The model type items.
@@ -62,28 +65,16 @@ public class ParameterTab extends JPanel {
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
             SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
-            SimulationTypes.CAUSAL_PERCEPTRON_NETWORK,
+            SimulationTypes.NONLINEAR_ADDITIVE_SEM,
+            SimulationTypes.ADDITIVE_NOISE_SEM,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES
     };
 
-
-    //                    public static final String[] MODEL_TYPE_ITEMS = {
-//                            SimulationTypes.BAYS_NET,
-//                            SimulationTypes.STRUCTURAL_EQUATION_MODEL,
-//                            SimulationTypes.LINEAR_FISHER_MODEL,
-//                            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
-//                            SimulationTypes.CAUSAL_PERCEPTRON_NETWORK,
-//                            SimulationTypes.LEE_AND_HASTIE,
-//                            SimulationTypes.CONDITIONAL_GAUSSIAN,
-//                            SimulationTypes.TIME_SERIES
-
-
+    public static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
     @Serial
     private static final long serialVersionUID = 7074205549192562786L;
-    private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
-
     /**
      * The graph type dropdown.
      */
@@ -180,6 +171,7 @@ public class ParameterTab extends JPanel {
                 case GraphTypes.ERDOS_RENYI_DAG -> new ErdosRenyi();
                 case GraphTypes.SCALE_FREE_DAG -> new ScaleFree();
                 case GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS -> new Cyclic();
+                case GraphTypes.RANDOM_MIM -> new RandomMim();
                 case GraphTypes.RANDOM_ONE_FACTOR_MIM -> new RandomSingleFactorMim();
                 case GraphTypes.RANDOM_TWO_FACTOR_MIM -> new RandomTwoFactorMim();
                 default -> throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);
@@ -205,17 +197,14 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_ADDITIVE_NOISE_MODEL:
-                        this.simulation.setSimulation(new NonlinearAdditiveNoiseModel(randomGraph), this.simulation.getParams());
-                        break;
                     case SimulationTypes.POST_NONLINEAR_MODEL:
                         this.simulation.setSimulation(new PostnonlinearCausalModel(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_FUNCTIONS_OF_LINEAR:
-                        this.simulation.setSimulation(new NonlinearFunctionsOfLinear(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.ADDITIVE_NOISE_SEM:
+                        this.simulation.setSimulation(new AdditiveNoiseSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.CAUSAL_PERCEPTRON_NETWORK:
-                        this.simulation.setSimulation(new CausalPerceptronNetwork(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.NONLINEAR_ADDITIVE_SEM:
+                        this.simulation.setSimulation(new AdditiveAnmSimulator(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
@@ -241,17 +230,6 @@ public class ParameterTab extends JPanel {
                     default:
                         throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
-
-                //                    public static final String[] MODEL_TYPE_ITEMS = {
-//                            SimulationTypes.BAYS_NET,
-//                            SimulationTypes.STRUCTURAL_EQUATION_MODEL,
-//                            SimulationTypes.LINEAR_FISHER_MODEL,
-//                            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
-//                            SimulationTypes.CAUSAL_PERCEPTRON_NETWORK,
-//                            SimulationTypes.LEE_AND_HASTIE,
-//                            SimulationTypes.CONDITIONAL_GAUSSIAN,
-//                            SimulationTypes.TIME_SERIES
-
             } else {
                 switch (simulationItem) {
                     case SimulationTypes.BAYS_NET:
@@ -263,17 +241,14 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_ADDITIVE_NOISE_MODEL:
-                        this.simulation.setSimulation(new NonlinearAdditiveNoiseModel(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.NONLINEAR_ADDITIVE_SEM:
+                        this.simulation.setSimulation(new AdditiveAnmSimulator(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.POST_NONLINEAR_MODEL:
                         this.simulation.setSimulation(new PostnonlinearCausalModel(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_FUNCTIONS_OF_LINEAR:
-                        this.simulation.setSimulation(new NonlinearFunctionsOfLinear(randomGraph), this.simulation.getParams());
-                        break;
-                    case SimulationTypes.CAUSAL_PERCEPTRON_NETWORK:
-                        this.simulation.setSimulation(new CausalPerceptronNetwork(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.ADDITIVE_NOISE_SEM:
+                        this.simulation.setSimulation(new AdditiveNoiseSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
@@ -440,3 +415,4 @@ public class ParameterTab extends JPanel {
         return initial;
     }
 }
+

@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.DataSet;
@@ -9,9 +29,9 @@ import java.util.Map;
 /**
  * Represents a conditional probability table (CPT) in a Bayes net. This represents the CPT as a map from a unique
  * integer index for a particular node to the cell count for that node, where 0's are not stored. Row counts are also
- * stored, so that the probability of a cell can be calculated. A prior cell count of 0 is assumed for all cells,
- * but this may be set by the user to any non-negative count. (A prior count of 0 is equivalent to a maximum
- * likelihood estimate.)
+ * stored, so that the probability of a cell can be calculated. A prior cell count of 0 is assumed for all cells, but
+ * this may be set by the user to any non-negative count. (A prior count of 0 is equivalent to a maximum likelihood
+ * estimate.)
  *
  * @author josephramsey
  */
@@ -183,8 +203,8 @@ public class CptMapCounts implements CptMap {
     }
 
     /**
-     * Sets the prior count for all cells in the CptMapCounts.
-     * The prior count is used in parameter estimation for Bayesian networks.
+     * Sets the prior count for all cells in the CptMapCounts. The prior count is used in parameter estimation for
+     * Bayesian networks.
      *
      * @param priorCount the value to set as the prior count.
      */
@@ -192,3 +212,4 @@ public class CptMapCounts implements CptMap {
         this.priorCount = priorCount;
     }
 }
+

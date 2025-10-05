@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.sem;
@@ -296,12 +295,33 @@ public class SemOptimizerEm implements SemOptimizer {
             }
         }
 
-        this.expectedCov = new Matrix(this.numObserved + this.numLatent, this.numObserved + this.numLatent);
+        // In initialize(), replace how you fill idxObserved/idxLatent.
+        List<Node> allVars = semIm.getSemPm().getVariableNodes(); // canonical order for SemIm matrices
+        List<Node> measured = semIm.getMeasuredNodes();
 
+        this.idxObserved = new int[measured.size()];
+        this.idxLatent = new int[allVars.size() - measured.size()];
+
+        int o = 0, l = 0;
+        for (int i = 0; i < allVars.size(); i++) {
+            Node node = allVars.get(i);
+            if (node.getNodeType() == NodeType.MEASURED || node.getNodeType() == NodeType.SELECTION) {
+                this.idxObserved[o++] = i;
+            } else if (node.getNodeType() == NodeType.LATENT) {
+                this.idxLatent[l++] = i;
+            }
+        }
+        this.numObserved = o;
+        this.numLatent = l;
+
+        // Fill expectedCovâs observed block using yCov in measured order:
+        this.expectedCov = new Matrix(this.numObserved + this.numLatent, this.numObserved + this.numLatent);
         for (int i = 0; i < this.numObserved; i++) {
             for (int j = i; j < this.numObserved; j++) {
-                this.expectedCov.set(this.idxObserved[i], this.idxObserved[j], this.yCov.get(i, j));
-                this.expectedCov.set(this.idxObserved[j], this.idxObserved[i], this.yCov.get(i, j));
+                double v = this.yCov.get(i, j); // yCov is in 'measured' order
+                int ii = this.idxObserved[i], jj = this.idxObserved[j];
+                this.expectedCov.set(ii, jj, v);
+                this.expectedCov.set(jj, ii, v);
             }
         }
 
@@ -350,11 +370,14 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
     private void expectation() {
-        Matrix bYZModel = this.yCovModel.inverse().times(this.yzCovModel);
-        Matrix yzCovPred = this.yCov.times(bYZModel);
-        Matrix zCovModel = this.yzCovModel.transpose().times(bYZModel);
+
+        // Solve yCovModel * B = yzCovModel  -> B = yCovModel^{-1} * yzCovModel
+        Matrix B = yCovModel.solve(yzCovModel); // implement solve() or replace with a small helper
+
+        Matrix yzCovPred = this.yCov.times(B);           // E[Z|Y] covariance
+        Matrix zCovModel = this.yzCovModel.transpose().times(B);
         Matrix zCovDiff = this.zCovModel.minus(zCovModel);
-        Matrix CzPred = yzCovPred.transpose().times(bYZModel);
+        Matrix CzPred = yzCovPred.transpose().times(B);
         Matrix newCz = CzPred.plus(zCovDiff);
 
         for (int i = 0; i < this.numLatent; i++) {
@@ -374,42 +397,87 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
     private void maximization() {
+        // We work in the graph.getNodes() index space, consistent with how 'parents',
+        // 'errorParent', and 'expectedCov' were built in initialize().
         List<Node> nodes = this.graph.getNodes();
 
-        for (Node node : this.graph.getNodes()) {
-            if (node.getNodeType() == NodeType.ERROR) {
-                continue;
-            }
+        for (Node node : nodes) {
+            if (node.getNodeType() == NodeType.ERROR) continue;
 
             int idx = nodes.indexOf(node);
+
+            // Start from the (expected) variance of this node.
             double variance = this.expectedCov.get(idx, idx);
 
-            if (this.parents[idx] != null) {
-                for (int i = 0; i < this.parents[idx].length; i++) {
-                    int idx2 = this.parents[idx][i];
-                    this.nodeParentsCov[idx][i] = this.expectedCov.get(idx, idx2);
-                    for (int j = i; j < this.parents[idx].length; j++) {
-                        int idx3 = this.parents[idx][j];
-                        this.parentsCov[idx][i][j] = this.expectedCov.get(idx2, idx3);
-                        this.parentsCov[idx][j][i] = this.expectedCov.get(idx3, idx2);
+            // If the node has structural parents, estimate regression coefficients via
+            // (regularized) normal equations: coefs = (X'X + Î»I)^{-1} X'y.
+            if (this.parents[idx] != null && this.parents[idx].length > 0) {
+                int k = this.parents[idx].length;
+
+                // Build cov(y, parents) and cov(parents, parents) from expectedCov
+                for (int i = 0; i < k; i++) {
+                    int pi = this.parents[idx][i];
+                    this.nodeParentsCov[idx][i] = this.expectedCov.get(idx, pi);
+                    for (int j = i; j < k; j++) {
+                        int pj = this.parents[idx][j];
+                        double v = this.expectedCov.get(pi, pj);
+                        this.parentsCov[idx][i][j] = v;
+                        this.parentsCov[idx][j][i] = v;
                     }
                 }
 
-                Vector coefs = new Matrix(this.parentsCov[idx]).inverse().times(new Vector(this.nodeParentsCov[idx]));
+                // Ridge regularization to stabilize in case of near-singular parent covariance.
+                // We keep Î» tiny so estimates remain close to OLS when well-conditioned.
+                final double ridge = 1e-8;
+                Matrix M = new Matrix(this.parentsCov[idx]);         // k x k
+                for (int d = 0; d < k; d++) {
+                    M.set(d, d, M.get(d, d) + ridge);
+                }
+                Vector c = new Vector(this.nodeParentsCov[idx]);      // k
 
-                for (int i = 0; i < coefs.size(); i++) {
+                // Solve for coefficients. If a direct solve is unavailable, fall back to inverse().
+                Vector coefs;
+                try {
+                    // Prefer a linear solve if available in your Matrix class:
+                    // coefs = M.solve(c);
+                    // If not available, use inverse() as a fallback:
+                    coefs = M.inverse().times(c);
+                } catch (Throwable t) {
+                    // Extremely defensive: try a slightly larger ridge and retry.
+                    double more = 1e-6;
+                    for (int d = 0; d < k; d++) {
+                        M.set(d, d, M.get(d, d) + more);
+                    }
+                    coefs = M.inverse().times(c);
+                }
 
-                    this.semIm.getSemPm().getParameter(nodes.get(this.parents[idx][i]), node);
-                    if (!this.semIm.getSemPm().getParameter(nodes.get(this.parents[idx][i]), node).isFixed()) {
-                        this.semIm.setEdgeCoef(nodes.get(this.parents[idx][i]), node, coefs.get(i));
+                // Write coefficients back to the SEM (respect fixed parameters).
+                for (int i = 0; i < k; i++) {
+                    Node parent = nodes.get(this.parents[idx][i]);
+                    double beta = coefs.get(i);
+
+                    // Only set if the coefficient parameter exists and is free.
+                    Parameter p = this.semIm.getSemPm().getParameter(parent, node);
+                    if (p != null && !p.isFixed()) {
+                        this.semIm.setEdgeCoef(parent, node, beta);
                     }
                 }
 
-                variance -= new Vector(this.nodeParentsCov[idx]).dotProduct(coefs);
+                // Residual variance = Var(y) - cov(y,parents)Â·beta
+                double explained = new Vector(this.nodeParentsCov[idx]).dotProduct(coefs);
+                variance -= explained;
+
+                // Clamp tiny negative values due to roundoff.
+                if (variance < 0.0) variance = 0.0;
             }
 
-            if (!this.semIm.getSemPm().getParameter(this.errorParent[idx], this.errorParent[idx]).isFixed()) {
-                this.semIm.setErrCovar(this.errorParent[idx], variance);
+            // Update the error variance parameter for this node's error term, if present and free.
+            Node err = this.errorParent[idx];
+            if (err != null) {
+                Parameter varParam = this.semIm.getSemPm().getParameter(err, err);
+                if (varParam != null && !varParam.isFixed()) {
+                    this.semIm.setErrCovar(err, err, variance);
+                }
             }
         }
     }
@@ -438,6 +506,7 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
 }
+
 
 
 

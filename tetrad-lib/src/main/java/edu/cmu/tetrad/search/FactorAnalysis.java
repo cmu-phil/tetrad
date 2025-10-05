@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,8 +15,7 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
@@ -119,7 +118,7 @@ public class FactorAnalysis {
      */
     private static Matrix normalizeVector(Matrix vector) {
         double scalar = FastMath.sqrt(vector.transpose().times(vector).get(0, 0));
-        return vector.scale(1.0 / scalar);
+        return vector.scalarMult(1.0 / scalar);
     }
 
     /**
@@ -233,7 +232,7 @@ public class FactorAnalysis {
         Matrix r = residuals.getLast();
 
         Matrix sumCols = r.transpose().times(unitColumn);
-        Matrix wVector = sumCols.scale(1.0 / FastMath.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
+        Matrix wVector = sumCols.scalarMult(1.0 / FastMath.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
         Matrix vVector = r.times(wVector);
 
         for (int k = 0; k < normalizedFactorLoadings.getNumColumns(); k++) {
@@ -265,15 +264,15 @@ public class FactorAnalysis {
             for (int i = 0; i < 200; i++) {
                 Matrix bVector = r.times(hVectors.get(i));
                 double averageSumSquaresBVector = unitColumn.transpose().times(FactorAnalysis.matrixExp(bVector, 2))
-                        .scale(1.0 / (double) bVector.getNumRows()).get(0, 0);
+                        .scalarMult(1.0 / (double) bVector.getNumRows()).get(0, 0);
 
-                Matrix betaVector = FactorAnalysis.matrixExp(bVector, 3).minus(bVector.scale(averageSumSquaresBVector));
+                Matrix betaVector = FactorAnalysis.matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
                 Matrix uVector = r.transpose().times(betaVector);
 
                 double alpha2 = (FastMath.sqrt(uVector.transpose().times(uVector).get(0, 0)));
                 bVectors.add(bVector);
 
-                hVectors.add(uVector.scale(1.0 / alpha2));
+                hVectors.add(uVector.scalarMult(1.0 / alpha2));
 
                 if (!Double.isNaN(alpha1)) {
                     if (abs((alpha2 - alpha1)) < this.threshold) {
@@ -368,7 +367,7 @@ public class FactorAnalysis {
         }
 
         double d = FastMath.sqrt(l0.get(0, 0));
-        Matrix f = residual.times(approximationVector).scale(1.0 / d);
+        Matrix f = residual.times(approximationVector).scalarMult(1.0 / d);
 
         for (int i = 0; i < 100; i++) {
             Matrix ui = residual.times(f);
@@ -380,13 +379,14 @@ public class FactorAnalysis {
             }
 
             d = di;
-            f = ui.scale(1.0 / d);
+            f = ui.scalarMult(1.0 / d);
         }
 
         this.factorLoadingVectors.add(f);
         return true;
     }
 }
+
 
 
 

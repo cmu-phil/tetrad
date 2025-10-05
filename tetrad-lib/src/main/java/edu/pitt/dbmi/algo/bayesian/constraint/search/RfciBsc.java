@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.pitt.dbmi.algo.bayesian.constraint.search;
 
 import edu.cmu.tetrad.bayes.BayesIm;
@@ -11,7 +31,7 @@ import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Rfci;
-import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -239,7 +259,7 @@ public class RfciBsc implements IGraphSearch {
         long stop = 0;
         long start = MillisecondTimes.timeMillis();
 
-        IndTestProbabilistic _test = (IndTestProbabilistic) this.rfci.getIndependenceTest();
+        IndTestProbabilistic _test = (IndTestProbabilistic) this.rfci.getTest();
 
         // create empirical data for constraints
         DataSet dataSet = SimpleDataLoader.getDiscreteDataSet(_test.getData());
@@ -402,8 +422,8 @@ public class RfciBsc implements IGraphSearch {
         pool.invokeAll(tasks);
 
         // learn structure of constraints using empirical data => constraint data
-        BdeuScore sd = new BdeuScore(depData);
-        sd.setSamplePrior(1.0);
+        BDeuScore sd = new BDeuScore(depData);
+        sd.setPriorEquivalentSampleSize(1.0);
         sd.setStructurePrior(1.0);
 
         Fges fges = new Fges(sd);
@@ -820,3 +840,4 @@ public class RfciBsc implements IGraphSearch {
     }
 
 }
+

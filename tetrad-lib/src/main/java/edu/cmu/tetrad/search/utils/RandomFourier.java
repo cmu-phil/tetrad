@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import java.util.Random;
@@ -7,7 +27,7 @@ import java.util.stream.DoubleStream;
  * The RandomFourier class generates a random Fourier series with specified cosine and sine amplitudes and frequency
  * terms. The series is defined as:
  * <p>
- * f(x) = Σ [a_i * cos(b_i * x) + c_i * sin(b_i * x)]
+ * f(x) = Î£ [a_i * cos(b_i * x) + c_i * sin(b_i * x)]
  * <p>
  * where: - a_i and c_i are randomly chosen amplitudes in the range [-2, 2], - b_i are randomly chosen frequencies
  * scaled by a given factor.
@@ -92,3 +112,4 @@ public class RandomFourier {
         return compute(x) - fAtZero; // Subtract f(0) to adjust the function
     }
 }
+

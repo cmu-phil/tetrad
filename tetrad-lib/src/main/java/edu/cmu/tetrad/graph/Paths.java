@@ -1,10 +1,33 @@
+/// ////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.GraphLegalityCheck;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -234,7 +257,7 @@ public class Paths implements TetradSerializable {
 
         for (Edge edge : graph.getEdges(x)) {
             if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
-            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
+            if (edge.getEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
         }
 
         while (!neighbors.isEmpty()) {
@@ -250,7 +273,7 @@ public class Paths implements TetradSerializable {
 
         for (Edge edge : graph.getEdges(x)) {
 //            if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
-            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) {
+            if (edge.getEndpoint(x) == Endpoint.TAIL) {
                 return true;
 //                neighbors.add(edge.getDistalNode(x));
             }
@@ -279,6 +302,58 @@ public class Paths implements TetradSerializable {
      * @return true if the graph is a legal CPDAG, false otherwise.
      */
     public synchronized boolean isLegalCpdag() {
+
+        // jdramsey 2024-2-17
+        //
+        // This is this idea I had for checking whether a graph is a CPDAG. What do you think?
+        //
+        // I'm using Bryan's method, validOrder, which repeatedly looks for a valid sink in the graph (no children,
+        // neighbors forming a clique) and removes it, then reports the removed nodes in reverse order.
+        //
+        // Bryan gave this example: G = âX1-->X2,X2---X3,X3<--X4â. validOrder gets Ï = [X1, X2, X4, X3]. (This is
+        // a malformed âvalid order,â but itâs what the algorithm says.) This makes sense because according to
+        // the valid order method, X3 is a valid sink (only X2 is a neighbor, so the neighbors form a clique),
+        // and the rest follows. So now youâre in a situation where youâre using d-separation on G, but itâs not
+        // even a CPDAG. This is interesting to think about, just as an exercise in using the d-separation algorithm
+        // on a malformed graph. What happens is you end up with an extra adjacency in the induced DAG because
+        // there is no collider on the path X2--X3<-X4, and you only get to condition on the prefix of X2, which
+        // is {X1} by the RU method, so there is no way to remove the adjacency X2--X4. So, G canât be a CPDAG.
+        // But we need a test of CPDAG that can handle graphs like G; I had to think about it.
+        //
+        // So let validOrder be this method. Let DAG(Ï, dsep) be the Raskutti-Uhler method of forming a DAG given
+        // permutation Ï and a d-separation relation dsep, taking G as the âtrue graphâ (possibly malformed) yielding
+        // a (possibly malformed) oracle of d-separation facts. Let CPDAG(Gâ) for DAG Gâ be the MEC graph for Gâ.
+        //
+        // I propose that if the validOrder method throws an exception because it can't find a valid sink, then G is
+        // not a CPDAG, since all CPDAGs have valid sinks, and any CPDAG with valid sinks removed in series also has
+        // a valid sink. If validOrder returns an order, then I look to see whether G = CPDAG(DAG(validOrder(G)))
+        // and return that judgment.
+        //
+        // I think I can prove that this works.
+        //
+        // Theorem 1: If validOrder(G) throws an exception, then G is not a CPDAG.
+        //
+        // Proof. We know the contrapositive. That is, we know that if G is a CPDAG, a valid order exists, so
+        // validOrder in that case will not throw an exception.
+        //
+        // Theorem 2: For permutation Ï, DAG(Ï, dsep) always returns a DAG in cases where a valid order for G exists,
+        // no matter the d-separation relation dsep (even based on possibly malformed information).
+        //
+        // Proof. DAG(Ï, dsep) always choos  es parents for a variable x from prefix(x, Ï), so the method will always
+        // return a DAG.
+        //
+        // Theorem 3: When validOrder(G) returns an order Ï, G is a CPDAG if and only if G = CPDAG(DAG(Ï, dsep(G))),
+        // where dsep(G) is the usual d-separation algorithm applied to (possibly malformed) G.
+        //
+        // Proof. Let Ï = validOrder(G). Note that if G is, in fact, a CPDAG, it follows from the construction of the
+        // validOrder method and the Raskutti-Uhler method for building DAGs that G = CPDAG(DAG(Ï, dsep(G))). So,
+        // let G not be a CPDAG and assume G = CPDAG(DAG(Ï, dsep(G))). But then G is, in fact, a CPDAG by construction
+        // since DAG(Ï, dsep(G)) is a DAG (Theorem 2), which is a contradiction. It follows that
+        // G != CPDAG(DAG(Ï, dsepG))), which proves the theorem.
+        //
+        // In any case, I can't get this method to fail, and it's easy to implement, given the other stuff we already
+        // have implemented in Tetrad.
+
         Graph g = this.graph;
 
         for (Edge e : g.getEdges()) {
@@ -291,14 +366,11 @@ public class Paths implements TetradSerializable {
 
         try {
             g.paths().makeValidOrder(pi);
-            Graph cpdag = GraphTransforms.dagToCpdag(GraphTransforms.dagToCpdag(g));
-
-//            Graph dag = getDag(pi, GraphTransforms.dagFromCpdag(g), false);
-//            Graph cpdag = GraphTransforms.dagToCpdag(dag);
+            Graph cpdag = GraphTransforms.dagToCpdag(getDag(pi, g, false));
             return g.equals(cpdag);
         } catch (Exception e) {
             // There was no valid sink.
-            System.out.println(e.getMessage());
+            TetradLogger.getInstance().log(e.getMessage());
             return false;
         }
     }
@@ -325,33 +397,17 @@ public class Paths implements TetradSerializable {
 
         try {
             g.paths().makeValidOrder(pi);
-            Graph dag = getDag(pi, g, false);
-            Graph cpdag = GraphTransforms.dagToCpdag(dag);
-            Graph _g = new EdgeListGraph(g);
-            _g = GraphTransforms.dagToCpdag(_g);
-
-            boolean equals = _g.equals(cpdag);
-
-            // Check maximality...
-            if (equals) {
-                Graph __g = new EdgeListGraph(g);
-                MeekRules meekRules = new MeekRules();
-                meekRules.setRevertToUnshieldedColliders(false);
-                meekRules.setVerbose(false);
-                meekRules.orientImplied(__g);
-                return g.equals(__g);
-            }
-
-            return false;
+            Graph cpdag = GraphTransforms.dagToCpdag(getDag(pi, g, false));
+            return cpdag.equals(GraphTransforms.dagToCpdag(g));
         } catch (Exception e) {
             // There was no valid sink.
-            System.out.println(e.getMessage());
+            TetradLogger.getInstance().log(e.getMessage());
             return false;
         }
     }
 
     /**
-     * Checks if the given Maximal Ancestral Graph (MPAG) is legal. A MPAG is considered legal if it is equal to a PAG
+     * Checks if the given Maximal Ancestral Graph (MAG) is legal. A MAG is considered legal if it is equal to a PAG
      * where additional edges have been oriented by Knowledge, with final FCI rules applied for maximum orientation. The
      * test is performed by attemping to convert the graph to a PAG using the DAG to CPDAG transformation and testing
      * whether that graph is a legal PAG. Finally, we test to see whether the obtained graph is equal to the original
@@ -365,18 +421,13 @@ public class Paths implements TetradSerializable {
         Graph g = this.graph;
 
         try {
-            Graph pag = GraphTransforms.dagToPag(g);
+            Graph pag = PagCache.getInstance().getPag(graph);
 
             if (pag.paths().isLegalPag()) {
-                Graph __g = PagCache.getInstance().getPag(graph);
-//                Graph __g = new DagToPag(graph).convert();
-
-                if (__g.paths().isLegalPag()) {
-                    Graph _g = new EdgeListGraph(g);
-                    FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
-                    fciOrient.finalOrientation(pag);
-                    return g.equals(_g);
-                }
+                Graph _g = new EdgeListGraph(g);
+                FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
+                fciOrient.finalOrientation(pag);
+                return g.equals(_g);
             }
 
             return false;
@@ -395,7 +446,7 @@ public class Paths implements TetradSerializable {
     public boolean isLegalMag() {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        return GraphSearchUtils.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
+        return GraphLegalityCheck.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
     }
 
     /**
@@ -405,7 +456,7 @@ public class Paths implements TetradSerializable {
      */
     public boolean isLegalPag() {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-        return GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
+        return GraphLegalityCheck.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
     }
 
     /**
@@ -1264,7 +1315,7 @@ public class Paths implements TetradSerializable {
         Node b = e1.getDistalNode(a);
         Node c = e2.getDistalNode(b);
 
-        boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW && e2.getProximalEndpoint(b) == Endpoint.ARROW;
+        boolean collider = e1.getEndpoint(b) == Endpoint.ARROW && e2.getEndpoint(b) == Endpoint.ARROW;
 
         if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
@@ -1279,7 +1330,7 @@ public class Paths implements TetradSerializable {
         Node b = e1.getDistalNode(a);
         Node c = e2.getDistalNode(b);
 
-        boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW && e2.getProximalEndpoint(b) == Endpoint.ARROW;
+        boolean collider = e1.getEndpoint(b) == Endpoint.ARROW && e2.getEndpoint(b) == Endpoint.ARROW;
 
         boolean ancestor = false;
 
@@ -1460,7 +1511,7 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Breadth-first version of the “inducing-path exists?” test.
+     * Breadth-first version of the âinducing-path exists?â test.
      *
      * @param x                  first measured node
      * @param y                  second measured node
@@ -1485,7 +1536,7 @@ public class Paths implements TetradSerializable {
             seedPath.add(x);
             seedPath.add(b);
 
-            if (b == y) {                         // x—b where b==y  ⇒  path of length-1
+            if (b == y) {                         // xâb where b==y  â  path of length-1
                 return true;
             }
             queue.add(new State(x, b, seedPath));
@@ -1500,7 +1551,7 @@ public class Paths implements TetradSerializable {
 
             for (Node c : graph.getAdjacentNodes(b)) {
 
-                if (c == a) continue;             // don’t back-track
+                if (c == a) continue;             // donât back-track
                 if (path.contains(c)) continue;   // avoid cycles
 
                 // --- Same admissibility checks as the DFS version -----------------
@@ -1517,7 +1568,7 @@ public class Paths implements TetradSerializable {
                 LinkedList<Node> newPath = new LinkedList<>(path);
                 newPath.add(c);
 
-                if (c == y) {                     // reached the target – success!
+                if (c == y) {                     // reached the target â success!
                     return true;
                 }
 
@@ -1525,7 +1576,7 @@ public class Paths implements TetradSerializable {
             }
         }
 
-        return false;                             // Exhausted queue – no inducing path
+        return false;                             // Exhausted queue â no inducing path
     }
 
 
@@ -2028,7 +2079,7 @@ public class Paths implements TetradSerializable {
                     // "virtual edges" that are directed in the direction of the arrow, so that the reachability
                     // algorithm can eventually find any colliders along the path that may be implied.
                     // jdramsey 2024-04-14
-                    if (!allowSelectionBias && edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                    if (!allowSelectionBias && edge1.getEndpoint(b) == Endpoint.ARROW) {
                         if (Edges.isUndirectedEdge(edge2)) {
                             edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                         } else if (Edges.isNondirectedEdge(edge2)) {
@@ -2080,7 +2131,7 @@ public class Paths implements TetradSerializable {
             // "virtual edges" that are directed in the direction of the arrow, so that the reachability
             // algorithm can eventually find any colliders along the path that may be implied.
             // jdramsey 2024-04-14
-            if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+            if (edge1.getEndpoint(b) == Endpoint.ARROW) {
                 if (!isPag && Edges.isUndirectedEdge(edge2)) {
                     edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                 } else if (isPag && Edges.isNondirectedEdge(edge2)) {
@@ -2138,7 +2189,7 @@ public class Paths implements TetradSerializable {
             // "virtual edges" that are directed in the direction of the arrow, so that the reachability
             // algorithm can eventually find any colliders along the path that may be implied.
             // jdramsey 2024-04-14
-            if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+            if (edge1.getEndpoint(b) == Endpoint.ARROW) {
                 if (!allowSelectionBias && Edges.isUndirectedEdge(edge2)) {
                     edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                 } else if (allowSelectionBias && Edges.isNondirectedEdge(edge2)) {
@@ -2234,13 +2285,13 @@ public class Paths implements TetradSerializable {
                     // algorithm can eventually find any colliders along the path that may be implied.
                     // jdramsey 2024-04-14
                     if (isPag) {
-                        if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                        if (edge1.getEndpoint(b) == Endpoint.ARROW) {
                             if (Edges.isNondirectedEdge(edge2)) {
                                 edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
                             }
                         }
                     } else {
-                        if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                        if (edge1.getEndpoint(b) == Endpoint.ARROW) {
                             if (Edges.isNondirectedEdge(edge2)) {
                                 edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
                             }
@@ -2292,7 +2343,7 @@ public class Paths implements TetradSerializable {
      */
     public boolean defVisiblePag(Node A, Node B) {
 
-        // Sanity: we only care about directed A → B edges that exist
+        // Sanity: we only care about directed A â B edges that exist
         if (!graph.isParentOf(A, B)) return false;
 
         for (Node C : graph.getNodes()) {
@@ -2302,16 +2353,16 @@ public class Paths implements TetradSerializable {
 
             /* ---------- Clause 1: an edge into A from C ---------------- */
             if (graph.getEndpoint(C, A) == Endpoint.ARROW) {
-                // Covers both  C → A  and  C ↔ A  (arrowhead at A).
+                // Covers both  C â A  and  C â A  (arrowhead at A).
                 return true;
             }
 
-            /* ---------- Clause 2: collider path C … A ------------------ */
+            /* ---------- Clause 2: collider path C â¦ A ------------------ */
             if (existsColliderPathInto(C, A, B)) {
                 return true;
             }
         }
-        return false;   // no qualifying C found ⇒ edge is invisible
+        return false;   // no qualifying C found â edge is invisible
     }
 
     /*======================================================================
@@ -2319,7 +2370,7 @@ public class Paths implements TetradSerializable {
      *====================================================================*/
 
     /**
-     * True iff there exists a collider path   C = v0 … vk = A (k ≥ 1) that is arrow-headed into A and whose
+     * True iff there exists a collider path   C = v0 â¦ vk = A (k â¥ 1) that is arrow-headed into A and whose
      * **interior** vertices are all parents of B.  Endpoints C and A themselves are *not* required to point to B.
      */
     private boolean existsColliderPathInto(Node C, Node A, Node B) {
@@ -2328,7 +2379,7 @@ public class Paths implements TetradSerializable {
 
     /* ------------------------------------------------------------------ */
 
-    private boolean dfsColliderPath(Node prev,           // vertex before ‘cur’
+    private boolean dfsColliderPath(Node prev,           // vertex before âcurâ
                                     Node cur,            // current vertex
                                     Node targetA,        // destination
                                     Node B,              // must receive arrows
@@ -2375,10 +2426,10 @@ public class Paths implements TetradSerializable {
 //        // Zhang, J. (2008). Causal Reasoning with Ancestral Graphs. Journal of Machine Learning
 //        // Research, 9(7)
 //        //
-//        // Definition 8 (Visibility) Given a MAG M, a directed edge A → B in M is visible
+//        // Definition 8 (Visibility) Given a MAG M, a directed edge A â B in M is visible
 //        // if there is a vertex C not adjacent to B, such that either there is an edge between
 //        // C and A that is into A, or there is a collider path between C and A that is into A
-//        // and every vertex on the path is a parent of B. Otherwise A → B is said to be invisible.
+//        // and every vertex on the path is a parent of B. Otherwise A â B is said to be invisible.
 //        // ...
 //        // The definition of visibility still makes sense in PAGs, except that we will call a
 //        // directed edge in a PAG definitely visible if it satisfies the condition for visibility
@@ -2473,10 +2524,10 @@ public class Paths implements TetradSerializable {
      */
 
 //    /**
-//     * True iff there exists a path C = v0 … vk = A such that
-//     *   (i)  for every i∈{1,…,k−1}, vi is a definite collider on (vi−1,vi,vi+1);
-//     *   (ii) for every i∈{0,…,k},   vi → B   (i.e., vi is a parent of B);
-//     *   (iii) vk−1 *-> A (arrowhead at A).
+//     * True iff there exists a path C = v0 â¦ vk = A such that
+//     *   (i)  for every iâ{1,â¦,kâ1}, vi is a definite collider on (viâ1,vi,vi+1);
+//     *   (ii) for every iâ{0,â¦,k},   vi â B   (i.e., vi is a parent of B);
+//     *   (iii) vkâ1 *-> A (arrowhead at A).
 //     *
 //     * @param C The C node from Zhang's (2008) definition of visible edge.
 //     * @param A The A node from Zhang's (2008) definition of visible edge.
@@ -3298,4 +3349,5 @@ public class Paths implements TetradSerializable {
         }
     }
 }
+
 

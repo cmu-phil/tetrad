@@ -1,21 +1,23 @@
-/*
- * Copyright (C) 2017 University of Pittsburgh.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
- */
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
@@ -23,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.PagSampleRfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RfciBsc;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.util.ParamDescription;
@@ -41,8 +43,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.Serial;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -155,7 +157,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
             params = Params.getScoreParameters(algorithm);
             if (!params.isEmpty()) {
-                String title = ((UsesScoreWrapper) algorithm).getScoreWrapper()
+                String title = ((TakesScoreWrapper) algorithm).getScoreWrapper()
                         .getClass().getAnnotation(Score.class).name();
                 this.mainPanel.add(createSubPanel(title, params, parameters));
                 this.mainPanel.add(Box.createVerticalStrut(10));
@@ -503,3 +505,4 @@ public class AlgorithmParameterPanel extends JPanel {
         return field;
     }
 }
+

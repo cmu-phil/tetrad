@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.algcomparison.statistic.utils;
 
 import edu.cmu.tetrad.graph.Edge;
@@ -9,7 +29,7 @@ import java.util.List;
 
 /**
  * A confusion matrix for tails--i.e. TP, FP, TN, FN for counts of arrow endpoints. A true positive arrow is counted for
- * X*-&gt;Y in the estimated graph if X is not adjacent to Y or X--Y or X&lt;--Y.
+ * X*--Y in the estimated graph if X--*Y.
  *
  * @author josephramsey, rubens (November, 2016)
  * @version $Id: $Id
@@ -90,8 +110,8 @@ public class TailConfusion {
             Endpoint e2Est = null;
 
             if (edge1 != null) {
-                e1Est = edge1.getProximalEndpoint(edge.getNode1());
-                e2Est = edge1.getProximalEndpoint(edge.getNode2());
+                e1Est = edge1.getEndpoint(edge.getNode1());
+                e2Est = edge1.getEndpoint(edge.getNode2());
             }
 
             List<Edge> edges2 = truth.getEdges(edge.getNode1(), edge.getNode2());
@@ -109,8 +129,8 @@ public class TailConfusion {
             Endpoint e2True = null;
 
             if (edge2 != null) {
-                e1True = edge2.getProximalEndpoint(edge.getNode1());
-                e2True = edge2.getProximalEndpoint(edge.getNode2());
+                e1True = edge2.getEndpoint(edge.getNode1());
+                e2True = edge2.getEndpoint(edge.getNode2());
             }
 
 
@@ -159,8 +179,8 @@ public class TailConfusion {
             Endpoint e2Est = null;
 
             if (edge1 != null) {
-                e1Est = edge1.getProximalEndpoint(edge.getNode1());
-                e2Est = edge1.getProximalEndpoint(edge.getNode2());
+                e1Est = edge1.getEndpoint(edge.getNode1());
+                e2Est = edge1.getEndpoint(edge.getNode2());
             }
 
             List<Edge> edges2 = truth.getEdges(edge.getNode1(), edge.getNode2());
@@ -178,8 +198,8 @@ public class TailConfusion {
             Endpoint e2True = null;
 
             if (edge2 != null) {
-                e1True = edge2.getProximalEndpoint(edge.getNode1());
-                e2True = edge2.getProximalEndpoint(edge.getNode2());
+                e1True = edge2.getEndpoint(edge.getNode1());
+                e2True = edge2.getEndpoint(edge.getNode2());
             }
 
 
@@ -298,3 +318,4 @@ public class TailConfusion {
 
 
 }
+

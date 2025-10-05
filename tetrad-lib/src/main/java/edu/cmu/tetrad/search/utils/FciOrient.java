@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,9 +15,9 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
@@ -136,38 +136,36 @@ public class FciOrient {
     }
 
     /**
-     * Determines whether an arrowhead is allowed between two nodes in a graph, based on specific conditions.
+     * Determines if an arrowhead can be placed at node Y in the given graph, based on the adjacency relationships,
+     * endpoint types, and any provided prior knowledge constraints.
      *
-     * @param x         The first node.
-     * @param y         The second node.
-     * @param graph     The graph data structure.
-     * @param knowledge The knowledge base containing forbidden connections.
-     * @return true if an arrowhead is allowed between X and Y, false otherwise.
+     * @param x     The first node under consideration in the graph.
+     * @param y     The second node under consideration in the graph, where the arrowhead placement is evaluated.
+     * @param graph The graph object containing nodes and their relationships.
+     * @param K     An object representing prior knowledge that may impose requirements or restrictions on edges.
+     * @return true if an arrowhead is allowed at node Y under the given conditions; false otherwise.
      */
-    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
+    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge K) {
         if (!graph.isAdjacentTo(x, y)) return false;
 
-        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
+        Endpoint eXY = graph.getEndpoint(x, y); // endpoint at y
+        Endpoint eYX = graph.getEndpoint(y, x); // endpoint at x
 
-        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return false;
-        }
+        // Already arrow at Y => allowed (no change).
+        if (eXY == Endpoint.ARROW) return true;
 
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
-                return true;
-            }
-        }
+        // Tail fixed at Y => cannot put an arrowhead at Y.
+        if (eXY == Endpoint.TAIL) return false;
 
-        if (graph.getEndpoint(y, x) == Endpoint.TAIL && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
-                return false;
-            }
-        }
+        // If knowledge REQUIRES y->x, disallow arrowhead at Y (bidirected would violate the requirement).
+        if (K != null && K.isRequired(y.getName(), x.getName())) return false;
 
-        return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
+        // If knowledge FORBIDS x->y, only allow an arrowhead at Y when we ALREADY have an arrowhead at X
+        // (so we'd make x <-> y). Otherwise, block to avoid x->y.
+        if (K != null && K.isForbidden(x.getName(), y.getName()) && eYX != Endpoint.ARROW) return false;
+
+        // Otherwise, circle at Y is orientable.
+        return eXY == Endpoint.CIRCLE;
     }
 
     /**
@@ -270,63 +268,133 @@ public class FciOrient {
      * @param graph               w {@link Graph} object
      * @param checkEcNonadjacency Whether to check for EC nonadjacency
      */
-    private static void discriminatingPathBfs(Node w, Node v, Node y, Graph graph, Set<DiscriminatingPath> discriminatingPaths,
-                                              int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
-        Map<Node, Node> previous = new HashMap<>();
+//    private static void discriminatingPathBfs(Node w, Node v, Node y, Graph graph, Set<DiscriminatingPath> discriminatingPaths,
+//                                              int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
+//        if ("X4".equals(w.getName()) && "X6".equals(y.getName()) && "X5".equals(v.getName())
+//            && graph.isParentOf(w, y)) {
+//            System.out.println();
+//        }
+//
+//        Queue<Node> Q = new ArrayDeque<>();
+//        Set<Node> V = new HashSet<>();
+//        Map<Node, Node> previous = new HashMap<>();
+//
+//        Q.offer(w);
+//        V.add(w);
+//        V.add(v);
+//
+//        previous.put(w, null);
+//        previous.put(v, w);
+//
+//        while (!Q.isEmpty()) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                break;
+//            }
+//
+//            Node t = Q.poll();
+//
+//            List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
+//
+//            for (Node x : nodesInTo) {
+//                if (Thread.currentThread().isInterrupted()) {
+//                    break;
+//                }
+//
+//                if (V.contains(x)) {
+//                    continue;
+//                }
+//
+//                previous.put(x, t);
+//
+//                // The collider path should be all nodes between V and X.
+//                LinkedList<Node> colliderPath = new LinkedList<>();
+//                Node d = x;
+//
+//                while ((d = previous.get(d)) != null) {
+//                    if (d != x) {
+//                        colliderPath.addFirst(d);
+//                        System.out.println("path " + GraphUtils.pathString(graph, colliderPath, false));
+//                    }
+//                }
+//
+//                // TODO put back,.
+////                if (maxDiscriminatingPathLength != -1 && colliderPath.size() > maxDiscriminatingPathLength) {
+////                    continue;
+////                }
+//
+//                DiscriminatingPath discriminatingPath = new DiscriminatingPath(x, w, v, y, colliderPath, checkEcNonadjacency);
+//
+//                if (discriminatingPath.existsIn(graph)) {
+//                    discriminatingPaths.add(discriminatingPath);
+//                }
+//
+//                if (!V.contains(x)) {
+//                    Q.offer(x);
+//                    V.add(x);
+//                }
+//            }
+//        }
+//    }
 
-        Q.offer(w);
-        V.add(w);
-        V.add(v);
+    private static void discriminatingPathBfs(
+            Node w, Node v, Node y, Graph graph,
+            Set<DiscriminatingPath> discriminatingPaths,
+            int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
 
-        previous.put(w, null);
-        previous.put(v, w);
+        // State carries current node t, previous node p (next in path toward v), and the colliderPath so far (between v and current upstream).
+        class State {
+            final Node t, p;                   // at node t, previous is p (null at the start)
+            final LinkedList<Node> path;       // nodes between v and current upstream endpoint (excludes that upstream x)
+            State(Node t, Node p, LinkedList<Node> path) { this.t = t; this.p = p; this.path = path; }
+        }
+
+        ArrayDeque<State> Q = new ArrayDeque<>();
+        // Start at w with no previous; colliderPath initially empty.
+        Q.offer(new State(w, null, new LinkedList<>()));
 
         while (!Q.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
+            if (Thread.currentThread().isInterrupted()) break;
+
+            State s = Q.poll();
+            Node t = s.t;
+            Node p = s.p;                 // "next in path" toward v
+            LinkedList<Node> pathToT = s.path;
+
+            // If t is an interior node (i.e., not the very first step), insist that p *-> t (collider at t),
+            // and (optional) that t is a parent of y.
+            if (p != null) {
+                if (graph.getEndpoint(p, t) != Endpoint.ARROW) continue;      // NOT a collider at t
+                if (!graph.isParentOf(t, y)) continue;                         // prune: interior must be parent of y
             }
 
-            Node t = Q.poll();
+            // Explore predecessors x with an arrowhead into t : x *-> t
+            for (Node x : graph.getNodesInTo(t, Endpoint.ARROW)) {
+                if (Thread.currentThread().isInterrupted()) break;
 
-            List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
+                // avoid immediate 2-cycle and prevent cycles along the current branch
+                if (x == p) continue;
+                if (pathToT.contains(x)) continue;
 
-            for (Node x : nodesInTo) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                if (V.contains(x)) {
-                    continue;
-                }
-
-                previous.put(x, t);
-
-                // The collider path should be all nodes between E and C.
-                LinkedList<Node> colliderPath = new LinkedList<>();
-                Node d = x;
-
-                while ((d = previous.get(d)) != null) {
-                    if (d != x) {
-                        colliderPath.addFirst(d);
-                    }
-                }
+                // Build colliderPath for candidate x: it’s pathToT plus the current t
+                LinkedList<Node> colliderPath = new LinkedList<>(pathToT);
+                colliderPath.add(t); // interior nodes between v and x (t becomes interior once we step to x)
 
                 if (maxDiscriminatingPathLength != -1 && colliderPath.size() > maxDiscriminatingPathLength) {
                     continue;
                 }
 
-                DiscriminatingPath discriminatingPath = new DiscriminatingPath(x, w, v, y, colliderPath, checkEcNonadjacency);
+                // Let DiscriminatingPath judge validity; we’re just enumerating paths with enforced collider-at-interior.
+                DiscriminatingPath dp = new DiscriminatingPath(x, w, v, y, colliderPath, checkEcNonadjacency);
 
-                if (discriminatingPath.existsIn(graph)) {
-                    discriminatingPaths.add(discriminatingPath);
+                if (dp.existsIn(graph)) {
+                    discriminatingPaths.add(dp);
                 }
 
-                if (!V.contains(x)) {
-                    Q.offer(x);
-                    V.add(x);
-                }
+                // Optional prune: also insist the new upstream node x is a parent of y to keep only promising chains.
+                if (!graph.isParentOf(x, y)) continue;
+
+                // Push next state upstream: new current is x, previous is t, carry this branch’s path
+                Q.offer(new State(x, t, colliderPath));
             }
         }
     }
@@ -586,7 +654,9 @@ public class FciOrient {
     }
 
     /**
-     * R1 If α ∗→ β o−−∗ γ, and α and γ are not adjacent, then orient the triple as α ∗→ β → γ.
+     * R1:
+     * If α *→ β o––* γ, and α and γ are not adjacent,
+     * then orient the triple as α *→ β → γ.
      *
      * @param a     α
      * @param b     β
@@ -615,7 +685,11 @@ public class FciOrient {
     }
 
     /**
-     * R2 If α → β ∗→ γ or α ∗→ β → γ, and α ∗−o γ, then orient α ∗−o γ as α ∗→ γ.
+     * R2:
+     * If α → β ∘→ γ  or  α ∘→ β → γ, and α ∘–o γ, then orient α ∘–o γ as α ∘→ γ.
+     *
+     * Intuition: when there’s a directed path α → β → γ with a circle on the edge incident to β on one side,
+     * and α–γ is currently a circle–circle edge, we can orient α–γ toward γ.
      *
      * @param a     α
      * @param b     β
@@ -643,13 +717,18 @@ public class FciOrient {
     }
 
     /**
-     * R3 If α ∗→ β ←∗ γ, α ∗−o θ o−∗ γ, α and γ are not adjacent, and θ ∗−o β, then orient θ ∗−o β as θ ∗→ β.
+     * R3:
+     * If α *→ β ←* γ,
+     *     α *–o θ o–* γ,
+     *     α and γ are not adjacent,
+     * and θ *–o β,
+     * then orient θ *–o β as θ *→ β.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph the graph in which the nodes exist
      */
     public void ruleR3(Graph graph) {
 
-        // a = α, b = β, c = γ, d = θ
+        // a = Î±, b = Î², c = Î³, d = Î¸
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
@@ -709,8 +788,8 @@ public class FciOrient {
     }
 
     /**
-     * R4 If u = &lt;θ ,...,α,β,γ&gt; is a discriminating path between θ and γ for β, and β o−−∗ γ; then if β ∈
-     * Sepset(θ,γ), orient β o−−∗ γ as β → γ; otherwise orient the triple &lt;α,β,γ&gt; as α ↔ β ↔ γ.
+     * R4 If u = &lt;Î¸ ,...,Î±,Î²,Î³&gt; is a discriminating path between Î¸ and Î³ for Î², and Î² oâââ Î³; then if Î² â
+     * Sepset(Î¸,Î³), orient Î² oâââ Î³ as Î² â Î³; otherwise orient the triple &lt;Î±,Î²,Î³&gt; as Î± â Î² â Î³.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
@@ -810,7 +889,7 @@ public class FciOrient {
     /**
      * Makes a list of tasks for the discriminating path orientation step based on the current graph.
      *
-     * @param graph           the graph
+     * @param graph            the graph
      * @param allowedColliders the allowed colliders
      * @return the list of tasks
      */
@@ -833,8 +912,8 @@ public class FciOrient {
     }
 
     /**
-     * R5 For every (remaining) α o−−o β, if there is an uncovered circle path p = &lt;α,γ,...,θ,β&gt; between α and β
-     * s.t. α,θ are not adjacent and β,γ are not adjacent, then orient α o−−o β and every edge on p as undirected edges
+     * R5 For every (remaining) Î± oââo Î², if there is an uncovered circle path p = &lt;Î±,Î³,...,Î¸,Î²&gt; between Î± and Î²
+     * s.t. Î±,Î¸ are not adjacent and Î²,Î³ are not adjacent, then orient Î± oââo Î² and every edge on p as undirected edges
      * (--).
      *
      * @param graph the graph to orient.
@@ -890,13 +969,13 @@ public class FciOrient {
     }
 
     /**
-     * R6 If α —- β o−−∗ γ (α and γ may or may not be adjacent), then orient β o−−∗ γ as β −−∗ γ.
+     * R6 If Î± â- Î² oâââ Î³ (Î± and Î³ may or may not be adjacent), then orient Î² oâââ Î³ as Î² âââ Î³.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR6(Graph graph) {
 
-        // We first look for undirected edges x —- y and the look for γ adjacent to either the x or the
+        // We first look for undirected edges x â- y and the look for Î³ adjacent to either the x or the
         // y endpoint.
 
         for (Edge edge : graph.getEdges()) {
@@ -939,7 +1018,7 @@ public class FciOrient {
     }
 
     /**
-     * R7 If α −−o β o−−∗ γ, and α, γ are not adjacent, then orient β o−−∗ γ as β −−∗ γ.
+     * R7 If Î± ââo Î² oâââ Î³, and Î±, Î³ are not adjacent, then orient Î² oâââ Î³ as Î² âââ Î³.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
@@ -1025,10 +1104,10 @@ public class FciOrient {
     }
 
     /**
-     * R8 If α → β → γ or α−−◦β → γ, and α o→ γ, orient α o→ γ as α → γ.
+     * R8 If Î± â Î² â Î³ or Î±âââ¦Î² â Î³, and Î± oâ Î³, orient Î± oâ Î³ as Î± â Î³.
      *
-     * @param a     α
-     * @param c     γ
+     * @param a     Î±
+     * @param c     Î³
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return Whether R8 was successfully applied.
      */
@@ -1077,8 +1156,8 @@ public class FciOrient {
     }
 
     /**
-     * R9 If α o→ γ, and p = &lt;α,β,θ,...,γ&gt; is an uncovered potentialy directed path from α to γ such that γ and β
-     * are not adjacent, then orient α o→ γ as α → γ.
+     * R9 If Î± oâ Î³, and p = &lt;Î±,Î²,Î¸,...,Î³&gt; is an uncovered potentialy directed path from Î± to Î³ such that Î³ and Î²
+     * are not adjacent, then orient Î± oâ Î³ as Î± â Î³.
      *
      * @param a     The node A.
      * @param c     The node C.
@@ -1087,7 +1166,7 @@ public class FciOrient {
      */
     public boolean ruleR9(Node a, Node c, Graph graph) {
 
-        // We are aiming to orient the tails on certain partially oriented edges α o→ γ, so we first
+        // We are aiming to orient the tails on certain partially oriented edges Î± oâ Î³, so we first
         // need to make sure we have such an edge.
         Edge edge = graph.getEdge(a, c);
 
@@ -1123,7 +1202,7 @@ public class FciOrient {
             return false;
         }
 
-        // This is the whole point of the rule, to orient the cicle in α o→ γ as a tail.
+        // This is the whole point of the rule, to orient the cicle in Î± oâ Î³ as a tail.
         setEndpoint(graph, c, a, Endpoint.TAIL);
 
         if (verbose) {
@@ -1145,13 +1224,13 @@ public class FciOrient {
     }
 
     /**
-     * R10 Suppose α o→ γ, β → γ ← θ, p1 is an uncovered potentially directed (semidirected) path from α to β, and p2 is
-     * an uncovered p.d. path from α to θ. Let μ be the vertex adjacent to α on p1 (μ could be β), and ω be the vertex
-     * adjacent to α on p2 (ω could be θ). If μ and ω ar    e distinct, and are not adjacent, then orient α o→ γ as α →
-     * γ.
+     * R10 Suppose Î± oâ Î³, Î² â Î³ â Î¸, p1 is an uncovered potentially directed (semidirected) path from Î± to Î², and p2 is
+     * an uncovered p.d. path from Î± to Î¸. Let Î¼ be the vertex adjacent to Î± on p1 (Î¼ could be Î²), and Ï be the vertex
+     * adjacent to Î± on p2 (Ï could be Î¸). If Î¼ and Ï ar    e distinct, and are not adjacent, then orient Î± oâ Î³ as Î± â
+     * Î³.
      *
-     * @param alpha α
-     * @param gamma γ
+     * @param alpha Î±
+     * @param gamma Î³
      * @param graph alpha {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR10(Node alpha, Node gamma, Graph graph) {
@@ -1379,3 +1458,4 @@ public class FciOrient {
         this.useR4 = useR4;
     }
 }
+

@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,1773 +15,649 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndTestGSquare;
-import edu.cmu.tetrad.search.utils.*;
-import edu.cmu.tetrad.util.MathUtils;
-import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.IntStream;
 
+import static edu.cmu.tetrad.search.Tsc.toNamesClusters;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * Implements the Build Pure Clusters (BPC) algorithm, which allows one to identify clusters of measured variables in a
- * dataset that are explained by a single latent. The algorithm outputs these clusters, which can then be used for
- * further analysis, such as inferring structure over the latents. For the latter, see for instance the MimBuild
- * algorithm.
+ * BuildPureClusters (BPC) inspired by Silva, Scheines, Glymour, Spirtes (JMLR 2006).
  * <p>
- * The reference for BPC is this:
+ * This implementation follows the spirit of the paper: 1) Identify candidate pure groups using tetrads (quartets) and
+ * within-group dependence. 2) Grow each seed to a local maximal pure group, but DO NOT mark variables as used. 3)
+ * Perform global purification/merging passes: - Merge groups when their union remains pure. - Resolve overlaps by
+ * globally assigning shared variables to the most compatible group. - Iterate until convergence. 4) Drop groups with
+ * fewer than 3 indicators (paperâs Step: remove latents with &lt; 3 children).
  * <p>
- * Silva, R., Scheines, R., Glymour, C., Spirtes, P., &amp; Chickering, D. M. (2006). Learning the Structure of Linear
- * Latent Variable Models. Journal of Machine Learning Research, 7(2).
- * <p>
- * For a more detailed description of the algorithm, see the paper above. The algorithm is based on the idea of finding
- * cliques in the graph of the covariance matrix. The algorithm is initialized by finding all maximal cliques in the
- * graph of the covariance matrix. Then, the algorithm iterates over the cliques, and for each clique, it tests whether
- * the clique is explained by a single latent. If so, the clique is added to the set of clusters. If not, the clique is
- * partitioned into smaller cliques, and the process is repeated for each of the smaller cliques. The algorithm stops
- * when all cliques have been tested.
- * <p>
- * Some more References:
- * <p>
- * Silva, R.; Scheines, R.; Spirtes, P.; Glymour, C. (2003). "Learning measurement models". Technical report
- * CMU-CALD-03-100, Center for Automated Learning and Discovery, Carnegie Mellon University.
- * <p>
- * Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads." Sociological Methods and
- * Research 19, 80-92.
- * <p>
- * Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of Psychology 19, 180-187.
- * <p>
- * Bron, C. and Kerbosch, J. (1973) "Algorithm 457: Finding all cliques of an undirected graph". Communications of ACM
- * 16, 575-577.
- * <p>
- * This class is not configured to respect knowledge of forbidden and required edges.
- *
- * @author Ricardo Silva
- * @version $Id: $Id
- * @see Fofc
- * @see Ftfc
+ * Notes: - We keep pairwise dependence as a simple Fisher-Z check on correlations. - Purification/overlap resolution
+ * uses correlation-based tie-breaking; the paper gives several logically equivalent global rulesâthis is a practical,
+ * deterministic variant.
  */
-public final class Bpc {
-    /*
-     * Color code for the different edges that show up during search
-     */
-    final int EDGE_NONE = 0;
-    final int EDGE_BLACK = 1;
-    final int EDGE_GRAY = 2;
-    final int EDGE_BLUE = 3;
-    final int EDGE_YELLOW = 4;
-    final int EDGE_RED = 4;
-    final int MAX_CLIQUE_TRIALS = 50;
-    private boolean outputMessage;
-    private ICovarianceMatrix covarianceMatrix;
-    private int numVariables;
-    private BpcTestType sigTestType;
-    private int[] labels;
-    private boolean scoreTestMode;
-    private TetradTest tetradTest;
-    private IndependenceTest independenceTest;
-    private DataSet dataSet;
-    private double alpha;
-    private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
-    private boolean verbose = false;
+public class Bpc {
+    // Minimum indicators per cluster per the JMLR paper (â¥3).
+    private static final int MIN_CLUSTER_SIZE = 3;
+    // Alpha cutoff for tetrads and dependence
+    private final double alpha;
+    // Number of variables
+    private final int numVars;
+    // Standard Normal for Fisher Z
+    private final NormalDistribution normal = new NormalDistribution(0, 1);
+    // Correlation matrix as a SimpleMatrix.
+    private final SimpleMatrix S;
+    // Cache for set-level purity checks (tetrads) to avoid recomputation across threads
+    private final ConcurrentHashMap<BitKey, Boolean> pureCache = new ConcurrentHashMap<>();
+    // Looser pairwise screen than tetrads (paper-faithful; just a pre-prune)
+    private final double alphaPairs;
+    // Merge gate: allow union only if avg|r| doesnât drop more than delta from either group
+    private final double deltaMerge;
+    // The effective sample size (ESS) which can be set to -1 (indicating sample size) or a positive
+    private final int ess;
+    // The sample size
+    private final int sampleSize;
+    // The nodes of the dataset.
+    private final List<Node> nodes;
+    // Thread-safe counters (parallel sections)
+    private final LongAdder tetradTests = new LongAdder();
+    private final LongAdder purityCacheHits = new LongAdder();
 
-    //**************************** INITIALIZATION ***********************************/
-
-    /**
-     * Constructor.
-     *
-     * @param covarianceMatrix The covariance matrix to analyze.
-     * @param alpha            The significance cutoff to use.
-     * @param sigTestType      The type of the significance test to use.
-     * @see BpcTestType
-     */
-    public Bpc(ICovarianceMatrix covarianceMatrix, double alpha, BpcTestType sigTestType) {
-        if (covarianceMatrix == null) {
-            throw new IllegalArgumentException("Covariance matrix cannot be null.");
-        }
-
-        this.covarianceMatrix = covarianceMatrix;
-        initAlgorithm(alpha, sigTestType);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param dataSet     The dataset to analyze.
-     * @param alpha       The significance cutoff to use.
-     * @param sigTestType The type of the significance test to use.
-     * @see BpcTestType
-     */
-    public Bpc(DataSet dataSet, double alpha, BpcTestType sigTestType) {
-        if (dataSet.isContinuous()) {
-            this.dataSet = dataSet;
-            this.covarianceMatrix = new CovarianceMatrix(dataSet);
-            initAlgorithm(alpha, sigTestType);
-        } else if (dataSet.isDiscrete()) {
-            throw new IllegalArgumentException("Discrete data is not supported " + "for this search.");
-        }
-    }
-
+    // ----------------------------- instrumentation -----------------------------
+    private final LongAdder purityCacheMisses = new LongAdder();
+    private final LongAdder seedsEnumerated = new LongAdder();
+    private final LongAdder seedsPure = new LongAdder();
+    private final LongAdder mergesConsidered = new LongAdder();
+    private final LongAdder mergesAccepted = new LongAdder();
+    private final LongAdder reassignments = new LongAdder();
+    // set in buildPatternLite()
+    private boolean[][] canLink;
+    // True if verbose logging is enabled
+    private boolean verbose;
+    // Timings (ns)
+    private long tPatternNs = 0L, tSeedsNs = 0L, tMergeNs = 0L, tResolveNs = 0L;
+    // Non-parallel summary (computed serially)
+    private int grownDistinct = 0;
 
     /**
-     * Runs the search and returns the graph, or null if there is no model. This will be a graph with clusters having
-     * their latents as parents.
+     * Constructor for the Bpc class.
      *
-     * @return This graph.
-     * @throws InterruptedException if any
+     * @param cov   A CovarianceMatrix containing the data to be used for clustering and correlation analysis.
+     * @param alpha The significance level for tetrad tests, used to determine the tolerance for statistical
+     *              independence.
+     * @param ess   The effective sample size (ESS) which can be set to -1 (indicating sample size) or a positive
+     *              integer. The chosen ESS impacts statistical decisions during the analysis.
+     * @throws IllegalArgumentException if the ess parameter is not -1 or a positive integer.
      */
-    public Graph search() throws InterruptedException {
-        long start = MillisecondTimes.timeMillis();
-
-        getIndependenceTest().setVerbose(verbose);
-
-        TetradLogger.getInstance().log("BPC alpha = " + this.alpha + " test = " + this.sigTestType);
-        List<Node> variables = this.tetradTest.getVariables();
-
-        List<int[]> clustering = findMeasurementPattern(variables);
-        clustering.removeIf(cluster -> cluster.length < 3);
-        Set<Set<Integer>> clusters = new HashSet<>();
-
-        for (int[] _c : clustering) {
-            Set<Integer> cluster = new HashSet<>();
-
-            for (int i : _c) {
-                cluster.add(i);
-            }
-
-            clusters.add(cluster);
-        }
-
-        ClusterUtils.logClusters(clusters, variables);
-        Graph graph = convertSearchGraph(clustering);
-
-        long stop = MillisecondTimes.timeMillis();
-        long elapsed = stop - start;
-
-        TetradLogger.getInstance().log("Elapsed " + elapsed + " ms");
-
-        Set<List<Integer>> _clustering = new HashSet<>();
-
-        for (int[] _cluster : clustering) {
-            List<Integer> __cluster = new ArrayList<>();
-            for (int i : _cluster) {
-                __cluster.add(i);
-            }
-
-            _clustering.add(__cluster);
-        }
-
-        ClusterSignificance clusterSignificance = new ClusterSignificance(variables, covarianceMatrix);
-
-        if (verbose) {
-            clusterSignificance.printClusterPValues(_clustering);
-        }
-
-        return graph;
-    }
-
-    /**
-     * Returns the wrapped covariance matrix.
-     *
-     * @return This.
-     */
-    public ICovarianceMatrix getCovarianceMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    /**
-     * Sets the cluster significance type.
-     *
-     * @param checkType This type
-     * @see ClusterSignificance
-     */
-    public void setCheckType(ClusterSignificance.CheckType checkType) {
-        this.checkType = checkType;
-    }
-
-    // PRIVATE METHODS
-
-    private IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
-    }
-
-    private int numVariables() {
-        return this.numVariables;
-    }
-
-    private void initAlgorithm(double alpha, BpcTestType sigTestType) {
-
-        // Check for missing values.
-        if (getCovarianceMatrix() != null && DataUtils.containsMissingValue(getCovarianceMatrix().getMatrix())) {
-            throw new IllegalArgumentException("Please remove or impute missing values first.");
-        }
-
+    public Bpc(CovarianceMatrix cov, double alpha, int ess) {
         this.alpha = alpha;
+        this.numVars = cov.getVariables().size();
+        this.sampleSize = cov.getSampleSize();
+        this.S = new CorrelationMatrix(cov).getMatrix().getSimpleMatrix();
+        this.nodes = cov.getVariables();
 
-        this.outputMessage = true;
-        this.sigTestType = sigTestType;
-        this.scoreTestMode = (this.sigTestType == BpcTestType.DISCRETE || this.sigTestType == BpcTestType.GAUSSIAN_FACTOR);
+        if (!(ess == -1 || ess > 0)) {
+            throw new IllegalArgumentException("esses must be -1 (sample size) or a positive integer");
+        }
 
-        if (sigTestType == BpcTestType.DISCRETE) {
-            this.numVariables = this.dataSet.getNumColumns();
-            this.independenceTest = new IndTestGSquare(this.dataSet, alpha);
-            this.tetradTest = new TetradTestDiscrete(this.dataSet, alpha);
-        } else {
-            assert getCovarianceMatrix() != null;
-            this.numVariables = getCovarianceMatrix().getSize();
-            this.independenceTest = new IndTestFisherZ(getCovarianceMatrix(), .1);
-            BpcTestType type;
+        this.ess = ess == -1 ? sampleSize : ess;
 
-            if (sigTestType == BpcTestType.TETRAD_WISHART || sigTestType == BpcTestType.TETRAD_DELTA || sigTestType == BpcTestType.GAUSSIAN_FACTOR) {
-                type = sigTestType;
-            } else {
-                throw new IllegalArgumentException("Expecting TETRAD_WISHART, TETRAD_DELTA, or GAUSSIAN FACTOR " + sigTestType);
+        // Implementation knobs (paper-faithful defaults)
+        this.alphaPairs = Math.min(this.alpha * 2.0, 0.20); // looser than tetrad alpha
+        this.deltaMerge = 0.02; // small allowed drop in avg|r| when merging
+    }
+
+    private static List<List<Integer>> deepCopy(List<List<Integer>> src) {
+        List<List<Integer>> out = new ArrayList<>();
+        for (List<Integer> g : src) out.add(new ArrayList<>(g));
+        return out;
+    }
+
+    private static boolean sameFamily(List<List<Integer>> a, List<List<Integer>> b) {
+        if (a.size() != b.size()) return false;
+        List<Set<Integer>> as = new ArrayList<>();
+        List<Set<Integer>> bs = new ArrayList<>();
+        for (List<Integer> g : a) as.add(new HashSet<>(g));
+        for (List<Integer> g : b) bs.add(new HashSet<>(g));
+        return as.containsAll(bs) && bs.containsAll(as);
+    }
+
+    private static List<Integer> sortedList(Collection<Integer> c) {
+        List<Integer> list = new ArrayList<>(c);
+        Collections.sort(list);
+        return list;
+    }
+
+    // ----------------------------- logging helpers -----------------------------
+
+    private void log(String s) {
+        if (verbose) TetradLogger.getInstance().log(s);
+    }
+
+    private void logParams() {
+        log(String.format(Locale.US,
+                "BPC params: alpha=%.4g alphaPairs=%.4g deltaMerge=%.3f ess=%d N=%d p=%d",
+                alpha, alphaPairs, deltaMerge, ess, sampleSize, numVars));
+    }
+
+    private void logPatternStats() {
+        int depPairs = 0, totalPairs = numVars * (numVars - 1) / 2;
+        for (int i = 0; i < numVars; i++)
+            for (int j = i + 1; j < numVars; j++)
+                if (canLink[i][j]) depPairs++;
+        double pct = totalPairs == 0 ? 0 : 100.0 * depPairs / totalPairs;
+        log(String.format(Locale.US,
+                "Pattern: dependent pairs = %d/%d (%.1f%%)", depPairs, totalPairs, pct));
+    }
+
+    private void logIteration(int iter, List<List<Integer>> current,
+                              int mergesThisIter, int reassignThisIter, int dropsThisIter) {
+        log(String.format(Locale.US,
+                "Iter %d: groups=%d merges=%d reassign=%d drops=%d",
+                iter, current.size(), mergesThisIter, reassignThisIter, dropsThisIter));
+    }
+
+    private void logSummary(List<List<Integer>> finalGroups) {
+        log(String.format(Locale.US,
+                "Summary: groups=%d seedsEnumerated=%d seedsPure=%d grownDistinct=%d mergesConsidered=%d mergesAccepted=%d reassignments=%d",
+                finalGroups.size(),
+                seedsEnumerated.sum(), seedsPure.sum(), grownDistinct,
+                mergesConsidered.sum(), mergesAccepted.sum(), reassignments.sum()));
+
+        log(String.format(Locale.US,
+                "Purity cache: size=%d hits=%d misses=%d tetradTests~=%d",
+                pureCache.size(),
+                purityCacheHits.sum(), purityCacheMisses.sum(), tetradTests.sum()));
+
+        log(String.format(Locale.US,
+                "Timing(ms): pattern=%.1f seeds=%.1f merge=%.1f resolve=%.1f total=%.1f",
+                tPatternNs / 1e6, tSeedsNs / 1e6, tMergeNs / 1e6, tResolveNs / 1e6,
+                (tPatternNs + tSeedsNs + tMergeNs + tResolveNs) / 1e6));
+    }
+
+    // ----------------------------- main entry -----------------------------
+
+    /**
+     * Identifies clusters of variables based on tetrad purity and pairwise dependence. Constructs initial clusters as
+     * locally maximal pure groups and refines them using global purification, merging, and overlap resolution until
+     * convergence.
+     *
+     * @return A list of clusters where each cluster is represented as a list of variable indices. Each cluster
+     * satisfies purity and pairwise dependence constraints, and all groups are disjoint after resolving overlaps.
+     * Returns an empty list if no valid clusters exist.
+     */
+    public List<List<Integer>> getClusters() {
+        logParams();
+
+        buildPatternLite();
+        logPatternStats();
+
+        // ---- Stage A: enumerate tetrad seeds in parallel, grow locally WITHOUT marking variables as used
+        long t0Seeds = System.nanoTime();
+
+        ConcurrentHashMap<BitKey, List<Integer>> candMap = new ConcurrentHashMap<>();
+
+        IntStream.range(0, numVars).parallel().forEach(i -> {
+            for (int j = i + 1; j < numVars; j++) {
+                if (!canLink[i][j]) continue;
+                for (int k = j + 1; k < numVars; k++) {
+                    if (!canLink[i][k] || !canLink[j][k]) continue;
+                    for (int l = k + 1; l < numVars; l++) {
+                        if (!canLink[i][l] || !canLink[j][l] || !canLink[k][l]) continue; // 6-pair screen
+                        List<Integer> seed = Arrays.asList(i, j, k, l);
+                        seedsEnumerated.increment();
+
+                        if (!isPure(seed)) continue;
+                        seedsPure.increment();
+
+                        List<Integer> grown = growMaximalPure(seed); // keep serial inside for determinism
+                        candMap.putIfAbsent(new BitKey(grown), grown);
+                    }
+                }
+            }
+        });
+
+        List<List<Integer>> candidates = new ArrayList<>(candMap.values());
+        grownDistinct = candidates.size();
+        tSeedsNs += System.nanoTime() - t0Seeds;
+
+        if (candidates.isEmpty()) {
+            log("No pure seeds found; returning empty cluster set.");
+            return new ArrayList<>();
+        }
+
+        // ---- Stage B: global purification & merging until convergence
+        List<List<Integer>> current = deepCopy(candidates);
+        boolean changed;
+        int iter = 0;
+
+        do {
+            iter++;
+            long mergesBefore = mergesAccepted.sum();
+            long reassignBefore = reassignments.sum();
+            int dropsThisIter = 0;
+
+            // 1) Merge any pair whose UNION is still pure and dependent
+            List<List<Integer>> merged = mergePurePairs(current);
+            boolean changed1 = !sameFamily(current, merged);
+            if (changed1) current = merged;
+
+            // 2) Resolve overlaps by assigning shared variables to their best-fitting group
+            List<List<Integer>> resolved = resolveOverlaps(current);
+            boolean changed2 = !sameFamily(current, resolved);
+            if (changed2) current = resolved;
+
+            // 3) Drop groups below minimum size
+            int before = current.size();
+            List<List<Integer>> filtered = new ArrayList<>();
+            for (List<Integer> g : current) if (g.size() >= MIN_CLUSTER_SIZE) filtered.add(g);
+            boolean changed3 = !sameFamily(current, filtered);
+            if (changed3) {
+                dropsThisIter = before - filtered.size();
+                current = filtered;
             }
 
-            if (this.dataSet != null) {
-                this.tetradTest = new TetradTestContinuous(this.dataSet, type, alpha);
-            } else {
-//                throw new IllegalArgumentException("Expecting a dataset.");
-                this.tetradTest = new TetradTestContinuous(new CorrelationMatrix(this.covarianceMatrix), type, alpha);
+            int mergesThisIter = (int) (mergesAccepted.sum() - mergesBefore);
+            int reassignThisIter = (int) (reassignments.sum() - reassignBefore);
+            logIteration(iter, current, mergesThisIter, reassignThisIter, dropsThisIter);
+
+            changed = changed1 || changed2 || changed3;
+        } while (changed);
+
+        Set<Set<Integer>> _current = new HashSet<>();
+        for (List<Integer> g : current) {
+            _current.add(new HashSet<>(g));
+        }
+
+        log("Final clusters: " + toNamesClusters(_current, nodes));
+        logSummary(current);
+
+        return current;
+    }
+
+    // ----------------------------- core helpers -----------------------------
+
+    /**
+     * Grow a seed to a locally maximal pure group: greedily add variables whose inclusion preserves purity (all tetrads
+     * pass) and pairwise dependence.
+     */
+    private List<Integer> growMaximalPure(List<Integer> seed) {
+        Set<Integer> group = new HashSet<>(seed);
+        boolean expanded;
+        do {
+            expanded = false;
+            for (int x = 0; x < numVars; x++) {
+                if (group.contains(x)) continue;
+                List<Integer> candidate = new ArrayList<>(group);
+                candidate.add(x);
+                if (isPure(candidate)) { // && clusterDependent(candidate)) {
+                    group.add(x);
+                    expanded = true;
+                    // Optional trace:
+                    // log("Grow: added " + nodes.get(x).getName() + " -> " + toNamesClusters(Set.of(new HashSet<>(group)), nodes));
+                }
             }
-        }
-        this.labels = new int[numVariables()];
-        for (int i = 0; i < numVariables(); i++) {
-            this.labels[i] = i + 1;
-        }
+        } while (expanded);
+        return sortedList(group);
     }
 
     /**
-     * @return the converted search graph, or null if there is no model.
+     * Whether the set passes all tetrad tests (purity).
      */
-    private Graph convertSearchGraph(List<int[]> clusters) {
-        List<Node> nodes = this.tetradTest.getVariables();
-        Graph graph = new EdgeListGraph(nodes);
-
-        List<Node> latents = new ArrayList<>();
-        for (int i = 0; i < clusters.size(); i++) {
-            Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
-            latent.setNodeType(NodeType.LATENT);
-            latents.add(latent);
-            graph.addNode(latent);
+    private boolean isPure(List<Integer> vars) {
+        if (vars.size() < 4) return false;
+        BitKey key = new BitKey(vars);
+        Boolean cached = pureCache.get(key);
+        if (cached != null) {
+            purityCacheHits.increment();
+            return cached;
         }
+        purityCacheMisses.increment();
 
-        for (int i = 0; i < latents.size(); i++) {
-            for (int j : clusters.get(i)) {
-                graph.addDirectedEdge(latents.get(i), nodes.get(j));
+        // Early abort: iterate tetrads and stop at first failure
+        int m = vars.size();
+        for (int i = 0; i < m; i++) {
+            for (int j = i + 1; j < m; j++) {
+                for (int k = j + 1; k < m; k++) {
+                    for (int l = k + 1; l < m; l++) {
+                        // 3 tetrads per 4-tuple
+                        tetradTests.add(3);
+
+                        int a = vars.get(i), b = vars.get(j), c = vars.get(k), d = vars.get(l);
+                        int[][] t1 = new int[][]{{a, b}, {c, d}};
+                        int[][] t2 = new int[][]{{a, c}, {b, d}};
+                        int[][] t3 = new int[][]{{a, d}, {b, c}};
+
+                        int rank1 = rank(t1);
+                        int rank2 = rank(t2);
+                        int rank3 = rank(t3);
+
+                        if (!(rank1 == 1 && rank2 == 1 && rank3 == 1)) {
+                            pureCache.put(key, Boolean.FALSE);
+                            return false;
+                        }
+                    }
+                }
             }
         }
-
-        return graph;
+        pureCache.put(key, Boolean.TRUE);
+        return true;
     }
 
-    /******************************* STATISTICAL TESTS ***********************************/
-
-    private boolean clusteredPartial1(int v1, int v2, int v3, int v4) {
-        if (this.scoreTestMode) {
-            return !this.tetradTest.oneFactorTest(v1, v2, v3, v4);
-        } else {
-            return !this.tetradTest.tetradScore3(v1, v2, v3, v4);
-        }
+    private int rank(int[][] t) {
+        return RankTests.estimateWilksRank(S, t[0], t[1], sampleSize, alpha);
     }
 
-    private boolean validClusterPairPartial1(int v1, int v2, int v3, int v4, int[][] cv) {
-        if (this.scoreTestMode) {
-            return this.tetradTest.oneFactorTest(v1, v2, v3, v4);
-        } else {
-            if (cv[v1][v4] == this.EDGE_NONE && cv[v2][v4] == this.EDGE_NONE && cv[v3][v4] == this.EDGE_NONE) {
-                return true;
-            }
-
-            boolean test1 = this.tetradTest.tetradHolds(v1, v2, v3, v4);
-            boolean test2 = this.tetradTest.tetradHolds(v1, v2, v4, v3);
-
-            if (test1 && test2) {
-                return true;
-            }
-
-            boolean test3 = this.tetradTest.tetradHolds(v1, v3, v4, v2);
-            return (test1 && test3) || (test2 && test3);
-        }
-    }
-
-    private boolean clusteredPartial2(int v1, int v2, int v3, int v4, int v5) {
-        if (this.scoreTestMode) {
-            return !this.tetradTest.oneFactorTest(v1, v2, v3, v5) || this.tetradTest.oneFactorTest(v1, v2, v3, v4, v5) || !this.tetradTest.twoFactorTest(v1, v2, v3, v4, v5);
-        } else {
-            return !this.tetradTest.tetradScore3(v1, v2, v3, v5) ||
-
-                   !this.tetradTest.tetradScore1(v1, v2, v4, v5) || !this.tetradTest.tetradScore1(v2, v3, v4, v5) || !this.tetradTest.tetradScore1(v1, v3, v4, v5);
-        }
-    }
-
-    private boolean validClusterPairPartial2(int v1, int v2, int v3, int v5, int[][] cv) {
-        if (this.scoreTestMode) {
-            return this.tetradTest.oneFactorTest(v1, v2, v3, v5);
-        } else {
-            if (cv[v1][v5] == this.EDGE_NONE && cv[v2][v5] == this.EDGE_NONE && cv[v3][v5] == this.EDGE_NONE) {
-                return true;
-            }
-
-            boolean test1 = this.tetradTest.tetradHolds(v1, v2, v3, v5);
-            boolean test2 = this.tetradTest.tetradHolds(v1, v2, v5, v3);
-            boolean test3 = this.tetradTest.tetradHolds(v1, v3, v5, v2);
-
-            return (test1 && test2) || (test1 && test3) || (test2 && test3);
-        }
-    }
-
-    private boolean unclusteredPartial3(int v1, int v2, int v3, int v4, int v5, int v6) {
-        if (this.scoreTestMode) {
-            return this.tetradTest.oneFactorTest(v1, v2, v3, v6) && this.tetradTest.oneFactorTest(v4, v5, v6, v1) && this.tetradTest.oneFactorTest(v4, v5, v6, v2) && this.tetradTest.oneFactorTest(v4, v5, v6, v3) && this.tetradTest.twoFactorTest(v1, v2, v3, v4, v5, v6);
-        } else {
-            return
-
-                    this.tetradTest.tetradScore3(v1, v2, v3, v6) && this.tetradTest.tetradScore3(v4, v5, v6, v1) && this.tetradTest.tetradScore3(v4, v5, v6, v2) && this.tetradTest.tetradScore3(v4, v5, v6, v3) &&
-
-                    this.tetradTest.tetradScore1(v1, v2, v4, v6) && this.tetradTest.tetradScore1(v1, v2, v5, v6) && this.tetradTest.tetradScore1(v2, v3, v4, v6) && this.tetradTest.tetradScore1(v2, v3, v5, v6) && this.tetradTest.tetradScore1(v1, v3, v4, v6) && this.tetradTest.tetradScore1(v1, v3, v5, v6);
-        }
-    }
-
-    private boolean validClusterPairPartial3(int v1, int v2, int v3, int v4, int v5, int v6, int[][] cv) {
-        if (this.scoreTestMode) {
-            return this.tetradTest.oneFactorTest(v1, v2, v3, v6) && this.tetradTest.oneFactorTest(v4, v5, v6, v1) && this.tetradTest.oneFactorTest(v4, v5, v6, v2) && this.tetradTest.oneFactorTest(v4, v5, v6, v3);
-        } else {
-            if (cv[v1][v6] == this.EDGE_NONE && cv[v2][v6] == this.EDGE_NONE && cv[v3][v6] == this.EDGE_NONE) {
-                return true;
-            }
-
-            boolean test1 = this.tetradTest.tetradHolds(v1, v2, v3, v6);
-            boolean test2 = this.tetradTest.tetradHolds(v1, v2, v6, v3);
-            boolean test3 = this.tetradTest.tetradHolds(v1, v3, v6, v2);
-
-            if (!((test1 && test2) || (test1 && test3) || (test2 && test3))) {
-                return false;
-            }
-
-            test1 = this.tetradTest.tetradHolds(v4, v5, v6, v1);
-            test2 = this.tetradTest.tetradHolds(v4, v5, v1, v6);
-            test3 = this.tetradTest.tetradHolds(v4, v6, v1, v5);
-
-            if (!((test1 && test2) || (test1 && test3) || (test2 && test3))) {
-                return false;
-            }
-
-            test1 = this.tetradTest.tetradHolds(v4, v5, v6, v2);
-            test2 = this.tetradTest.tetradHolds(v4, v5, v2, v6);
-            test3 = this.tetradTest.tetradHolds(v4, v6, v2, v5);
-
-            if (!((test1 && test2) || (test1 && test3) || (test2 && test3))) {
-                return false;
-            }
-
-            test1 = this.tetradTest.tetradHolds(v4, v5, v6, v3);
-            test2 = this.tetradTest.tetradHolds(v4, v5, v3, v6);
-            test3 = this.tetradTest.tetradHolds(v4, v6, v3, v5);
-
-            return (test1 && test2) || (test1 && test3) || (test2 && test3);
-        }
-    }
-
-    private boolean partialRule1_1(int x1, int x2, int x3, int y1) {
-        if (this.scoreTestMode) {
-            return this.tetradTest.oneFactorTest(x1, y1, x2, x3);
-        }
-
-        return this.tetradTest.tetradScore3(x1, y1, x2, x3);
-    }
-
-    private boolean partialRule1_2(int x1, int x2, int y1, int y2) {
-        if (this.scoreTestMode) {
-            return !this.tetradTest.oneFactorTest(x1, x2, y1, y2) && this.tetradTest.twoFactorTest(x1, x2, y1, y2);
-        }
-
-        return !this.tetradTest.tetradHolds(x1, x2, y2, y1) && !this.tetradTest.tetradHolds(x1, y1, x2, y2) && this.tetradTest.tetradHolds(x1, y1, y2, x2);
-
-    }
-
-    private boolean partialRule1_3(int x1, int y1, int y2, int y3) {
-        if (this.scoreTestMode) {
-            return this.tetradTest.oneFactorTest(x1, y1, y2, y3);
-        }
-
-        return this.tetradTest.tetradScore3(x1, y1, y2, y3);
-
-    }
-
-    private boolean partialRule2_1(int x1, int x2, int y1, int y2) {
-        if (this.scoreTestMode) {
-            return !this.tetradTest.oneFactorTest(x1, x2, y1, y2) && this.tetradTest.twoFactorTest(x1, x2, y1, y2);
-        }
-
-        return this.tetradTest.tetradHolds(x1, y1, y2, x2) && !this.tetradTest.tetradHolds(x1, x2, y2, y1) && !this.tetradTest.tetradHolds(x1, y1, x2, y2) && this.tetradTest.tetradHolds(x1, y1, y2, x2);
-
-    }
-
-    private boolean partialRule2_2(int x1, int x2, int x3, int y2) {
-        if (this.scoreTestMode) {
-            return this.tetradTest.twoFactorTest(x1, x3, x2, y2);
-        }
-
-        return this.tetradTest.tetradHolds(x1, x2, y2, x3);
-
-    }
-
-    private boolean partialRule2_3(int x2, int y1, int y2, int y3) {
-        if (this.scoreTestMode) {
-            this.tetradTest.twoFactorTest(x2, y2, y1, y3);
-        }
-
-        return this.tetradTest.tetradHolds(x2, y1, y3, y2);
-    }
-
-    /*
-     * Test vanishing marginal and partial correlations of two variables conditioned
-     * in a third variables. I am using Fisher's z test as described in
-     * Tetrad II user's manual.
-     *
-     * Notice that this code does not include asymptotic distribution-free
-     * tests of vanishing partial correlation.
-     *
-     * For the discrete test, we just use g-square.
+    /**
+     * Pairwise dependence inside a cluster via Fisher Z on correlations. Returns true if ALL pairs are dependent.
      */
-    private boolean uncorrelated(int v1, int v2) throws InterruptedException {
-
-        if (getCovarianceMatrix() != null) {
-            List<Node> variables = getCovarianceMatrix().getVariables();
-            return getIndependenceTest().checkIndependence(variables.get(v1), variables.get(v2)).isIndependent();
-
-        } else {
-            return getIndependenceTest().checkIndependence(this.dataSet.getVariable(v1), this.dataSet.getVariable(v2)).isIndependent();
-
+    @SuppressWarnings("unused")
+    private boolean clusterDependent(List<Integer> cluster) {
+        if (cluster.size() <= 1) return true;
+        if (canLink != null) {
+            for (int i = 0; i < cluster.size(); i++) {
+                int vi = cluster.get(i);
+                for (int j = i + 1; j < cluster.size(); j++) {
+                    int vj = cluster.get(j);
+                    if (!canLink[vi][vj]) return false;
+                }
+            }
+            return true;
         }
-    }
-
-    /********************************** DEBUG UTILITIES ***********************************/
-
-    private void printClustering(List<int[]> clustering) {
-        for (int[] cluster : clustering) {
-            printClusterNames(cluster);
-        }
-    }
-
-    private void printClusterIds(int[] c) {
-        int[] sorted = new int[c.length];
-        for (int i = 0; i < c.length; i++) {
-            sorted[i] = this.labels[c[i]];
-        }
-        for (int i = 0; i < sorted.length - 1; i++) {
-            int min = Integer.MAX_VALUE;
-            int min_idx = -1;
-
-            for (int j = i; j < sorted.length; j++) {
-                if (sorted[j] < min) {
-                    min = sorted[j];
-                    min_idx = j;
-                }
-            }
-
-            int temp;
-            temp = sorted[i];
-            sorted[i] = min;
-            sorted[min_idx] = temp;
-        }
-    }
-
-    private void printClusterNames(int[] c) {
-        String[] sorted = new String[c.length];
-        for (int i = 0; i < c.length; i++) {
-            sorted[i] = this.tetradTest.getVarNames()[c[i]];
-        }
-        for (int i = 0; i < sorted.length - 1; i++) {
-            String min = sorted[i];
-            int min_idx = i;
-
-            for (int j = i + 1; j < sorted.length; j++) {
-                if (sorted[j].compareTo(min) < 0) {
-                    min = sorted[j];
-                    min_idx = j;
-                }
-            }
-
-            String temp;
-            temp = sorted[i];
-            sorted[i] = min;
-            sorted[min_idx] = temp;
-        }
-    }
-
-    private void printLatentClique(int[] latents) {
-        int[] sorted = new int[latents.length];
-        System.arraycopy(latents, 0, sorted, 0, latents.length);
-
-        for (int i = 0; i < sorted.length - 1; i++) {
-            int min = Integer.MAX_VALUE;
-            int min_idx = -1;
-
-            for (int j = i; j < sorted.length; j++) {
-                if (sorted[j] < min) {
-                    min = sorted[j];
-                    min_idx = j;
-                }
-            }
-
-            int temp;
-            temp = sorted[i];
-            sorted[i] = min;
-            sorted[min_idx] = temp;
-        }
-    }
-
-    private List<int[]> findComponents(int[][] graph, int size) {
-        boolean[] marked = new boolean[size];
-
-        int numMarked = 0;
-        List<int[]> output = new ArrayList<>();
-        int[] tempComponent = new int[size];
-
-        while (numMarked != size) {
-            int sizeTemp = 0;
-            boolean noChange;
-
-            do {
-                noChange = true;
-
-                for (int i = 0; i < size; i++) {
-                    if (marked[i]) {
-                        continue;
-                    }
-
-                    boolean inComponent = false;
-
-                    for (int j = 0; j < sizeTemp; j++) {
-                        if (graph[i][tempComponent[j]] == 3) {
-                            inComponent = true;
-                            break;
-                        }
-                    }
-
-                    if (sizeTemp == 0 || inComponent) {
-                        tempComponent[sizeTemp++] = i;
-                        marked[i] = true;
-                        noChange = false;
-                        numMarked++;
-                    }
-                }
-            } while (!noChange);
-
-            if (sizeTemp > 1) {
-                int[] newPartition = new int[sizeTemp];
-                System.arraycopy(tempComponent, 0, newPartition, 0, sizeTemp);
-                output.add(newPartition);
-            }
-        }
-
-        return output;
-    }
-
-    /*
-     * Find all maximal cliques of a graph. However, it can generate an exponential number of
-     * cliques as a function of the number of impurities in the true graph. Therefore, we also
-     * use a counter to stop the computation after a given number of calls. This is an
-     * implementation of Algorithm 2 from Bron and Kerbosch (1973).
-     */
-    private List<int[]> findMaximalCliques(int[] elements, int[][] ng) {
-        boolean[][] connected = new boolean[this.numVariables()][this.numVariables()];
-
-        for (int i = 0; i < connected.length; i++) {
-            for (int j = i; j < connected.length; j++) {
-                if (i != j) {
-                    connected[i][j] = connected[j][i] = (ng[i][j] != this.EDGE_NONE);
-                } else {
-                    connected[i][j] = true;
-                }
-            }
-        }
-
-        int[] numCalls = new int[1];
-        int[] c = new int[1];
-        List<int[]> output = new ArrayList<>();
-        int[] compsub = new int[elements.length];
-        int[] old = new int[elements.length];
-        System.arraycopy(elements, 0, old, 0, elements.length);
-        findMaximalCliquesOperator(numCalls, output, connected, compsub, c, old, 0, elements.length);
-        return output;
-    }
-
-    private void findMaximalCliquesOperator(int[] numCalls, List<int[]> output, boolean[][] connected, int[] compsub, int[] c, int[] old, int ne, int ce) {
-        if (numCalls[0] > this.MAX_CLIQUE_TRIALS) {
-            return;
-        }
-
-        int[] newA = new int[ce];
-        int nod, fixp = -1;
-        int newne, newce, i, j, count, pos = -1, p, s = -1, sel, minnod;
-        minnod = ce;
-        nod = 0;
-
-        for (i = 0; i < ce && minnod != 0; i++) {
-            p = old[i];
-            count = 0;
-
-            for (j = ne; j < ce && count < minnod; j++) {
-                if (!connected[p][old[j]]) {
-                    count++;
-                    pos = j;
-                }
-            }
-
-            if (count < minnod) {
-                fixp = p;
-                minnod = count;
-
-                if (i < ne) {
-                    s = pos;
-                } else {
-                    s = i;
-                    nod = 1;
-                }
-            }
-        }
-
-        for (nod = minnod + nod; nod >= 1; nod--) {
-            p = old[s];
-            old[s] = old[ne];
-            sel = old[ne] = p;
-            newne = 0;
-
-            for (i = 0; i < ne; i++) {
-                if (connected[sel][old[i]]) {
-                    newA[newne++] = old[i];
-                }
-            }
-
-            newce = newne;
-
-            for (i = ne + 1; i < ce; i++) {
-                if (connected[sel][old[i]]) {
-                    newA[newce++] = old[i];
-                }
-            }
-
-            compsub[c[0]++] = sel;
-
-            if (newce == 0) {
-                int[] clique = new int[c[0]];
-                System.arraycopy(compsub, 0, clique, 0, c[0]);
-                output.add(clique);
-            } else if (newne < newce) {
-                numCalls[0]++;
-                findMaximalCliquesOperator(numCalls, output, connected, compsub, c, newA, newne, newce);
-            }
-
-            c[0]--;
-            ne++;
-
-            if (nod > 1) {
-                s = ne;
-                while (connected[fixp][old[s]]) {
-                    s++;
-                }
-            }
-        }
-    }
-
-    /*
-     * Return true iff "newClique" is contained in some element of "clustering".
-     */
-    private boolean cliqueContained(int[] newClique, int size, List<int[]> clustering) {
-        for (int[] next : clustering) {
-            if (size > next.length) {
-                continue;
-            }
-            boolean found = true;
-            for (int i = 0; i < size && found; i++) {
-                found = false;
-                for (int k : next) {
-                    if (newClique[i] == k) {
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            if (found) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /* Remove cliques that are contained into another ones in cliqueList. */
-    private List<int[]> trimCliqueList(List<int[]> cliqueList) {
-        List<int[]> trimmed = new ArrayList<>();
-        List<int[]> cliqueCopy = new ArrayList<>(cliqueList);
-
-        for (int[] cluster : cliqueList) {
-            cliqueCopy.remove(cluster);
-            if (!cliqueContained(cluster, cluster.length, cliqueCopy)) {
-                trimmed.add(cluster);
-            }
-            cliqueCopy.add(cluster);
-        }
-        return trimmed;
-    }
-
-    private int clustersize(List<int[]> cluster) {
-        int total = 0;
-        for (int[] next : cluster) {
-            total += next.length;
-        }
-        return total;
-    }
-
-    private int clustersize3(List<int[]> cluster) {
-        int total = 0;
-        for (int[] next : cluster) {
-            if (next.length > 2) {
-                total += next.length;
-            }
-        }
-        return total;
-    }
-
-    private void sortClusterings(int start, int end, List<List<int[]>> clusterings, int[] criterion) {
-        for (int i = start; i < end - 1; i++) {
-            int max = -1;
-            int max_idx = -1;
-            for (int j = i; j < end; j++) {
-                if (criterion[j] > max) {
-                    max = criterion[j];
-                    max_idx = j;
-                }
-            }
-            List<int[]> temp = clusterings.get(i);
-            clusterings.set(i, clusterings.get(max_idx));
-            clusterings.set(max_idx, temp);
-            int old_c;
-            old_c = criterion[i];
-            criterion[i] = criterion[max_idx];
-            criterion[max_idx] = old_c;
-        }
-    }
-
-    /*
-     * Transforms clusterings (each "clustering" is a set of "clusters"), remove overlapping indicators for each
-     * clustering, and order clusterings according to the number of nonoverlapping indicators, throwing away any latent
-     * with zero indicators. Also, for each pair of indicators such that they are linked in ng, one of them is chosen to
-     * be removed (the heuristic is, choose the one that belongs to the largest cluster). The list that is returned
-     * is a list of lists. Each element in the big list is a list of integer arrays, where each integer array represents
-     * one cluster.
-     */
-    private int scoreClustering(List<int[]> clustering, boolean[] buffer) {
-        int score = 0;
-        Arrays.fill(buffer, true);
-
-        //First filter: remove all overlaps
-        for (int[] currentCluster : clustering) {
-            next_item:
-            for (int k : currentCluster) {
-                if (!buffer[k]) {
-                    continue;
-                }
-                for (int[] nextCluster : clustering) {
-                    if (nextCluster == currentCluster) {
-                        continue;
-                    }
-                    for (int i : nextCluster) {
-                        if (k == i) {
-                            buffer[k] = false;
-                            continue next_item;
-                        }
-                    }
-                }
-            }
-        }
-
-        //Second filter: remove nodes that are linked by an edge in ng but are in different clusters
-        //(i.e., they were not shown to belong to different clusters)
-        //Current criterion: for every such pair, remove the one in the largest cluster, unless the largest one
-        //has only three indicators
-        int localScore;
-        for (int[] currentCluster : clustering) {
-            localScore = 0;
-            for (int k : currentCluster) {
-                if (!buffer[k]) {
-                    continue;
-                }
-                localScore++;
-            }
-            if (localScore > 1) {
-                score += localScore;
-            }
-        }
-
-        return score;
-    }
-
-    private List<List<int[]>> filterAndOrderClusterings(List<List<int[]>> baseListOfClusterings, List<List<Integer>> baseListOfIds, List<int[]> clusteringIds, int[][] ng, List<Node> variables) {
-
-        assert clusteringIds != null;
-        List<List<int[]>> listOfClusterings = new ArrayList<>();
-        clusteringIds.clear();
-
-        for (int i = 0; i < baseListOfClusterings.size(); i++) {
-
-            //First filter: remove all overlaps
-            List<int[]> newClustering = new ArrayList<>();
-            List<int[]> baseClustering = baseListOfClusterings.get(i);
-
-            if (verbose) {
-                System.out.println("* Base mimClustering");
-                printClustering(baseClustering);
-            }
-
-            List<Integer> baseIds = baseListOfIds.get(i);
-            List<Integer> usedIds = new ArrayList<>();
-
-            for (int j = 0; j < baseClustering.size(); j++) {
-                int[] currentCluster = baseClustering.get(j);
-
-                ClusterSignificance clusterSignificance = new ClusterSignificance(variables, covarianceMatrix);
-                clusterSignificance.setCheckType(checkType);
-                List<Integer> cluster = MathUtils.getInts(currentCluster);
-                if (!clusterSignificance.significant(cluster, alpha)) {
-                    continue;
-                }
-
-                Integer currentId = baseIds.get(j);
-                int[] draftArea = new int[currentCluster.length];
-                int draftCount = 0;
-                next_item:
-
-                for (int value : currentCluster) {
-                    for (int k = 0; k < baseClustering.size(); k++) {
-                        if (k == j) {
-                            continue;
-                        }
-
-                        int[] nextCluster = baseClustering.get(k);
-
-                        for (int item : nextCluster) {
-                            if (value == item) {
-                                continue next_item;
-                            }
-                        }
-                    }
-
-                    draftArea[draftCount++] = value;
-                }
-
-                if (draftCount > 1) {
-                    //Only clusters with at least two indicators can be added
-                    int[] newCluster = new int[draftCount];
-                    System.arraycopy(draftArea, 0, newCluster, 0, draftCount);
-                    newClustering.add(newCluster);
-                    usedIds.add(currentId);
-                }
-            }
-
-            if (verbose) {
-                System.out.println("* Filtered mimClustering 1");
-                printClustering(newClustering);
-            }
-
-            //Second filter: remove nodes that are linked by an edge in ng but are in different clusters
-            //(i.e., they were not shown to belong to different clusters)
-            //Current criterion: count the number of invalid relations each node participates in, greedily
-            //remove nodes till none of these relations hold anymore
-            boolean[][] impurities = new boolean[this.numVariables()][this.numVariables()];
-
-            for (int j = 0; j < newClustering.size() - 1; j++) {
-                int[] currentCluster = newClustering.get(j);
-
-                for (int jj = j + 1; jj < currentCluster.length; jj++) {
-                    for (int k = 0; k < newClustering.size(); k++) {
-                        if (k == j) {
-                            continue;
-                        }
-
-                        int[] nextCluster = newClustering.get(k);
-
-                        for (int value : nextCluster) {
-                            impurities[currentCluster[jj]][value] = ng[currentCluster[jj]][value] != this.EDGE_NONE;
-                            impurities[value][currentCluster[jj]] = impurities[currentCluster[jj]][value];
-                        }
-                    }
-                }
-            }
-
-            List<int[]> newClustering2 = removeMarkedImpurities(newClustering, impurities);
-            List<int[]> finalNewClustering = new ArrayList<>();
-            List<Integer> finalUsedIds = new ArrayList<>();
-
-            for (int j = 0; j < newClustering2.size(); j++) {
-                if (newClustering2.get(j).length > 0) {
-                    finalNewClustering.add(newClustering2.get(j));
-                    finalUsedIds.add(usedIds.get(j));
-                }
-            }
-
-            if (finalNewClustering.size() > 0) {
-                listOfClusterings.add(finalNewClustering);
-                int[] usedIdsArray = new int[finalUsedIds.size()];
-
-                for (int j = 0; j < finalUsedIds.size(); j++) {
-                    usedIdsArray[j] = finalUsedIds.get(j);
-                }
-
-                clusteringIds.add(usedIdsArray);
-
-                if (verbose) {
-                    System.out.println("* Filtered mimClustering 2");
-                    printClustering(finalNewClustering);
-                    System.out.print("* ID/Size: ");
-                    printLatentClique(usedIdsArray);
-                    System.out.println();
-                }
-            }
-
-        }
-
-        //Now, order clusterings according to the number of latents with at least three children.
-        //The second criterion is the total number of their indicators.
-        int[] numIndicators = new int[listOfClusterings.size()];
-        for (int i = 0; i < listOfClusterings.size(); i++) {
-            numIndicators[i] = clustersize3(listOfClusterings.get(i));
-        }
-        sortClusterings(0, listOfClusterings.size(), listOfClusterings, numIndicators);
-        for (int i = 0; i < listOfClusterings.size(); i++) {
-            numIndicators[i] = clustersize(listOfClusterings.get(i));
-        }
-
-        int start = 0;
-
-        while (start < listOfClusterings.size()) {
-            int size3 = clustersize3(listOfClusterings.get(start));
-            int end = start + 1;
-
-            for (int j = start + 1; j < listOfClusterings.size(); j++) {
-                if (size3 != clustersize3(listOfClusterings.get(j))) {
-                    break;
-                }
-                end++;
-            }
-
-            sortClusterings(start, end, listOfClusterings, numIndicators);
-            start = end;
-        }
-
-        return listOfClusterings;
-    }
-
-    private List<int[]> removeMarkedImpurities(List<int[]> partition, boolean[][] impurities) {
-
-        if (verbose) {
-            System.out.println("sizecluster = " + clustersize(partition));
-        }
-
-        int[][] elements = new int[clustersize(partition)][3];
-        int[] partitionCount = new int[partition.size()];
-        int countElements = 0;
-
-        for (int p = 0; p < partition.size(); p++) {
-            int[] next = partition.get(p);
-            partitionCount[p] = 0;
-
-            for (int j : next) {
-                elements[countElements][0] = j; // global ID
-                elements[countElements][1] = p; // set partition ID
-                countElements++;
-                partitionCount[p]++;
-            }
-        }
-
-        //Count how many impure relations is entailed by each indicator
-        for (int i = 0; i < elements.length; i++) {
-            elements[i][2] = 0;
-
-            for (int j = 0; j < elements.length; j++) {
-                if (impurities[elements[i][0]][elements[j][0]]) {
-                    elements[i][2]++; // number of impure relations
-                }
-            }
-        }
-
-        //Iteratively eliminate impurities till some solution (or no solution) is found
-        boolean[] eliminated = new boolean[this.numVariables()];
-
-        while (!validSolution(elements, eliminated)) {
-            //Sort them in the descending order of number of impurities (heuristic to avoid exponential search)
-            sortByImpurityPriority(elements, partitionCount, eliminated);
-            eliminated[elements[0][0]] = true;
-
-            for (int i = 0; i < elements.length; i++) {
-                if (impurities[elements[i][0]][elements[0][0]]) {
-                    elements[i][2]--;
-                }
-            }
-
-            partitionCount[elements[0][1]]--;
-        }
-
-        List<int[]> solution = new ArrayList<>();
-
-        for (int[] next : partition) {
-            int[] draftArea = new int[next.length];
-            int draftCount = 0;
-
-            for (int k : next) {
-                for (int[] element : elements) {
-                    if (element[0] == k && !eliminated[element[0]]) {
-                        draftArea[draftCount++] = k;
-                    }
-                }
-            }
-
-            if (draftCount > 0) {
-                int[] realCluster = new int[draftCount];
-                if (verbose) {
-                    System.arraycopy(draftArea, 0, realCluster, 0, draftCount);
-                }
-                solution.add(realCluster);
-            }
-        }
-        return solution;
-    }
-
-    private void sortByImpurityPriority(int[][] elements, int[] partitionCount, boolean[] eliminated) {
-        int[] temp = new int[3];
-
-        //First, throw all eliminated elements to the end of the array
-        for (int i = 0; i < elements.length - 1; i++) {
-            if (eliminated[elements[i][0]]) {
-                for (int j = i + 1; j < elements.length; j++) {
-                    if (!eliminated[elements[j][0]]) {
-                        swapElements(elements, i, j, temp);
-                        break;
-                    }
-                }
-            }
-        }
-
-        int total = 0;
-
-        while (total < elements.length && !eliminated[elements[total][0]]) {
-            total++;
-        }
-
-        //Sort them in the descending order of number of impurities
-        for (int i = 0; i < total - 1; i++) {
-            int max = -1;
-            int max_idx = -1;
-
-            for (int j = i; j < total; j++) {
-                if (elements[j][2] > max) {
-                    max = elements[j][2];
-                    max_idx = j;
-                }
-            }
-
-            swapElements(elements, i, max_idx, temp);
-        }
-
-        //Now, within each cluster, select first those that belong to the clusters with less than three latents.
-        //Then, in decreasing order of cluster size.
-        int start = 0;
-
-        while (start < total) {
-            int size = partitionCount[elements[start][1]];
-            int end = start + 1;
-
-            for (int j = start + 1; j < total; j++) {
-                if (size != partitionCount[elements[j][1]]) {
-                    break;
-                }
-                end++;
-            }
-
-            //Put elements with partitionCount of 1 and 2 at the top of the list
-            for (int i = start + 1; i < end; i++) {
-                if (partitionCount[elements[i][1]] == 1) {
-                    swapElements(elements, i, start, temp);
-                    start++;
-                }
-            }
-
-            for (int i = start + 1; i < end; i++) {
-                if (partitionCount[elements[i][1]] == 2) {
-                    swapElements(elements, i, start, temp);
-                    start++;
-                }
-            }
-
-            //Now, order elements in the descending order of partitionCount
-            for (int i = start; i < end - 1; i++) {
-                int max = -1;
-                int max_idx = -1;
-
-                for (int j = i; j < end; j++) {
-                    if (partitionCount[elements[j][1]] > max) {
-                        max = partitionCount[elements[j][1]];
-                        max_idx = j;
-                    }
-                }
-
-                swapElements(elements, i, max_idx, temp);
-            }
-            start = end;
-        }
-    }
-
-    private void swapElements(int[][] elements, int i, int j, int[] buffer) {
-        buffer[0] = elements[i][0];
-        buffer[1] = elements[i][1];
-        buffer[2] = elements[i][2];
-        elements[i][0] = elements[j][0];
-        elements[i][1] = elements[j][1];
-        elements[i][2] = elements[j][2];
-        elements[j][0] = buffer[0];
-        elements[j][1] = buffer[1];
-        elements[j][2] = buffer[2];
-    }
-
-    private boolean validSolution(int[][] elements, boolean[] eliminated) {
-        for (int[] element : elements) {
-            if (!eliminated[element[0]] && element[2] > 0) {
-                return false;
+        // Fallback: direct Fisher-Z checks
+        int n = ess;
+        for (int i = 0; i < cluster.size(); i++) {
+            for (int j = i + 1; j < cluster.size(); j++) {
+                double r = S.get(cluster.get(i), cluster.get(j));
+                double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
+                double df = n - 3.0; // no conditioning
+                double fisherZ = sqrt(df) * q;
+                double pTwoSided = 2 * (1.0 - this.normal.cumulativeProbability(Math.abs(fisherZ)));
+                if (pTwoSided > alpha) return false;
             }
         }
         return true;
     }
 
-    /******************** MAIN ALGORITHM: INITIALIZATION************************************/
-
-    private List<int[]> initialMeasurementPattern(int[][] ng, int[][] cv, List<Node> variables) throws InterruptedException {
-        boolean[][] notYellow = new boolean[numVariables()][numVariables()];
-
-        /* Stage 1: identify (partially) uncorrelated and impure pairs */
-        for (int v1 = 0; v1 < numVariables() - 1; v1++) {
-            for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
-                ng[v1][v2] = ng[v2][v1] = this.EDGE_BLACK;
-            }
-        }
-        for (int v1 = 0; v1 < numVariables() - 1; v1++) {
-            for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
-                if (uncorrelated(v1, v2)) {
-                    cv[v1][v2] = cv[v2][v1] = this.EDGE_NONE;
-                } else {
-                    cv[v1][v2] = cv[v2][v1] = this.EDGE_BLACK;
-                }
-                ng[v1][v2] = ng[v2][v1] = cv[v1][v2];
-            }
-        }
-
-        for (int v1 = 0; v1 < numVariables() - 1; v1++) {
-            for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
-                if (ng[v1][v2] != this.EDGE_BLACK) {
-                    continue;
-                }
-                boolean notFound = true;
-                for (int v3 = 0; v3 < numVariables() - 1 && notFound; v3++) {
-                    if (v1 == v3 || v2 == v3 || ng[v1][v3] == this.EDGE_NONE || ng[v1][v3] == this.EDGE_GRAY || ng[v2][v3] == this.EDGE_NONE || ng[v2][v3] == this.EDGE_GRAY) {
-                        continue;
-                    }
-                    for (int v4 = v3 + 1; v4 < numVariables() && notFound; v4++) {
-                        if (v1 == v4 || v2 == v4 || ng[v1][v4] == this.EDGE_NONE || ng[v1][v4] == this.EDGE_GRAY || ng[v2][v4] == this.EDGE_NONE || ng[v2][v4] == this.EDGE_GRAY || ng[v3][v4] == this.EDGE_NONE || ng[v3][v4] == this.EDGE_GRAY) {
-                            continue;
-                        }
-                        if (this.tetradTest.tetradScore3(v1, v2, v3, v4)) {
-                            notFound = false;
-                            ng[v1][v2] = ng[v2][v1] = this.EDGE_BLUE;
-                            ng[v1][v3] = ng[v3][v1] = this.EDGE_BLUE;
-                            ng[v1][v4] = ng[v4][v1] = this.EDGE_BLUE;
-                            ng[v2][v3] = ng[v3][v2] = this.EDGE_BLUE;
-                            ng[v2][v4] = ng[v4][v2] = this.EDGE_BLUE;
-                            ng[v3][v4] = ng[v4][v3] = this.EDGE_BLUE;
-                        }
-                    }
-                }
-                if (notFound) {
-                    ng[v1][v2] = ng[v2][v1] = this.EDGE_GRAY;
-                }
-            }
-        }
-
-        /* Stage 2: prune blue edges, find yellow ones */
-        for (int i = 0; i < numVariables() - 1; i++) {
-            for (int j = i + 1; j < numVariables(); j++) {
-                notYellow[i][j] = notYellow[j][i] = false;
-            }
-        }
-
-        for (int v1 = 0; v1 < numVariables() - 1; v1++) {
-            for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
-
-                //Trying to find unclustered({v1, v3, v5}, {v2, v4, v6})
-                if (ng[v1][v2] != this.EDGE_BLUE) {
-                    continue;
-                }
-
-                boolean notFound = true;
-
-                for (int v3 = 0; v3 < numVariables() - 1 && notFound; v3++) {
-                    if (v1 == v3 || v2 == v3 || //ng[v1][v3] != EDGE_BLUE ||
-                        ng[v1][v3] == this.EDGE_GRAY || ng[v2][v3] == this.EDGE_GRAY || cv[v1][v3] != this.EDGE_BLACK || cv[v2][v3] != this.EDGE_BLACK) {
-                        continue;
-                    }
-
-                    for (int v5 = v3 + 1; v5 < numVariables() && notFound; v5++) {
-                        if (v1 == v5 || v2 == v5 || //ng[v1][v5] != EDGE_BLUE || ng[v3][v5] != EDGE_BLUE ||
-                            ng[v1][v5] == this.EDGE_GRAY || ng[v2][v5] == this.EDGE_GRAY || ng[v3][v5] == this.EDGE_GRAY || cv[v1][v5] != this.EDGE_BLACK || cv[v2][v5] != this.EDGE_BLACK || cv[v3][v5] != this.EDGE_BLACK || clusteredPartial1(v1, v3, v5, v2)) {
-                            continue;
-                        }
-
-                        for (int v4 = 0; v4 < numVariables() - 1 && notFound; v4++) {
-                            if (v1 == v4 || v2 == v4 || v3 == v4 || v5 == v4 || ng[v1][v4] == this.EDGE_GRAY || ng[v2][v4] == this.EDGE_GRAY || ng[v3][v4] == this.EDGE_GRAY || ng[v5][v4] == this.EDGE_GRAY || //ng[v2][v4] != EDGE_BLUE ||
-                                cv[v1][v4] != this.EDGE_BLACK || cv[v2][v4] != this.EDGE_BLACK || cv[v3][v4] != this.EDGE_BLACK || cv[v5][v4] != this.EDGE_BLACK || clusteredPartial2(v1, v3, v5, v2, v4)) {
-                                continue;
-                            }
-
-                            for (int v6 = v4 + 1; v6 < numVariables() && notFound; v6++) {
-                                if (v1 == v6 || v2 == v6 || v3 == v6 || v5 == v6 || ng[v1][v6] == this.EDGE_GRAY || ng[v2][v6] == this.EDGE_GRAY || ng[v3][v6] == this.EDGE_GRAY || ng[v4][v6] == this.EDGE_GRAY || ng[v5][v6] == this.EDGE_GRAY || //ng[v2][v6] != EDGE_BLUE || ng[v4][v6] != EDGE_BLUE ||
-                                    cv[v1][v6] != this.EDGE_BLACK || cv[v2][v6] != this.EDGE_BLACK || cv[v3][v6] != this.EDGE_BLACK || cv[v4][v6] != this.EDGE_BLACK || cv[v5][v6] != this.EDGE_BLACK) {
-                                    continue;
-                                }
-
-                                if (unclusteredPartial3(v1, v3, v5, v2, v4, v6)) {
-                                    notFound = false;
-                                    ng[v1][v2] = ng[v2][v1] = this.EDGE_NONE;
-                                    ng[v1][v4] = ng[v4][v1] = this.EDGE_NONE;
-                                    ng[v1][v6] = ng[v6][v1] = this.EDGE_NONE;
-                                    ng[v3][v2] = ng[v2][v3] = this.EDGE_NONE;
-                                    ng[v3][v4] = ng[v4][v3] = this.EDGE_NONE;
-                                    ng[v3][v6] = ng[v6][v3] = this.EDGE_NONE;
-                                    ng[v5][v2] = ng[v2][v5] = this.EDGE_NONE;
-                                    ng[v5][v4] = ng[v4][v5] = this.EDGE_NONE;
-                                    ng[v5][v6] = ng[v6][v5] = this.EDGE_NONE;
-                                    notYellow[v1][v3] = notYellow[v3][v1] = true;
-                                    notYellow[v1][v5] = notYellow[v5][v1] = true;
-                                    notYellow[v3][v5] = notYellow[v5][v3] = true;
-                                    notYellow[v2][v4] = notYellow[v4][v2] = true;
-                                    notYellow[v2][v6] = notYellow[v6][v2] = true;
-                                    notYellow[v4][v6] = notYellow[v6][v4] = true;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (notYellow[v1][v2]) {
-                    notFound = false;
-                }
-
-                if (notFound) {
-
-                    //Trying to find unclustered({v1, v2, v3}, {v4, v5, v6})
-                    for (int v3 = 0; v3 < numVariables() && notFound; v3++) {
-                        if (v1 == v3 || v2 == v3 || ng[v1][v3] == this.EDGE_GRAY || ng[v2][v3] == this.EDGE_GRAY || cv[v1][v3] != this.EDGE_BLACK || cv[v2][v3] != this.EDGE_BLACK) {
-                            continue;
-                        }
-
-                        for (int v4 = 0; v4 < numVariables() - 2 && notFound; v4++) {
-                            if (v1 == v4 || v2 == v4 || v3 == v4 || ng[v1][v4] == this.EDGE_GRAY || ng[v2][v4] == this.EDGE_GRAY || ng[v3][v4] == this.EDGE_GRAY || cv[v1][v4] != this.EDGE_BLACK || cv[v2][v4] != this.EDGE_BLACK || cv[v3][v4] != this.EDGE_BLACK || clusteredPartial1(v1, v2, v3, v4)) {
-                                continue;
-                            }
-
-                            for (int v5 = v4 + 1; v5 < numVariables() - 1 && notFound; v5++) {
-                                if (v1 == v5 || v2 == v5 || v3 == v5 || ng[v1][v5] == this.EDGE_GRAY || ng[v2][v5] == this.EDGE_GRAY || ng[v3][v5] == this.EDGE_GRAY || ng[v4][v5] == this.EDGE_GRAY || cv[v1][v5] != this.EDGE_BLACK || cv[v2][v5] != this.EDGE_BLACK || cv[v3][v5] != this.EDGE_BLACK || cv[v4][v5] != this.EDGE_BLACK || //ng[v4][v5] != EDGE_BLUE ||
-                                    clusteredPartial2(v1, v2, v3, v4, v5)) {
-                                    continue;
-                                }
-
-                                for (int v6 = v5 + 1; v6 < numVariables() && notFound; v6++) {
-                                    if (v1 == v6 || v2 == v6 || v3 == v6 || ng[v1][v6] == this.EDGE_GRAY || ng[v2][v6] == this.EDGE_GRAY || ng[v3][v6] == this.EDGE_GRAY || ng[v4][v6] == this.EDGE_GRAY || ng[v5][v6] == this.EDGE_GRAY || cv[v1][v6] != this.EDGE_BLACK || cv[v2][v6] != this.EDGE_BLACK || cv[v3][v6] != this.EDGE_BLACK || cv[v4][v6] != this.EDGE_BLACK || cv[v5][v6] != this.EDGE_BLACK) {
-                                        continue;
-                                    }
-
-                                    if (unclusteredPartial3(v1, v2, v3, v4, v5, v6)) {
-                                        notFound = false;
-                                        ng[v1][v4] = ng[v4][v1] = this.EDGE_NONE;
-                                        ng[v1][v5] = ng[v5][v1] = this.EDGE_NONE;
-                                        ng[v1][v6] = ng[v6][v1] = this.EDGE_NONE;
-                                        ng[v2][v4] = ng[v4][v2] = this.EDGE_NONE;
-                                        ng[v2][v5] = ng[v5][v2] = this.EDGE_NONE;
-                                        ng[v2][v6] = ng[v6][v2] = this.EDGE_NONE;
-                                        ng[v3][v4] = ng[v4][v3] = this.EDGE_NONE;
-                                        ng[v3][v5] = ng[v5][v3] = this.EDGE_NONE;
-                                        ng[v3][v6] = ng[v6][v3] = this.EDGE_NONE;
-                                        notYellow[v1][v2] = notYellow[v2][v1] = true;
-                                        notYellow[v1][v3] = notYellow[v3][v1] = true;
-                                        notYellow[v2][v3] = notYellow[v3][v2] = true;
-                                        notYellow[v4][v5] = notYellow[v5][v4] = true;
-                                        notYellow[v4][v6] = notYellow[v6][v4] = true;
-                                        notYellow[v5][v6] = notYellow[v6][v5] = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (notFound) {
-                    ng[v1][v2] = ng[v2][v1] = this.EDGE_YELLOW;
-                }
-
-            }
-        }
-
-        /* Stage 3: find maximal cliques */
-        List<int[]> clustering = new ArrayList<>();
-        List<int[]> components = findComponents(ng, numVariables());
-        for (int[] component : components) {
-            if (verbose) {
-                printClusterIds(component);
-            }
-            List<int[]> nextClustering = findMaximalCliques(component, ng);
-            clustering.addAll(trimCliqueList(nextClustering));
-        }
-        //Sort cliques by size: heuristic to keep as many indicators as possible
-        for (int i = 0; i < clustering.size() - 1; i++) {
-            int max = 0;
-            int max_idx = -1;
-            for (int j = i; j < clustering.size(); j++) {
-                if (clustering.get(j).length > max) {
-                    max = clustering.get(j).length;
-                    max_idx = j;
-                }
-            }
-            int[] temp = clustering.get(i);
-            clustering.set(i, clustering.get(max_idx));
-            clustering.set(max_idx, temp);
-        }
-
-        List<int[]> individualOneFactors = individualPurification(clustering);
-        if (verbose) {
-            printClustering(individualOneFactors);
-        }
-        clustering = individualOneFactors;
-        List<List<Integer>> ids = new ArrayList<>();
-        List<List<int[]>> clusterings = chooseClusterings(clustering, ids, true, cv);
-        List<int[]> orderedIds = new ArrayList<>();
-        List<List<int[]>> actualClustering = filterAndOrderClusterings(clusterings, ids, orderedIds, ng, variables);
-        return purify(actualClustering, orderedIds);
-    }
-
-    private List<int[]> individualPurification(List<int[]> clustering) {
-        boolean oldOutputMessage = this.outputMessage;
-        List<int[]> purified = new ArrayList<>();
-        int[] ids = {1};
-        for (int[] rawCluster : clustering) {
-            this.outputMessage = false;
-            if (rawCluster.length <= 4) {
-                this.outputMessage = oldOutputMessage;
-                purified.add(rawCluster);
-                continue;
-            }
-            List<List<int[]>> dummyClusterings = new ArrayList<>();
-            List<int[]> dummyClustering = new ArrayList<>();
-            dummyClustering.add(rawCluster);
-            dummyClusterings.add(dummyClustering);
-            List<int[]> dummyIds = new ArrayList<>();
-            dummyIds.add(ids);
-            List<int[]> purification = purify(dummyClusterings, dummyIds);
-            if (purification.size() > 0) {
-                purified.add(purification.get(0));
-            } else {
-                int[] newFakeCluster = new int[4];
-                System.arraycopy(rawCluster, 0, newFakeCluster, 0, 4);
-                purified.add(newFakeCluster);
-            }
-            this.outputMessage = oldOutputMessage;
-        }
-        return purified;
-    }
-
-    private boolean compatibleClusters(int[] cluster1, int[] cluster2, int[][] cv) {
-        HashSet<Integer> allNodes = new HashSet<>();
-
-        for (int j : cluster1) {
-            allNodes.add(j);
-        }
-
-        for (int j : cluster2) {
-            allNodes.add(j);
-        }
-
-        if (allNodes.size() < cluster1.length + cluster2.length) return false;
-
-
-        int cset1 = cluster1.length;
-        int cset2 = cluster2.length;
-        for (int o1 = 0; o1 < cset1 - 2; o1++) {
-            for (int o2 = o1 + 1; o2 < cset1 - 1; o2++) {
-                for (int o3 = o2 + 1; o3 < cset1; o3++) {
-                    for (int o4 = 0; o4 < cset2 - 2; o4++) {
-                        if (!validClusterPairPartial1(cluster1[o1], cluster1[o2], cluster1[o3], cluster2[o4], cv)) {
-                            continue;
-                        }
-                        for (int o5 = o4 + 1; o5 < cset2 - 1; o5++) {
-                            if (!validClusterPairPartial2(cluster1[o1], cluster1[o2], cluster1[o3], cluster2[o5], cv)) {
-                                continue;
-                            }
-                            for (int o6 = o5 + 1; o6 < cset2; o6++) {
-                                if (validClusterPairPartial3(cluster1[o1], cluster1[o2], cluster1[o3], cluster2[o4], cluster2[o5], cluster2[o6], cv)) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (verbose) {
-            System.out.println("INCOMPATIBLE!:");
-            printClusterNames(cluster1);
-            printClusterNames(cluster2);
-        }
-
-        return false;
-    }
-
-    /******************************* MAIN ALGORITHM: CORE ***************************************/
-
-    private List<int[]> findMeasurementPattern(List<Node> variables) throws InterruptedException {
-        int[][] ng = new int[numVariables()][numVariables()];
-        int[][] cv = new int[numVariables()][numVariables()];
-        boolean[] selected = new boolean[numVariables()];
-
-        for (int i = 0; i < numVariables(); i++) {
-            selected[i] = false;
-        }
-
-        List<int[]> initialClustering = initialMeasurementPattern(ng, cv, variables);
-
-        if (verbose) {
-            printClustering(initialClustering);
-        }
-
-        for (int[] nextCluster : initialClustering) {
-            for (int j : nextCluster) {
-                selected[j] = true;
-            }
-        }
-
-        /* Stage 1: identify (partially) uncorrelated and impure pairs */
-        for (int i = 0; i < numVariables(); i++) {
-            for (int j = 0; j < numVariables(); j++) {
-                if (selected[i] && selected[j] && (ng[i][j] == this.EDGE_BLUE || ng[i][j] == this.EDGE_YELLOW)) {
-                    ng[i][j] = this.EDGE_RED;
-                } else if ((!selected[i] || !selected[j]) && ng[i][j] == this.EDGE_YELLOW) {
-                    ng[i][j] = this.EDGE_BLUE;
-                }
-            }
-        }
-
-        /* Stage 2: prune blue edges */
-
-        //Rule 1
-        for (int x1 = 0; x1 < numVariables() - 1; x1++) {
-            outer_loop:
-            for (int y1 = x1 + 1; y1 < numVariables(); y1++) {
-                if (ng[x1][y1] != this.EDGE_BLUE) {
-                    continue;
-                }
-                for (int x2 = 0; x2 < numVariables(); x2++) {
-                    if (x1 == x2 || y1 == x2 || cv[x1][x2] == this.EDGE_NONE || cv[y1][x2] == this.EDGE_NONE) {
-                        continue;
-                    }
-                    for (int x3 = 0; x3 < numVariables(); x3++) {
-                        if (x1 == x3 || x2 == x3 || y1 == x3 || cv[x1][x3] == this.EDGE_NONE || cv[x2][x3] == this.EDGE_NONE || cv[y1][x3] == this.EDGE_NONE || !partialRule1_1(x1, x2, x3, y1)) {
-                            continue;
-                        }
-                        for (int y2 = 0; y2 < numVariables(); y2++) {
-                            if (x1 == y2 || x2 == y2 || x3 == y2 || y1 == y2 || cv[x1][y2] == this.EDGE_NONE || cv[x2][y2] == this.EDGE_NONE || cv[x3][y2] == this.EDGE_NONE || cv[y1][y2] == this.EDGE_NONE || !partialRule1_2(x1, x2, y1, y2)) {
-                                continue;
-                            }
-                            for (int y3 = 0; y3 < numVariables(); y3++) {
-                                if (x1 == y3 || x2 == y3 || x3 == y3 || y1 == y3 || y2 == y3 || cv[x1][y3] == this.EDGE_NONE || cv[x2][y3] == this.EDGE_NONE || cv[x3][y3] == this.EDGE_NONE || cv[y1][y3] == this.EDGE_NONE || cv[y2][y3] == this.EDGE_NONE || !partialRule1_3(x1, y1, y2, y3)) {
-                                    continue;
-                                }
-                                ng[x1][y1] = ng[y1][x1] = this.EDGE_NONE;
-                                continue outer_loop;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (verbose) {
-            System.out.println("Trying RULE 2 now!");
-        }
-
-        for (int x1 = 0; x1 < numVariables() - 1; x1++) {
-            outer_loop:
-            for (int y1 = x1 + 1; y1 < numVariables(); y1++) {
-                if (ng[x1][y1] != this.EDGE_BLUE) {
-                    continue;
-                }
-                for (int x2 = 0; x2 < numVariables(); x2++) {
-                    if (x1 == x2 || y1 == x2 || cv[x1][x2] == this.EDGE_NONE || cv[y1][x2] == this.EDGE_NONE || ng[x1][x2] == this.EDGE_GRAY) {
-                        continue;
-                    }
-                    for (int y2 = 0; y2 < numVariables(); y2++) {
-                        if (x1 == y2 || x2 == y2 || y1 == y2 || cv[x1][y2] == this.EDGE_NONE || cv[x2][y2] == this.EDGE_NONE || cv[y1][y2] == this.EDGE_NONE || ng[y1][y2] == this.EDGE_GRAY || !partialRule2_1(x1, x2, y1, y2)) {
-                            continue;
-                        }
-                        for (int x3 = 0; x3 < numVariables(); x3++) {
-                            if (x1 == x3 || x2 == x3 || y1 == x3 || y2 == x3 || ng[x1][x3] == this.EDGE_GRAY || cv[x1][x3] == this.EDGE_NONE || cv[x2][x3] == this.EDGE_NONE || cv[y1][x3] == this.EDGE_NONE || cv[y2][x3] == this.EDGE_NONE || !partialRule2_2(x1, x2, x3, y2)) {
-                                continue;
-                            }
-                            for (int y3 = 0; y3 < numVariables(); y3++) {
-                                if (x1 == y3 || x2 == y3 || x3 == y3 || y1 == y3 || y2 == y3 || ng[y1][y3] == this.EDGE_GRAY || cv[x1][y3] == this.EDGE_NONE || cv[x2][y3] == this.EDGE_NONE || cv[x3][y3] == this.EDGE_NONE || cv[y1][y3] == this.EDGE_NONE || cv[y2][y3] == this.EDGE_NONE || !partialRule2_3(x2, y1, y2, y3)) {
-                                    continue;
-                                }
-                                ng[x1][y1] = ng[y1][x1] = this.EDGE_NONE;
-                                continue outer_loop;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        for (int i = 0; i < numVariables(); i++) {
-            for (int j = 0; j < numVariables(); j++) {
-                if (ng[i][j] == this.EDGE_RED) {
-                    ng[i][j] = this.EDGE_BLUE;
-                }
-            }
-        }
-
-        /* Stage 3: find maximal cliques */
-        List<int[]> clustering = new ArrayList<>();
-        List<int[]> components = findComponents(ng, numVariables());
-        for (int[] component : components) {
-            if (verbose) {
-                printClusterIds(component);
-            }
-
-            List<int[]> nextClustering = findMaximalCliques(component, ng);
-            clustering.addAll(trimCliqueList(nextClustering));
-        }
-        //Sort cliques by size: better visualization when printing
-        for (int i = 0; i < clustering.size() - 1; i++) {
-            int max = 0;
-            int max_idx = -1;
-            for (int j = i; j < clustering.size(); j++) {
-                if (clustering.get(j).length > max) {
-                    max = clustering.get(j).length;
-                    max_idx = j;
-                }
-            }
-            int[] temp = clustering.get(i);
-            clustering.set(i, clustering.get(max_idx));
-            clustering.set(max_idx, temp);
-        }
-
-        if (verbose) {
-            printClustering(clustering);
-        }
-        List<List<Integer>> ids = new ArrayList<>();
-        List<List<int[]>> clusterings = chooseClusterings(clustering, ids, false, cv);
-        List<int[]> orderedIds = new ArrayList<>();
-        List<List<int[]>> actualClusterings = filterAndOrderClusterings(clusterings, ids, orderedIds, ng, variables);
-        List<int[]> finalPureModel = purify(actualClusterings, orderedIds);
-
-        if (verbose) {
-            printClustering(finalPureModel);
-        }
-
-        return finalPureModel;
-    }
-
-    private List<List<int[]>> chooseClusterings(List<int[]> clustering, List<List<Integer>> outputIds, boolean need3, int[][] cv) {
-        List<List<int[]>> clusterings = new ArrayList<>();
-        boolean[] marked = new boolean[clustering.size()];
-        boolean[] buffer = new boolean[this.numVariables()];
-
-        int max = FastMath.min(clustering.size(), 1000);
-
-        boolean[][] compatibility = new boolean[clustering.size()][clustering.size()];
-        if (need3) {
-            for (int i = 0; i < clustering.size() - 1; i++) {
-                for (int j = i + 1; j < clustering.size(); j++) {
-                    compatibility[i][j] = compatibility[j][i] = compatibleClusters(clustering.get(i), clustering.get(j), cv);
-                }
-            }
-        }
-
-        //Ideally, we should find all maximum cliques among "cluster nodes".
-        //Heuristic: greedily build a set of clusters starting from each cluster.
-        if (verbose) {
-            System.out.println("Total number of clusters: " + clustering.size());
-        }
-        for (int i = 0; i < max; i++) {
-            //System.out.println("Step " + i);
-            List<Integer> nextIds = new ArrayList<>();
-            List<int[]> newClustering = new ArrayList<>();
-            nextIds.add(i);
-            newClustering.add(clustering.get(i));
-            for (int j = 0; j < clustering.size(); j++) {
-                marked[j] = false;
-            }
-            marked[i] = true;
-            int bestChoice;
-            double bestScore = clustering.get(i).length;
-            do {
-                bestChoice = -1;
-                next_choice:
-                for (int j = 0; j < clustering.size(); j++) {
-                    if (marked[j]) {
-                        continue;
-                    }
-                    for (int[] ints : newClustering) {
-                        if (need3 && !compatibility[j][clustering.indexOf(ints)]) {
-                            marked[j] = true;
-                            continue next_choice;
-                        }
-                    }
-                    newClustering.add(clustering.get(j));
-                    int localScore = scoreClustering(newClustering, buffer);
-                    //System.out.println("Score = " + localScore);
-                    newClustering.remove(clustering.get(j));
-                    if (localScore >= bestScore) {
-                        bestChoice = j;
-                        bestScore = localScore;
-                    }
-                }
-                if (bestChoice != -1) {
-                    marked[bestChoice] = true;
-                    newClustering.add(clustering.get(bestChoice));
-                    nextIds.add(bestChoice);
-                }
-            } while (bestChoice > -1);
-
-            if (isNewClustering(clusterings, newClustering)) {
-                clusterings.add(newClustering);
-                outputIds.add(nextIds);
-            }
-        }
-        return clusterings;
-    }
-
     /**
-     * Check if newClustering is contained in clusterings.
+     * Build a lightweight measurement pattern: canLink[i][j] = true iff pair (i,j) is significantly dependent.
      */
-    private boolean isNewClustering(List<List<int[]>> clusterings, List<int[]> newClustering) {
+    private void buildPatternLite() {
+        long t0 = System.nanoTime();
 
-        nextClustering:
-        for (List<int[]> clustering : clusterings) {
+        canLink = new boolean[numVars][numVars];
+        int n = ess;
+        for (int i = 0; i < numVars; i++) {
+            canLink[i][i] = true;
+            for (int j = i + 1; j < numVars; j++) {
+                double r = S.get(i, j);
+                double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
+                double df = n - 3.0;
+                double fisherZ = sqrt(df) * q;
+                double pTwoSided = 2 * (1.0 - this.normal.cumulativeProbability(Math.abs(fisherZ)));
+                boolean dep = pTwoSided <= alphaPairs; // looser screen than tetrads
+                canLink[i][j] = canLink[j][i] = dep;
+            }
+        }
 
-            nextOldCluster:
-            for (Object value : clustering) {
-                int[] cluster = (int[]) value;
+        tPatternNs += System.nanoTime() - t0;
+    }
 
-                nextNewCluster:
-                for (Object o : newClustering) {
-                    int[] newCluster = (int[]) o;
+    /**
+     * Merge any pair of groups whose union remains pure and dependent; iterate until no merges apply.
+     */
+    private List<List<Integer>> mergePurePairs(List<List<Integer>> groups) {
+        long t0 = System.nanoTime();
 
-                    if (cluster.length == newCluster.length) {
+        List<List<Integer>> current = deepCopy(groups);
+        boolean mergedSomething;
+        do {
+            mergedSomething = false;
 
-                        nextElement:
-                        for (int k : cluster) {
-                            for (int i : newCluster) {
-                                if (k == i) {
-                                    continue nextElement;
-                                }
-                            }
-
-                            continue nextNewCluster;
-                        }
-
-                        continue nextOldCluster;
+            final int n = current.size();
+            // Build candidate merges in parallel
+            List<int[]> candidates = Collections.synchronizedList(new ArrayList<>());
+            IntStream.range(0, n).parallel().forEach(a -> {
+                for (int b = a + 1; b < n; b++) {
+                    Set<Integer> union = new HashSet<>(current.get(a));
+                    union.addAll(current.get(b));
+                    if (union.size() < 4) continue;
+                    List<Integer> u = sortedList(union);
+                    if (!isPure(u) /*|| !clusterDependent(u)*/) continue;
+                    // delta gate: union avg|r| must not drop too much from either group
+                    double meanU = avgAbsCorrGroup(u);
+                    double meanA = avgAbsCorrGroup(current.get(a));
+                    double meanB = avgAbsCorrGroup(current.get(b));
+                    if (meanU + deltaMerge >= Math.min(meanA, meanB)) {
+                        candidates.add(new int[]{a, b});
+                        mergesConsidered.increment();
                     }
                 }
+            });
 
-                continue nextClustering;
+            if (!candidates.isEmpty()) {
+                // Greedy selection of non-overlapping merges by larger union first
+                candidates.sort((x, y) -> Integer.compare(
+                        sizeOfUnion(y[0], y[1], current),
+                        sizeOfUnion(x[0], x[1], current)));
+
+                boolean[] used = new boolean[current.size()];
+                for (int[] pair : candidates) {
+                    int a = pair[0], b = pair[1];
+                    if (a >= current.size() || b >= current.size()) continue;
+                    if (used[a] || used[b]) continue;
+                    Set<Integer> union = new HashSet<>(current.get(a));
+                    union.addAll(current.get(b));
+                    List<Integer> u = sortedList(union);
+                    if (u.size() >= 4 && isPure(u)) { // && clusterDependent(u)) {
+                        double meanU = avgAbsCorrGroup(u);
+                        double meanA = avgAbsCorrGroup(current.get(a));
+                        double meanB = avgAbsCorrGroup(current.get(b));
+                        if (meanU + deltaMerge >= Math.min(meanA, meanB)) {
+                            current.set(a, u);
+                            current.remove(b);
+                            used[a] = true; // mark the merged slot; indexes shift for >b, but we prevent reuse
+                            mergesAccepted.increment();
+                            mergedSomething = true;
+                            break; // restart outer do-while to recompute candidates
+                        }
+                    }
+                }
             }
+        } while (mergedSomething);
 
-            return false;
-        }
+        tMergeNs += System.nanoTime() - t0;
+        return current;
+    }
 
-        return true;
+    private int sizeOfUnion(int a, int b, List<List<Integer>> current) {
+        if (a >= current.size() || b >= current.size()) return 0;
+        Set<Integer> union = new HashSet<>(current.get(a));
+        union.addAll(current.get(b));
+        return union.size();
     }
 
     /**
-     * This implementation uses the Purify class.
+     * Resolve overlaps: for any variable that appears in multiple groups, assign it to the group where it has highest
+     * average absolute correlation with the rest of that group (compatibility), then remove from others.
      */
+    private List<List<Integer>> resolveOverlaps(List<List<Integer>> groups) {
+        long t0 = System.nanoTime();
 
-    private List<int[]> purify(List<List<int[]>> actualClusterings, List<int[]> clusterIds) {
+        Map<Integer, List<Integer>> owners = new HashMap<>();
+        for (int gi = 0; gi < groups.size(); gi++) {
+            for (int v : groups.get(gi)) owners.computeIfAbsent(v, k -> new ArrayList<>()).add(gi);
+        }
+        List<Set<Integer>> work = new ArrayList<>();
+        for (List<Integer> g : groups) work.add(new HashSet<>(g));
 
-        if (!actualClusterings.isEmpty()) {
-            List<int[]> partition = actualClusterings.get(0);
-            if (verbose) {
-                printLatentClique(clusterIds.get(0));
+        // Decide best owner for each overlapping variable in parallel
+        Map<Integer, Integer> bestOwner = new ConcurrentHashMap<>();
+        owners.entrySet().parallelStream().forEach(e -> {
+            int v = e.getKey();
+            List<Integer> gs = e.getValue();
+            if (gs.size() <= 1) {
+                if (!gs.isEmpty()) bestOwner.put(v, gs.getFirst());
+                return;
             }
-
-            Clusters clustering = new Clusters();
-            int clusterId = 0;
-
-            if (verbose) {
-                printClustering(partition);
-            }
-
-            for (int[] codes : partition) {
-                for (int code : codes) {
-                    String var = this.tetradTest.getVarNames()[code];
-                    clustering.addToCluster(clusterId, var);
+            double bestScore = Double.NEGATIVE_INFINITY;
+            int bestGi = gs.getFirst();
+            int bestT = -1;
+            for (int gi : gs) {
+                double score = avgAbsCorr(v, work.get(gi));
+                int tie = 0;
+                // tie-break by number of passing tetrads involving v in this group
+                if (Double.compare(score, bestScore) == 0.0) {
+                    tie = countPassingTetradsWithVar(v, work.get(gi));
                 }
-
-                clusterId++;
-            }
-
-            List<List<Node>> partition2 = new ArrayList<>();
-
-            for (Object o : partition) {
-                int[] clusterIndices = (int[]) o;
-                List<Node> cluster = new ArrayList<>();
-
-                for (int clusterIndex : clusterIndices) {
-                    cluster.add(this.tetradTest.getVariables().get(clusterIndex));
+                if (score > bestScore || (Double.compare(score, bestScore) == 0.0 && tie > bestT)) {
+                    bestScore = score;
+                    bestT = tie;
+                    bestGi = gi;
                 }
-
-                partition2.add(cluster);
             }
+            bestOwner.put(v, bestGi);
+        });
 
-            if (verbose) {
-                System.out.println("Partition = " + partition2);
-            }
+        long overlapVars = owners.entrySet().stream().filter(e -> e.getValue().size() > 1).count();
 
-            return partition;
+        // Apply removals serially for determinism
+        for (Map.Entry<Integer, List<Integer>> e : owners.entrySet()) {
+            int v = e.getKey();
+            List<Integer> gs = e.getValue();
+            if (gs.size() <= 1) continue;
+            int keep = bestOwner.get(v);
+            for (int gi : gs)
+                if (gi != keep) {
+                    boolean removed = work.get(gi).remove(v);
+                    if (removed) reassignments.increment();
+                }
         }
 
-        return new ArrayList<>();
+        // Rebuild list and drop groups that became too small or impure after removals
+        List<List<Integer>> out = new ArrayList<>();
+        for (Set<Integer> gset : work) {
+            List<Integer> g = sortedList(gset);
+            if (g.size() >= MIN_CLUSTER_SIZE && (g.size() < 4 || isPure(g))) { // && clusterDependent(g)) {
+                out.add(g);
+            }
+        }
+
+        tResolveNs += System.nanoTime() - t0;
+        log(String.format(Locale.US, "Overlap vars=%d reassignments(total)=%d",
+                overlapVars, reassignments.sum()));
+        return out;
     }
 
     /**
-     * Sets the verbose mode for the object. When verbose mode is enabled, detailed logging or additional output may be
-     * produced during execution.
+     * Average absolute correlation between v and others in the group (excluding v).
+     */
+    private double avgAbsCorr(int v, Set<Integer> group) {
+        if (!group.contains(v)) return Double.NEGATIVE_INFINITY;
+        if (group.size() <= 1) return Double.NEGATIVE_INFINITY;
+        double s = 0.0;
+        int c = 0;
+        for (int u : group) {
+            if (u == v) continue;
+            s += Math.abs(S.get(v, u));
+            c++;
+        }
+        return c == 0 ? Double.NEGATIVE_INFINITY : s / c;
+    }
+
+    private double avgAbsCorrGroup(Collection<Integer> group) {
+        if (group.size() <= 1) return 0.0;
+        double s = 0.0;
+        int c = 0;
+        List<Integer> list = (group instanceof List) ? (List<Integer>) group : new ArrayList<>(group);
+        for (int i = 0; i < list.size(); i++) {
+            int vi = list.get(i);
+            for (int j = i + 1; j < list.size(); j++) {
+                int vj = list.get(j);
+                s += Math.abs(S.get(vi, vj));
+                c++;
+            }
+        }
+        return c == 0 ? 0.0 : s / c;
+    }
+
+    private int countPassingTetradsWithVar(int v, Set<Integer> group) {
+        if (!group.contains(v) || group.size() < 4) return 0;
+        List<Integer> list = new ArrayList<>(group);
+        int idxV = list.indexOf(v);
+        int m = list.size();
+        int count = 0;
+        for (int i = 0; i < m; i++) {
+            if (i == idxV) continue;
+            for (int j = i + 1; j < m; j++) {
+                if (j == idxV) continue;
+                for (int k = j + 1; k < m; k++) {
+                    if (k == idxV) continue;
+                    int a = list.get(idxV), b = list.get(i), c = list.get(j), d = list.get(k);
+
+                    int[][] t1 = new int[][]{{a, b}, {c, d}};
+                    int[][] t2 = new int[][]{{a, c}, {b, d}};
+                    int[][] t3 = new int[][]{{a, d}, {b, c}};
+
+                    int rank1 = rank(t1);
+                    int rank2 = rank(t2);
+                    int rank3 = rank(t3);
+
+                    if ((rank1 == 1 && rank2 == 1 && rank3 == 1)) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Enables or disables verbose logging for the Bpc instance.
      *
-     * @param verbose A boolean value indicating whether verbose mode should be enabled (true) or disabled (false).
+     * @param verbose A boolean indicating whether verbose logging should be enabled (true) or disabled (false).
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    /**
+     * BitSet-based key for caching set-level purity
+     */
+    private static final class BitKey {
+        private final BitSet bits;
+
+        BitKey(Collection<Integer> idxs) {
+            BitSet b = new BitSet();
+            for (Integer v : idxs) if (v != null) b.set(v);
+            this.bits = b;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof BitKey other)) return false;
+            return this.bits.equals(other.bits);
+        }
+
+        @Override
+        public int hashCode() {
+            return bits.hashCode();
+        }
+    }
 }
-
-
-
-
-

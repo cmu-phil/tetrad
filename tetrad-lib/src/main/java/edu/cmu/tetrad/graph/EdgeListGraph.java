@@ -1,12 +1,12 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,12 +15,12 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.beans.PropertyChangeListener;
@@ -74,6 +74,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * The cache for the semidirected path relationships
      */
     private final Map<Pair<Node, Node>, Boolean> semidirectedPathCache = new HashMap<>();
+    /**
+     * A map from names of graphs to ancillary graphs for this graph.
+     */
+    private final Map<String, Graph> ancillaryGraphs = new HashMap<>();
     /**
      * Map from each node to the List of edges connected to that node.
      */
@@ -143,6 +147,14 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.underLineTriples = graph.getUnderLines();
         this.dottedUnderLineTriples = graph.getDottedUnderlines();
         this.ambiguousTriples = graph.getAmbiguousTriples();
+
+        // Keep the nullity check for backward compatibility with 7.6.8
+        // @deprecated
+        if (graph instanceof EdgeListGraph && ((EdgeListGraph) graph).ancillaryGraphs != null) {
+            for (String name : ((EdgeListGraph) graph).ancillaryGraphs.keySet()) {
+                ancillaryGraphs.put(name, ((EdgeListGraph) graph).ancillaryGraphs.get(name));
+            }
+        }
     }
 
     /**
@@ -166,6 +178,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.dottedUnderLineTriples = graph.getDottedUnderlines();
         this.ambiguousTriples = graph.getAmbiguousTriples();
 
+        for (String name : ((EdgeListGraph) graph).ancillaryGraphs.keySet()) {
+            ancillaryGraphs.put(name, ((EdgeListGraph) graph).ancillaryGraphs.get(name));
+        }
+
+        graph.ancillaryGraphs.replaceAll((n, v) -> v);
     }
 
     /**
@@ -287,10 +304,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                 return true;
             }
 
-            if (_node1 && edge.getProximalEndpoint(node2) == Endpoint.CIRCLE) {
+            if (_node1 && edge.getEndpoint(node2) == Endpoint.CIRCLE) {
                 circle12 = true;
             }
-            if (_node3 && edge.getProximalEndpoint(node2) == Endpoint.CIRCLE) {
+            if (_node3 && edge.getEndpoint(node2) == Endpoint.CIRCLE) {
                 circle32 = true;
             }
             if (circle12 && circle32 && !isAdjacentTo(node1, node2)) {
@@ -312,7 +329,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
         if (edge1 == null || edge2 == null) return false;
 
-        return edge1.getProximalEndpoint(node2) == Endpoint.ARROW && edge2.getProximalEndpoint(node2) == Endpoint.ARROW;
+        return edge1.getEndpoint(node2) == Endpoint.ARROW && edge2.getEndpoint(node2) == Endpoint.ARROW;
 
     }
 
@@ -388,12 +405,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             return null;
         }
 
-        if (edges.size() == 0) {
+        if (edges.isEmpty()) {
             return null;
         }
 
         for (Edge edge : edges) {
-            if (Edges.isDirectedEdge(edge) && edge.getProximalEndpoint(node2) == Endpoint.ARROW) {
+            if (Edges.isDirectedEdge(edge) && edge.getEndpoint(node2) == Endpoint.ARROW) {
                 return edge;
             }
         }
@@ -418,7 +435,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                 if (edge == null) continue;
 
                 Endpoint endpoint1 = edge.getDistalEndpoint(node);
-                Endpoint endpoint2 = edge.getProximalEndpoint(node);
+                Endpoint endpoint2 = edge.getEndpoint(node);
 
                 if (endpoint1 == Endpoint.TAIL && endpoint2 == Endpoint.ARROW) {
                     parents.add(edge.getDistalNode(node));
@@ -433,6 +450,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     /**
      * Determines whether one node is an ancestor of another. Including this here for caching purposes.
+     *
      * @param node1 The first node.
      * @param node2 The second node.
      * @return True if the first node is an ancestor of the second, false if not.
@@ -450,6 +468,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     /**
      * Determines whether one node is an ancestor of another. Including this here for caching purposes.
+     *
      * @param node1 The first node.
      * @param node2 The second node.
      * @return True if the first node is an ancestor of the second, false if not.
@@ -712,7 +731,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         Edge edge = getEdge(node1, node2);
 
         if (edge != null) {
-            return edge.getProximalEndpoint(node2);
+            return edge.getEndpoint(node2);
         }
 
         return null;
@@ -731,7 +750,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             throws IllegalArgumentException {
         if (!isAdjacentTo(from, to)) throw new IllegalArgumentException("Not adjacent");
         Edge edge = getEdge(from, to);
-        Edge newEdge = new Edge(from, to, edge.getProximalEndpoint(from), endPoint);
+        Edge newEdge = new Edge(from, to, edge.getEndpoint(from), endPoint);
         removeEdge(edge);
         addEdge(newEdge);
         return true;
@@ -748,7 +767,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         Set<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {
-            if (edge.getProximalEndpoint(node) == endpoint) {
+            if (edge.getEndpoint(node) == endpoint) {
                 nodes.add(edge.getDistalNode(node));
             }
         }
@@ -1579,4 +1598,35 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, this));
         return triplesList;
     }
+
+    /**
+     * Sets an ancillary graph with the given name.
+     *
+     * @param name  The name of the ancillary graph.
+     * @param graph The ancillary graph.
+     */
+    public void setAncillaryGraph(String name, Graph graph) {
+        if (graph == null) {
+            ancillaryGraphs.remove(name);
+        } else {
+            ancillaryGraphs.put(name, new EdgeListGraph(graph));
+        }
+    }
+
+    /**
+     * Returns the ancillary graph with the given name, or null if no ancillary graph by that name has been set.
+     *
+     * @param name The name of the ancillary graph.
+     * @return The ancillary graph, or null if no such has been set.
+     */
+    public Graph getAncillaryGraph(String name) {
+        Graph graph = ancillaryGraphs.get(name);
+
+        if (graph == null) {
+            return null;
+        }
+
+        return new EdgeListGraph(graph);
+    }
 }
+

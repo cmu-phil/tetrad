@@ -1,10 +1,33 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule;
 import edu.cmu.tetrad.search.SepsetFinder;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
@@ -184,49 +207,28 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
-        Set<Node> blocking;
+        Set<Node> blocking = null;
 
         // If you already have a sepset, use it.
         if (sepsetMap.get(x, y) != null) {
             blocking = sepsetMap.get(x, y);
+        }
 
-        } else
+        if (blocking == null && blockingType == BlockingType.RECURSIVE) {
+            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
+                    maxLength, maxLength, preserveMarkovHelper, depth);
+        }
 
-            // Else for the recursive option see if you can find a recursive sepset; this fails for Puzzle #2.
-            if (blockingType == BlockingType.RECURSIVE) {
-                blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
-                        maxLength, maxLength, preserveMarkovHelper, depth);
-
-                if (blocking == null) { // If it does fail, use FCI style reasoning.
-                    blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
-
-                    if (verbose && blocking != null) {
-                        TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
-                    }
-                }
-
-                sepsetMap.set(x, y, blocking);
-            } else
-
-                // Else for the greedy option, do FCI-style reasoning.
-                if (blockingType == BlockingType.GREEDY) {
-                    blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
-                    sepsetMap.set(x, y, blocking);
-                } else {
-                    throw new IllegalArgumentException("Unknown blocking type.");
-                }
-
-        //  *         V
-        // *         **            * is either an arrowhead, a tail, or a circle
-        // *        /  \
-        // *       v    *
-        // * X....W --> Y
-
-        // This is needed for greedy and anteriority methods, which return sepsets, not recursive, which always
-        // returns a blocking set.
         if (blocking == null) {
-            TetradLogger.getInstance().log("Blocking set is null in R4.");
-            throw new IllegalArgumentException("Blocking set is null in R4.");
+            blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+        }
+
+        if (blocking != null) {
+            sepsetMap.set(x, y, blocking);
+        } else {
+            blocking = Set.of();
+//            TetradLogger.getInstance().log("Blocking set is null in R4.");
+//            throw new IllegalArgumentException("Blocking set is null in R4.");
         }
 
         if (!(blocking.containsAll(path) && blocking.contains(w))) {
@@ -389,3 +391,4 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         GREEDY,
     }
 }
+

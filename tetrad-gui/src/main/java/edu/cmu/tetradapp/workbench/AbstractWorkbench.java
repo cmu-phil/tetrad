@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
 //                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
+// the Free Software Foundation, either version 3 of the License, or         //
 // (at your option) any later version.                                       //
 //                                                                           //
 // This program is distributed in the hope that it will be useful,           //
@@ -15,21 +15,24 @@
 // GNU General Public License for more details.                              //
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
+
 package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.editor.GraphFileMenu;
+import edu.cmu.tetradapp.editor.GraphPropertiesAction;
+import edu.cmu.tetradapp.editor.PathsAction;
+import edu.cmu.tetradapp.editor.UnderliningsAction;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
@@ -41,12 +44,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.prefs.Preferences;
-
-import static edu.cmu.tetradapp.workbench.EnsembleMenu.isSameGraph;
-import static edu.cmu.tetradapp.workbench.EnsembleMenu.isSamplingGraph;
 
 /**
  * The functionality of the workbench which is shared between the workbench workbench and the session (and any other
@@ -199,10 +199,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Whether to do pag edge specialization markup.
      */
     private boolean pagEdgeSpecializationMarked = false;
-    /**
-     * The graph to be used for sampling.
-     */
-    private Graph samplingGraph;
+//    /**
+//     * The graph to be used for sampling.
+//     */
+//    private Graph samplingGraph;
     /**
      * The knowledge.
      */
@@ -216,12 +216,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @param graph The graph that this workbench will display.
      */
     protected AbstractWorkbench(Graph graph) {
-        if (samplingGraph != null) {
-            setGraph(GraphSampling.createDisplayGraph(samplingGraph,
-                    ResamplingEdgeEnsemble.Majority));
-        } else {
-            setGraph(graph);
-        }
+        setGraph(graph);
         addMouseListener(this.mouseHandler);
         addMouseMotionListener(this.mouseMotionHandler);
         // setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -612,23 +607,23 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         this.allowEdgeReorientations = allowEdgeReorientations;
     }
 
-    /**
-     * <p>Getter for the field <code>samplingGraph</code>.</p>
-     *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public final Graph getSamplingGraph() {
-        return samplingGraph;
-    }
+//    /**
+//     * <p>Getter for the field <code>samplingGraph</code>.</p>
+//     *
+//     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+//     */
+//    public final Graph getSamplingGraph() {
+//        return samplingGraph;
+//    }
 
-    /**
-     * <p>Setter for the field <code>samplingGraph</code>.</p>
-     *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public final void setSamplingGraph(Graph graph) {
-        samplingGraph = graph;
-    }
+//    /**
+//     * <p>Setter for the field <code>samplingGraph</code>.</p>
+//     *
+//     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+//     */
+//    public final void setSamplingGraph(Graph graph) {
+//        samplingGraph = graph;
+//    }
 
     /**
      * Sets the label for an edge to a particular JComponent. The label will be displayed halfway along the edge
@@ -1125,20 +1120,22 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             this.graphStack.addLast(new EdgeListGraph(graph));
         }
 
-        if (isSamplingGraph(graph)) {
-            Graph samplingGraph = getSamplingGraph();
+        this.graph = graph;
 
-            // replace original sampling graph if it's a different sampling graph
-            if (!isSameGraph(samplingGraph, graph)) {
-                samplingGraph = graph;
-                setSamplingGraph(samplingGraph);
-            }
-
-            this.graph = graph;
-        } else {
-            setSamplingGraph(null);
-            this.graph = graph;
-        }
+//        if (isSamplingGraph(graph)) {
+//            Graph samplingGraph = getSamplingGraph();
+//
+//            // replace original sampling graph if it's a different sampling graph
+//            if (!isSameGraph(samplingGraph, graph)) {
+//                samplingGraph = graph;
+//                setSamplingGraph(samplingGraph);
+//            }
+//
+//            this.graph = graph;
+//        } else {
+//            setSamplingGraph(null);
+//            this.graph = graph;
+//        }
 
         if (pagEdgeSpecializationMarked) {
             GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
@@ -2113,6 +2110,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         if (this instanceof GraphWorkbench) {
             popup.add(new EnsembleMenu((GraphWorkbench) this));
         }
+
+        popup.addSeparator();
+
+        if (this instanceof GraphWorkbench) {
+            popup.add(new GraphFileMenu((GraphWorkbench) this));
+        }
+
+        popup.add(createGraphMenu());
+
         popup.show(this, e.getX(), e.getY());
     }
 
@@ -2275,14 +2281,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                     text.append("</html>");
 
-                  setEdgeToolTip(edge, text.toString());
+                    setEdgeToolTip(edge, text.toString());
                 }
             }
         } else if (source instanceof DisplayNode displayNode) {
             Node node = displayNode.getModelNode();
             if (this.graph.containsNode(node)) {
                 Map<String, Object> attributes = node.getAllAttributes();
-                if (!attributes.isEmpty()) {                    StringBuilder attribute = new StringBuilder();
+                if (!attributes.isEmpty()) {
+                    StringBuilder attribute = new StringBuilder();
                     for (String key : attributes.keySet()) {
                         Object value = attributes.get(key);
                         attribute.append(key).append(": ").append(value).append("<br>");
@@ -2691,6 +2698,30 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
     }
 
+    private JMenu createGraphMenu() {
+        JMenu graph = new JMenu("Graph");
+
+        JMenuItem graphProperties = new JMenuItem(new GraphPropertiesAction(((GraphWorkbench) this)));
+        JMenuItem pathsAction = new JMenuItem(new PathsAction((GraphWorkbench) this, new Parameters()));
+        graphProperties.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_DOWN_MASK));
+        pathsAction.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_DOWN_MASK));
+
+        graph.add(graphProperties);
+        graph.add(pathsAction);
+        graph.add(new UnderliningsAction(((GraphWorkbench) this)));
+        graph.addSeparator();
+
+        graph.add(edu.cmu.tetradapp.util.GraphUtils.getHighlightMenu(((GraphWorkbench) this)));
+        graph.add(edu.cmu.tetradapp.util.GraphUtils.getCheckGraphMenu(((GraphWorkbench) this)));
+        edu.cmu.tetradapp.util.GraphUtils.addGraphManipItems(graph, ((GraphWorkbench) this));
+        graph.addSeparator();
+        graph.add(edu.cmu.tetradapp.util.GraphUtils.addPagEdgeSpecializationsItems(((GraphWorkbench) this)));
+
+        return graph;
+    }
+
     /**
      * This inner class is a simple wrapper for JComponents which are to serve as edge labels in the workbench. Its sole
      * function is to make sure the wrapped JComponents stay in the right place in the workbench--that is, halfway along
@@ -3026,3 +3057,4 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
     }
 }
+

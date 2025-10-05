@@ -3,7 +3,7 @@
   <parent>
     <artifactId>tetrad</artifactId>
     <groupId>io.github.cmu-phil</groupId>
-    <version>7.6.8</version>
+    <version>7.6.9-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>tetrad-lib</artifactId>
@@ -48,6 +48,13 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+          <useModulePath>false</useModulePath>
+        </configuration>
       </plugin>
     </plugins>
   </build>
