@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>tetrad-lib</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
 
     <build>
         <plugins>

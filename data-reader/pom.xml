@@ -9,6 +9,7 @@
     </parent>
     <!--    <groupId>io.github.cmu-phil</groupId>-->
     <artifactId>data-reader</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <properties>

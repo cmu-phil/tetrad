@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>tetrad-gui</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
 
     <build>
         <resources>
