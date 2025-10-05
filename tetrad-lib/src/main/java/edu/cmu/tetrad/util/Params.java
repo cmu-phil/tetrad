@@ -1170,10 +1170,14 @@ public final class Params {
      * Constant <code>INSTANCE_ROW="instanceRow"</code>
      */
     public static final String INSTANCE_ROW = "instanceRow";
-
+    /**
+     * Constant <code>IS_ALPHA="isAlpha"</code>
+     */
+    public static final String INSTANCE_SPECIFIC_ALPHA = "instanceSpecificAlpha";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
+
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,
             Params.CCI_SCORE_ALPHA, Params.CG_EXACT, Params.COEF_HIGH, Params.COEF_LOW, Params.COEF_SYMMETRIC,
             Params.COLLIDER_DISCOVERY_RULE, Params.COMPLETE_RULE_SET_USED, Params.CONCURRENT_FAS,
@@ -1279,6 +1283,10 @@ public final class Params {
      * regression and HSIC.
      */
     public static String RCIT_CENTER_FEATURES = "rcit.centerFeatures";
+    /**
+     * Constant <code>REPEATING_GRAPH="repeatingGraph"</code> Whether to use a repeating graph for time lag search.
+     */
+    public static String TIME_LAG_REPLICATING_GRAPH = "timeLagReplicatingGraph";
 
     private Params() {
     }

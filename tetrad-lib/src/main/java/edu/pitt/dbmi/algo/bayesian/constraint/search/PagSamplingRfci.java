@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.GraphLegalityCheck;
 import edu.cmu.tetrad.util.GraphSampling;
 
 import java.util.HashSet;
@@ -107,7 +107,7 @@ public class PagSamplingRfci implements IGraphSearch {
                 for (Future<Graph> completedTask : completedTasks) {
                     try {
                         Graph graph = completedTask.get();
-                        if (graph != null && GraphSearchUtils.isLegalPag(graph, new HashSet<>()).isLegalPag()) {
+                        if (graph != null && GraphLegalityCheck.isLegalPag(graph, new HashSet<>()).isLegalPag()) {
                             graphs.add(graph);
                         }
                     } catch (ExecutionException exception) {

@@ -160,7 +160,8 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // FCIT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setCheckAdjacencySepsets(parameters.getBoolean(Params.CHECK_ADJACENCY_SEPSETS));
+//        search.setCheckAdjacencySepsets(parameters.getBoolean(Params.CHECK_ADJACENCY_SEPSETS));
+//        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.BOSS);
@@ -175,7 +176,6 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
-        search.setGuaranteeMag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
         return search.search();
     }
@@ -199,7 +199,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      */
     @Override
     public String getDescription() {
-        return "FCIT (FCI Targeted Testing) using " + this.score.getDescription();
+        return "FCIT (FCI Targeted Testing) using "+ this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**
@@ -228,10 +228,8 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 
         // FCIT
         params.add(Params.FCIT_STARTS_WITH);
-        params.add(Params.CHECK_ADJACENCY_SEPSETS);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
-        params.add(Params.GUARANTEE_PAG);
 
         // General
         params.add(Params.TIME_LAG);

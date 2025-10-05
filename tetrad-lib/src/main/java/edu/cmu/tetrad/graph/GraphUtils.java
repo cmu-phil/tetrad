@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.graph;
 
@@ -243,11 +243,7 @@ public final class GraphUtils {
     public static Graph completeGraph(Graph graph) {
         Graph graph2;
 
-        if (graph instanceof SvarEdgeListGraph) {
-            graph2 = new SvarEdgeListGraph(graph.getNodes());
-        } else {
-            graph2 = new EdgeListGraph(graph.getNodes());
-        }
+        graph2 = GraphFactoryUtil.newGraph(graph.getNodes(), graph instanceof ReplicatingGraph);
 
         graph2.removeEdges(new ArrayList<>(graph2.getEdges()));
 
@@ -2624,7 +2620,7 @@ public final class GraphUtils {
 
         MagToPag dagToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
         dagToPag.setKnowledge(knowledge);
-        Graph pag2 = dagToPag.convert();
+        Graph pag2 = dagToPag.convert(true);
 
         if (pag2.equals(orig)) {
             if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
@@ -3407,8 +3403,8 @@ public final class GraphUtils {
 
     private static void strongConnect(Node v,
                                       Graph g,
-                                      Map<Node,Integer> index,
-                                      Map<Node,Integer> lowlink,
+                                      Map<Node, Integer> index,
+                                      Map<Node, Integer> lowlink,
                                       Deque<Node> stack,
                                       Set<Node> onStack,
                                       int[] counter,

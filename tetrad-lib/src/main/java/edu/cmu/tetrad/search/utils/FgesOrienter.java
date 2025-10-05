@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.util.FastMath;
@@ -155,8 +155,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
             BoxDataSet dataSet1 = new BoxDataSet(box, dataSet.getVariables());
 
             setDataSet(dataSet1);
-            BdeuScore score = new BdeuScore(dataSet1);
-            score.setSamplePrior(10);
+            BDeuScore score = new BDeuScore(dataSet1);
+            score.setPriorEquivalentSampleSize(10);
             score.setStructurePrior(0.001);
             setDiscreteScore(score);
             setStructurePrior(0.001);
@@ -371,7 +371,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
      */
     public void setSamplePrior(double samplePrior) {
         if (getDiscreteScore() != null) {
-            getDiscreteScore().setSamplePrior(samplePrior);
+            getDiscreteScore().setPriorEquivalentSampleSize(samplePrior);
         }
     }
 

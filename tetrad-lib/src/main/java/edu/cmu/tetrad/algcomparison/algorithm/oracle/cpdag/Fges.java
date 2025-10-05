@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -105,6 +105,7 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         Graph graph;
 
         edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(myScore);
+        search.setReplicating(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
@@ -160,6 +161,7 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.NUM_THREADS);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.VERBOSE);
 
         return parameters;
@@ -197,4 +199,3 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         this.score = score;
     }
 }
-

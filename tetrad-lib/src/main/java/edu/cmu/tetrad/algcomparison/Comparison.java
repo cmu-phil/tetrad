@@ -452,6 +452,10 @@ public class Comparison implements TetradSerializable {
             }
         }
 
+        for (int i = 0; i < simulations.getSimulations().size(); i++) {
+            saveToFiles(resultsPath + "/simulation" + (i + 1), simulations.getSimulations().get(i), parameters);
+        }
+
         // Run all the algorithms and compile statistics.
         double[][][][] allStats;
 
@@ -616,9 +620,9 @@ public class Comparison implements TetradSerializable {
             printStats(statTables, statistics, Mode.MedianValue, newOrder, algorithmSimulationWrappers, algorithmWrappers, simulationWrappers, utilities, parameters);
         }
 
-        for (int i = 0; i < simulations.getSimulations().size(); i++) {
-            saveToFiles(resultsPath + "/simulation" + (i + 1), simulations.getSimulations().get(i), parameters);
-        }
+//        for (int i = 0; i < simulations.getSimulations().size(); i++) {
+//            saveToFiles(resultsPath + "/simulation" + (i + 1), simulations.getSimulations().get(i), parameters);
+//        }
 
         close();
     }
@@ -734,9 +738,11 @@ public class Comparison implements TetradSerializable {
                         GraphSaveLoadUtils.saveGraph(GraphTransforms.dagToCpdag(graph), file3, false);
                     }
 
+
                     if (isSavePags()) {
+                        Graph pag = GraphTransforms.dagToPag(graph);
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphSaveLoadUtils.saveGraph(GraphTransforms.dagToPag(graph), file4, false);
+                        GraphSaveLoadUtils.saveGraph(pag, file4, false);
                     }
 
                 }

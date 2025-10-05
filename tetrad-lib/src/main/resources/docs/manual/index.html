@@ -7635,7 +7635,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="hiddenDimension_short_desc">
-                For a shallow multilayer perception (MLP), the number of nodes in the hidden layer
+                For Nonlinear Additive Model, the number of nodes per edge
             </span></li>
             <li>Long Description: <span
                     id="hiddenDimension_long_desc">
@@ -7643,14 +7643,14 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </span></li>
             <li>Default
                 Value: <span
-                        id="hiddenDimension_default_value">50,50,50,50,50</span></li>
+                        id="hiddenDimension_default_value">10</span></li>
             <li>Lower Bound: <span
-                    id="hiddenDimension_lower_bound"></span></li>
+                    id="hiddenDimension_lower_bound">1</span></li>
             <li>Upper
                 Bound: <span
-                        id="hiddenDimension_upper_bound"></span></li>
+                        id="hiddenDimension_upper_bound">500000</span></li>
             <li>Value Type: <span
-                    id="hiddenDimension_value_type">String</span></li>
+                    id="hiddenDimension_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -10722,8 +10722,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="timeLag_short_desc">A time lag for time series data,
-                    automatically applied (zero if none)</span></li>
+                    id="timeLag_short_desc">
+                For time lag searches,`a time lag,
+                automatically applied (zero if none)</span></li>
             <li>Long Description: <span
                     id="timeLag_long_desc">Automatically applies the time lag
                     transform to the data, creating additional lagged variables. If
@@ -10734,6 +10735,31 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 Bound: <span id="timeLag_upper_bound">2147483647</span></li>
             <li>Value Type: <span
                     id="timeLag_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="timeLagReplicatingGraph">timeLagReplicatingGraph</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="timeLagReplicatingGraph_short_desc">
+                    For time lag searches, whether to make the graph replicate edges across time lags, SVAR-style
+        </span></li>
+            <li>Long Description: <span
+                    id="timeLagReplicatingGraph_long_desc">
+                    For time lag searches, whether to make the graph replicate edges across time lags, SVAR-style
+                    <option class="" value=""></option>
+        </span></li>
+            <li>Default Value: <span
+                    id="timeLagReplicatingGraph_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="timeLagReplicatingGraph_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="timeLagReplicatingGraph_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="timeLagReplicatingGraph_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="useGap">useGap</h3>
@@ -11499,6 +11525,24 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Lower Bound: <span id="instanceRow_lower_bound">1</span></li>
             <li>Upper Bound: <span id="instanceRow_upper_bound">2147483647</span></li>
             <li>Value Type: <span id="instanceRow_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="instanceSpecificAlpha">instanceSpecificAlpha</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description:
+                <span id="instanceSpecificAlpha_short_desc">
+                Weight for instance-specific component to the score
+                </span>
+            </li>
+            <li>Long Description:
+                <span id="instanceSpecificAlpha_long_desc">
+                  Weight for instance-specific component to the score.
+                </span>
+            </li>
+            <li>Default Value: <span id="instanceSpecificAlpha_default_value">1.0</span></li>
+            <li>Lower Bound: <span id="instanceSpecificAlpha_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="instanceSpecificAlpha_upper_bound">Infinity</span></li>
+            <li>Value Type: <span id="instanceSpecificAlpha_value_type">Double</span></li>
         </ul>
     </div> <!-- End of search parameters -->
 

@@ -31,7 +31,7 @@ import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Rfci;
-import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -422,8 +422,8 @@ public class RfciBsc implements IGraphSearch {
         pool.invokeAll(tasks);
 
         // learn structure of constraints using empirical data => constraint data
-        BdeuScore sd = new BdeuScore(depData);
-        sd.setSamplePrior(1.0);
+        BDeuScore sd = new BDeuScore(depData);
+        sd.setPriorEquivalentSampleSize(1.0);
         sd.setStructurePrior(1.0);
 
         Fges fges = new Fges(sd);

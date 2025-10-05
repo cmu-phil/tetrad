@@ -45,25 +45,17 @@ public final class SimulationTypes {
      */
     public static final String GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL = "Gaussian Process Structural Equation Model";
     /**
-     * Constant <code>NONLINEAR_ADDITIVE_NOISE_MODEL="Nonlinear Additive Noise Model"</code>
+     * Constant <code>ADDITIVE_NOISE_MODEL="Additive Noise SEM"</code>
      */
-    public static final String NONLINEAR_ADDITIVE_NOISE_MODEL = "Nonlinear Additive Noise Model";
+    public static final String NONLINEAR_ADDITIVE_SEM = "Nonlienar Additive SEM (CAM)";
     /**
      * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
      */
     public static final String POST_NONLINEAR_MODEL = "Post-nonlinear causal Model";
-//    /**
-//     * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
-//     */
-//    public static final String NONLINEAR_FUNCTIONS_OF_LINEAR = "Nonlinear Functions of Linear (NFL) Model";
     /**
      * Constant <code>CAUSAL_PERCEPTRON_NETWORK="Causal Peceptron Network (CPN)"</code>
      */
-    public static final String CAUSAL_PERCEPTRON_NETWORK = "Nonlinear SEM (Deep Net)";
-    /**
-     * Constant <code>CAUSAL_PERCEPTRON_NETWORK="Causal Peceptron Network (CPN)"</code>
-     */
-    public static final String ADDITIVE_ANM_NETWORK = "Additive Nonlinear SEM";
+    public static final String ADDITIVE_NOISE_SEM = "Additive Noise SEM (Deep Net)";
     /**
      * Constant <code>LG_MNAR_SIMULATION="LG MNAR Simulation"</code>
      */

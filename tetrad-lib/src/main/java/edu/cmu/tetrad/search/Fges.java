@@ -188,6 +188,7 @@ public class Fges implements IGraphSearch, DagScorer {
      * The number of threads to use to run the algorithm.
      */
     private int numThreads = 1;
+    private boolean replicating = false;
 
     /**
      * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
@@ -225,7 +226,7 @@ public class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges till the model is significant. Then start
+     * Greedy equivalence search: Start from the empty graph, add edges tillsetre the model is significant. Then start
      * deleting edges till a minimum is achieved.
      *
      * @return the resulting Pattern.
@@ -234,7 +235,7 @@ public class Fges implements IGraphSearch, DagScorer {
         long start = MillisecondTimes.timeMillis();
         topGraphs.clear();
 
-        graph = new EdgeListGraph(getVariables());
+        graph = GraphFactoryUtil.newGraph(getVariables(), replicating);
 
         if (boundGraph != null) {
             boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
@@ -1338,6 +1339,15 @@ public class Fges implements IGraphSearch, DagScorer {
         set.addAll(T);
         set.addAll(parents);
         return scoreGraphChange(x, y, set, idx); // calls existing private method
+    }
+
+    /**
+     * Sets the replicating status of the current object.
+     *
+     * @param replicating the new replicating status to set; true to enable replication, false to disable it
+     */
+    public void setReplicating(boolean replicating) {
+        this.replicating = replicating;
     }
 
     /**

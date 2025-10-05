@@ -38,7 +38,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @version $Id: $Id
- * @see BdeuScore
+ * @see BDeuScore
  */
 public class BdeScore implements DiscreteScore {
 
@@ -201,7 +201,7 @@ public class BdeScore implements DiscreteScore {
      *
      * @param samplePrior The sample prior value.
      */
-    public void setSamplePrior(double samplePrior) {
+    public void setPriorEquivalentSampleSize(double samplePrior) {
         throw new UnsupportedOperationException("BDe does not use a sample prior.");
     }
 

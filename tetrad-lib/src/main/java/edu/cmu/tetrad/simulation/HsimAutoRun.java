@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -120,7 +120,7 @@ public class HsimAutoRun {
             //DataWriter.writeRectangularData(dataSet, new FileWriter("dataOut2.txt"), '\t');
             //apply Hsim to data, with whatever parameters
             //========first make the Dag for Hsim==========
-            BdeuScore score = new BdeuScore(this.data);
+            BDeuScore score = new BDeuScore(this.data);
 
             //ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
             final double penaltyDiscount = 2.0;
@@ -198,7 +198,7 @@ public class HsimAutoRun {
             }
             //=======Run FGES on the output data, and compare it to the original learned graph
 
-            BdeuScore newscore = new BdeuScore(newDataSet);
+            BDeuScore newscore = new BDeuScore(newDataSet);
             Fges fgesOut = new Fges(newscore);
             fgesOut.setVerbose(false);
 

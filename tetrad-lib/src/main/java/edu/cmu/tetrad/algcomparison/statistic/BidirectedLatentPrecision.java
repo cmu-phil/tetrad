@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -79,16 +79,22 @@ public class BidirectedLatentPrecision implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        Graph dag = PagCache.getInstance().getDag(trueGraph);
+        Graph dag;
+
+        if (trueGraph.paths().isLegalDag()) {
+            dag = trueGraph;
+        } else {
+            dag = PagCache.getInstance().getDag(trueGraph);
+        }
+
+        if (dag == null) {
+            throw new IllegalArgumentException("Dag is null");
+        }
 
         int tp = 0;
         int pos = 0;
 
         estGraph = GraphUtils.replaceNodes(estGraph, dag.getNodes());
-
-        if (dag == null) {
-            return -99;
-        }
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {

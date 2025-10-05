@@ -22,7 +22,7 @@ package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.ISScore;
+import edu.cmu.tetrad.search.IsScore;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -53,7 +53,7 @@ import java.util.stream.IntStream;
  * providing a lightweight alternative to IS-BDeu when a BIC-style criterion is
  * preferred.</p>
  */
-public class ISBicScore implements ISScore {
+public class IsBicScore implements IsScore {
 
     /** Training data as [var][row] integer-coded categories (use -99 for missing). */
     private final int[][] data;
@@ -92,7 +92,7 @@ public class ISBicScore implements ISScore {
      *                                  if the test case variable count does not match the training dataset variable count,
      *                                  or if the test case does not contain a single row.
      */
-    public ISBicScore(DataSet dataSet, DataSet testCase) {
+    public IsBicScore(DataSet dataSet, DataSet testCase) {
         if (dataSet == null || testCase == null) {
             throw new NullPointerException("Training dataset and test case must be non-null.");
         }

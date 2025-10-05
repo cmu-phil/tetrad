@@ -171,10 +171,11 @@ public final class MagToPag {
     /**
      * This method does the conversion of MAG to PAG.
      *
+     * @param checkMag Whether to check if the MAG is legal before conversion.
      * @return Returns the converted PAG.
      */
-    public Graph convert() {
-        if (!this.mag.paths().isLegalMag()) {
+    public Graph convert(boolean checkMag) {
+        if (checkMag && !this.mag.paths().isLegalMag()) {
             throw new IllegalArgumentException("Not legal mag");
         }
 
@@ -185,6 +186,7 @@ public final class MagToPag {
         FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
+        fciOrient.setMaxDiscriminatingPathLength(-1);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
 
         for (Node y : pag.getNodes()) {

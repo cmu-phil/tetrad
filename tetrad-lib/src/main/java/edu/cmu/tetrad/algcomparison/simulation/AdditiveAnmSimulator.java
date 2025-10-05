@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.AdditiveAnmSimulator;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -42,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Additive Nonlinear SEM (ANM-style) simulator wrapper for algcomparison.
+ * Additive Noise SEM (ANM-style) simulator wrapper for algcomparison.
  *
  * <p>Model:</p>
  * <pre>
@@ -61,7 +60,7 @@ import java.util.List;
  *
  * <p>Keeps existing post-processing knobs: STANDARDIZE, etc.</p>
  */
-public class AdditiveAnmSimulation implements Simulation {
+public class AdditiveAnmSimulator implements Simulation {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -104,7 +103,7 @@ public class AdditiveAnmSimulation implements Simulation {
      * @param graph the random graph to be used for the simulation; must not be null
      * @throws NullPointerException if the provided graph is null
      */
-    public AdditiveAnmSimulation(RandomGraph graph) {
+    public AdditiveAnmSimulator(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -238,7 +237,7 @@ public class AdditiveAnmSimulation implements Simulation {
      * @return a description of the simulation
      */
     public String getDescription() {
-        return "Additive Nonlinear SEM using " + this.randomGraph.getDescription();
+        return "Additive Noise SEM using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -333,12 +332,12 @@ public class AdditiveAnmSimulation implements Simulation {
         final boolean standardizeParents = parameters.getBoolean(Params.STANDARDIZE, true);
 
         // ---------- 2) Preset -> base family & base richness/amplitude ----------
-        AdditiveAnmSimulator.Family family = switch (preset) {
-            case "smooth_rbf" -> AdditiveAnmSimulator.Family.RBF;
-            case "wavy_rbf" -> AdditiveAnmSimulator.Family.RBF;
-            case "tanh" -> AdditiveAnmSimulator.Family.TANH;
-            case "polynomial" -> AdditiveAnmSimulator.Family.POLY;
-            default -> AdditiveAnmSimulator.Family.RBF; // fallback
+        edu.cmu.tetrad.sem.AdditiveAnmSimulator.Family family = switch (preset) {
+            case "smooth_rbf" -> edu.cmu.tetrad.sem.AdditiveAnmSimulator.Family.RBF;
+            case "wavy_rbf" -> edu.cmu.tetrad.sem.AdditiveAnmSimulator.Family.RBF;
+            case "tanh" -> edu.cmu.tetrad.sem.AdditiveAnmSimulator.Family.TANH;
+            case "polynomial" -> edu.cmu.tetrad.sem.AdditiveAnmSimulator.Family.POLY;
+            default -> edu.cmu.tetrad.sem.AdditiveAnmSimulator.Family.RBF; // fallback
         };
 
         int baseUnits = switch (preset) {
@@ -366,7 +365,7 @@ public class AdditiveAnmSimulation implements Simulation {
         RealDistribution noiseDist = buildNoise(parameters, noiseKind, sigma);
 
         // ---------- 6) Build generator ----------
-        AdditiveAnmSimulator gen = new AdditiveAnmSimulator(
+        edu.cmu.tetrad.sem.AdditiveAnmSimulator gen = new edu.cmu.tetrad.sem.AdditiveAnmSimulator(
                 graph,
                 N,
                 noiseDist

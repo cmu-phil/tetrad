@@ -28,7 +28,7 @@ import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.FgesFci;
 import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
@@ -203,9 +203,9 @@ public class Comparison {
                 throw new IllegalArgumentException("Structure prior not set.");
             }
 
-            score = new BdeuScore(dataSet);
-            ((BdeuScore) score).setSamplePrior(params.getSamplePrior());
-            ((BdeuScore) score).setStructurePrior(params.getStructurePrior());
+            score = new BDeuScore(dataSet);
+            ((BDeuScore) score).setPriorEquivalentSampleSize(params.getSamplePrior());
+            ((BDeuScore) score).setStructurePrior(params.getStructurePrior());
 
             params.setDataType(ComparisonParameters.DataType.Discrete);
 

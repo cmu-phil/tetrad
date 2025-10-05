@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -25,7 +25,7 @@ import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.GraphLegalityCheck;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.*;
@@ -407,7 +407,7 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Checks if the given Maximal Ancestral Graph (MPAG) is legal. A MPAG is considered legal if it is equal to a PAG
+     * Checks if the given Maximal Ancestral Graph (MAG) is legal. A MAG is considered legal if it is equal to a PAG
      * where additional edges have been oriented by Knowledge, with final FCI rules applied for maximum orientation. The
      * test is performed by attemping to convert the graph to a PAG using the DAG to CPDAG transformation and testing
      * whether that graph is a legal PAG. Finally, we test to see whether the obtained graph is equal to the original
@@ -421,18 +421,13 @@ public class Paths implements TetradSerializable {
         Graph g = this.graph;
 
         try {
-            Graph pag = GraphTransforms.dagToPag(g);
+            Graph pag = PagCache.getInstance().getPag(graph);
 
             if (pag.paths().isLegalPag()) {
-                Graph __g = PagCache.getInstance().getPag(graph);
-//                Graph __g = new DagToPag(graph).convert();
-
-                if (__g.paths().isLegalPag()) {
-                    Graph _g = new EdgeListGraph(g);
-                    FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
-                    fciOrient.finalOrientation(pag);
-                    return g.equals(_g);
-                }
+                Graph _g = new EdgeListGraph(g);
+                FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
+                fciOrient.finalOrientation(pag);
+                return g.equals(_g);
             }
 
             return false;
@@ -451,7 +446,7 @@ public class Paths implements TetradSerializable {
     public boolean isLegalMag() {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        return GraphSearchUtils.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
+        return GraphLegalityCheck.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
     }
 
     /**
@@ -461,7 +456,7 @@ public class Paths implements TetradSerializable {
      */
     public boolean isLegalPag() {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-        return GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
+        return GraphLegalityCheck.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
     }
 
     /**

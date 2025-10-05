@@ -90,6 +90,7 @@ public final class Rfci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    private boolean replicatingGraph = false;
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.
@@ -154,7 +155,9 @@ public final class Rfci implements IGraphSearch {
     public Graph search(List<Node> nodes) throws InterruptedException {
         nodes = new ArrayList<>(nodes);
 
-        return search(new Fas(getTest()), nodes);
+        Fas fas = new Fas(getTest());
+        fas.setReplicatingGraph(replicatingGraph);
+        return search(fas, nodes);
     }
 
     /**
@@ -546,6 +549,15 @@ public final class Rfci implements IGraphSearch {
                 }
             }
         }
+    }
+
+    /**
+     * Sets the state of whether the graph is set to replicate or not during the search process.
+     *
+     * @param replicatingGraph If true, the graph is in a replicating state. If false, it is not.
+     */
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
     }
 }
 

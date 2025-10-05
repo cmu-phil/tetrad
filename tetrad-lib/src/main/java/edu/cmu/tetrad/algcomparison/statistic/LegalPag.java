@@ -47,7 +47,7 @@ public class LegalPag implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "LegalPAG";
+        return "PAG";
     }
 
     /**

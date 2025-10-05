@@ -525,16 +525,19 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
                 }
             }
-            // ----- 2B) Standard algorithms: NEW â run once PER DATASET and collect graphs -----
+            // ----- 2B) Standard algorithms: run once PER DATASET and collect graphs -----
             else { // NEW
                 // (Removed the old single-dataset assertion; now we iterate all datasets.)
                 for (int i = 0; i < dataModelList.size(); i++) {
                     DataModel data = dataModelList.get(i);
 
-                    // Prefer knowledge embedded in each dataset if present
-                    Knowledge knowledgeFromData = data.getKnowledge();
-                    if (knowledgeFromData != null && !knowledgeFromData.getVariables().isEmpty()) {
-                        this.knowledge = knowledgeFromData;
+                    if (knowledge == null) {
+
+                        // If knowledge is not set, use knowledge embedded in each dataset if present
+                        Knowledge knowledgeFromData = data.getKnowledge();
+                        if (knowledgeFromData != null && !knowledgeFromData.getVariables().isEmpty()) {
+                            this.knowledge = knowledgeFromData;
+                        }
                     }
 
                     // Wire score/test wrappers with BlockSpec if applicable
@@ -543,12 +546,18 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         if (scoreWrapper instanceof BlockScoreWrapper) {
                             ((BlockScoreWrapper) scoreWrapper).setBlockSpec(blockSpec);
                         }
+                        if (scoreWrapper instanceof HasKnowledge) {
+                            ((HasKnowledge) scoreWrapper).setKnowledge(knowledge);
+                        }
                     }
 
                     if (algo instanceof TakesIndependenceWrapper) {
                         IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
                         if (wrapper instanceof BlockIndependenceWrapper) {
                             ((BlockIndependenceWrapper) wrapper).setBlockSpec(blockSpec);
+                        }
+                        if (wrapper instanceof HasKnowledge) {
+                            ((HasKnowledge) wrapper).setKnowledge(knowledge);
                         }
                     }
 

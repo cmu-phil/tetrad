@@ -115,6 +115,7 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         };
 
         edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(this.test.getTest(dataModel, parameters));
+        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setR0ColliderRule(colliderOrientationStyle);
         search.setKnowledge(this.knowledge);
@@ -188,6 +189,7 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.GUARANTEE_PAG);
 
         parameters.add(Params.VERBOSE);

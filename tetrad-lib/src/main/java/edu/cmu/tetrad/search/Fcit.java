@@ -124,15 +124,6 @@ public final class Fcit implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
-     * A flag indicating whether to perform a final check of condition sets that are subsets of adjacent nodes of the
-     * variables in the graph, after all recursive separation set removals have been completed. This step can ensure
-     * correctness in specific theoretical tests, such as Oracle tests, but may reduce accuracy when applied to
-     * empirical data.
-     * <p>
-     * The default value is {@code true}.
-     */
-    private boolean checkAdjacencySepsets = true;
-    /**
      * A field representing the Partial Ancestral Graph (PAG) used during the causal discovery process. The PAG is
      * initialized as an empty {@link EdgeListGraph} and is updated throughout the search algorithm to incorporate
      * causal structure information.
@@ -145,16 +136,7 @@ public final class Fcit implements IGraphSearch {
      * instantiated to an empty graph structure.
      */
     private @NotNull Graph pag = new EdgeListGraph();
-    /**
-     * Indicates whether the search algorithm guarantees that the output graph is a valid Partial Ancestral Graph (PAG).
-     * If set to true, the algorithm ensures the validity of the PAG by making necessary adjustments and conforming to
-     * PAG-specific rules.
-     * <p>
-     * This flag is useful for scenarios where a valid PAG is a mandatory requirement for further causal inference or
-     * analysis. If false, the algorithm does not enforce this guarantee, which might allow more freedom in the search
-     * process but could result in outputs that are not strictly valid as PAGs.
-     */
-    private boolean guaranteeMag = false;
+    private boolean replicatingGraph = false;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -218,10 +200,13 @@ public final class Fcit implements IGraphSearch {
         return initialColliders;
     }
 
-    private static void redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge, Set<Triple> initialColliders, SepsetMap sepsets, boolean superVerbose) {
+    private static void redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+                                            Set<Triple> initialColliders, boolean completeRuleSetUsed,
+                                            SepsetMap sepsets, boolean superVerbose) {
         // GFCI reorientation...
         GraphUtils.reorientWithCircles(pag, superVerbose);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
         adjustForExtraSepsets(sepsets, pag, superVerbose);
         fciOrient.finalOrientation(pag);
@@ -304,9 +289,9 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
-        fciOrient.setParallel(true);
-        fciOrient.setCompleteRuleSetUsed(true);
-        fciOrient.setKnowledge(knowledge);
+        fciOrient.setParallel(false);
+//        fciOrient.setCompleteRuleSetUsed(true);
+//        fciOrient.setKnowledge(knowledge);
 
         Graph dag;
         List<Node> best;
@@ -350,6 +335,7 @@ public final class Fcit implements IGraphSearch {
             long start = MillisecondTimes.wallTimeMillis();
 
             Grasp grasp = getGraspSearch();
+            grasp.setReplicatingGraph(replicatingGraph);
             best = grasp.bestOrder(nodes);
             dag = grasp.getGraph(false);
 
@@ -439,12 +425,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         // The main procedure.
-
-        MagToPag dagToPag = new MagToPag(GraphTransforms.dagToMag(dag));
-        dagToPag.setKnowledge(knowledge);
-        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-        dagToPag.setVerbose(superVerbose);
-        this.pag = dagToPag.convert();
+        this.pag = GraphTransforms.dagToPag(dag);
 
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
@@ -455,23 +436,8 @@ public final class Fcit implements IGraphSearch {
         int round = 0;
 
         do {
-            System.out.println("Round: " + (++round) + " legal pag = " + pag.paths().isLegalPag());
-
-            if (verbose) {
-                TetradLogger.getInstance().log("===== NEW ROUND =====");
-            }
+            System.out.println("Round: " + (++round));
         } while (removeEdgesRecursively(checks));
-
-        System.out.println("Final round: legal pag = " + pag.paths().isLegalPag());
-
-        // This (optional) step removes edges based on FCI-style subsets of adjacents reasoning. This is needed
-        // for correctness, but can lead to lower accuracies. Again, after every edge removal, the evolving PAG
-        // is rebuilt and the Zhang MAG in the PAG optionally checked.
-        if (checkAdjacencySepsets) {
-
-            // This only needs to be done once.
-            removeEdgesSubsetsOfAdjacents(checks);
-        }
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -496,58 +462,6 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
 
-    private IndependenceCheck findIndependenceCheckSubsetOfAdjacents(Edge edge) throws InterruptedException {
-
-        if (sepsets.get(edge.getNode1(), edge.getNode2()) != null) {
-            return null;
-        }
-
-        if (verbose) {
-            System.out.print(".");
-        }
-
-        Node x = edge.getNode1();
-        Node y = edge.getNode2();
-
-        List<Node> adjx = this.pag.getAdjacentNodes(x);
-        List<Node> adjy = this.pag.getAdjacentNodes(y);
-        adjx.remove(y);
-        adjy.remove(x);
-
-        SublistGenerator gen1 = new SublistGenerator(adjx.size(), adjx.size());
-        int[] choice1;
-
-        while ((choice1 = gen1.next()) != null) {
-            if (!pag.isAdjacentTo(x, y)) {
-                continue;
-            }
-
-            Set<Node> cond = GraphUtils.asSet(choice1, adjx);
-
-            if (test.checkIndependence(x, y, cond).isIndependent()) {
-                return new IndependenceCheck(edge, cond);
-            }
-        }
-
-
-        SublistGenerator gen2 = new SublistGenerator(adjy.size(), adjy.size());
-        int[] choice2;
-
-        while ((choice2 = gen2.next()) != null) {
-            if (!pag.isAdjacentTo(x, y)) {
-                continue;
-            }
-
-            Set<Node> cond = GraphUtils.asSet(choice2, adjy);
-
-            if (test.checkIndependence(x, y, cond).isIndependent()) {
-                return new IndependenceCheck(edge, cond);
-            }
-        }
-
-        return null;
-    }
-
     /**
      * Configures and returns a new instance of PermutationSearch using the BOSS algorithm. The method initializes the
      * BOSS algorithm with parameters such as the score function, verbosity, number of starts, number of threads, and
@@ -563,6 +477,7 @@ public final class Fcit implements IGraphSearch {
         subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
         subAlg.setVerbose(superVerbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
+        alg.setReplicatingGraph(replicatingGraph);
         alg.setKnowledge(knowledge);
         return alg;
     }
@@ -583,7 +498,7 @@ public final class Fcit implements IGraphSearch {
         grasp.setUseScore(true);
         grasp.setUseRaskuttiUhler(false);
         grasp.setUseDataOrder(useDataOrder);
-        grasp.setAllowInternalRandomness(true);
+        grasp.setAllowInternalRandomness(false);
         grasp.setVerbose(superVerbose);
         grasp.setNumStarts(numStarts);
         grasp.setKnowledge(this.knowledge);
@@ -599,7 +514,7 @@ public final class Fcit implements IGraphSearch {
      * sets that would separate the endpoints. 3. Runs the independence test on those candidate sets. 4. If independence
      * is found, tries to remove the edge and re-orient the graph accordingly.
      * <p>
-     * If {@code guaranteeMag} is true, removals that would yield an illegal MAG are reverted; otherwise, illegal PAG
+     * If {@code guaranteePag} is true, removals that would yield an illegal MAG are reverted; otherwise, illegal PAG
      * states may persist. Verbose logging records each attempted removal and orientation.
      *
      * @return true if at least one edge was removed, false otherwise
@@ -643,199 +558,26 @@ public final class Fcit implements IGraphSearch {
         return changed;
     }
 
-    private void removeEdgesSubsetsOfAdjacents(Set<IndependenceCheck> checks) {
-        if (superVerbose) {
-            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
-        }
-
-        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-        // there in this graph.
-        Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
-
-        List<Result> results = findIndependenceChecksSubsetOfAdjacents(edgePool, checks);
-
-        if (verbose) {
-            System.out.println();
-        }
-
-        for (Result result : results) {
-            Edge edge = result.edge();
-            Set<Node> b = result.cond();
-            tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "subsets of adjacents");
-        }
-    }
-
-//    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
-//        return new HashSet<>(edges).parallelStream().filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge) || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())).map(edge -> {
-//            try {
-//                IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
-//                checks.add(checkResult);
-//                return checkResult != null ? new Result(checkResult.edge(), checkResult.cond()) : null;
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }).filter(Objects::nonNull).collect(Collectors.toList());
-//    }
-
-    private List<Result> findIndependenceChecksRecursive(
-            Set<Edge> edges,
-            Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge,
-            Set<IndependenceCheck> checks
-    ) {
-        return new HashSet<>(edges).parallelStream()
-                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
-                .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
-                                || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
-                .map(edge -> {
-                    try {
-                        IndependenceCheck checkResult =
-                                findIndependenceCheckRecursive(edge, pathsByEdge, checks);
-                        if (checkResult != null) {
-                            checks.add(checkResult); // guard against null
-                            return new Result(checkResult.edge(), checkResult.cond());
-                        }
-                        return null;
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    private List<Result> findIndependenceChecksSubsetOfAdjacents(Set<Edge> edges, Set<IndependenceCheck> checks) {
-        return new HashSet<>(edges).parallelStream().filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge) || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())).map(edge -> {
+    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
+        return new HashSet<>(edges).parallelStream().
+                filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(
+                edge -> knowledge == null || !Edges.isDirectedEdge(edge)
+                        || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
+        ).map(edge -> {
             try {
-                IndependenceCheck checkResult = findIndependenceCheckSubsetOfAdjacents(edge);
-                checks.add(checkResult);
-                return checkResult != null ? new Result(checkResult.edge(), checkResult.cond()) : null;
+                IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
+                if (checkResult != null) {
+                    checks.add(checkResult); // guard against null
+                    return new Result(checkResult.edge(), checkResult.cond());
+                }
+                return null;
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
-//    private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) throws InterruptedException {
-//        if (verbose) {
-//            System.out.print(".");
-//        }
-//
-//        Node x = edge.getNode1();
-//        Node y = edge.getNode2();
-//
-//        Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
-//        paths = (paths == null) ? Set.of() : paths;
-//        Set<Node> perhapsNotFollowed = new HashSet<>();
-//
-//        // Don't repeat the same independence test twice for this edge x *-* y.
-//        Set<Set<Node>> S = new HashSet<>();
-//
-//        for (DiscriminatingPath path : paths) {
-//            if (this.pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-//                perhapsNotFollowed.add(path.getV());
-//            }
-//        }
-//
-//        List<Node> _common = pag.getAdjacentNodes(x);
-//        _common.retainAll(pag.getAdjacentNodes(y));
-//
-//        List<Node> E = new ArrayList<>(perhapsNotFollowed);
-//
-//        // Generate subsets and check blocking paths
-//        SublistGenerator gen = new SublistGenerator(E.size(), E.size());
-//        int[] choice;
-//
-//        while ((choice = gen.next()) != null) {
-//            if (!this.pag.isAdjacentTo(x, y)) {
-//                break;
-//            }
-//
-//            Set<Node> notFollowed = GraphUtils.asSet(choice, E);
-//
-//            // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-//            Set<Node> _b = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1, knowledge);
-//
-//            if (_b == null) {
-//                continue;
-//            }
-//
-//            if (superVerbose && !notFollowed.isEmpty()) {
-//                TetradLogger.getInstance().log("Not followed set = " + notFollowed + " cond set = " + _b);
-//            }
-//
-//            {
-//                List<Node> common = this.pag.getAdjacentNodes(x);
-//                common.remove(y);
-//                common.retainAll(_b);
-//
-//                SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
-//                int[] choice2;
-//
-//                while ((choice2 = gen2.next()) != null) {
-//                    if (!this.pag.isAdjacentTo(x, y)) {
-//                        break;
-//                    }
-//
-//                    Set<Node> b = new HashSet<>(_b);
-//
-//                    Set<Node> c = GraphUtils.asSet(choice2, common);
-//                    b.removeAll(c);
-//
-//                    if (S.contains(b)) continue;
-//                    S.add(new HashSet<>(b));
-//
-//                    if (b.size() > (depth == -1 ? test.getVariables().size() : depth)) {
-//                        continue;
-//                    }
-//
-//                    if (checks.contains(new IndependenceCheck(edge, b))) {
-//                        return new IndependenceCheck(edge, b);
-//                    } else if (test.checkIndependence(x, y, b).isIndependent()) {
-//                        return new IndependenceCheck(edge, b);
-//                    }
-//                }
-//            }
-//
-//            {
-//                List<Node> common = this.pag.getAdjacentNodes(y);
-//                common.remove(x);
-//                common.retainAll(_b);
-//
-//                SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
-//                int[] choice2;
-//
-//                while ((choice2 = gen2.next()) != null) {
-//                    if (!this.pag.isAdjacentTo(x, y)) {
-//                        break;
-//                    }
-//
-//                    Set<Node> b = new HashSet<>(_b);
-//
-//                    Set<Node> c = GraphUtils.asSet(choice2, common);
-//                    b.removeAll(c);
-//
-//                    if (S.contains(b)) continue;
-//                    S.add(new HashSet<>(b));
-//
-//                    if (b.size() > (depth == -1 ? test.getVariables().size() : depth)) {
-//                        continue;
-//                    }
-//
-//                    if (test.checkIndependence(x, y, b).isIndependent()) {
-//                        return new IndependenceCheck(edge, b);
-//                    }
-//                }
-//            }
-//        }
-//
-//        return null;
-//    }
-
-    private IndependenceCheck findIndependenceCheckRecursive(
-            Edge edge,
-            Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge,
-            Set<IndependenceCheck> checks
-    ) throws InterruptedException {
+    private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) throws InterruptedException {
         if (verbose) System.out.print(".");
 
         final Node x = edge.getNode1();
@@ -864,9 +606,7 @@ public final class Fcit implements IGraphSearch {
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
 
             // Use recursive blocking to propose a blocking set B; null => no sepset under this NF
-            Set<Node> B = RecursiveBlocking.blockPathsRecursively(
-                    this.pag, x, y, Set.of(), notFollowed, -1, this.knowledge
-            );
+            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1, this.knowledge);
             if (B == null) {
                 continue; // No separating set possible for this NF; try another NF
             }
@@ -923,14 +663,17 @@ public final class Fcit implements IGraphSearch {
         this.pag.removeEdge(_edge);
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
-        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
+        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, superVerbose);
 
-        if (guaranteeMag) {
-            if (!GraphTransforms.zhangMagFromPag(pag).paths().isLegalMag()) {
-                this.pag = _pag;
-                sepsets.set(x, y, sepset);
-                return false;
+        if (!GraphLegalityCheck.isLegalPagQuiet(this.pag, Set.of())) {
+            if (verbose) {
+                TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
+                                               + " reasons, but it didn't lead to a PAG");
             }
+
+            this.pag = _pag;
+            sepsets.set(x, y, sepset);
+            return false;
         }
 
         if (verbose) {
@@ -1030,24 +773,12 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * True if condition sets should at the end be checked that are subsets of adjacents of the variables. This is only
-     * done after all recursive sepset removals have been done. True by default. This is needed in order to pass an
-     * Oracle test but can reduce accuracy from data.
+     * Sets the flag indicating whether the graph should be replicated during the search process.
      *
-     * @param checkAdjacencySepsets True if the final FCI-style rule of checking adjacency sepsets should be performed.
+     * @param replicatingGraph true to enable graph replication, false otherwise.
      */
-    public void setCheckAdjacencySepsets(boolean checkAdjacencySepsets) {
-        this.checkAdjacencySepsets = checkAdjacencySepsets;
-    }
-
-    /**
-     * Sets the flag indicating whether the algorithm should guarantee the generation of a valid Partial Ancestral Graph
-     * (PAG).
-     *
-     * @param guaranteeMag true to guarantee a valid PAG, false otherwise
-     */
-    public void setGuaranteeMag(boolean guaranteeMag) {
-        this.guaranteeMag = guaranteeMag;
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
     }
 
     /**

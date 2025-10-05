@@ -165,6 +165,7 @@ public class Pc implements IGraphSearch {
      * utilized within the context of the causal discovery process.
      */
     private Fas fas = null; // expose via getFas()
+    private boolean replicatingGraph = false;
 
     /**
      * Constructs a new instance of the Pc class with a given independence test.
@@ -335,6 +336,7 @@ public class Pc implements IGraphSearch {
 
         // 1) Skeleton via FAS
         this.fas = new Fas(test);
+        fas.setReplicatingGraph(replicatingGraph);
         fas.setKnowledge(knowledge);
         fas.setDepth(depth);
         fas.setStable(fasStable);
@@ -792,6 +794,16 @@ public class Pc implements IGraphSearch {
      */
     public Fas getFas() {
         return fas;
+    }
+
+    /**
+     * Sets the flag indicating whether the graph is in a replicating state.
+     *
+     * @param replicatingGraph a boolean value where {@code true} denotes that the graph is replicating and
+     *                         {@code false} denotes that it is not.
+     */
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
     }
 
     // ------------------------------------------------------------

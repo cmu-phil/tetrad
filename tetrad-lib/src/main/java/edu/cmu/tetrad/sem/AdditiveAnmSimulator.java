@@ -10,7 +10,7 @@ import org.apache.commons.math3.distribution.RealDistribution;
 import java.util.*;
 
 /**
- * Additive Nonlinear SEM generator (ANM style):
+ * Additive Noise SEM generator (ANM style):
  *
  * <pre>
  *   X_j = sum_{k in pa(j)} f_{jk}(X_k) + eps_j

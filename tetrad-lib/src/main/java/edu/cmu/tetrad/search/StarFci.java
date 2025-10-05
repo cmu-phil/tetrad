@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -98,6 +98,7 @@ public abstract class StarFci implements IGraphSearch {
      * algorithm. The default value is {@code true}, enabling the heuristic by default.
      */
     private boolean useMaxP = false;
+    private boolean replicatingGraph = false;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -284,7 +285,8 @@ public abstract class StarFci implements IGraphSearch {
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         Graph cpdag = getMarkovCpdag();
-        Graph pag = new EdgeListGraph(cpdag);
+//        Graph pag = new EdgeListGraph(cpdag);
+        Graph pag = wrapWorkingGraph(cpdag);
         Set<Triple> unshieldedColliders = new HashSet<>();
         SepsetMap sepsetMap = new SepsetMap();
 
@@ -400,6 +402,14 @@ public abstract class StarFci implements IGraphSearch {
         return pag;
     }
 
+    private Graph wrapWorkingGraph(Graph cpdag) {
+        if (replicatingGraph) {
+            return new ReplicatingGraph(cpdag, new LagReplicationPolicy());
+        } else {
+            return new EdgeListGraph(cpdag);
+        }
+    }
+
     /**
      * Returns the knowledge used in search.
      *
@@ -497,5 +507,16 @@ public abstract class StarFci implements IGraphSearch {
      * @throws InterruptedException if interrupted.
      */
     public abstract Graph getMarkovCpdag() throws InterruptedException;
+
+    /**
+     * Sets the flag indicating whether the graph is being replicated.
+     *
+     * @param replicatingGraph A boolean value where {@code true} indicates that
+     *                         the graph is being replicated, and {@code false}
+     *                         otherwise.
+     */
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
+    }
 }
 

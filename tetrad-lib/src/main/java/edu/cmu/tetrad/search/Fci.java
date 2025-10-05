@@ -67,6 +67,7 @@ public final class Fci implements IGraphSearch {
     private double maxPMargin = 0.0;            // margin to resolve near-ties (0 => off)
     private boolean logMaxPTies = false;
     private java.io.PrintStream logStream = System.out;
+    private boolean replicatingGraph = false;
 
     /**
      * Constructs an instance of the Fci algorithm using the specified independence test.
@@ -333,6 +334,8 @@ public final class Fci implements IGraphSearch {
         long start = MillisecondTimes.timeMillis();
 
 //        Fas fas = new Fas(getIndependenceTest());
+
+        fas.setReplicatingGraph(this.replicatingGraph);
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting FCI algorithm.");
@@ -737,6 +740,15 @@ public final class Fci implements IGraphSearch {
             set.add(new edu.cmu.tetrad.graph.Triple(t.x, t.z, t.y));
         }
         return set;
+    }
+
+    /**
+     * Sets the state of the replicatingGraph flag.
+     *
+     * @param replicatingGraph a boolean value indicating whether the graph should be in a replicating state.
+     */
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
     }
 
     /**

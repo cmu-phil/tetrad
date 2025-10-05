@@ -28,7 +28,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.Rfci;
-import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.utils.BayesImParser;
@@ -462,8 +462,8 @@ public class RBExperiments {
     }
 
     private Graph runFGS(DataSet data) {
-        BdeuScore sd = new BdeuScore(data);
-        sd.setSamplePrior(1.0);
+        BDeuScore sd = new BDeuScore(data);
+        sd.setPriorEquivalentSampleSize(1.0);
         sd.setStructurePrior(1.0);
         Fges fgs = new Fges(sd);
         fgs.setVerbose(false);

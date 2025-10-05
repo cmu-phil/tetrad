@@ -134,6 +134,7 @@ public class Gfci implements IGraphSearch {
      * process.
      */
     private boolean useMaxP;
+    private boolean replicatingGraph;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -336,12 +337,32 @@ public class Gfci implements IGraphSearch {
         if (startFromCompleteGraph) {
             TetradLogger.getInstance().log("===Starting with complete graph=== ");
             cpdag = new EdgeListGraph(independenceTest.getVariables());
-            cpdag = GraphUtils.completeGraph(cpdag);
+//            cpdag = GraphUtils.completeGraph(cpdag);
         } else {
             cpdag = getMarkovCpdag();
         }
 
-        Graph pag = new EdgeListGraph(cpdag);
+//        Graph cpdag = startFromCompleteGraph
+//                ? GraphUtils.completeGraph(new EdgeListGraph(independenceTest.getVariables()))
+//                : getMarkovCpdag();
+
+        Graph pag = GraphFactoryUtil.newGraph(cpdag);
+
+//        Graph pag;
+//        if (replicatingGraph) {
+//            // OPTION A: if you added a (Graph, Policy) ctor
+//             pag = new ReplicatingGraph(cpdag, new LagReplicationPolicy());
+//
+////            // OPTION B: generic, works with (List<Node>, Policy)
+////            pag = new ReplicatingGraph(cpdag.getNodes(), new LagReplicationPolicy());
+////            for (Edge e : cpdag.getEdges()) {
+////                pag.addEdge(e);    // will mirror across lags on insert
+////            }
+//        } else {
+//            pag = new EdgeListGraph(cpdag);
+//        }
+
+//        Graph pag = new EdgeListGraph(cpdag);
 
         Set<Triple> unshieldedColliders = new HashSet<>();
 
@@ -402,7 +423,7 @@ public class Gfci implements IGraphSearch {
                         unshieldedColliders.add(new Triple(x, y, z));
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("Copied collider " + x + " â " + y + " â " + z + " from CPDAG.");
+                            TetradLogger.getInstance().log("Copied collider " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
                         }
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
@@ -418,7 +439,7 @@ public class Gfci implements IGraphSearch {
                             }
 
                             if (verbose) {
-                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " â " + y + " â " + z);
+                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " *-> " + y + " <-* " + z);
                             }
                         }
                     }
@@ -699,6 +720,7 @@ public class Gfci implements IGraphSearch {
         }
 
         Fges fges = new Fges(this.score);
+        fges.setReplicating(true);
         fges.setKnowledge(getKnowledge());
         fges.setVerbose(isVerbose());
         fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
@@ -721,6 +743,15 @@ public class Gfci implements IGraphSearch {
      */
     public void setUseMaxP(boolean useMaxP) {
         this.useMaxP = useMaxP;
+    }
+
+    /**
+     * Sets the state of the replicatingGraph property.
+     *
+     * @param replicatingGraph a boolean value indicating whether the graph is in a replicating state.
+     */
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
     }
 }
 

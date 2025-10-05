@@ -55,7 +55,7 @@ import java.util.List;
  *
  * @author fattaneh
  */
-public interface ISScore {
+public interface IsScore {
 
     /**
      * Calculates the local score for a given node in the context of its parent nodes and children population.

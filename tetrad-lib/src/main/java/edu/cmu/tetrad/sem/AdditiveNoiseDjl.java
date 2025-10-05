@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.sem;
 
 import ai.djl.ndarray.NDArray;
-import ai.djl.translate.TranslateException;
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
@@ -83,7 +82,7 @@ import java.util.stream.IntStream;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class CausalPerceptronNetworkDjl {
+public class AdditiveNoiseDjl {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -146,7 +145,7 @@ public class CausalPerceptronNetworkDjl {
     private Function<Double, Double> activationFunction = Math::tanh;
 
     /**
-     * Constructs a CausalPerceptronNetwork that operates on a directed acyclic graph (DAG) to model causal
+     * Constructs a AdditiveNoiseSimulation that operates on a directed acyclic graph (DAG) to model causal
      * relationships with post-nonlinear causal mechanisms and custom activation functions.
      *
      * @param graph              The directed acyclic graph (DAG) representing the causal structure.
@@ -161,9 +160,9 @@ public class CausalPerceptronNetworkDjl {
      * @throws IllegalArgumentException If the graph contains cycles, numSamples is less than 1, rescaleMin is greater
      *                                  than rescaleMax, or any value in hiddenDimensions is less than 1.
      */
-    public CausalPerceptronNetworkDjl(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                      double rescaleMin, double rescaleMax, List<Integer> hiddenDimensions, double inputScale,
-                                      Function<Double, Double> activationFunction) {
+    public AdditiveNoiseDjl(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                            double rescaleMin, double rescaleMax, List<Integer> hiddenDimensions, double inputScale,
+                            Function<Double, Double> activationFunction) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }

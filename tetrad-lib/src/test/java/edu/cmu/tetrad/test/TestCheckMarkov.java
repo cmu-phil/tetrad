@@ -160,7 +160,6 @@ public class TestCheckMarkov {
 
         Fcit fcit = new Fcit(test, score);
         fcit.setVerbose(true);
-        fcit.setCheckAdjacencySepsets(false);
         fcit.setDepth(7);
         fcit.setCompleteRuleSetUsed(false);
         Graph pag;

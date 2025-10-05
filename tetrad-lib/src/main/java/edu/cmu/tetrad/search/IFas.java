@@ -76,4 +76,14 @@ public interface IFas extends IGraphSearch {
      *               process.
      */
     void setStable(boolean stable);
+
+    /**
+     * Sets whether the adjacency search should use a replicating graph. When set to {@code true},
+     * the search process may involve duplicating certain graph structures or information for concurrent or
+     * experimental purposes.
+     *
+     * @param replicatingGraph a boolean flag indicating whether the search process should involve
+     *                         a replicating graph.
+     */
+    void setReplicatingGraph(boolean replicatingGraph);
 }

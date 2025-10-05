@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class IsFges extends Fges {
 
-    private final ISScore isScore;
+    private final IsScore isScore;
     private Graph populationGraph; // optional; may be set by caller
 
     /**
@@ -28,7 +28,7 @@ public class IsFges extends Fges {
      * @param populationScore the population score used for FGES-style search
      * @throws NullPointerException if the provided instance-specific score is null
      */
-    public IsFges(ISScore isScore, Score populationScore) {
+    public IsFges(IsScore isScore, Score populationScore) {
         super(populationScore);
         if (isScore == null) throw new NullPointerException("isScore == null");
         this.isScore = isScore;

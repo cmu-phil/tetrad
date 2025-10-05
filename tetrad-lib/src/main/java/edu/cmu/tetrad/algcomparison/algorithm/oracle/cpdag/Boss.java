@@ -122,6 +122,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         PermutationSearch permutationSearch = new PermutationSearch(boss);
         permutationSearch.setKnowledge(this.knowledge);
         permutationSearch.setSeed(seed);
+        permutationSearch.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         try {
             Graph graph = permutationSearch.search(parameters.getBoolean(Params.OUTPUT_CPDAG));
             LogUtilsSearch.stampWithScore(graph, boss.getScore());
@@ -175,6 +176,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.USE_BES);
         params.add(Params.NUM_STARTS);
         params.add(Params.TIME_LAG);
+        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.NUM_THREADS);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.OUTPUT_CPDAG);

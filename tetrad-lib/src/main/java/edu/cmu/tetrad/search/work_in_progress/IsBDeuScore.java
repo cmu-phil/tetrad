@@ -22,7 +22,7 @@ package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.ISScore;
+import edu.cmu.tetrad.search.IsScore;
 import org.apache.commons.math3.special.Gamma;
 
 import java.util.*;
@@ -55,7 +55,8 @@ import java.util.stream.IntStream;
         * <p><b>References:</b> Fattaneh Jabbari, Ph.D. dissertation, Carnegie Mellon University,
         * pp. 144–147.</p>
         */
-public class ISBDeuScore implements ISScore {
+//@Deprecated
+public class IsBDeuScore implements IsScore {
     private static final boolean verbose = false;
     private final int[][] data;
     private final int sampleSize;
@@ -77,7 +78,7 @@ public class ISBDeuScore implements ISScore {
      * @param testCase the test case to evaluate. Must not be null.
      * @throws NullPointerException if either dataSet or testCase is null.
      */
-    public ISBDeuScore(DataSet dataSet, DataSet testCase) {
+    public IsBDeuScore(DataSet dataSet, DataSet testCase) {
 
         if (dataSet == null) {
             throw new NullPointerException("Dataset was not provided.");

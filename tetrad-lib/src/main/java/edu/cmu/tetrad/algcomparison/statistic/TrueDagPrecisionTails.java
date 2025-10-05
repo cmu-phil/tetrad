@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -79,6 +80,18 @@ public class TrueDagPrecisionTails implements Statistic {
         int tp = 0;
         int fp = 0;
 
+        Graph dag;
+
+        if (trueGraph.paths().isLegalDag()) {
+            dag = trueGraph;
+        } else {
+            dag = PagCache.getInstance().getDag(trueGraph);
+        }
+
+        if (dag == null) {
+            throw new IllegalArgumentException("Dag is null");
+        }
+
         List<Node> nodes = estGraph.getNodes();
 
         for (Node x : nodes) {
@@ -90,17 +103,17 @@ public class TrueDagPrecisionTails implements Statistic {
                 if (edge == null) continue;
 
                 if (Edges.directedEdge(x, y).equals(edge)) {
-                    if (trueGraph.paths().isAncestorOf(x, y)) {
+                    if (dag.paths().isAncestorOf(x, y)) {
                         tp++;
                     } else {
                         fp++;
                     }
-
-                    if (trueGraph.paths().isAncestorOf(y, x)) {
-//                        System.out.println("Should be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));
-                    } else {
-//                        System.out.println("Should be " + x + "o~~>" + y + ": " + estGraph.getEdge(x, y));
-                    }
+//
+//                    if (dag.paths().isAncestorOf(y, x)) {
+////                        System.out.println("Should be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));
+//                    } else {
+////                        System.out.println("Should be " + x + "o~~>" + y + ": " + estGraph.getEdge(x, y));
+//                    }
                 }
             }
         }

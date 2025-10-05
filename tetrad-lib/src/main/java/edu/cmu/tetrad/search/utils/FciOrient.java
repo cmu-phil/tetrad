@@ -268,63 +268,133 @@ public class FciOrient {
      * @param graph               w {@link Graph} object
      * @param checkEcNonadjacency Whether to check for EC nonadjacency
      */
-    private static void discriminatingPathBfs(Node w, Node v, Node y, Graph graph, Set<DiscriminatingPath> discriminatingPaths,
-                                              int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
-        Map<Node, Node> previous = new HashMap<>();
+//    private static void discriminatingPathBfs(Node w, Node v, Node y, Graph graph, Set<DiscriminatingPath> discriminatingPaths,
+//                                              int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
+//        if ("X4".equals(w.getName()) && "X6".equals(y.getName()) && "X5".equals(v.getName())
+//            && graph.isParentOf(w, y)) {
+//            System.out.println();
+//        }
+//
+//        Queue<Node> Q = new ArrayDeque<>();
+//        Set<Node> V = new HashSet<>();
+//        Map<Node, Node> previous = new HashMap<>();
+//
+//        Q.offer(w);
+//        V.add(w);
+//        V.add(v);
+//
+//        previous.put(w, null);
+//        previous.put(v, w);
+//
+//        while (!Q.isEmpty()) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                break;
+//            }
+//
+//            Node t = Q.poll();
+//
+//            List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
+//
+//            for (Node x : nodesInTo) {
+//                if (Thread.currentThread().isInterrupted()) {
+//                    break;
+//                }
+//
+//                if (V.contains(x)) {
+//                    continue;
+//                }
+//
+//                previous.put(x, t);
+//
+//                // The collider path should be all nodes between V and X.
+//                LinkedList<Node> colliderPath = new LinkedList<>();
+//                Node d = x;
+//
+//                while ((d = previous.get(d)) != null) {
+//                    if (d != x) {
+//                        colliderPath.addFirst(d);
+//                        System.out.println("path " + GraphUtils.pathString(graph, colliderPath, false));
+//                    }
+//                }
+//
+//                // TODO put back,.
+////                if (maxDiscriminatingPathLength != -1 && colliderPath.size() > maxDiscriminatingPathLength) {
+////                    continue;
+////                }
+//
+//                DiscriminatingPath discriminatingPath = new DiscriminatingPath(x, w, v, y, colliderPath, checkEcNonadjacency);
+//
+//                if (discriminatingPath.existsIn(graph)) {
+//                    discriminatingPaths.add(discriminatingPath);
+//                }
+//
+//                if (!V.contains(x)) {
+//                    Q.offer(x);
+//                    V.add(x);
+//                }
+//            }
+//        }
+//    }
 
-        Q.offer(w);
-        V.add(w);
-        V.add(v);
+    private static void discriminatingPathBfs(
+            Node w, Node v, Node y, Graph graph,
+            Set<DiscriminatingPath> discriminatingPaths,
+            int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
 
-        previous.put(w, null);
-        previous.put(v, w);
+        // State carries current node t, previous node p (next in path toward v), and the colliderPath so far (between v and current upstream).
+        class State {
+            final Node t, p;                   // at node t, previous is p (null at the start)
+            final LinkedList<Node> path;       // nodes between v and current upstream endpoint (excludes that upstream x)
+            State(Node t, Node p, LinkedList<Node> path) { this.t = t; this.p = p; this.path = path; }
+        }
+
+        ArrayDeque<State> Q = new ArrayDeque<>();
+        // Start at w with no previous; colliderPath initially empty.
+        Q.offer(new State(w, null, new LinkedList<>()));
 
         while (!Q.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
+            if (Thread.currentThread().isInterrupted()) break;
+
+            State s = Q.poll();
+            Node t = s.t;
+            Node p = s.p;                 // "next in path" toward v
+            LinkedList<Node> pathToT = s.path;
+
+            // If t is an interior node (i.e., not the very first step), insist that p *-> t (collider at t),
+            // and (optional) that t is a parent of y.
+            if (p != null) {
+                if (graph.getEndpoint(p, t) != Endpoint.ARROW) continue;      // NOT a collider at t
+                if (!graph.isParentOf(t, y)) continue;                         // prune: interior must be parent of y
             }
 
-            Node t = Q.poll();
+            // Explore predecessors x with an arrowhead into t : x *-> t
+            for (Node x : graph.getNodesInTo(t, Endpoint.ARROW)) {
+                if (Thread.currentThread().isInterrupted()) break;
 
-            List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
+                // avoid immediate 2-cycle and prevent cycles along the current branch
+                if (x == p) continue;
+                if (pathToT.contains(x)) continue;
 
-            for (Node x : nodesInTo) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                if (V.contains(x)) {
-                    continue;
-                }
-
-                previous.put(x, t);
-
-                // The collider path should be all nodes between E and C.
-                LinkedList<Node> colliderPath = new LinkedList<>();
-                Node d = x;
-
-                while ((d = previous.get(d)) != null) {
-                    if (d != x) {
-                        colliderPath.addFirst(d);
-                    }
-                }
+                // Build colliderPath for candidate x: it’s pathToT plus the current t
+                LinkedList<Node> colliderPath = new LinkedList<>(pathToT);
+                colliderPath.add(t); // interior nodes between v and x (t becomes interior once we step to x)
 
                 if (maxDiscriminatingPathLength != -1 && colliderPath.size() > maxDiscriminatingPathLength) {
                     continue;
                 }
 
-                DiscriminatingPath discriminatingPath = new DiscriminatingPath(x, w, v, y, colliderPath, checkEcNonadjacency);
+                // Let DiscriminatingPath judge validity; we’re just enumerating paths with enforced collider-at-interior.
+                DiscriminatingPath dp = new DiscriminatingPath(x, w, v, y, colliderPath, checkEcNonadjacency);
 
-                if (discriminatingPath.existsIn(graph)) {
-                    discriminatingPaths.add(discriminatingPath);
+                if (dp.existsIn(graph)) {
+                    discriminatingPaths.add(dp);
                 }
 
-                if (!V.contains(x)) {
-                    Q.offer(x);
-                    V.add(x);
-                }
+                // Optional prune: also insist the new upstream node x is a parent of y to keep only promising chains.
+                if (!graph.isParentOf(x, y)) continue;
+
+                // Push next state upstream: new current is x, previous is t, carry this branch’s path
+                Q.offer(new State(x, t, colliderPath));
             }
         }
     }

@@ -28,6 +28,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -37,8 +38,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.work_in_progress.ISBDeuScore;
-import edu.cmu.tetrad.search.ISScore;
+import edu.cmu.tetrad.search.work_in_progress.IsBDeuScore;
+import edu.cmu.tetrad.search.IsScore;
 import edu.cmu.tetrad.search.IsGFci;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -57,6 +58,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
+@Experimental
 public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
@@ -185,7 +187,7 @@ public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, Has
         DataSet testCase = aligned.subsetRows(new int[]{row});
 
         // Build instance-specific score (ISBDeuScore falls back to population-only if testCase == null)
-        ISScore isScore = new ISBDeuScore(train, testCase);
+        IsScore isScore = new IsBDeuScore(train, testCase);
 
         // Population score (use algcomparison wrapper consistently)
         Score populationScore = new BdeuScore().getScore(dataModel, parameters);

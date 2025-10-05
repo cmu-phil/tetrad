@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -52,7 +52,7 @@ final class ConstructTemplateAction extends AbstractAction {
             "Load data and search",
             "Search then estimate",
             "Search, estimate, then update",
-//        "MIMBuild" // Removed 4/9/2019 Folded into FOFC
+            "Latent Clustering and Structure Search"
     };
 
     /**
@@ -203,12 +203,9 @@ final class ConstructTemplateAction extends AbstractAction {
             estimateFromSimulatedData(leftX);
         } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[4])) {
             estimateThenUpdateUsingSearchResult(leftX);
-        }
-        // Removed 4/9/2019 Folded into FOFC
-//        else if (this.templateName.equals(getTemplateNames()[5])) {
-//            mimbuild(leftX);
-//        }
-        else {
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[5])) {
+            latentClusterThenSearch(leftX);
+        } else {
             throw new IllegalStateException("Unrecognized template name: " + this.templateName);
         }
     }
@@ -264,6 +261,31 @@ final class ConstructTemplateAction extends AbstractAction {
         nodes.add(addNode("Data", data, leftX, 100));
         nodes.add(addNode("Search", search, 125 + leftX, 100));
 
+        addEdge(data, search);
+
+        ConstructTemplateAction.selectSubgraph(nodes);
+    }
+
+    private void latentClusterThenSearch(int leftX) {
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        SessionEditorWorkbench sessionWorkbench
+                = sessionEditor.getSessionWorkbench();
+        sessionWorkbench.deselectAll();
+
+        List<Node> nodes = new LinkedList<>();
+
+        String data = ConstructTemplateAction.nextName("Data");
+        String cluster = ConstructTemplateAction.nextName("Latent Clusters");
+        String search = ConstructTemplateAction.nextName("Latent Structure");
+
+        nodes.add(addNode("Data", data, leftX, 100));
+        nodes.add(addNode("Latent_Clusters", cluster, leftX, 225));
+        nodes.add(addNode("Latent_Structure", search, leftX + 170, 225));
+
+        addEdge(data, cluster);
+        addEdge(cluster, search);
         addEdge(data, search);
 
         ConstructTemplateAction.selectSubgraph(nodes);
