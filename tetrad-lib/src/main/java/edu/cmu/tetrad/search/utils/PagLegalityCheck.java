@@ -15,7 +15,7 @@ import java.util.Set;
  * The methods in this class can be utilized to verify structural and conditional validity of graphs in various
  * applications, such as causal inference and graphical modeling.
  */
-public class GraphLegalityCheck {
+public class PagLegalityCheck {
 
     /**
      * Default private constructor to prevent instantiation of the GraphLegalityCheck class.
@@ -23,7 +23,7 @@ public class GraphLegalityCheck {
      * This class provides static utility methods for checking the legality of Partial Ancestral Graphs (PAG)
      * and Mixed Ancestral Graphs (MAG). Since the class is utility-based, it should not be instantiated.
      */
-    private GraphLegalityCheck() {
+    private PagLegalityCheck() {
 
     }
 

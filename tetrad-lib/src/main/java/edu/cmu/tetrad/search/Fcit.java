@@ -665,7 +665,7 @@ public final class Fcit implements IGraphSearch {
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, superVerbose);
 
-        if (!GraphLegalityCheck.isLegalPagQuiet(this.pag, Set.of())) {
+        if (!PagLegalityCheck.isLegalPagQuiet(this.pag, Set.of())) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
                                                + " reasons, but it didn't lead to a PAG");
