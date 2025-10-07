@@ -484,6 +484,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return pathExists;
     }
 
+    @Override
+    public boolean isDirectedFromTo(Node x, Node y) {
+        return false;
+    }
+
     /**
      * {@inheritDoc}
      */

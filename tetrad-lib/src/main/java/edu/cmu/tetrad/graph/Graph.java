@@ -712,6 +712,10 @@ public interface Graph extends TetradSerializable {
     default Graph copy() {
         return new EdgeListGraph(this);
     }
+
+    default boolean isDirectedFromTo(Node x, Node y) {
+        return getDirectedEdge(x, y) != null;
+    }
 }
 
 

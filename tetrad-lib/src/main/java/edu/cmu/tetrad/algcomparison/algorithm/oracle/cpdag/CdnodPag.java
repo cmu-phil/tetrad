@@ -13,6 +13,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.cdnod_pag.CdnodPagOrienter;
 import edu.cmu.tetrad.search.cdnod_pag.CgLrtChangeTest;
@@ -20,6 +21,7 @@ import edu.cmu.tetrad.search.cdnod_pag.ChangeTest;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 import edu.cmu.tetrad.search.utils.R0R4Strategy;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.util.Parameters;
@@ -28,6 +30,8 @@ import edu.cmu.tetrad.util.Params;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 /**
  * CD-NOD wrapper for algcomparison.
@@ -94,11 +98,12 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
 
         // Configure core search. We pass the dataset that ALREADY has C as the last column.
         // (A) FCIT builder over non-env columns
-       edu.cmu.tetrad.search.cdnod_pag.CdnodPag.PagBuilder fcitBuilder = (DataSet dataWithoutEnv) -> {
+       edu.cmu.tetrad.search.cdnod_pag.CdnodPag.PagBuilder pagBuilder = (DataSet dataWithoutEnv) -> {
            Score _score = score.getScore(dataWithoutEnv, parameters);
            IndependenceTest _test = test.getTest(dataWithoutEnv, parameters);
 
            Fcit fcit = new Fcit(_test, _score);
+           fcit.setKnowledge(knowledge);
            try {
                return fcit.search();
            } catch (InterruptedException e) {
@@ -111,21 +116,26 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
         // e.g., new FciRulePropagator().propagate(pag);
         CdnodPagOrienter.Propagator prop = fciOrient::finalOrientation;
 
+        Function<Graph, Boolean> legalityCheck = PagLegalityCheck::isLegalPagFast;
+
         // (D) Change test (CG-LRT residual-vs-E)
         ChangeTest changeTest = new CgLrtChangeTest(); // implement its TODOs with your calls
 
-        Graph pag = new edu.cmu.tetrad.search.cdnod_pag.CdnodPag(
+        edu.cmu.tetrad.search.cdnod_pag.CdnodPag cdnodPag = new edu.cmu.tetrad.search.cdnod_pag.CdnodPag(
                 data,
-                true,           // last column is E (Rings)
-                0.01,           // alpha for change-test
-                changeTest,
-                fcitBuilder,
-                () -> prop     // factory
-        ).withMaxSubsetSize(1)
-                .withProxyGuard(true)
-                .run();
+                parameters.getDouble(Params.ALPHA), changeTest,
+                pagBuilder /* e.g., (ds) -> new FCIT(ds, knowledge).search() */,
+                legalityCheck,
+                () -> prop /* e.g., (g) -> RRules.propagate(g) */)
+                .addContexts("Rings")                  // tier-1 contexts
+                .putTier("Rings", 1)                   // optional tiers
+                .putTier("Length", 2)
+                .putTier("Whole", 3)
+                .forbidArrowheadsInto("Sex")           // any extra protected nodes
+                .withMaxSubsetSize(1)
+                .withProxyGuard(true);
 
-        return pag;
+        return cdnodPag.run();
     }
 
     /**
@@ -177,6 +187,8 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
 //        parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
 //        parameters.add(Params.DEPTH);
 //        parameters.add(Params.FDR_Q);
+
+        parameters.add(Params.ALPHA);
         parameters.add(Params.VERBOSE);
         return parameters;
     }

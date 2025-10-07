@@ -1,116 +1,169 @@
 package edu.cmu.tetrad.search.cdnod_pag;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 
 import java.util.*;
-
-import static edu.cmu.tetrad.search.cdnod_pag.PagEdgeUtils.partiallyOriented;
-import static edu.cmu.tetrad.search.cdnod_pag.PagEdgeUtils.orientArrowheadAt;
+import java.util.function.Function;
 
 /**
- * CD-NOD-PAG orienter (conservative arrowheads-only) with environment INCLUDED in the graph.
- * - Never orients arrowheads INTO the environment node.
- * - Excludes env from S subsets for stabilization tests (except proxy-guard checks).
+ * CD-NOD-PAG orienter (arrowheads-only) with:
+ *  - Multiple context variables (Tier-0) supported via ChangeOracle.contexts().
+ *  - Optional tier map: only orient X o-> Y if tier(X) < tier(Y).
+ *  - Never add arrowheads into protected nodes (contexts + any user-provided).
+ *  - Exclude contexts from S when testing stabilization (except optional proxy guard).
+ *  - Progressive rollback if the PAG becomes illegal after propagation.
  */
 public final class CdnodPagOrienter {
 
-    public interface Propagator {
-        void propagate(Graph pag);
-    }
+    /** Functional interface for running propagation (R0–R10 + discriminating paths, etc.). */
+    @FunctionalInterface
+    public interface Propagator { void propagate(Graph graph); }
 
+    // Core state
     private final Graph pag;
     private final ChangeOracle oracle;
+    private final Function<Graph, Boolean> legalityCheck;
     private final Propagator propagator;
 
-    private int maxSubsetSize = 1; // neighbors depth bound
-    private boolean useProxyGuard = false;   // check X not just proxying for E
-    private boolean excludeEnvFromS = true;  // don't use E in S
-    private boolean forbidArrowheadsIntoEnv = true; // no X ?-> E
+    // Config
+    private int maxSubsetSize = 1;
+    private boolean useProxyGuard = true;
+    private boolean excludeContextsFromS = true;
 
-    public CdnodPagOrienter(Graph pag, ChangeOracle oracle, Propagator propagator) {
+    // Protection & tiers
+    private final Set<Node> protectedNodes = new LinkedHashSet<>();
+    private final Map<Node, Integer> tier = new HashMap<>(); // smaller = earlier
+
+    // Undo stack for rollback
+    private final Deque<Runnable> undoStack = new ArrayDeque<>();
+
+    public CdnodPagOrienter(Graph pag,
+                            ChangeOracle oracle,
+                            Function<Graph, Boolean> legalityCheck,
+                            Propagator propagator) {
         this.pag = Objects.requireNonNull(pag);
         this.oracle = Objects.requireNonNull(oracle);
+        this.legalityCheck = Objects.requireNonNull(legalityCheck);
         this.propagator = Objects.requireNonNull(propagator);
+
+        // Always protect contexts from receiving arrowheads
+        this.protectedNodes.addAll(oracle.contexts());
     }
+
+    // ---------------- Fluent setters ----------------
 
     public CdnodPagOrienter withMaxSubsetSize(int k) { this.maxSubsetSize = Math.max(0, k); return this; }
     public CdnodPagOrienter withProxyGuard(boolean on) { this.useProxyGuard = on; return this; }
-    public CdnodPagOrienter withExcludeEnvFromS(boolean on) { this.excludeEnvFromS = on; return this; }
-    public CdnodPagOrienter withForbidArrowheadsIntoEnv(boolean on) { this.forbidArrowheadsIntoEnv = on; return this; }
+    public CdnodPagOrienter withExcludeContextsFromS(boolean on) { this.excludeContextsFromS = on; return this; }
 
-    public void run() {
-        Deque<Runnable> undo = new ArrayDeque<>();
-        List<Edge> cand = partiallyOriented(pag);
-        Node E = oracle.env();
+    /** Add nodes that must not receive arrowheads (contexts are already included). */
+    public CdnodPagOrienter forbidArrowheadsInto(Collection<Node> nodes) { this.protectedNodes.addAll(nodes); return this; }
+    public CdnodPagOrienter forbidArrowheadsInto(Node node) { this.protectedNodes.add(node); return this; }
 
-        for (Edge e : cand) {
-            Node x = e.getNode1();
-            Node y = e.getNode2();
-
-            // do not orient INTO env
-            if (forbidArrowheadsIntoEnv) {
-                if (y.equals(E) && tryC1(x, y, undo)) { /* would try, but will skip inside */ }
-                if (x.equals(E) && tryC1(y, x, undo)) { /* skip child=E inside */ }
-            }
-
-            // try "x stabilizes y"
-            if (tryC1(x, y, undo)) continue;
-            // try "y stabilizes x"
-            if (tryC1(y, x, undo)) continue;
-        }
-
-        propagator.propagate(pag); // standard FCI propagation
-
-        if (!PagLegalityCheck.isLegalPagQuiet(pag, Set.of())) {
-            // rollback ALL CD-NOD orientations if illegal after propagation
-            while (!undo.isEmpty()) undo.pop().run();
-            propagator.propagate(pag);
-        }
+    /** Provide a tier map; orientations are only allowed when tier(X) < tier(Y). */
+    public CdnodPagOrienter withTiers(Map<Node, Integer> tiers) {
+        if (tiers != null) this.tier.putAll(tiers);
+        return this;
     }
 
-    private boolean tryC1(Node parentCand, Node child, Deque<Runnable> undo) {
-        Node E = oracle.env();
-        if (forbidArrowheadsIntoEnv && child.equals(E)) return false; // never add heads into E
+    // ---------------- Main entry ----------------
 
-        Set<Node> neigh = new LinkedHashSet<>(pag.getAdjacentNodes(child));
-        neigh.remove(parentCand);
-        if (excludeEnvFromS) neigh.remove(E);
+    public void run() {
+        final List<Node> ctx = oracle.contexts();
 
-        // If there's no variation in child at all, nothing to absorb.
-        if (!oracle.changes(child, Collections.emptySet())) return false;
+        // Iterate over undirected/partially oriented adjacencies
+        for (Node y : pag.getNodes()) {
+            if (protectedNodes.contains(y)) continue; // never add arrowheads into protected
 
-        for (Set<Node> S : SmallSubsetIter.subsets(neigh, maxSubsetSize)) {
-            if (!oracle.changes(child, S)) continue;
+            final List<Node> adjs = pag.getAdjacentNodes(y);
+            for (Node x : adjs) {
+                if (protectedNodes.contains(x)) continue;
+                if (pag.isDirectedFromTo(x, y) || pag.isDirectedFromTo(y, x)) continue;
 
-            Set<Node> SplusX = new LinkedHashSet<>(S);
-            SplusX.add(parentCand);
+                // Tier guard: allow X->Y only if tier(X) < tier(Y) when both are known
+                Integer tx = tier.get(x), ty = tier.get(y);
+                if (tx != null && ty != null && tx >= ty) continue;
 
-            if (oracle.changes(child, SplusX)) continue; // adding X did NOT stabilize
+                // Build candidate neighborhood for S = Adj(Y)\{X}
+                List<Node> neigh = new ArrayList<>(adjs);
+                neigh.remove(x);
+                if (excludeContextsFromS) neigh.removeAll(ctx);
 
-            // Optional proxy guard using E: ensure X isn't just standing in for E.
-            if (useProxyGuard) {
-                Set<Node> SplusE = new LinkedHashSet<>(S); SplusE.add(E);
-                boolean stabilizedByE = !oracle.changes(child, SplusE);
-                if (!stabilizedByE) continue; // E should stabilize if it's the driver
+                // Require that Y exhibits change (under some S; we try all up to maxSubsetSize)
+                boolean oriented = false;
 
-                Set<Node> SplusXE = new LinkedHashSet<>(SplusE); SplusXE.add(parentCand);
-                boolean extraBeyondE = oracle.changes(child, SplusXE) != oracle.changes(child, SplusE);
-                if (extraBeyondE) continue; // X shouldn't add benefit beyond E
+                for (Set<Node> S0 : SmallSubsetIter.subsets(neigh, maxSubsetSize)) {
+                    // Work on a copy; don't mutate the iterator's set
+                    Set<Node> S = new LinkedHashSet<>(S0);
+                    if (excludeContextsFromS) S.removeAll(oracle.contexts());
+
+                    if (!oracle.changes(y, S)) continue;
+
+                    Set<Node> SplusX = plus(S, x);
+                    if (!oracle.stable(y, SplusX)) continue;
+
+                    boolean proxyOk = true;
+                    if (useProxyGuard && !oracle.contexts().isEmpty()) {
+                        proxyOk = false;
+                        for (Node c : oracle.contexts()) {
+                            if (oracle.stable(y, plus(S, c))) { proxyOk = true; break; }
+                        }
+                    }
+                    if (!proxyOk) continue;
+
+                    addArrowheadAt(pag, x, y);
+                    break; // done with this (x,y)
+                }
+
+                // (Optional) could early-propagate per pair; we batch-propagate below for efficiency
+                if (oriented) { /* keep going; we’ll propagate once at the end */ }
             }
 
-            // Propose X ?-> child (arrowhead at child)
-            Endpoint oldXY = pag.getEndpoint(parentCand, child);
-            Endpoint oldYX = pag.getEndpoint(child, parentCand);
 
-            orientArrowheadAt(pag, parentCand, child);
-
-            undo.push(() -> {
-                pag.setEndpoint(parentCand, child, oldXY);
-                pag.setEndpoint(child, parentCand, oldYX);
-            });
-            return true;
         }
-        return false;
+
+        // Propagate and ensure legality (with progressive rollback)
+        propagateAndLegalize();
+    }
+
+    // ---------------- Internals ----------------
+
+    private static <T> Set<T> plus(Set<T> s, T x) {
+        Set<T> u = new LinkedHashSet<>(s);
+        u.add(x);
+        return u;
+    }
+
+    /** Add an arrowhead at y on edge (x,y); record undo. */
+    private void addArrowheadAt(Graph g, Node x, Node y) {
+        Endpoint oldXY = g.getEndpoint(x, y);
+        Endpoint oldYX = g.getEndpoint(y, x);
+
+        // If already has an arrowhead at y, nothing to do
+        if (oldXY == Endpoint.ARROW) return;
+
+        g.setEndpoint(x, y, Endpoint.ARROW);      // X *-> Y
+        // (keep the other endpoint as-is; this is arrowheads-only)
+        undoStack.push(() -> {
+            g.setEndpoint(x, y, oldXY);
+            g.setEndpoint(y, x, oldYX);
+        });
+    }
+
+    private void propagateAndLegalize() {
+        propagator.propagate(pag);
+
+        if (!legalityCheck.apply(pag)) {
+            // Try rolling back orientations until legal
+            while (!undoStack.isEmpty() && !legalityCheck.apply(pag)) {
+                undoStack.pop().run();
+                propagator.propagate(pag);
+            }
+            // If still illegal, revert all CD-NOD orientations
+            if (!legalityCheck.apply(pag)) {
+                while (!undoStack.isEmpty()) undoStack.pop().run();
+                propagator.propagate(pag);
+            }
+        }
     }
 }
