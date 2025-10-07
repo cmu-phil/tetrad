@@ -7,168 +7,229 @@ import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.BDeuScore;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetReader;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Objects;
 
+/**
+ * CLI runner for instance-specific FGES on TCGA-like discrete data.
+ *
+ * <p>Refactor highlights:
+ * <ul>
+ *   <li>Correct argument handling (compute paths after parsing).</li>
+ *   <li>Extracted helpers for IO, population run, IS run, bootstrap.</li>
+ *   <li>try-with-resources for CSV log; robust directory creation.</li>
+ *   <li>Preserves original defaults/behavior (kappa sweep fixed at p=5).</li>
+ * </ul>
+ */
 public class TestISFGS_TCGA {
-    public static void main(String[] args) {
 
-        String pathToFolder = System.getProperty("user.dir");
-        String dataName = "gsva_dis_25";
-        String pathToData = pathToFolder + "/" + dataName + ".csv";
-        String names = "Name";
+    private static final String DEFAULT_DATA_NAME = "gsva_dis_25";
+    private static final String DEFAULT_NAME_COLUMN = "Name";
+    private static final char DEFAULT_DELIM = ',';
+
+    public static void main(String[] args) {
+        // Print raw args for reproducibility
+        System.out.println(Arrays.asList(args));
+
+        // Defaults
+        String dataName = DEFAULT_DATA_NAME;
+        String dataDir = System.getProperty("user.dir");
         int numBootstraps = 1;
+
+        // Parse args
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "-data":
-                    dataName = args[i + 1];
+                    dataName = required(args, ++i, "-data");
                     break;
                 case "-dir":
-                    pathToFolder = args[i + 1];
+                    dataDir = required(args, ++i, "-dir");
                     break;
                 case "-bs":
-                    numBootstraps = Integer.parseInt(args[i + 1]);
+                    numBootstraps = Integer.parseInt(required(args, ++i, "-bs"));
                     break;
+                case "-h":
+                case "--help":
+                    printHelpAndExit();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown option: " + args[i] + ". Use -h for help.");
             }
         }
 
+        new TestISFGS_TCGA().run(dataDir, dataName, numBootstraps);
+    }
 
-        // Read in the data
-        DataSet trainDataOrig = readData(pathToData);
-        System.out.println(trainDataOrig.getNumRows() + ", " + trainDataOrig.getNumColumns());
-        DataSet trainDataWOnames = trainDataOrig.copy();
-        trainDataWOnames.removeColumn(trainDataOrig.getColumn(trainDataOrig.getVariable(names)));
+    private void run(String dataDir, String dataName, int numBootstraps) {
+        Path dataCsv = Paths.get(dataDir).resolve(dataName + ".csv");
+        Path outDir = Paths.get(dataDir).resolve(Paths.get("outputs", dataName, "kappa_0.5")); // matches p=5 → 0.5
+        ensureDir(outDir);
 
-        // Create the knowledge
-//		IKnowledge knowledge = createKnowledge(trainDataOrig, target);
+        // Read data
+        DataSet dataWithNames = readDiscreteCsv(dataCsv, DEFAULT_DELIM);
+        System.out.println(dataWithNames.getNumRows() + ", " + dataWithNames.getNumColumns());
+        DataSet data = stripNameColumn(dataWithNames, DEFAULT_NAME_COLUMN);
 
-        // learn the population model using all training data
+        // Population model
         double samplePrior = 1.0;
         double structurePrior = 1.0;
-        Graph graphP = BNlearn_pop(trainDataWOnames, samplePrior, structurePrior);
+        Graph graphP = learnPopulationFges(data, samplePrior, structurePrior);
         System.out.println("Pop graph:" + graphP.getEdges());
 
+        // Persist population graph (legacy path pattern)
+        saveGraph(graphP, outDir.resolve(dataName + "_population_wide.txt"));
 
-        for (int p = 5; p <= 5; p++) {
+        // Legacy code sweeps p=5..5 giving kappa = 0.5; preserve behavior
+        double kappa = 0.5;
+        Path csv = outDir.resolve(dataName + "_kappa_" + kappa + ".csv");
 
-            double k_add = p / 10.0; //Math.pow(10, -1.0*p);
-
-            System.out.println("kappa = " + k_add);
-            File dir = new File(pathToFolder + "/outputs/" + dataName + "/kappa_" + k_add + "/");
-            dir.mkdirs();
-            String outputFileName = dataName + "_population_wide.txt";
-            File filePop = new File(dir, outputFileName);
-            GraphSaveLoadUtils.saveGraph(graphP, filePop, false);
-
-            outputFileName = dataName + "_kappa_" + k_add + ".csv";
-            File fileML = new File(dir, outputFileName);
-            PrintStream out = null;
-            try {
-                out = new PrintStream(new FileOutputStream(fileML));
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+        try (PrintStream out = new PrintStream(Files.newOutputStream(csv))) {
             out.println("case, m-likelihood pop, m-likelihood IS");
 
-            //LOOCV loop
-            for (int i = 0; i < trainDataWOnames.getNumRows(); i++) {
-                DataSet trainData = trainDataWOnames.copy();
+            // LOO × bootstrap
+            final int n = data.getNumRows();
+            final int nameIdx = dataWithNames.getColumn(dataWithNames.getVariable(DEFAULT_NAME_COLUMN));
 
-                DataSet test = trainDataWOnames.subsetRows(new int[]{i});
-                trainData.removeRows(new int[]{i});
+            for (int i = 0; i < n; i++) {
+                // LOO split
+                DataSet train = data.copy();
+                DataSet test = data.subsetRows(new int[]{i});
+                train.removeRows(new int[]{i});
 
-                // Generate the bootstrap samples
-                for (int bootstrap = 0; bootstrap < numBootstraps; bootstrap++) {
-                    DataSet bs = new BootstrapSampler().sample(trainData, trainData.getNumRows());
+                for (int b = 0; b < numBootstraps; b++) {
+                    DataSet bs = bootstrap(train, train.getNumRows());
 
-                    BDeuScore _score = new BDeuScore(bs);
+                    BDeuScore popScoreOnBs = new BDeuScore(bs);
 
-                    IsBDeuScore2 scoreI = new IsBDeuScore2(bs, test);
-                    scoreI.setSamplePrior(samplePrior);
-                    scoreI.setKAddition(0.5);
-                    scoreI.setKDeletion(0.5);
-                    scoreI.setKReorientation(0.5);
-                    IsFges fgesI = new IsFges(scoreI, _score);
-                    fgesI.setPopulationGraph(graphP);
-                    double scoreP = fgesI.scoreDag(graphP);
+                    // Score population graph under IS objective for comparison
+                    IsBDeuScore2 scoreIS_forPop = new IsBDeuScore2(bs, test);
+                    scoreIS_forPop.setSamplePrior(samplePrior);
+                    scoreIS_forPop.setKAddition(0.5);
+                    scoreIS_forPop.setKDeletion(0.5);
+                    scoreIS_forPop.setKReorientation(0.5);
+                    IsFges tmp = new IsFges(scoreIS_forPop, popScoreOnBs);
+                    tmp.setPopulationGraph(graphP);
+                    double popMl = tmp.scoreDag(graphP);
 
-                    String caseName = (String) trainDataOrig.getObject(i, trainDataOrig.getColumn(trainDataOrig.getVariable(names)));
-                    outputFileName = dataName + "_" + caseName + "_kappa_" + k_add + "_" + bootstrap + ".txt";
-                    File fileIs = new File(dir, outputFileName);
+                    String caseName = Objects.toString(dataWithNames.getObject(i, nameIdx));
+                    Path outGraph = outDir.resolve(dataName + "_" + caseName + "_kappa_" + kappa + "_" + b + ".txt");
 
-                    // learn the IS graph
-                    Graph graphI = learnBNIS(bs, test, k_add, graphP, samplePrior, out, caseName, scoreP);
+                    // Learn IS graph
+                    Graph graphIS = learnInstanceSpecific(bs, test, kappa, graphP, samplePrior);
 
-                    GraphSaveLoadUtils.saveGraph(graphI, fileIs, false);
+                    // Score learned IS graph under the same objective
+                    IsFges tmp2 = new IsFges(scoreIS_forPop, popScoreOnBs);
+                    tmp2.setPopulationGraph(graphP);
+                    double isMl = tmp2.scoreDag(graphIS);
+                    out.println(caseName + "," + popMl + "," + isMl);
+
+                    saveGraph(graphIS, outGraph);
                 }
             }
-            out.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to write CSV log: " + csv, e);
         }
-
     }
 
-    private static Graph learnBNIS(DataSet trainData, DataSet test, double kappa, Graph graphP, double samplePrior, PrintStream out, String caseName, double scoreP) {
-        // learn the instance-specific model
-        BDeuScore _score = new BDeuScore(trainData);
+    // ================== Learning helpers ==================
 
-        IsBDeuScore2 scoreI = new IsBDeuScore2(trainData, test);
-        scoreI.setSamplePrior(samplePrior);
-        scoreI.setKAddition(kappa);
-        scoreI.setKDeletion(kappa);
-        scoreI.setKReorientation(kappa);
-        IsFges fgesI = new IsFges(scoreI, _score);
-        fgesI.setPopulationGraph(graphP);
-        fgesI.setInitialGraph(graphP);
-        Graph graphI = null;
+    private static Graph learnPopulationFges(DataSet data, double samplePrior, double structurePrior) {
+        BDeuScore score = new BDeuScore(data);
+        score.setPriorEquivalentSampleSize(samplePrior);
+        score.setStructurePrior(structurePrior);
+        Fges fges = new Fges(score);
+        fges.setSymmetricFirstStep(true);
         try {
-            graphI = fgesI.search();
+            Graph g = fges.search();
+            return GraphUtils.replaceNodes(g, data.getVariables());
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Population FGES interrupted", e);
         }
-        graphI = GraphUtils.replaceNodes(graphI, trainData.getVariables());
-        double scoreGI = fgesI.scoreDag(graphI);
-        out.println(caseName + "," + scoreP + "," + scoreGI);
-
-        return graphI;
     }
 
-    private static Graph BNlearn_pop(DataSet trainDataOrig, double samplePrior, double structurePrior) {
-        BDeuScore scoreP = new BDeuScore(trainDataOrig);
-        scoreP.setPriorEquivalentSampleSize(samplePrior);
-        scoreP.setStructurePrior(structurePrior);
-        Fges fgesP = new Fges(scoreP);
-        fgesP.setSymmetricFirstStep(true);
-        Graph graphP = null;
+    private static Graph learnInstanceSpecific(DataSet train, DataSet test, double kappa, Graph populationGraph, double samplePrior) {
+        BDeuScore popScore = new BDeuScore(train);
+
+        IsBDeuScore2 scoreIS = new IsBDeuScore2(train, test);
+        scoreIS.setSamplePrior(samplePrior);
+        scoreIS.setKAddition(kappa);
+        scoreIS.setKDeletion(kappa);
+        scoreIS.setKReorientation(kappa);
+
+        IsFges fges = new IsFges(scoreIS, popScore);
+        fges.setPopulationGraph(populationGraph);
+        fges.setInitialGraph(populationGraph);
+
         try {
-            graphP = fgesP.search();
+            Graph g = fges.search();
+            return GraphUtils.replaceNodes(g, train.getVariables());
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("IS-FGES interrupted", e);
         }
-        graphP = GraphUtils.replaceNodes(graphP, trainDataOrig.getVariables());
-        return graphP;
     }
 
-    private static DataSet readData(String pathToData) {
-        Path trainDataFile = Paths.get(pathToData);
-        char delimiter = ',';
-        VerticalDiscreteTabularDatasetReader trainDataReader = new VerticalDiscreteTabularDatasetFileReader(trainDataFile, DelimiterUtils.toDelimiter(delimiter));
-        DataSet trainDataOrig = null;
+    // ================== IO helpers ==================
+
+    private static void ensureDir(Path dir) {
         try {
-            trainDataOrig = (DataSet) DataConvertUtils.toDataModel(trainDataReader.readInData());
-        } catch (Exception IOException) {
-            IOException.printStackTrace();
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to create output directory: " + dir, e);
         }
-        return trainDataOrig;
     }
 
+    private static void saveGraph(Graph g, Path out) {
+        File f = out.toFile();
+        GraphSaveLoadUtils.saveGraph(g, f, false);
+        System.out.println("Wrote: " + out);
+    }
+
+    private static DataSet readDiscreteCsv(Path csv, char delimiter) {
+        VerticalDiscreteTabularDatasetReader reader =
+                new VerticalDiscreteTabularDatasetFileReader(csv, DelimiterUtils.toDelimiter(delimiter));
+        try {
+            return (DataSet) DataConvertUtils.toDataModel(reader.readInData());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read dataset: " + csv, e);
+        }
+    }
+
+    private static DataSet stripNameColumn(DataSet withNames, String nameCol) {
+        DataSet copy = withNames.copy();
+        int idx = copy.getColumn(copy.getVariable(nameCol));
+        copy.removeColumn(idx);
+        return copy;
+    }
+
+    private static DataSet bootstrap(DataSet data, int size) {
+        return new BootstrapSampler().sample(data, size);
+    }
+
+    private static String required(String[] args, int i, String flag) {
+        if (i >= args.length) throw new IllegalArgumentException("Missing value for " + flag);
+        return args[i];
+    }
+
+    private static void printHelpAndExit() {
+        System.out.println("Usage: TestISFGS_TCGA [options]\n" +
+                           "  -data <name>   Data CSV base name (default: " + DEFAULT_DATA_NAME + ")\n" +
+                           "  -dir <path>    Directory containing CSVs (default: user.dir)\n" +
+                           "  -bs <int>      Number of bootstrap replicates per LOO case (default: 1)\n" +
+                           "  -h, --help     Show this help");
+        System.exit(0);
+    }
 }

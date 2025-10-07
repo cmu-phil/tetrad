@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
+import edu.cmu.tetrad.search.Gfci;
 import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.DataConvertUtils;
@@ -14,148 +15,296 @@ import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReade
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetReader;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.*;
 
-
+/**
+ * CLI runner used to reproduce the original IGFCI-on-TCGA workflow.
+ *
+ * <p>Refactor goals:
+ * <ul>
+ *   <li>Separate concerns (arg parsing, IO, population run, LOO run).</li>
+ *   <li>Safer IO and error handling, no broad catch named as an IOException variable.</li>
+ *   <li>Use Paths/Files and create directories robustly.</li>
+ *   <li>Preserve original defaults/behavior.</li>
+ * </ul>
+ *
+ * <p>Usage examples:
+ * <pre>
+ *   java ... TestIGFCI_TCGA \
+ *     -data gsva_dis_25 -knowledge forbid_pairs_nodes2 -dir /path/to/dir \
+ *     -th true -cutoff 0.5 -kappa 0.5 -bs 1
+ * </pre>
+ */
 public class TestIGFCI_TCGA {
-    public static void main(String[] args) {
-        // read and process input arguments
-        String data_path = System.getProperty("user.dir");
-        boolean threshold = true;
-        double alpha = 0, cutoff = 0.5, kappa = 0.5;
-        int nbs = 1;
 
+    // --- Defaults preserved from the legacy version ---
+    private static final String DEFAULT_DATA_NAME = "gsva_dis_25";
+    private static final String DEFAULT_KNOWLEDGE_NAME = "forbid_pairs_nodes2";
+    private static final String DEFAULT_NAME_COLUMN = "Name"; // column removed from the data
+    private static final char DEFAULT_DELIM = ',';
+    private static final double DEFAULT_CUTOFF = 0.5;
+    private static final double DEFAULT_KAPPA = 0.5;
+    private static final boolean DEFAULT_THRESHOLD = true;
+    private static final int DEFAULT_BOOTSTRAP_MULTIPLIER = 1; // nbs
+
+    // 90% bootstrap as in the legacy code
+    private static final double BOOTSTRAP_FRACTION = 0.9;
+
+    public static void main(String[] args) {
+        // Print raw args for reproducibility (legacy behavior)
         System.out.println(Arrays.asList(args));
-        String data_name = "gsva_dis_25", knowledge_name = "forbid_pairs_nodes2";
+
+        // Parse CLI
+        CliOptions opt = parseArgs(args);
+
+        // Kick off
+        new TestIGFCI_TCGA().run(opt);
+    }
+
+    private void run(CliOptions opt) {
+        // Seed matches the legacy formula: 1454147771L + 100 * nbs
+        RandomUtil.getInstance().setSeed(1454147771L + 100L * opt.bootstrapIndex);
+
+        // Inputs
+        Path dataCsv = Paths.get(opt.dataDir).resolve(opt.dataName + ".csv");
+        Path knowledgeCsv = Paths.get(opt.dataDir).resolve(opt.knowledgeName + ".csv");
+
+        // Output dir
+        Path outDir = Paths.get(opt.dataDir).resolve(Paths.get("outputs_PAGs_BS", opt.dataName));
+        ensureDir(outDir);
+
+        // Read data
+        DataSet trainWithNames = readDiscreteCsv(dataCsv, DEFAULT_DELIM);
+        DataSet trainData = stripNameColumn(trainWithNames, DEFAULT_NAME_COLUMN);
+
+        // Bootstrap sample (population run uses bs in the legacy code)
+        DataSet bs = bootstrap(trainData, BOOTSTRAP_FRACTION);
+
+        // Knowledge
+        Knowledge knowledge = loadKnowledgePairs(knowledgeCsv);
+
+        // --- Population search ---
+        System.out.println("begin population search");
+        Graph populationPag = runPopulation(bs, knowledge, opt);
+        saveGraph(populationPag, outDir.resolve(opt.dataName + "_populationWide_" + opt.bootstrapIndex + ".txt"));
+
+        // --- Leave-one-out instance-specific runs ---
+        leaveOneOut(trainWithNames, trainData, bs, knowledge, opt, outDir);
+    }
+
+    // ================== Pipeline pieces ==================
+
+    private Graph runPopulation(DataSet bs, Knowledge knowledge, CliOptions opt) {
+        IndTestProbabilisticBDeu indTest = new IndTestProbabilisticBDeu(bs, /*alpha*/ 0.5); // original used 0.5; CLI -alpha was unused
+        indTest.setThreshold(opt.threshold);
+        indTest.setCutoff(opt.cutoff);
+
+        BDeuScore score = new BDeuScore(bs);
+        Gfci gfci = new Gfci(indTest, score);
+        gfci.setKnowledge(knowledge);
+        try {
+            return gfci.search();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Population search interrupted", e);
+        }
+    }
+
+    private void leaveOneOut(
+            DataSet trainWithNames,
+            DataSet trainData,
+            DataSet bs,
+            Knowledge knowledge,
+            CliOptions opt,
+            Path outDir
+    ) {
+        final int n = trainData.getNumRows();
+        final int nameColIndex = trainWithNames.getColumn(trainWithNames.getVariable(DEFAULT_NAME_COLUMN));
+
+        BDeuScore populationScore = new BDeuScore(bs); // for structure prior only
+
+        for (int i = 0; i < n; i++) {
+            System.out.println("case i: " + i);
+
+            // Train/test split for LOO
+            DataSet train = trainData.copy();
+            DataSet test = train.subsetRows(new int[]{i});
+            train.removeRows(new int[]{i});
+
+            // Instance-specific independence test
+            IndTestProbabilisticISBDeu indTestIS = new IndTestProbabilisticISBDeu(bs, test, populationScore.getStructurePrior());
+            indTestIS.setThreshold(opt.threshold);
+            indTestIS.setCutoff(opt.cutoff);
+
+            // Instance-specific score (kappa for add/delete/reorient)
+            IsBDeuScore2 scoreIS = new IsBDeuScore2(bs, test);
+            scoreIS.setKAddition(opt.kappa);
+            scoreIS.setKDeletion(opt.kappa);
+            scoreIS.setKReorientation(opt.kappa);
+
+            // Background score on train for mixed objective
+            Score scoreTrain = new BDeuScore(train);
+
+            // Search
+            IsGFci isGfci = new IsGFci(indTestIS, scoreIS, scoreTrain);
+            isGfci.setKnowledge(knowledge);
+            Graph graph;
+            try {
+                graph = isGfci.search();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Instance-specific search interrupted (i=" + i + ")", e);
+            }
+
+            String caseName = (String) trainWithNames.getObject(i, nameColIndex);
+            Path out = outDir.resolve(opt.dataName + "_" + caseName + "_" + opt.bootstrapIndex + ".txt");
+            saveGraph(graph, out);
+        }
+    }
+
+    // ================== IO helpers ==================
+
+    private static void ensureDir(Path dir) {
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to create output directory: " + dir, e);
+        }
+    }
+
+    private static DataSet readDiscreteCsv(Path csv, char delimiter) {
+        VerticalDiscreteTabularDatasetReader reader =
+                new VerticalDiscreteTabularDatasetFileReader(csv, DelimiterUtils.toDelimiter(delimiter));
+        try {
+            return (DataSet) DataConvertUtils.toDataModel(reader.readInData());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read dataset: " + csv, e);
+        }
+    }
+
+    private static DataSet stripNameColumn(DataSet withNames, String nameCol) {
+        DataSet copy = withNames.copy();
+        int idx = copy.getColumn(copy.getVariable(nameCol));
+        copy.removeColumn(idx);
+        return copy;
+    }
+
+    private static DataSet bootstrap(DataSet data, double fraction) {
+        int numRows = (int) Math.round(fraction * data.getNumRows());
+        return new BootstrapSampler().sample(data, numRows);
+        // NOTE: BootstrapSampler().sample() samples with replacement in Tetrad.
+    }
+
+    private static Knowledge loadKnowledgePairs(Path csv) {
+        DataSet knowledgeData = readDiscreteCsv(csv, DEFAULT_DELIM);
+        Knowledge k = new Knowledge();
+        for (int i = 0; i < knowledgeData.getNumRows(); i++) {
+            String a = Objects.toString(knowledgeData.getObject(i, 0));
+            String b = Objects.toString(knowledgeData.getObject(i, 1));
+            // The legacy code sets both directions forbidden
+            k.setForbidden(a, b);
+            k.setForbidden(b, a);
+        }
+        return k;
+    }
+
+    private static void saveGraph(Graph g, Path out) {
+        File f = out.toFile();
+        GraphSaveLoadUtils.saveGraph(g, f, false);
+        System.out.println("Wrote: " + out);
+    }
+
+    // ================== CLI ==================
+
+    private static CliOptions parseArgs(String[] args) {
+        // Defaults
+        CliOptions opt = new CliOptions();
+        opt.dataDir = System.getProperty("user.dir");
+        opt.threshold = DEFAULT_THRESHOLD;
+        opt.cutoff = DEFAULT_CUTOFF;
+        opt.kappa = DEFAULT_KAPPA;
+        opt.dataName = DEFAULT_DATA_NAME;
+        opt.knowledgeName = DEFAULT_KNOWLEDGE_NAME;
+        opt.bootstrapIndex = DEFAULT_BOOTSTRAP_MULTIPLIER;
+
+        if (args == null || args.length == 0) {
+            return opt; // use defaults
+        }
+
         for (int i = 0; i < args.length; i++) {
-            switch (args[i]) {
+            String a = args[i];
+            switch (a) {
+                case "-h":
+                case "--help":
+                    printHelpAndExit();
+                    break;
                 case "-th":
-                    threshold = Boolean.parseBoolean(args[i + 1]);
+                    opt.threshold = Boolean.parseBoolean(required(args, ++i, "-th"));
                     break;
                 case "-alpha":
-                    alpha = Double.parseDouble(args[i + 1]);
+                    // NOTE: alpha was parsed in legacy but never used; we keep it for compatibility
+                    opt.alpha = Double.parseDouble(required(args, ++i, "-alpha"));
                     break;
                 case "-cutoff":
-                    cutoff = Double.parseDouble(args[i + 1]);
+                    opt.cutoff = Double.parseDouble(required(args, ++i, "-cutoff"));
                     break;
                 case "-kappa":
-                    kappa = Double.parseDouble(args[i + 1]);
+                    opt.kappa = Double.parseDouble(required(args, ++i, "-kappa"));
                     break;
                 case "-data":
-                    data_name = args[i + 1];
+                    opt.dataName = required(args, ++i, "-data");
                     break;
                 case "-knowledge":
-                    knowledge_name = args[i + 1];
+                    opt.knowledgeName = required(args, ++i, "-knowledge");
                     break;
                 case "-dir":
-                    data_path = args[i + 1];
+                    opt.dataDir = required(args, ++i, "-dir");
                     break;
                 case "-bs":
-                    nbs = Integer.parseInt(args[i + 1]);
+                    opt.bootstrapIndex = Integer.parseInt(required(args, ++i, "-bs"));
                     break;
+                default:
+                    throw new IllegalArgumentException("Unknown option: " + a + ". Use -h for help.");
             }
         }
 
-        TestIGFCI_TCGA t = new TestIGFCI_TCGA();
-        t.test_sim(alpha, threshold, cutoff, kappa, data_name, knowledge_name, data_path, nbs);
+        return opt;
     }
 
-    private static DataSet readData(String pathToData) {
-        Path trainDataFile = Paths.get(pathToData);
-        char delimiter = ',';
-        VerticalDiscreteTabularDatasetReader trainDataReader = new VerticalDiscreteTabularDatasetFileReader(trainDataFile, DelimiterUtils.toDelimiter(delimiter));
-        DataSet trainDataOrig = null;
-        try {
-            trainDataOrig = (DataSet) DataConvertUtils.toDataModel(trainDataReader.readInData());
-        } catch (Exception IOException) {
-            IOException.printStackTrace();
+    private static String required(String[] args, int i, String opt) {
+        if (i >= args.length) {
+            throw new IllegalArgumentException("Missing value for " + opt);
         }
-        return trainDataOrig;
+        return args[i];
     }
 
-    public void test_sim(double alpha, boolean threshold, double cutoff, double kappa, String data_name, String knowledge_name, String data_path, int nbs) { //int numVars, double edgesPerNode, double latent, int numCases, int numTests, int numActualTest, int numSim, String data_path, int time, long seed){
-
-        RandomUtil.getInstance().setSeed(1454147771L + 100 * nbs);
-
-        String pathToData = data_path + "/" + data_name + ".csv";
-        String names = "Name";
-
-        // Read in the data
-        DataSet trainDataWnames = readData(pathToData);
-        DataSet trainDataOrig = trainDataWnames.copy();
-        trainDataOrig.removeColumn(trainDataWnames.getColumn(trainDataWnames.getVariable(names)));
-        int numBSCases = (int) (0.9 * trainDataOrig.getNumRows());
-        DataSet bs = new BootstrapSampler().sample(trainDataOrig, numBSCases);
-
-        String pathToKnowledge = data_path + "/" + knowledge_name + ".csv";
-        Knowledge knowledge = new Knowledge();
-        DataSet knowledgeData = readData(pathToKnowledge);
-        for (int i = 0; i < knowledgeData.getNumRows(); i++) {
-            knowledge.setForbidden(knowledgeData.getObject(i, 0).toString(), knowledgeData.getObject(i, 1).toString());
-            knowledge.setForbidden(knowledgeData.getObject(i, 1).toString(), knowledgeData.getObject(i, 0).toString());
-
-        }
-
-
-        // learn the population model using all training data and write the result in the output file
-        System.out.println("begin population search");
-        IndTestProbabilisticBDeu indTest_pop = new IndTestProbabilisticBDeu(bs, 0.5);
-        indTest_pop.setThreshold(threshold);
-        indTest_pop.setCutoff(cutoff);
-        BDeuScore scoreP = new BDeuScore(bs);
-        edu.cmu.tetrad.search.Gfci fci_pop = new edu.cmu.tetrad.search.Gfci(indTest_pop, scoreP);
-        fci_pop.setKnowledge(knowledge);
-        Graph graphP = null;
-        try {
-            graphP = fci_pop.search();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        File dir = new File(data_path + "/outputs_PAGs_BS/" + data_name);
-        dir.mkdirs();
-        String outputFileName = data_name + "_populationWide_" + nbs + ".txt";
-        File filePop = new File(dir, outputFileName);
-        GraphSaveLoadUtils.saveGraph(graphP, filePop, false);
-
-        // run leave-one-out cross-validation over the training set to learn an instance-specific PAG for each sample
-        for (int i = 0; i < trainDataOrig.getNumRows(); i++) {
-            System.out.println("case i: " + i);
-            DataSet trainData = trainDataOrig.copy();
-            DataSet test = trainData.subsetRows(new int[]{i});
-            trainData.removeRows(new int[]{i});
-
-            // learn the instance-specific model using the IGFCi method, training data, and test
-            // define the instance-specific BSC test
-            IndTestProbabilisticISBDeu indTest_IS = new IndTestProbabilisticISBDeu(bs, test, scoreP.getStructurePrior());
-            indTest_IS.setThreshold(threshold);
-            indTest_IS.setCutoff(cutoff);
-
-            // define the instance-specific score
-            IsBDeuScore2 scoreI = new IsBDeuScore2(bs, test);
-            scoreI.setKAddition(kappa);
-            scoreI.setKDeletion(kappa);
-            scoreI.setKReorientation(kappa);
-
-            Score scoreI2 = new BDeuScore(trainData);
-
-            //run IsGFci and write the result in the output file
-            IsGFci Fci_IS = new IsGFci(indTest_IS, scoreI, scoreI2);
-            Fci_IS.setKnowledge(knowledge);
-            Graph graphI = null;
-            try {
-                graphI = Fci_IS.search();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            String caseName = (String) trainDataWnames.getObject(i, trainDataWnames.getColumn(trainDataWnames.getVariable(names)));
-            outputFileName = data_name + "_" + caseName + "_" + nbs + ".txt";
-            File fileIs = new File(dir, outputFileName);
-            GraphSaveLoadUtils.saveGraph(graphI, fileIs, false);
-        }
-
+    private static void printHelpAndExit() {
+        System.out.println("Usage: TestIGFCI_TCGA [options]\n" +
+                           "  -data <name>         Data CSV base name (default: " + DEFAULT_DATA_NAME + ")\n" +
+                           "  -knowledge <name>    Knowledge CSV base name (default: " + DEFAULT_KNOWLEDGE_NAME + ")\n" +
+                           "  -dir <path>          Directory containing CSVs (default: user.dir)\n" +
+                           "  -th <true|false>     Use thresholding in tests (default: " + DEFAULT_THRESHOLD + ")\n" +
+                           "  -cutoff <double>     Test cutoff (default: " + DEFAULT_CUTOFF + ")\n" +
+                           "  -kappa <double>      kappa for add/delete/reorient (default: " + DEFAULT_KAPPA + ")\n" +
+                           "  -alpha <double>      (parsed but not used; kept for compatibility)\n" +
+                           "  -bs <int>            Bootstrap index multiplier (default: " + DEFAULT_BOOTSTRAP_MULTIPLIER + ")\n" +
+                           "  -h, --help           Show this help");
+        System.exit(0);
     }
 
+    // Simple POJO for parsed options
+    private static class CliOptions {
+        String dataDir;
+        String dataName;
+        String knowledgeName;
+        boolean threshold;
+        double cutoff;
+        double kappa;
+        double alpha; // kept for compatibility though unused
+        int bootstrapIndex;
+    }
 }

@@ -1,23 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search.is;
 
 import edu.cmu.tetrad.data.*;
@@ -29,767 +9,186 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Instance-Specific BDeu (IS-BDeu) score.
-        *
-        * <p>This score extends the standard Bayesian Dirichlet equivalent uniform (BDeu) score
- * to the instance-specific setting described by Fattaneh Jabbari. In addition to the
- * usual population-wide likelihood, it incorporates likelihood contributions from a
- * designated test case (a single row from a dataset). The resulting score therefore
- * rewards structures that not only fit the overall data but also provide a good
- * explanation for the chosen instance.</p>
-        *
-        * <p>The score is decomposable, so local score differences can be evaluated for candidate
- * edge additions, deletions, or reversals. Each local computation blends:</p>
-        * <ul>
- *   <li><b>Population term</b>: the standard BDeu contribution based on counts over the training dataset.</li>
-        *   <li><b>Instance-specific term</b>: a correction that favors parent configurations consistent with
- *       the observed values in the test case.</li>
-        * </ul>
-        *
-        * <p>This hybrid design allows search algorithms such as IS-FGES and IS-GFCI to guide
- * edge orientation using both population regularities and individual evidence, yielding
- * graphs that may differ across test cases while remaining anchored to the population
- * model.</p>
-        *
-        * <p><b>References:</b> Fattaneh Jabbari, Ph.D. dissertation, Carnegie Mellon University,
-        * pp. 144–147.</p>
-        */
-//@Deprecated
+ * Instance‑Specific BDeu (IS‑BDeu) score.
+ *
+ * <p>Population term: standard BDeu on training data (Dirichlet‑uniform prior).
+ * Instance‑specific term: single‑row correction favoring the test case’s parent
+ * configuration; plus a simple structure prior for edits vs. a population family.</p>
+ */
 public class IsBDeuScore2 implements IsScore {
-    private static final boolean verbose = false;
-    private final int[][] data;
+
+    private static final int MISSING = -99;
+
+    // ------------ Data ------------
+    private final int[][] data;               // shape: p × n (var × row)
     private final int sampleSize;
-    private final int[][] test;
-    private final int[] numCategories;
+    private final int[][] test;               // shape: p × 1 (single instance)
+    private final int[] numCategories;        // length p
+    private List<Node> variables;             // length p, name/order must match matrices
 
-    //	private Graph graph_pop;
-    private List<Node> variables;
-    private double samplePrior = 1;
-    private double structurePrior = 1;
-    private double k_addition = 0.1;
-    private double k_deletion = 0.1;
-    private double k_reorient = 0.1;
+    // ------------ Hyper‑params ------------
+    private double samplePrior = 1.0;         // equivalent sample size multiplier
+    private double structurePrior = 1.0;      // kept for API parity (not directly used below)
+    private double k_addition  = 0.1;
+    private double k_deletion  = 0.1;
+    private double k_reorient  = 0.1;
+
+    private static final boolean verbose = false;
+
+    // ============================== Ctor ===============================
 
     /**
-     * Initializes the ISBDeuScore with the given dataset and test case.
-     *
-     * @param dataSet  the dataset to be used for scoring. Must not be null.
-     * @param testCase the test case to evaluate. Must not be null.
-     * @throws NullPointerException if either dataSet or testCase is null.
+     * @param dataSet training data (discrete)
+     * @param testCase single‑row test case, same variables/order as {@code dataSet}
      */
-    public IsBDeuScore2(DataSet dataSet, DataSet testCase) {
+    public IsBDeuScore2(final DataSet dataSet, final DataSet testCase) {
+        if (dataSet == null) throw new NullPointerException("Dataset was not provided.");
+        if (testCase == null) throw new NullPointerException("Test case was not provided.");
 
-        if (dataSet == null) {
-            throw new NullPointerException("Dataset was not provided.");
-        }
+        this.variables = dataSet.getVariables();
 
-        if (testCase == null) {
-            throw new NullPointerException("Test case was not provided.");
-        }
-
-        if (dataSet instanceof BoxDataSet) {
-            DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
-
-            this.variables = dataSet.getVariables();
-
-            if (!(dataBox instanceof VerticalIntDataBox)) {
-                dataBox = new VerticalIntDataBox(dataBox);
-            }
-
-            VerticalIntDataBox box = (VerticalIntDataBox) dataBox;
-
-            data = box.getVariableVectors();
-            this.sampleSize = box.numRows();
+        // training matrix
+        if (dataSet instanceof BoxDataSet box) {
+            DataBox db = box.getDataBox();
+            if (!(db instanceof VerticalIntDataBox)) db = new VerticalIntDataBox(db);
+            VerticalIntDataBox vbox = (VerticalIntDataBox) db;
+            this.data = vbox.getVariableVectors();
+            this.sampleSize = vbox.numRows();
         } else {
-            data = new int[dataSet.getNumColumns()][];
-            this.variables = dataSet.getVariables();
-
-            for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                data[j] = new int[dataSet.getNumRows()];
-
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    data[j][i] = dataSet.getInt(i, j);
-                }
-            }
-
-            this.sampleSize = dataSet.getNumRows();
+            int p = dataSet.getNumColumns(), n = dataSet.getNumRows();
+            this.data = new int[p][n];
+            for (int j = 0; j < p; j++) for (int i = 0; i < n; i++) this.data[j][i] = dataSet.getInt(i, j);
+            this.sampleSize = n;
         }
 
-        final List<Node> variables = dataSet.getVariables();
-        numCategories = new int[variables.size()];
-        for (int i = 0; i < variables.size(); i++) {
-            numCategories[i] = (getVariable(i)).getNumCategories();
+        // categories + discrete guard
+        final int p = variables.size();
+        this.numCategories = new int[p];
+        for (int i = 0; i < p; i++) {
+            Node v = variables.get(i);
+            if (!(v instanceof DiscreteVariable dv)) {
+                throw new IllegalArgumentException("All variables must be discrete for IsBDeuScore2: " + v);
+            }
+            numCategories[i] = dv.getNumCategories();
         }
 
-        // convert test case to an array
-        if (testCase instanceof BoxDataSet) {
-            DataBox testBox = ((BoxDataSet) testCase).getDataBox();
-
-            this.variables = dataSet.getVariables();
-
-            if (!(testBox instanceof VerticalIntDataBox)) {
-                testBox = new VerticalIntDataBox(testBox);
-            }
-
-            VerticalIntDataBox box = (VerticalIntDataBox) testBox;
-            test = box.getVariableVectors();
-            // this.sampleSize = dataSet.getNumRows();
+        // test (must be single row)
+        if (testCase.getNumColumns() != p) {
+            throw new IllegalArgumentException("Test case variable count != training variable count.");
+        }
+        if (testCase instanceof BoxDataSet tbox) {
+            DataBox tb = tbox.getDataBox();
+            if (!(tb instanceof VerticalIntDataBox)) tb = new VerticalIntDataBox(tb);
+            VerticalIntDataBox vtb = (VerticalIntDataBox) tb;
+            this.test = vtb.getVariableVectors();
         } else {
-            test = new int[testCase.getNumColumns()][];
-            // this.variables = dataSet.getVariables();
-
-            for (int j = 0; j < testCase.getNumColumns(); j++) {
-                test[j] = new int[testCase.getNumRows()];
-
-                for (int i = 0; i < testCase.getNumRows(); i++) {
-                    test[j][i] = testCase.getInt(i, j);
-                }
+            if (testCase.getNumRows() != 1) {
+                throw new IllegalArgumentException("Instance‑specific score expects a SINGLE‑ROW test case.");
             }
-            // this.sampleSize = dataSet.getNumRows();
+            this.test = new int[p][1];
+            for (int j = 0; j < p; j++) this.test[j][0] = testCase.getInt(0, j);
+        }
+        if (this.test.length != p || this.test[0].length != 1) {
+            throw new IllegalArgumentException("Instance‑specific score expects a SINGLE‑ROW test case.");
         }
     }
 
-    /**
-     * Computes the row index based on the given dimensions and values.
-     *
-     * @param dim    an array representing the dimensions.
-     * @param values an array representing the values corresponding to each dimension.
-     * @return the computed row index as an integer.
-     */
-    private static int getRowIndex(int[] dim, int[] values) {
-        int rowIndex = 0;
-        for (int i = 0; i < dim.length; i++) {
-            rowIndex *= dim[i];
-            rowIndex += values[i];
-        }
-        return rowIndex;
-    }
+    // ============================== IsScore ==============================
 
-    private DiscreteVariable getVariable(int i) {
-        return (DiscreteVariable) variables.get(i);
-    }
-
-    /**
-     * Calculates the local scoring for a given node in a Bayesian Network
-     * based on the provided parent and child configurations.
-     *
-     * @param node The index of the node for which the score is being calculated.
-     * @param parents_is An array of indices representing the context-specific parents of the node.
-     * @param parents_pop An array of indices representing the population-wide parents of the node.
-     * @param children_pop An array of indices representing the children of the node in the population-wide model.
-     * @return The computed local score as a double value.
-     */
     @Override
-    public double localScore(int node, int[] parents_is, int[] parents_pop, int[] children_pop) {
+    public double localScore(final int node, final int[] parents_is, final int[] parents_pop, final int[] children_pop) {
+        // Node arity
+        final int K = numCategories[node];
 
-        // Number of categories for node.
-        int K = numCategories[node];
+        // POP parent dims & states
+        final int[] dims_p = getDimensions(parents_pop);
+        final int r_p = numStates(parents_pop, dims_p);
 
-        // Numbers of categories of parents in POP and IS models.
-        int[] dims_p = getDimentions(parents_pop);
+        // Counts
+        final int[][] np_jk = new int[r_p][K];
+        final int[]   np_j  = new int[r_p];
 
-        // Number of parent states  in POP, IS, and both.
-        int r_p = computeAllParentStates(parents_pop, dims_p);
+        // IS bin for the test case
+        final int[] parentValuesTest = new int[parents_is.length];
+        for (int i = 0; i < parents_is.length; i++) parentValuesTest[i] = test[parents_is[i]][0];
 
-        // Conditional cell coefs of data for node given population parents(node).
-        int[][] np_jk = new int[r_p][K];
-        int[] np_j = new int[r_p];
+        final int[] y = data[node];
 
-        // Conditional cell coefs of data for node given context specific parents(node).
-        int[] ni_jk = new int[K];
-        int ni_j = 0;
-
-        int[] parentValuesTest = new int[parents_is.length];
-        for (int i = 0; i < parents_is.length; i++) {
-            parentValuesTest[i] = test[parents_is[i]][0];
-        }
-
-
-        int[] myChild = data[node];
-
-        ROW:
-        for (int i = 0; i < sampleSize; i++) {
-            int[] parentValues = new int[parents_is.length];
+        // Iterate rows; if test parents match, push to IS cell; else to POP table
+        ROW: for (int i = 0; i < sampleSize; i++) {
+            // IS parents for the row
+            final int[] parentValuesIS = new int[parents_is.length];
             for (int p = 0; p < parents_is.length; p++) {
-                if (data[parents_is[p]][i] == -99) continue ROW;
-                parentValues[p] = data[parents_is[p]][i];
+                int val = data[parents_is[p]][i];
+                if (val == MISSING) continue ROW;
+                parentValuesIS[p] = val;
             }
 
-            int childValue = myChild[i];
+            final int childValue = y[i];
+            if (childValue == MISSING) continue;
 
-            if (childValue == -99) {
-                continue;
-            }
-
-            if (Arrays.equals(parentValues, parentValuesTest) && parentValuesTest.length > 0) {
-                ni_jk[childValue]++;
-                ni_j++;
+            if (parents_is.length > 0 && Arrays.equals(parentValuesIS, parentValuesTest)) {
+                // contributed to IS term below via ni_jk/ni_j
+                // We don't need to keep the per‑state breakdown for IS: only the single matched row bucket.
+                // We accumulate counts directly as ni_jk/ni_j.
             } else {
-                int[] parentValuesPop = new int[parents_pop.length];
+                // To POP counts (needs POP parents present)
+                final int[] parentValuesPop = new int[parents_pop.length];
                 for (int p = 0; p < parents_pop.length; p++) {
-                    if (data[parents_pop[p]][i] == -99) continue ROW;
-                    parentValuesPop[p] = data[parents_pop[p]][i];
+                    int val = data[parents_pop[p]][i];
+                    if (val == MISSING) continue ROW;
+                    parentValuesPop[p] = val;
                 }
-
-                int rowIndex = getRowIndex(dims_p, parentValuesPop);
-
-                np_jk[rowIndex][childValue]++;
-                np_j[rowIndex]++;
+                final int j = rowIndex(dims_p, parentValuesPop);
+                np_jk[j][childValue]++;
+                np_j[j]++;
             }
         }
 
-        // computing priors
-        List<Integer> parents_all_list = IntStream.of(parents_pop).boxed().collect(Collectors.toList());
-        for (int parentsI : parents_is) {
-            if (!parents_all_list.contains(parentsI)) {
-                parents_all_list.add(parentsI);
+        // Separate pass to compute IS counts (only the single matched configuration)
+        int[] ni_jk = new int[K];
+        int   ni_j  = 0;
+        if (parents_is.length > 0) {
+            ROW2: for (int i = 0; i < sampleSize; i++) {
+                final int[] parentValuesIS = new int[parents_is.length];
+                for (int p = 0; p < parents_is.length; p++) {
+                    int val = data[parents_is[p]][i];
+                    if (val == MISSING) continue ROW2;
+                    parentValuesIS[p] = val;
+                }
+                if (Arrays.equals(parentValuesIS, parentValuesTest)) {
+                    final int yv = y[i];
+                    if (yv == MISSING) continue;
+                    ni_jk[yv]++; ni_j++;
+                }
             }
         }
-        int[] parents_all = parents_all_list.stream().mapToInt(i -> i).toArray();
-        Arrays.sort(parents_all);
-        int[] dims_all = getDimentions(parents_all);
 
-        // Number of parent states  in POP, IS, and both.
-        int r_all = computeAllParentStates(parents_all, dims_all);
-        Map<List<Integer>, Double> row_priors = new HashMap<>();
-
+        // Build priors over the union of IS and POP parents (uniform over configurations)
+        final int[] parents_all = unionSorted(parents_pop, parents_is);
+        final int[] dims_all = getDimensions(parents_all);
+        final int r_all = numStates(parents_all, dims_all);
+        final Map<List<Integer>, Double> row_priors = new HashMap<>(r_all * 2);
         for (int i = 0; i < r_all; i++) {
-            int[] rowValues = getParentValuesForCombination(i, dims_all);
-            row_priors.put(Arrays.stream(rowValues).boxed().collect(Collectors.toList()), 1.0 / r_all);
+            int[] rowVals = getParentValuesForCombination(i, dims_all);
+            row_priors.put(Arrays.stream(rowVals).boxed().collect(Collectors.toList()), 1.0 / r_all);
         }
 
-        double scoreIS = 0.0, scorePop = 0.0, score;
+        double scoreIS = 0.0, scorePop = 0.0;
 
-        // compute IS score
+        // IS term (only if there are IS parents)
         if (parents_is.length > 0) {
             double rowPrior_i = computeRowPrior(parents_is, parentValuesTest, parents_all, row_priors);
             rowPrior_i = getSamplePrior() * rowPrior_i;
             double cellPrior_i = rowPrior_i / K;
 
-            for (int k = 0; k < K; k++) {
-                scoreIS += Gamma.logGamma(cellPrior_i + ni_jk[k]);
-            }
-
+            for (int k = 0; k < K; k++) scoreIS += Gamma.logGamma(cellPrior_i + ni_jk[k]);
             scoreIS -= K * Gamma.logGamma(cellPrior_i);
             scoreIS -= Gamma.logGamma(rowPrior_i + ni_j);
             scoreIS += Gamma.logGamma(rowPrior_i);
         }
 
-        // re-compute pop score
-        for (int j = 0; j < r_p; j++) {
-            int[] parentValuesPop = new int[parents_pop.length];
-            parentValuesPop = getParentValuesForCombination(j, dims_p);
-            double rowPrior_p = computeRowPrior(parents_pop, parentValuesPop, parents_all, row_priors);
-            rowPrior_p = getSamplePrior() * rowPrior_p;
-            double cellPrior_p = rowPrior_p / K;
-
-            if (rowPrior_p > 0) {
-                scorePop -= Gamma.logGamma(rowPrior_p + np_j[j]);
-                for (int k = 0; k < K; k++) {
-                    scorePop += Gamma.logGamma(cellPrior_p + np_jk[j][k]);
-                    scorePop -= Gamma.logGamma(cellPrior_p);
-                }
-                scorePop += Gamma.logGamma(rowPrior_p);
-            }
-        }
-
-        scoreIS += getPriorForStructure(node, parents_is, parents_pop, children_pop);
-
-        score = scorePop + scoreIS;
-        return score;
-    }
-
-    /**
-     * Computes the prior for a specific row based on its parent values and the provided priors map.
-     *
-     * @param parents       An array of integers representing the parent indices for the current row.
-     * @param parent_values An array of integers representing the values of the parents for the current row.
-     * @param parents_all   An array of all parent indices available.
-     * @param row_priors    A map where the key is a list of integers representing parent combinations and the value is
-     *                      the prior associated with that combination.
-     * @return The computed prior value for the current row.
-     */
-    private double computeRowPrior(int[] parents, int[] parent_values, int[] parents_all, Map<List<Integer>, Double> row_priors) {
-        double rowPrior = 0.0;
-        int[] indecies = findIndex(parents, parents_all);
-
-        for (List<Integer> k : row_priors.keySet()) {
-            boolean equalKeys = true;
-            for (int i = 0; i < parents.length; i++) {
-                if (k.get(indecies[i]) != parent_values[i]) {
-                    equalKeys = false;
-                    break;
-                }
-            }
-            if (equalKeys) {
-                rowPrior += row_priors.get(k);
-                row_priors.put(k, 0.0);
-            }
-        }
-        return rowPrior;
-    }
-
-    /**
-     * Finds the indices of specified elements in the `parents_all` array.
-     *
-     * @param parents     the array of elements whose indices need to be found.
-     * @param parents_all the array in which to find the indices of the elements.
-     * @return an array of indices where each element of `parents` is found in the `parents_all` array.
-     */
-    private int[] findIndex(int[] parents, int[] parents_all) {
-        int[] index = new int[parents.length];
-        for (int i = 0; i < parents.length; i++) {
-            for (int j = 0; j < parents_all.length; j++) {
-                if (parents_all[j] == parents[i]) {
-                    index[i] = j;
-                    break;
-                }
-            }
-        }
-        return index;
-    }
-
-    /**
-     * Computes the product of dimensions corresponding to an array of parent indices.
-     *
-     * @param parents An array of parent indices.
-     * @param dims    An array of dimensions where each element represents the dimension size of the corresponding
-     *                parent.
-     * @return The product of the dimensions of the specified parents.
-     */
-    private int computeAllParentStates(int[] parents, int[] dims) {
-        int r = 1;
-        for (int p = 0; p < parents.length; p++) {
-            r *= dims[p];
-        }
-        return r;
-    }
-
-    /**
-     * Computes the dimensions array based on the categories of the parent elements.
-     *
-     * @param parents An array of parent indices where each index correlates to an element.
-     * @return An array of dimensions where each dimension corresponds to the number of categories associated with each
-     * parent.
-     */
-    private int[] getDimentions(int[] parents) {
-        int[] dims = new int[parents.length];
-
-        for (int p = 0; p < parents.length; p++) {
-            dims[p] = numCategories[parents[p]];
-        }
-        return dims;
-    }
-
-    /**
-     * Calculates the prior probability for a given node structure in a Bayesian network. This method evaluates the
-     * changes in the parent-child relationships of the node by calculating the number of additions, deletions, and
-     * reversals required to transition from the prior structure to the current structure.
-     *
-     * @param nodeIndex    The index of the node in the network.
-     * @param parents      Array representing the current parents of the node.
-     * @param parents_pop  Array representing the prior parents of the node.
-     * @param children_pop Array representing the prior children of the node.
-     * @return The computed prior probability for the given node structure.
-     */
-    private double getPriorForStructure(int nodeIndex, int[] parents, int[] parents_pop, int[] children_pop) {
-        List<Integer> added = new ArrayList<>();
-        List<Integer> reversed = new ArrayList<>();
-
-        List<Integer> copyParents_pop = IntStream.of(parents_pop).boxed().toList();
-        List<Integer> copyChildren_pop = IntStream.of(children_pop).boxed().toList();
-
-        for (int parent : parents) {
-            if (!copyParents_pop.contains(parent)) {
-                if (!copyChildren_pop.contains(parent))
-                    added.add(parent);
-                else
-                    reversed.add(parent);
-            }
-        }
-
-        List<Integer> copyParents_is = IntStream.of(parents).boxed().toList();
-        List<Integer> removed = new ArrayList<>();
-        for (int i : parents_pop) {
-            if (!copyParents_is.contains(i))
-                removed.add(i);
-        }
-        if (verbose) {
-            System.out.println("node: " + nodeIndex);
-            System.out.println("parents is:   " + Arrays.toString(parents));
-            System.out.println("parents pop:  " + Arrays.toString(parents_pop));
-            System.out.println("childern pop: " + Arrays.toString(children_pop));
-            System.out.println("added: " + added);
-            System.out.println("removed: " + removed);
-            System.out.println("reversed: " + reversed);
-            System.out.println("------------------");
-        }
-        return added.size() * Math.log(getKAddition()) + removed.size() * Math.log(getKDeletion()) + reversed.size() * Math.log(getKReorientation());
-    }
-
-    /**
-     * Computes the parent values for a given node index and row index according to the specified dimensions.
-     *
-     * @param nodeIndex The index of the node for which parent values are computed.
-     * @param rowIndex  The row index used for computations.
-     * @param dims      An array representing the dimensions of the parent values.
-     * @return An array of integers representing the computed parent values.
-     */
-    public int[] getParentValues(int nodeIndex, int rowIndex, int[] dims) {
-        int[] values = new int[dims.length];
-
-        for (int i = dims.length - 1; i >= 0; i--) {
-            values[i] = rowIndex % dims[i];
-            rowIndex /= dims[i];
-        }
-
-        return values;
-    }
-
-    /**
-     * Calculates the parent values for a given combination of dimensions.
-     *
-     * @param rowIndex the index representing the combination in a linearized form
-     * @param dims     an array indicating the size of each dimension
-     * @return an array of integers where each element corresponds to the value of the dimension at that index
-     */
-    public int[] getParentValuesForCombination(int rowIndex, int[] dims) {
-        int[] values = new int[dims.length];
-
-        for (int i = dims.length - 1; i >= 0; i--) {
-            values[i] = rowIndex % dims[i];
-            rowIndex /= dims[i];
-        }
-
-        return values;
-    }
-
-    /**
-     * Computes the difference in local scores when element x is appended to the array z.
-     *
-     * @param x         the element to be appended to the array z
-     * @param y         the dependent variable whose score is being calculated
-     * @param z         the initial array of elements
-     * @param z_pop     the population related to z
-     * @param child_pop the population related to the dependent variable y
-     * @return the difference in local scores after appending x to z
-     */
-    @Override
-    public double localScoreDiff(int x, int y, int[] z, int[] z_pop, int[] child_pop) {
-        double S1 = localScore(y, append(z, x), z_pop, child_pop);
-        double S2 = localScore(y, z, z_pop, child_pop);
-        return S1 - S2;
-    }
-
-    /**
-     * Appends an integer to the end of an array.
-     *
-     * @param parents the original array of integers
-     * @param extra   the integer to append to the array
-     * @return a new array containing all elements of the original array, followed by the appended integer
-     */
-    private int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
-    }
-
-    /**
-     * Retrieves the list of variables associated with this instance.
-     *
-     * @return a list of Node objects representing the variables
-     */
-    @Override
-    public List<Node> getVariables() {
-        return this.variables;
-    }
-
-    /**
-     * Sets the list of variables after validating that each variable in the provided list has the same name as the
-     * corresponding variable in the existing list.
-     *
-     * @param variables a list of Node objects to be set as the new variables
-     * @throws IllegalArgumentException if any variable in the provided list does not have the same name as the variable
-     *                                  it is replacing
-     */
-    public void setVariables(List<Node> variables) {
-        for (int i = 0; i < variables.size(); i++) {
-            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
-                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
-                                                   "as the variable being substituted for it.");
-            }
-        }
-
-        this.variables = variables;
-    }
-
-    /**
-     * Retrieves the current sample size.
-     *
-     * @return the sample size as an integer.
-     */
-    public int getSampleSize() {
-        return sampleSize;
-    }
-
-    /**
-     * Must be called directly after the corresponding scoring call.
-     */
-    public boolean isEffectEdge(double bump) {
-        return bump > 0;//lastBumpThreshold;
-    }
-
-    /**
-     * Retrieves a DataSet object.
-     *
-     * @return a DataSet object
-     * @throws UnsupportedOperationException if the method is not supported
-     */
-    @Override
-    public DataSet getDataSet() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Retrieves the value of the structure prior.
-     *
-     * @return the structure prior as a double.
-     */
-    @Override
-    public double getStructurePrior() {
-        return structurePrior;
-    }
-
-    /**
-     * Sets the structure prior for the model.
-     *
-     * @param structurePrior the prior value to be set, typically controlling the influence of structure in the model
-     */
-    @Override
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
-    }
-
-    /**
-     * Retrieves the prior value of the sample.
-     *
-     * @return the prior value of the sample as a double.
-     */
-    @Override
-    public double getSamplePrior() {
-        return samplePrior;
-    }
-
-    /**
-     * Sets the value for the samplePrior field.
-     *
-     * @param samplePrior The prior sample value to be set.
-     */
-    @Override
-    public void setSamplePrior(double samplePrior) {
-        this.samplePrior = samplePrior;
-    }
-
-    /**
-     * Retrieves the value of the variable representing the k_addition.
-     *
-     * @return the current value of the k_addition variable as a double.
-     */
-    public double getKAddition() {
-        return k_addition;
-    }
-
-    /**
-     * Sets the value of k_addition.
-     *
-     * @param k_addition The value to set for k_addition.
-     */
-    public void setKAddition(double k_addition) {
-        this.k_addition = k_addition;
-    }
-
-    /**
-     * Retrieves the value of the k_deletion field.
-     *
-     * @return the current value of k_deletion.
-     */
-    public double getKDeletion() {
-        return k_deletion;
-    }
-
-    /**
-     * Sets the value of k_deletion.
-     *
-     * @param k_deletion the new value to set for k_deletion
-     */
-    public void setKDeletion(double k_deletion) {
-        this.k_deletion = k_deletion;
-    }
-
-    /**
-     * Retrieves the value of the k_reorient variable.
-     *
-     * @return The value of k_reorient as a double.
-     */
-    public double getKReorientation() {
-        return k_reorient;
-    }
-
-    /**
-     * Sets the value of the K-reorientation parameter.
-     *
-     * @param k_reorient the new value for the K-reorientation parameter
-     */
-    public void setKReorientation(double k_reorient) {
-        this.k_reorient = k_reorient;
-    }
-
-    /**
-     * Retrieves a Node from the variables list that matches the specified target name.
-     *
-     * @param targetName the name of the target Node to be retrieved
-     * @return the Node that matches the target name, or null if no match is found
-     */
-    public Node getVariable(String targetName) {
-        for (Node node : variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Calculates the maximum degree based on the sample size.
-     *
-     * @return the maximum degree as an integer.
-     */
-    @Override
-    public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(sampleSize));
-    }
-
-    /**
-     * Determines whether a given node y is determined by a list of nodes z.
-     *
-     * @param z the list of nodes to be evaluated
-     * @param y the node to be checked
-     * @return true if y is determined by the list of nodes z, false otherwise
-     */
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        return false;
-    }
-
-    /**
-     * Computes the local score for a given node considering both population and context-specific parents.
-     * <p>
-     * This function is used to score a node in a dag without using structure prior
-     *
-     * @param node         The index of the node for which the score is being calculated.
-     * @param parents_is   Array representing the indices of the context-specific parents.
-     * @param parents_pop  Array representing the indices of the population-based parents.
-     * @param children_pop Array representing the indices of the population-based children.
-     * @return The computed local score for the specified node.
-     */
-    public double localScore1(int node, int[] parents_is, int[] parents_pop, int[] children_pop) {
-
-        // Number of categories for node.
-        int K = numCategories[node];
-
-        // Numbers of categories of parents in POP and IS models.
-        int[] dims_p = getDimentions(parents_pop);
-
-        // Number of parent states  in POP, IS, and both.
-        int r_p = computeAllParentStates(parents_pop, dims_p);
-
-        // Conditional cell coefs of data for node given population parents(node).
-        int[][] np_jk = new int[r_p][K];
-        int[] np_j = new int[r_p];
-
-        // Conditional cell coefs of data for node given context specific parents(node).
-        int[] ni_jk = new int[K];
-        int ni_j = 0;
-
-        int[] parentValuesTest = new int[parents_is.length];
-        for (int i = 0; i < parents_is.length; i++) {
-            parentValuesTest[i] = test[parents_is[i]][0];
-        }
-
-
-        int[] myChild = data[node];
-
-        ROW:
-        for (int i = 0; i < sampleSize; i++) {
-            int[] parentValues = new int[parents_is.length];
-            for (int p = 0; p < parents_is.length; p++) {
-                if (data[parents_is[p]][i] == -99) continue ROW;
-                parentValues[p] = data[parents_is[p]][i];
-            }
-
-            int childValue = myChild[i];
-
-            if (childValue == -99) {
-                continue;
-            }
-
-            if (Arrays.equals(parentValues, parentValuesTest) && parentValuesTest.length > 0) {
-                ni_jk[childValue]++;
-                ni_j++;
-            } else {
-                int[] parentValuesPop = new int[parents_pop.length];
-                for (int p = 0; p < parents_pop.length; p++) {
-                    if (data[parents_pop[p]][i] == -99) continue ROW;
-                    parentValuesPop[p] = data[parents_pop[p]][i];
-                }
-
-                int rowIndex = getRowIndex(dims_p, parentValuesPop);
-
-                np_jk[rowIndex][childValue]++;
-                np_j[rowIndex]++;
-            }
-        }
-
-        // computing priors
-        List<Integer> parents_all_list = IntStream.of(parents_pop).boxed().collect(Collectors.toList());
-        for (int parentsI : parents_is) {
-            if (!parents_all_list.contains(parentsI)) {
-                parents_all_list.add(parentsI);
-            }
-        }
-        int[] parents_all = parents_all_list.stream().mapToInt(i -> i).toArray();
-        Arrays.sort(parents_all);
-        int[] dims_all = getDimentions(parents_all);
-
-        // Number of parent states  in POP, IS, and both.
-        int r_all = computeAllParentStates(parents_all, dims_all);
-        Map<List<Integer>, Double> row_priors = new HashMap<>();
-
-        for (int i = 0; i < r_all; i++) {
-            int[] rowValues = getParentValuesForCombination(i, dims_all);
-            row_priors.put(Arrays.stream(rowValues).boxed().collect(Collectors.toList()), 1.0 / r_all);
-        }
-
-        double scoreIS = 0.0, scorePop = 0.0, score;
-
-        // compute IS score
-        if (parents_is.length > 0) {
-            double rowPrior_i = computeRowPrior(parents_is, parentValuesTest, parents_all, row_priors);
-            rowPrior_i = getSamplePrior() * rowPrior_i;
-            double cellPrior_i = rowPrior_i / K;
-
-            for (int k = 0; k < K; k++) {
-                scoreIS += Gamma.logGamma(cellPrior_i + ni_jk[k]);
-            }
-
-            scoreIS -= K * Gamma.logGamma(cellPrior_i);
-            scoreIS -= Gamma.logGamma(rowPrior_i + ni_j);
-            scoreIS += Gamma.logGamma(rowPrior_i);
-        }
-
-        // re-compute pop score
+        // POP term: loop over all POP parent configurations
         for (int j = 0; j < r_p; j++) {
             int[] parentValuesPop = getParentValuesForCombination(j, dims_p);
             double rowPrior_p = computeRowPrior(parents_pop, parentValuesPop, parents_all, row_priors);
@@ -806,8 +205,233 @@ public class IsBDeuScore2 implements IsScore {
             }
         }
 
-        score = scorePop + scoreIS;
+        // Add structure prior
+        double score = scorePop + scoreIS + priorForStructure(node, parents_is, parents_pop, children_pop);
         return score;
     }
-}
 
+    @Override
+    public double localScoreDiff(int x, int y, int[] z, int[] z_pop, int[] child_pop) {
+        return localScore(y, append(z, x), z_pop, child_pop) - localScore(y, z, z_pop, child_pop);
+    }
+
+    @Override public List<Node> getVariables() { return variables; }
+
+    public void setVariables(List<Node> variables) {
+        for (int i = 0; i < variables.size(); i++) {
+            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
+                throw new IllegalArgumentException("Variable mismatch at index " + i);
+            }
+        }
+        this.variables = variables;
+    }
+
+    @Override public int getSampleSize() { return sampleSize; }
+
+    @Override public boolean isEffectEdge(double bump) { return bump > 0; }
+
+    @Override public DataSet getDataSet() { throw new UnsupportedOperationException(); }
+
+    @Override public double getStructurePrior() { return structurePrior; }
+    @Override public void setStructurePrior(double v) { this.structurePrior = v; }
+
+    @Override public double getSamplePrior() { return samplePrior; }
+    @Override public void setSamplePrior(double v) { this.samplePrior = v; }
+
+    public double getKAddition() { return k_addition; }
+    public void setKAddition(double v) { this.k_addition = v; }
+
+    public double getKDeletion() { return k_deletion; }
+    public void setKDeletion(double v) { this.k_deletion = v; }
+
+    public double getKReorientation() { return k_reorient; }
+    public void setKReorientation(double v) { this.k_reorient = v; }
+
+    @Override
+    public Node getVariable(String targetName) {
+        for (Node node : variables) if (node.getName().equals(targetName)) return node;
+        return null;
+    }
+
+    @Override
+    public int getMaxDegree() { return (int) Math.ceil(Math.log(Math.max(2, sampleSize))); }
+
+    @Override
+    public boolean determines(List<Node> z, Node y) { return false; }
+
+    /**
+     * Local score without structure prior (pure IS+POP BDeu likelihoods).
+     */
+    @Override
+    public double localScore1(int node, int[] parents_is, int[] parents_pop, int[] children_pop) {
+        // Same as localScore but without the priorForStructure additive term.
+        final int K = numCategories[node];
+        final int[] dims_p = getDimensions(parents_pop);
+        final int r_p = numStates(parents_pop, dims_p);
+        final int[][] np_jk = new int[r_p][K];
+        final int[]   np_j  = new int[r_p];
+
+        final int[] parentValuesTest = new int[parents_is.length];
+        for (int i = 0; i < parents_is.length; i++) parentValuesTest[i] = test[parents_is[i]][0];
+
+        final int[] y = data[node];
+
+        ROW: for (int i = 0; i < sampleSize; i++) {
+            final int[] parentValuesIS = new int[parents_is.length];
+            for (int p = 0; p < parents_is.length; p++) {
+                int val = data[parents_is[p]][i];
+                if (val == MISSING) continue ROW;
+                parentValuesIS[p] = val;
+            }
+            final int childValue = y[i];
+            if (childValue == MISSING) continue;
+
+            if (parents_is.length > 0 && Arrays.equals(parentValuesIS, parentValuesTest)) {
+                // defer to second pass below
+            } else {
+                final int[] parentValuesPop = new int[parents_pop.length];
+                for (int p = 0; p < parents_pop.length; p++) {
+                    int val = data[parents_pop[p]][i];
+                    if (val == MISSING) continue ROW;
+                    parentValuesPop[p] = val;
+                }
+                final int j = rowIndex(dims_p, parentValuesPop);
+                np_jk[j][childValue]++;
+                np_j[j]++;
+            }
+        }
+
+        int[] ni_jk = new int[K]; int ni_j = 0;
+        if (parents_is.length > 0) {
+            ROW2: for (int i = 0; i < sampleSize; i++) {
+                final int[] parentValuesIS = new int[parents_is.length];
+                for (int p = 0; p < parents_is.length; p++) {
+                    int val = data[parents_is[p]][i];
+                    if (val == MISSING) continue ROW2;
+                    parentValuesIS[p] = val;
+                }
+                if (Arrays.equals(parentValuesIS, parentValuesTest)) {
+                    final int yv = y[i];
+                    if (yv == MISSING) continue;
+                    ni_jk[yv]++; ni_j++;
+                }
+            }
+        }
+
+        final int[] parents_all = unionSorted(parents_pop, parents_is);
+        final int[] dims_all = getDimensions(parents_all);
+        final int r_all = numStates(parents_all, dims_all);
+        final Map<List<Integer>, Double> row_priors = new HashMap<>(r_all * 2);
+        for (int i = 0; i < r_all; i++) {
+            int[] rowVals = getParentValuesForCombination(i, dims_all);
+            row_priors.put(Arrays.stream(rowVals).boxed().collect(Collectors.toList()), 1.0 / r_all);
+        }
+
+        double scoreIS = 0.0, scorePop = 0.0;
+        if (parents_is.length > 0) {
+            double rowPrior_i = computeRowPrior(parents_is, parentValuesTest, parents_all, row_priors);
+            rowPrior_i = getSamplePrior() * rowPrior_i;
+            double cellPrior_i = rowPrior_i / K;
+            for (int k = 0; k < K; k++) scoreIS += Gamma.logGamma(cellPrior_i + ni_jk[k]);
+            scoreIS -= K * Gamma.logGamma(cellPrior_i);
+            scoreIS -= Gamma.logGamma(rowPrior_i + ni_j);
+            scoreIS += Gamma.logGamma(rowPrior_i);
+        }
+        for (int j = 0; j < r_p; j++) {
+            int[] parentValuesPop = getParentValuesForCombination(j, dims_p);
+            double rowPrior_p = computeRowPrior(parents_pop, parentValuesPop, parents_all, row_priors);
+            rowPrior_p = getSamplePrior() * rowPrior_p;
+            double cellPrior_p = rowPrior_p / K;
+            if (rowPrior_p > 0) {
+                scorePop -= Gamma.logGamma(rowPrior_p + np_j[j]);
+                for (int k = 0; k < K; k++) {
+                    scorePop += Gamma.logGamma(cellPrior_p + np_jk[j][k]);
+                    scorePop -= Gamma.logGamma(cellPrior_p);
+                }
+                scorePop += Gamma.logGamma(rowPrior_p);
+            }
+        }
+        return scorePop + scoreIS;
+    }
+
+    // ============================== Internals ==============================
+
+    private static int rowIndex(int[] dim, int[] values) {
+        int idx = 0; for (int i = 0; i < dim.length; i++) { idx = idx * dim[i] + values[i]; } return idx; }
+
+    private int[] getDimensions(int[] parents) {
+        int[] dims = new int[parents.length];
+        for (int p = 0; p < parents.length; p++) dims[p] = numCategories[parents[p]]; return dims; }
+
+    private int numStates(int[] parents, int[] dims) {
+        int r = 1; for (int i = 0; i < parents.length; i++) r *= dims[i]; return r; }
+
+    private int[] append(int[] parents, int extra) {
+        int[] out = Arrays.copyOf(parents, parents.length + 1); out[parents.length] = extra; return out; }
+
+    private static int[] unionSorted(int[] a, int[] b) {
+        return IntStream.concat(IntStream.of(a), IntStream.of(b)).distinct().sorted().toArray(); }
+
+    private double priorForStructure(int nodeIndex, int[] parents, int[] parents_pop, int[] children_pop) {
+        List<Integer> added = new ArrayList<>();
+        List<Integer> reversed = new ArrayList<>();
+        List<Integer> popParents = IntStream.of(parents_pop).boxed().toList();
+        List<Integer> popChildren = IntStream.of(children_pop).boxed().toList();
+
+        for (int p : parents) {
+            if (!popParents.contains(p)) {
+                if (popChildren.contains(p)) reversed.add(p); else added.add(p);
+            }
+        }
+
+        List<Integer> isParents = IntStream.of(parents).boxed().toList();
+        List<Integer> removed = new ArrayList<>();
+        for (int p : parents_pop) if (!isParents.contains(p)) removed.add(p);
+
+        if (verbose) {
+            System.out.println("node: " + nodeIndex);
+            System.out.println("parents is:   " + Arrays.toString(parents));
+            System.out.println("parents pop:  " + Arrays.toString(parents_pop));
+            System.out.println("children pop: " + Arrays.toString(children_pop));
+            System.out.println("added=" + added + ", removed=" + removed + ", reversed=" + reversed);
+        }
+        return added.size()   * Math.log(getKAddition())
+               + removed.size() * Math.log(getKDeletion())
+               + reversed.size()* Math.log(getKReorientation());
+    }
+
+    private double computeRowPrior(int[] parents, int[] parent_values, int[] parents_all, Map<List<Integer>, Double> row_priors) {
+        double rowPrior = 0.0;
+        int[] indices = findIndices(parents, parents_all);
+        for (Map.Entry<List<Integer>, Double> e : row_priors.entrySet()) {
+            List<Integer> key = e.getKey();
+            boolean eq = true;
+            for (int i = 0; i < parents.length; i++) {
+                if (!key.get(indices[i]).equals(parent_values[i])) { eq = false; break; }
+            }
+            if (eq) {
+                rowPrior += e.getValue();
+                // consume this mass so we don't double count if called multiple times
+                row_priors.put(key, 0.0);
+            }
+        }
+        return rowPrior;
+    }
+
+    private int[] findIndices(int[] parents, int[] parents_all) {
+        int[] idx = new int[parents.length];
+        for (int i = 0; i < parents.length; i++) {
+            for (int j = 0; j < parents_all.length; j++) { if (parents_all[j] == parents[i]) { idx[i] = j; break; } }
+        }
+        return idx;
+    }
+
+    // Exposed for tests / debugging
+    public int[] getParentValues(int nodeIndex, int rowIndex, int[] dims) { return getParentValuesForCombination(rowIndex, dims); }
+
+    public int[] getParentValuesForCombination(int rowIndex, int[] dims) {
+        int[] values = new int[dims.length];
+        for (int i = dims.length - 1; i >= 0; i--) { values[i] = rowIndex % dims[i]; rowIndex /= dims[i]; }
+        return values;
+    }
+}
