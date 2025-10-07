@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search.cdnod_pag;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 
 import java.util.*;
@@ -15,15 +16,11 @@ public final class CdnodPag {
     @FunctionalInterface
     public interface PagBuilder { Graph search(DataSet fullData); }
 
-    @FunctionalInterface
-    public interface PropagatorFactory { CdnodPagOrienter.Propagator make(); }
-
     private final DataSet dataAll;
     private final double alpha;
     private final ChangeTest changeTest;
     private final PagBuilder pagBuilder;
     private final Function<Graph, Boolean> legalityCheck;
-    private final PropagatorFactory propFactory;
 
     // Config
     private int maxSubsetSize = 1;
@@ -39,18 +36,24 @@ public final class CdnodPag {
     // Optional: extra protected nodes (no arrowheads into these)
     private final Set<String> forbidHeadsIntoByName = new LinkedHashSet<>();
 
+    private final Knowledge knowledge;
+    private final Function<Graph, Graph> propagator;
+
     public CdnodPag(DataSet dataAll,
                     double alpha,
                     ChangeTest changeTest,
                     PagBuilder pagBuilder,
                     Function<Graph, Boolean> legalityCheck,
-                    PropagatorFactory propFactory) {
+                    Function<Graph, Graph> propagator,
+                    Knowledge knowledge
+    ) {
         this.dataAll = Objects.requireNonNull(dataAll);
         this.alpha = alpha;
         this.changeTest = Objects.requireNonNull(changeTest);
         this.pagBuilder = Objects.requireNonNull(pagBuilder);
         this.legalityCheck = Objects.requireNonNull(legalityCheck);
-        this.propFactory = Objects.requireNonNull(propFactory);
+        this.propagator = Objects.requireNonNull(propagator);
+        this.knowledge = Objects.requireNonNull(knowledge);
     }
 
     // ---- Configuration API ----
@@ -61,27 +64,23 @@ public final class CdnodPag {
         return this;
     }
 
-    /** Optional: provide a tier index for a variable (0 for contexts; >=1 for system tiers). */
-    public CdnodPag putTier(String varName, int tierIndex) {
-        this.tierByName.put(varName, tierIndex);
-        return this;
-    }
-
-    /** Optional: protect additional variables from receiving arrowheads. */
-    public CdnodPag forbidArrowheadsInto(String... names) {
-        this.forbidHeadsIntoByName.addAll(Arrays.asList(names));
-        return this;
-    }
-
     public CdnodPag withMaxSubsetSize(int k) { this.maxSubsetSize = Math.max(0, k); return this; }
     public CdnodPag withProxyGuard(boolean on) { this.useProxyGuard = on; return this; }
-    public CdnodPag withStripArrowheadsIntoContexts(boolean on) { this.stripArrowheadsIntoContexts = on; return this; }
 
     // ---- Run ----
 
     public Graph run() {
+
+        contextNames.clear();
+
+        for (String name : knowledge.getTier(0)) {
+            contextNames.add(name);
+            forbidHeadsIntoByName.add(name);
+        }
+
         // 1) Build baseline PAG on ALL variables (contexts included)
         Graph pag = pagBuilder.search(dataAll);
+        pag = propagator.apply(pag);
 
         // Resolve Node handles
         List<Node> contexts = resolveNodes(pag, contextNames);
@@ -108,9 +107,6 @@ public final class CdnodPag {
             Node n = pag.getNode(e.getKey());
             if (n != null) tiers.put(n, e.getValue());
         }
-
-        // 5) Orient + propagate + legalize
-        var propagator = Objects.requireNonNull(propFactory.make(), "PropagatorFactory.make() returned null");
 
         CdnodPagOrienter orienter = new CdnodPagOrienter(pag, oracle, legalityCheck, propagator)
                 .withMaxSubsetSize(maxSubsetSize)

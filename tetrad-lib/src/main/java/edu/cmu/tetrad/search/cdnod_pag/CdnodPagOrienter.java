@@ -1,29 +1,28 @@
 package edu.cmu.tetrad.search.cdnod_pag;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 
 import java.util.*;
 import java.util.function.Function;
 
 /**
- * CD-NOD-PAG orienter (arrowheads-only) with:
- *  - Multiple context variables (Tier-0) supported via ChangeOracle.contexts().
- *  - Optional tier map: only orient X o-> Y if tier(X) < tier(Y).
- *  - Never add arrowheads into protected nodes (contexts + any user-provided).
- *  - Exclude contexts from S when testing stabilization (except optional proxy guard).
- *  - Progressive rollback if the PAG becomes illegal after propagation.
+ * CD-NOD-PAG orienter (arrowheads-only) with strong legality (fixed-point) gating.
+ *
+ * - Multiple context variables supported via ChangeOracle.contexts().
+ * - Optional tier map: only orient X o-> Y if tier(X) < tier(Y).
+ * - Never add arrowheads into protected nodes (contexts + any user-provided).
+ * - Exclude contexts from S when testing stabilization (configurable).
+ * - After tentatively adding each arrowhead, run propagation and the *strong* legality check
+ *   (PAG(MAG(G)) == G). If it fails, rollback just that arrowhead and continue.
  */
 public final class CdnodPagOrienter {
 
-    /** Functional interface for running propagation (R0–R10 + discriminating paths, etc.). */
-    @FunctionalInterface
-    public interface Propagator { void propagate(Graph graph); }
-
     // Core state
-    private final Graph pag;
+    private Graph pag;
     private final ChangeOracle oracle;
-    private final Function<Graph, Boolean> legalityCheck;
-    private final Propagator propagator;
+    private final Function<Graph, Boolean> strongPagLegality; // fixed-point: PAG(MAG(G)) == G
+    private final Function<Graph, Graph> propagator;
 
     // Config
     private int maxSubsetSize = 1;
@@ -34,17 +33,17 @@ public final class CdnodPagOrienter {
     private final Set<Node> protectedNodes = new LinkedHashSet<>();
     private final Map<Node, Integer> tier = new HashMap<>(); // smaller = earlier
 
-    // Undo stack for rollback
+    // Undo stack (kept for final safety net; per-edge rollback uses last push)
     private final Deque<Runnable> undoStack = new ArrayDeque<>();
 
     public CdnodPagOrienter(Graph pag,
                             ChangeOracle oracle,
-                            Function<Graph, Boolean> legalityCheck,
-                            Propagator propagator) {
-        this.pag = Objects.requireNonNull(pag);
-        this.oracle = Objects.requireNonNull(oracle);
-        this.legalityCheck = Objects.requireNonNull(legalityCheck);
-        this.propagator = Objects.requireNonNull(propagator);
+                            Function<Graph, Boolean> strongPagLegality,
+                            Function<Graph, Graph> propagator) {
+        this.pag = Objects.requireNonNull(pag, "pag");
+        this.oracle = Objects.requireNonNull(oracle, "oracle");
+        this.strongPagLegality = Objects.requireNonNull(strongPagLegality, "legality");
+        this.propagator = Objects.requireNonNull(propagator, "propagator");
 
         // Always protect contexts from receiving arrowheads
         this.protectedNodes.addAll(oracle.contexts());
@@ -60,7 +59,7 @@ public final class CdnodPagOrienter {
     public CdnodPagOrienter forbidArrowheadsInto(Collection<Node> nodes) { this.protectedNodes.addAll(nodes); return this; }
     public CdnodPagOrienter forbidArrowheadsInto(Node node) { this.protectedNodes.add(node); return this; }
 
-    /** Provide a tier map; orientations are only allowed when tier(X) < tier(Y). */
+    /** Provide a tier map; orientations allowed only when tier(X) < tier(Y) if both known. */
     public CdnodPagOrienter withTiers(Map<Node, Integer> tiers) {
         if (tiers != null) this.tier.putAll(tiers);
         return this;
@@ -71,7 +70,7 @@ public final class CdnodPagOrienter {
     public void run() {
         final List<Node> ctx = oracle.contexts();
 
-        // Iterate over undirected/partially oriented adjacencies
+        // Iterate over adjacencies (undirected/partially oriented)
         for (Node y : pag.getNodes()) {
             if (protectedNodes.contains(y)) continue; // never add arrowheads into protected
 
@@ -84,46 +83,67 @@ public final class CdnodPagOrienter {
                 Integer tx = tier.get(x), ty = tier.get(y);
                 if (tx != null && ty != null && tx >= ty) continue;
 
-                // Build candidate neighborhood for S = Adj(Y)\{X}
+                // Neighborhood for S = Adj(Y)\{X}
                 List<Node> neigh = new ArrayList<>(adjs);
                 neigh.remove(x);
                 if (excludeContextsFromS) neigh.removeAll(ctx);
 
-                // Require that Y exhibits change (under some S; we try all up to maxSubsetSize)
-                boolean oriented = false;
-
-                for (Set<Node> S0 : SmallSubsetIter.subsets(neigh, maxSubsetSize)) {
-                    // Work on a copy; don't mutate the iterator's set
-                    Set<Node> S = new LinkedHashSet<>(S0);
-                    if (excludeContextsFromS) S.removeAll(oracle.contexts());
-
-                    if (!oracle.changes(y, S)) continue;
-
-                    Set<Node> SplusX = plus(S, x);
-                    if (!oracle.stable(y, SplusX)) continue;
-
-                    boolean proxyOk = true;
-                    if (useProxyGuard && !oracle.contexts().isEmpty()) {
-                        proxyOk = false;
-                        for (Node c : oracle.contexts()) {
-                            if (oracle.stable(y, plus(S, c))) { proxyOk = true; break; }
-                        }
-                    }
-                    if (!proxyOk) continue;
-
-                    addArrowheadAt(pag, x, y);
-                    break; // done with this (x,y)
-                }
-
-                // (Optional) could early-propagate per pair; we batch-propagate below for efficiency
-                if (oriented) { /* keep going; we’ll propagate once at the end */ }
+                boolean oriented = tryOrientC1PerEdgeStrong(x, y, neigh, ctx);
+                // If oriented, keep going; we already propagated & legalized within the attempt.
+                // If not, try the next neighbor.
             }
-
-
         }
 
-        // Propagate and ensure legality (with progressive rollback)
-        propagateAndLegalize();
+        // Final safety net: propagate & ensure strong legality (should already hold)
+        pag = propagator.apply(pag);
+        if (!strongPagLegality.apply(pag)) {
+            // Progressive rollback until strong legality holds (unlikely if per-edge gating worked)
+            while (!undoStack.isEmpty() && !strongPagLegality.apply(pag)) {
+                undoStack.pop().run();
+                pag = propagator.apply(pag);
+            }
+        }
+    }
+
+    // Attempt CD-NOD C1-like orientation for (x,y) using per-edge strong legality gating.
+    private boolean tryOrientC1PerEdgeStrong(Node x, Node y, List<Node> neigh, List<Node> contexts) {
+        // Enumerate S ⊆ neigh with |S| ≤ maxSubsetSize
+        for (Set<Node> S0 : SmallSubsetIter.subsets(neigh, maxSubsetSize)) {
+            // Work on a copy; never mutate iterator's set
+            Set<Node> S = new LinkedHashSet<>(S0);
+
+            // Require: Y shows change under S
+            if (!oracle.changes(y, S)) continue;
+
+            // If adding X stabilizes across all contexts, propose X o-> Y
+            Set<Node> SplusX = plus(S, x);
+            if (!oracle.stable(y, SplusX)) continue;
+
+            // Optional proxy guard: at least one context alone stabilizes Y
+            if (useProxyGuard && !contexts.isEmpty()) {
+                boolean someContextStabilizes = false;
+                for (Node c : contexts) {
+                    if (oracle.stable(y, plus(S, c))) { someContextStabilizes = true; break; }
+                }
+                if (!someContextStabilizes) continue;
+            }
+
+            // Tentatively orient arrowhead at child Y (X o-> Y)
+            addArrowheadAt(pag, x, y);
+
+            // Propagate and enforce strong fixed-point legality immediately
+            pag = propagator.apply(pag);
+            if (!strongPagLegality.apply(pag)) {
+                // Roll back just this arrowhead and continue trying other S
+                undoLast();
+                pag = propagator.apply(pag);
+                continue;
+            }
+
+            // Keep this orientation; move on to next (x,y)
+            return true;
+        }
+        return false;
     }
 
     // ---------------- Internals ----------------
@@ -134,36 +154,20 @@ public final class CdnodPagOrienter {
         return u;
     }
 
-    /** Add an arrowhead at y on edge (x,y); record undo. */
+    /** Add an arrowhead at y on edge (x,y); record undo. (Arrowheads-only; preserves the other endpoint.) */
     private void addArrowheadAt(Graph g, Node x, Node y) {
         Endpoint oldXY = g.getEndpoint(x, y);
         Endpoint oldYX = g.getEndpoint(y, x);
+        if (oldXY == Endpoint.ARROW) return; // already has head at y
 
-        // If already has an arrowhead at y, nothing to do
-        if (oldXY == Endpoint.ARROW) return;
-
-        g.setEndpoint(x, y, Endpoint.ARROW);      // X *-> Y
-        // (keep the other endpoint as-is; this is arrowheads-only)
+        g.setEndpoint(x, y, Endpoint.ARROW); // X *-> Y
         undoStack.push(() -> {
             g.setEndpoint(x, y, oldXY);
             g.setEndpoint(y, x, oldYX);
         });
     }
 
-    private void propagateAndLegalize() {
-        propagator.propagate(pag);
-
-        if (!legalityCheck.apply(pag)) {
-            // Try rolling back orientations until legal
-            while (!undoStack.isEmpty() && !legalityCheck.apply(pag)) {
-                undoStack.pop().run();
-                propagator.propagate(pag);
-            }
-            // If still illegal, revert all CD-NOD orientations
-            if (!legalityCheck.apply(pag)) {
-                while (!undoStack.isEmpty()) undoStack.pop().run();
-                propagator.propagate(pag);
-            }
-        }
+    private void undoLast() {
+        if (!undoStack.isEmpty()) undoStack.pop().run();
     }
 }

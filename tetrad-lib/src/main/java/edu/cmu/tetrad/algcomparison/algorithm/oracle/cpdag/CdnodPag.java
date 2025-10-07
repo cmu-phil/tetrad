@@ -9,13 +9,12 @@ import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fcit;
-import edu.cmu.tetrad.search.cdnod_pag.CdnodPagOrienter;
 import edu.cmu.tetrad.search.cdnod_pag.CgLrtChangeTest;
 import edu.cmu.tetrad.search.cdnod_pag.ChangeTest;
 import edu.cmu.tetrad.search.score.Score;
@@ -98,25 +97,30 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
 
         // Configure core search. We pass the dataset that ALREADY has C as the last column.
         // (A) FCIT builder over non-env columns
-       edu.cmu.tetrad.search.cdnod_pag.CdnodPag.PagBuilder pagBuilder = (DataSet dataWithoutEnv) -> {
-           Score _score = score.getScore(dataWithoutEnv, parameters);
-           IndependenceTest _test = test.getTest(dataWithoutEnv, parameters);
+        edu.cmu.tetrad.search.cdnod_pag.CdnodPag.PagBuilder pagBuilder = (DataSet dataWithoutEnv) -> {
+            Score _score = score.getScore(dataWithoutEnv, parameters);
+            IndependenceTest _test = test.getTest(dataWithoutEnv, parameters);
 
-           Fcit fcit = new Fcit(_test, _score);
-           fcit.setKnowledge(knowledge);
-           try {
-               return fcit.search();
-           } catch (InterruptedException e) {
-               throw new RuntimeException(e);
-           }
-       };
+            Fcit fcit = new Fcit(_test, _score);
+            fcit.setKnowledge(knowledge);
+            try {
+                return fcit.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
 
         // (B) Propagator that runs your standard FCI rule propagation
         // TODO: call your rule propagation (R0–R10 + discriminating paths)
         // e.g., new FciRulePropagator().propagate(pag);
-        CdnodPagOrienter.Propagator prop = fciOrient::finalOrientation;
+        Function<Graph, Graph> prop = g -> {
+            fciOrient.finalOrientation(g);
+            return g;
+        };
 
-        Function<Graph, Boolean> legalityCheck = PagLegalityCheck::isLegalPagFast;
+        Function<Graph, Boolean> legalityCheck = g -> {
+            return PagLegalityCheck.isLegalPagQuiet(g, Set.of());
+        };
 
         // (D) Change test (CG-LRT residual-vs-E)
         ChangeTest changeTest = new CgLrtChangeTest(); // implement its TODOs with your calls
@@ -124,14 +128,10 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
         edu.cmu.tetrad.search.cdnod_pag.CdnodPag cdnodPag = new edu.cmu.tetrad.search.cdnod_pag.CdnodPag(
                 data,
                 parameters.getDouble(Params.ALPHA), changeTest,
-                pagBuilder /* e.g., (ds) -> new FCIT(ds, knowledge).search() */,
+                pagBuilder,
                 legalityCheck,
-                () -> prop /* e.g., (g) -> RRules.propagate(g) */)
-                .addContexts("Rings")                  // tier-1 contexts
-                .putTier("Rings", 1)                   // optional tiers
-                .putTier("Length", 2)
-                .putTier("Whole", 3)
-                .forbidArrowheadsInto("Sex")           // any extra protected nodes
+                prop,
+                knowledge)
                 .withMaxSubsetSize(1)
                 .withProxyGuard(true);
 
@@ -182,12 +182,6 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-
-//        parameters.add(Params.STABLE_FAS);
-//        parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
-//        parameters.add(Params.DEPTH);
-//        parameters.add(Params.FDR_Q);
-
         parameters.add(Params.ALPHA);
         parameters.add(Params.VERBOSE);
         return parameters;
