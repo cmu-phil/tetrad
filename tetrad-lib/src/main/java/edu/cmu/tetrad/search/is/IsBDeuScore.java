@@ -36,7 +36,7 @@ public final class IsBDeuScore implements Score {
     /** Weight on the instance term. */
     private double isAlpha = 1.0;
 
-    /** Construct with schema validation (names & category labels must match). */
+    /** Construct with schema validation (names &amp; category labels must match). */
     public IsBDeuScore(final DataSet train, final DataSet instanceOneRow) {
         if (!Objects.requireNonNull(train, "train").isDiscrete()) {
             throw new IllegalArgumentException("Training data must be discrete.");
