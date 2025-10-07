@@ -114,6 +114,7 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
         // TODO: call your rule propagation (R0–R10 + discriminating paths)
         // e.g., new FciRulePropagator().propagate(pag);
         Function<Graph, Graph> prop = g -> {
+            fciOrient.setKnowledge(knowledge);
             fciOrient.finalOrientation(g);
             return g;
         };

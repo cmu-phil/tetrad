@@ -1,20 +1,13 @@
 package edu.cmu.tetrad.search.cdnod_pag;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 
 import java.util.*;
 import java.util.function.Function;
 
 /**
- * CD-NOD-PAG orienter (arrowheads-only) with strong legality (fixed-point) gating.
- *
- * - Multiple context variables supported via ChangeOracle.contexts().
- * - Optional tier map: only orient X o-> Y if tier(X) < tier(Y).
- * - Never add arrowheads into protected nodes (contexts + any user-provided).
- * - Exclude contexts from S when testing stabilization (configurable).
- * - After tentatively adding each arrowhead, run propagation and the *strong* legality check
- *   (PAG(MAG(G)) == G). If it fails, rollback just that arrowhead and continue.
+ * CD-NOD-PAG orienter (arrowheads-only) with per-edge strong legality (fixed-point) gating.
+ * Propagator is modeled as Function<Graph, Graph> to match runner convention.
  */
 public final class CdnodPagOrienter {
 
@@ -22,7 +15,7 @@ public final class CdnodPagOrienter {
     private Graph pag;
     private final ChangeOracle oracle;
     private final Function<Graph, Boolean> strongPagLegality; // fixed-point: PAG(MAG(G)) == G
-    private final Function<Graph, Graph> propagator;
+    private final Function<Graph, Graph> propagator;          // in-place; returns same instance
 
     // Config
     private int maxSubsetSize = 1;
@@ -33,7 +26,7 @@ public final class CdnodPagOrienter {
     private final Set<Node> protectedNodes = new LinkedHashSet<>();
     private final Map<Node, Integer> tier = new HashMap<>(); // smaller = earlier
 
-    // Undo stack (kept for final safety net; per-edge rollback uses last push)
+    // Undo stack
     private final Deque<Runnable> undoStack = new ArrayDeque<>();
 
     public CdnodPagOrienter(Graph pag,
@@ -44,60 +37,46 @@ public final class CdnodPagOrienter {
         this.oracle = Objects.requireNonNull(oracle, "oracle");
         this.strongPagLegality = Objects.requireNonNull(strongPagLegality, "legality");
         this.propagator = Objects.requireNonNull(propagator, "propagator");
-
-        // Always protect contexts from receiving arrowheads
+        // contexts never receive arrowheads
         this.protectedNodes.addAll(oracle.contexts());
     }
 
-    // ---------------- Fluent setters ----------------
-
+    // ---- Fluent setters ----
     public CdnodPagOrienter withMaxSubsetSize(int k) { this.maxSubsetSize = Math.max(0, k); return this; }
     public CdnodPagOrienter withProxyGuard(boolean on) { this.useProxyGuard = on; return this; }
     public CdnodPagOrienter withExcludeContextsFromS(boolean on) { this.excludeContextsFromS = on; return this; }
-
-    /** Add nodes that must not receive arrowheads (contexts are already included). */
     public CdnodPagOrienter forbidArrowheadsInto(Collection<Node> nodes) { this.protectedNodes.addAll(nodes); return this; }
     public CdnodPagOrienter forbidArrowheadsInto(Node node) { this.protectedNodes.add(node); return this; }
+    public CdnodPagOrienter withTiers(Map<Node, Integer> tiers) { if (tiers != null) this.tier.putAll(tiers); return this; }
 
-    /** Provide a tier map; orientations allowed only when tier(X) < tier(Y) if both known. */
-    public CdnodPagOrienter withTiers(Map<Node, Integer> tiers) {
-        if (tiers != null) this.tier.putAll(tiers);
-        return this;
-    }
-
-    // ---------------- Main entry ----------------
-
+    // ---- Main ----
     public void run() {
         final List<Node> ctx = oracle.contexts();
 
-        // Iterate over adjacencies (undirected/partially oriented)
         for (Node y : pag.getNodes()) {
-            if (protectedNodes.contains(y)) continue; // never add arrowheads into protected
+            if (protectedNodes.contains(y)) continue; // never add heads into protected
 
             final List<Node> adjs = pag.getAdjacentNodes(y);
             for (Node x : adjs) {
                 if (protectedNodes.contains(x)) continue;
                 if (pag.isDirectedFromTo(x, y) || pag.isDirectedFromTo(y, x)) continue;
 
-                // Tier guard: allow X->Y only if tier(X) < tier(Y) when both are known
+                // Tier guard
                 Integer tx = tier.get(x), ty = tier.get(y);
                 if (tx != null && ty != null && tx >= ty) continue;
 
-                // Neighborhood for S = Adj(Y)\{X}
+                // Neighborhood for S = Adj(Y)\{X}, optionally minus contexts
                 List<Node> neigh = new ArrayList<>(adjs);
                 neigh.remove(x);
                 if (excludeContextsFromS) neigh.removeAll(ctx);
 
-                boolean oriented = tryOrientC1PerEdgeStrong(x, y, neigh, ctx);
-                // If oriented, keep going; we already propagated & legalized within the attempt.
-                // If not, try the next neighbor.
+                tryOrientC1PerEdgeStrong(x, y, neigh, ctx);
             }
         }
 
-        // Final safety net: propagate & ensure strong legality (should already hold)
+        // Final safety net: propagate & ensure strong legality
         pag = propagator.apply(pag);
         if (!strongPagLegality.apply(pag)) {
-            // Progressive rollback until strong legality holds (unlikely if per-edge gating worked)
             while (!undoStack.isEmpty() && !strongPagLegality.apply(pag)) {
                 undoStack.pop().run();
                 pag = propagator.apply(pag);
@@ -105,9 +84,8 @@ public final class CdnodPagOrienter {
         }
     }
 
-    // Attempt CD-NOD C1-like orientation for (x,y) using per-edge strong legality gating.
-    private boolean tryOrientC1PerEdgeStrong(Node x, Node y, List<Node> neigh, List<Node> contexts) {
-        // Enumerate S ⊆ neigh with |S| ≤ maxSubsetSize
+    // Attempt C1-like orientation for (x,y) using per-edge strong legality gating.
+    private void tryOrientC1PerEdgeStrong(Node x, Node y, List<Node> neigh, List<Node> contexts) {
         for (Set<Node> S0 : SmallSubsetIter.subsets(neigh, maxSubsetSize)) {
             // Work on a copy; never mutate iterator's set
             Set<Node> S = new LinkedHashSet<>(S0);
@@ -141,12 +119,11 @@ public final class CdnodPagOrienter {
             }
 
             // Keep this orientation; move on to next (x,y)
-            return true;
+            return;
         }
-        return false;
     }
 
-    // ---------------- Internals ----------------
+    // ---- Internals ----
 
     private static <T> Set<T> plus(Set<T> s, T x) {
         Set<T> u = new LinkedHashSet<>(s);
