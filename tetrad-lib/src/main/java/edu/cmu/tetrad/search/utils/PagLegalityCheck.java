@@ -168,11 +168,6 @@ public class PagLegalityCheck {
         return new LegalMagRet(true, "This is a legal MAG");
     }
 
-
-    public static boolean isLegalPagFast(Graph g) {
-        return isLegalPagQuiet(g, Set.of());
-    }
-
     /**
      * Determines whether the provided Partial Ancestral Graph (PAG) is a legal PAG without providing detailed error
      * messages.

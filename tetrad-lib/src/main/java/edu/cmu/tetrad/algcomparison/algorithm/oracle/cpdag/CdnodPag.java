@@ -13,7 +13,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.cdnod_pag.CgLrtChangeTest;
 import edu.cmu.tetrad.search.cdnod_pag.ChangeTest;
@@ -61,6 +63,10 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
      * This field can be set and retrieved via the corresponding accessor methods.
      */
     private Knowledge knowledge = new Knowledge();
+    /**
+     * Represents an instance of {@link ScoreWrapper} used within the Cdnod class. This field is utilized for scoring
+     * the generated graphs and evaluating their quality based on the provided implementation.
+     */
     private ScoreWrapper score;
 
     /**

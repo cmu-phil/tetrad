@@ -22,7 +22,7 @@ package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IsScore;
+import edu.cmu.tetrad.search.is.IsScore;
 import org.apache.commons.math3.special.Gamma;
 
 import java.util.*;

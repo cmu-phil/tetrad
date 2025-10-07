@@ -1,9 +1,10 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.is;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.Score;
 
 import java.util.Collection;

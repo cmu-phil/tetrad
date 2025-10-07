@@ -1,9 +1,10 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.is;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Gfci;
 import edu.cmu.tetrad.search.score.DiscreteBicScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;

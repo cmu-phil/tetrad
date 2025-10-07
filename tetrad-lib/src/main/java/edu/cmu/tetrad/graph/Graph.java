@@ -713,6 +713,13 @@ public interface Graph extends TetradSerializable {
         return new EdgeListGraph(this);
     }
 
+    /**
+     * Determines if there is a directed edge from node x to node y in the graph.
+     *
+     * @param x the source node
+     * @param y the destination node
+     * @return true if there is a directed edge from x to y, false otherwise
+     */
     default boolean isDirectedFromTo(Node x, Node y) {
         return getDirectedEdge(x, y) != null;
     }
