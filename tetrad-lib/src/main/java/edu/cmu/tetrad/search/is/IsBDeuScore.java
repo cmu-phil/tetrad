@@ -1,8 +1,10 @@
-package edu.cmu.tetrad.search.score;
+package edu.cmu.tetrad.search.is;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.BDeuScore;
+import edu.cmu.tetrad.search.score.Score;
 
 import java.util.List;
 import java.util.Objects;

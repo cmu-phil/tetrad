@@ -18,11 +18,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search.work_in_progress;
+package edu.cmu.tetrad.search.is;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.is.IsScore;
 import org.apache.commons.math3.special.Gamma;
 
 import java.util.*;
@@ -56,7 +55,7 @@ import java.util.stream.IntStream;
         * pp. 144–147.</p>
         */
 //@Deprecated
-public class IsBDeuScore implements IsScore {
+public class IsBDeuScore2 implements IsScore {
     private static final boolean verbose = false;
     private final int[][] data;
     private final int sampleSize;
@@ -78,7 +77,7 @@ public class IsBDeuScore implements IsScore {
      * @param testCase the test case to evaluate. Must not be null.
      * @throws NullPointerException if either dataSet or testCase is null.
      */
-    public IsBDeuScore(DataSet dataSet, DataSet testCase) {
+    public IsBDeuScore2(DataSet dataSet, DataSet testCase) {
 
         if (dataSet == null) {
             throw new NullPointerException("Dataset was not provided.");
