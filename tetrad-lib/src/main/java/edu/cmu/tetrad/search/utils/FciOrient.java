@@ -778,11 +778,18 @@ public class FciOrient {
     }
 
     /**
-     * R4 If u = &lt;Î¸ ,...,Î±,Î²,Î³&gt; is a discriminating path between Î¸ and Î³ for Î², and Î² oâââ Î³; then
-     * if Î² â Sepset(Î¸,Î³), orient Î² oâââ Î³ as Î² â Î³; otherwise orient the triple &lt;Î±,Î²,Î³&gt; as Î±
-     * â Î² â Î³.
+     * R4: If u = ⟨θ, …, α, β, γ⟩ is a discriminating path between θ and γ for β,
+     * and β o−∗ γ, then:
+     * <ul>
+     *   <li>If β ∈ Sepset(θ, γ), orient β o−∗ γ as β → γ;</li>
+     *   <li>Otherwise, orient the triple ⟨α, β, γ⟩ as α ↔ β ↔ γ.</li>
+     * </ul>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * <p>This rule uses discriminating paths to determine whether β acts as a collider
+     * or non-collider on the triple ⟨α, β, γ⟩, refining orientations in the presence of
+     * potential latent confounding.</p>
+     *
+     * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
      */
     public void ruleR4(Graph graph) {
 
@@ -901,11 +908,16 @@ public class FciOrient {
     }
 
     /**
-     * R5 For every (remaining) Î± oââo Î², if there is an uncovered circle path p = &lt;Î±,Î³,...,Î¸,Î²&gt; between
-     * Î± and Î² s.t. Î±,Î¸ are not adjacent and Î²,Î³ are not adjacent, then orient Î± oââo Î² and every edge on p
-     * as undirected edges (--).
+     * R5: For every remaining α o−o β, if there exists an uncovered circle path
+     * p = ⟨α, γ, …, θ, β⟩ between α and β such that α and θ are not adjacent
+     * and β and γ are not adjacent, then orient α o−o β and every edge on p
+     * as undirected (−−).
      *
-     * @param graph the graph to orient.
+     * <p>This rule converts circle paths into undirected chains when they form
+     * an uncovered circle path between α and β, thereby ensuring that the
+     * resulting PAG correctly represents selection bias relationships.</p>
+     *
+     * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
      */
     public void ruleR5(Graph graph) {
 
@@ -958,10 +970,14 @@ public class FciOrient {
     }
 
     /**
-     * R6 If Î± â- Î² oâââ Î³ (Î± and Î³ may or may not be adjacent), then orient Î² oâââ Î³ as Î²
-     * âââ Î³.
+     * R6: If α — β o−∗ γ (where α and γ may or may not be adjacent),
+     * then orient β o−∗ γ as β −∗ γ.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * <p>This rule orients the circle endpoint on β o−∗ γ as a tail when β
+     * is connected to α by an undirected edge, ensuring propagation of
+     * definite non-collider structure along the chain.</p>
+     *
+     * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
      */
     public void ruleR6(Graph graph) {
 
@@ -1008,9 +1024,14 @@ public class FciOrient {
     }
 
     /**
-     * R7 If Î± ââo Î² oâââ Î³, and Î±, Î³ are not adjacent, then orient Î² oâââ Î³ as Î² âââ Î³.
+     * R7: If α −∘ β o−∗ γ, and α and γ are not adjacent, then orient
+     * β o−∗ γ as β −∗ γ.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * <p>This rule resolves the circle at β by extending the orientation
+     * consistently along the partially directed chain from α to γ, provided
+     * that α and γ are nonadjacent.</p>
+     *
+     * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
      */
     public void ruleR7(Graph graph) {
         for (Edge edge : graph.getEdges()) {
@@ -1094,12 +1115,16 @@ public class FciOrient {
     }
 
     /**
-     * R8 If Î± â Î² â Î³ or Î±âââ¦Î² â Î³, and Î± oâ Î³, orient Î± oâ Î³ as Î± â Î³.
+     * R8: If α → β → γ or α −∘ β → γ, and α ∘→ γ, then orient α ∘→ γ as α → γ.
      *
-     * @param a     Î±
-     * @param c     Î³
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return Whether R8 was successfully applied.
+     * <p>This rule orients the circle endpoint on α ∘→ γ when α already reaches γ
+     * through an intermediate directed or partially directed chain, ensuring
+     * transitive consistency of arrow directions.</p>
+     *
+     * @param a     The node α.
+     * @param c     The node γ.
+     * @param graph The graph being oriented.
+     * @return {@code true} if R8 was successfully applied; {@code false} otherwise.
      */
     public boolean ruleR8(Node a, Node c, Graph graph) {
 
@@ -1144,13 +1169,20 @@ public class FciOrient {
     }
 
     /**
-     * R9 If Î± oâ Î³, and p = &lt;Î±,Î²,Î¸,...,Î³&gt; is an uncovered potentialy directed path from Î± to Î³ such
-     * that Î³ and Î² are not adjacent, then orient Î± oâ Î³ as Î± â Î³.
+     * R9: Suppose α ∘→ γ, and let
+     * p = ⟨α, β, θ, …, γ⟩ be an uncovered, potentially-directed path from α to γ
+     * such that γ and β are not adjacent.
+     * Then orient α ∘→ γ as α → γ.
      *
-     * @param a     The node A.
-     * @param c     The node C.
+     * <p>This rule finalizes the circle endpoint on α ∘→ γ when α can reach γ
+     * through an uncovered potentially-directed path that begins with a
+     * non-adjacent β, ensuring consistency with the causal flow implied by the
+     * rest of the graph.</p>
+     *
+     * @param a     The node α.
+     * @param c     The node γ.
      * @param graph The graph being oriented.
-     * @return Whether R9 was successfully applied.
+     * @return {@code true} if R9 was successfully applied; {@code false} otherwise.
      */
     public boolean ruleR9(Node a, Node c, Graph graph) {
 
