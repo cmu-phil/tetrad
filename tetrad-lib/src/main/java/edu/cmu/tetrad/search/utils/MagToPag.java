@@ -164,6 +164,37 @@ public final class MagToPag {
 
                     return Pair.of(discriminatingPath, true);
                 }
+
+//                if (graph.isAdjacentTo(x, y)) {
+//                    throw new IllegalArgumentException("x and y must not be adjacent");
+//                }
+//
+//                // Use D-SEP, not anteriority:
+//                Set<Node> sepset = mag.paths().dsep(x, y);
+//
+//                if (verbose) {
+//                    TetradLogger.getInstance().log("Sepset for x = " + x + " and y = " + y + " = " + sepset);
+//                }
+//
+//                if (sepset != null && sepset.contains(v)) {
+////                    if (!FciOrient.isTailAllowed(y, v, graph, knowledge)) {  // optional: symmetry with arrowhead checks
+////                        return Pair.of(discriminatingPath, false);
+////                    }
+//                    graph.setEndpoint(y, v, Endpoint.TAIL);
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log("R4: tail case x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
+//                    }
+//                    return Pair.of(discriminatingPath, true);
+//                } else {
+//                    if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) return Pair.of(discriminatingPath, false);
+//                    if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) return Pair.of(discriminatingPath, false);
+//                    graph.setEndpoint(w, v, Endpoint.ARROW);
+//                    graph.setEndpoint(y, v, Endpoint.ARROW);
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log("R4: collider case x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
+//                    }
+//                    return Pair.of(discriminatingPath, true);
+//                }
             }
         };
     }

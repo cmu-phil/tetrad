@@ -1349,26 +1349,37 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Return a map from each node to its collection of descendants.
-     *
-     * @return This map.
+     * Return a map from each node to its set of descendants (following directed edges only).
+     * Descendants do NOT include the node itself.
      */
     public Map<Node, Set<Node>> getDescendantsMap() {
-        Map<Node, Set<Node>> decendantsMap = new HashMap<>();
+        Map<Node, Set<Node>> descendantsMap = new HashMap<>();
+        List<Node> nodes = graph.getNodes();
 
-        for (Node node : graph.getNodes()) {
-            decendantsMap.put(node, new HashSet<>());
+        // Prepare empty sets
+        for (Node n : nodes) {
+            descendantsMap.put(n, new HashSet<>());
         }
 
-        for (Node n1 : graph.getNodes()) {
-            for (Node n2 : graph.getNodes()) {
-                if (isAncestorOfAnyZ(n1, Collections.singleton(n2))) {
-                    decendantsMap.get(n1).add(n2);
+        // For each node, traverse its directed children iteratively
+        for (Node src : nodes) {
+            ArrayDeque<Node> stack = new ArrayDeque<>(graph.getChildren(src));
+            Set<Node> seen = new HashSet<>();
+
+            while (!stack.isEmpty()) {
+                Node v = stack.pop();
+                if (!seen.add(v)) continue;
+
+                descendantsMap.get(src).add(v);
+
+                // Follow only directed edges out of v
+                for (Node child : graph.getChildren(v)) {
+                    if (!seen.contains(child)) stack.push(child);
                 }
             }
         }
 
-        return decendantsMap;
+        return descendantsMap;
     }
 
     /**
@@ -1401,35 +1412,55 @@ public class Paths implements TetradSerializable {
      * @param z a {@link java.util.Set} object
      * @return true if b is an ancestor of any node in z
      */
+//    public boolean isAncestorOfAnyZ(Node b, Set<Node> z) {
+//        if (z.contains(b)) {
+//            return true;
+//        }
+//
+//        Queue<Node> Q = new ArrayDeque<>();
+//        Set<Node> V = new HashSet<>();
+//
+//        for (Node node : z) {
+//            Q.offer(node);
+//            V.add(node);
+//        }
+//
+//        while (!Q.isEmpty()) {
+//            Node t = Q.poll();
+//            if (t == b) {
+//                return true;
+//            }
+//
+//            for (Node c : graph.getParents(t)) {
+//                if (!V.contains(c)) {
+//                    Q.offer(c);
+//                    V.add(c);
+//                }
+//            }
+//        }
+//
+//        return false;
+//
+//    }
+
+    /**
+     * Return true if b is an ancestor of any node in z.
+     * Uses a cached descendants map for O(|z|) membership checks.
+     */
     public boolean isAncestorOfAnyZ(Node b, Set<Node> z) {
-        if (z.contains(b)) {
-            return true;
+        if (z == null || z.isEmpty()) return false;
+        if (z.contains(b)) return true; // ancestor-of-self shortcut if you treat reflexive ancestry as true
+
+        // Prefer precomputed descendants map if available
+        Map<Node, Set<Node>> desc = graph.paths().getDescendantsMap();
+        Set<Node> bDesc = desc.get(b);
+        if (bDesc == null || bDesc.isEmpty()) return false;
+
+        // Check if any element of z is in descendants(b)
+        for (Node t : z) {
+            if (bDesc.contains(t)) return true;
         }
-
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
-
-        for (Node node : z) {
-            Q.offer(node);
-            V.add(node);
-        }
-
-        while (!Q.isEmpty()) {
-            Node t = Q.poll();
-            if (t == b) {
-                return true;
-            }
-
-            for (Node c : graph.getParents(t)) {
-                if (!V.contains(c)) {
-                    Q.offer(c);
-                    V.add(c);
-                }
-            }
-        }
-
         return false;
-
     }
 
     /**

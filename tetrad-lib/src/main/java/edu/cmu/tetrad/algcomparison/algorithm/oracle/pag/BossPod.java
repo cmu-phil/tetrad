@@ -54,8 +54,8 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-POD",
-        command = "BOSS-POD",
+        name = "LV-Dumb",
+        command = "lvdumb",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
@@ -173,7 +173,7 @@ public class BossPod extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      */
     @Override
     public String getDescription() {
-        return "BOSS-POD (BOSS followed by DAG to PAG) using " + this.score.getDescription();
+        return "LV-Dumb a.k.a. BOSS-POD (BOSS followed by PAG Of DAG) using " + this.score.getDescription();
     }
 
     /**

@@ -207,6 +207,7 @@ public final class Fcit implements IGraphSearch {
         GraphUtils.reorientWithCircles(pag, superVerbose);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setParallel(true);
         GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
         adjustForExtraSepsets(sepsets, pag, superVerbose);
         fciOrient.finalOrientation(pag);
