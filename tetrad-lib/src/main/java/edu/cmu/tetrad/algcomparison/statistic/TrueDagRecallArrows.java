@@ -67,19 +67,9 @@ public class TrueDagRecallArrows implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
         int fn = 0;
-
-        Graph dag;
-
-        if (trueGraph.paths().isLegalDag()) {
-            dag = trueGraph;
-        } else if (trueGraph.paths().isLegalPag()) {
-            dag = PagCache.getInstance().getDag(trueGraph);
-        } else {
-            throw new IllegalStateException("Graph is not legal dag or pag");
-        }
 
         List<Node> nodes = estGraph.getNodes();
 
@@ -87,7 +77,7 @@ public class TrueDagRecallArrows implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!dag.paths().isAncestorOf(y, x)) {
+                if (!trueDag.paths().isAncestorOf(y, x)) {
                     Edge edge2 = estGraph.getEdge(x, y);
 
                     if (edge2 != null) {

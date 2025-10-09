@@ -70,7 +70,7 @@ public class OrientationRecall implements Statistic {
      * a graph compared to the true graph.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         OrientationConfusion oriConfusion = new OrientationConfusion(trueGraph, estGraph);
         int oriTp = oriConfusion.getTp();
         int oriFn = oriConfusion.getFn();

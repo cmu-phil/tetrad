@@ -71,6 +71,7 @@ public class BidirectedLatentPrecision implements Statistic {
      * Calculates the percentage of correctly identified bidirected edges in an estimated graph for which a latent
      * confounder exists in the true graph.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -78,27 +79,15 @@ public class BidirectedLatentPrecision implements Statistic {
      * @return The percentage of correctly identified bidirected edges.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        Graph dag;
-
-        if (trueGraph.paths().isLegalDag()) {
-            dag = trueGraph;
-        } else {
-            dag = PagCache.getInstance().getDag(trueGraph);
-        }
-
-        if (dag == null) {
-            throw new IllegalArgumentException("Dag is null");
-        }
-
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
         int pos = 0;
 
-        estGraph = GraphUtils.replaceNodes(estGraph, dag.getNodes());
+        estGraph = GraphUtils.replaceNodes(estGraph, trueDag.getNodes());
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (GraphUtils.isCorrectBidirectedEdge(edge, dag)) {
+                if (GraphUtils.isCorrectBidirectedEdge(edge, trueDag)) {
                     tp++;
                 }
 

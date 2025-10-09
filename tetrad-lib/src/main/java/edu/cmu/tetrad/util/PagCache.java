@@ -26,8 +26,8 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 /**
  * A cache for storing PAGs so that the only need to be calculated once per DAG.
@@ -42,11 +42,7 @@ public class PagCache {
     /**
      * A map that stores the PAGs corresponding to the DAGs.
      */
-    private final Map<Graph, Graph> pagCache = new WeakHashMap<>();
-    /**
-     * A map that stores the DAGs corresponding to the PAGs.
-     */
-    private final Map<Graph, Graph> dagCache = new WeakHashMap<>();
+    private final Map<Graph, Graph> pagCache = new IdentityHashMap<>();
 
     /**
      * Private constructor to prevent instantiation of the PagCache class.
@@ -106,7 +102,6 @@ public class PagCache {
 //            MagToPag dagToPag = new MagToPag(graph);
 //            Graph pag = dagToPag.convert();
             pagCache.put(graph, pag);
-            dagCache.put(pag, graph);
             return pag;
         }
     }
@@ -134,29 +129,7 @@ public class PagCache {
         } else {
             Graph pag = GraphTransforms.dagToPag(graph);
             pagCache.put(graph, pag);
-
-            if (graph.paths().isLegalDag()) {
-                dagCache.put(pag, graph);
-            }
-
             return pag;
-        }
-    }
-
-    /**
-     * Returns the Directed Acyclic Graph (DAG) corresponding to the given graph if it is a PAG that has previously been
-     * converted from a DAG. Otherwise, if it is a DAG, the input graph is returned as is. Otherwise, null is returned.
-     *
-     * @param graph the input graph to be checked and potentially converted to a DAG
-     * @return the corresponding DAG if the input graph is a legal DAG or present in cache; null otherwise
-     */
-    public Graph getDag(Graph graph) {
-        if (dagCache.containsKey(graph)) {
-            return dagCache.get(graph);
-        } else if (graph.paths().isLegalDag()) {
-            return graph;
-        } else {
-            return null;
         }
     }
 }

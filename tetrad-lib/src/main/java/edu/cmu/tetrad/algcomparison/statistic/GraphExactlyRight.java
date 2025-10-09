@@ -63,7 +63,7 @@ public class GraphExactlyRight implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
         return trueGraph.equals(estGraph) ? 1 : 0;
     }

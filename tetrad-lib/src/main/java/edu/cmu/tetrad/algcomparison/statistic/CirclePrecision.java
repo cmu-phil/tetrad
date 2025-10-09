@@ -65,6 +65,7 @@ public class CirclePrecision implements Statistic {
      * Calculates the circle precision, which is the ratio of true positive arrows to the sum of true positive arrows
      * and false positive arrows.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -72,7 +73,7 @@ public class CirclePrecision implements Statistic {
      * @return The calculated circle precision value.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         CircleConfusion confusion = new CircleConfusion(trueGraph, estGraph);
         double tp = confusion.getTp();
         double fp = confusion.getFp();

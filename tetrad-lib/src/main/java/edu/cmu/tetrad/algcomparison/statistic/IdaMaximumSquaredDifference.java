@@ -78,6 +78,7 @@ public class IdaMaximumSquaredDifference implements Statistic {
     /**
      * Calculates the value of the statistic "IDA Average Maximum Squared Difference".
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -85,7 +86,7 @@ public class IdaMaximumSquaredDifference implements Statistic {
      * @return The value of the statistic.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (!estGraph.paths().isLegalMpdag()) {
             return Double.NaN;
         }

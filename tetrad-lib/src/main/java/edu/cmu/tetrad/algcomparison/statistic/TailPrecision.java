@@ -65,6 +65,7 @@ public class TailPrecision implements Statistic {
      * Calculates the tail precision, which is the ratio of true positive arrows to the sum of true positive arrows and
      * false positive arrows.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -72,7 +73,7 @@ public class TailPrecision implements Statistic {
      * @return The calculated tail precision value.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         TailConfusion adjConfusion = new TailConfusion(trueGraph, estGraph);
         double arrowsTp = adjConfusion.getArrowsTp();
         double arrowsFp = adjConfusion.getArrowsFp();

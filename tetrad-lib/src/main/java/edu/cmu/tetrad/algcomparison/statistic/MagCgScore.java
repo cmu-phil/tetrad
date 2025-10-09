@@ -68,7 +68,7 @@ public class MagCgScore implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (!(dataModel instanceof DataSet))
             throw new IllegalArgumentException("Expecting a dataset for MAG DG Score.");
 

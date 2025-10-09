@@ -69,6 +69,7 @@ public class TrueDagPrecisionArrow implements Statistic {
     /**
      * Calculates the proportion of X*->Y in the estimated graph for which there is no path Y~~>X in the true graph.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -76,28 +77,16 @@ public class TrueDagPrecisionArrow implements Statistic {
      * @return The calculated proportion value.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
         int fp = 0;
-
-        Graph dag;
-
-        if (trueGraph.paths().isLegalDag()) {
-            dag = trueGraph;
-        } else {
-            dag = PagCache.getInstance().getDag(trueGraph);
-        }
-
-        if (dag == null) {
-            throw new IllegalArgumentException("Dag is null");
-        }
 
         List<Node> nodes = estGraph.getNodes();
 
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (estGraph.isAdjacentTo(x, y) && estGraph.getEndpoint(x, y) == Endpoint.ARROW) {
-                    if (!dag.paths().isAncestorOf(y, x)) {
+                    if (!trueDag.paths().isAncestorOf(y, x)) {
                         tp++;
                     } else {
 //                        System.out.println("Shouldn't be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));

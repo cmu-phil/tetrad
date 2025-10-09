@@ -1354,21 +1354,34 @@ public class Paths implements TetradSerializable {
      * @return This map.
      */
     public Map<Node, Set<Node>> getDescendantsMap() {
-        Map<Node, Set<Node>> decendantsMap = new HashMap<>();
+        Map<Node, Set<Node>> descendantsMap = new HashMap<>();
+        List<Node> nodes = graph.getNodes();
 
-        for (Node node : graph.getNodes()) {
-            decendantsMap.put(node, new HashSet<>());
+        // Precompute children once (directed-only)
+        Map<Node, List<Node>> children = new HashMap<>();
+        for (Node n : nodes) {
+            children.put(n, new ArrayList<>(graph.getChildren(n)));
         }
 
-        for (Node n1 : graph.getNodes()) {
-            for (Node n2 : graph.getNodes()) {
-                if (isAncestorOfAnyZ(n1, Collections.singleton(n2))) {
-                    decendantsMap.get(n1).add(n2);
+        for (Node s : nodes) {
+            // Reflexive: include s itself as its own descendant (consistent with isAncestorOfAnyZ)
+            Set<Node> desc = new HashSet<>();
+            desc.add(s);
+
+            ArrayDeque<Node> q = new ArrayDeque<>(children.get(s));
+            desc.addAll(children.get(s));
+
+            while (!q.isEmpty()) {
+                Node u = q.poll();
+                for (Node c : children.get(u)) {
+                    if (desc.add(c)) q.add(c);
                 }
             }
+
+            descendantsMap.put(s, desc);
         }
 
-        return decendantsMap;
+        return descendantsMap;
     }
 
     /**
@@ -1378,17 +1391,30 @@ public class Paths implements TetradSerializable {
      */
     public Map<Node, Set<Node>> getAncestorsMap() {
         Map<Node, Set<Node>> ancestorsMap = new HashMap<>();
+        List<Node> nodes = graph.getNodes();
 
-        for (Node node : graph.getNodes()) {
-            ancestorsMap.put(node, new HashSet<>());
+        // Precompute parent lists once (directed-only)
+        Map<Node, List<Node>> parents = new HashMap<>();
+        for (Node n : nodes) {
+            parents.put(n, new ArrayList<>(graph.getParents(n)));
         }
 
-        for (Node n1 : graph.getNodes()) {
-            for (Node n2 : graph.getNodes()) {
-                if (isAncestorOfAnyZ(n1, Collections.singleton(n2))) {
-                    ancestorsMap.get(n2).add(n1);
+        for (Node t : nodes) {
+            // Reflexive: include t itself as its own ancestor (matches isAncestorOfAnyZ)
+            Set<Node> anc = new HashSet<>();
+            anc.add(t);
+
+            ArrayDeque<Node> q = new ArrayDeque<>(parents.get(t));
+            anc.addAll(parents.get(t));
+
+            while (!q.isEmpty()) {
+                Node u = q.poll();
+                for (Node p : parents.get(u)) {
+                    if (anc.add(p)) q.add(p);
                 }
             }
+
+            ancestorsMap.put(t, anc);
         }
 
         return ancestorsMap;
@@ -1402,34 +1428,41 @@ public class Paths implements TetradSerializable {
      * @return true if b is an ancestor of any node in z
      */
     public boolean isAncestorOfAnyZ(Node b, Set<Node> z) {
-        if (z.contains(b)) {
-            return true;
+        if (z == null || z.isEmpty()) return false;
+
+        // Reflexive ancestry: if any z == b we consider it "ancestor of itself"
+        for (Node zi : z) {
+            if (b.equals(zi)) return true;
         }
 
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
+        // Optional fast path — only use if your descendants map is known-good and directed-only + reflexive:
+        // Map<Node, Set<Node>> desc = graph.paths().getDescendantsMap();
+        // Set<Node> bDesc = desc.get(b);
+        // if (bDesc != null) {
+        //     for (Node zi : z) if (bDesc.contains(zi)) return true;
+        // }
 
-        for (Node node : z) {
-            Q.offer(node);
-            V.add(node);
+        // Fallback: explicit upward BFS from all z through directed parents
+        ArrayDeque<Node> q = new ArrayDeque<>();
+        HashSet<Node> seen = new HashSet<>();
+
+        for (Node zi : z) {
+            q.add(zi);
+            seen.add(zi);
         }
 
-        while (!Q.isEmpty()) {
-            Node t = Q.poll();
-            if (t == b) {
-                return true;
-            }
+        while (!q.isEmpty()) {
+            Node t = q.poll();
+            if (b.equals(t)) return true;
 
-            for (Node c : graph.getParents(t)) {
-                if (!V.contains(c)) {
-                    Q.offer(c);
-                    V.add(c);
+            for (Node p : graph.getParents(t)) {   // directed-only
+                if (seen.add(p)) {
+                    q.add(p);
                 }
             }
         }
 
         return false;
-
     }
 
     /**

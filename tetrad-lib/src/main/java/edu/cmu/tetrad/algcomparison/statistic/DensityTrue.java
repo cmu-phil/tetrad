@@ -62,8 +62,8 @@ public class DensityTrue implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        return new AverageDegreeTrue().getValue(trueGraph, estGraph, dataModel, new Parameters())
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        return new AverageDegreeTrue().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters())
                / (double) (trueGraph.getNumNodes() - 1);
     }
 

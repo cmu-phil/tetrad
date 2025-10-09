@@ -67,7 +67,7 @@ public class ArrowheadFp implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         ArrowConfusion confusion = new ArrowConfusion(trueGraph, estGraph);
         return confusion.getFp();
     }

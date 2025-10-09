@@ -70,6 +70,7 @@ public class ProportionSemidirectedPathsNotReversedEst implements Statistic {
      * Calculates the proportion of semi(X, Y) in the estimated graph for which there is no semi(Y, X) in the true
      * graph.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -77,7 +78,7 @@ public class ProportionSemidirectedPathsNotReversedEst implements Statistic {
      * @return The proportion of semi(X, Y) in the estimated graph for which there is no semi(Y, X) in the true graph.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         List<Node> nodes = estGraph.getNodes();
         nodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 

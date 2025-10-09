@@ -71,6 +71,7 @@ public class IdaCheckAvgSquaredDifference implements Statistic {
      * Retrieves the value of the statistic, which is the average squared difference between the estimated and true
      * values for a given data model and graphs.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -79,7 +80,7 @@ public class IdaCheckAvgSquaredDifference implements Statistic {
      * @throws IllegalArgumentException if the data model is null.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
 
         if (dataModel == null) {
             throw new IllegalArgumentException("Data model is null.");

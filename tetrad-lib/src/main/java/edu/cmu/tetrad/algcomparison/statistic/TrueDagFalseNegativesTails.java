@@ -67,6 +67,7 @@ public class TrueDagFalseNegativesTails implements Statistic {
     /**
      * Calculates the number of false negatives for tails compared to the true DAG.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -74,7 +75,7 @@ public class TrueDagFalseNegativesTails implements Statistic {
      * @return The number of false negatives for tails.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
 //        int tp = 0;
         int fn = 0;
 

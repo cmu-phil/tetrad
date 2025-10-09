@@ -69,6 +69,7 @@ public class TrueDagPrecisionTails implements Statistic {
      * Calculates the proportion of X-->Y edges in the estimated graph for which there is a path X~~>Y in the true
      * graph.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -76,21 +77,9 @@ public class TrueDagPrecisionTails implements Statistic {
      * @return The proportion of X-->Y edges in the estimated graph for which there is a path X~~>Y in the true graph.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
         int fp = 0;
-
-        Graph dag;
-
-        if (trueGraph.paths().isLegalDag()) {
-            dag = trueGraph;
-        } else {
-            dag = PagCache.getInstance().getDag(trueGraph);
-        }
-
-        if (dag == null) {
-            throw new IllegalArgumentException("Dag is null");
-        }
 
         List<Node> nodes = estGraph.getNodes();
 
@@ -103,7 +92,7 @@ public class TrueDagPrecisionTails implements Statistic {
                 if (edge == null) continue;
 
                 if (Edges.directedEdge(x, y).equals(edge)) {
-                    if (dag.paths().isAncestorOf(x, y)) {
+                    if (trueDag.paths().isAncestorOf(x, y)) {
                         tp++;
                     } else {
                         fp++;

@@ -1246,10 +1246,10 @@ public class FciOrient {
     /**
      * R10 (Zhang 2008 FCI orientation rule).
      * <p>
-     * ASCII version: Suppose alpha o-> gamma, beta -> gamma <- theta. Let p1 be an uncovered potentially directed
+     * ASCII version: Suppose alpha o-&gt; gamma, beta -&gt; gamma &lt;- theta. Let p1 be an uncovered potentially directed
      * (semi-directed) path from alpha to beta, and p2 be an uncovered potentially directed path from alpha to theta.
      * Let mu be the vertex adjacent to alpha on p1 (mu could be beta), and omega be the vertex adjacent to alpha on p2
-     * (omega could be theta). If mu and omega are distinct and nonadjacent, then orient alpha o-> gamma as alpha ->
+     * (omega could be theta). If mu and omega are distinct and nonadjacent, then orient alpha o-&gt; gamma as alpha -&gt;
      * gamma.
      * <p>
      * Unicode version (same content): Suppose α o→ γ, β → γ ← θ. Let p1 be an uncovered potentially directed
