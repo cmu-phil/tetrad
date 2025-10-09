@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -42,8 +43,7 @@ public class PagCache {
     /**
      * A map that stores the PAGs corresponding to the DAGs.
      */
-    private final Map<Graph, Graph> pagCache = new IdentityHashMap<>();
-
+    private final Map<Graph, Graph> pagCache = Collections.synchronizedMap(new IdentityHashMap<>());
     /**
      * Private constructor to prevent instantiation of the PagCache class.
      */
