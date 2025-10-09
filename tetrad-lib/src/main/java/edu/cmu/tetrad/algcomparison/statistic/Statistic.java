@@ -52,16 +52,21 @@ public interface Statistic extends Serializable {
      */
     String getDescription();
 
+    default double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        return getValue(null, trueGraph, estGraph, dataModel, parameters);
+    }
+
     /**
      * Returns the value of this statistic, given the true graph and the estimated graph.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model (can be null).
      * @param parameters The parameters (can be null).
      * @return The value of the statistic.
      */
-    double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters);
+    double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters);
 
     /**
      * Returns the value of this statistic, given the true graph and the estimated graph.
@@ -72,7 +77,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        return getValue(trueGraph, estGraph, dataModel, null);
+        return getValue(null, trueGraph, estGraph, dataModel, null);
     }
 
     /**
@@ -84,7 +89,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph, Parameters parameters) {
-        return getValue(trueGraph, estGraph, null, parameters);
+        return getValue(null, trueGraph, estGraph, null, parameters);
     }
 
     /**
@@ -95,7 +100,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph) {
-        return getValue(trueGraph, estGraph, null, null);
+        return getValue(null, trueGraph, estGraph, null, null);
     }
 
     /**

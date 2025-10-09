@@ -72,6 +72,7 @@ public class PercentAmbiguous implements Statistic {
     /**
      * Calculates the percentage of ambiguous triples in the estimated graph compared to the true graph.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -79,7 +80,7 @@ public class PercentAmbiguous implements Statistic {
      * @return The percentage of ambiguous triples in the estimated graph.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int numAmbiguous = 0;
         int numTriples = 0;
 

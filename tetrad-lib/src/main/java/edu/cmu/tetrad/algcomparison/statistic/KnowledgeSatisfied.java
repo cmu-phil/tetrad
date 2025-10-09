@@ -77,7 +77,7 @@ public class KnowledgeSatisfied implements Statistic, HasKnowledge {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         return knowledge.isViolatedBy(estGraph) ? 0 : 1;
     }
 

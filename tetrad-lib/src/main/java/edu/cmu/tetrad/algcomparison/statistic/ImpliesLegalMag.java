@@ -68,7 +68,7 @@ public class ImpliesLegalMag implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         List<Node> latent = trueGraph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
 

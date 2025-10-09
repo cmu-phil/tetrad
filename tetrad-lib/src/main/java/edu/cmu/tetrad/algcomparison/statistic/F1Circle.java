@@ -66,7 +66,7 @@ public class F1Circle implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         CircleConfusion circleConfusion = new CircleConfusion(trueGraph, estGraph);
         int circleTp = circleConfusion.getTp();
         int circleFp = circleConfusion.getFp();

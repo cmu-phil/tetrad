@@ -71,7 +71,7 @@ public class AdjacencyFpr implements Statistic {
      * Returns the value of the statistic, given the true graph and the estimated graph.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
         int adjFp = adjConfusion.getFp();
         int adjTn = adjConfusion.getTn();

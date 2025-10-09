@@ -66,6 +66,7 @@ public class PagAdjacencyPrecision implements Statistic {
     /**
      * Calculates the adjacency precision of the estimated graph compared to the true graph.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -73,7 +74,7 @@ public class PagAdjacencyPrecision implements Statistic {
      * @return The adjacency precision value.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         Graph pag = GraphTransforms.dagToPag(trueGraph);
 
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(pag, estGraph);

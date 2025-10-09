@@ -80,6 +80,7 @@ public class IdaAverageSquaredDistance implements Statistic {
      * Calculates the value of the IDA Average Squared Distance statistic. Assumes the true SEM IM has been passed in
      * through the constructor.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -87,7 +88,7 @@ public class IdaAverageSquaredDistance implements Statistic {
      * @return The calculated value of the IDA Average Squared Distance statistic.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (!estGraph.paths().isLegalMpdag()) {
             return Double.NaN;
         }

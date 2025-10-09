@@ -67,6 +67,7 @@ public class PagAdjacencyRecall implements Statistic {
     /**
      * Calculates the adjacency recall compared to the true PAG (Partial Ancestral Graph).
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG of the true DAG).
      * @param estGraph   The estimated graph (same type as trueGraph).
      * @param dataModel  The data model.
@@ -74,7 +75,7 @@ public class PagAdjacencyRecall implements Statistic {
      * @return The adjacency recall value as a double.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         Graph pag = GraphTransforms.dagToPag(trueGraph);
 
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(pag, estGraph);

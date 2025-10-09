@@ -91,7 +91,7 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
      * Returns the value of the statistic.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {

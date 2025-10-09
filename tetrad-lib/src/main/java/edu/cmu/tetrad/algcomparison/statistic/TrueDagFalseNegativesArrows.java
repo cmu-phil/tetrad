@@ -66,6 +66,7 @@ public class TrueDagFalseNegativesArrows implements Statistic {
     /**
      * Calculates the number of false negatives for arrows compared to the true DAG.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -73,16 +74,16 @@ public class TrueDagFalseNegativesArrows implements Statistic {
      * @return The number of false negatives for arrows.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int fn = 0;
 
-        List<Node> nodes = trueGraph.getNodes();
+        List<Node> nodes = trueDag.getNodes();
 
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!trueGraph.paths().isAncestorOf(x, y)) {
+                if (!trueDag.paths().isAncestorOf(x, y)) {
                     Edge e = estGraph.getEdge(x, y);
 
                     if (e != null && e.getEndpoint(x) != Endpoint.ARROW) {

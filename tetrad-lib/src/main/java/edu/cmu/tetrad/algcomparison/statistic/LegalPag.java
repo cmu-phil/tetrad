@@ -62,7 +62,7 @@ public class LegalPag implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (estGraph.paths().isLegalPag()) {
             return 1.0;
         } else {

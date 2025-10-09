@@ -65,6 +65,7 @@ public class TrueDagFalsePositiveTails implements Statistic {
     /**
      * Calculates the number of false positives for tails in the estimated graph compared to the true DAG.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -72,18 +73,18 @@ public class TrueDagFalsePositiveTails implements Statistic {
      * @return The number of false positives for tails.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int fp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
-                if (!trueGraph.paths().isAncestorOf(edge.getNode1(), edge.getNode2())) {
+                if (!trueDag.paths().isAncestorOf(edge.getNode1(), edge.getNode2())) {
                     fp++;
                 }
             }
 
             if (edge.getEndpoint2() == Endpoint.TAIL) {
-                if (!trueGraph.paths().isAncestorOf(edge.getNode2(), edge.getNode1())) {
+                if (!trueDag.paths().isAncestorOf(edge.getNode2(), edge.getNode1())) {
                     fp++;
                 }
             }

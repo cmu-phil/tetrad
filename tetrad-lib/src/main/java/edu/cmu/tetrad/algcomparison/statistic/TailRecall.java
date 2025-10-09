@@ -64,6 +64,7 @@ public class TailRecall implements Statistic {
     /**
      * Calculates the tail recall value for a given true graph, estimated graph, and data model.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -71,7 +72,7 @@ public class TailRecall implements Statistic {
      * @return The tail recall value.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         TailConfusion confusion = new TailConfusion(trueGraph, estGraph);
         double arrowsTp = confusion.getArrowsTp();
         double arrowsFn = confusion.getArrowsFn();

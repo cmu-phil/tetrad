@@ -66,14 +66,8 @@ public class NumCorrectVisibleEdges implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        Graph dag = PagCache.getInstance().getDag(trueGraph);
-
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         GraphUtils.addEdgeSpecializationMarkup(estGraph);
-
-        if (dag == null) {
-            return -99;
-        }
 
         int tp = 0;
 
@@ -86,11 +80,11 @@ public class NumCorrectVisibleEdges implements Statistic {
 
                 // A latent confounder is a latent node z such that there is a trek x<~~(z)~~>y, so we can limit the
                 // length of these treks to 3.
-                List<List<Node>> treks = dag.paths().treks(x, y, 3);
+                List<List<Node>> treks = trueDag.paths().treks(x, y, 3);
 
                 // If there is a trek, x<~~z~~>y, where z is latent, then the edge is not semantically visible.
                 for (List<Node> trek : treks) {
-                    if (GraphUtils.isConfoundingTrek(dag, trek, x, y)) {
+                    if (GraphUtils.isConfoundingTrek(trueDag, trek, x, y)) {
                         existsLatentConfounder = true;
                         break;
                     }

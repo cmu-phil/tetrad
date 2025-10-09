@@ -67,7 +67,7 @@ public class NumberEdgesInUnshieldedCollidersEst implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         List<Node> nodes = estGraph.getNodes();
         Set<Edge> edges = new HashSet<>();
 

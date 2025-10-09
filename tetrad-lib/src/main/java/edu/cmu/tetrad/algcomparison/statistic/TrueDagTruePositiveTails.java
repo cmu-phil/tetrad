@@ -64,18 +64,18 @@ public class TrueDagTruePositiveTails implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
-                if (trueGraph.paths().isAncestorOf(edge.getNode1(), edge.getNode2())) {
+                if (trueDag.paths().isAncestorOf(edge.getNode1(), edge.getNode2())) {
                     tp++;
                 }
             }
 
             if (edge.getEndpoint2() == Endpoint.TAIL) {
-                if (trueGraph.paths().isAncestorOf(edge.getNode2(), edge.getNode1())) {
+                if (trueDag.paths().isAncestorOf(edge.getNode2(), edge.getNode1())) {
                     tp++;
                 }
             }

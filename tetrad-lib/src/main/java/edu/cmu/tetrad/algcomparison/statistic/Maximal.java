@@ -61,7 +61,7 @@ public class Maximal implements Statistic {
      * Checks whether a PAG is maximal.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         boolean maximal = estGraph.paths().isMaximal();
 
         if (!maximal) {

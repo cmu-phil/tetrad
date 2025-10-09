@@ -67,6 +67,7 @@ public class TrueDagTruePositiveDirectedPathNonancestor implements Statistic {
     /**
      * Calculates the true positives for arrows compared to the true DAG.
      *
+     * @param trueDag
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -74,7 +75,7 @@ public class TrueDagTruePositiveDirectedPathNonancestor implements Statistic {
      * @return The number of true positives for arrows.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
 
         List<Node> nodes = trueGraph.getNodes();
@@ -84,7 +85,7 @@ public class TrueDagTruePositiveDirectedPathNonancestor implements Statistic {
                 if (x == y) continue;
 
                 if (estGraph.paths().isAncestorOf(x, y)) {
-                    if (!trueGraph.paths().isAncestorOf(y, x)) {
+                    if (!trueDag.paths().isAncestorOf(y, x)) {
                         tp++;
                     }
                 }

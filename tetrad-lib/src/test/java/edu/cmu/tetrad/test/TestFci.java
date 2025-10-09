@@ -384,21 +384,21 @@ public class TestFci {
         IndependenceTest independence = new MsepTest(graph);
         Score score = new GraphScore(graph);
 
-        {
-            Fci fci = new Fci(independence);
-            fci.setKnowledge(knowledge);
-            fci.setVerbose(verbose);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
-
-        {
-            FgesFci fci = new FgesFci(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setVerbose(verbose);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
+//        {
+//            Fci fci = new Fci(independence);
+//            fci.setKnowledge(knowledge);
+//            fci.setVerbose(verbose);
+//
+//            runLvSearch(outputGraph, fci, graph);
+//        }
+//
+//        {
+//            FgesFci fci = new FgesFci(independence, score);
+//            fci.setKnowledge(knowledge);
+//            fci.setVerbose(verbose);
+//
+//            runLvSearch(outputGraph, fci, graph);
+//        }
 
         {
             GraspFci fci = new GraspFci(independence, score);
@@ -408,16 +408,16 @@ public class TestFci {
             runLvSearch(outputGraph, fci, graph);
         }
 
-        {
-            Fcit fci = new Fcit(independence, score);
-            fci.setStartWith(Fcit.START_WITH.GRASP);
-//            fci.setDepth(-1);
-            fci.setKnowledge(knowledge);
-//            fci.setPreserveMarkov(false);
-            fci.setVerbose(verbose);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
+//        {
+//            Fcit fci = new Fcit(independence, score);
+//            fci.setStartWith(Fcit.START_WITH.GRASP);
+////            fci.setDepth(-1);
+//            fci.setKnowledge(knowledge);
+////            fci.setPreserveMarkov(false);
+//            fci.setVerbose(verbose);
+//
+//            runLvSearch(outputGraph, fci, graph);
+//        }
     }
 
     //    @Test
