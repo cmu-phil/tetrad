@@ -20,70 +20,64 @@
 
 package edu.cmu.tetrad.bayes;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.DataBox;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.DiscreteBicScore;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
- * Calculates some scores for Bayes nets as a whole.
+ * Calculates likelihood-based properties for discrete Bayes nets against data.
+ * <p>
+ * This implementation computes:
+ * <ul>
+ *   <li>Raw (unpenalized) log-likelihood of the BN: sum over local multinomials.</li>
+ *   <li>Likelihood-ratio test (BN vs. saturated joint over the same variables).</li>
+ *   <li>BIC under the convention BIC = 2*LL - k*log(N).</li>
+ * </ul>
  *
- * @author josephramsey
- * @version $Id: $Id
+ * Notes:
+ * <ul>
+ *   <li>Degrees of freedom for the BN are \sum_i q_i (r_i - 1), where r_i is the cardinality of X_i
+ *       and q_i is the product of parent cardinalities for X_i.</li>
+ *   <li>The saturated model parameter count is (\prod_i r_i) - 1, over the graph's variables only.</li>
+ * </ul>
+ *
+ * @author josephramsey (corrected implementation)
  */
 public final class BayesProperties {
 
-    /**
-     * The data set.
-     */
+    /** The data set. */
     private final DataSet dataSet;
 
-    /**
-     * The variables.
-     */
+    /** The variables (same order as DataSet columns). */
     private final List<Node> variables;
 
-    /**
-     * The sample size.
-     */
+    /** Sample size. */
     private final int sampleSize;
 
-    /**
-     * The number of categories for each variable.
-     */
+    /** Number of categories per variable (aligned with variables list). */
     private final int[] numCategories;
 
-    /**
-     * The chi-squared statistic.
-     */
+    /** LR chi-square statistic. */
     private double chisq;
 
-    /**
-     * The degrees of freedom.
-     */
+    /** LR degrees of freedom. */
     private double dof;
 
-    /**
-     * The BIC.
-     */
+    /** BIC for the BN model (convention: 2*LL - k*log N). */
     private double bic;
 
-    /**
-     * The likelihood.
-     */
+    /** BN log-likelihood (unpenalized). */
     private double likelihood;
 
-    /**
-     * Prevents instantiation.
-     *
-     * @throws UnsupportedOperationException if called.
-     */
+    /** Prevents parameterless construction. */
     private BayesProperties() {
         throw new UnsupportedOperationException();
     }
@@ -91,175 +85,313 @@ public final class BayesProperties {
     /**
      * Constructs a new BayesProperties object for the given data set.
      *
-     * @param dataSet The data set.
+     * @param dataSet The data set (discrete).
      */
     public BayesProperties(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
-
         this.dataSet = dataSet;
 
         if (dataSet instanceof BoxDataSet) {
             DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
             this.variables = dataSet.getVariables();
+            // Force materialization of int vectors to avoid boxing overhead later if needed
             VerticalIntDataBox box = new VerticalIntDataBox(dataBox);
             box.getVariableVectors();
         } else {
             this.variables = dataSet.getVariables();
-
         }
+
         this.sampleSize = dataSet.getNumRows();
 
-        List<Node> variables = dataSet.getVariables();
-        this.numCategories = new int[variables.size()];
-        for (int i = 0; i < variables.size(); i++) {
+        this.numCategories = new int[this.variables.size()];
+        for (int i = 0; i < this.variables.size(); i++) {
             DiscreteVariable variable = getVariable(i);
-
             if (variable != null) {
                 this.numCategories[i] = variable.getNumCategories();
+            } else {
+                this.numCategories[i] = 0;
             }
         }
     }
 
     /**
-     * Calculates the p-value of the graph with respect to the given data, against the complete model as an
-     * alternative.
+     * Likelihood-ratio p-value for BN vs. saturated joint over the same variables as {@code graph0}.
      *
-     * @param graph0 The model to test.
-     * @return The p-value.
+     * @param graph0 The BN structure to evaluate.
+     * @return p-value and related quantities.
      */
     public LikelihoodRet getLikelihoodRatioP(Graph graph0) {
-        Graph graph1 = GraphUtils.completeGraph(graph0);
+        // BN model (smaller model)
+        Ret rModel = getLikelihood(graph0);
+        this.likelihood = rModel.lik(); // unpenalized BN LL
 
-        Ret r1 = getLikelihood(graph1);
-        Ret r0 = getLikelihood(graph0);
+        // Saturated joint (larger model) over the SAME variables as graph0
+        GraphScope scope = buildGraphScope(graph0);
+        double llSat = saturatedJointLogLikelihood(scope);
+        int paramsSat = saturatedParamCount(scope);
 
-        this.likelihood = r0.lik();
+        // LR statistic: 2*(LL_larger - LL_smaller) >= 0
+        double chisq = 2.0 * (llSat - rModel.lik());
+        int df = paramsSat - rModel.dof();
 
-        double lDiff = r0.lik() - r1.lik();
-        System.out.println("lDiff = " + lDiff);
-
-        int nDiff = r0.dof() - r1.dof();
-        System.out.println("nDiff = " + nDiff);
-
-        double chisq = 2.0 * lDiff;
+        // Numerical & sanity guards
+        if (chisq < 0 && Math.abs(chisq) < 1e-9) chisq = 0.0;
+        if (chisq < 0) {
+            throw new IllegalStateException("Negative LR statistic: check log-likelihood calculations.");
+        }
+        if (df < 0) {
+            throw new IllegalStateException("Negative DOF: parameter counting mismatch.");
+        }
 
         this.chisq = chisq;
-        this.dof = nDiff;
+        this.dof = df;
 
+        // BIC for BN model under convention 2*LL - k*log N
         int N = this.dataSet.getNumRows();
-        this.bic = 2 * r0.lik() - r0.dof() * FastMath.log(N);
-        System.out.println("bic = " + this.bic);
+        this.bic = 2 * rModel.lik() - rModel.dof() * FastMath.log(N);
 
-        System.out.println("chisq = " + chisq);
-        System.out.println("dof = " + (double) nDiff);
-
-        double p = StatUtils.getChiSquareP(nDiff, chisq);
-        System.out.println("p = " + p);
+        double p = StatUtils.getChiSquareP(df, chisq);
 
         LikelihoodRet _ret = new LikelihoodRet();
         _ret.p = p;
         _ret.bic = bic;
         _ret.chiSq = chisq;
-        _ret.dof = dof;
-
+        _ret.dof = df;
         return _ret;
     }
 
-    /**
-     * Call after calling getLikelihoodP().
-     *
-     * @return The chi-squared statistic.
-     */
-    public double getChisq() {
-        return this.chisq;
-    }
+    /** Call after getLikelihoodRatioP(): chi-square statistic. */
+    public double getChisq() { return this.chisq; }
 
-    /**
-     * Call after calling getLikelihoodP().
-     *
-     * @return The degrees of freedom.
-     */
-    public double getDof() {
-        return this.dof;
-    }
+    /** Call after getLikelihoodRatioP(): degrees of freedom. */
+    public double getDof() { return this.dof; }
 
-    /**
-     * Call after calling getLikelihoodP().
-     *
-     * @return The BIC.
-     */
-    public double getBic() {
-        return this.bic;
-    }
+    /** Call after getLikelihoodRatioP(): BIC. */
+    public double getBic() { return this.bic; }
 
-    /**
-     * Call after calling getLikelihoodP().
-     *
-     * @return The likelihood.
-     */
-    public double getLikelihood() {
-        return this.likelihood;
-    }
+    /** Call after getLikelihoodRatioP(): BN log-likelihood. */
+    public double getLikelihood() { return this.likelihood; }
 
-    /**
-     * Returns the sample size.
-     *
-     * @return The sample size.
-     */
-    public int getSampleSize() {
-        return this.sampleSize;
-    }
+    /** Sample size. */
+    public int getSampleSize() { return this.sampleSize; }
 
-    /**
-     * Returns the variable with the given name (assumed the target).
-     *
-     * @param targetName The name of the target variable.
-     * @return a {@link edu.cmu.tetrad.graph.Node} object
-     */
+    /** Returns the variable with the given name (from this.variables). */
     public Node getVariable(String targetName) {
         for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
         }
-
         return null;
     }
 
+    // =========================
+    // Core likelihood computing
+    // =========================
+
+    /**
+     * Raw (unpenalized) BN log-likelihood and parameter count (k) for the given graph.
+     * Computes \ell = sum over nodes of local multinomial log-likelihoods.
+     * Parameter count is \sum_i q_i (r_i - 1).
+     */
     private Ret getLikelihood(Graph graph) {
-        double lik = 0.0;
-        int dof = 0;
+        double ll = 0.0;
+        int params = 0;
 
         for (Node node : graph.getNodes()) {
             List<Node> parents = new ArrayList<>(graph.getParents(node));
 
-            int i = this.variables.indexOf(getVariable(node.getName()));
-
-            int[] z = new int[parents.size()];
-
-            for (int j = 0; j < parents.size(); j++) {
-                z[j] = this.variables.indexOf(getVariable(parents.get(j).getName()));
+            // indices in DataSet/variables space (names are matched to align)
+            int childIdx = this.variables.indexOf(getVariable(node.getName()));
+            if (childIdx < 0) {
+                throw new IllegalStateException("Child variable not found in DataSet: " + node.getName());
             }
 
-            Ret ret = getLikelihoodNode(i, z);
-            lik += ret.lik();
-            dof += ret.dof();
+            int[] parentIdx = new int[parents.size()];
+            for (int j = 0; j < parents.size(); j++) {
+                String pname = parents.get(j).getName();
+                Node pnode = getVariable(pname);
+                if (pnode == null) {
+                    throw new IllegalStateException("Parent variable not found in DataSet: " + pname);
+                }
+                parentIdx[j] = this.variables.indexOf(pnode);
+            }
+
+            // Local raw log-likelihood
+            double llNode = localLogLikelihood(childIdx, parentIdx);
+            ll += llNode;
+
+            // Parameter count: qi * (ri - 1)
+            int ri = numCategories[childIdx];
+            int qi = 1;
+            for (int p : parentIdx) {
+                int rpar = numCategories[p];
+                if (rpar <= 0) {
+                    throw new IllegalStateException("Non-positive cardinality for parent index " + p);
+                }
+                qi *= rpar;
+            }
+            params += qi * (ri - 1);
         }
 
-        return new Ret(lik, dof);
+        return new Ret(ll, params);
     }
 
-    private Ret getLikelihoodNode(int node, int[] parents) {
-        DiscreteBicScore bic = new DiscreteBicScore(dataSet);
-        double lik = bic.localScore(node, parents);
+    /**
+     * Local multinomial log-likelihood for a node given parents:
+     * \sum_{rows r} \sum_{j} n_{rj} log(n_{rj}/n_r)
+     * (Skip terms with n_{rj} = 0.)
+     */
+    private double localLogLikelihood(int childIdx, int[] parentIdx) {
+        // Map: parent assignment -> counts over child states
+        Map<ParentKey, int[]> table = new HashMap<>();
+        int rChild = numCategories[childIdx];
+        if (rChild <= 0) {
+            throw new IllegalStateException("Non-positive cardinality for child index " + childIdx);
+        }
 
-        int dof = (numCategories[node] - 1) * parents.length;
+        for (int row = 0; row < dataSet.getNumRows(); row++) {
+            int[] keyVals = new int[parentIdx.length];
+            for (int k = 0; k < parentIdx.length; k++) {
+                keyVals[k] = dataSet.getInt(row, parentIdx[k]);
+            }
+            int y = dataSet.getInt(row, childIdx);
+            ParentKey key = new ParentKey(keyVals);
+            int[] counts = table.computeIfAbsent(key, _k -> new int[rChild]);
+            counts[y] += 1;
+        }
 
-        return new Ret(lik, dof);
+        double ll = 0.0;
+        for (int[] counts : table.values()) {
+            int nr = 0;
+            for (int c : counts) nr += c;
+            if (nr == 0) continue;
+            for (int c : counts) {
+                if (c > 0) {
+                    ll += c * Math.log((double) c / nr);
+                }
+            }
+        }
+        return ll;
     }
 
+    // =========================
+    // Saturated model helpers
+    // =========================
+
+    /** Scope of variables for the given graph within the current DataSet. */
+    private static final class GraphScope {
+        final int[] dsCols;  // DataSet column indices for graph vars, in graph's node iteration order
+        final int[] card;    // cardinalities for those vars, same order
+        GraphScope(int[] dsCols, int[] card) { this.dsCols = dsCols; this.card = card; }
+    }
+
+    /** Build scope: map each graph node to its dataset column and cardinality. */
+    private GraphScope buildGraphScope(Graph graph) {
+        List<Node> gvars = graph.getNodes();
+        int m = gvars.size();
+        int[] dsCols = new int[m];
+        int[] card = new int[m];
+
+        for (int i = 0; i < m; i++) {
+            Node g = gvars.get(i);
+
+            // find dataset column with the same name
+            int dsCol = -1;
+            for (int c = 0; c < dataSet.getNumColumns(); c++) {
+                if (dataSet.getVariable(c).getName().equals(g.getName())) {
+                    dsCol = c; break;
+                }
+            }
+            if (dsCol < 0) {
+                throw new IllegalStateException("DataSet is missing variable from graph: " + g.getName());
+            }
+            dsCols[i] = dsCol;
+
+            // cardinality from the dataset's variable (assumed DiscreteVariable)
+            DiscreteVariable dv = (DiscreteVariable) dataSet.getVariable(dsCol);
+            card[i] = dv.getNumCategories();
+            if (card[i] <= 0) {
+                throw new IllegalStateException("Non-positive cardinality for variable: " + g.getName());
+            }
+        }
+        return new GraphScope(dsCols, card);
+    }
+
+    /** Saturated joint log-likelihood over the graph's variables only. */
+    private double saturatedJointLogLikelihood(GraphScope scope) {
+        // Count unique joint assignments over scope.dsCols
+        Map<RowKey, Integer> counts = new HashMap<>();
+        for (int r = 0; r < dataSet.getNumRows(); r++) {
+            int[] vals = new int[scope.dsCols.length];
+            for (int i = 0; i < scope.dsCols.length; i++) {
+                vals[i] = dataSet.getInt(r, scope.dsCols[i]);
+            }
+            RowKey key = new RowKey(vals);
+            counts.merge(key, 1, Integer::sum);
+        }
+        int N = dataSet.getNumRows();
+        double ll = 0.0;
+        for (int n : counts.values()) {
+            if (n > 0) ll += n * Math.log((double) n / N);
+        }
+        return ll;
+    }
+
+    /** Saturated parameter count over the graph's variables only: (∏ r_i) − 1. */
+    private int saturatedParamCount(GraphScope scope) {
+        long prod = 1L;
+        for (int r : scope.card) prod *= r;
+        long sat = prod - 1L;
+        return sat > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) sat;
+    }
+
+    // =========================
+    // Small helper records/classes
+    // =========================
+
+    /** Parent assignment key for local CPT counting. */
+    private static final class ParentKey {
+        final int[] vals;
+        ParentKey(int[] v) { this.vals = v; }
+        @Override public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ParentKey k)) return false;
+            return Arrays.equals(vals, k.vals);
+        }
+        @Override public int hashCode() { return Arrays.hashCode(vals); }
+    }
+
+    /** Hashable key for joint assignments (saturated counts). */
+    private static final class RowKey {
+        final int[] vals;
+        RowKey(int[] v) { this.vals = v; }
+        @Override public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof RowKey k)) return false;
+            return Arrays.equals(vals, k.vals);
+        }
+        @Override public int hashCode() { return Arrays.hashCode(vals); }
+    }
+
+    /** Tuple for (log-likelihood, parameter count). */
+    private record Ret(double lik, int dof) {
+        @Override public double lik() { return this.lik; }
+        @Override public int dof() { return this.dof; }
+    }
+
+    /** Result container for LR test. */
+    public static class LikelihoodRet {
+        public double p;
+        public double bic;
+        public double chiSq;
+        public double dof;
+        public LikelihoodRet() {}
+    }
+
+    /** Return variable as DiscreteVariable if possible. */
     private DiscreteVariable getVariable(int i) {
         if (this.variables.get(i) instanceof DiscreteVariable) {
             return (DiscreteVariable) this.variables.get(i);
@@ -268,73 +400,47 @@ public final class BayesProperties {
         }
     }
 
-    /**
-     * Returns the likelihood ratio test statistic for the given graph and its degrees of freedom.
-     */
-    private record Ret(double lik, int dof) {
-        /**
-         * Constructs a new Ret object.
-         *
-         * @param lik The likelihood.
-         * @param dof The degrees of freedom.
-         */
-        private Ret {
+    // Debug helper: print 2x2 table and classic tests for two named binary vars.
+    private void debugIndependence2x2(String aName, String bName) {
+        int aCol = -1, bCol = -1;
+        for (int c = 0; c < dataSet.getNumColumns(); c++) {
+            String nm = dataSet.getVariable(c).getName();
+            if (nm.equals(aName)) aCol = c;
+            if (nm.equals(bName)) bCol = c;
         }
-
-        /**
-         * Returns the likelihood.
-         *
-         * @return The likelihood.
-         */
-        @Override
-        public double lik() {
-            return this.lik;
+        if (aCol < 0 || bCol < 0) {
+            System.out.println("[indep2x2] Missing variables " + aName + " or " + bName);
+            return;
         }
-
-        /**
-         * Returns the degrees of freedom.
-         *
-         * @return The degrees of freedom.
-         */
-        @Override
-        public int dof() {
-            return this.dof;
+        int[][] n = new int[2][2];
+        for (int r = 0; r < dataSet.getNumRows(); r++) {
+            int a = dataSet.getInt(r, aCol);
+            int b = dataSet.getInt(r, bCol);
+            if (0 <= a && a <= 1 && 0 <= b && b <= 1) n[a][b]++;
         }
-    }
+        int n00 = n[0][0], n01 = n[0][1], n10 = n[1][0], n11 = n[1][1];
+        int n0_ = n00 + n01, n1_ = n10 + n11, n_0 = n00 + n10, n_1 = n01 + n11;
+        int N   = n0_ + n1_;
+        double e00 = (double) n0_ * n_0 / N;
+        double e01 = (double) n0_ * n_1 / N;
+        double e10 = (double) n1_ * n_0 / N;
+        double e11 = (double) n1_ * n_1 / N;
 
-    /**
-     * The LikelihoodRet class represents the result of a likelihood ratio test. It contains the p-value, BIC,
-     * chi-squared statistic, and degrees of freedom.
-     */
-    public static class LikelihoodRet {
-
-        /**
-         * The p-value.
-         */
-        public double p;
-        /**
-         * The BIC.
-         */
-        public double bic;
-        /**
-         * The chi-squared statistic.
-         */
-        public double chiSq;
-        /**
-         * The degrees of freedom.
-         */
-        public double dof;
-
-        /**
-         * Constructs a new LikelihoodRet object.
-         */
-        public LikelihoodRet() {
+        double chi2 = 0.0;
+        int[] obs = {n00, n01, n10, n11};
+        double[] exp = {e00, e01, e10, e11};
+        for (int i = 0; i < 4; i++) if (exp[i] > 0) {
+            double d = obs[i] - exp[i];
+            chi2 += (d * d) / exp[i];
         }
+        double g2 = 0.0; // LR G^2 = 2 * sum n_ij * log(n_ij / e_ij)
+        for (int i = 0; i < 4; i++) if (obs[i] > 0 && exp[i] > 0) {
+            g2 += 2.0 * obs[i] * Math.log(obs[i] / exp[i]);
+        }
+        double pPearson = StatUtils.getChiSquareP(1, chi2);
+        double pLR      = StatUtils.getChiSquareP(1, g2);
+
+        System.out.printf("[indep2x2] counts=[[%d,%d],[%d,%d]]  Pearson χ²=%.4f (p=%.4f)  G²=%.4f (p=%.4f)%n",
+                n00, n01, n10, n11, chi2, pPearson, g2, pLR);
     }
 }
-
-
-
-
-
-
