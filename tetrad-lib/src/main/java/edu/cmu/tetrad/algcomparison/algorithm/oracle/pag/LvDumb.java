@@ -60,7 +60,7 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class BossPod extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
+public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -88,7 +88,7 @@ public class BossPod extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public BossPod() {
+    public LvDumb() {
         // Used for reflection; do not delete it.
     }
 
@@ -105,7 +105,7 @@ public class BossPod extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public BossPod(ScoreWrapper score) {
+    public LvDumb(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -134,7 +134,7 @@ public class BossPod extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         }
 
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.BossPod search = new edu.cmu.tetrad.search.BossPod(score);
+        edu.cmu.tetrad.search.LvDumb search = new edu.cmu.tetrad.search.LvDumb(score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));

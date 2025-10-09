@@ -132,36 +132,67 @@ public final class MagToPag {
                     throw new IllegalArgumentException("x and y must not be adjacent");
                 }
 
-                Set<Node> sepset = mag.isAdjacentTo(x, y) ? null : mag.paths().anteriority(x, y);
+//                Set<Node> sepset = mag.isAdjacentTo(x, y) ? null : mag.paths().anteriority(x, y);
+//
+//                if (verbose) {
+//                    TetradLogger.getInstance().log("Sepset for x = " + x + " and y = " + y + " = " + sepset);
+//                }
+//
+//                if (sepset != null && sepset.contains(v)) {
+//                    graph.setEndpoint(y, v, Endpoint.TAIL);
+//
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log("R4: Definite discriminating path tail rule x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
+//                    }
+//
+//                    return Pair.of(discriminatingPath, true);
+//                } else {
+//                    if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) {
+//                        return Pair.of(discriminatingPath, false);
+//                    }
+//
+//                    if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) {
+//                        return Pair.of(discriminatingPath, false);
+//                    }
+//
+//                    graph.setEndpoint(w, v, Endpoint.ARROW);
+//                    graph.setEndpoint(y, v, Endpoint.ARROW);
+//
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log("R4: Definite discriminating path collider rule x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
+//                    }
+//
+//                    return Pair.of(discriminatingPath, true);
+//                }
+
+                if (graph.isAdjacentTo(x, y)) {
+                    throw new IllegalArgumentException("x and y must not be adjacent");
+                }
+
+                // Use D-SEP, not anteriority:
+                Set<Node> sepset = mag.paths().dsep(x, y);
 
                 if (verbose) {
                     TetradLogger.getInstance().log("Sepset for x = " + x + " and y = " + y + " = " + sepset);
                 }
 
                 if (sepset != null && sepset.contains(v)) {
+//                    if (!FciOrient.isTailAllowed(y, v, graph, knowledge)) {  // optional: symmetry with arrowhead checks
+//                        return Pair.of(discriminatingPath, false);
+//                    }
                     graph.setEndpoint(y, v, Endpoint.TAIL);
-
                     if (verbose) {
-                        TetradLogger.getInstance().log("R4: Definite discriminating path tail rule x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
+                        TetradLogger.getInstance().log("R4: tail case x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
                     }
-
                     return Pair.of(discriminatingPath, true);
                 } else {
-                    if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) {
-                        return Pair.of(discriminatingPath, false);
-                    }
-
-                    if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) {
-                        return Pair.of(discriminatingPath, false);
-                    }
-
+                    if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) return Pair.of(discriminatingPath, false);
+                    if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) return Pair.of(discriminatingPath, false);
                     graph.setEndpoint(w, v, Endpoint.ARROW);
                     graph.setEndpoint(y, v, Endpoint.ARROW);
-
                     if (verbose) {
-                        TetradLogger.getInstance().log("R4: Definite discriminating path collider rule x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
+                        TetradLogger.getInstance().log("R4: collider case x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
                     }
-
                     return Pair.of(discriminatingPath, true);
                 }
             }
@@ -188,6 +219,7 @@ public final class MagToPag {
         fciOrient.setKnowledge(knowledge);
         fciOrient.setMaxDiscriminatingPathLength(-1);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setParallel(true);
 
         for (Node y : pag.getNodes()) {
             List<Node> adjy = pag.getAdjacentNodes(y);

@@ -284,7 +284,7 @@ public final class TestGraph {
         List<Node> children = graph.getChildren(x1);
         List<Node> parents = graph.getParents(x4);
 
-        assertTrue(graph.paths().isMConnectedTo(x1, x3, new HashSet<>(), false));
+        assertTrue(!graph.paths().isMSeparatedFrom(x1, x3, new HashSet<>(), false));
 
 
         graph.removeNode(x2);

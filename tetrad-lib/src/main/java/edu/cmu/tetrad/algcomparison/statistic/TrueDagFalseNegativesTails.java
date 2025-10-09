@@ -85,7 +85,7 @@ public class TrueDagFalseNegativesTails implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.paths().isAncestorOf(x, y)) {
+                if (trueDag.paths().isAncestorOf(x, y)) {
                     Edge e = estGraph.getEdge(x, y);
 
                     if (e != null && e.getEndpoint(x) != Endpoint.TAIL) {

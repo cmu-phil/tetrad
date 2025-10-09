@@ -85,7 +85,7 @@ public class TrueDagTruePositiveDirectedPathNonancestor implements Statistic {
                 if (x == y) continue;
 
                 if (estGraph.paths().isAncestorOf(x, y)) {
-                    if (!trueGraph.paths().isAncestorOf(y, x)) {
+                    if (!trueDag.paths().isAncestorOf(y, x)) {
                         tp++;
                     }
                 }

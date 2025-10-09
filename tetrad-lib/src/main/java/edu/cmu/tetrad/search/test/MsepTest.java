@@ -135,7 +135,7 @@ public class MsepTest implements IndependenceTest {
 
         this.graph = graph;
 
-        this.ancestorMap = graph.paths().getDescendantsMap();
+        this.ancestorMap = graph.paths().getAncestorsMap();
         this._observedVars = calcVars(graph.getNodes(), keepLatents);
         this.observedVars = new ArrayList<>(_observedVars);
         this.hasLatents = false;
@@ -275,8 +275,16 @@ public class MsepTest implements IndependenceTest {
 
         if (selectionVars != null) _z.addAll(selectionVars);
 
-        if (graph != null) {
+//        if (graph != null) {
             mSeparated = !getGraph().paths().isMConnectedTo(x, y, _z, ancestorMap, isPag);
+//        } else {
+//            mSeparated = independenceFacts.isIndependent(x, y, _z);
+//        }
+
+        if (graph != null) {
+            // Use the engine’s own ancestry logic; avoids any stale/semantics drift in {ancestors,descendants} caches.
+            // This overload is what GraphScore uses too.
+            mSeparated = getGraph().paths().isMSeparatedFrom(x, y, _z, isPag);
         } else {
             mSeparated = independenceFacts.isIndependent(x, y, _z);
         }
