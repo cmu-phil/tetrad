@@ -207,14 +207,13 @@ public class FciOrient {
      * @param w                           The first node.
      * @param y                           The second node.
      * @param maxDiscriminatingPathLength The maximum length of w discriminating path.
-     * @param checkXyNonadjacency         Whether to check for EC nonadjacency.
+     * @param checkEcNonadjacency         Whether to check for EC nonadjacency.
      * @return The set of discriminating paths for &lt;w, y&gt;.
      */
-    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, Node w, Node y, int maxDiscriminatingPathLength,
-                                                                  boolean checkXyNonadjacency) {
+    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, Node w, Node y, int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
         Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
 
-        if (checkXyNonadjacency) {
+        if (checkEcNonadjacency) {
             if (!graph.isParentOf(w, y)) {
                 return discriminatingPaths;
             }
@@ -237,7 +236,7 @@ public class FciOrient {
 
             if (w == y) continue;
 
-            if (checkXyNonadjacency) {
+            if (checkEcNonadjacency) {
                 if (!graph.isParentOf(w, y)) continue;
             } else {
                 if (graph.getEndpoint(y, w) == Endpoint.ARROW) continue;
@@ -252,7 +251,7 @@ public class FciOrient {
                 continue;
             }
 
-            discriminatingPathBfs(w, v, y, graph, discriminatingPaths, maxDiscriminatingPathLength, checkXyNonadjacency);
+            discriminatingPathBfs(w, v, y, graph, discriminatingPaths, maxDiscriminatingPathLength, checkEcNonadjacency);
         }
 
         return discriminatingPaths;
@@ -812,8 +811,7 @@ public class FciOrient {
             while (true) {
                 List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, null);
 
-                List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream().map(
-                        task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS)).toList();
+                List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS)).toList();
 
                 allResults.addAll(results);
 
@@ -1246,6 +1244,27 @@ public class FciOrient {
         return true;
     }
 
+    /**
+     * R10 (Zhang 2008 FCI orientation rule).
+     * <p>
+     * ASCII version: Suppose alpha o-> gamma, beta -> gamma <- theta. Let p1 be an uncovered potentially directed
+     * (semi-directed) path from alpha to beta, and p2 be an uncovered potentially directed path from alpha to theta.
+     * Let mu be the vertex adjacent to alpha on p1 (mu could be beta), and omega be the vertex adjacent to alpha on p2
+     * (omega could be theta). If mu and omega are distinct and nonadjacent, then orient alpha o-> gamma as alpha ->
+     * gamma.
+     * <p>
+     * Unicode version (same content): Suppose α o→ γ, β → γ ← θ. Let p1 be an uncovered potentially directed
+     * (semi-directed) path from α to β, and p2 be an uncovered potentially directed path from α to θ. Let μ be the
+     * vertex adjacent to α on p1 (μ could be β), and ω be the vertex adjacent to α on p2 (ω could be θ). If μ and ω are
+     * distinct and nonadjacent, then orient α o→ γ as α → γ.
+     * <p>
+     * Notes: - "Uncovered" means every consecutive triple on the path is unshielded. - "Potentially directed /
+     * semi-directed" means no arrowhead points toward alpha along the path.
+     *
+     * @param alpha the node α
+     * @param gamma the node γ
+     * @param graph the working {@link edu.cmu.tetrad.graph.Graph}
+     */
 //    public void ruleR10(Node alpha, Node gamma, Graph graph) {
 //
 //        // We are aiming to orient the tails on certain partially oriented edges alpha o-> gamma, so we first
@@ -1314,177 +1333,53 @@ public class FciOrient {
 //            }
 //        }
 //    }
-//    public void ruleR10(Node alpha, Node gamma, Graph graph) {
-//        // Require alpha o-> gamma
-//        Edge e = graph.getEdge(alpha, gamma);
-//        if (e == null || !e.equals(Edges.partiallyOrientedEdge(alpha, gamma))) return;
-//
-//        // Need beta -> gamma <- theta (exclude alpha)
-//        final List<Node> into = new ArrayList<>(graph.getNodesInTo(gamma, Endpoint.ARROW));
-//        into.remove(alpha);
-//        if (into.size() < 2) return;
-//
-//        // Neighbors of alpha (include beta/theta if adjacent; μ/ω may be them!)
-//        final Set<Node> adjAlpha = new HashSet<>(graph.getAdjacentNodes(alpha));
-//        if (adjAlpha.isEmpty()) return;
-//
-//        // Cache for uncovered PD subproblems: (prev, curr, target) -> boolean
-//        final Map<Key3, Boolean> cache = new HashMap<>();
-//
-//        for (int i = 0; i < into.size(); i++) {
-//            for (int j = i + 1; j < into.size(); j++) {
-//                Node beta = into.get(i);
-//                Node theta = into.get(j);
-//
-//                // Ensure beta -> gamma <- theta (tails at gamma side)
-//                if (graph.getEndpoint(gamma, beta) != Endpoint.TAIL) continue;
-//                if (graph.getEndpoint(gamma, theta) != Endpoint.TAIL) continue;
-//
-//                // μ candidates for beta and ω candidates for theta are any neighbors of alpha
-//                // whose first hop satisfies uncovered + potentially-directed, and from which
-//                // an uncovered PD path reaches the respective target.
-//                List<Node> muCand = new ArrayList<>();
-//                List<Node> omegaCand = new ArrayList<>();
-//
-//                for (Node hop : adjAlpha) {
-//                    if (existsUncoveredPdPathFromAlphaVia(alpha, hop, beta, graph, cache)) muCand.add(hop);
-//                    if (existsUncoveredPdPathFromAlphaVia(alpha, hop, theta, graph, cache)) omegaCand.add(hop);
-//                }
-//
-//                if (muCand.isEmpty() || omegaCand.isEmpty()) continue;
-//
-//                // Need μ and ω distinct and nonadjacent
-//                final Set<Node> omegaSet = new HashSet<>(omegaCand);
-//                for (Node mu : muCand) {
-//                    for (Node omega : omegaSet) {
-//                        if (mu == omega) continue;
-//                        if (graph.isAdjacentTo(mu, omega)) continue;
-//
-//                        // Orient α o-> γ as α -> γ
-//                        setEndpoint(graph, gamma, alpha, Endpoint.TAIL);
-//                        if (verbose) {
-//                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(gamma, alpha)));
-//                        }
-//                        this.changeFlag = true;
-//                        return;
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-    // --- Helpers (robust to endpoint-order confusion) ---
-    private static boolean isDirected(Node from, Node to, Graph g) {
-        return g.getEndpoint(from, to) == Endpoint.TAIL
-               && g.getEndpoint(to, from) == Endpoint.ARROW;
-    }
-    private static boolean arrowheadAt(Node at, Node other, Graph g) {
-        return g.getEndpoint(other, at) == Endpoint.ARROW;
-    }
-    private static boolean noArrowheadAt(Node at, Node other, Graph g) {
-        return g.getEndpoint(other, at) != Endpoint.ARROW;
-    }
-
-    // --- Exact uncovered, potentially-directed traversal from (alpha, hop) to target ---
-    private boolean existsUncoveredPdPathFromAlphaVia(Node alpha, Node hop, Node target,
-                                                      Graph graph,
-                                                      Map<String, Boolean> memo) {
-        // First hop must have NO arrowhead at alpha
-        if (!noArrowheadAt(alpha, hop, graph)) return false;
-        if (hop == target) return true;
-        return dfsUncoveredPd(alpha, hop, target, graph, memo, new java.util.HashSet<>());
-    }
-
-    private boolean dfsUncoveredPd(Node prev, Node curr, Node target, Graph g,
-                                   Map<String, Boolean> memo,
-                                   java.util.Set<String> visited) {
-        String key = prev.getName() + "|" + curr.getName() + "|" + target.getName();
-        if (memo.containsKey(key)) return memo.get(key);
-        String edgeKey = prev.getName() + "->" + curr.getName();
-        if (!visited.add(edgeKey)) { memo.put(key, false); return false; }
-
-        try {
-            for (Node next : g.getAdjacentNodes(curr)) {
-                if (next == prev) continue;
-
-                // PD step: NO arrowhead at 'curr'
-                if (!noArrowheadAt(curr, next, g)) continue;
-
-                // Uncovered triple (prev, curr, next)
-                if (g.isAdjacentTo(prev, next)) continue;
-
-                if (next == target) { memo.put(key, true); return true; }
-
-                if (dfsUncoveredPd(curr, next, target, g, memo, visited)) {
-                    memo.put(key, true); return true;
-                }
-            }
-            memo.put(key, false); return false;
-        } finally {
-            visited.remove(edgeKey);
-        }
-    }
-
-    /**
-     * R10 (Zhang 2008 FCI orientation rule).
-     * <p>
-     * ASCII version: Suppose alpha o-> gamma, beta -> gamma <- theta. Let p1 be an uncovered potentially directed
-     * (semi-directed) path from alpha to beta, and p2 be an uncovered potentially directed path from alpha to theta.
-     * Let mu be the vertex adjacent to alpha on p1 (mu could be beta), and omega be the vertex adjacent to alpha on p2
-     * (omega could be theta). If mu and omega are distinct and nonadjacent, then orient alpha o-> gamma as alpha ->
-     * gamma.
-     * <p>
-     * Unicode version (same content): Suppose α o→ γ, β → γ ← θ. Let p1 be an uncovered potentially directed
-     * (semi-directed) path from α to β, and p2 be an uncovered potentially directed path from α to θ. Let μ be the
-     * vertex adjacent to α on p1 (μ could be β), and ω be the vertex adjacent to α on p2 (ω could be θ). If μ and ω are
-     * distinct and nonadjacent, then orient α o→ γ as α → γ.
-     * <p>
-     * Notes: - "Uncovered" means every consecutive triple on the path is unshielded. - "Potentially directed /
-     * semi-directed" means no arrowhead points toward alpha along the path.
-     *
-     * @param alpha the node α
-     * @param gamma the node γ
-     * @param graph the working {@link edu.cmu.tetrad.graph.Graph}
-     */
     public void ruleR10(Node alpha, Node gamma, Graph graph) {
+        // Require alpha o-> gamma
         Edge e = graph.getEdge(alpha, gamma);
-        if (e == null) return;
-        if (!e.equals(Edges.partiallyOrientedEdge(alpha, gamma))) return; // α ∘→ γ
+        if (e == null || !e.equals(Edges.partiallyOrientedEdge(alpha, gamma))) return;
 
-        // Collect parents of γ with definite arrows into γ
-        java.util.List<Node> parents = new java.util.ArrayList<>();
-        for (Node u : graph.getAdjacentNodes(gamma)) {
-            if (isDirected(u, gamma, graph)) parents.add(u);
-        }
-        if (parents.size() < 2) return;
+        // Need beta -> gamma <- theta (exclude alpha)
+        final List<Node> into = new ArrayList<>(graph.getNodesInTo(gamma, Endpoint.ARROW));
+        into.remove(alpha);
+        if (into.size() < 2) return;
 
-        java.util.Set<Node> adjAlpha = new java.util.HashSet<>(graph.getAdjacentNodes(alpha));
+        // Neighbors of alpha (include beta/theta if adjacent; μ/ω may be them!)
+        final Set<Node> adjAlpha = new HashSet<>(graph.getAdjacentNodes(alpha));
         if (adjAlpha.isEmpty()) return;
 
-        java.util.Map<String, Boolean> memo = new java.util.HashMap<>();
+        // Cache for uncovered PD subproblems: (prev, curr, target) -> boolean
+        final Map<Key3, Boolean> cache = new HashMap<>();
 
-        for (int i = 0; i < parents.size(); i++) {
-            for (int j = i + 1; j < parents.size(); j++) {
-                Node beta  = parents.get(i);
-                Node theta = parents.get(j);
+        for (int i = 0; i < into.size(); i++) {
+            for (int j = i + 1; j < into.size(); j++) {
+                Node beta = into.get(i);
+                Node theta = into.get(j);
 
-                // First-hop candidate sets (include beta/theta themselves if adjacent to α)
-                java.util.List<Node> muCand = new java.util.ArrayList<>();
-                java.util.List<Node> omCand = new java.util.ArrayList<>();
+                // Ensure beta -> gamma <- theta (tails at gamma side)
+                if (graph.getEndpoint(gamma, beta) != Endpoint.TAIL) continue;
+                if (graph.getEndpoint(gamma, theta) != Endpoint.TAIL) continue;
+
+                // μ candidates for beta and ω candidates for theta are any neighbors of alpha
+                // whose first hop satisfies uncovered + potentially-directed, and from which
+                // an uncovered PD path reaches the respective target.
+                List<Node> muCand = new ArrayList<>();
+                List<Node> omegaCand = new ArrayList<>();
 
                 for (Node hop : adjAlpha) {
-                    if (existsUncoveredPdPathFromAlphaVia(alpha, hop, beta,  graph, memo)) muCand.add(hop);
-                    if (existsUncoveredPdPathFromAlphaVia(alpha, hop, theta, graph, memo)) omCand.add(hop);
+                    if (existsUncoveredPdPathFromAlphaVia(alpha, hop, beta, graph, cache)) muCand.add(hop);
+                    if (existsUncoveredPdPathFromAlphaVia(alpha, hop, theta, graph, cache)) omegaCand.add(hop);
                 }
-                if (muCand.isEmpty() || omCand.isEmpty()) continue;
 
-                java.util.Set<Node> omSet = new java.util.HashSet<>(omCand);
+                if (muCand.isEmpty() || omegaCand.isEmpty()) continue;
+
+                // Need μ and ω distinct and nonadjacent
+                final Set<Node> omegaSet = new HashSet<>(omegaCand);
                 for (Node mu : muCand) {
-                    for (Node om : omSet) {
-                        if (mu == om) continue;                 // distinct
-                        if (graph.isAdjacentTo(mu, om)) continue;// nonadjacent
+                    for (Node omega : omegaSet) {
+                        if (mu == omega) continue;
+                        if (graph.isAdjacentTo(mu, omega)) continue;
 
-                        // Orient α ∘→ γ as α → γ
+                        // Orient α o-> γ as α -> γ
                         setEndpoint(graph, gamma, alpha, Endpoint.TAIL);
                         if (verbose) {
                             this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(gamma, alpha)));
@@ -1497,77 +1392,77 @@ public class FciOrient {
         }
     }
 
-//    /**
-//     * Exact check for an uncovered, potentially-directed path that starts with the pair (alpha, hop) and ends at
-//     * 'target'.
-//     * <p>
-//     * Potentially-directed constraint (from alpha to target): for each step (prev -> curr -> next) along the path, the
-//     * edge (curr, next) must NOT have an arrowhead pointing into 'curr': graph.getEndpoint(next, curr) !=
-//     * Endpoint.ARROW
-//     * <p>
-//     * Uncovered constraint: for each triple (prev, curr, next), prev and next must be nonadjacent.
-//     */
-//    private boolean existsUncoveredPdPathFromAlphaVia(Node alpha,
-//                                                      Node hop,
-//                                                      Node target,
-//                                                      Graph graph,
-//                                                      Map<Key3, Boolean> cache) {
-//        // First hop must be PD wrt alpha: no arrowhead into alpha on (alpha, hop)
-//        if (graph.getEndpoint(hop, alpha) == Endpoint.ARROW) return false;
-//
-//        // Trivial success: hop == target gives path alpha—hop == alpha—target
-//        if (hop == target) return true;
-//
-//        // DFS with memo and visited set (simple paths)
-//        return dfsUncoveredPd(alpha, hop, target, graph, cache, new HashSet<>());
-//    }
+    /**
+     * Exact check for an uncovered, potentially-directed path that starts with the pair (alpha, hop) and ends at
+     * 'target'.
+     * <p>
+     * Potentially-directed constraint (from alpha to target): for each step (prev -> curr -> next) along the path, the
+     * edge (curr, next) must NOT have an arrowhead pointing into 'curr': graph.getEndpoint(next, curr) !=
+     * Endpoint.ARROW
+     * <p>
+     * Uncovered constraint: for each triple (prev, curr, next), prev and next must be nonadjacent.
+     */
+    private boolean existsUncoveredPdPathFromAlphaVia(Node alpha,
+                                                      Node hop,
+                                                      Node target,
+                                                      Graph graph,
+                                                      Map<Key3, Boolean> cache) {
+        // First hop must be PD wrt alpha: no arrowhead into alpha on (alpha, hop)
+        if (graph.getEndpoint(hop, alpha) == Endpoint.ARROW) return false;
 
-//    private boolean dfsUncoveredPd(Node prev,
-//                                   Node curr,
-//                                   Node target,
-//                                   Graph graph,
-//                                   Map<Key3, Boolean> cache,
-//                                   Set<NodePair> visitedEdge) {
-//        Key3 key = Key3.of(prev, curr, target);
-//        Boolean memo = cache.get(key);
-//        if (memo != null) return memo;
-//
-//        // Prevent immediate back-and-forth and general cycles via edge memory
-//        NodePair edgeKey = NodePair.of(prev, curr);
-//        if (!visitedEdge.add(edgeKey)) {
-//            cache.put(key, Boolean.FALSE);
-//            return false;
-//        }
-//
-//        try {
-//            for (Node next : graph.getAdjacentNodes(curr)) {
-//                if (next == prev) continue;
-//
-//                // Potentially-directed step: no arrowhead into 'curr' on (curr,next)
-//                if (graph.getEndpoint(next, curr) == Endpoint.ARROW) continue;
-//
-//                // Uncovered triple (prev, curr, next)
-//                if (graph.isAdjacentTo(prev, next)) continue;
-//
-//                if (next == target) {
-//                    cache.put(key, Boolean.TRUE);
-//                    return true;
-//                }
-//
-//                // Recurse
-//                if (dfsUncoveredPd(curr, next, target, graph, cache, visitedEdge)) {
-//                    cache.put(key, Boolean.TRUE);
-//                    return true;
-//                }
-//            }
-//
-//            cache.put(key, Boolean.FALSE);
-//            return false;
-//        } finally {
-//            // Backtrack edge marker
-//            visitedEdge.remove(edgeKey);
-//        }
-//    }
+        // Trivial success: hop == target gives path alpha—hop == alpha—target
+        if (hop == target) return true;
+
+        // DFS with memo and visited set (simple paths)
+        return dfsUncoveredPd(alpha, hop, target, graph, cache, new HashSet<>());
+    }
+
+    private boolean dfsUncoveredPd(Node prev,
+                                   Node curr,
+                                   Node target,
+                                   Graph graph,
+                                   Map<Key3, Boolean> cache,
+                                   Set<NodePair> visitedEdge) {
+        Key3 key = Key3.of(prev, curr, target);
+        Boolean memo = cache.get(key);
+        if (memo != null) return memo;
+
+        // Prevent immediate back-and-forth and general cycles via edge memory
+        NodePair edgeKey = NodePair.of(prev, curr);
+        if (!visitedEdge.add(edgeKey)) {
+            cache.put(key, Boolean.FALSE);
+            return false;
+        }
+
+        try {
+            for (Node next : graph.getAdjacentNodes(curr)) {
+                if (next == prev) continue;
+
+                // Potentially-directed step: no arrowhead into 'curr' on (curr,next)
+                if (graph.getEndpoint(next, curr) == Endpoint.ARROW) continue;
+
+                // Uncovered triple (prev, curr, next)
+                if (graph.isAdjacentTo(prev, next)) continue;
+
+                if (next == target) {
+                    cache.put(key, Boolean.TRUE);
+                    return true;
+                }
+
+                // Recurse
+                if (dfsUncoveredPd(curr, next, target, graph, cache, visitedEdge)) {
+                    cache.put(key, Boolean.TRUE);
+                    return true;
+                }
+            }
+
+            cache.put(key, Boolean.FALSE);
+            return false;
+        } finally {
+            // Backtrack edge marker
+            visitedEdge.remove(edgeKey);
+        }
+    }
 
     /**
      * Returns the maximum path length, or -1 if unlimited.

@@ -393,9 +393,7 @@ public class TestSepsetMethods {
     @Test
     public void test6() {
 
-//        Graph graph = GraphUtils.convert("x-->a,a-->b,c-->a,w-->c,x-->w,y-->w");
-        Graph graph = GraphUtils.convert("x-->a,a-->b,c-->a,w-->c,x---w,y---w,x---y");
-//        Graph graph = GraphUtils.convert("x-->a,a-->b,c-->a,w---c,x---w,y---w");
+        Graph graph = GraphUtils.convert("x-->a,a-->b,c-->a,w-->c,x-->w,y-->w");
 
         System.out.println(graph);
 
