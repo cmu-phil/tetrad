@@ -97,8 +97,13 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         JRadioButton range =
                 new JRadioButton("<html>" + "Range:</html>");
         ButtonGroup group = new ButtonGroup();
+
+        JRadioButton copy =
+                new JRadioButton("<html>Copy:</html>");
+
         group.add(trinary);
         group.add(range);
+        group.add(copy);
 
         // continue workbench construction.
         Box b1 = Box.createVerticalBox();
@@ -153,6 +158,17 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b8.add(this.upperBoundField);
         b1.add(b8);
 
+        ;
+        Box b9 = Box.createHorizontalBox();
+        b9.add(copy);
+        b1.add(b9);
+
+        Box b10 = Box.createHorizontalBox();
+        b10.add(Box.createHorizontalStrut(25));
+        b10.add(new JLabel("Categories should be copied from parent PM (if available)"));
+        b10.add(Box.createHorizontalGlue());
+        b1.add(b10);
+
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);
 
@@ -176,6 +192,10 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
             getParams().set("bayesPmInitializationMode", "range");
             this.lowerBoundField.setEnabled(true);
             this.upperBoundField.setEnabled(true);
+        });
+
+        copy.addActionListener(e -> {
+            getParams().set("bayesPmInitializationMode", "copy");
         });
     }
 

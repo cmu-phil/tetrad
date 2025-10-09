@@ -71,7 +71,9 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         group.add(manually);
         group.add(randomly);
 
-        String string = getParams().getString("initializationMode", "randomOverwrite");
+//        String string = getParams().getString("initializationMode", "randomOverwrite");
+
+        String string = "randomOverwrite";
 
         if ("manualRetain".equals(string)) {
             manually.setSelected(true);

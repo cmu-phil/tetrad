@@ -91,11 +91,11 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
-        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
+        if (params.getString("initializationMode", "randomRetain").equals("manualRetain")) {
             this.bayesIm = new MlBayesImObs(bayesPm);
-        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
+        } else if (params.getString("initializationMode", "randomRetain").equals("randomRetain")) {
             this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
-        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
+        } else if (params.getString("initializationMode", "randomRetain").equals("randomOverwrite")) {
             this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
         }
 
