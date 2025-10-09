@@ -54,8 +54,8 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-POD",
-        command = "BOSS-POD",
+        name = "LV-Dumb",
+        command = "lv-dumb",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
@@ -77,7 +77,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents BOSS-POD algorithm.
+     * This class represents LV-Dumb algorithm.
      *
      * <p>
      * The FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
@@ -173,7 +173,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      */
     @Override
     public String getDescription() {
-        return "BOSS-POD (BOSS followed by DAG to PAG) using " + this.score.getDescription();
+        return "LV-Dumb (BOSS followed by DAG to PAG) using " + this.score.getDescription();
     }
 
     /**
