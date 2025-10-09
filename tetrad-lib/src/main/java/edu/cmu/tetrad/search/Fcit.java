@@ -336,7 +336,6 @@ public final class Fcit implements IGraphSearch {
             long start = MillisecondTimes.wallTimeMillis();
 
             Grasp grasp = getGraspSearch();
-            grasp.setReplicatingGraph(replicatingGraph);
             best = grasp.bestOrder(nodes);
             dag = grasp.getGraph(false);
 
@@ -529,7 +528,8 @@ public final class Fcit implements IGraphSearch {
 
         // The final orientation rules were applied just before this step, so this should list only
         // discriminating paths that could not be oriented by them...
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag, -1, false);
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag, -1,
+                false);
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
         for (DiscriminatingPath path : discriminatingPaths) {
             Node x = path.getX();
@@ -559,23 +559,57 @@ public final class Fcit implements IGraphSearch {
         return changed;
     }
 
-    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
-        return new HashSet<>(edges).parallelStream().
-                filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(
-                edge -> knowledge == null || !Edges.isDirectedEdge(edge)
-                        || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
-        ).map(edge -> {
-            try {
-                IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
-                if (checkResult != null) {
-                    checks.add(checkResult); // guard against null
-                    return new Result(checkResult.edge(), checkResult.cond());
-                }
-                return null;
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+//    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
+//        return new HashSet<>(edges).parallelStream().
+//                filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(
+//                edge -> knowledge == null || !Edges.isDirectedEdge(edge)
+//                        || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
+//        ).map(edge -> {
+//            try {
+//                IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
+//                if (checkResult != null) {
+//                    checks.add(checkResult); // guard against null
+//                    return new Result(checkResult.edge(), checkResult.cond());
+//                }
+//                return null;
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }).filter(Objects::nonNull).collect(Collectors.toList());
+//    }
+
+    private List<Result> findIndependenceChecksRecursive(
+            Set<Edge> edges,
+            Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge,
+            Set<IndependenceCheck> checks) {
+
+        // Decide in parallel, but only collect successes locally
+        List<IndependenceCheck> successes = edges.parallelStream()
+                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
+                .filter(edge -> knowledge == null
+                                || !Edges.isDirectedEdge(edge)
+                                || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
+                .map(edge -> {
+                    try {
+                        return findIndependenceCheckRecursive(edge, pathsByEdge, checks);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        // Commit to the shared set sequentially (no race)
+        for (IndependenceCheck ic : successes) {
+            checks.add(ic);
+        }
+
+        // Convert to Results (sequential)
+        List<Result> results = new ArrayList<>(successes.size());
+        for (IndependenceCheck ic : successes) {
+            results.add(new Result(ic.edge(), ic.cond()));
+        }
+        return results;
     }
 
     private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) throws InterruptedException {

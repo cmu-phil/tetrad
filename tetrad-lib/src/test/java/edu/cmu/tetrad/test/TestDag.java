@@ -73,7 +73,7 @@ public final class TestDag {
         assertTrue(parents.contains(x3));
         assertTrue(parents.contains(x5));
 
-        assertTrue(graph.paths().isMConnectedTo(x1, x3, Collections.EMPTY_SET, false));
+        assertTrue(!graph.paths().isMSeparatedFrom(x1, x3, Collections.EMPTY_SET, false));
 
         assertTrue(graph.paths().existsDirectedPath(x1, x4));
         assertFalse(graph.paths().existsDirectedPath(x1, x5));

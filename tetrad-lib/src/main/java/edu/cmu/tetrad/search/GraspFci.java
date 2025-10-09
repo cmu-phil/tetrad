@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -131,7 +131,10 @@ public final class GraspFci extends StarFci {
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        alg.bestOrder(variables);
+        List<Node> best = alg.bestOrder(variables);
+
+        System.out.println("Best order: " + best);
+
         Graph cpdag = alg.getGraph(true);
 
         if (isVerbose()) {

@@ -16,16 +16,18 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.LagReplicationPolicy;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.ReplicatingGraph;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -141,7 +143,6 @@ public class Grasp {
      * Represents the seed used for random number generation or shuffling.
      */
     private long seed = -1;
-    private boolean replicatingGraph = false;
 
     /**
      * Constructor for a score.
@@ -180,18 +181,6 @@ public class Grasp {
     }
 
     /**
-     * Returns the graph implied by the discovered permutation.
-     *
-     * @param cpDag True if a CPDAG should be returned, false if a DAG should be returned.
-     * @return This graph.
-     */
-//    @NotNull
-//    public Graph getGraph(boolean cpDag) {
-//        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-//        return this.scorer.getGraph(cpDag);
-//    }
-
-    /**
      * Retrieves a graph based on specified parameters.
      *
      * @param cpDag True if a CPDAG (Completed Partially Directed Acyclic Graph) should be returned.
@@ -214,8 +203,11 @@ public class Grasp {
      *         if `replicating` is true.
      */
     public Graph getGraph(boolean cpDag, boolean replicating) {
-        Graph g = this.scorer.getGraph(cpDag);
-        return new ReplicatingGraph(g, new LagReplicationPolicy());
+        if (replicating) {
+            return new ReplicatingGraph(this.scorer.getGraph(cpDag), new LagReplicationPolicy());
+        } else {
+            return this.scorer.getGraph(cpDag);
+        }
     }
 
     private List<Node> getVariables(IndependenceTest test, Score score) {
@@ -242,15 +234,27 @@ public class Grasp {
         long start = MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
+//        this.scorer = new TeyssierScorer(this.test, this.score);
+//        this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
+//        this.scorer.setKnowledge(knowledge);
+//
+//        if (this.useRaskuttiUhler) {
+//            this.scorer.setUseScore(false);
+//            this.scorer.setUseRaskuttiUhler(true);
+//        } else {
+//            this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
+//        }
+
         this.scorer = new TeyssierScorer(this.test, this.score);
-        this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
         this.scorer.setKnowledge(knowledge);
+        this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
 
         if (this.useRaskuttiUhler) {
+            // RU path uses the test; don’t use the score
             this.scorer.setUseScore(false);
-            this.scorer.setUseRaskuttiUhler(true);
         } else {
-            this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
+            // Let GRaSP use whatever Score you passed in, including GraphScore
+            this.scorer.setUseScore(this.useScore && this.score != null);
         }
 
         this.scorer.clearBookmarks();
@@ -659,16 +663,6 @@ public class Grasp {
      */
     public void setSeed(long seed) {
         this.seed = seed;
-    }
-
-    /**
-     * Sets the replicatingGraph flag to determine if graph replication is enabled.
-     *
-     * @param replicatingGraph the boolean value to set the replicatingGraph flag.
-     *                         If true, replication is enabled; otherwise, it is disabled.
-     */
-    public void setReplicatingGraph(boolean replicatingGraph) {
-        this.replicatingGraph = replicatingGraph;
     }
 }
 

@@ -1353,32 +1353,40 @@ public class Paths implements TetradSerializable {
      * Descendants do NOT include the node itself.
      */
     public Map<Node, Set<Node>> getDescendantsMap() {
-        Map<Node, Set<Node>> descendantsMap = new HashMap<>();
-        List<Node> nodes = graph.getNodes();
+        // Snapshot nodes and children once for thread-safety
+        List<Node> nodes = new ArrayList<>(graph.getNodes());
 
-        // Prepare empty sets
+        Map<Node, List<Node>> childrenSnap = new HashMap<>(nodes.size() * 2);
         for (Node n : nodes) {
-            descendantsMap.put(n, new HashSet<>());
+            childrenSnap.put(n, new ArrayList<>(graph.getChildren(n)));
         }
 
-        // For each node, traverse its directed children iteratively
-        for (Node src : nodes) {
-            ArrayDeque<Node> stack = new ArrayDeque<>(graph.getChildren(src));
+        // Each source computes its descendant set independently
+        java.util.concurrent.ConcurrentHashMap<Node, Set<Node>> out = new java.util.concurrent.ConcurrentHashMap<>();
+
+        nodes.parallelStream().forEach(src -> {
+            ArrayDeque<Node> stack = new ArrayDeque<>(childrenSnap.get(src));
+            // Thread-local structures inside the lambda
             Set<Node> seen = new HashSet<>();
+            Set<Node> desc = new HashSet<>();
 
             while (!stack.isEmpty()) {
                 Node v = stack.pop();
                 if (!seen.add(v)) continue;
-
-                descendantsMap.get(src).add(v);
-
-                // Follow only directed edges out of v
-                for (Node child : graph.getChildren(v)) {
-                    if (!seen.contains(child)) stack.push(child);
+                desc.add(v);
+                List<Node> kids = childrenSnap.get(v);
+                if (kids != null) {
+                    for (Node child : kids) {
+                        if (!seen.contains(child)) stack.push(child);
+                    }
                 }
             }
-        }
+            out.put(src, desc);
+        });
 
+        // Return a plain HashMap<HashSet> if preferred
+        Map<Node, Set<Node>> descendantsMap = new HashMap<>(out.size() * 2);
+        out.forEach((k, v) -> descendantsMap.put(k, new HashSet<>(v)));
         return descendantsMap;
     }
 
@@ -1388,21 +1396,30 @@ public class Paths implements TetradSerializable {
      * @return This map.
      */
     public Map<Node, Set<Node>> getAncestorsMap() {
-        Map<Node, Set<Node>> ancestorsMap = new HashMap<>();
+        // Build descendants once (already parallelized above)
+        Map<Node, Set<Node>> descendants = getDescendantsMap();
 
-        for (Node node : graph.getNodes()) {
-            ancestorsMap.put(node, new HashSet<>());
+        // Prepare ancestor buckets
+        Map<Node, Set<Node>> ancestors = new java.util.concurrent.ConcurrentHashMap<>(descendants.size() * 2);
+        for (Node n : descendants.keySet()) {
+            ancestors.put(n, java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap<>()));
         }
 
-        for (Node n1 : graph.getNodes()) {
-            for (Node n2 : graph.getNodes()) {
-                if (isAncestorOfAnyZ(n1, Collections.singleton(n2))) {
-                    ancestorsMap.get(n2).add(n1);
-                }
+        // Invert in parallel: src -> {desc}  becomes  for each desc: add src to ancestors(desc)
+        descendants.entrySet().parallelStream().forEach(e -> {
+            Node src = e.getKey();
+            for (Node d : e.getValue()) {
+                ancestors.get(d).add(src);
             }
-        }
+        });
 
-        return ancestorsMap;
+        // Preserve your previous REFLEXIVE behavior: each node is its own ancestor
+        ancestors.keySet().parallelStream().forEach(n -> ancestors.get(n).add(n));
+
+        // Return plain HashMap<HashSet> if you prefer
+        Map<Node, Set<Node>> out = new HashMap<>(ancestors.size() * 2);
+        ancestors.forEach((k, v) -> out.put(k, new HashSet<>(v)));
+        return out;
     }
 
     /**
@@ -1449,14 +1466,15 @@ public class Paths implements TetradSerializable {
      */
     public boolean isAncestorOfAnyZ(Node b, Set<Node> z) {
         if (z == null || z.isEmpty()) return false;
-        if (z.contains(b)) return true; // ancestor-of-self shortcut if you treat reflexive ancestry as true
 
-        // Prefer precomputed descendants map if available
-        Map<Node, Set<Node>> desc = graph.paths().getDescendantsMap();
+        // Reflexive: treat b as ancestor of itself
+        if (z.contains(b)) return true;
+
+        // Prefer a precomputed descendants map
+        Map<Node, Set<Node>> desc = getDescendantsMap(); // consider caching if called often
         Set<Node> bDesc = desc.get(b);
         if (bDesc == null || bDesc.isEmpty()) return false;
 
-        // Check if any element of z is in descendants(b)
         for (Node t : z) {
             if (bDesc.contains(t)) return true;
         }

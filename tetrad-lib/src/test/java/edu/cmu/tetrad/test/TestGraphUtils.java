@@ -241,18 +241,18 @@ public final class TestGraphUtils {
         assertFalse(graph.paths().isAncestorOf(y, a));
         assertFalse(graph.paths().isAncestorOf(x, b));
 
-        assertTrue(graph.paths().isMConnectedTo(a, y, new HashSet<>(), false));
-        assertTrue(graph.paths().isMConnectedTo(b, x, new HashSet<>(), false));
+        assertTrue(!graph.paths().isMSeparatedFrom(a, y, new HashSet<>(), false));
+        assertTrue(!graph.paths().isMSeparatedFrom(b, x, new HashSet<>(), false));
 
         // MSEP problem now with 2-cycles. TODO
-        assertTrue(graph.paths().isMConnectedTo(a, y, Collections.singleton(x), false));
-        assertTrue(graph.paths().isMConnectedTo(b, x, Collections.singleton(y), false));
+        assertTrue(!graph.paths().isMSeparatedFrom(a, y, Collections.singleton(x), false));
+        assertTrue(!graph.paths().isMSeparatedFrom(b, x, Collections.singleton(y), false));
 
-        assertTrue(graph.paths().isMConnectedTo(a, y, Collections.singleton(b), false));
-        assertTrue(graph.paths().isMConnectedTo(b, x, Collections.singleton(a), false));
+        assertTrue(!graph.paths().isMSeparatedFrom(a, y, Collections.singleton(b), false));
+        assertTrue(!graph.paths().isMSeparatedFrom(b, x, Collections.singleton(a), false));
 
-        assertTrue(graph.paths().isMConnectedTo(y, a, Collections.singleton(b), false));
-        assertTrue(graph.paths().isMConnectedTo(x, b, Collections.singleton(a), false));
+        assertTrue(!graph.paths().isMSeparatedFrom(y, a, Collections.singleton(b), false));
+        assertTrue(!graph.paths().isMSeparatedFrom(x, b, Collections.singleton(a), false));
     }
 
     @Test
@@ -277,11 +277,11 @@ public final class TestGraphUtils {
         assertTrue(graph.paths().isAncestorOf(a, c));
 
         // MSEP problem now with 2-cycles. TODO
-        assertTrue(graph.paths().isMConnectedTo(a, b, Collections.EMPTY_SET, false));
-        assertTrue(graph.paths().isMConnectedTo(a, c, Collections.EMPTY_SET, false));
+        assertTrue(!graph.paths().isMSeparatedFrom(a, b, Collections.EMPTY_SET, false));
+        assertTrue(!graph.paths().isMSeparatedFrom(a, c, Collections.EMPTY_SET, false));
         //
-        assertTrue(graph.paths().isMConnectedTo(a, c, Collections.singleton(b), false));
-        assertTrue(graph.paths().isMConnectedTo(c, a, Collections.singleton(b), false));
+        assertTrue(!graph.paths().isMSeparatedFrom(a, c, Collections.singleton(b), false));
+        assertTrue(!graph.paths().isMSeparatedFrom(c, a, Collections.singleton(b), false));
     }
 
     public void test8() {
