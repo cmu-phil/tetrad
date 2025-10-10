@@ -97,6 +97,12 @@ public class TrueDagPrecisionTails implements Statistic {
                     } else {
                         fp++;
                     }
+//
+//                    if (dag.paths().isAncestorOf(y, x)) {
+////                        System.out.println("Should be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));
+//                    } else {
+////                        System.out.println("Should be " + x + "o~~>" + y + ": " + estGraph.getEdge(x, y));
+//                    }
                 }
             }
         }

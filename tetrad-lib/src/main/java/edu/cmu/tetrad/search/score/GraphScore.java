@@ -72,8 +72,6 @@ public class GraphScore implements Score {
         this.dag = dag;
         this.variables = new ArrayList<>(dag.getNodes());
         this.variables.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-
-        System.out.println("DAG passed into graphscore = " + this.dag);
     }
 
     /**

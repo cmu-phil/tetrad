@@ -73,7 +73,7 @@ public final class TestEdgeListGraph {
         assertEquals(children, Collections.singletonList(this.x2));
         assertEquals(parents, Collections.singletonList(this.x3));
 
-        assertTrue(!this.graph.paths().isMSeparatedFrom(this.x1, this.x3, Collections.EMPTY_SET, false));
+        assertTrue(this.graph.paths().isMConnectedTo(this.x1, this.x3, Collections.EMPTY_SET, false));
         this.graph.removeNode(this.x2);
 
         // No cycles.

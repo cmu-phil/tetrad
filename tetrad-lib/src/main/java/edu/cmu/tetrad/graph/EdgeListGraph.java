@@ -484,6 +484,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return pathExists;
     }
 
+    @Override
+    public boolean isDirectedFromTo(Node x, Node y) {
+        return false;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -596,7 +601,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
      */
     public boolean isMSeparatedFrom(Node x, Node y, Set<Node> z) {
-        return new Paths(this).isMSeparatedFrom(x, y, z, false);
+        return !new Paths(this).isMConnectedTo(x, y, z, false);
     }
 
     /**

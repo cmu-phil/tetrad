@@ -741,7 +741,7 @@ public class TeyssierScorer {
         updateScores(0, this.pi.size() - 1);
     }
 
-    public void updateScores(int i1, int i2) {
+    private void updateScores(int i1, int i2) {
         for (int i = i1; i <= i2; i++) {
             this.orderHash.put(this.pi.get(i), i);
             this.scores.set(i, null);

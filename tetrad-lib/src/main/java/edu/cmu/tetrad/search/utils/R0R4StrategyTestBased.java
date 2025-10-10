@@ -1,4 +1,4 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //

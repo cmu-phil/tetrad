@@ -184,11 +184,11 @@ public class BayesImWrapper implements SessionModel, Memorable {
 
         BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
-        if (params.getString("initializationMode", "randomRetain").equals("manualRetain")) {
+        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             setBayesIm(new MlBayesIm(bayesPm));
-        } else if (params.getString("initializationMode", "randomRetain").equals("randomRetain")) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
             setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
-        } else if (params.getString("initializationMode", "randomRetain").equals("randomOverwrite")) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
             setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
         }
     }
@@ -234,11 +234,11 @@ public class BayesImWrapper implements SessionModel, Memorable {
 
         BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
 
-        if (params.getString("initializationMode", "randomRetain").equals("manualRetain")) {
+        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
             setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.MANUAL);
-        } else if (params.getString("initializationMode", "randomRetain").equals("randomRetain")) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
             setBayesIm(bayesPm, oldBayesIm, MlBayesIm.InitializationMethod.RANDOM);
-        } else if (params.getString("initializationMode", "randomRetain").equals("randomOverwrite")) {
+        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
             setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM));
         }
     }

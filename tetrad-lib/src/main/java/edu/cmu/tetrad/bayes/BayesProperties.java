@@ -148,18 +148,45 @@ public final class BayesProperties {
         this.chisq = chisq;
         this.dof = df;
 
-        // BIC for BN model under convention 2*LL - k*log N
+        // ... after computing chisq and df ...
+        if (chisq < 0 && Math.abs(chisq) < 1e-9) chisq = 0.0;
+        if (chisq < 0) throw new IllegalStateException("Negative LR statistic.");
+        if (df < 0)    throw new IllegalStateException("Negative DOF: parameter counting mismatch.");
+
+        // BIC for BN model
         int N = this.dataSet.getNumRows();
         this.bic = 2 * rModel.lik() - rModel.dof() * FastMath.log(N);
 
-        double p = StatUtils.getChiSquareP(df, chisq);
+        double p;
+        if (df == 0) {
+            // Degenerate chi-square at 0: P(Χ² >= x) is 1 if x==0, else 0
+            p = (chisq <= 1e-12) ? 1.0 : 0.0;
+        } else {
+            p = StatUtils.getChiSquareP(df, chisq);
+        }
+
+        this.chisq = chisq;
+        this.dof   = df;
 
         LikelihoodRet _ret = new LikelihoodRet();
-        _ret.p = p;
-        _ret.bic = bic;
+        _ret.p     = p;
+        _ret.bic   = bic;
         _ret.chiSq = chisq;
-        _ret.dof = df;
+        _ret.dof   = df;
         return _ret;
+
+//        // BIC for BN model under convention 2*LL - k*log N
+//        int N = this.dataSet.getNumRows();
+//        this.bic = 2 * rModel.lik() - rModel.dof() * FastMath.log(N);
+//
+//        double p = StatUtils.getChiSquareP(df, chisq);
+//
+//        LikelihoodRet _ret = new LikelihoodRet();
+//        _ret.p = p;
+//        _ret.bic = bic;
+//        _ret.chiSq = chisq;
+//        _ret.dof = df;
+//        return _ret;
     }
 
     /** Call after getLikelihoodRatioP(): chi-square statistic. */
@@ -398,49 +425,5 @@ public final class BayesProperties {
         } else {
             return null;
         }
-    }
-
-    // Debug helper: print 2x2 table and classic tests for two named binary vars.
-    private void debugIndependence2x2(String aName, String bName) {
-        int aCol = -1, bCol = -1;
-        for (int c = 0; c < dataSet.getNumColumns(); c++) {
-            String nm = dataSet.getVariable(c).getName();
-            if (nm.equals(aName)) aCol = c;
-            if (nm.equals(bName)) bCol = c;
-        }
-        if (aCol < 0 || bCol < 0) {
-            System.out.println("[indep2x2] Missing variables " + aName + " or " + bName);
-            return;
-        }
-        int[][] n = new int[2][2];
-        for (int r = 0; r < dataSet.getNumRows(); r++) {
-            int a = dataSet.getInt(r, aCol);
-            int b = dataSet.getInt(r, bCol);
-            if (0 <= a && a <= 1 && 0 <= b && b <= 1) n[a][b]++;
-        }
-        int n00 = n[0][0], n01 = n[0][1], n10 = n[1][0], n11 = n[1][1];
-        int n0_ = n00 + n01, n1_ = n10 + n11, n_0 = n00 + n10, n_1 = n01 + n11;
-        int N   = n0_ + n1_;
-        double e00 = (double) n0_ * n_0 / N;
-        double e01 = (double) n0_ * n_1 / N;
-        double e10 = (double) n1_ * n_0 / N;
-        double e11 = (double) n1_ * n_1 / N;
-
-        double chi2 = 0.0;
-        int[] obs = {n00, n01, n10, n11};
-        double[] exp = {e00, e01, e10, e11};
-        for (int i = 0; i < 4; i++) if (exp[i] > 0) {
-            double d = obs[i] - exp[i];
-            chi2 += (d * d) / exp[i];
-        }
-        double g2 = 0.0; // LR G^2 = 2 * sum n_ij * log(n_ij / e_ij)
-        for (int i = 0; i < 4; i++) if (obs[i] > 0 && exp[i] > 0) {
-            g2 += 2.0 * obs[i] * Math.log(obs[i] / exp[i]);
-        }
-        double pPearson = StatUtils.getChiSquareP(1, chi2);
-        double pLR      = StatUtils.getChiSquareP(1, g2);
-
-        System.out.printf("[indep2x2] counts=[[%d,%d],[%d,%d]]  Pearson χ²=%.4f (p=%.4f)  G²=%.4f (p=%.4f)%n",
-                n00, n01, n10, n11, chi2, pPearson, g2, pLR);
     }
 }

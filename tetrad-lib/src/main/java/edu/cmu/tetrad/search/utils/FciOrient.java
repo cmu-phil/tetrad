@@ -176,8 +176,7 @@ public class FciOrient {
      * @param checkXyNonadjacency         whether to check for EC nonadjacency
      * @return a set of discriminating paths found in the graph
      */
-    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, int maxDiscriminatingPathLength,
-                                                                  boolean checkXyNonadjacency) {
+    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, int maxDiscriminatingPathLength, boolean checkXyNonadjacency) {
         Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
 
         List<Node> nodes = graph.getNodes();

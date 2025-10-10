@@ -286,8 +286,8 @@ public final class TestSearchGraph {
                         z.add(theRest.get(value));
                     }
 
-                    boolean mConnectedTo = !graph.paths().isMSeparatedFrom(x, y, z, false);
-                    boolean mConnectedTo1 = !graph.paths().isMSeparatedFrom(y, x, z, false);
+                    boolean mConnectedTo = graph.paths().isMConnectedTo(x, y, z, false);
+                    boolean mConnectedTo1 = graph.paths().isMConnectedTo(y, x, z, false);
 
                     if (mConnectedTo != mConnectedTo1) {
                         System.out.println(x + " d connected to " + y + " given " + z);
@@ -383,7 +383,7 @@ public final class TestSearchGraph {
             _z.add(graph.getNode(name));
         }
 
-        return !graph.paths().isMSeparatedFrom(_x, _y, _z, false);
+        return graph.paths().isMConnectedTo(_x, _y, _z, false);
     }
 
     public void testAlternativeGraphs() {

@@ -77,13 +77,13 @@ public class TrueDagFalseNegativesArrows implements Statistic {
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int fn = 0;
 
-        List<Node> nodes = trueDag.getNodes();
+        List<Node> nodes = trueGraph.getNodes();
 
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!trueDag.paths().isAncestorOf(x, y)) {
+                if (!trueGraph.paths().isAncestorOf(x, y)) {
                     Edge e = estGraph.getEdge(x, y);
 
                     if (e != null && e.getEndpoint(x) != Endpoint.ARROW) {

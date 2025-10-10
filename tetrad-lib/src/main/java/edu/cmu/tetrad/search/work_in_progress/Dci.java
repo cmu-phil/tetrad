@@ -1847,7 +1847,7 @@ public class Dci {
                 System.out.println("Resolving inconsistencies... " + c + " of " + cs + " (" + p + " of " + pairs.size() + " pairs)");
                 c++;
                 Set<Node> z = new HashSet<>(set);
-                if (!allInd.paths().isMSeparatedFrom(pair.getFirst(), pair.getSecond(), z, false)) {
+                if (allInd.paths().isMConnectedTo(pair.getFirst(), pair.getSecond(), z, false)) {
                     continue;
                 }
                 combinedSepset.set(pair.getFirst(), pair.getSecond(), new HashSet<>(set));

@@ -157,7 +157,7 @@ public class TestFci {
         try {
             Graph actual = fas.search();
 
-            System.out.println("Actual = " + actual);
+            System.out.println(actual);
 
             assertEquals(expectedFasOutput, actual);
         } catch (InterruptedException e) {

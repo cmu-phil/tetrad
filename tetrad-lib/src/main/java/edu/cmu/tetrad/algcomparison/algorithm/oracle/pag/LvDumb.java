@@ -77,7 +77,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents LV-Dumb algorithm.
+     * This class represents BOSS-POD algorithm.
      *
      * <p>
      * The FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
