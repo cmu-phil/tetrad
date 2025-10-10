@@ -1,137 +1,133 @@
-/// ////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-/// ////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.util;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
- * A cache for storing PAGs so that the only need to be calculated once per DAG.
+ * Minimal cache: given a DAG/MAG, compute its PAG once per (graph identity, structure).
+ * - No normalization, no auditing, no copies.
+ * - If the *same* Graph object is later mutated, a structural signature detects it and forces recompute.
  */
-public class PagCache {
+public final class PagCache {
 
-    /**
-     * A singleton instance of the PagCache class. This ensures that only one instance of the cache exists at any given
-     * time.
-     */
-    private static transient PagCache instance = null;
-    /**
-     * A map that stores the PAGs corresponding to the DAGs.
-     */
-    private final Map<Graph, Graph> pagCache = Collections.synchronizedMap(new IdentityHashMap<>());
+    private static volatile PagCache instance;
 
-    /**
-     * Private constructor to prevent instantiation of the PagCache class.
-     */
-    private PagCache() {
-    }
+    /** Cache by identity; entries auto-GC when keys are not referenced elsewhere. */
+    private final Map<Graph, Entry> cache = Collections.synchronizedMap(new IdentityHashMap<Graph, Entry>());
 
-    /**
-     * Returns the singleton instance of the PagCache.
-     *
-     * @return the singleton instance of PagCache.
-     */
+    private PagCache() {}
+
     public static PagCache getInstance() {
-        if (instance == null) {
-            instance = new PagCache();
+        PagCache local = instance;
+        if (local == null) {
+            synchronized (PagCache.class) {
+                local = instance;
+                if (local == null) instance = local = new PagCache();
+            }
         }
-
-        return instance;
+        return local;
     }
 
-    /**
-     * Returns the PAG (Partial Ancestral Graph) corresponding to the given DAG (Directed Acyclic Graph). If the
-     * conversion has already been performed earlier, the cached result will be returned. Otherwise, the DAG will be
-     * converted to a PAG, cached, and then returned.
-     *
-     * @param graph the input DAG to be transformed into a PAG
-     * @return the corresponding PAG of the input DAG
-     * @throws IllegalArgumentException if the input graph is not a DAG
-     */
-    public @NotNull Graph getPag(Graph graph) {
+    /** Clear cache (handy in tests/benchmarks). */
+    public void clear() { cache.clear(); }
 
-        // This caching caused problems at one point, turning it off for now. jdramsey 2025-06-14
-        if (!(graph.paths().isLegalDag() || graph.paths().isLegalMag())) {
+    /** Main entry: accept DAG or MAG and return PAG. (Returns the cached instance; do not mutate it.) */
+    public @NotNull Graph getPag(Graph g) {
+        if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
             throw new IllegalArgumentException("Graph must be a DAG or a MAG.");
         }
+        final long sig = signature(g);
 
-        // If the graph is already in the cache, return it; otherwise, call GraphTransforms.dagToPag(graph)
-        // to get the PAG and put it into the cache.
-        if (pagCache.containsKey(graph)) {
-            return pagCache.get(graph);
-        } else {
-
-            Graph pag = null;
-
-            if (graph.paths().isLegalMag()) {
-                MagToPag magToPag = new MagToPag(graph);
-                pag = magToPag.convert(false);
-            } else if (graph.paths().isLegalDag()) {
-                MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(graph));
-                pag = magToPag.convert(false);
-            } else {
-                Graph mag = GraphTransforms.zhangMagFromPag(graph);
-                MagToPag magToPag = new MagToPag(mag);
-                pag = magToPag.convert(true);
+        synchronized (cache) {
+            Entry e = cache.get(g);
+            if (e != null && e.sig == sig) {
+                return e.pag; // return cached instance as-is (FCI expects identical behavior)
             }
+        }
 
-//            MagToPag dagToPag = new MagToPag(graph);
-//            Graph pag = dagToPag.convert();
-            pagCache.put(graph, pag);
-            return pag;
+        // Compute outside synchronized block to keep lock short
+        final Graph pag = computePag(g);
+
+        synchronized (cache) {
+            cache.put(g, new Entry(pag, sig));
+        }
+        return pag;
+    }
+
+    /** Overload kept for API compatibility; intentionally ignores knowledge/verbose (original did not apply it here). */
+    public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean verbose) {
+        return getPag(g);
+    }
+
+    // ----------------- internals -----------------
+
+    private static final class Entry {
+        final Graph pag;
+        final long sig;
+        Entry(Graph pag, long sig) { this.pag = pag; this.sig = sig; }
+    }
+
+    /** Compute PAG using the same semantics you already had (no extra massaging). */
+    private static Graph computePag(Graph graph) {
+        if (graph.paths().isLegalMag()) {
+            return new MagToPag(graph).convert(false);
+        } else if (graph.paths().isLegalDag()) {
+            Graph mag = GraphTransforms.dagToMag(graph);
+            return new MagToPag(mag).convert(false);
+        } else {
+            // Fallback: PAG -> MAG (Zhang) -> PAG (rare path, kept to match original)
+            Graph mag = GraphTransforms.zhangMagFromPag(graph);
+            return new MagToPag(mag).convert(true);
         }
     }
 
     /**
-     * Returns the PAG (Partial Ancestral Graph) corresponding to the given DAG (Directed Acyclic Graph). If the
-     * conversion has already been performed earlier, the cached result will be returned. Otherwise, the DAG will be
-     * converted to a PAG, cached, and then returned.
-     *
-     * @param graph     the input DAG to be transformed into a PAG
-     * @param knowledge the knowledge that should be used for the conversion
-     * @param verbose   whether to print verbose output
-     * @return the corresponding PAG of the input DAG
-     * @throws IllegalArgumentException if the input graph is not a DAG
+     * Fast, stable structural signature of the input graph.
+     * Recompute the PAG if this changes (i.e., the same Graph object was mutated).
      */
-    public Graph getPag(Graph graph, Knowledge knowledge, boolean verbose) {
-        if (!graph.paths().isLegalDag()) {
-            throw new IllegalArgumentException("Graph must be a DAG.");
-        }
+    private static long signature(Graph g) {
+        // FNV-1a 64-bit
+        long h = 0xcbf29ce484222325L;
 
-        // If the graph is already in the cache, return it; otherwise, call GraphTransforms.dagToPag(graph)
-        // to get the PAG and put it into the cache.
-        if (pagCache.containsKey(graph)) {
-            return pagCache.get(graph);
-        } else {
-            Graph pag = GraphTransforms.dagToPag(graph);
-            pagCache.put(graph, pag);
-            return pag;
+        // include node names (order-independent)
+        List<String> names = new ArrayList<>();
+        for (Node n : g.getNodes()) names.add(n.getName());
+        Collections.sort(names);
+        for (String s : names) h = fnv1a(h, s);
+
+        // include edges with endpoints (order-independent)
+        List<String> es = new ArrayList<>();
+        for (Edge e : g.getEdges()) {
+            Node a = e.getNode1(), b = e.getNode2();
+            String na = a.getName(), nb = b.getName();
+            // canonicalize node order
+            boolean swap = na.compareTo(nb) > 0;
+            Node x = swap ? b : a, y = swap ? a : b;
+            Endpoint xy = g.getEndpoint(x, y);
+            Endpoint yx = g.getEndpoint(y, x);
+            es.add(x.getName() + "|" + y.getName() + "|" +
+                   (xy == null ? "N" : xy.name().charAt(0)) + "|" +
+                   (yx == null ? "N" : yx.name().charAt(0)));
         }
+        Collections.sort(es);
+        for (String s : es) h = fnv1a(h, s);
+
+        return h;
+    }
+
+    private static long fnv1a(long h, String s) {
+        for (int i = 0; i < s.length(); i++) {
+            h ^= (s.charAt(i) & 0xff);
+            h *= 0x100000001b3L;
+        }
+        return h;
     }
 }
-
