@@ -289,7 +289,7 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
-        fciOrient.setParallel(false);
+        fciOrient.setParallel(true);
 //        fciOrient.setCompleteRuleSetUsed(true);
 //        fciOrient.setKnowledge(knowledge);
 
@@ -528,7 +528,8 @@ public final class Fcit implements IGraphSearch {
 
         // The final orientation rules were applied just before this step, so this should list only
         // discriminating paths that could not be oriented by them...
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag, -1, false);
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag,
+                -1, false);
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
         for (DiscriminatingPath path : discriminatingPaths) {
             Node x = path.getX();

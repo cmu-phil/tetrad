@@ -168,93 +168,138 @@ public class FciOrient {
         return eXY == Endpoint.CIRCLE;
     }
 
-    /**
-     * Lists all the discriminating paths in the given graph.
-     *
-     * @param graph                       the graph to analyze
-     * @param maxDiscriminatingPathLength the maximum length of a discriminating path
-     * @param checkXyNonadjacency         whether to check for EC nonadjacency
-     * @return a set of discriminating paths found in the graph
-     */
-    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, int maxDiscriminatingPathLength, boolean checkXyNonadjacency) {
-        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
+    public static Set<DiscriminatingPath> listDiscriminatingPaths(
+            Graph graph, int maxLen, boolean checkXyNonadjacency) {
 
-        List<Node> nodes = graph.getNodes();
-
-        //  *         V
-        // *         *o           * is either an arrowhead or a circle; note V *-> W is not a condition in Zhang's rule
-        // *        /  \
-        // *       v    *
-        // * X....W --> Y
-        for (Node w : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
+        Set<DiscriminatingPath> out = new HashSet<>();
+        for (Node w : graph.getNodes()) {
             for (Node y : graph.getAdjacentNodes(w)) {
-                discriminatingPaths.addAll(listDiscriminatingPaths(graph, w, y, maxDiscriminatingPathLength, checkXyNonadjacency));
+                out.addAll(listDiscriminatingPaths(graph, w, y, maxLen, checkXyNonadjacency));
             }
         }
-
-        return discriminatingPaths;
+        return out;
     }
 
-    /**
-     * Lists the discriminating paths for &lt;w, y&gt; in the graph.
-     *
-     * @param graph                       The graph.
-     * @param w                           The first node.
-     * @param y                           The second node.
-     * @param maxDiscriminatingPathLength The maximum length of w discriminating path.
-     * @param checkEcNonadjacency         Whether to check for EC nonadjacency.
-     * @return The set of discriminating paths for &lt;w, y&gt;.
-     */
-    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, Node w, Node y, int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
-        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
+    public static Set<DiscriminatingPath> listDiscriminatingPaths(
+            Graph graph, Node w, Node y, int maxLen, boolean checkEcNonadjacency) {
 
+        Set<DiscriminatingPath> out = new HashSet<>();
+
+        // Required local relationship between w and y:
         if (checkEcNonadjacency) {
-            if (!graph.isParentOf(w, y)) {
-                return discriminatingPaths;
-            }
+            // strict: only when w is a parent of y
+            if (!graph.isParentOf(w, y)) return out;
         } else {
-            if (graph.getEndpoint(y, w) == Endpoint.ARROW) {
-                return discriminatingPaths;
-            }
+            // relaxed: allow covering edge but not y -> w
+            Endpoint e_yw = graph.getEndpoint(y, w);
+            if (e_yw == Endpoint.ARROW) return out;
         }
 
-        List<Node> vnodes = graph.getAdjacentNodes(y);
-        vnodes.retainAll(graph.getAdjacentNodes(w));
+        // v must be adjacent to both w and y
+        Set<Node> vset = new HashSet<>(graph.getAdjacentNodes(w));
+        vset.retainAll(graph.getAdjacentNodes(y));
 
-        for (Node v : vnodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
+        for (Node v : vset) {
+            if (v == w || v == y) continue;
 
-            // Here we simply assert that W and Y are adjacent to V; we let the DiscriminatingPath class determine
-            // whether the path is valid.
+            // Need v o-> y to be a candidate
+            Endpoint e_yv = graph.getEndpoint(y, v); // endpoint at v on edge y—v
+            Endpoint e_vy = graph.getEndpoint(v, y); // endpoint at y on edge v—y
+            if (e_yv != Endpoint.CIRCLE) continue;   // circle at v
+            if (e_vy != Endpoint.ARROW)  continue;   // arrowhead into y
 
-            if (w == y) continue;
-
-            if (checkEcNonadjacency) {
-                if (!graph.isParentOf(w, y)) continue;
-            } else {
-                if (graph.getEndpoint(y, w) == Endpoint.ARROW) continue;
-            }
-
-            // We ignore any discriminating paths that do not require orientation.
-            if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
-                continue;
-            }
-
-            if (graph.getEndpoint(v, y) != Endpoint.ARROW) {
-                continue;
-            }
-
-            discriminatingPathBfs(w, v, y, graph, discriminatingPaths, maxDiscriminatingPathLength, checkEcNonadjacency);
+            discriminatingPathBfs(w, v, y, graph, out, maxLen, checkEcNonadjacency);
         }
 
-        return discriminatingPaths;
+        return out;
     }
+//    /**
+//     * Lists all the discriminating paths in the given graph.
+//     *
+//     * @param graph                       the graph to analyze
+//     * @param maxDiscriminatingPathLength the maximum length of a discriminating path
+//     * @param checkXyNonadjacency         whether to check for EC nonadjacency
+//     * @return a set of discriminating paths found in the graph
+//     */
+//    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, int maxDiscriminatingPathLength, boolean checkXyNonadjacency) {
+//        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
+//
+//        List<Node> nodes = graph.getNodes();
+//
+//        //  *         V
+//        // *         *o           * is either an arrowhead or a circle; note V *-> W is not a condition in Zhang's rule
+//        // *        /  \
+//        // *       v    *
+//        // * X....W --> Y
+//        for (Node w : nodes) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                break;
+//            }
+//
+//            for (Node y : graph.getAdjacentNodes(w)) {
+//                discriminatingPaths.addAll(listDiscriminatingPaths(graph, w, y, maxDiscriminatingPathLength, checkXyNonadjacency));
+//            }
+//        }
+//
+//        return discriminatingPaths;
+//    }
+
+//    /**
+//     * Lists the discriminating paths for &lt;w, y&gt; in the graph.
+//     *
+//     * @param graph                       The graph.
+//     * @param w                           The first node.
+//     * @param y                           The second node.
+//     * @param maxDiscriminatingPathLength The maximum length of w discriminating path.
+//     * @param checkEcNonadjacency         Whether to check for EC nonadjacency.
+//     * @return The set of discriminating paths for &lt;w, y&gt;.
+//     */
+//    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, Node w, Node y, int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
+//        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
+//
+//        if (checkEcNonadjacency) {
+//            if (!graph.isParentOf(w, y)) {
+//                return discriminatingPaths;
+//            }
+//        } else {
+//            if (graph.getEndpoint(y, w) == Endpoint.ARROW) {
+//                return discriminatingPaths;
+//            }
+//        }
+//
+//        List<Node> vnodes = graph.getAdjacentNodes(y);
+//        vnodes.retainAll(graph.getAdjacentNodes(w));
+//
+//        for (Node v : vnodes) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                break;
+//            }
+//
+//            // Here we simply assert that W and Y are adjacent to V; we let the DiscriminatingPath class determine
+//            // whether the path is valid.
+//
+//            if (w == y) continue;
+//
+//            if (checkEcNonadjacency) {
+//                if (!graph.isParentOf(w, y)) continue;
+//            } else {
+//                if (graph.getEndpoint(y, w) == Endpoint.ARROW) continue;
+//            }
+//
+//            // We ignore any discriminating paths that do not require orientation.
+//            if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
+//                continue;
+//            }
+//
+//            if (graph.getEndpoint(v, y) != Endpoint.ARROW) {
+//                continue;
+//            }
+//
+//            discriminatingPathBfs(w, v, y, graph, discriminatingPaths, maxDiscriminatingPathLength, checkEcNonadjacency);
+//        }
+//
+//        return discriminatingPaths;
+//    }
 
     /**
      * A method to search "back from w" to find w discriminating path. It is called with w reachability list (first
