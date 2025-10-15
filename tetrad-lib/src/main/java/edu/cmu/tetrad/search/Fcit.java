@@ -626,15 +626,15 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> S = new HashSet<>(B);
                 Set<Node> C = GraphUtils.asSet(cChoice, common);
 
-                // Skip if any c ∈ C is a definite collider x -> c <- y
-                boolean killsDefCollider = false;
+                // We don't want to condition on a known collider.
+                boolean skip = false;
                 for (Node c : C) {
                     if (this.pag.isDefCollider(x, c, y)) {
-                        killsDefCollider = true;
+                        skip = true;
                         break;
                     }
                 }
-                if (killsDefCollider) continue;
+                if (skip) continue;
 
                 S.removeAll(C);
 
