@@ -1393,6 +1393,18 @@ public class Comparison implements TetradSerializable {
 
             Graph[] est = new Graph[numGraphTypes];
 
+//            if (trueGraph.paths().isLegalDag()) {
+//                System.out.println("--> precision: trueGraph is a legal dag");
+//            }
+//
+//            if (trueGraph.paths().isLegalCpdag()) {
+//                System.out.println("--> precision: trueGraph is a legal cpdag");
+//            }
+//
+//            if (trueGraph.paths().isLegalPag()) {
+//                System.out.println("--> precision: trueGraph is a legal pag");
+//            }
+
             Graph comparisonGraph;
 
             if (this.comparisonGraph == ComparisonGraph.true_DAG) {

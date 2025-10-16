@@ -1,4 +1,4 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.utils;
 
@@ -37,7 +37,7 @@ import java.util.Set;
  * @author peterspirtes
  * @version $Id: $Id
  */
-public final class MagToPag {
+public final class MagToPagLvDumb {
 
     /**
      * The MAG to be converted.
@@ -55,12 +55,7 @@ public final class MagToPag {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    /**
-     * Represents the maximum length of discriminating paths to be considered during MAG to PAG conversion. A value of
-     * -1 indicates that all possible discriminating paths should be considered without any specific length constraint.
-     * This value can be adjusted to limit the depth of analysis based on the specific use case.
-     */
-    private int maxDiscriminatingPathLength = -1;
+    private int depth = -1;
 
 
     /**
@@ -68,7 +63,7 @@ public final class MagToPag {
      *
      * @param mag a {@link Graph} object
      */
-    public MagToPag(Graph mag) {
+    public MagToPagLvDumb(Graph mag) {
         this.mag = new EdgeListGraph(mag);
     }
 
@@ -180,9 +175,8 @@ public final class MagToPag {
         FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
-        fciOrient.setMaxDiscriminatingPathLength(-1);
+        fciOrient.setMaxDiscriminatingPathLength(4);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
 
         for (Node y : pag.getNodes()) {
             List<Node> adjy = pag.getAdjacentNodes(y);
@@ -200,11 +194,60 @@ public final class MagToPag {
             }
         }
 
-//        fciOrient.ruleR0(pag, new HashSet<>());
-        fciOrient.finalOrientation(pag);
+        finalOrientationSpecial(pag, fciOrient);
 
         return pag;
     }
+
+    TetradLogger logger = TetradLogger.getInstance();
+
+    private void finalOrientationSpecial(Graph graph, FciOrient fciOrient) {
+        fciOrient.changeFlag = true;
+
+//        this.changeFlag = true;
+        boolean firstTime = true;
+
+        while (fciOrient.changeFlag && !Thread.currentThread().isInterrupted()) {
+            fciOrient.changeFlag = false;
+            fciOrient.rulesR1R2cycle(graph);
+            fciOrient.ruleR3(graph);
+
+            // R4 requires an arrow orientation.
+            if (fciOrient.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
+                fciOrient.ruleR4(graph);
+                firstTime = false;
+            }
+
+            if (this.verbose) {
+                logger.log("Epoch");
+            }
+        }
+
+        if (isCompleteRuleSetUsed()) {
+            // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
+            // R5 once.
+//            fciOrient.ruleR5(graph);
+
+            // Now, by a further remark on page 102, we apply R6,R7 as many times
+            // as possible.
+            fciOrient.changeFlag = true;
+
+            while (fciOrient.changeFlag && !Thread.currentThread().isInterrupted()) {
+                fciOrient.changeFlag = false;
+//                fciOrient.ruleR6(graph);
+//                fciOrient.ruleR7(graph);
+            }
+
+            // Finally, we apply R8-R10 as many times as possible.
+            fciOrient.changeFlag = true;
+
+            while (fciOrient.changeFlag && !Thread.currentThread().isInterrupted()) {
+                fciOrient.changeFlag = false;
+                fciOrient.rulesR8R9R10(graph);
+            }
+        }
+    }
+
 
     /**
      * <p>Getter for the field <code>knowledge</code>.</p>
@@ -255,10 +298,6 @@ public final class MagToPag {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
-        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 }
 

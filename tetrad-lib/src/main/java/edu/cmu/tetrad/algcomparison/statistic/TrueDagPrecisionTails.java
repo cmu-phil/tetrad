@@ -81,6 +81,18 @@ public class TrueDagPrecisionTails implements Statistic {
         int tp = 0;
         int fp = 0;
 
+//        if (trueGraph.paths().isLegalDag()) {
+//            System.out.println("--> precision: trueGraph is a legal dag");
+//        }
+//
+//        if (trueGraph.paths().isLegalCpdag()) {
+//            System.out.println("--> precision: trueGraph is a legal cpdag");
+//        }
+//
+//        if (trueGraph.paths().isLegalPag()) {
+//            System.out.println("--> precision: trueGraph is a legal pag");
+//        }
+
         List<Node> nodes = estGraph.getNodes();
 
         for (Node x : nodes) {

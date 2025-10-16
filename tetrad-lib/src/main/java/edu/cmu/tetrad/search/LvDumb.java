@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.List;
@@ -65,8 +66,21 @@ public final class LvDumb implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    private int depth = -1;
+    /**
+     * Indicates whether the complete final FCI rule set (Zhang 2008) should be used during the search.
+     * If set to true, the algorithm will utilize the complete ruleset as defined by Zhang (2008).
+     * Otherwise, it will default to the Spirtes ruleset from "Causation, Prediction, and Search" (2000).
+     */
     private boolean completeRuleSetUsed = true;
+    /**
+     * Represents the maximum length of a discriminating path that will be considered during the search process.
+     * A discriminating path is a sequence of edges used in the algorithm to make causal inferences, and this
+     * value imposes a limit on its length to restrict computation to a manageable level.
+     *
+     * A value of -1 indicates that no limit is set, meaning the algorithm may consider discriminating paths
+     * of any length. Setting this value to a positive integer constrains the maximum length of such paths.
+     */
+    private int maxDiscriminatingPathLength = -1;
 
     /**
      * BOSS-POD constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
@@ -124,13 +138,18 @@ public final class LvDumb implements IGraphSearch {
             TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
         }
 
-//        MagToPag dagToPag = new MagToPag(GraphTransforms.dagToMag(dag));
-//        dagToPag.setVerbose(verbose);
-//        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-//        dagToPag.setKnowledge(knowledge);
-//        Graph pag = dagToPag.convert(true);
+        Graph mag = GraphTransforms.dagToMag(dag);
+        MagToPag dagToPag = new MagToPag(mag);
+        dagToPag.setVerbose(verbose);
+        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
+        dagToPag.setKnowledge(knowledge);
+        dagToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        Graph pag = dagToPag.convert(true);
 
-        Graph pag = GraphTransforms.dagToPag(dag);
+
+//        Graph pag = new MagToPag(mag).convert(false);
+
+//        Graph pag = GraphTransforms.dagToPag(dag);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished calculating PAG from CPDAG.");
@@ -196,6 +215,10 @@ public final class LvDumb implements IGraphSearch {
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
+    }
+
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 }
 

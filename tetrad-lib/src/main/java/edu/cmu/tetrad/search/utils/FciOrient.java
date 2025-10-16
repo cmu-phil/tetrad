@@ -270,7 +270,7 @@ public class FciOrient {
                 LinkedList<Node> colliderPath = new LinkedList<>(pathToT);
                 colliderPath.add(t); // interior nodes between v and x (t becomes interior once we step to x)
 
-                if (maxDiscriminatingPathLength != -1 && colliderPath.size() > maxDiscriminatingPathLength) {
+                if (maxDiscriminatingPathLength != -1 && colliderPath.size() + 1 > maxDiscriminatingPathLength) {
                     continue;
                 }
 
@@ -1369,8 +1369,8 @@ public class FciOrient {
      * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
-        if (maxDiscriminatingPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
+        if (!(maxDiscriminatingPathLength == -1 || maxDiscriminatingPathLength >= 4)) {
+            throw new IllegalArgumentException("maxDiscriminatingPathLength must be -1 (unlimited) or >= 4: " + maxDiscriminatingPathLength);
         }
 
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;

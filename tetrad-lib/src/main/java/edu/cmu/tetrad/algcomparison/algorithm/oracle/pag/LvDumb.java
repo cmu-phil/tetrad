@@ -141,7 +141,9 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
+        // DAG to PAG
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -202,6 +204,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
 
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
+        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
 
         // General
         params.add(Params.TIME_LAG);
