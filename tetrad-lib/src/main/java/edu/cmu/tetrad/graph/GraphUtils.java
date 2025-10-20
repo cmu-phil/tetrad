@@ -372,7 +372,7 @@ public final class GraphUtils {
             buf.append(path.getFirst().toString());
         }
 
-        String conditioningSymbol = "â";
+        String conditioningSymbol = "\u2714";
 
         if (conditioningVars.contains(path.getFirst())) {
             buf.append(conditioningSymbol);

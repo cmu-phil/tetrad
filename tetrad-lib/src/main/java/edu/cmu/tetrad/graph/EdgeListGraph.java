@@ -486,7 +486,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     @Override
     public boolean isDirectedFromTo(Node x, Node y) {
-        return false;
+        Edge edge = getEdge(x, y);
+        return edge != null
+               && edge.getEndpoint(x) == Endpoint.TAIL
+               && edge.getEndpoint(y) == Endpoint.ARROW;
     }
 
     /**

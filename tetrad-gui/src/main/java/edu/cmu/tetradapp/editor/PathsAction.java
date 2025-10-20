@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,12 +16,13 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
@@ -659,6 +660,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "All Paths",
                 "Adjacents",
                 "Adjustment Sets",
+                "Recursive Blocking Sets",
                 "Amenable paths",
                 "Backdoor paths"
         });
@@ -831,6 +833,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     adjacentNodes(graph, textArea, nodes1, nodes2);
                 } else if ("Adjustment Sets".equals(method)) {
                     adjustmentSets(graph, textArea, nodes1, nodes2);
+                } else if ("Recursive Blocking Sets".equals(method)) {
+                    recursiveBlockingSets(graph, textArea, nodes1, nodes2);
                 } else if ("Cycles".equals(method)) {
                     allCyclicPaths(graph, textArea, nodes1, nodes2);
                 } else {
@@ -844,7 +848,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
 
     private void addConditionNote(JTextArea textArea) {
-        String conditioningSymbol = "â";
+        String conditioningSymbol = "\u2714";
         textArea.append("\n" + conditioningSymbol + " indicates that the marked variable is in the conditioning set; (L) that L is latent.");
     }
 
@@ -989,7 +993,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             mpdag = true;
         } else if (graph.paths().isLegalMag()) {
             mag = true;
-        } else if (!graph.paths().isLegalPag()) {
+        } else if (graph.paths().isLegalPag()) {
             pag = true;
         }
 
@@ -1488,6 +1492,96 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         if (!found) {
             textArea.append("\n\nNo adjustment sets found.");
         }
+    }
+
+    private void recursiveBlockingSets(Graph graph, JTextArea textArea,
+                                       List<Node> nodes1, List<Node> nodes2) {
+        textArea.setText("""
+            A recursive blocking (RB) set for nodes x and y is a set of variables that blocks all 
+            non-inducing paths between x and y (it may leave a direct edge x — y or other inducing paths unblocked).
+
+            • If (x,y) is amenable (i.e., there exist semidirected paths from x to y that begin with a visible edge 
+              out of x), an RB set functions as an ADJUSTMENT SET: it blocks all non-causal/backdoor paths while leaving all 
+              amenable (potentially causal) paths unblocked.
+
+            • If (x,y) is not amenable, an RB set blocks non-inducing paths but is not guaranteed to be a valid 
+              adjustment set.
+
+            Tip: To assess amenability, select “Amenable paths” above. All amenable paths should remain unblocked; 
+            backdoor paths should be blocked.
+            """);
+
+        boolean anyFound = false;
+        int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
+
+        for (Node node1 : nodes1) {
+            for (Node node2 : nodes2) {
+                if (node1 == node2) continue;
+
+                Set<Node> blocking1 = null;
+                Set<Node> blocking2 = null;
+                try {
+                    blocking1 = RecursiveBlocking.blockPathsRecursively(
+                            graph, node1, node2, conditioningSet, Set.of(), maxDistanceFromEndpoint);
+                    blocking2 = RecursiveBlocking.blockPathsRecursively(
+                            graph, node2, node1, conditioningSet, Set.of(), maxDistanceFromEndpoint);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                textArea.append("\n\nRecursive blocking sets for <" + node1 + ", " + node2 + ">:\n");
+
+                textArea.append("\nFrom " + node1 + " to " + node2 + ":");
+                textArea.append(blocking1 == null ? "\n    --NONE--" : "\n    " + blocking1);
+
+                textArea.append("\n\nFrom " + node2 + " to " + node1 + ":");
+                textArea.append(blocking2 == null ? "\n    --NONE--" : "\n    " + blocking2);
+
+                boolean foundPair = (blocking1 != null) || (blocking2 != null);
+                anyFound |= foundPair;
+
+                // Determine edge & amenability status
+                boolean hasEdge = (graph.getEdge(node1, node2) != null);
+                boolean amenable =
+                        hasAmenablePaths(graph, node1, node2) || hasAmenablePaths(graph, node2, node1);
+
+                if (foundPair && hasEdge && amenable) {
+                    textArea.append("\n\nResult: The pair <" + node1 + ", " + node2 + "> is amenable; the above RB set(s) " +
+                                    "serve as ADJUSTMENT SETS for estimating the total effect.");
+                } else if (foundPair && hasEdge) {
+                    textArea.append("\n\nResult: An edge exists between " + node1 + " and " + node2 +
+                                    ", but amenability is not established. The RB set(s) block non-inducing paths,\n " +
+                                    "but are not guaranteed to be valid adjustment sets.");
+                } else if (foundPair) {
+                    // No edge: separating set(s)
+                    String indep = " _||_ ";
+                    textArea.append("\n\nResult: No edge between " + node1 + " and " + node2 +
+                                    ". The RB set(s) are separating sets:\n    " +
+                                    node1 + indep + node2 + " | " + (blocking1 == null ? "{}" : blocking1) + " and\n    " +
+                                    node1 + indep + node2 + " | " + (blocking2 == null ? "{}" : blocking2));
+                } else {
+                    textArea.append("\n\nResult: No RB sets found for this pair under the current search limits.");
+                }
+            }
+        }
+
+        if (!anyFound) {
+            textArea.append("\n\nNo recursive blocking sets found under the current parameters.");
+        }
+    }
+
+    /** Returns true if there exist amenable paths (Perković) from x to y in this graph. */
+    private boolean hasAmenablePaths(Graph graph, Node x, Node y) {
+        int L = parameters.getInt("pathsMaxLengthAdjustment");
+        // Prefer a PAG-aware amenable routine if available, else fall back to MPDAG/MAG version.
+        if (graph.paths().isLegalPag()) {
+            List<List<Node>> aps = graph.paths().amenablePathsPag(x, y, L);
+            return aps != null && !aps.isEmpty();
+        } else if (graph.paths().isLegalMpdag() || graph.paths().isLegalMag()) {
+            List<List<Node>> aps = graph.paths().amenablePathsMpdagMag(x, y, L);
+            return aps != null && !aps.isEmpty();
+        }
+        return false;
     }
 
     /**
