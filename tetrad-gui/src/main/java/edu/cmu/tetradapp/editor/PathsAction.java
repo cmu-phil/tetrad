@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.RecursiveBlocking;
+import edu.cmu.tetrad.search.RecursiveAdjustment;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
@@ -583,6 +584,49 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         return selectionBox;
     }
 
+    // Build a mask that tells RB "never add these to Z" (treat as latent for this run).
+    static Set<Node> buildLatentMaskForTotalEffect(Graph graph,
+                                                   Node X, Node Y,
+                                                   Collection<List<Node>> amenablePaths,
+                                                   Set<Node> containing,            // seed Z (may be empty)
+                                                   boolean includeDescendantsOfX) { // Tier-B toggle
+        Set<Node> mask = new HashSet<>();
+
+        // --- Tier A: interior non-colliders along amenable X→Y paths ---
+        for (List<Node> p : amenablePaths) {
+            if (p.size() < 3) continue; // no interior nodes on length-2 path X–Y
+            for (int i = 1; i < p.size() - 1; i++) {
+                Node a = p.get(i - 1), b = p.get(i), c = p.get(i + 1);
+                // Mask ONLY if b is a definite non-collider on this triple
+                if (!graph.isDefCollider(a, b, c)) {
+                    mask.add(b);
+                }
+            }
+        }
+
+        // --- Tier B (optional): Descendants of X (measured only) ---
+        if (includeDescendantsOfX) {
+            Map<Node, Set<Node>> descMap = graph.paths().getDescendantsMap(); // recompute per run
+            Set<Node> descX = descMap.getOrDefault(X, Collections.emptySet());
+            for (Node d : descX) {
+                if (d != null && d.getNodeType() == NodeType.MEASURED) {
+                    mask.add(d);
+                }
+            }
+        }
+
+        // --- Sanitize: remove endpoints, latents, and anything the user forced into Z ---
+        mask.remove(X);
+        mask.remove(Y);
+        if (containing != null) {
+            mask.removeAll(containing);
+        }
+        // Keep mask to measured nodes only; true latents are already handled by RB
+        mask.removeIf(n -> n == null || n.getNodeType() != NodeType.MEASURED);
+
+        return mask;
+    }
+
     /**
      * Performs the action when an event occurs.
      *
@@ -661,6 +705,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Adjacents",
                 "Adjustment Sets",
                 "Recursive Blocking Sets",
+                "Recursive Adjustment Sets",
                 "Amenable paths",
                 "Backdoor paths"
         });
@@ -798,7 +843,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         return buttonPanel;
     }
 
-
     /**
      * Updates the text area based on the selected method.
      *
@@ -835,6 +879,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     adjustmentSets(graph, textArea, nodes1, nodes2);
                 } else if ("Recursive Blocking Sets".equals(method)) {
                     recursiveBlockingSets(graph, textArea, nodes1, nodes2);
+                } else if ("Recursive Adjustment Sets".equals(method)) {
+                    recursiveAdjustmentSets(graph, textArea, nodes1, nodes2);
                 } else if ("Cycles".equals(method)) {
                     allCyclicPaths(graph, textArea, nodes1, nodes2);
                 } else {
@@ -845,7 +891,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             }
         };
     }
-
 
     private void addConditionNote(JTextArea textArea) {
         String conditioningSymbol = "\u2714";
@@ -926,7 +971,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             textArea.append("\n\nNo directed paths found.");
         }
     }
-
 
     /**
      * Appends all semidirected paths from nodes in list nodes1 to nodes in list nodes2 to the given text area. A
@@ -1494,26 +1538,118 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
+    private void recursiveAdjustmentSets(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+        textArea.setText("""     
+                An adjustment set is a set of nodes that blocks all paths that can't be causal while leaving
+                all causal paths unblocked. In particular, all confounders of the source and target will be
+                blocked. By conditioning on an adjustment set (if one exists) one can estimate the total 
+                effect of a source on a target. We look for adjustment sets here using a masked version of
+                the recursive blocking set algorithm.
+                
+                To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
+                into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
+                dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are 
+                blocked, the set is not an adjustment set. Also select "Backdoor paths" from the dropdown. 
+                All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
+                set is not an adjustment set.
+                """);
+
+        boolean found = false;
+
+        for (Node node1 : nodes1) {
+            for (Node node2 : nodes2) {
+                int maxNumSet = parameters.getInt("pathsMaxNumSets");
+                int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
+                int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
+                int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
+
+                List<List<Node>> amenablePaths;
+
+                if (graph.paths().isLegalMpdag() || graph.paths().isLegalMag()) {
+                    amenablePaths = graph.paths().amenablePathsMpdagMag(node1, node2, -1);
+                } else if (graph.paths().isLegalPag()) {
+                    amenablePaths = graph.paths().amenablePathsPag(node1, node2, -1);
+                } else {
+                    throw new IllegalArgumentException("Graph must be a legal MPDAG, MAG, or PAG");
+                }
+
+                Set<Node> latentMask;// = buildLatentMaskForTotalEffect(graph, node1, node2, amenablePaths, Collections.emptySet(), true);
+
+//                Set<Node> latentMask = /* build from amenable-path non-colliders, Desc(X), etc. */;
+                Set<Node> adjustment = null;
+                try {
+                    // Step 1. Build the latent mask (forbidden nodes on amenable paths)
+                    latentMask = RecursiveAdjustment.buildAmenableNoncolliderMask(
+                            graph, node1, node2, amenablePaths, Collections.emptySet()
+                    );
+
+                    // Step 2. Run the recursive adjustment search
+                    adjustment = RecursiveAdjustment.findAdjustmentSet(
+                            graph,
+                            node1,
+                            node2,
+                            /* seedZ        */ Collections.emptySet(),
+                            /* notFollowed  */ Collections.emptySet(),
+                            /* maxPathLength */ -1,
+                            latentMask
+                    );
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+//                List<Set<Node>> adjustments;
+//
+//                try {
+//                    adjustments = graph.paths().adjustmentSets(node1, node2, maxNumSet,
+//                            maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment);
+//                } catch (Exception e) {
+//
+//                    // A message is returned, which we are not printing.
+//                    continue;
+//                }
+
+                textArea.append("\nLatent mask = " + latentMask + "\n");
+
+                textArea.append("\nAdjustment set for " + node1 + " ~~> " + node2 + ":\n");
+
+                if (adjustment == null) {
+                    textArea.append("\n    --NONE--");
+                    continue;
+                }
+
+//                for (Set<Node> adjustment : adjustments) {
+                textArea.append("\n    " + adjustment);
+//                }
+
+                found = true;
+            }
+        }
+
+        if (!found) {
+            textArea.append("\n\nNo adjustment sets found.");
+        }
+    }
+
     private void recursiveBlockingSets(Graph graph, JTextArea textArea,
                                        List<Node> nodes1, List<Node> nodes2) {
         textArea.setText("""
-        A recursive blocking (RB) set for nodes x and y is a set of variables that blocks all 
-        non-inducing paths between x and y (it may leave a direct edge x — y or other inducing paths unblocked).
-
-        • If there is a direct edge x → y, the RB set isolates the EDGE-SPECIFIC (LOCAL) EFFECT associated 
-          with that edge. It blocks all alternative non-inducing paths from x to y while leaving the edge 
-          itself unblocked.
-
-        • If multiple inducing paths exist between x and y (for example, due to latent confounding), the RB 
-          set will leave those open as well. In such cases, it does not correspond to a unique adjustment set 
-          or direct-effect estimate.
-
-        • Only in special cases—when x and y are amenable and there is a unique directed causal route from 
-          x to y—will an RB set coincide with an ADJUSTMENT SET for estimating the total effect of x on y.
-
-        Tip: To assess amenability, select “Amenable paths” above. All amenable paths (those that can be causal) 
-        should remain unblocked; backdoor paths should be blocked.
-        """);
+                A recursive blocking (RB) set for nodes x and y is a set of variables that blocks all 
+                non-inducing paths between x and y (it may leave a direct edge x — y or other inducing paths unblocked).
+                
+                • If there is a direct edge x → y, the RB set isolates the EDGE-SPECIFIC (LOCAL) EFFECT associated 
+                  with that edge. It blocks all alternative non-inducing paths from x to y while leaving the edge 
+                  itself unblocked.
+                
+                • If multiple inducing paths exist between x and y (for example, due to latent confounding), the RB 
+                  set will leave those open as well. In such cases, it does not correspond to a unique adjustment set 
+                  or direct-effect estimate.
+                
+                • Only in special cases—when x and y are amenable and there is a unique directed causal route from 
+                  x to y—will an RB set coincide with an ADJUSTMENT SET for estimating the total effect of x on y.
+                
+                Tip: To assess amenability, select “Amenable paths” above. All amenable paths (those that can be causal) 
+                should remain unblocked; backdoor paths should be blocked.
+                """);
 
         boolean anyFound = false;
         int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
@@ -1573,8 +1709,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             textArea.append("\n\nNo recursive blocking sets found under the current parameters.");
         }
     }
-    
-    /** Returns true if there exist amenable paths (Perković) from x to y in this graph. */
+
+    /**
+     * Returns true if there exist amenable paths (Perković) from x to y in this graph.
+     */
     private boolean hasAmenablePaths(Graph graph, Node x, Node y) {
         int L = parameters.getInt("pathsMaxLengthAdjustment");
         // Prefer a PAG-aware amenable routine if available, else fall back to MPDAG/MAG version.
