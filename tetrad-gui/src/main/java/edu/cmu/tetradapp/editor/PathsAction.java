@@ -1574,93 +1574,80 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         boolean found = false;
 
+        final int maxNumSet = parameters.getInt("pathsMaxNumSets");
+        final int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
+
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
                 // Skip degenerate X ~~> X requests.
-                if (node1 == null || node2 == null || node1 == node2) {
-                    continue;
-                }
+                if (node1 == null || node2 == null || node1 == node2) continue;
 
-                int maxNumSet = parameters.getInt("pathsMaxNumSets");
-                int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
+                // Library entry point
+                var paths = graph.paths();
 
-                // Collect amenable (causal) paths X ~~> Y
-                List<List<Node>> amenablePaths;
-                if (graph.paths().isLegalMpdag() || graph.paths().isLegalMag()) {
-                    amenablePaths = graph.paths().amenablePathsMpdagMag(node1, node2, -1);
-                } else if (graph.paths().isLegalPag()) {
-                    amenablePaths = graph.paths().amenablePathsPag(node1, node2, -1);
-                } else {
-                    throw new IllegalArgumentException("Graph must be a legal MPDAG, MAG, or PAG");
-                }
+                // Case split based on amenability (library check)
+                boolean amenable = paths.hasAmenablePaths(node1, node2, -1);
 
-                try {
-                    // === Case A: No amenable paths ===
-                    if (amenablePaths.isEmpty()) {
-                        textArea.append("\n\nCandidate separating set(s) for " + node1 + " ~~> " + node2 + ":\n");
-                        textArea.append("No amenable (causal) paths exist between " + node1 + " and " + node2 + ".\n");
-                        textArea.append("We list candidate separating sets that block all backdoor (non-causal) paths.\n");
-
-                        // IMPORTANT: use an EMPTY mask in the no-amenable case.
-                        Set<Node> emptyMask = Collections.emptySet();
-
-                        List<Set<Node>> candSepSets = RecursiveAdjustment.findAdjustmentSets(
-                                graph,
-                                node1,
-                                node2,
-                                /* seedZ        */ Collections.emptySet(),
-                                /* notFollowed  */ Collections.emptySet(),
-                                /* maxPathLength*/ -1,
-                                emptyMask,
-                                /* maxSets      */ maxNumSet <= 0 ? -1 : maxNumSet,
+                if (amenable) {
+                    // True adjustment-set search via recursive algorithm
+                    List<Set<Node>> adj;
+                    try {
+                        adj = paths.recursiveAdjustment(
+                                node1, node2,
+                                maxNumSet, maxLengthAdjustment,
                                 /* minimizeEach */ false
                         );
-
-                        textArea.append("Latent mask = " + emptyMask + "\n");
-
-                        if (candSepSets.isEmpty()) {
-                            textArea.append("\n    --NONE--");
-                        } else {
-                            for (Set<Node> z : candSepSets) {
-                                textArea.append("\n    " + z);
-                            }
-                            found = true;
-                        }
-                        // Continue to next pair; we intentionally do NOT try “adjustment sets” here.
+                    } catch (Exception e) {
+                        // Be defensive; show a graceful message and continue.
+                        textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
+                        textArea.append("    --ERROR running recursive adjustment search--");
                         continue;
                     }
 
-                    // === Case B: Amenable paths exist → True adjustment-set search ===
-                    // Build the latent mask (forbid interior non-colliders on amenable paths; also forbid Desc(X))
-                    Set<Node> latentMask = buildLatentMaskForTotalEffect(
-                            graph, node1, node2, amenablePaths, Collections.emptySet(), true
-                    );
-
-                    List<Set<Node>> adjustmentSets = RecursiveAdjustment.findAdjustmentSets(
-                            graph,
-                            node1,
-                            node2,
-                            /* seedZ        */ Collections.emptySet(),
-                            /* notFollowed  */ Collections.emptySet(),
-                            /* maxPathLength*/ -1,
-                            latentMask,
-                            /* maxSets      */ maxNumSet <= 0 ? -1 : maxNumSet,
-                            /* minimizeEach */ false
-                    );
-
                     textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
-                    textArea.append("Latent mask = " + latentMask + "\n");
 
-                    if (adjustmentSets.isEmpty()) {
-                        textArea.append("\n    --NONE--");
+                    if (adj == null) {
+                        // Per spec: null means “no amenable paths OR no recursive solution produced”.
+                        // Since we already know amenable==true, this is the “no recursive solution” branch.
+                        textArea.append("    --NONE FOUND BY RECURSIVE METHOD (try relaxing limits)--");
+                    } else if (adj.isEmpty()) {
+                        // Degenerate x==y would have been skipped; reaching here means empty from library.
+                        textArea.append("    --NONE--");
                     } else {
-                        for (Set<Node> z : adjustmentSets) {
+                        for (Set<Node> z : adj) {
                             textArea.append("\n    " + z);
                         }
                         found = true;
                     }
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+
+                } else {
+                    // No amenable paths → offer candidate separating sets (library call)
+                    List<Set<Node>> seps;
+                    try {
+                        seps = paths.recursiveSeparatingSets(
+                                node1, node2,
+                                maxNumSet, maxLengthAdjustment,
+                                /* minimizeEach */ false
+                        );
+                    } catch (Exception e) {
+                        textArea.append("\n\nCandidate separating set(s) for " + node1 + " ~~> " + node2 + ":\n");
+                        textArea.append("No amenable (causal) paths exist between " + node1 + " and " + node2 + ".\n");
+                        textArea.append("    --ERROR running separating-set search--");
+                        continue;
+                    }
+
+                    textArea.append("\n\nCandidate separating set(s) for " + node1 + " ~~> " + node2 + ":\n");
+                    textArea.append("No amenable (causal) paths exist between " + node1 + " and " + node2 + ".\n");
+                    textArea.append("We list sets that block all backdoor (non-causal) paths:\n");
+
+                    if (seps == null || seps.isEmpty()) {
+                        textArea.append("    --NONE--");
+                    } else {
+                        for (Set<Node> z : seps) {
+                            textArea.append("\n    " + z);
+                        }
+                        found = true;
+                    }
                 }
             }
         }

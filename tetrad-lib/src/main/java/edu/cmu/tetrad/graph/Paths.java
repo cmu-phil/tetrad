@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.search.RecursiveAdjustment;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -3173,6 +3174,156 @@ public class Paths implements TetradSerializable {
         }
 
         return adjustmentSets;
+    }
+
+// --- Public API: Recursive (mask-based) adjustment ---
+
+    /**
+     * Recursive adjustment-set finder (library call).
+     *
+     * Returns:
+     *   - A (possibly non-unique) list of adjustment sets when amenable paths exist,
+     *   - null if there are no amenable paths X ~~> Y, or if no recursive solution is found.
+     *
+     * Backward-compatible: does not alter the legacy adjustmentSets(...) method.
+     */
+    public List<Set<Node>> recursiveAdjustment(Node source,
+                                               Node target,
+                                               int maxNumSets,
+                                               int maxPathLength,
+                                               boolean minimizeEach) {
+        // Degenerate: x ~~> x
+        if (source == null || target == null || source == target) return Collections.emptyList();
+
+        // 1) Get amenable (causal) paths X ~~> Y per graph semantics
+        List<List<Node>> amenable = getAmenablePaths(source, target, -1);
+
+        // 2) If none, spec says: return null
+        if (amenable == null || amenable.isEmpty()) return null;
+
+        // 3) Build latent/forbidden mask for total-effect adjustment
+        //    (forbid interior non-colliders on amenable paths; also forbid Desc(X))
+        Set<Node> latentMask = buildLatentMaskForTotalEffect(this.graph, source, target, amenable,
+                Collections.emptySet(), /*includeDescOfX*/ true);
+
+        // 4) Run recursive enumerator
+        try {
+            List<Set<Node>> sets = RecursiveAdjustment.findAdjustmentSets(
+                    this.graph,
+                    source,
+                    target,
+                    /*seedZ*/ Collections.emptySet(),
+                    /*notFollowed*/ Collections.emptySet(),
+                    /*maxPathLength*/ maxPathLength <= 0 ? -1 : maxPathLength,
+                    /*latentMask*/ latentMask,
+                    /*maxSets*/ (maxNumSets <= 0 ? -1 : maxNumSets),
+                    /*minimizeEach*/ minimizeEach
+            );
+
+            // If the recursive method yields nothing, treat as "no answer" -> null (per your spec)
+            if (sets == null || sets.isEmpty()) return null;
+
+            return sets;
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
+    }
+
+    static Set<Node> buildLatentMaskForTotalEffect(Graph graph,
+                                                   Node X, Node Y,
+                                                   Collection<List<Node>> amenablePaths,
+                                                   Set<Node> containing,            // seed Z (may be empty)
+                                                   boolean includeDescendantsOfX) { // Tier-B toggle
+        Set<Node> mask = new HashSet<>();
+
+        // --- Tier A: interior non-colliders along amenable X→Y paths ---
+        for (List<Node> p : amenablePaths) {
+            if (p.size() < 3) continue; // no interior nodes on length-2 path X–Y
+            for (int i = 1; i < p.size() - 1; i++) {
+                Node a = p.get(i - 1), b = p.get(i), c = p.get(i + 1);
+                // Mask ONLY if b is a definite non-collider on this triple
+                if (!graph.isDefCollider(a, b, c) && b.getNodeType() == NodeType.MEASURED) {
+                    mask.add(b);
+                }
+            }
+        }
+
+        // --- Tier B (optional): Descendants of X (measured only) ---
+        if (includeDescendantsOfX) {
+            Map<Node, Set<Node>> descMap = graph.paths().getDescendantsMap(); // recompute per run
+            Set<Node> descX = descMap.getOrDefault(X, Collections.emptySet());
+            for (Node d : descX) {
+                if (d != null && d.getNodeType() == NodeType.MEASURED) {
+                    mask.add(d);
+                }
+            }
+        }
+
+        // --- Sanitize: remove endpoints, latents, and anything the user forced into Z ---
+        mask.remove(X);
+        mask.remove(Y);
+        if (containing != null) {
+            mask.removeAll(containing);
+        }
+        // Keep mask to measured nodes only; true latents are already handled by RB
+        mask.removeIf(n -> n == null || n.getNodeType() != NodeType.MEASURED);
+
+        return mask;
+    }
+
+    /**
+     * When there are no amenable paths X ~~> Y, this returns candidate separating sets:
+     * sets that block all backdoor (non-causal) paths, using the same recursive engine
+     * but with an EMPTY mask (so it’s allowed to condition anywhere that’s measured).
+     *
+     * If amenable paths DO exist, this returns an empty list (use recursiveAdjustment instead).
+     */
+    public List<Set<Node>> recursiveSeparatingSets(Node source,
+                                                   Node target,
+                                                   int maxNumSets,
+                                                   int maxPathLength,
+                                                   boolean minimizeEach) {
+        if (source == null || target == null || source == target) return Collections.emptyList();
+
+        List<List<Node>> amenable = getAmenablePaths(source, target, -1);
+
+        // Only produce separating sets when there are NO amenable paths
+        if (amenable != null && !amenable.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            return RecursiveAdjustment.findAdjustmentSets(
+                    this.graph,
+                    source,
+                    target,
+                    /*seedZ*/ Collections.emptySet(),
+                    /*notFollowed*/ Collections.emptySet(),
+                    /*maxPathLength*/ maxPathLength <= 0 ? -1 : maxPathLength,
+                    /*latentMask*/ Collections.emptySet(),   // <-- key difference
+                    /*maxSets*/ (maxNumSets <= 0 ? -1 : maxNumSets),
+                    /*minimizeEach*/ minimizeEach
+            );
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            return Collections.emptyList();
+        }
+    }
+
+    public boolean hasAmenablePaths(Node x, Node y, int maxLength) {
+        List<List<Node>> aps = getAmenablePaths(x, y, maxLength);
+        return aps != null && !aps.isEmpty();
+    }
+
+    private List<List<Node>> getAmenablePaths(Node source, Node target, int maxLength) {
+        if (source == null || target == null || source == target) return Collections.emptyList();
+        if (graph.paths().isLegalPag()) {
+            return graph.paths().amenablePathsPag(source, target, maxLength);
+        } else {
+            // DAG/CPDAG/MPDAG/MAG handled here
+            return graph.paths().amenablePathsMpdagMag(source, target, maxLength);
+        }
     }
 
     /**
