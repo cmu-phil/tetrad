@@ -703,9 +703,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Cycles",
                 "All Paths",
                 "Adjacents",
-                "Adjustment Sets",
-                "Recursive Blocking Sets",
-                "Recursive Adjustment Sets",
+                "Adjustment Set(s) (Recursive)",
+                "Adjustment Sets (Full Path Enumeration)",
+//                "Recursive Blocking Sets",
                 "Amenable paths",
                 "Backdoor paths"
         });
@@ -875,11 +875,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     latentConfounderPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Adjacents".equals(method)) {
                     adjacentNodes(graph, textArea, nodes1, nodes2);
-                } else if ("Adjustment Sets".equals(method)) {
+                } else if ("Adjustment Sets (Full Path Enumeration)".equals(method)) {
                     adjustmentSets(graph, textArea, nodes1, nodes2);
                 } else if ("Recursive Blocking Sets".equals(method)) {
                     recursiveBlockingSets(graph, textArea, nodes1, nodes2);
-                } else if ("Recursive Adjustment Sets".equals(method)) {
+                } else if ("Adjustment Set(s) (Recursive)".equals(method)) {
                     recursiveAdjustmentSets(graph, textArea, nodes1, nodes2);
                 } else if ("Cycles".equals(method)) {
                     allCyclicPaths(graph, textArea, nodes1, nodes2);
@@ -1558,31 +1558,34 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
     private void recursiveAdjustmentSets(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.setText("""     
-            An adjustment set is a set of nodes that blocks all paths that can't be causal while leaving
-            all causal paths unblocked. In particular, all confounders of the source and target will be
-            blocked. By conditioning on an adjustment set (if one exists) one can estimate the total 
-            effect of a source on a target. We look for adjustment sets here using a masked version of
-            the recursive blocking set algorithm.
-            
-            To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
-            into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
-            dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are 
-            blocked, the set is not an adjustment set. Also select "Backdoor paths" from the dropdown. 
-            All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
-            set is not an adjustment set.
-            """);
+        An adjustment set is a set of nodes that blocks all paths that can't be causal while leaving
+        all causal paths unblocked. In particular, all confounders of the source and target will be
+        blocked. By conditioning on an adjustment set (if one exists) one can estimate the total 
+        effect of a source on a target. We look for adjustment sets here using a masked version of
+        the recursive blocking set algorithm.
+        
+        To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
+        into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
+        dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are 
+        blocked, the set is not an adjustment set. Also select "Backdoor paths" from the dropdown. 
+        All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
+        set is not an adjustment set.
+        """);
 
         boolean found = false;
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
+                // Skip degenerate X ~~> X requests.
+                if (node1 == null || node2 == null || node1 == node2) {
+                    continue;
+                }
+
                 int maxNumSet = parameters.getInt("pathsMaxNumSets");
-                int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
-                int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
                 int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
 
+                // Collect amenable (causal) paths X ~~> Y
                 List<List<Node>> amenablePaths;
-
                 if (graph.paths().isLegalMpdag() || graph.paths().isLegalMag()) {
                     amenablePaths = graph.paths().amenablePathsMpdagMag(node1, node2, -1);
                 } else if (graph.paths().isLegalPag()) {
@@ -1592,74 +1595,68 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 try {
-                    boolean single = false;
-
-                    // === NEW NOTE: Check if there are any amenable paths ===
+                    // === Case A: No amenable paths ===
                     if (amenablePaths.isEmpty()) {
-                        textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
+                        textArea.append("\n\nCandidate separating set(s) for " + node1 + " ~~> " + node2 + ":\n");
                         textArea.append("No amenable (causal) paths exist between " + node1 + " and " + node2 + ".\n");
-                        textArea.append("Hence, no adjustment set is needed or defined.\n");
-                        continue;
-                    }
+                        textArea.append("We list candidate separating sets that block all backdoor (non-causal) paths.\n");
 
-                    if (single) {
-                        // Step 1. Build the latent mask (forbidden nodes on amenable paths)
-                        Set<Node> latentMask = RecursiveAdjustment.buildAmenableNoncolliderMask(
-                                graph, node1, node2, amenablePaths, Collections.emptySet()
-                        );
+                        // IMPORTANT: use an EMPTY mask in the no-amenable case.
+                        Set<Node> emptyMask = Collections.emptySet();
 
-                        // Step 2. Run the recursive adjustment search
-                        Set<Node> adjustmentSet = RecursiveAdjustment.findAdjustmentSet(
+                        List<Set<Node>> candSepSets = RecursiveAdjustment.findAdjustmentSets(
                                 graph,
                                 node1,
                                 node2,
-                                /* seedZ */ Collections.emptySet(),
-                                /* notFollowed */ Collections.emptySet(),
-                                /* maxPathLength */ -1,
-                                latentMask
-                        );
-
-                        textArea.append("\n\nAdjustment set for " + node1 + " ~~> " + node2 + ":\n");
-                        textArea.append("Latent mask = " + latentMask + "\n");
-
-                        if (adjustmentSet == null) {
-                            textArea.append("\n    --NONE--");
-                            continue;
-                        }
-
-                        textArea.append("\n    " + adjustmentSet);
-                        found = true;
-
-                    } else {
-                        Set<Node> latentMask = buildLatentMaskForTotalEffect(
-                                graph, node1, node2, amenablePaths, Collections.emptySet(), true
-                        );
-
-                        // Call the enumerator for multiple adjustment sets
-                        List<Set<Node>> adjustmentSets = RecursiveAdjustment.findAdjustmentSets(
-                                graph,
-                                node1,
-                                node2,
-                                /* seedZ */ Collections.emptySet(),
-                                /* notFollowed */ Collections.emptySet(),
-                                /* maxPathLength */ -1,
-                                latentMask,
-                                /* maxSets */ -1,
+                                /* seedZ        */ Collections.emptySet(),
+                                /* notFollowed  */ Collections.emptySet(),
+                                /* maxPathLength*/ -1,
+                                emptyMask,
+                                /* maxSets      */ maxNumSet <= 0 ? -1 : maxNumSet,
                                 /* minimizeEach */ false
                         );
 
-                        textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
-                        textArea.append("Latent mask = " + latentMask + "\n");
+                        textArea.append("Latent mask = " + emptyMask + "\n");
 
-                        if (adjustmentSets.isEmpty()) {
+                        if (candSepSets.isEmpty()) {
                             textArea.append("\n    --NONE--");
-                            continue;
+                        } else {
+                            for (Set<Node> z : candSepSets) {
+                                textArea.append("\n    " + z);
+                            }
+                            found = true;
                         }
+                        // Continue to next pair; we intentionally do NOT try “adjustment sets” here.
+                        continue;
+                    }
 
-                        for (Set<Node> adjustment : adjustmentSets) {
-                            textArea.append("\n    " + adjustment);
+                    // === Case B: Amenable paths exist → True adjustment-set search ===
+                    // Build the latent mask (forbid interior non-colliders on amenable paths; also forbid Desc(X))
+                    Set<Node> latentMask = buildLatentMaskForTotalEffect(
+                            graph, node1, node2, amenablePaths, Collections.emptySet(), true
+                    );
+
+                    List<Set<Node>> adjustmentSets = RecursiveAdjustment.findAdjustmentSets(
+                            graph,
+                            node1,
+                            node2,
+                            /* seedZ        */ Collections.emptySet(),
+                            /* notFollowed  */ Collections.emptySet(),
+                            /* maxPathLength*/ -1,
+                            latentMask,
+                            /* maxSets      */ maxNumSet <= 0 ? -1 : maxNumSet,
+                            /* minimizeEach */ false
+                    );
+
+                    textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
+                    textArea.append("Latent mask = " + latentMask + "\n");
+
+                    if (adjustmentSets.isEmpty()) {
+                        textArea.append("\n    --NONE--");
+                    } else {
+                        for (Set<Node> z : adjustmentSets) {
+                            textArea.append("\n    " + z);
                         }
-
                         found = true;
                     }
                 } catch (InterruptedException e) {
@@ -1669,7 +1666,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!found) {
-            textArea.append("\n\nNo adjustment sets found.");
+            textArea.append("\n\nNo adjustment (or candidate separating) sets found.");
         }
     }
 
