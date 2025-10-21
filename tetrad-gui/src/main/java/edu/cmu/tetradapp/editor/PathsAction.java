@@ -22,8 +22,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.RecursiveAdjustment;
+import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
@@ -1573,55 +1573,73 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     throw new IllegalArgumentException("Graph must be a legal MPDAG, MAG, or PAG");
                 }
 
-                Set<Node> latentMask;// = buildLatentMaskForTotalEffect(graph, node1, node2, amenablePaths, Collections.emptySet(), true);
-
-//                Set<Node> latentMask = /* build from amenable-path non-colliders, Desc(X), etc. */;
-                Set<Node> adjustment = null;
                 try {
-                    // Step 1. Build the latent mask (forbidden nodes on amenable paths)
-                    latentMask = RecursiveAdjustment.buildAmenableNoncolliderMask(
-                            graph, node1, node2, amenablePaths, Collections.emptySet()
-                    );
 
-                    // Step 2. Run the recursive adjustment search
-                    adjustment = RecursiveAdjustment.findAdjustmentSet(
-                            graph,
-                            node1,
-                            node2,
-                            /* seedZ        */ Collections.emptySet(),
-                            /* notFollowed  */ Collections.emptySet(),
-                            /* maxPathLength */ -1,
-                            latentMask
-                    );
+                    boolean single = false;
+
+                    if (single) {
+                        // Step 1. Build the latent mask (forbidden nodes on amenable paths)
+                        Set<Node> latentMask = RecursiveAdjustment.buildAmenableNoncolliderMask(
+                                graph, node1, node2, amenablePaths, Collections.emptySet()
+                        );
+
+                        // Step 2. Run the recursive adjustment search
+                        Set<Node> adjustmentSet = RecursiveAdjustment.findAdjustmentSet(
+                                graph,
+                                node1,
+                                node2,
+                                /* seedZ        */ Collections.emptySet(),
+                                /* notFollowed  */ Collections.emptySet(),
+                                /* maxPathLength */ -1,
+                                latentMask
+                        );
+
+
+                        textArea.append("\n\nAdjustment set for " + node1 + " ~~> " + node2 + ":\n");
+                        textArea.append("Latent mask = " + latentMask + "\n");
+
+                        if (adjustmentSet == null) {
+                            textArea.append("\n    --NONE--");
+                            continue;
+                        }
+
+                        textArea.append("\n    " + adjustmentSet);
+
+                        found = true;
+                    } else {
+                        Set<Node> latentMask = buildLatentMaskForTotalEffect(graph, node1, node2, amenablePaths, Collections.emptySet(), true);
+
+                       // Call the enumerator for multiple adjustment sets
+                        List<Set<Node>> adjustmentSets = RecursiveAdjustment.findAdjustmentSets(
+                                graph,
+                                node1,
+                                node2,
+                                /* seedZ */ Collections.emptySet(),
+                                /* notFollowed */ Collections.emptySet(),
+                                /* maxPathLength */ -1,
+                                latentMask,
+                                /* maxSets */ -1,            // limit how many sets to find
+                                /* minimizeEach */ false      // apply greedy cleanup
+                        );
+
+
+                        textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
+                        textArea.append("latent mask = " + latentMask + "\n");
+
+                        if (adjustmentSets.isEmpty()) {
+                            textArea.append("\n    --NONE--");
+                            continue;
+                        }
+
+                        for (Set<Node> adjustment : adjustmentSets) {
+                            textArea.append("\n    " + adjustment);
+                        }
+
+                        found = true;
+                    }
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-
-//                List<Set<Node>> adjustments;
-//
-//                try {
-//                    adjustments = graph.paths().adjustmentSets(node1, node2, maxNumSet,
-//                            maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment);
-//                } catch (Exception e) {
-//
-//                    // A message is returned, which we are not printing.
-//                    continue;
-//                }
-
-                textArea.append("\nLatent mask = " + latentMask + "\n");
-
-                textArea.append("\nAdjustment set for " + node1 + " ~~> " + node2 + ":\n");
-
-                if (adjustment == null) {
-                    textArea.append("\n    --NONE--");
-                    continue;
-                }
-
-//                for (Set<Node> adjustment : adjustments) {
-                textArea.append("\n    " + adjustment);
-//                }
-
-                found = true;
             }
         }
 

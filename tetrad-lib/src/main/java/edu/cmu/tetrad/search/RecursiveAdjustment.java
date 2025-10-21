@@ -21,6 +21,8 @@ import java.util.*;
  */
 public final class RecursiveAdjustment {
 
+    private static final boolean DEBUG = true; // set false to silence logging
+
     private RecursiveAdjustment() {}
 
     // ---------------------------------------------------------------------
@@ -51,67 +53,298 @@ public final class RecursiveAdjustment {
 //        return adjustment;
 //    }
 
-    public static Set<Node> findAdjustmentSet(
+    // ========== ADDED CODE ===========
+
+    // ===== Public enumerator =====
+    public static List<Set<Node>> findAdjustmentSets(
             Graph graph, Node x, Node y,
             Set<Node> seedZ, Set<Node> notFollowed,
-            int maxPathLength, Set<Node> latentMask) throws InterruptedException {
+            int maxPathLength, Set<Node> latentMask,
+            int maxSets, boolean minimizeEach) throws InterruptedException {
 
-        Set<Node> z0 = visit(
-                graph, x, y,
-                seedZ == null ? Collections.emptySet() : seedZ,
-                notFollowed == null ? Collections.emptySet() : notFollowed,
-                graph.paths().getDescendantsMap(),
-                maxPathLength, null,
-                latentMask == null ? Collections.emptySet() : latentMask
-        );
+        if (x == y) {
+            return List.of(Collections.emptySet());
+        }
 
-        if (z0 == null) return null;                // no valid adjustment set
-        return z0;
-//        return minimizeZ(graph, x, y, z0, notFollowed, maxPathLength);  // checker-based
+        int cap = (maxSets <= 0 ? Integer.MAX_VALUE : maxSets);
+
+        // Start from a single candidate seed
+        Set<Node> baseZ = seedZ == null ? Collections.emptySet() : seedZ;
+        Set<Node> nf    = notFollowed == null ? Collections.emptySet() : notFollowed;
+        Set<Node> mask  = latentMask == null ? Collections.emptySet() : latentMask;
+
+        // Build branch-wise, combining constraints across all backdoor-starting neighbors
+        List<Set<Node>> frontier = new ArrayList<>();
+        frontier.add(new HashSet<>(baseZ));
+
+        Map<Node, Set<Node>> desc = graph.paths().getDescendantsMap();
+        Set<String> globalSeen = new HashSet<>(); // optional global dedupe
+
+        for (Node b : graph.getAdjacentNodes(x)) {
+            if (Thread.currentThread().isInterrupted()) return List.of();
+            if (b == y) continue;
+
+            Edge e = graph.getEdge(x, b);
+            if (e == null) continue;
+            if (!startsBackdoorFromX(graph, e, x, b, y)) continue;
+
+            List<Set<Node>> next = new ArrayList<>();
+
+            // For each partial Z that blocks all *previous* backdoor starts,
+            // expand to the Z's that also block the branch via (x,b, ... y).
+            for (Set<Node> Z : frontier) {
+                if (Thread.currentThread().isInterrupted()) return List.of();
+                List<Set<Node>> blockedVariants = blockBranchEnum(
+                        graph, x, b, y, Z, nf, maxPathLength, desc, mask, cap - next.size());
+                for (Set<Node> zv : blockedVariants) {
+                    String key = canon(zv);
+                    if (globalSeen.add(key)) {
+                        next.add(zv);
+                        if (next.size() >= cap) break;
+                    }
+                }
+                if (cap != Integer.MAX_VALUE && next.size() >= cap) break;
+//                if (next.size() >= cap) break;
+            }
+
+            logBranch(x, b, next.size());
+
+            // If no variants can block this branch, enumeration fails
+            if (next.isEmpty()) return List.of(); // no valid adjustment sets
+
+            frontier = next;
+            if (frontier.size() >= cap) break;
+        }
+
+        // Optionally minimize each found set using your checker
+        if (minimizeEach) {
+            List<Set<Node>> minimized = new ArrayList<>();
+            Set<String> seen = new HashSet<>();
+            for (Set<Node> Z : frontier) {
+                Set<Node> m = minimizeZ(graph, x, y, Z, nf, maxPathLength);
+                String key = canon(m);
+                if (seen.add(key)) minimized.add(m);
+            }
+            frontier = minimized;
+        }
+
+        log("Total adjustment sets found: " + frontier.size());
+
+        return frontier;
     }
 
-    /** Variant with optional background knowledge (currently unused). */
-    public static Set<Node> findAdjustmentSet(
-            Graph graph, Node x, Node y,
-            Set<Node> seedZ, Set<Node> notFollowed,
-            int maxPathLength, Knowledge knowledge, Set<Node> latentMask) throws InterruptedException {
-        return visit(
-                graph, x, y,
-                seedZ == null ? Collections.emptySet() : seedZ,
-                notFollowed == null ? Collections.emptySet() : notFollowed,
-                graph.paths().getDescendantsMap(),
-                maxPathLength, knowledge,
-                latentMask == null ? Collections.emptySet() : latentMask
-        );
+    // ===== Branch-level enumeration (conjoins into overall sets) =====
+// Replace your blockBranchEnum with this version
+    private static List<Set<Node>> blockBranchEnum(
+            Graph graph, Node a, Node b, Node y,
+            Set<Node> Z0, Set<Node> notFollowed,
+            int maxPathLength, Map<Node, Set<Node>> descendantsMap, Set<Node> latentMask,
+            int maxForThisBranch) throws InterruptedException {
+
+        // Cap / guard
+        if (Thread.currentThread().isInterrupted() || maxForThisBranch <= 0) return List.of();
+
+        // Base failures
+        if (b == y) return List.of();                 // cannot block this branch with current Z
+        if (notFollowed.contains(b)) return List.of();
+
+        return enumDescend(
+                graph, a, b, y,
+                new HashSet<>(Z0), notFollowed,
+                maxPathLength, new ArrayDeque<>(List.of(a)),
+                descendantsMap, latentMask,
+                maxForThisBranch, new HashSet<>());
     }
 
+    // Enumerate all Z ⊇ Zcur that block every continuation from (a,b) to y.
+    private static List<Set<Node>> enumDescend(
+            Graph graph, Node a, Node b, Node y,
+            Set<Node> Zcur, Set<Node> notFollowed,
+            int maxPathLength, Deque<Node> path,          // carries the path
+            Map<Node, Set<Node>> descendantsMap, Set<Node> latentMask,
+            int budget, Set<String> seen) throws InterruptedException {
+
+        if (Thread.currentThread().isInterrupted()) return List.of();
+
+        // Open branch → no solution from this branch
+        if (b == y) return List.of();
+        if (notFollowed.contains(b)) return List.of();
+
+        // Treat "don't follow into y" as already blocked for this branch
+        if (notFollowed.contains(y)) return List.of(new HashSet<>(Zcur));
+
+        // Cycle guard (same as single-set version)
+        if (path.contains(b)) return List.of();
+
+        // Depth bound via path length
+        if (maxPathLength != -1 && path.size() > maxPathLength) return List.of();
+
+        // Dedup: include predecessor context so we don't over-prune
+        String state = b.getName() + "||" + canon(Zcur) + "||" + path.peekLast().getName();
+        if (!seen.add(state)) return List.of();
+
+        // Push b
+        path.addLast(b);
+        try {
+            boolean maskedLatent = latentMask.contains(b);
+            boolean cannotAddB = (b.getNodeType() == NodeType.LATENT) || maskedLatent || Zcur.contains(b);
+
+            // Children under current Z
+            List<Node> kidsNoZ = children(graph, a, b, Zcur, descendantsMap, notFollowed);
+
+            // No continuations → this sub-branch is already BLOCKED by current Z
+            if (kidsNoZ.isEmpty()) {
+                return List.of(new HashSet<>(Zcur));
+            }
+
+            List<Set<Node>> results = new ArrayList<>();
+
+            // ---- Option 1: do NOT add b to Z ----
+            {
+                List<List<Set<Node>>> perChildSolutions = new ArrayList<>();
+                boolean anyChildImpossible = false;
+
+                for (Node c : kidsNoZ) {
+                    if (budget > 0 && results.size() >= budget) break;
+
+                    // IMPORTANT: pass a COPY of the current path (which already has b)
+                    Deque<Node> nextPath = new ArrayDeque<>(path);
+                    List<Set<Node>> solsC = enumDescend(
+                            graph, b, c, y,
+                            Zcur, notFollowed,
+                            maxPathLength, nextPath,
+                            descendantsMap, latentMask,
+                            budget, seen);
+
+                    if (solsC.isEmpty()) {
+                        anyChildImpossible = true;  // some child can't be blocked without adding b
+                        break;
+                    }
+                    perChildSolutions.add(solsC);
+                }
+
+                if (!anyChildImpossible) {
+                    combineAcrossChildren(perChildSolutions,
+                            (budget <= 0 ? Integer.MAX_VALUE : (budget - results.size())),
+                            results);
+                }
+            }
+
+            if (budget > 0 && results.size() >= budget) {
+                return dedupeCap(results, budget);
+            }
+
+            // ---- Option 2: add b to Z (if allowed) ----
+            if (!cannotAddB) {
+                Set<Node> Zwith = new HashSet<>(Zcur);
+                Zwith.add(b);
+
+                List<Node> kidsWith = children(graph, a, b, Zwith, descendantsMap, notFollowed);
+                if (kidsWith.isEmpty()) {
+                    results.add(Zwith);
+                } else {
+                    List<List<Set<Node>>> perChildSolutions = new ArrayList<>();
+                    boolean anyChildImpossible = false;
+
+                    for (Node c : kidsWith) {
+                        if (budget > 0 && results.size() >= budget) break;
+
+                        Deque<Node> nextPath = new ArrayDeque<>(path);
+                        List<Set<Node>> solsC = enumDescend(
+                                graph, b, c, y,
+                                Zwith, notFollowed,
+                                maxPathLength, nextPath,
+                                descendantsMap, latentMask,
+                                budget, seen);
+
+                        if (solsC.isEmpty()) {
+                            anyChildImpossible = true;
+                            break;
+                        }
+                        perChildSolutions.add(solsC);
+                    }
+
+                    if (!anyChildImpossible) {
+                        combineAcrossChildren(perChildSolutions,
+                                (budget <= 0 ? Integer.MAX_VALUE : (budget - results.size())),
+                                results);
+                    }
+                }
+            }
+
+            return (budget > 0) ? dedupeCap(results, budget) : results;
+        } finally {
+            path.removeLast();
+        }
+    }
+
+    // Take the cartesian product across children-lists and union the Z’s along each tuple.
+    private static void combineAcrossChildren(
+            List<List<Set<Node>>> perChildSolutions, int cap, List<Set<Node>> out) {
+
+        if (perChildSolutions.isEmpty()) return;
+        // iterative product
+        List<Set<Node>> acc = new ArrayList<>();
+        acc.add(Collections.emptySet());
+
+        for (List<Set<Node>> childList : perChildSolutions) {
+            List<Set<Node>> next = new ArrayList<>();
+            for (Set<Node> prefix : acc) {
+                for (Set<Node> add : childList) {
+                    Set<Node> u = new HashSet<>(prefix);
+                    u.addAll(add);
+                    next.add(u);
+                    if (cap > 0 && (out.size() + next.size()) >= cap) break;
+                }
+                if (cap > 0 && (out.size() + next.size()) >= cap) break;
+            }
+            acc = next;
+            if (cap > 0 && (out.size() + acc.size()) >= cap) break;
+        }
+        // append to out with simple dedupe
+        Set<String> seen = new HashSet<>();
+        for (Set<Node> z : acc) {
+            String key = canon(z);
+            if (seen.add(key)) {
+                out.add(z);
+                if (cap > 0 && out.size() >= cap) break;
+            }
+        }
+    }
+
+    // simple dedupe + cap
+    private static List<Set<Node>> dedupeCap(List<Set<Node>> in, int cap) {
+        Map<String, Set<Node>> m = new LinkedHashMap<>();
+        for (Set<Node> z : in) {
+            String k = canon(z);
+            m.putIfAbsent(k, z);
+            if (cap > 0 && m.size() >= cap) break;
+        }
+        return new ArrayList<>(m.values());
+    }
+
+    // ===== Minimal greedy pass using the checker you already have =====
     private static Set<Node> minimizeZ(
             Graph graph, Node x, Node y, Set<Node> Z,
             Set<Node> notFollowed, int maxPathLength) throws InterruptedException {
 
         List<Node> order = new ArrayList<>(Z);
         Set<Node> best = new HashSet<>(Z);
-
         for (Node n : order) {
             if (Thread.currentThread().isInterrupted()) return best;
             Set<Node> trial = new HashSet<>(best);
             trial.remove(n);
             if (isAdjustmentSet(graph, x, y, trial, notFollowed, maxPathLength)) {
-                best = trial; // removal kept it valid; accept
+                best = trial;
             }
         }
         return best;
     }
 
-    // ---------------------------------------------------------------------
-    // Core recursive logic
-    // ---------------------------------------------------------------------
-
+    // ===== Pure checker (no additions to Z) =====
     public static boolean isAdjustmentSet(
             Graph graph, Node x, Node y, Set<Node> Z,
             Set<Node> notFollowed, int maxPathLength) throws InterruptedException {
-
-        if (Thread.currentThread().isInterrupted()) return false;
 
         Set<Node> path = new HashSet<>();
         path.add(x);
@@ -130,46 +363,160 @@ public final class RecursiveAdjustment {
         return true;
     }
 
-    // “Check” version of descend: NO Case-3 (no adding b to Z)
     private static Blockable descendCheck(
             Graph graph, Node a, Node b, Node y,
             Set<Node> path, Set<Node> Z, int maxPathLength,
             Set<Node> notFollowed, Map<Node, Set<Node>> descendantsMap) throws InterruptedException {
 
-        if (Thread.currentThread().isInterrupted()) return Blockable.INDETERMINATE;
-
         if (b == y) return Blockable.UNBLOCKABLE;
         if (path.contains(b)) return Blockable.UNBLOCKABLE;
         if (notFollowed.contains(b)) return Blockable.INDETERMINATE;
-        if (notFollowed.contains(y)) return Blockable.BLOCKED;
+        if (maxPathLength != -1 && path.size() > maxPathLength) return Blockable.INDETERMINATE;
 
         path.add(b);
         try {
-            if (maxPathLength != -1 && path.size() > maxPathLength)
-                return Blockable.INDETERMINATE;
-
-            // If b is latent or already in Z, just traverse
-            if (b.getNodeType() == NodeType.LATENT || Z.contains(b)) {
-                for (Node c : children(graph, a, b, Z, descendantsMap, notFollowed)) {
-                    Blockable r = descendCheck(graph, b, c, y, path, Z, maxPathLength, notFollowed, descendantsMap);
-                    if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE) return Blockable.UNBLOCKABLE;
-                }
-                return Blockable.BLOCKED;
-            }
-
-            // Try WITHOUT conditioning on b; no “with b” branch in check mode
-            for (Node c : children(graph, a, b, Z, descendantsMap, notFollowed)) {
+            List<Node> kids = children(graph, a, b, Z, descendantsMap, notFollowed);
+            if (kids.isEmpty()) return Blockable.BLOCKED;
+            for (Node c : kids) {
                 Blockable r = descendCheck(graph, b, c, y, path, Z, maxPathLength, notFollowed, descendantsMap);
-                if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE) {
-                    return Blockable.UNBLOCKABLE; // can’t block with current Z
-                }
+                if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE) return Blockable.UNBLOCKABLE;
             }
             return Blockable.BLOCKED;
-
         } finally {
             path.remove(b);
         }
     }
+
+    // ===== Tiny helpers =====
+    private static String canon(Set<Node> Z) {
+        List<String> names = new ArrayList<>();
+        for (Node n : Z) names.add(n.getName());
+        Collections.sort(names);
+        return String.join("|", names);
+    }
+
+    private static String canonState(Node cur, Deque<Node> path, Set<Node> Z) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(cur.getName()).append("||");
+        List<String> p = new ArrayList<>();
+        for (Node n : path) p.add(n.getName());
+        sb.append(String.join("-", p)).append("||");
+        sb.append(canon(Z));
+        return sb.toString();
+    }
+
+    private static void log(String msg) {
+        if (DEBUG) System.out.println("[RecursiveAdjustment] " + msg);
+    }
+
+    private static void logBranch(Node x, Node b, int count) {
+        if (DEBUG) {
+            System.out.printf("[RecursiveAdjustment] Branch %s → %s produced %d candidate sets%n",
+                    x.getName(), b.getName(), count);
+        }
+    }
+
+//    private static final class Frame {
+//        final Node a, b;
+//        final Deque<Node> path;
+//        final Set<Node> Z;
+//        Frame(Node a, Node b, Deque<Node> path, Set<Node> Z) {
+//            this.a = a; this.b = b; this.path = path; this.Z = Z;
+//        }
+//    }
+
+    // ========== DONE ADDED CODE ========
+
+    public static Set<Node> findAdjustmentSet(
+            Graph graph, Node x, Node y,
+            Set<Node> seedZ, Set<Node> notFollowed,
+            int maxPathLength, Set<Node> latentMask) throws InterruptedException {
+
+        if (x == y) {
+            return Collections.emptySet();
+        }
+
+        Set<Node> z0 = visit(
+                graph, x, y,
+                seedZ == null ? Collections.emptySet() : seedZ,
+                notFollowed == null ? Collections.emptySet() : notFollowed,
+                graph.paths().getDescendantsMap(),
+                maxPathLength, null,
+                latentMask == null ? Collections.emptySet() : latentMask
+        );
+
+        if (z0 == null) return null;                // no valid adjustment set
+        return z0;
+//        return minimizeZ(graph, x, y, z0, notFollowed, maxPathLength);  // checker-based
+    }
+
+    // ---------------------------------------------------------------------
+    // Core recursive logic
+    // ---------------------------------------------------------------------
+
+//    public static boolean isAdjustmentSet(
+//            Graph graph, Node x, Node y, Set<Node> Z,
+//            Set<Node> notFollowed, int maxPathLength) throws InterruptedException {
+//
+//        if (Thread.currentThread().isInterrupted()) return false;
+//
+//        Set<Node> path = new HashSet<>();
+//        path.add(x);
+//
+//        for (Node b : graph.getAdjacentNodes(x)) {
+//            if (Thread.currentThread().isInterrupted()) return false;
+//            if (b == y) continue;
+//
+//            Edge e = graph.getEdge(x, b);
+//            if (e == null) continue;
+//            if (!startsBackdoorFromX(graph, e, x, b, y)) continue;
+//
+//            Blockable r = descendCheck(graph, x, b, y, path, Z, maxPathLength, notFollowed, graph.paths().getDescendantsMap());
+//            if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE) return false;
+//        }
+//        return true;
+//    }
+
+    // “Check” version of descend: NO Case-3 (no adding b to Z)
+//    private static Blockable descendCheck(
+//            Graph graph, Node a, Node b, Node y,
+//            Set<Node> path, Set<Node> Z, int maxPathLength,
+//            Set<Node> notFollowed, Map<Node, Set<Node>> descendantsMap) throws InterruptedException {
+//
+//        if (Thread.currentThread().isInterrupted()) return Blockable.INDETERMINATE;
+//
+//        if (b == y) return Blockable.UNBLOCKABLE;
+//        if (path.contains(b)) return Blockable.UNBLOCKABLE;
+//        if (notFollowed.contains(b)) return Blockable.INDETERMINATE;
+//        if (notFollowed.contains(y)) return Blockable.BLOCKED;
+//
+//        path.add(b);
+//        try {
+//            if (maxPathLength != -1 && path.size() > maxPathLength)
+//                return Blockable.INDETERMINATE;
+//
+//            // If b is latent or already in Z, just traverse
+//            if (b.getNodeType() == NodeType.LATENT || Z.contains(b)) {
+//                for (Node c : children(graph, a, b, Z, descendantsMap, notFollowed)) {
+//                    Blockable r = descendCheck(graph, b, c, y, path, Z, maxPathLength, notFollowed, descendantsMap);
+//                    if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE) return Blockable.UNBLOCKABLE;
+//                }
+//                return Blockable.BLOCKED;
+//            }
+//
+//            // Try WITHOUT conditioning on b; no “with b” branch in check mode
+//            for (Node c : children(graph, a, b, Z, descendantsMap, notFollowed)) {
+//                Blockable r = descendCheck(graph, b, c, y, path, Z, maxPathLength, notFollowed, descendantsMap);
+//                if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE) {
+//                    return Blockable.UNBLOCKABLE; // can’t block with current Z
+//                }
+//            }
+//            return Blockable.BLOCKED;
+//
+//        } finally {
+//            path.remove(b);
+//        }
+//    }
 
     private static Set<Node> visit(
             Graph graph, Node x, Node y,
@@ -188,6 +535,8 @@ public final class RecursiveAdjustment {
 
         // Explore only backdoor-starting edges out of X
         for (Node b : graph.getAdjacentNodes(x)) {
+            log("Exploring backdoor branch " + x.getName() + " → " + b.getName());
+
             if (Thread.currentThread().isInterrupted()) return null;
             if (b == y) continue;
 

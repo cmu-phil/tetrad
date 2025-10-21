@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -44,7 +44,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PagFromDagGraphWrapper(GraphSource source, Parameters parameters) {
-        this(source.getGraph());
+        this(source.getGraph(), parameters);
     }
 
 
@@ -53,7 +53,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public PagFromDagGraphWrapper(Graph graph) {
+    public PagFromDagGraphWrapper(Graph graph, Parameters parameters) {
         super(graph);
 
         if (graph.paths().existsDirectedCycle()) {
@@ -73,7 +73,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
      * @return a {@link edu.cmu.tetradapp.model.PagFromDagGraphWrapper} object
      */
     public static PagFromDagGraphWrapper serializableInstance() {
-        return new PagFromDagGraphWrapper(EdgeListGraph.serializableInstance());
+        return new PagFromDagGraphWrapper(EdgeListGraph.serializableInstance(), new Parameters());
     }
 
     //======================== Private Method ======================//
