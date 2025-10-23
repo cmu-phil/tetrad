@@ -1609,7 +1609,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                         adj = paths.recursiveAdjustment(
                                 node1, node2,
                                 graphType.toString(),
-                                maxNumSet, maxLengthAdjustment,
+                                maxNumSet, -1,
                                 /* minimizeEach */ false
                         );
                     } catch (Exception e) {
