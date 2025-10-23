@@ -7,7 +7,6 @@ import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.BDeuScore;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
@@ -39,6 +38,27 @@ public class TestISFGS_TCGA {
     private static final String DEFAULT_NAME_COLUMN = "Name";
     private static final char DEFAULT_DELIM = ',';
 
+    /**
+     * Default constructor for the TestISFGS_TCGA class.
+     * <p>
+     * This constructor initializes an instance of the TestISFGS_TCGA class. It does not perform any specific operations
+     * or initialize any fields explicitly. Instances of this class may be used to test or execute instance-specific
+     * FGES (Fast Greedy Equivalent Search) algorithms on TCGA (The Cancer Genome Atlas) datasets.
+     * <p>
+     * The class is designed to work with discrete data in CSV format and leverages various graph and data processing
+     * utilities for instance-specific learning tasks. Further operations and behaviors are implemented in other methods
+     * of the class.
+     */
+    public TestISFGS_TCGA() {
+
+    }
+
+    /**
+     * The entry point of the program. This method parses the command-line arguments, sets up necessary configurations,
+     * and runs the specified data processing logic.
+     *
+     * @param args an array of command-line arguments.
+     */
     public static void main(String[] args) {
         // Print raw args for reproducibility
         System.out.println(Arrays.asList(args));
@@ -70,6 +90,96 @@ public class TestISFGS_TCGA {
         }
 
         new TestISFGS_TCGA().run(dataDir, dataName, numBootstraps);
+    }
+
+    private static Graph learnPopulationFges(DataSet data, double samplePrior, double structurePrior) {
+        BDeuScore score = new BDeuScore(data);
+        score.setPriorEquivalentSampleSize(samplePrior);
+        score.setStructurePrior(structurePrior);
+        Fges fges = new Fges(score);
+        fges.setSymmetricFirstStep(true);
+        try {
+            Graph g = fges.search();
+            return GraphUtils.replaceNodes(g, data.getVariables());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Population FGES interrupted", e);
+        }
+    }
+
+    // ================== Learning helpers ==================
+
+    private static Graph learnInstanceSpecific(DataSet train, DataSet test, double kappa, Graph populationGraph, double samplePrior) {
+        BDeuScore popScore = new BDeuScore(train);
+
+        IsBDeuScore2 scoreIS = new IsBDeuScore2(train, test);
+        scoreIS.setSamplePrior(samplePrior);
+        scoreIS.setKAddition(kappa);
+        scoreIS.setKDeletion(kappa);
+        scoreIS.setKReorientation(kappa);
+
+        IsFges fges = new IsFges(scoreIS, popScore);
+        fges.setPopulationGraph(populationGraph);
+        fges.setInitialGraph(populationGraph);
+
+        try {
+            Graph g = fges.search();
+            return GraphUtils.replaceNodes(g, train.getVariables());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("IS-FGES interrupted", e);
+        }
+    }
+
+    private static void ensureDir(Path dir) {
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to create output directory: " + dir, e);
+        }
+    }
+
+    // ================== IO helpers ==================
+
+    private static void saveGraph(Graph g, Path out) {
+        File f = out.toFile();
+        GraphSaveLoadUtils.saveGraph(g, f, false);
+        System.out.println("Wrote: " + out);
+    }
+
+    private static DataSet readDiscreteCsv(Path csv, char delimiter) {
+        VerticalDiscreteTabularDatasetReader reader =
+                new VerticalDiscreteTabularDatasetFileReader(csv, DelimiterUtils.toDelimiter(delimiter));
+        try {
+            return (DataSet) DataConvertUtils.toDataModel(reader.readInData());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read dataset: " + csv, e);
+        }
+    }
+
+    private static DataSet stripNameColumn(DataSet withNames, String nameCol) {
+        DataSet copy = withNames.copy();
+        int idx = copy.getColumn(copy.getVariable(nameCol));
+        copy.removeColumn(idx);
+        return copy;
+    }
+
+    private static DataSet bootstrap(DataSet data, int size) {
+        return new BootstrapSampler().sample(data, size);
+    }
+
+    private static String required(String[] args, int i, String flag) {
+        if (i >= args.length) throw new IllegalArgumentException("Missing value for " + flag);
+        return args[i];
+    }
+
+    private static void printHelpAndExit() {
+        System.out.println("Usage: TestISFGS_TCGA [options]\n" +
+                           "  -data <name>   Data CSV base name (default: " + DEFAULT_DATA_NAME + ")\n" +
+                           "  -dir <path>    Directory containing CSVs (default: user.dir)\n" +
+                           "  -bs <int>      Number of bootstrap replicates per LOO case (default: 1)\n" +
+                           "  -h, --help     Show this help");
+        System.exit(0);
     }
 
     private void run(String dataDir, String dataName, int numBootstraps) {
@@ -141,95 +251,5 @@ public class TestISFGS_TCGA {
         } catch (IOException e) {
             throw new RuntimeException("Unable to write CSV log: " + csv, e);
         }
-    }
-
-    // ================== Learning helpers ==================
-
-    private static Graph learnPopulationFges(DataSet data, double samplePrior, double structurePrior) {
-        BDeuScore score = new BDeuScore(data);
-        score.setPriorEquivalentSampleSize(samplePrior);
-        score.setStructurePrior(structurePrior);
-        Fges fges = new Fges(score);
-        fges.setSymmetricFirstStep(true);
-        try {
-            Graph g = fges.search();
-            return GraphUtils.replaceNodes(g, data.getVariables());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Population FGES interrupted", e);
-        }
-    }
-
-    private static Graph learnInstanceSpecific(DataSet train, DataSet test, double kappa, Graph populationGraph, double samplePrior) {
-        BDeuScore popScore = new BDeuScore(train);
-
-        IsBDeuScore2 scoreIS = new IsBDeuScore2(train, test);
-        scoreIS.setSamplePrior(samplePrior);
-        scoreIS.setKAddition(kappa);
-        scoreIS.setKDeletion(kappa);
-        scoreIS.setKReorientation(kappa);
-
-        IsFges fges = new IsFges(scoreIS, popScore);
-        fges.setPopulationGraph(populationGraph);
-        fges.setInitialGraph(populationGraph);
-
-        try {
-            Graph g = fges.search();
-            return GraphUtils.replaceNodes(g, train.getVariables());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("IS-FGES interrupted", e);
-        }
-    }
-
-    // ================== IO helpers ==================
-
-    private static void ensureDir(Path dir) {
-        try {
-            Files.createDirectories(dir);
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to create output directory: " + dir, e);
-        }
-    }
-
-    private static void saveGraph(Graph g, Path out) {
-        File f = out.toFile();
-        GraphSaveLoadUtils.saveGraph(g, f, false);
-        System.out.println("Wrote: " + out);
-    }
-
-    private static DataSet readDiscreteCsv(Path csv, char delimiter) {
-        VerticalDiscreteTabularDatasetReader reader =
-                new VerticalDiscreteTabularDatasetFileReader(csv, DelimiterUtils.toDelimiter(delimiter));
-        try {
-            return (DataSet) DataConvertUtils.toDataModel(reader.readInData());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to read dataset: " + csv, e);
-        }
-    }
-
-    private static DataSet stripNameColumn(DataSet withNames, String nameCol) {
-        DataSet copy = withNames.copy();
-        int idx = copy.getColumn(copy.getVariable(nameCol));
-        copy.removeColumn(idx);
-        return copy;
-    }
-
-    private static DataSet bootstrap(DataSet data, int size) {
-        return new BootstrapSampler().sample(data, size);
-    }
-
-    private static String required(String[] args, int i, String flag) {
-        if (i >= args.length) throw new IllegalArgumentException("Missing value for " + flag);
-        return args[i];
-    }
-
-    private static void printHelpAndExit() {
-        System.out.println("Usage: TestISFGS_TCGA [options]\n" +
-                           "  -data <name>   Data CSV base name (default: " + DEFAULT_DATA_NAME + ")\n" +
-                           "  -dir <path>    Directory containing CSVs (default: user.dir)\n" +
-                           "  -bs <int>      Number of bootstrap replicates per LOO case (default: 1)\n" +
-                           "  -h, --help     Show this help");
-        System.exit(0);
     }
 }

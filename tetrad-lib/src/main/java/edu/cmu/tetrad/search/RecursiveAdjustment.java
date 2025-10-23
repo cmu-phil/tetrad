@@ -21,43 +21,15 @@ import java.util.*;
  */
 public final class RecursiveAdjustment {
 
-    private static final boolean DEBUG = true; // set false to silence logging
+    private static final boolean DEBUG = false; // set false to silence logging
+
+    public enum GraphType{DAG, MPDAG, MAG, PAG}
 
     private RecursiveAdjustment() {}
 
-    // ---------------------------------------------------------------------
-    // Public API
-    // ---------------------------------------------------------------------
-
-    /**
-     * Finds a candidate adjustment set between x and y, optionally masking
-     * nodes that lie on amenable (causal) paths.
-     */
-//    public static Set<Node> findAdjustmentSet(
-//            Graph graph, Node x, Node y,
-//            Set<Node> seedZ, Set<Node> notFollowed,
-//            int maxPathLength, Set<Node> latentMask) throws InterruptedException {
-//        Set<Node> visit = visit(
-//                graph, x, y,
-//                seedZ == null ? Collections.emptySet() : seedZ,
-//                notFollowed == null ? Collections.emptySet() : notFollowed,
-//                graph.paths().getDescendantsMap(),
-//                maxPathLength, null,
-//                latentMask == null ? Collections.emptySet() : latentMask
-//        );
-//
-//        System.out.println("visit: " + visit);
-//
-//        Set<Node> adjustment = minimize(graph, x, y, visit, notFollowed, maxPathLength, latentMask);
-//
-//        return adjustment;
-//    }
-
-    // ========== ADDED CODE ===========
-
     // ===== Public enumerator =====
     public static List<Set<Node>> findAdjustmentSets(
-            Graph graph, Node x, Node y,
+            Graph graph, GraphType graphType, Node x, Node y,
             Set<Node> seedZ, Set<Node> notFollowed,
             int maxPathLength, Set<Node> latentMask,
             int maxSets, boolean minimizeEach) throws InterruptedException {
@@ -86,7 +58,7 @@ public final class RecursiveAdjustment {
 
             Edge e = graph.getEdge(x, b);
             if (e == null) continue;
-            if (!startsBackdoorFromX(graph, e, x, b, y)) continue;
+            if (!startsBackdoorFromX(graph, graphType, e, x, b, y)) continue;
 
             List<Set<Node>> next = new ArrayList<>();
 
@@ -121,7 +93,7 @@ public final class RecursiveAdjustment {
             List<Set<Node>> minimized = new ArrayList<>();
             Set<String> seen = new HashSet<>();
             for (Set<Node> Z : frontier) {
-                Set<Node> m = minimizeZ(graph, x, y, Z, nf, maxPathLength);
+                Set<Node> m = minimizeZ(graph, graphType, x, y, Z, nf, maxPathLength);
                 String key = canon(m);
                 if (seen.add(key)) minimized.add(m);
             }
@@ -325,7 +297,7 @@ public final class RecursiveAdjustment {
 
     // ===== Minimal greedy pass using the checker you already have =====
     private static Set<Node> minimizeZ(
-            Graph graph, Node x, Node y, Set<Node> Z,
+            Graph graph, GraphType graphType, Node x, Node y, Set<Node> Z,
             Set<Node> notFollowed, int maxPathLength) throws InterruptedException {
 
         List<Node> order = new ArrayList<>(Z);
@@ -334,7 +306,7 @@ public final class RecursiveAdjustment {
             if (Thread.currentThread().isInterrupted()) return best;
             Set<Node> trial = new HashSet<>(best);
             trial.remove(n);
-            if (isAdjustmentSet(graph, x, y, trial, notFollowed, maxPathLength)) {
+            if (isAdjustmentSet(graph, graphType, x, y, trial, notFollowed, maxPathLength)) {
                 best = trial;
             }
         }
@@ -343,7 +315,7 @@ public final class RecursiveAdjustment {
 
     // ===== Pure checker (no additions to Z) =====
     public static boolean isAdjustmentSet(
-            Graph graph, Node x, Node y, Set<Node> Z,
+            Graph graph, GraphType graphType, Node x, Node y, Set<Node> Z,
             Set<Node> notFollowed, int maxPathLength) throws InterruptedException {
 
         Set<Node> path = new HashSet<>();
@@ -355,7 +327,7 @@ public final class RecursiveAdjustment {
 
             Edge e = graph.getEdge(x, b);
             if (e == null) continue;
-            if (!startsBackdoorFromX(graph, e, x, b, y)) continue;
+            if (!startsBackdoorFromX(graph, graphType,  e, x, b, y)) continue;
 
             Blockable r = descendCheck(graph, x, b, y, path, Z, maxPathLength, notFollowed, graph.paths().getDescendantsMap());
             if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE) return false;
@@ -416,19 +388,8 @@ public final class RecursiveAdjustment {
         }
     }
 
-//    private static final class Frame {
-//        final Node a, b;
-//        final Deque<Node> path;
-//        final Set<Node> Z;
-//        Frame(Node a, Node b, Deque<Node> path, Set<Node> Z) {
-//            this.a = a; this.b = b; this.path = path; this.Z = Z;
-//        }
-//    }
-
-    // ========== DONE ADDED CODE ========
-
     public static Set<Node> findAdjustmentSet(
-            Graph graph, Node x, Node y,
+            Graph graph, GraphType graphType, Node x, Node y,
             Set<Node> seedZ, Set<Node> notFollowed,
             int maxPathLength, Set<Node> latentMask) throws InterruptedException {
 
@@ -437,7 +398,7 @@ public final class RecursiveAdjustment {
         }
 
         Set<Node> z0 = visit(
-                graph, x, y,
+                graph, graphType, x, y,
                 seedZ == null ? Collections.emptySet() : seedZ,
                 notFollowed == null ? Collections.emptySet() : notFollowed,
                 graph.paths().getDescendantsMap(),
@@ -450,76 +411,8 @@ public final class RecursiveAdjustment {
 //        return minimizeZ(graph, x, y, z0, notFollowed, maxPathLength);  // checker-based
     }
 
-    // ---------------------------------------------------------------------
-    // Core recursive logic
-    // ---------------------------------------------------------------------
-
-//    public static boolean isAdjustmentSet(
-//            Graph graph, Node x, Node y, Set<Node> Z,
-//            Set<Node> notFollowed, int maxPathLength) throws InterruptedException {
-//
-//        if (Thread.currentThread().isInterrupted()) return false;
-//
-//        Set<Node> path = new HashSet<>();
-//        path.add(x);
-//
-//        for (Node b : graph.getAdjacentNodes(x)) {
-//            if (Thread.currentThread().isInterrupted()) return false;
-//            if (b == y) continue;
-//
-//            Edge e = graph.getEdge(x, b);
-//            if (e == null) continue;
-//            if (!startsBackdoorFromX(graph, e, x, b, y)) continue;
-//
-//            Blockable r = descendCheck(graph, x, b, y, path, Z, maxPathLength, notFollowed, graph.paths().getDescendantsMap());
-//            if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE) return false;
-//        }
-//        return true;
-//    }
-
-    // “Check” version of descend: NO Case-3 (no adding b to Z)
-//    private static Blockable descendCheck(
-//            Graph graph, Node a, Node b, Node y,
-//            Set<Node> path, Set<Node> Z, int maxPathLength,
-//            Set<Node> notFollowed, Map<Node, Set<Node>> descendantsMap) throws InterruptedException {
-//
-//        if (Thread.currentThread().isInterrupted()) return Blockable.INDETERMINATE;
-//
-//        if (b == y) return Blockable.UNBLOCKABLE;
-//        if (path.contains(b)) return Blockable.UNBLOCKABLE;
-//        if (notFollowed.contains(b)) return Blockable.INDETERMINATE;
-//        if (notFollowed.contains(y)) return Blockable.BLOCKED;
-//
-//        path.add(b);
-//        try {
-//            if (maxPathLength != -1 && path.size() > maxPathLength)
-//                return Blockable.INDETERMINATE;
-//
-//            // If b is latent or already in Z, just traverse
-//            if (b.getNodeType() == NodeType.LATENT || Z.contains(b)) {
-//                for (Node c : children(graph, a, b, Z, descendantsMap, notFollowed)) {
-//                    Blockable r = descendCheck(graph, b, c, y, path, Z, maxPathLength, notFollowed, descendantsMap);
-//                    if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE) return Blockable.UNBLOCKABLE;
-//                }
-//                return Blockable.BLOCKED;
-//            }
-//
-//            // Try WITHOUT conditioning on b; no “with b” branch in check mode
-//            for (Node c : children(graph, a, b, Z, descendantsMap, notFollowed)) {
-//                Blockable r = descendCheck(graph, b, c, y, path, Z, maxPathLength, notFollowed, descendantsMap);
-//                if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE) {
-//                    return Blockable.UNBLOCKABLE; // can’t block with current Z
-//                }
-//            }
-//            return Blockable.BLOCKED;
-//
-//        } finally {
-//            path.remove(b);
-//        }
-//    }
-
     private static Set<Node> visit(
-            Graph graph, Node x, Node y,
+            Graph graph, GraphType graphType, Node x, Node y,
             Set<Node> containing, Set<Node> notFollowed,
             Map<Node, Set<Node>> descendantsMap,
             int maxPathLength, Knowledge knowledge, Set<Node> latentMask) throws InterruptedException {
@@ -542,7 +435,7 @@ public final class RecursiveAdjustment {
 
             Edge e = graph.getEdge(x, b);
             if (e == null) continue;
-            if (!startsBackdoorFromX(graph, e, x, b, y)) continue;
+            if (!startsBackdoorFromX(graph, graphType, e, x, b, y)) continue;
 
             Blockable r = descend(graph, x, b, y, path, Z, maxPathLength, notFollowed, descendantsMap, latentMask);
             if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE) return null;
@@ -550,16 +443,16 @@ public final class RecursiveAdjustment {
         return Z;
     }
 
-    private static boolean startsBackdoorFromX(Graph graph, Edge e, Node x, Node b, Node y) {
-        boolean mpdag = graph.paths().isLegalMpdag();
-        boolean mag   = graph.paths().isLegalMag();
-        boolean pag   = graph.paths().isLegalPag();
+    private static boolean startsBackdoorFromX(Graph graph, GraphType graphType, Edge e, Node x, Node b, Node y) {
+//        boolean mpdag = graph.paths().isLegalMpdag();
+//        boolean mag   = graph.paths().isLegalMag();
+//        boolean pag   = graph.paths().isLegalPag();
 
-        if (mpdag) {
+        if (graphType == GraphType.MPDAG) {
             return e.pointsTowards(x) || Edges.isUndirectedEdge(e);
-        } else if (mag) {
+        } else if (graphType == GraphType.MAG) {
             return e.pointsTowards(x) || Edges.isUndirectedEdge(e) || Edges.isBidirectedEdge(e);
-        } else if (pag) {
+        } else if (graphType == GraphType.PAG) {
             if (e.pointsTowards(x) || Edges.isUndirectedEdge(e)) return true;
             if (Edges.isBidirectedEdge(e)) {
                 return graph.paths().existsDirectedPath(b, x) || graph.paths().existsDirectedPath(b, y);
@@ -686,7 +579,7 @@ public final class RecursiveAdjustment {
         return mask;
     }
 
-    static Set<Node> minimize(Graph g, Node x, Node y, Set<Node> Z,
+    static Set<Node> minimize(Graph g, GraphType graphType, Node x, Node y, Set<Node> Z,
                               Set<Node> notFollowed, int maxLen, Set<Node> mask) throws InterruptedException {
         List<Node> order = new ArrayList<>(Z);
         // Try the easy wins first: remove descendants of X or Y last
@@ -695,7 +588,7 @@ public final class RecursiveAdjustment {
         for (Node n : order) {
             Set<Node> trial = new HashSet<>(best);
             trial.remove(n);
-            Set<Node> check = RecursiveAdjustment.findAdjustmentSet(g, x, y, trial, notFollowed, maxLen, mask);
+            Set<Node> check = RecursiveAdjustment.findAdjustmentSet(g, graphType, x, y, trial, notFollowed, maxLen, mask);
             if (check != null) best = check; // still blocks all backdoors; keep it smaller
         }
         return best;

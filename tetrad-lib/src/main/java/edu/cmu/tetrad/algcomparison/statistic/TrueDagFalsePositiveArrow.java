@@ -63,14 +63,15 @@ public class TrueDagFalsePositiveArrow implements Statistic {
     }
 
     /**
-     * Calculates the false positives for arrows compared to the true DAG.
+     * Calculates the number of false positive arrows in the estimated graph compared to the true directed acyclic
+     * graph (DAG).
      *
-     * @param trueDag
-     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph   The estimated graph (same type).
-     * @param dataModel  The data model.
-     * @param parameters The parameters.
-     * @return The number of false positive arrows in the estimated graph compared to the true graph.
+     * @param trueDag The true directed acyclic graph (DAG).
+     * @param trueGraph The true graph structure used for comparison.
+     * @param estGraph The estimated graph being evaluated.
+     * @param dataModel The data model used in the evaluation process.
+     * @param parameters Additional parameters for the calculation.
+     * @return The number of false positive arrows in the estimated graph compared to the true DAG.
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {

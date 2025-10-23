@@ -149,7 +149,7 @@ public class Paths implements TetradSerializable {
     }
 
     static Set<Node> buildLatentMaskForTotalEffect(
-            Graph graph, Node X, Node Y,
+            Graph graph,  RecursiveAdjustment.GraphType  graphType, Node X, Node Y,
             Collection<List<Node>> amenablePaths,
             Set<Node> containing,
             boolean includeDescendantsOfX,
@@ -3337,9 +3337,12 @@ public class Paths implements TetradSerializable {
      */
     public List<Set<Node>> recursiveAdjustment(Node source,
                                                Node target,
+                                               String graphType,
                                                int maxNumSets,
                                                int maxPathLength,
                                                boolean minimizeEach) {
+        RecursiveAdjustment.GraphType _graphType = RecursiveAdjustment.GraphType.valueOf(graphType);
+
         // Degenerate: x ~~> x
         if (source == null || target == null || source == target) return Collections.emptyList();
 
@@ -3347,7 +3350,7 @@ public class Paths implements TetradSerializable {
         List<List<Node>> amenable = getAmenablePaths(source, target, -1);
 
         // 2) If none, spec says: return null
-        if (amenable == null || amenable.isEmpty()) return null;
+//        if (amenable == null || amenable.isEmpty()) return null;
 
         // 3) Build latent/forbidden mask for total-effect adjustment
         //    (forbid interior non-colliders on amenable paths; also forbid Desc(X))
@@ -3355,7 +3358,7 @@ public class Paths implements TetradSerializable {
 //                Collections.emptySet(), /*includeDescOfX*/ true);
 
         Set<Node> latentMask = buildLatentMaskForTotalEffect(
-                this.graph, source, target, amenable,
+                this.graph, _graphType, source, target, amenable,
                 Collections.emptySet(),
                 /* includeDescendantsOfX */ true,
                 /* includeDescendantsOfMediators */ true  // <— turn it on
@@ -3369,6 +3372,7 @@ public class Paths implements TetradSerializable {
             if (numSetsCap == 1) {
                 Set<Node> set = RecursiveAdjustment.findAdjustmentSet(
                         this.graph,
+                        _graphType,
                         source,
                         target,
                         /*seedZ*/ Collections.emptySet(),
@@ -3382,6 +3386,7 @@ public class Paths implements TetradSerializable {
             } else {
                 sets = RecursiveAdjustment.findAdjustmentSets(
                         this.graph,
+                        _graphType,
                         source,
                         target,
                         /*seedZ*/ Collections.emptySet(),
@@ -3412,6 +3417,7 @@ public class Paths implements TetradSerializable {
      */
     public List<Set<Node>> recursiveSeparatingSets(Node source,
                                                    Node target,
+                                                   RecursiveAdjustment.GraphType graphType,
                                                    int maxNumSets,
                                                    int maxPathLength,
                                                    boolean minimizeEach) {
@@ -3427,6 +3433,7 @@ public class Paths implements TetradSerializable {
         try {
             return RecursiveAdjustment.findAdjustmentSets(
                     this.graph,
+                    graphType,
                     source,
                     target,
                     /*seedZ*/ Collections.emptySet(),

@@ -1479,24 +1479,24 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      */
     private void adjustmentSets(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.setText("""     
-            An adjustment set is a set of nodes that blocks all paths that can't be causal while leaving
-            all causal paths unblocked. In particular, all confounders of the source and target will be
-            blocked. By conditioning on an adjustment set (if one exists) one can estimate the total 
-            effect of a source on a target.
-            
-            To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
-            into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
-            dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are 
-            blocked, the set is not an adjustment set. Also select "Backdoor paths" from the dropdown. 
-            All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
-            set is not an adjustment set.
-            
-            In the below perhaps not all adjustment sets are listed. Rather, the algorithm is designed to
-            find up to a maximum number of adjustment sets that are no more than a certain distance from
-            either the source or the target node, or either. Also, while all amenable paths are taken
-            into account, backdoor paths considered are only those that with no more than a certain number 
-            of nodes. These parameters can be edited.
-            """);
+                An adjustment set is a set of nodes that blocks all paths that can't be causal while leaving
+                all causal paths unblocked. In particular, all confounders of the source and target will be
+                blocked. By conditioning on an adjustment set (if one exists) one can estimate the total 
+                effect of a source on a target.
+                
+                To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
+                into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
+                dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are 
+                blocked, the set is not an adjustment set. Also select "Backdoor paths" from the dropdown. 
+                All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
+                set is not an adjustment set.
+                
+                In the below perhaps not all adjustment sets are listed. Rather, the algorithm is designed to
+                find up to a maximum number of adjustment sets that are no more than a certain distance from
+                either the source or the target node, or either. Also, while all amenable paths are taken
+                into account, backdoor paths considered are only those that with no more than a certain number 
+                of nodes. These parameters can be edited.
+                """);
 
         boolean found = false;
 
@@ -1558,19 +1558,33 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
     private void recursiveAdjustmentSets(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.setText("""     
-        An adjustment set is a set of nodes that blocks all paths that can't be causal while leaving
-        all causal paths unblocked. In particular, all confounders of the source and target will be
-        blocked. By conditioning on an adjustment set (if one exists) one can estimate the total 
-        effect of a source on a target. We look for adjustment sets here using a masked version of
-        the recursive blocking set algorithm.
-        
-        To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
-        into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
-        dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are 
-        blocked, the set is not an adjustment set. Also select "Backdoor paths" from the dropdown. 
-        All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
-        set is not an adjustment set.
-        """);
+                An adjustment set is a set of nodes that blocks all paths that can't be causal while leaving
+                all causal paths unblocked. In particular, all confounders of the source and target will be
+                blocked. By conditioning on an adjustment set (if one exists) one can estimate the total 
+                effect of a source on a target. We look for adjustment sets here using a masked version of
+                the recursive blocking set algorithm.
+                
+                To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
+                into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
+                dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are 
+                blocked, the set is not an adjustment set. Also select "Backdoor paths" from the dropdown. 
+                All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
+                set is not an adjustment set.
+                """);
+
+        RecursiveAdjustment.GraphType graphType;
+
+        if (graph.paths().isLegalDag()) {
+            graphType = RecursiveAdjustment.GraphType.DAG;
+        } else if (graph.paths().isLegalMpdag()) {
+            graphType = RecursiveAdjustment.GraphType.MPDAG;
+        } else if (graph.paths().isLegalMag()) {
+            graphType = RecursiveAdjustment.GraphType.MAG;
+        } else if (graph.paths().isLegalPag()) {
+            graphType = RecursiveAdjustment.GraphType.PAG;
+        } else {
+            graphType = RecursiveAdjustment.GraphType.DAG;
+        }
 
         boolean found = false;
 
@@ -1588,12 +1602,13 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 // Case split based on amenability (library check)
                 boolean amenable = paths.hasAmenablePaths(node1, node2, -1);
 
-                if (amenable) {
+                if (true) {
                     // True adjustment-set search via recursive algorithm
                     List<Set<Node>> adj;
                     try {
                         adj = paths.recursiveAdjustment(
                                 node1, node2,
+                                graphType.toString(),
                                 maxNumSet, maxLengthAdjustment,
                                 /* minimizeEach */ false
                         );
@@ -1604,7 +1619,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                         continue;
                     }
 
-                    textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
+                    if (amenable) {
+                        textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
+                    } else {
+                        textArea.append("\n\nNo amenable (causal) paths exist between " + node1 + " and " + node2 + ".");
+                        textArea.append("\nWe list sets that block all backdoor (non-causal) paths:\n");
+                    }
+
+//                    textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
 
                     if (adj == null) {
                         // Per spec: null means “no amenable paths OR no recursive solution produced”.
@@ -1626,6 +1648,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     try {
                         seps = paths.recursiveSeparatingSets(
                                 node1, node2,
+                                graphType,
                                 maxNumSet, maxLengthAdjustment,
                                 /* minimizeEach */ false
                         );

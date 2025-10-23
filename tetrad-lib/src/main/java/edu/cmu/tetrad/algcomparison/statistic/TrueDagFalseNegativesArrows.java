@@ -64,14 +64,14 @@ public class TrueDagFalseNegativesArrows implements Statistic {
     }
 
     /**
-     * Calculates the number of false negatives for arrows compared to the true DAG.
+     * Computes the number of False Negatives for Arrows in the estimated graph compared to the true DAG.
      *
-     * @param trueDag
-     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph   The estimated graph (same type).
-     * @param dataModel  The data model.
-     * @param parameters The parameters.
-     * @return The number of false negatives for arrows.
+     * @param trueDag The true Directed Acyclic Graph (DAG).
+     * @param trueGraph The true graph containing the correct structure of nodes and edges.
+     * @param estGraph The estimated graph to compare against the true graph.
+     * @param dataModel The data model used in the analysis. This parameter is not utilized in this method.
+     * @param parameters Additional parameters for computation. This parameter is not utilized in this method.
+     * @return The number of False Negatives for Arrows in the estimated graph compared to the true DAG.
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {

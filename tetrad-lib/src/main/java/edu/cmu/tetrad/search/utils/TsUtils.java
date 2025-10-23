@@ -483,6 +483,18 @@ public class TsUtils {
 //        return graphToLagGraph(_graph, numLags, defaultAvgOutDeg, noHardMax, 0.05);
 //    }
 
+    /**
+     * Converts a directed graph into a time-lagged graph representation.
+     * The resulting graph includes lagged copies of nodes, self-lagged edges,
+     * contemporaneous edges, and probabilistically generated inter-variable lagged edges up to the specified maximum lag.
+     *
+     * @param _graph The base directed graph to be converted. Must only contain directed edges.
+     *               Throws IllegalArgumentException if the input graph is not fully directed.
+     * @param numLags The maximum number of lags to include in the time-lagged graph.
+     * @param lagEdgeProb The probability of adding lagged inter-variable edges between nodes in the graph.
+     * @return A time-lagged graph representation of the input graph with the specified properties.
+     *         The resulting graph includes lagged nodes, self-lagged edges, and probabilistically generated lagged edges.
+     */
     public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags, double lagEdgeProb) {
         lagEdgeProb = 0.05;
 

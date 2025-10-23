@@ -67,14 +67,16 @@ public class TrueDagPrecisionArrow implements Statistic {
     }
 
     /**
-     * Calculates the proportion of X*->Y in the estimated graph for which there is no path Y~~>X in the true graph.
+     * Calculates the precision of arrow edges (X*->Y) in the estimated graph compared to the true DAG.
+     * Specifically, it determines the proportion of arrow edges in the estimated graph for which
+     * there is no path Y~~>X in the true graph.
      *
-     * @param trueDag
-     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph   The estimated graph (same type).
-     * @param dataModel  The data model.
-     * @param parameters The parameters.
-     * @return The calculated proportion value.
+     * @param trueDag The true directed acyclic graph (DAG) used as a reference.
+     * @param trueGraph The true graph representing the actual structure.
+     * @param estGraph The estimated graph whose precision is being evaluated.
+     * @param dataModel Data model containing additional information for the evaluation.
+     * @param parameters Parameters for controlling the evaluation process.
+     * @return The calculated precision value as a double.
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
