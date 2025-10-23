@@ -29,7 +29,7 @@ public final class RecursiveAdjustment {
 
     // ===== Public enumerator =====
     public static List<Set<Node>> findAdjustmentSets(
-            Graph graph, GraphType graphType, Node x, Node y,
+            Graph graph, String graphType, Node x, Node y,
             Set<Node> seedZ, Set<Node> notFollowed,
             int maxPathLength, Set<Node> latentMask,
             int maxSets, boolean minimizeEach) throws InterruptedException {
@@ -37,6 +37,8 @@ public final class RecursiveAdjustment {
         if (x == y) {
             return List.of(Collections.emptySet());
         }
+
+        GraphType _graphType = GraphType.valueOf(graphType);
 
         int cap = (maxSets <= 0 ? Integer.MAX_VALUE : maxSets);
 
@@ -58,7 +60,7 @@ public final class RecursiveAdjustment {
 
             Edge e = graph.getEdge(x, b);
             if (e == null) continue;
-            if (!startsBackdoorFromX(graph, graphType, e, x, b, y)) continue;
+            if (!startsBackdoorFromX(graph, _graphType, e, x, b, y)) continue;
 
             List<Set<Node>> next = new ArrayList<>();
 
@@ -93,7 +95,7 @@ public final class RecursiveAdjustment {
             List<Set<Node>> minimized = new ArrayList<>();
             Set<String> seen = new HashSet<>();
             for (Set<Node> Z : frontier) {
-                Set<Node> m = minimizeZ(graph, graphType, x, y, Z, nf, maxPathLength);
+                Set<Node> m = minimizeZ(graph, _graphType, x, y, Z, nf, maxPathLength);
                 String key = canon(m);
                 if (seen.add(key)) minimized.add(m);
             }

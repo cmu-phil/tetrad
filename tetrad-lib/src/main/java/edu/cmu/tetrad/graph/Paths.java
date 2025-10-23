@@ -3347,7 +3347,7 @@ public class Paths implements TetradSerializable {
         if (source == null || target == null || source == target) return Collections.emptyList();
 
         // 1) Get amenable (causal) paths X ~~> Y per graph semantics
-        List<List<Node>> amenable = getAmenablePaths(source, target, -1);
+        List<List<Node>> amenable = getAmenablePaths(source, target, graphType, -1);
 
         // 2) If none, spec says: return null
 //        if (amenable == null || amenable.isEmpty()) return null;
@@ -3386,7 +3386,7 @@ public class Paths implements TetradSerializable {
             } else {
                 sets = RecursiveAdjustment.findAdjustmentSets(
                         this.graph,
-                        _graphType,
+                        graphType,
                         source,
                         target,
                         /*seedZ*/ Collections.emptySet(),
@@ -3417,13 +3417,13 @@ public class Paths implements TetradSerializable {
      */
     public List<Set<Node>> recursiveSeparatingSets(Node source,
                                                    Node target,
-                                                   RecursiveAdjustment.GraphType graphType,
+                                                   String graphType,
                                                    int maxNumSets,
                                                    int maxPathLength,
                                                    boolean minimizeEach) {
         if (source == null || target == null || source == target) return Collections.emptyList();
 
-        List<List<Node>> amenable = getAmenablePaths(source, target, -1);
+        List<List<Node>> amenable = getAmenablePaths(source, target, graphType,-1);
 
         // Only produce separating sets when there are NO amenable paths
         if (amenable != null && !amenable.isEmpty()) {
@@ -3449,14 +3449,16 @@ public class Paths implements TetradSerializable {
         }
     }
 
-    public boolean hasAmenablePaths(Node x, Node y, int maxLength) {
-        List<List<Node>> aps = getAmenablePaths(x, y, maxLength);
+    public boolean hasAmenablePaths(Node x, Node y, String graphType, int maxLength) {
+        List<List<Node>> aps = getAmenablePaths(x, y, graphType, maxLength);
         return aps != null && !aps.isEmpty();
     }
 
-    private List<List<Node>> getAmenablePaths(Node source, Node target, int maxLength) {
+    private List<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
+        RecursiveAdjustment.GraphType _graphType = RecursiveAdjustment.GraphType.valueOf(graphType);
+
         if (source == null || target == null || source == target) return Collections.emptyList();
-        if (graph.paths().isLegalPag()) {
+        if (_graphType == RecursiveAdjustment.GraphType.PAG) {
             return graph.paths().amenablePathsPag(source, target, maxLength);
         } else {
             // DAG/CPDAG/MPDAG/MAG handled here
