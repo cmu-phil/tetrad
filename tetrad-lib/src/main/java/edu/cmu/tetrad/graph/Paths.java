@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.graph;
 
@@ -146,6 +146,155 @@ public class Paths implements TetradSerializable {
         }
 
         return parents;
+    }
+
+    static Set<Node> buildLatentMaskForTotalEffect(
+            Graph graph, Node X, Node Y,
+            Collection<List<Node>> amenablePaths,
+            Set<Node> containing,
+            boolean includeDescendantsOfX,
+            boolean includeDescendantsOfMediators   // <— NEW toggle
+    ) {
+        Set<Node> mask = new HashSet<>();
+
+        // Tier A: interior non-colliders (mediators) on amenable X→Y paths
+        Set<Node> mediators = new HashSet<>();
+        for (List<Node> p : amenablePaths) {
+            if (p.size() < 3) continue;
+            for (int i = 1; i < p.size() - 1; i++) {
+                Node a = p.get(i - 1), b = p.get(i), c = p.get(i + 1);
+                if (!graph.isDefCollider(a, b, c) && b.getNodeType() == NodeType.MEASURED) {
+                    mediators.add(b);
+                    mask.add(b); // forbid the mediator itself
+                }
+            }
+        }
+
+        Map<Node, Set<Node>> descMap = graph.paths().getDescendantsMap();
+
+        // Tier B: Descendants of X (measured)
+        if (includeDescendantsOfX) {
+            for (Node d : descMap.getOrDefault(X, Collections.emptySet())) {
+                if (d != null && d.getNodeType() == NodeType.MEASURED) {
+                    mask.add(d);
+                }
+            }
+        }
+
+        // Tier C: Descendants of any mediator (measured)  <— NEW per GAC
+        if (includeDescendantsOfMediators) {
+            for (Node m : mediators) {
+                for (Node d : descMap.getOrDefault(m, Collections.emptySet())) {
+                    if (d != null && d.getNodeType() == NodeType.MEASURED) {
+                        mask.add(d);
+                    }
+                }
+            }
+        }
+
+        // Cleanup
+        mask.remove(X);
+        mask.remove(Y);
+        if (containing != null) mask.removeAll(containing);
+        mask.removeIf(n -> n == null || n.getNodeType() != NodeType.MEASURED);
+
+        return mask;
+    }
+
+    public static PathEffectSpec buildMaskForPathEffect(
+            Graph graph,
+            Node X,
+            Node Y,
+            Collection<List<Node>> keepPaths,    // paths to KEEP causal flow
+            boolean includeDescendantsOfX) {
+
+        // 0) Collect ALL amenable X ~~> Y paths per semantics
+        List<List<Node>> allAmenable;
+        if (graph.paths().isLegalPag()) {
+            allAmenable = graph.paths().amenablePathsPag(X, Y, -1);
+        } else if (graph.paths().isLegalMpdag() || graph.paths().isLegalMag()) {
+            allAmenable = graph.paths().amenablePathsMpdagMag(X, Y, -1);
+        } else {
+            throw new IllegalArgumentException("Expect MPDAG/MAG/PAG for path-specific masking.");
+        }
+
+        // Canonicalize path identity by node-name sequence
+        java.util.function.Function<List<Node>, String> pkey = p -> {
+            StringBuilder sb = new StringBuilder();
+            for (Node n : p) {
+                sb.append(n.getName()).append("->");
+            }
+            return sb.toString();
+        };
+
+        Set<String> keepKeys = new HashSet<>();
+        for (List<Node> p : keepPaths) keepKeys.add(pkey.apply(p));
+
+        // Partition amenable paths
+        List<List<Node>> kept = new ArrayList<>();
+        List<List<Node>> excluded = new ArrayList<>();
+        for (List<Node> p : allAmenable) {
+            (keepKeys.contains(pkey.apply(p)) ? kept : excluded).add(p);
+        }
+
+        // 1) MASK: For kept paths, forbid interior definite NON-COLLIDERS (to keep them open).
+        Set<Node> mask = new HashSet<>();
+        for (List<Node> p : kept) {
+            for (int i = 1; i + 1 < p.size(); i++) {
+                Node a = p.get(i - 1), b = p.get(i), c = p.get(i + 1);
+                if (!graph.isDefCollider(a, b, c) && b.getNodeType() == NodeType.MEASURED) {
+                    mask.add(b);
+                }
+            }
+        }
+
+        // 2) SEED Z: For each excluded path, choose at least one interior NON-COLLIDER to block it.
+        //    Heuristic: take the first measured non-collider after X when available; else any measured non-collider.
+        Set<Node> seedZ = new HashSet<>();
+        for (List<Node> p : excluded) {
+            Node chosen = null;
+
+            // Prefer the non-collider right after X if possible
+            if (p.size() >= 3) {
+                Node a = p.get(0), b = p.get(1), c = p.get(2);
+                if (!graph.isDefCollider(a, b, c) && b.getNodeType() == NodeType.MEASURED) {
+                    chosen = b;
+                }
+            }
+
+            // Otherwise, pick any interior measured non-collider
+            if (chosen == null) {
+                for (int i = 1; i + 1 < p.size(); i++) {
+                    Node a = p.get(i - 1), b = p.get(i), c = p.get(i + 1);
+                    if (!graph.isDefCollider(a, b, c) && b.getNodeType() == NodeType.MEASURED) {
+                        chosen = b;
+                        break;
+                    }
+                }
+            }
+
+            if (chosen != null && chosen != X && chosen != Y) {
+                seedZ.add(chosen);
+            }
+        }
+
+        // 3) Optionally add Desc(X) (measured) to mask to prevent mediator adjustment
+        if (includeDescendantsOfX) {
+            Map<Node, Set<Node>> descMap = graph.paths().getDescendantsMap();
+            for (Node d : descMap.getOrDefault(X, Collections.emptySet())) {
+                if (d != null && d.getNodeType() == NodeType.MEASURED) {
+                    mask.add(d);
+                }
+            }
+        }
+
+        // 4) Sanitize: never mask endpoints; never mask things we *must* seed
+        mask.remove(X);
+        mask.remove(Y);
+        mask.removeAll(seedZ);
+        mask.removeIf(n -> n == null || n.getNodeType() != NodeType.MEASURED);
+
+        return new PathEffectSpec(mask, seedZ);
     }
 
     /**
@@ -528,7 +677,6 @@ public class Paths implements TetradSerializable {
         return components;
     }
 
-
     /**
      * Finds all directed paths from node1 to node2 with a maximum length.
      *
@@ -617,7 +765,6 @@ public class Paths implements TetradSerializable {
 
         return amenablePaths;
     }
-
 
     /**
      * Finds amenable paths from the given source node to the given destination node with a maximum length, for a PAG.
@@ -1067,6 +1214,10 @@ public class Paths implements TetradSerializable {
         return GraphUtils.district(node, graph);
     }
 
+
+    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
+    // length at most 'bound'. Cycle checker in other words.
+
     /**
      * Checks if a directed path exists between two nodes within a certain depth.
      *
@@ -1115,10 +1266,6 @@ public class Paths implements TetradSerializable {
         path.removeLast();
         return false;
     }
-
-
-    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
-    // length at most 'bound'. Cycle checker in other words.
 
     /**
      * <p>existsSemiDirectedPath.</p>
@@ -1613,7 +1760,6 @@ public class Paths implements TetradSerializable {
         return false;                             // Exhausted queue â no inducing path
     }
 
-
     /**
      * Determines whether an inducing path exists between two nodes in a graph. This is a breadth-first implementation.
      *
@@ -1757,96 +1903,6 @@ public class Paths implements TetradSerializable {
 
     }
 
-    /**
-     * Remove edges by the possible m-separation rule.
-     *
-     * @param test    The independence test to use to remove edges.
-     * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets will not be
-     *                recorded.
-     * @throws InterruptedException if any
-     */
-    public void removeByPossibleDsep(IndependenceTest test, SepsetMap sepsets) throws InterruptedException {
-        for (Edge edge : graph.getEdges()) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
-
-            {
-                List<Node> possibleDsep = possibleDsep(a, -1);
-                possibleDsep.remove(a);
-                possibleDsep.remove(b);
-
-                SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    if (choice.length < 2) continue;
-                    Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
-                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
-                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                    if (test.checkIndependence(a, b, sepset).isIndependent()) {
-                        graph.removeEdge(edge);
-
-                        if (sepsets != null) {
-                            sepsets.set(a, b, sepset);
-                        }
-
-                        break;
-                    }
-                }
-            }
-
-            if (graph.containsEdge(edge)) {
-                {
-                    List<Node> possibleDsep = possibleDsep(a, -1);
-                    possibleDsep.remove(a);
-                    possibleDsep.remove(b);
-
-                    SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
-                    int[] choice;
-
-                    while ((choice = gen.next()) != null) {
-                        if (choice.length < 2) continue;
-                        Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
-                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
-                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                        if (test.checkIndependence(a, b, sepset).isIndependent()) {
-                            graph.removeEdge(edge);
-
-                            if (sepsets != null) {
-                                sepsets.set(a, b, sepset);
-                            }
-
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private boolean existOnePathWithPossibleParents(Map<Node, Set<Node>> previous, Node w, Node x, Node b) {
-        if (w == x) {
-            return true;
-        }
-
-        Set<Node> p = previous.get(w);
-        if (p == null) {
-            return false;
-        }
-
-        for (Node r : p) {
-            if (r == b || r == x) {
-                continue;
-            }
-
-            if ((existsSemiDirectedPath(r, x)) || existsSemiDirectedPath(r, b)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
 //    /**
 //     * Calculates the possible d-separation nodes between two given Nodes within a graph, using a maximum path length
 //     * constraint.
@@ -1943,6 +1999,96 @@ public class Paths implements TetradSerializable {
 //
 //        return _msep;
 //    }
+
+    /**
+     * Remove edges by the possible m-separation rule.
+     *
+     * @param test    The independence test to use to remove edges.
+     * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets will not be
+     *                recorded.
+     * @throws InterruptedException if any
+     */
+    public void removeByPossibleDsep(IndependenceTest test, SepsetMap sepsets) throws InterruptedException {
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            {
+                List<Node> possibleDsep = possibleDsep(a, -1);
+                possibleDsep.remove(a);
+                possibleDsep.remove(b);
+
+                SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    if (choice.length < 2) continue;
+                    Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
+                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
+                    if (test.checkIndependence(a, b, sepset).isIndependent()) {
+                        graph.removeEdge(edge);
+
+                        if (sepsets != null) {
+                            sepsets.set(a, b, sepset);
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            if (graph.containsEdge(edge)) {
+                {
+                    List<Node> possibleDsep = possibleDsep(a, -1);
+                    possibleDsep.remove(a);
+                    possibleDsep.remove(b);
+
+                    SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
+                    int[] choice;
+
+                    while ((choice = gen.next()) != null) {
+                        if (choice.length < 2) continue;
+                        Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
+                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
+                        if (test.checkIndependence(a, b, sepset).isIndependent()) {
+                            graph.removeEdge(edge);
+
+                            if (sepsets != null) {
+                                sepsets.set(a, b, sepset);
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean existOnePathWithPossibleParents(Map<Node, Set<Node>> previous, Node w, Node x, Node b) {
+        if (w == x) {
+            return true;
+        }
+
+        Set<Node> p = previous.get(w);
+        if (p == null) {
+            return false;
+        }
+
+        for (Node r : p) {
+            if (r == b || r == x) {
+                continue;
+            }
+
+            if ((existsSemiDirectedPath(r, x)) || existsSemiDirectedPath(r, b)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Returns D-SEP(x, y) for a maximal ancestral graph G (or inducing path graph G, as in Causation, Prediction and
@@ -2239,6 +2385,10 @@ public class Paths implements TetradSerializable {
         return true;
     }
 
+    /*======================================================================
+     * 1.  PUBLIC ENTRY POINT
+     *====================================================================*/
+
     /**
      * Detemrmines whether x and y are d-connected given z.
      *
@@ -2345,6 +2495,10 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    /*======================================================================
+     * 2.  COLLIDER-PATH SEARCH  (Zhang 2008, Def. 8, second bullet)
+     *====================================================================*/
+
     /**
      * Assumes node should be in component.
      */
@@ -2364,9 +2518,7 @@ public class Paths implements TetradSerializable {
         }
     }
 
-    /*======================================================================
-     * 1.  PUBLIC ENTRY POINT
-     *====================================================================*/
+    /* ------------------------------------------------------------------ */
 
     /**
      * Returns true if the edge form A to B is a definitely visible edge in a PAG.
@@ -2397,51 +2549,6 @@ public class Paths implements TetradSerializable {
             }
         }
         return false;   // no qualifying C found â edge is invisible
-    }
-
-    /*======================================================================
-     * 2.  COLLIDER-PATH SEARCH  (Zhang 2008, Def. 8, second bullet)
-     *====================================================================*/
-
-    /**
-     * True iff there exists a collider path   C = v0 â¦ vk = A (k â¥ 1) that is arrow-headed into A and whose
-     * **interior** vertices are all parents of B.  Endpoints C and A themselves are *not* required to point to B.
-     */
-    private boolean existsColliderPathInto(Node C, Node A, Node B) {
-        return dfsColliderPath(null, C, A, B, new HashSet<>());
-    }
-
-    /* ------------------------------------------------------------------ */
-
-    private boolean dfsColliderPath(Node prev,           // vertex before âcurâ
-                                    Node cur,            // current vertex
-                                    Node targetA,        // destination
-                                    Node B,              // must receive arrows
-                                    Set<Node> onBranch)  // cycle guard
-    {
-        /* (i) Interior-vertex parent-of-B condition */
-        if (prev != null && !cur.equals(targetA)          // interior only
-            && !graph.isParentOf(cur, B)) {
-            return false;                                 // violates clause
-        }
-
-        /* (ii) Endpoint reached: arrowhead into A required */
-        if (cur.equals(targetA)) {
-            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
-        }
-
-        /* (iii) DFS expansion with collider check */
-        onBranch.add(cur);
-        for (Node nxt : graph.getAdjacentNodes(cur)) {
-            if (onBranch.contains(nxt)) continue;         // avoid cycles
-
-            // collider requirement applies once we *have* a predecessor
-            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
-                if (dfsColliderPath(cur, nxt, targetA, B, onBranch)) return true;
-            }
-        }
-        onBranch.remove(cur);
-        return false;
     }
 
 //    /**
@@ -2644,6 +2751,45 @@ public class Paths implements TetradSerializable {
 //
 //        return false;
 //    }
+
+    /**
+     * True iff there exists a collider path   C = v0 â¦ vk = A (k â¥ 1) that is arrow-headed into A and whose
+     * **interior** vertices are all parents of B.  Endpoints C and A themselves are *not* required to point to B.
+     */
+    private boolean existsColliderPathInto(Node C, Node A, Node B) {
+        return dfsColliderPath(null, C, A, B, new HashSet<>());
+    }
+
+    private boolean dfsColliderPath(Node prev,           // vertex before âcurâ
+                                    Node cur,            // current vertex
+                                    Node targetA,        // destination
+                                    Node B,              // must receive arrows
+                                    Set<Node> onBranch)  // cycle guard
+    {
+        /* (i) Interior-vertex parent-of-B condition */
+        if (prev != null && !cur.equals(targetA)          // interior only
+            && !graph.isParentOf(cur, B)) {
+            return false;                                 // violates clause
+        }
+
+        /* (ii) Endpoint reached: arrowhead into A required */
+        if (cur.equals(targetA)) {
+            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
+        }
+
+        /* (iii) DFS expansion with collider check */
+        onBranch.add(cur);
+        for (Node nxt : graph.getAdjacentNodes(cur)) {
+            if (onBranch.contains(nxt)) continue;         // avoid cycles
+
+            // collider requirement applies once we *have* a predecessor
+            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
+                if (dfsColliderPath(cur, nxt, targetA, B, onBranch)) return true;
+            }
+        }
+        onBranch.remove(cur);
+        return false;
+    }
 
     /**
      * <p>existsDirectedCycle.</p>
@@ -2985,6 +3131,8 @@ public class Paths implements TetradSerializable {
         return existsSemiDirectedPath(node1, Collections.singleton(node2));
     }
 
+// --- Public API: Recursive (mask-based) adjustment ---
+
     /**
      * Returns the set of nodes that are in the anteriority of the given nodes in the graph.
      *
@@ -3176,7 +3324,7 @@ public class Paths implements TetradSerializable {
         return adjustmentSets;
     }
 
-// --- Public API: Recursive (mask-based) adjustment ---
+    // Put this next to your existing mask builder in Paths (or a util class).
 
     /**
      * Recursive adjustment-set finder (library call).
@@ -3203,73 +3351,56 @@ public class Paths implements TetradSerializable {
 
         // 3) Build latent/forbidden mask for total-effect adjustment
         //    (forbid interior non-colliders on amenable paths; also forbid Desc(X))
-        Set<Node> latentMask = buildLatentMaskForTotalEffect(this.graph, source, target, amenable,
-                Collections.emptySet(), /*includeDescOfX*/ true);
+//        Set<Node> latentMask = buildLatentMaskForTotalEffect(this.graph, source, target, amenable,
+//                Collections.emptySet(), /*includeDescOfX*/ true);
+
+        Set<Node> latentMask = buildLatentMaskForTotalEffect(
+                this.graph, source, target, amenable,
+                Collections.emptySet(),
+                /* includeDescendantsOfX */ true,
+                /* includeDescendantsOfMediators */ true  // <— turn it on
+        );
 
         // 4) Run recursive enumerator
         try {
-            List<Set<Node>> sets = RecursiveAdjustment.findAdjustmentSets(
-                    this.graph,
-                    source,
-                    target,
-                    /*seedZ*/ Collections.emptySet(),
-                    /*notFollowed*/ Collections.emptySet(),
-                    /*maxPathLength*/ maxPathLength <= 0 ? -1 : maxPathLength,
-                    /*latentMask*/ latentMask,
-                    /*maxSets*/ (maxNumSets <= 0 ? -1 : maxNumSets),
-                    /*minimizeEach*/ minimizeEach
-            );
+            int numSetsCap = maxNumSets <= 0 ? -1 : maxNumSets;
+            List<Set<Node>> sets;
+
+            if (numSetsCap == 1) {
+                Set<Node> set = RecursiveAdjustment.findAdjustmentSet(
+                        this.graph,
+                        source,
+                        target,
+                        /*seedZ*/ Collections.emptySet(),
+                        /*notFollowed*/ Collections.emptySet(),
+                        /*maxPathLength*/ maxPathLength <= 0 ? -1 : maxPathLength,
+                        latentMask
+//                        /*minimizeEach*/ minimizeEach
+                );
+
+                return set == null ? List.of() : List.of(set);
+            } else {
+                sets = RecursiveAdjustment.findAdjustmentSets(
+                        this.graph,
+                        source,
+                        target,
+                        /*seedZ*/ Collections.emptySet(),
+                        /*notFollowed*/ Collections.emptySet(),
+                        /*maxPathLength*/ maxPathLength <= 0 ? -1 : maxPathLength,
+                        /*latentMask*/ latentMask,
+                        /*maxSets*/ numSetsCap,
+                        /*minimizeEach*/ minimizeEach
+                );
+            }
 
             // If the recursive method yields nothing, treat as "no answer" -> null (per your spec)
-            if (sets == null || sets.isEmpty()) return null;
+            if (sets.isEmpty()) return null;
 
             return sets;
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             return null;
         }
-    }
-
-    static Set<Node> buildLatentMaskForTotalEffect(Graph graph,
-                                                   Node X, Node Y,
-                                                   Collection<List<Node>> amenablePaths,
-                                                   Set<Node> containing,            // seed Z (may be empty)
-                                                   boolean includeDescendantsOfX) { // Tier-B toggle
-        Set<Node> mask = new HashSet<>();
-
-        // --- Tier A: interior non-colliders along amenable X→Y paths ---
-        for (List<Node> p : amenablePaths) {
-            if (p.size() < 3) continue; // no interior nodes on length-2 path X–Y
-            for (int i = 1; i < p.size() - 1; i++) {
-                Node a = p.get(i - 1), b = p.get(i), c = p.get(i + 1);
-                // Mask ONLY if b is a definite non-collider on this triple
-                if (!graph.isDefCollider(a, b, c) && b.getNodeType() == NodeType.MEASURED) {
-                    mask.add(b);
-                }
-            }
-        }
-
-        // --- Tier B (optional): Descendants of X (measured only) ---
-        if (includeDescendantsOfX) {
-            Map<Node, Set<Node>> descMap = graph.paths().getDescendantsMap(); // recompute per run
-            Set<Node> descX = descMap.getOrDefault(X, Collections.emptySet());
-            for (Node d : descX) {
-                if (d != null && d.getNodeType() == NodeType.MEASURED) {
-                    mask.add(d);
-                }
-            }
-        }
-
-        // --- Sanitize: remove endpoints, latents, and anything the user forced into Z ---
-        mask.remove(X);
-        mask.remove(Y);
-        if (containing != null) {
-            mask.removeAll(containing);
-        }
-        // Keep mask to measured nodes only; true latents are already handled by RB
-        mask.removeIf(n -> n == null || n.getNodeType() != NodeType.MEASURED);
-
-        return mask;
     }
 
     /**
@@ -3393,6 +3524,17 @@ public class Paths implements TetradSerializable {
         }
 
         return true;
+    }
+
+    /** Small bundle for path-specific RA: mask (forbidden to condition on) + a seed Z (required blockers). */
+    public static final class PathEffectSpec {
+        public final Set<Node> mask;   // nodes RA must NOT condition on
+        public final Set<Node> seedZ;  // nodes RA SHOULD start with in Z (to close excluded causal paths)
+
+        public PathEffectSpec(Set<Node> mask, Set<Node> seedZ) {
+            this.mask = mask;
+            this.seedZ = seedZ;
+        }
     }
 
     /**

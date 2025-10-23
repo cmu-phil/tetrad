@@ -159,7 +159,7 @@ public class Comparison2 {
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
-                trueDag = TsUtils.graphToLagGraph(trueDag, 2);
+                trueDag = TsUtils.graphToLagGraph(trueDag, 2, 0.1);
                 System.out.println("Creating Time Lag Graph : " + trueDag);
             }
 
@@ -243,7 +243,7 @@ public class Comparison2 {
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                     trueDag = RandomGraph.randomGraphRandomForwardEdges(
                             nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
-                    trueDag = TsUtils.graphToLagGraph(trueDag, 2);
+                    trueDag = TsUtils.graphToLagGraph(trueDag, 2, 0.1);
                     System.out.println("Creating Time Lag Graph : " + trueDag);
                 }
 

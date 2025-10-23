@@ -705,7 +705,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Adjacents",
                 "Adjustment Set(s) (Recursive)",
                 "Adjustment Sets (Full Path Enumeration)",
-//                "Recursive Blocking Sets",
+                "Recursive Blocking Sets",
                 "Amenable paths",
                 "Backdoor paths"
         });
