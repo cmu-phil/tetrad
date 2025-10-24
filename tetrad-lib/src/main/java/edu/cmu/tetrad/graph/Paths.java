@@ -149,7 +149,7 @@ public class Paths implements TetradSerializable {
     }
 
     static Set<Node> buildLatentMaskForTotalEffect(
-            Graph graph,  RecursiveAdjustment.GraphType  graphType, Node X, Node Y,
+            Graph graph, RecursiveAdjustment.GraphType graphType, Node X, Node Y,
             Collection<List<Node>> amenablePaths,
             Set<Node> containing,
             boolean includeDescendantsOfX,
@@ -2768,7 +2768,7 @@ public class Paths implements TetradSerializable {
     {
         /* (i) Interior-vertex parent-of-B condition */
         if (prev != null && !cur.equals(targetA)          // interior only
-            && !graph.isParentOf(cur, B)) {
+                && !graph.isParentOf(cur, B)) {
             return false;                                 // violates clause
         }
 
@@ -3328,11 +3328,11 @@ public class Paths implements TetradSerializable {
 
     /**
      * Recursive adjustment-set finder (library call).
-     *
+     * <p>
      * Returns:
-     *   - A (possibly non-unique) list of adjustment sets when amenable paths exist,
-     *   - null if there are no amenable paths X ~~> Y, or if no recursive solution is found.
-     *
+     * - A (possibly non-unique) list of adjustment sets when amenable paths exist,
+     * - null if there are no amenable paths X ~~> Y, or if no recursive solution is found.
+     * <p>
      * Backward-compatible: does not alter the legacy adjustmentSets(...) method.
      */
     public List<Set<Node>> recursiveAdjustment(Node source,
@@ -3366,45 +3366,21 @@ public class Paths implements TetradSerializable {
 
         // 4) Run recursive enumerator
         try {
-            int numSetsCap = maxNumSets <= 0 ? -1 : maxNumSets;
-            List<Set<Node>> sets;
+            Set<Node> set = RecursiveAdjustment.findAdjustmentSet(
+                    this.graph,
+                    graphType,
+                    source,
+                    target,
+                    /*seedZ*/ Collections.emptySet(),
+                    /*notFollowed*/ Collections.emptySet(),
+                    /*maxPathLength*/ maxPathLength <= 0 ? -1 : maxPathLength,
+                    latentMask
+                    //                        /*minimizeEach*/ minimizeEach
+            );
 
-            if (numSetsCap == 1) {
-                Set<Node> set = RecursiveAdjustment.findAdjustmentSet(
-                        this.graph,
-                        _graphType,
-                        source,
-                        target,
-                        /*seedZ*/ Collections.emptySet(),
-                        /*notFollowed*/ Collections.emptySet(),
-                        /*maxPathLength*/ maxPathLength <= 0 ? -1 : maxPathLength,
-                        latentMask
-//                        /*minimizeEach*/ minimizeEach
-                );
-
-                return set == null ? List.of() : List.of(set);
-            } else {
-                sets = RecursiveAdjustment.findAdjustmentSets(
-                        this.graph,
-                        graphType,
-                        source,
-                        target,
-                        /*seedZ*/ Collections.emptySet(),
-                        /*notFollowed*/ Collections.emptySet(),
-                        /*maxPathLength*/ maxPathLength <= 0 ? -1 : maxPathLength,
-                        /*latentMask*/ latentMask,
-                        /*maxSets*/ numSetsCap,
-                        /*minimizeEach*/ minimizeEach
-                );
-            }
-
-            // If the recursive method yields nothing, treat as "no answer" -> null (per your spec)
-            if (sets.isEmpty()) return null;
-
-            return sets;
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-            return null;
+            return set == null ? List.of() : List.of(set);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -3412,7 +3388,7 @@ public class Paths implements TetradSerializable {
      * When there are no amenable paths X ~~> Y, this returns candidate separating sets:
      * sets that block all backdoor (non-causal) paths, using the same recursive engine
      * but with an EMPTY mask (so it’s allowed to condition anywhere that’s measured).
-     *
+     * <p>
      * If amenable paths DO exist, this returns an empty list (use recursiveAdjustment instead).
      */
     public List<Set<Node>> recursiveSeparatingSets(Node source,
@@ -3421,32 +3397,34 @@ public class Paths implements TetradSerializable {
                                                    int maxNumSets,
                                                    int maxPathLength,
                                                    boolean minimizeEach) {
-        if (source == null || target == null || source == target) return Collections.emptyList();
+        throw new UnsupportedOperationException("Need a new iplementation.");
 
-        List<List<Node>> amenable = getAmenablePaths(source, target, graphType,-1);
-
-        // Only produce separating sets when there are NO amenable paths
-        if (amenable != null && !amenable.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        try {
-            return RecursiveAdjustment.findAdjustmentSets(
-                    this.graph,
-                    graphType,
-                    source,
-                    target,
-                    /*seedZ*/ Collections.emptySet(),
-                    /*notFollowed*/ Collections.emptySet(),
-                    /*maxPathLength*/ maxPathLength <= 0 ? -1 : maxPathLength,
-                    /*latentMask*/ Collections.emptySet(),   // <-- key difference
-                    /*maxSets*/ (maxNumSets <= 0 ? -1 : maxNumSets),
-                    /*minimizeEach*/ minimizeEach
-            );
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-            return Collections.emptyList();
-        }
+//        if (source == null || target == null || source == target) return Collections.emptyList();
+//
+//        List<List<Node>> amenable = getAmenablePaths(source, target, graphType, -1);
+//
+//        // Only produce separating sets when there are NO amenable paths
+//        if (amenable != null && !amenable.isEmpty()) {
+//            return Collections.emptyList();
+//        }
+//
+//        try {
+//            return RecursiveAdjustment.findAdjustmentSets(
+//                    this.graph,
+//                    graphType,
+//                    source,
+//                    target,
+//                    /*seedZ*/ Collections.emptySet(),
+//                    /*notFollowed*/ Collections.emptySet(),
+//                    /*maxPathLength*/ maxPathLength <= 0 ? -1 : maxPathLength,
+//                    /*latentMask*/ Collections.emptySet(),   // <-- key difference
+//                    /*maxSets*/ (maxNumSets <= 0 ? -1 : maxNumSets),
+//                    /*minimizeEach*/ minimizeEach
+//            );
+//        } catch (InterruptedException ie) {
+//            Thread.currentThread().interrupt();
+//            return Collections.emptyList();
+//        }
     }
 
     public boolean hasAmenablePaths(Node x, Node y, String graphType, int maxLength) {
@@ -3535,7 +3513,9 @@ public class Paths implements TetradSerializable {
         return true;
     }
 
-    /** Small bundle for path-specific RA: mask (forbidden to condition on) + a seed Z (required blockers). */
+    /**
+     * Small bundle for path-specific RA: mask (forbidden to condition on) + a seed Z (required blockers).
+     */
     public static final class PathEffectSpec {
         public final Set<Node> mask;   // nodes RA must NOT condition on
         public final Set<Node> seedZ;  // nodes RA SHOULD start with in Z (to close excluded causal paths)
