@@ -240,31 +240,32 @@ public final class RecursiveAdjustment {
             if (e == null) continue;
             if (!startsBackdoorFromX(graph, graphType,  e, x, b, y)) continue;
 
-            RecursiveAdjustmentCopy.Blockable r = descendCheck(graph, x, b, y, path, Z, maxPathLength, notFollowed, graph.paths().getDescendantsMap());
-            if (r == RecursiveAdjustmentCopy.Blockable.UNBLOCKABLE || r == RecursiveAdjustmentCopy.Blockable.INDETERMINATE) return false;
+            Blockable r = descendCheck(graph, x, b, y, path, Z, maxPathLength, notFollowed, graph.paths().getDescendantsMap());
+            if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE) return false;
         }
         return true;
     }
 
-    private static RecursiveAdjustmentCopy.Blockable descendCheck(
+    private static Blockable descendCheck(
             Graph graph, Node a, Node b, Node y,
             Set<Node> path, Set<Node> Z, int maxPathLength,
             Set<Node> notFollowed, Map<Node, Set<Node>> descendantsMap) throws InterruptedException {
 
-        if (b == y) return RecursiveAdjustmentCopy.Blockable.UNBLOCKABLE;
-        if (path.contains(b)) return RecursiveAdjustmentCopy.Blockable.UNBLOCKABLE;
-        if (notFollowed.contains(b)) return RecursiveAdjustmentCopy.Blockable.INDETERMINATE;
-        if (maxPathLength != -1 && path.size() > maxPathLength) return RecursiveAdjustmentCopy.Blockable.INDETERMINATE;
+        if (b == y) return Blockable.UNBLOCKABLE;
+        if (path.contains(b)) return Blockable.BLOCKED;
+        if (notFollowed.contains(b)) return Blockable.INDETERMINATE;
+        if (maxPathLength != -1 && path.size() > maxPathLength) return Blockable.INDETERMINATE;
 
         path.add(b);
         try {
             List<Node> kids = children(graph, a, b, Z, descendantsMap, notFollowed);
-            if (kids.isEmpty()) return RecursiveAdjustmentCopy.Blockable.BLOCKED;
+            if (kids.isEmpty()) return Blockable.BLOCKED;
             for (Node c : kids) {
-                RecursiveAdjustmentCopy.Blockable r = descendCheck(graph, b, c, y, path, Z, maxPathLength, notFollowed, descendantsMap);
-                if (r == RecursiveAdjustmentCopy.Blockable.UNBLOCKABLE || r == RecursiveAdjustmentCopy.Blockable.INDETERMINATE) return RecursiveAdjustmentCopy.Blockable.UNBLOCKABLE;
+                Blockable r = descendCheck(graph, b, c, y, path, Z, maxPathLength, notFollowed, descendantsMap);
+                if (r == Blockable.UNBLOCKABLE || r == Blockable.INDETERMINATE)
+                    return Blockable.UNBLOCKABLE;
             }
-            return RecursiveAdjustmentCopy.Blockable.BLOCKED;
+            return Blockable.BLOCKED;
         } finally {
             path.remove(b);
         }

@@ -261,7 +261,7 @@ public class RecursiveBlocking {
             return Blockable.UNBLOCKABLE;
         }
         if (path.contains(b)) {
-            return Blockable.UNBLOCKABLE;
+            return Blockable.BLOCKED;
         }
         if (notFollowed.contains(b)) {
             return Blockable.INDETERMINATE;

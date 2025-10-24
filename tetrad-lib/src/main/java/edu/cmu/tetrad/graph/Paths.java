@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.search.RAEnumerate;
 import edu.cmu.tetrad.search.RecursiveAdjustment;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
@@ -148,12 +149,7 @@ public class Paths implements TetradSerializable {
         return parents;
     }
 
-    static Set<Node> buildLatentMaskForTotalEffect(
-            Graph graph, RecursiveAdjustment.GraphType graphType, Node X, Node Y,
-            Collection<List<Node>> amenablePaths,
-            Set<Node> containing,
-            boolean includeDescendantsOfX,
-            boolean includeDescendantsOfMediators   // <— NEW toggle
+    static Set<Node> buildLatentMaskForTotalEffect(Graph graph, RecursiveAdjustment.GraphType graphType, Node X, Node Y, Collection<List<Node>> amenablePaths, Set<Node> containing, boolean includeDescendantsOfX, boolean includeDescendantsOfMediators   // <— NEW toggle
     ) {
         Set<Node> mask = new HashSet<>();
 
@@ -201,12 +197,8 @@ public class Paths implements TetradSerializable {
         return mask;
     }
 
-    public static PathEffectSpec buildMaskForPathEffect(
-            Graph graph,
-            Node X,
-            Node Y,
-            Collection<List<Node>> keepPaths,    // paths to KEEP causal flow
-            boolean includeDescendantsOfX) {
+    public static PathEffectSpec buildMaskForPathEffect(Graph graph, Node X, Node Y, Collection<List<Node>> keepPaths,    // paths to KEEP causal flow
+                                                        boolean includeDescendantsOfX) {
 
         // 0) Collect ALL amenable X ~~> Y paths per semantics
         List<List<Node>> allAmenable;
@@ -3335,53 +3327,231 @@ public class Paths implements TetradSerializable {
      * <p>
      * Backward-compatible: does not alter the legacy adjustmentSets(...) method.
      */
-    public List<Set<Node>> recursiveAdjustment(Node source,
-                                               Node target,
-                                               String graphType,
-                                               int maxNumSets,
-                                               int maxPathLength,
-                                               boolean minimizeEach) {
-        RecursiveAdjustment.GraphType _graphType = RecursiveAdjustment.GraphType.valueOf(graphType);
+    public RAEnumerate.AdjSummary recursiveAdjustment(
+            Node source,
+            Node target,
+            String graphType,           // "PAG" | "MAG" | "MPDAG" | "DAG"
+            int maxNumSets,
+            int maxPathLength,          // <=0 means unlimited
+            boolean minimizeEach
+    ) {
+        if (source == null || target == null || source == target) return null;
 
-        // Degenerate: x ~~> x
-        if (source == null || target == null || source == target) return Collections.emptyList();
+        final Graph G = this.graph;
+        final String gt = (graphType != null) ? graphType : RAEnumerate.inferGraphType(G);
 
-        // 1) Get amenable (causal) paths X ~~> Y per graph semantics
-        List<List<Node>> amenable = getAmenablePaths(source, target, graphType, -1);
-
-        // 2) If none, spec says: return null
-//        if (amenable == null || amenable.isEmpty()) return null;
-
-        // 3) Build latent/forbidden mask for total-effect adjustment
-        //    (forbid interior non-colliders on amenable paths; also forbid Desc(X))
-//        Set<Node> latentMask = buildLatentMaskForTotalEffect(this.graph, source, target, amenable,
-//                Collections.emptySet(), /*includeDescOfX*/ true);
+        // Amenable paths and latent mask (your existing helpers)
+        List<List<Node>> amenable = getAmenablePaths(source, target, gt, -1);
 
         Set<Node> latentMask = buildLatentMaskForTotalEffect(
-                this.graph, _graphType, source, target, amenable,
-                Collections.emptySet(),
+                G, RecursiveAdjustment.GraphType.valueOf(gt), source, target, amenable, Collections.emptySet(),
                 /* includeDescendantsOfX */ true,
-                /* includeDescendantsOfMediators */ true  // <— turn it on
+                /* includeDescendantsOfMediators */ true
         );
 
-        // 4) Run recursive enumerator
+        // GAC forbidden set (Forb_G(X,Y)) – used only for acceptance (A2)
+        Set<Node> forbGAC;
         try {
-            Set<Node> set = RecursiveAdjustment.findAdjustmentSet(
-                    this.graph,
-                    graphType,
-                    source,
-                    target,
-                    /*seedZ*/ Collections.emptySet(),
-                    /*notFollowed*/ Collections.emptySet(),
-                    /*maxPathLength*/ maxPathLength <= 0 ? -1 : maxPathLength,
-                    latentMask
-                    //                        /*minimizeEach*/ minimizeEach
-            );
-
-            return set == null ? List.of() : List.of(set);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            forbGAC = new LinkedHashSet<>(getForbiddenForAdjustment(graph, graphType, source, target));
+        } catch (Throwable t) {
+            forbGAC = Collections.emptySet();
         }
+
+        // Branch checker (A3)
+        RAEnumerate.BranchChecker branchChecker = RAEnumerate.defaultBranchCheckerFor(gt);
+
+        // ---------------- Fast path: single set ----------------
+        if (maxNumSets == 1) {
+            try {
+                Set<Node> S = RecursiveAdjustment.findAdjustmentSet(
+                        G, gt, source, target,
+                        /*seedZ*/ Collections.emptySet(),
+                        /*notFollowed*/ Collections.emptySet(),               // <— don’t inject forbGAC here
+                        /*maxPathLength*/ (maxPathLength <= 0 ? -1 : maxPathLength),
+                        /*latentMask*/ latentMask
+                );
+
+                if (S == null) {
+                    // no set found under the given fuse
+                    return new RAEnumerate.AdjSummary(RAEnumerate.AdjKind.NONEMPTY_SETS, List.of());
+                }
+
+                // A2: reject if intersects forbidden
+                if (!Collections.disjoint(S, forbGAC)) {
+                    return new RAEnumerate.AdjSummary(RAEnumerate.AdjKind.NONEMPTY_SETS, List.of());
+                }
+
+                // A3: must block all backdoors
+                if (!branchChecker.isBlocked(G, source, target, S, null)) {
+                    return new RAEnumerate.AdjSummary(RAEnumerate.AdjKind.NONEMPTY_SETS, List.of());
+                }
+
+                if (S.isEmpty()) {
+                    return new RAEnumerate.AdjSummary(RAEnumerate.AdjKind.EMPTY_SET_SUFFICES,
+                            List.of(Collections.emptySet()));
+                } else {
+                    return new RAEnumerate.AdjSummary(RAEnumerate.AdjKind.NONEMPTY_SETS,
+                            List.of(Collections.unmodifiableSet(new LinkedHashSet<>(S))));
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return new RAEnumerate.AdjSummary(RAEnumerate.AdjKind.NONEMPTY_SETS, List.of());
+            }
+        }
+
+        // ---------------- Enumeration path: multiple sets ----------------
+
+        // Minimal policy that lets RAEnumerate steer away from pivots; universe = all nodes.
+        RAEnumerate.Policy policyAll = new RAEnumerate.Policy() {
+            private final Set<Node> forbid = Collections.emptySet();
+            @Override public RAEnumerate.Policy withRandom(Random rnd) { return this; }
+            @Override public RAEnumerate.Policy withForbid(Set<Node> f) {
+                return new RAEnumerate.Policy() {
+                    @Override public RAEnumerate.Policy withRandom(Random r) { return this; }
+                    @Override public RAEnumerate.Policy withForbid(Set<Node> ff) { return this; }
+                    @Override public Set<Node> forbid() { return f; }  // per-try forbid (pivots), NOT forbGAC
+                    @Override public List<Node> universe(Graph GG, Node X, Node Y) {
+                        return new ArrayList<>(GG.getNodes());
+                    }
+                };
+            }
+            @Override public Set<Node> forbid() { return forbid; }
+            @Override public List<Node> universe(Graph GG, Node X, Node Y) {
+                return new ArrayList<>(GG.getNodes());
+            }
+        };
+
+        // Run the enumerator (make sure your RAEnumerate has the 2-line patch above)
+        List<Set<Node>> sets = new RAEnumerate.Builder()
+                .policy(policyAll)
+                .graphType(gt)
+                .baseForbid(forbGAC)      // used only as acceptance filter inside RAEnumerate
+                .latentMask(latentMask)   // passed to RA core on each attempt
+                .K(maxNumSets)
+                .maxTries(Math.max(8 * maxNumSets, 64)) // heuristic
+                .maxMillis(0)             // set if you want a global deadline
+                .perAttemptMillis(0)      // set if you want per-try timeouts
+                .enforceMinimality(false) // RA core already minimizes
+                .run(G, source, target);
+
+        if (!sets.isEmpty() && sets.get(0).isEmpty()) {
+            return new RAEnumerate.AdjSummary(RAEnumerate.AdjKind.EMPTY_SET_SUFFICES,
+                    List.of(Collections.emptySet()));
+        }
+        return new RAEnumerate.AdjSummary(RAEnumerate.AdjKind.NONEMPTY_SETS, sets);
+    }
+
+    /**
+     * Compute Forb_G(X,Y): possible descendants of X and of any node that lies on
+     * a proper possibly-directed path from X to Y (Perković et al., 2018).
+     * Returns a set of observed + latent nodes (caller may subtract latents if desired).
+     *
+     * NOTE:
+     *  - "Possibly-directed" step a -> b is allowed iff the edge has NO arrowhead into 'a'.
+     *    (i.e., not e.pointsTowards(a) and not bidirected into 'a').
+     *  - We exclude {X, Y} from the returned set (RA already forbids adjusting on them).
+     */
+    public static Set<Node> getForbiddenForAdjustment(Graph G, String graphType, Node X, Node Y) {
+        Objects.requireNonNull(G); Objects.requireNonNull(X); Objects.requireNonNull(Y);
+        if (X == Y) return Collections.emptySet();
+
+        // Normalize graphType to an enum-ish tag
+        final String gt = graphType == null ? "DAG" : graphType.toUpperCase(Locale.ROOT);
+
+        // 1) Nodes reachable from X along possibly-directed forward steps
+        Set<Node> fwdFromX = forwardReach(G, gt, Set.of(X));
+
+        // 2) Nodes that can reach Y along possibly-directed forward steps
+        //    (equivalently, forwardReach on the reversed sense: a node v is "backward-reachable"
+        //     if there exists a neighbor u such that the step v -> u is possibly-directed AND u is known to reach Y)
+        Set<Node> canReachY = backwardFilterByForwardRule(G, gt, Y);
+
+        // 3) Nodes that lie on at least one proper possibly-directed path X ~> Y
+        //    Intersect (forward from X) with (can reach Y), and remove X itself.
+        Set<Node> onSomePDPath = new LinkedHashSet<>(fwdFromX);
+        onSomePDPath.retainAll(canReachY);
+        onSomePDPath.remove(X);
+
+        // 4) Forbidden = possible descendants of X and of every node on such paths
+        Set<Node> seeds = new LinkedHashSet<>();
+        seeds.add(X);
+        seeds.addAll(onSomePDPath);
+
+        Set<Node> forb = forwardReach(G, gt, seeds);
+
+        // 5) Do not return X or Y as "forbidden adjusters" (they're banned elsewhere anyway)
+        forb.remove(X);
+        forb.remove(Y);
+
+        return forb;
+    }
+
+    /* ----------------- helpers ----------------- */
+
+    /** BFS forward reach under "possibly-directed out of 'a'": edge must NOT have an arrowhead into 'a'. */
+    private static Set<Node> forwardReach(Graph G, String graphType, Set<Node> starts) {
+        Deque<Node> q = new ArrayDeque<>(starts);
+        Set<Node> seen = new LinkedHashSet<>(starts);
+        while (!q.isEmpty()) {
+            Node a = q.removeFirst();
+            for (Node b : G.getAdjacentNodes(a)) {
+                Edge e = G.getEdge(a, b);
+                if (e == null) continue;
+                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
+                if (seen.add(b)) q.addLast(b);
+            }
+        }
+        // include the start nodes’ possible descendants, but the caller will tweak X/Y removal
+        return seen;
+    }
+
+    /**
+     * Compute nodes that can reach Y via a possibly-directed path.
+     * We do this by a reverse-style dynamic programming:
+     *   canReach[Y] = true; iteratively mark a as true if exists b with canReach[b] and
+     *   step a -> b is possibly-directed (i.e., no arrowhead into a on edge (a,b)).
+     */
+    private static Set<Node> backwardFilterByForwardRule(Graph G, String graphType, Node Y) {
+        Set<Node> canReach = new LinkedHashSet<>();
+        Deque<Node> q = new ArrayDeque<>();
+        canReach.add(Y);
+        q.add(Y);
+
+        while (!q.isEmpty()) {
+            Node b = q.removeFirst();
+            for (Node a : G.getAdjacentNodes(b)) {
+                Edge e = G.getEdge(a, b);
+                if (e == null) continue;
+                // For a to step toward b on a possibly-directed path, the edge must NOT have an arrowhead into 'a'
+                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
+                if (canReach.add(a)) q.addLast(a);
+            }
+        }
+        return canReach;
+    }
+
+    /**
+     * True iff the edge (a,b) can be used as a possibly-directed step "a -> b",
+     * i.e., the endpoint at 'a' does NOT have an arrowhead.
+     *
+     * Concretely:
+     *  - If e.pointsTowards(a) => there's an arrowhead into 'a' ⇒ NOT allowed.
+     *  - Bidirected (↔) has arrowheads at both ends ⇒ NOT allowed.
+     *  - Undirected (—) / tail at 'a' (a—>b) / circle at 'a' (PAG) ⇒ allowed.
+     */
+    private static boolean isPossiblyOutEdge(String graphType, Edge e, Node a, Node b) {
+        // Arrowhead into 'a' disqualifies for possibly-directed step out of 'a'
+        if (e.pointsTowards(a)) return false;
+        // Bidirected disqualifies (arrowheads on both ends)
+        if (Edges.isBidirectedEdge(e)) return false;
+
+        // Undirected is OK for PD paths in (M)PDAG/PAG semantics
+        if (Edges.isUndirectedEdge(e)) return true;
+
+        // Otherwise, tail or circle at 'a' is fine:
+        // - In DAG/MPDAG "a -> b": tail at 'a' ⇒ allowed
+        // - In PAG/MAG "a o-> b" (circle at 'a') also allowed as "possibly out"
+        return true;
     }
 
     /**
@@ -3391,12 +3561,7 @@ public class Paths implements TetradSerializable {
      * <p>
      * If amenable paths DO exist, this returns an empty list (use recursiveAdjustment instead).
      */
-    public List<Set<Node>> recursiveSeparatingSets(Node source,
-                                                   Node target,
-                                                   String graphType,
-                                                   int maxNumSets,
-                                                   int maxPathLength,
-                                                   boolean minimizeEach) {
+    public List<Set<Node>> recursiveSeparatingSets(Node source, Node target, String graphType, int maxNumSets, int maxPathLength, boolean minimizeEach) {
         throw new UnsupportedOperationException("Need a new iplementation.");
 
 //        if (source == null || target == null || source == target) return Collections.emptyList();

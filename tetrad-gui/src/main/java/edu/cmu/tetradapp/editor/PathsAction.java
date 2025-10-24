@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.search.RAEnumerate;
 import edu.cmu.tetrad.search.RecursiveAdjustment;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.util.ParamDescription;
@@ -1151,7 +1152,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 if (mpdag || mag) {
                     backdoor.removeIf(path -> path.size() < 2 ||
-                                              !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
+                            !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
                 } else {
                     backdoor.removeIf(path -> {
                         if (path.size() < 2) {
@@ -1161,11 +1162,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                         Node w = path.get(1);
                         Node y = node2;
                         return !(graph.getEdge(x, w).pointsTowards(x)
-                                 || Edges.isUndirectedEdge(graph.getEdge(x, w))
-                                 || (Edges.isBidirectedEdge(graph.getEdge(x, w))
-                                     && (graph.paths().existsDirectedPath(w, x)
-                                         || (graph.paths().existsDirectedPath(w, x)
-                                             && graph.paths().existsDirectedPath(w, y)))));
+                                || Edges.isUndirectedEdge(graph.getEdge(x, w))
+                                || (Edges.isBidirectedEdge(graph.getEdge(x, w))
+                                && (graph.paths().existsDirectedPath(w, x)
+                                || (graph.paths().existsDirectedPath(w, x)
+                                && graph.paths().existsDirectedPath(w, y)))));
                     });
                 }
 
@@ -1356,7 +1357,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 confounderPaths.removeIf(path -> path.get(0).getNodeType() != NodeType.MEASURED
-                                                 || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED);
+                        || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED);
 
                 if (confounderPaths.isEmpty()) {
                     continue;
@@ -1414,7 +1415,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     }
 
                     if (path.get(0).getNodeType() != NodeType.MEASURED
-                        || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED) {
+                            || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED) {
                         latentConfounderPaths.remove(path);
                     }
                 }
@@ -1589,7 +1590,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         boolean found = false;
 
         final int maxNumSet = parameters.getInt("pathsMaxNumSets");
-        final int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
@@ -1600,83 +1600,34 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 var paths = graph.paths();
 
                 // Case split based on amenability (library check)
-                boolean amenable = paths.hasAmenablePaths(node1, node2, graphType,-1);
+                boolean amenable = paths.hasAmenablePaths(node1, node2, graphType, -1);
+                textArea.append("\n\n" + node1 + " ~~> " + node2 + ":\n");
 
-                if (true) {
-                    // True adjustment-set search via recursive algorithm
-                    List<Set<Node>> adj;
+                // True adjustment-set search via recursive algorithm
+                if (amenable) {
+                    RAEnumerate.AdjSummary adj;
                     try {
                         adj = paths.recursiveAdjustment(
                                 node1, node2,
-                                graphType.toString(),
+                                graphType,
                                 maxNumSet, -1,
-                                /* minimizeEach */ false
+                                /* minimizeEach */ true
                         );
                     } catch (Exception e) {
-                        // Be defensive; show a graceful message and continue.
-                        textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
+                        e.printStackTrace();
                         textArea.append("    --ERROR running recursive adjustment search--");
                         continue;
                     }
 
-                    if (amenable) {
-                        textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
-                    } else {
-                        textArea.append("\n\nNo amenable (causal) paths exist between " + node1 + " and " + node2 + ".");
-                        textArea.append("\nWe list sets that block all backdoor (non-causal) paths:\n");
-                    }
-
-//                    textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
-
-                    if (adj == null) {
-                        // Per spec: null means “no amenable paths OR no recursive solution produced”.
-                        // Since we already know amenable==true, this is the “no recursive solution” branch.
-                        textArea.append("    --NONE FOUND BY RECURSIVE METHOD (try relaxing limits)--");
-                    } else if (adj.isEmpty()) {
-                        // Degenerate x==y would have been skipped; reaching here means empty from library.
-                        textArea.append("    --NONE--");
-                    } else {
-                        for (Set<Node> z : adj) {
-                            textArea.append("\n    " + z);
-                        }
-                        found = true;
-                    }
-
+                    textArea.append("\n" + adj.toString());
                 } else {
-                    // No amenable paths → offer candidate separating sets (library call)
-                    List<Set<Node>> seps;
-                    try {
-                        seps = paths.recursiveSeparatingSets(
-                                node1, node2,
-                                graphType,
-                                maxNumSet, maxLengthAdjustment,
-                                /* minimizeEach */ false
-                        );
-                    } catch (Exception e) {
-                        textArea.append("\n\nCandidate separating set(s) for " + node1 + " ~~> " + node2 + ":\n");
-                        textArea.append("No amenable (causal) paths exist between " + node1 + " and " + node2 + ".\n");
-                        textArea.append("    --ERROR running separating-set search--");
-                        continue;
-                    }
-
-                    textArea.append("\n\nCandidate separating set(s) for " + node1 + " ~~> " + node2 + ":\n");
-                    textArea.append("No amenable (causal) paths exist between " + node1 + " and " + node2 + ".\n");
-                    textArea.append("We list sets that block all backdoor (non-causal) paths:\n");
-
-                    if (seps == null || seps.isEmpty()) {
-                        textArea.append("    --NONE--");
-                    } else {
-                        for (Set<Node> z : seps) {
-                            textArea.append("\n    " + z);
-                        }
-                        found = true;
-                    }
+                    textArea.append("\nNo amenable (causal) paths exist.");
                 }
             }
         }
 
         if (!found) {
-            textArea.append("\n\nNo adjustment (or candidate separating) sets found.");
+            textArea.append("\nNo adjustment (or candidate separating) sets found.");
         }
     }
 
@@ -1736,19 +1687,19 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 if (foundPair && hasEdge && amenable) {
                     textArea.append("\n\nResult: The pair <" + node1 + ", " + node2 + "> is amenable. The above RB set(s) " +
-                                    "serve as EDGE-SPECIFIC BLOCKING SETS for isolating the local effect of the edge " +
-                                    node1 + " → " + node2 + ".");
+                            "serve as EDGE-SPECIFIC BLOCKING SETS for isolating the local effect of the edge " +
+                            node1 + " → " + node2 + ".");
                 } else if (foundPair && hasEdge) {
                     textArea.append("\n\nResult: An edge exists between " + node1 + " and " + node2 +
-                                    ", but amenability is not established. The RB set(s) block non-inducing paths,\n " +
-                                    "but multiple inducing paths may remain unblocked; thus, these are not guaranteed " +
-                                    "to represent valid direct-effect blocking sets.");
+                            ", but amenability is not established. The RB set(s) block non-inducing paths,\n " +
+                            "but multiple inducing paths may remain unblocked; thus, these are not guaranteed " +
+                            "to represent valid direct-effect blocking sets.");
                 } else if (foundPair) {
                     String indep = " _||_ ";
                     textArea.append("\n\nResult: No edge between " + node1 + " and " + node2 +
-                                    ". The RB set(s) are separating sets:\n    " +
-                                    node1 + indep + node2 + " | " + (blocking1 == null ? "{}" : blocking1) + " and\n    " +
-                                    node1 + indep + node2 + " | " + (blocking2 == null ? "{}" : blocking2));
+                            ". The RB set(s) are separating sets:\n    " +
+                            node1 + indep + node2 + " | " + (blocking1 == null ? "{}" : blocking1) + " and\n    " +
+                            node1 + indep + node2 + " | " + (blocking2 == null ? "{}" : blocking2));
                 } else {
                     textArea.append("\n\nResult: No RB sets found for this pair under the current search limits.");
                 }
