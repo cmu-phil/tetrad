@@ -1501,6 +1501,18 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         boolean found = false;
 
+        String graphType = "DAG";
+
+        if (graph.paths().isLegalDag()) {
+            graphType = "DAG";
+        } else if (graph.paths().isLegalMpdag()) {
+            graphType = "MPDAG";
+        } else if  (graph.paths().isLegalMag()) {
+            graphType = "MAG";
+        } else if (graph.paths().isLegalPag()) {
+            graphType = "PAG";
+        }
+
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
                 int maxNumSet = parameters.getInt("pathsMaxNumSets");
@@ -1508,15 +1520,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
                 int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
 
-                // === NEW: Check for amenable (causal) paths ===
-                List<List<Node>> amenablePaths;
-                if (graph.paths().isLegalMpdag() || graph.paths().isLegalMag()) {
-                    amenablePaths = graph.paths().amenablePathsMpdagMag(node1, node2, -1);
-                } else if (graph.paths().isLegalPag()) {
-                    amenablePaths = graph.paths().amenablePathsPag(node1, node2, -1);
-                } else {
-                    throw new IllegalArgumentException("Graph must be a legal MPDAG, MAG, or PAG");
-                }
+//                // === NEW: Check for amenable (causal) paths ===
+                List<List<Node>> amenablePaths = getAmenablePaths(graph, graphType, node1, node2);
 
                 if (amenablePaths.isEmpty()) {
                     textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
@@ -1529,7 +1534,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 List<Set<Node>> adjustments;
                 try {
                     adjustments = graph.paths().adjustmentSets(
-                            node1, node2, maxNumSet,
+                            node1, node2, graphType, maxNumSet,
                             maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment
                     );
                 } catch (Exception e) {
@@ -1555,6 +1560,18 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         if (!found) {
             textArea.append("\n\nNo adjustment sets found.");
         }
+    }
+
+    private static List<List<Node>> getAmenablePaths(Graph graph, String graphType, Node node1, Node node2) {
+        List<List<Node>> amenablePaths;
+        if (graphType.equals("DAG") || graphType.equals("MPDAG") || graphType.equals("MAG")) {
+            amenablePaths = graph.paths().amenablePathsMpdagMag(node1, node2, -1);
+        } else if (graphType.equals("PAG")) {
+            amenablePaths = graph.paths().amenablePathsPag(node1, node2, -1);
+        } else {
+            throw new IllegalArgumentException("Graph must be a legal MPDAG, MAG, or PAG: " + graphType);
+        }
+        return amenablePaths;
     }
 
     private void recursiveAdjustmentSets(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {

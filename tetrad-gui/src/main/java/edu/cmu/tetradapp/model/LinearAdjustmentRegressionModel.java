@@ -112,7 +112,19 @@ public class LinearAdjustmentRegressionModel implements SessionModel, GraphSourc
         int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
         int maxPathLength = parameters.getInt("pathsMaxLength");
 
-        return graph.paths().adjustmentSets(source, target, maxNumSets, maxDistanceFromEndpoint, nearWhichEndpoint,
+        String graphType = "DAG";
+
+        if (graph.paths().isLegalDag()) {
+            graphType = "DAG";
+        } else if (graph.paths().isLegalMpdag()) {
+            graphType = "MPDAG";
+        } else if  (graph.paths().isLegalMag()) {
+            graphType = "MAG";
+        } else if (graph.paths().isLegalPag()) {
+            graphType = "PAG";
+        }
+
+        return graph.paths().adjustmentSets(source, target, graphType, maxNumSets, maxDistanceFromEndpoint, nearWhichEndpoint,
                 maxPathLength);
     }
 
