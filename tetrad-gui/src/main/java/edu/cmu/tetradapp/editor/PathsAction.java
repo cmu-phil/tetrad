@@ -1132,43 +1132,52 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         boolean mpdag = false;
         boolean mag = false;
+        String graphType;
 
         if (graph.paths().isLegalMpdag()) {
             mpdag = true;
+            graphType = "MPDAG";
         } else if (graph.paths().isLegalMag()) {
             mag = true;
-        } else if (!graph.paths().isLegalPag()) {
-            textArea.append("\nThe graph is not a DAG, CPDAG, MPDAG, MAG or PAG.");
-            return;
+            graphType = "MAG";
+        } else if (graph.paths().isLegalPag()) {
+            textArea.append("\nThe graph is not a MPDAG, MAG or PAG.");
+            graphType = "PAG";
+        } else {
+            throw new IllegalArgumentException("Graph type is not MPDAG, MAG, or PAG");
         }
 
         boolean pathListed = false;
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                Set<List<Node>> _backdoor = graph.paths().allPaths(node1, node2,
-                        parameters.getInt("pathsMaxLengthAdjustment"));
-                List<List<Node>> backdoor = new ArrayList<>(_backdoor);
+                int maxLength = parameters.getInt("pathsMaxLengthAdjustment");
 
-                if (mpdag || mag) {
-                    backdoor.removeIf(path -> path.size() < 2 ||
-                            !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
-                } else {
-                    backdoor.removeIf(path -> {
-                        if (path.size() < 2) {
-                            return false;
-                        }
-                        Node x = path.get(0);
-                        Node w = path.get(1);
-                        Node y = node2;
-                        return !(graph.getEdge(x, w).pointsTowards(x)
-                                || Edges.isUndirectedEdge(graph.getEdge(x, w))
-                                || (Edges.isBidirectedEdge(graph.getEdge(x, w))
-                                && (graph.paths().existsDirectedPath(w, x)
-                                || (graph.paths().existsDirectedPath(w, x)
-                                && graph.paths().existsDirectedPath(w, y)))));
-                    });
-                }
+//                Set<List<Node>> _backdoor = graph.paths().allPaths(node1, node2,
+//                        maxLength);
+//                List<List<Node>> backdoor = new ArrayList<>(_backdoor);
+//
+//                if (mpdag || mag) {
+//                    backdoor.removeIf(path -> path.size() < 2 ||
+//                            !(graph.getEdge(path.getFirst(), path.get(1)).pointsTowards(path.getFirst())));
+//                } else {
+//                    backdoor.removeIf(path -> {
+//                        if (path.size() < 2) {
+//                            return false;
+//                        }
+//                        Node x = path.get(0);
+//                        Node w = path.get(1);
+//                        Node y = node2;
+//                        return !(graph.getEdge(x, w).pointsTowards(x)
+//                                || Edges.isUndirectedEdge(graph.getEdge(x, w))
+//                                || (Edges.isBidirectedEdge(graph.getEdge(x, w))
+//                                && (graph.paths().existsDirectedPath(w, x)
+//                                || (graph.paths().existsDirectedPath(w, x)
+//                                && graph.paths().existsDirectedPath(w, y)))));
+//                    });
+//                }
+
+                Set<List<Node>> backdoor = graph.paths().getBackdoorPaths(node1, node2, graphType, maxLength);
 
                 if (backdoor.isEmpty()) {
                     continue;
@@ -1177,7 +1186,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
-                listPaths(graph, textArea, backdoor);
+                listPaths(graph, textArea, new ArrayList<>(backdoor));
             }
         }
 
@@ -1501,11 +1510,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         boolean found = false;
 
-        String graphType = "DAG";
+        String graphType = "MPDAG";
 
-        if (graph.paths().isLegalDag()) {
-            graphType = "DAG";
-        } else if (graph.paths().isLegalMpdag()) {
+        if (graph.paths().isLegalMpdag()) {
             graphType = "MPDAG";
         } else if  (graph.paths().isLegalMag()) {
             graphType = "MAG";
