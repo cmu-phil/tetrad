@@ -628,6 +628,18 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         return mask;
     }
 
+    private static List<List<Node>> getAmenablePaths(Graph graph, String graphType, Node node1, Node node2) {
+        List<List<Node>> amenablePaths;
+        if (graphType.equals("DAG") || graphType.equals("MPDAG") || graphType.equals("MAG")) {
+            amenablePaths = graph.paths().amenablePathsMpdagMag(node1, node2, -1);
+        } else if (graphType.equals("PAG")) {
+            amenablePaths = graph.paths().amenablePathsPag(node1, node2, -1);
+        } else {
+            throw new IllegalArgumentException("Graph must be a legal MPDAG, MAG, or PAG: " + graphType);
+        }
+        return amenablePaths;
+    }
+
     /**
      * Performs the action when an event occurs.
      *
@@ -1514,7 +1526,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         if (graph.paths().isLegalMpdag()) {
             graphType = "MPDAG";
-        } else if  (graph.paths().isLegalMag()) {
+        } else if (graph.paths().isLegalMag()) {
             graphType = "MAG";
         } else if (graph.paths().isLegalPag()) {
             graphType = "PAG";
@@ -1530,12 +1542,12 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 //                // === NEW: Check for amenable (causal) paths ===
                 List<List<Node>> amenablePaths = getAmenablePaths(graph, graphType, node1, node2);
 
-                if (amenablePaths.isEmpty()) {
-                    textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
-                    textArea.append("No amenable (causal) paths exist between " + node1 + " and " + node2 + ".\n");
-                    textArea.append("Hence, no adjustment set is needed or defined.\n");
-                    continue;
-                }
+//                if (amenablePaths.isEmpty()) {
+//                    textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
+//                    textArea.append("No amenable (causal) paths exist between " + node1 + " and " + node2 + ".\n");
+//                    textArea.append("Hence, no adjustment set is needed or defined.\n");
+//                    continue;
+//                }
 
                 // --- Run the all-paths adjustment finder ---
                 List<Set<Node>> adjustments;
@@ -1551,13 +1563,30 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nAdjustment sets for " + node1 + " ~~> " + node2 + ":\n");
 
-                if (adjustments.isEmpty()) {
-                    textArea.append("\n    --NONE--");
-                    continue;
-                }
-
                 for (Set<Node> adjustment : adjustments) {
                     textArea.append("\n    " + adjustment);
+                }
+
+                if (amenablePaths.isEmpty()) {
+                    if (!adjustments.isEmpty()) {
+                        if (adjustments.getFirst().isEmpty()) {
+                            textArea.append("\n\n    (No amenable paths exist, and adjustment is unnecessary)");
+                        } else {
+                            textArea.append("\n\n    (No amenable paths exist, but adjustment is possible)");
+                        }
+                    } else {
+                        textArea.append("\n\n    (No amenable paths exist, and no adjustment is necessary)");
+                    }
+                } else {
+                    if (!adjustments.isEmpty()) {
+                        if (adjustments.getFirst().isEmpty()) {
+                            textArea.append("\n\n    (Amenable paths exist, but adjustment is unnecessary)");
+                        } else {
+                            textArea.append("\n\n    (Amenable paths exist, and adjustment is necessary)");
+                        }
+                    } else {
+                        textArea.append("\n\n    (No backdoor paths found; no adjustment necessary)");
+                    }
                 }
 
                 found = true;
@@ -1567,18 +1596,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         if (!found) {
             textArea.append("\n\nNo adjustment sets found.");
         }
-    }
-
-    private static List<List<Node>> getAmenablePaths(Graph graph, String graphType, Node node1, Node node2) {
-        List<List<Node>> amenablePaths;
-        if (graphType.equals("DAG") || graphType.equals("MPDAG") || graphType.equals("MAG")) {
-            amenablePaths = graph.paths().amenablePathsMpdagMag(node1, node2, -1);
-        } else if (graphType.equals("PAG")) {
-            amenablePaths = graph.paths().amenablePathsPag(node1, node2, -1);
-        } else {
-            throw new IllegalArgumentException("Graph must be a legal MPDAG, MAG, or PAG: " + graphType);
-        }
-        return amenablePaths;
     }
 
     private void recursiveAdjustmentSets(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
@@ -1628,24 +1645,25 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\n" + node1 + " ~~> " + node2 + ":\n");
 
                 // True adjustment-set search via recursive algorithm
-                if (amenable) {
-                    RAEnumerate.AdjSummary adj;
-                    try {
-                        adj = paths.recursiveAdjustment(
-                                node1, node2,
-                                graphType,
-                                maxNumSet, -1,
-                                /* minimizeEach */ true
-                        );
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        textArea.append("    --ERROR running recursive adjustment search--");
-                        continue;
-                    }
+//                if (amenable) {
+                RAEnumerate.AdjSummary adj;
+                try {
+                    adj = paths.recursiveAdjustment(
+                            node1, node2,
+                            graphType,
+                            maxNumSet, -1,
+                            /* minimizeEach */ true
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    textArea.append("    --ERROR running recursive adjustment search--");
+                    continue;
+                }
 
-                    textArea.append("\n" + adj.toString());
-                } else {
-                    textArea.append("\nNo amenable (causal) paths exist.");
+                textArea.append("\n" + adj.toString());
+
+                if (!amenable) {
+                    textArea.append("\n(But no amenable (causal) paths exist.)");
                 }
             }
         }

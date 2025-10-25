@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -1722,6 +1723,31 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Returns the set of all ancestors of nodes in Z (excluding Z itself).
+     * Traverses only along directed edges (parents) in the graph.
+     */
+    public Set<Node> ancestorsOfZ(Set<Node> Z) {
+        if (Z == null || Z.isEmpty()) return Collections.emptySet();
+
+        ArrayDeque<Node> q = new ArrayDeque<>(Z);
+        HashSet<Node> seen = new HashSet<>(Z);
+
+        while (!q.isEmpty()) {
+            Node t = q.poll();
+            for (Node p : graph.getParents(t)) { // move only through directed parents
+                if (seen.add(p)) {
+                    q.add(p);
+                }
+            }
+        }
+
+        // Optionally exclude Z itself if you only want *strict* ancestors
+//        seen.removeAll(Z);
+
+        return seen;
+    }
+
+    /**
      * Determines whether an inducing path exists between node1 and node2, given a set O of observed nodes and a set sem
      * of conditioned nodes.
      *
@@ -3270,23 +3296,23 @@ public class Paths implements TetradSerializable {
      * <p>
      * This currently will only work for DAGs and CPDAGs.
      *
-     * @param source                  The source node whose sets will be used for adjustment.
-     * @param target                  The target node whose sets will be adjusted to match the source node.
-     * @param maxNumSets              The maximum number of sets to be adjusted. If this value is less than or equal to
-     *                                0, all sets in the target node will be adjusted to match the source node.
-     * @param nearWhichEndpoint       The endpoint(s) to consider for adjustment; 1 = near the source, 2 = near the
-     *                                target, 3 = near either.
-     * @param maxPathLength           The maximum length of the path to consider for backdoor paths. If a value of -1 is
-     *                                given, all paths will be considered.
+     * @param source            The source node whose sets will be used for adjustment.
+     * @param target            The target node whose sets will be adjusted to match the source node.
+     * @param maxNumSets        The maximum number of sets to be adjusted. If this value is less than or equal to
+     *                          0, all sets in the target node will be adjusted to match the source node.
+     * @param nearWhichEndpoint The endpoint(s) to consider for adjustment; 1 = near the source, 2 = near the
+     *                          target, 3 = near either.
+     * @param maxPathLength     The maximum length of the path to consider for backdoor paths. If a value of -1 is
+     *                          given, all paths will be considered.
      * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;. Return an smpty list if source ==
      * target or there is no amenable path from source to target.
      */
-    public List<Set<Node>> adjustmentSets(Node source, Node target,
-                                          String graphType,
-                                          int maxNumSets,
-                                          int maxRadius,
-                                          int nearWhichEndpoint,   // 1=source, 2=target, 3=both
-                                          int maxPathLength) {
+    public List<Set<Node>> adjustmentSetsSlow(Node source, Node target,
+                                              String graphType,
+                                              int maxNumSets,
+                                              int maxRadius,
+                                              int nearWhichEndpoint,   // 1=source, 2=target, 3=both
+                                              int maxPathLength) {
         if (source == null || target == null || source == target) return new ArrayList<>();
         final boolean usePagSemantics = "PAG".equalsIgnoreCase(graphType);
 
@@ -3319,8 +3345,10 @@ public class Paths implements TetradSerializable {
             shellsFromX.layers[r].retainAll(reachFromY);
             shellsFromY.layers[r].retainAll(reachFromX);
             // Remove forbidden + endpoints
-            shellsFromX.layers[r].remove(source); shellsFromX.layers[r].remove(target);
-            shellsFromY.layers[r].remove(source); shellsFromY.layers[r].remove(target);
+            shellsFromX.layers[r].remove(source);
+            shellsFromX.layers[r].remove(target);
+            shellsFromY.layers[r].remove(source);
+            shellsFromY.layers[r].remove(target);
             shellsFromX.layers[r].removeAll(forbidden);
             shellsFromY.layers[r].removeAll(forbidden);
         }
@@ -3357,7 +3385,10 @@ public class Paths implements TetradSerializable {
                     // 4a) Amenable must remain open
                     boolean okAmen = true;
                     for (List<Node> semi : amenable) {
-                        if (!isMConnectingPath(semi, Z, usePagSemantics)) { okAmen = false; break; }
+                        if (!isMConnectingPath(semi, Z, usePagSemantics)) {
+                            okAmen = false;
+                            break;
+                        }
                     }
                     if (!okAmen) continue;
 
@@ -3372,7 +3403,10 @@ public class Paths implements TetradSerializable {
                         Zmin.remove(v);
                         boolean ok = true;
                         for (List<Node> semi : amenable) {
-                            if (!isMConnectingPath(semi, Zmin, usePagSemantics)) { ok = false; break; }
+                            if (!isMConnectingPath(semi, Zmin, usePagSemantics)) {
+                                ok = false;
+                                break;
+                            }
                         }
                         if (ok) {
 //                            Set<Node> ancOfZmin = possibleAncestorsOf(Zmin, graphType);
@@ -3392,6 +3426,581 @@ public class Paths implements TetradSerializable {
             }
         }
         return results;
+    }
+
+    public List<Set<Node>> adjustmentSetsFast(Node X, Node Y, String graphType,
+                                              int maxNumSets, int maxRadius, int nearWhichEndpoint,
+                                              int maxPathLength) {
+        // as before: amenable, forbidden, shells, candidates...
+        List<List<Node>> amenable = getAmenablePaths(X, Y, graphType, maxPathLength);
+        if (amenable.isEmpty()) return List.of(new LinkedHashSet<>());
+
+        Set<Node> forbidden = getForbiddenForAdjustment(graph, graphType, X, Y);
+
+        Shells sx = backdoorShellsFromX(X, firstBackdoorNeighbors(X, Y, graphType), Math.max(1, maxRadius));
+        Shells sy = undirectedShells(Y, Math.max(1, maxRadius));
+        Set<Node> reachX = sx.reach, reachY = sy.reach;
+
+        // Candidate pool near endpoints ∩ reachable ∩ not forbidden
+        List<Node> pool = new ArrayList<>();
+        for (int r = 1; r <= maxRadius; r++) {
+            if (nearWhichEndpoint == 1 || nearWhichEndpoint == 3) pool.addAll(sx.layers[r]);
+            if (nearWhichEndpoint == 2 || nearWhichEndpoint == 3) pool.addAll(sy.layers[r]);
+        }
+        pool.retainAll(reachX);
+        pool.retainAll(reachY);
+        pool.remove(X);
+        pool.remove(Y);
+        pool.removeAll(forbidden);
+
+        // Order: closer to endpoints → lower degree → name/id
+        pool.sort(Comparator
+                .comparingInt((Node v) -> approxEndpointDistance(v, X, Y, sx, sy))
+                .thenComparingInt(v -> graph.getAdjacentNodes(v).size())
+                .thenComparing(Node::getName));
+
+        // index for bitmask keys
+        Map<Node, Integer> idx = new HashMap<>();
+        for (int i = 0; i < pool.size(); i++) idx.put(pool.get(i), i);
+
+        List<Set<Node>> out = new ArrayList<>();
+        Set<Long> seenZ = new HashSet<>();
+
+        while (out.size() < maxNumSets) {
+            // Start empty; if no witness, {} works
+            LinkedHashSet<Node> Z = new LinkedHashSet<>();
+            long zmask = 0L;
+
+            // find open backdoor witness; if none, we're done for this solution
+            while (true) {
+                if (!amenableOpen(amenable, Z, graphType)) break; // shouldn't happen; just safety
+                Optional<List<Node>> wit = findBackdoorWitness(X, Y, Z, ancOfZ(zmask, idx), graphType, maxPathLength);
+                if (wit.isEmpty()) break; // all backdoors blocked → candidate found
+
+                // choose a blocker near endpoints on this witness, avoiding amenable-closers
+                Node pick = chooseBlockerOnWitness(wit.get(), pool, forbidden, Z, amenable, graphType);
+                if (pick == null) { // fallback: expand search radius or bail
+                    break;
+                }
+                if (Z.add(pick)) zmask |= (1L << idx.get(pick));
+                // loop continues until witness disappears
+            }
+
+            if (Z.isEmpty()) { // {} works
+                if (seenZ.add(zmask)) out.add(Z);
+                break;
+            }
+
+            // Minimality trim
+            Z = minimalTrim(Z, amenable, graphType, (z) -> findBackdoorWitness(X, Y, z, ancOfZ(maskOf(z, idx), idx), graphType, maxPathLength).isEmpty());
+            zmask = maskOf(Z, idx);
+            if (seenZ.add(zmask)) out.add(Z);
+            else break; // avoid loops on identical results
+
+            // diversity: lightly penalize used nodes (simple rotation)
+            Collections.rotate(pool, 1);
+        }
+
+        return out;
+    }
+
+    // Keep uniques by a canonical key
+    private String keyOf(Set<Node> Z) {
+        return Z.stream().map(Node::getName).sorted().reduce((a, b) -> a + "," + b).orElse("");
+    }
+
+    // -------- Precompute (build once per (X,Y,graphType,params)) --------
+    public PrecomputeContext precomputeContext(Node X, Node Y, String graphType,
+                                               int maxRadius, int nearWhichEndpoint,
+                                               int maxPathLength) {
+        if (X == null || Y == null || X == Y) throw new IllegalArgumentException("X and Y must differ.");
+
+        // Normalize “no limit”
+        if (maxRadius < 0) maxRadius = graph.getNodes().size();    // full reach
+        final boolean pag = "PAG".equalsIgnoreCase(graphType);
+
+        // 1) Amenable (PD-out-of-X) paths you must preserve
+        List<List<Node>> amenable = getAmenablePaths(X, Y, graphType, maxPathLength);
+        if (amenable.isEmpty()) {
+            // No PD-out-of-X route => {} is valid later; still return a context
+            amenable = Collections.emptyList();
+        }
+
+        // 2) Forbidden (Perković GAC)
+        Set<Node> forbidden = getForbiddenForAdjustment(graph, graphType, X, Y);
+
+        // 3) Endpoint-local shells (no full backdoor enumeration)
+        List<Node> starts = firstBackdoorNeighbors(X, Y, graphType);
+        Shells shellsFromX = starts.isEmpty()
+                ? new Shells(emptyLayers(maxRadius), Set.of())
+                : backdoorShellsFromX(X, starts, maxRadius);
+        Shells shellsFromY = undirectedShells(Y, maxRadius);
+
+        // Reachability filter: keep nodes lying on some X–Y path
+        Set<Node> reachX = shellsFromX.reach;
+        Set<Node> reachY = shellsFromY.reach;
+
+        // 4) Candidate pool (local to endpoints, reachable, not forbidden, not endpoints)
+        LinkedHashSet<Node> poolSet = new LinkedHashSet<>();
+        for (int r = 1; r <= maxRadius; r++) {
+            if (nearWhichEndpoint == 1 || nearWhichEndpoint == 3) {
+                poolSet.addAll(shellsFromX.layers[r]);
+            }
+            if (nearWhichEndpoint == 2 || nearWhichEndpoint == 3) {
+                poolSet.addAll(shellsFromY.layers[r]);
+            }
+        }
+        // Intersect with reach both sides
+        poolSet.retainAll(reachX);
+        poolSet.retainAll(reachY);
+        poolSet.remove(X);
+        poolSet.remove(Y);
+        poolSet.removeAll(forbidden);
+
+        // Optional: prune obvious amenable blockers up front (safe and fast)
+        // Set<Node> A = amenableBlockers(amenable); poolSet.removeAll(A);
+
+        // 5) Stable order: nearer to endpoints → lower degree → name
+        List<Node> pool = new ArrayList<>(poolSet);
+        pool.sort(Comparator
+                .comparingInt((Node v) -> approxEndpointDistance(v, X, Y, shellsFromX, shellsFromY))
+                .thenComparingInt(v -> graph.getAdjacentNodes(v).size())
+                .thenComparing(Node::getName));
+
+        // 6) Index maps
+        Map<Node, Integer> idx = new HashMap<>(pool.size() * 2);
+        Map<Node, Integer> order = new HashMap<>(pool.size() * 2);
+        for (int i = 0; i < pool.size(); i++) {
+            idx.put(pool.get(i), i);
+            order.put(pool.get(i), i);
+        }
+
+        return new PrecomputeContext(X, Y, graphType, maxRadius, nearWhichEndpoint, maxPathLength,
+                amenable, forbidden, shellsFromX, shellsFromY, pool, idx, order);
+    }
+
+    public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
+                                          int maxNumSets, int maxRadius,
+                                          int nearWhichEndpoint, int maxPathLength) {
+        List<Set<Node>> out = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+
+        // precompute shells, pool, amenable, forbidden as you already do…
+        var ctx = precomputeContext(X, Y, graphType, maxRadius, nearWhichEndpoint, maxPathLength);
+
+        // Worklist of bans; start with “no bans”
+        Deque<Set<Node>> bans = new ArrayDeque<>();
+        bans.add(Collections.emptySet());
+
+        while (!bans.isEmpty() && out.size() < maxNumSets) {
+            Set<Node> ban = bans.removeFirst();
+
+            // find one solution under this ban
+            LinkedHashSet<Node> Z = solveOnce(ctx, ban);
+            if (Z == null) continue;
+
+            // minimality already enforced inside solveOnce(...)
+            String key = keyOf(Z);
+            if (seen.add(key)) {
+                out.add(Z);
+
+                // diversify: for every v in Z, create a new run that bans v
+                for (Node v : Z) {
+                    Set<Node> ban2 = new LinkedHashSet<>(ban);
+                    ban2.add(v);
+                    bans.addLast(ban2);
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Find ONE minimal adjustment set under the given ban set.
+     * Returns null if no solution exists with these bans.
+     */
+    public @Nullable LinkedHashSet<Node> solveOnce(PrecomputeContext ctx, Set<Node> ban) {
+        final Node X = ctx.X, Y = ctx.Y;
+        final String graphType = ctx.graphType;
+        final boolean pag = "PAG".equalsIgnoreCase(graphType);
+
+        // Candidate universe and quick lookups
+        final List<Node> pool = ctx.pool;                 // ordered endpoint-near first
+        final Set<Node> poolSet = new HashSet<>(pool);
+        final Set<Node> forbidden = ctx.forbidden;
+        final List<List<Node>> amenable = ctx.amenable;
+
+        // Start empty; we'll add only blockers that (1) lie on a witness and (2) don't close amenable paths
+        LinkedHashSet<Node> Z = new LinkedHashSet<>();
+
+        // If there are no PD-out-of-X paths, {} is valid
+//        if (amenable.isEmpty()) return Z;
+
+        Set<Node> _Z = new HashSet<>(Z);
+
+        // Quick helper
+        java.util.function.Supplier<Boolean> amenableOpen =
+                () -> {
+                    for (List<Node> p : amenable) if (!isMConnectingPath(p, _Z, pag)) return false;
+                    return true;
+                };
+
+        // 1) Witness-guided growth
+        while (true) {
+            if (!amenableOpen.get()) {
+                // Shouldn't happen if chooseBlocker preserves amenable, but guard anyway: fail under this ban
+                return null;
+            }
+
+            Optional<List<Node>> wit = findBackdoorWitness(X, Y, Z, graphType, ctx.maxPathLength);
+            if (wit.isEmpty()) break; // all backdoors are blocked → candidate found
+
+            Node pick = chooseBlockerOnWitness(wit.get(), pool, poolSet, forbidden, ban, Z, amenable, graphType);
+            if (pick == null) {
+                // No allowable blocker on this witness that preserves amenable (under current bans)
+                return null;
+            }
+            Z.add(pick);
+            // loop to see if any backdoor remains
+        }
+
+        // 2) Minimality trim (try-delete)
+        if (!Z.isEmpty()) {
+            LinkedHashSet<Node> Zmin = new LinkedHashSet<>(Z);
+            for (Node v : new ArrayList<>(Zmin)) {
+                Zmin.remove(v);
+                // must keep amenable open
+                boolean ok = true;
+                for (List<Node> semi : amenable) {
+                    if (!isMConnectingPath(semi, Zmin, pag)) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok) {
+                    // must still block all backdoors (no witness)
+                    if (findBackdoorWitness(X, Y, Zmin, graphType, ctx.maxPathLength).isPresent()) ok = false;
+                }
+                if (!ok) Zmin.add(v);
+            }
+            Z = Zmin;
+        }
+
+        return Z;
+    }
+
+    /**
+     * Pick a blocker on the current witness path.
+     * Constraints:
+     * - must lie on the witness AND be in the candidate pool (pool/poolSet)
+     * - not in forbidden, not in current Z, not in ban
+     * - adding it must NOT close any amenable path
+     * Tie-break by your pool order (endpoint-near first), then degree, then name.
+     *
+     * @return the chosen Node, or null if no allowable blocker exists under these constraints.
+     */
+    private @Nullable Node chooseBlockerOnWitness(
+            List<Node> witness,
+            List<Node> pool,
+            Set<Node> poolSet,
+            Set<Node> forbidden,
+            Set<Node> ban,
+            Set<Node> Z,
+            List<List<Node>> amenable,
+            String graphType
+    ) {
+        final boolean pag = "PAG".equalsIgnoreCase(graphType);
+
+        // Fast membership for witness nodes
+        Set<Node> inWitness = new HashSet<>(witness);
+
+        // Candidates = (pool ∩ witness) \ (forbidden ∪ Z ∪ ban)
+        List<Node> candidates = new ArrayList<>();
+        for (Node v : pool) {
+            if (inWitness.contains(v) && !forbidden.contains(v) && !Z.contains(v) && !ban.contains(v)) {
+                candidates.add(v);
+            }
+        }
+
+        // Optional fallback: allow any witness node that’s also in poolSet (keeps locality bias)
+        if (candidates.isEmpty()) {
+            for (Node v : witness) {
+                if (poolSet.contains(v) && !forbidden.contains(v) && !Z.contains(v) && !ban.contains(v)) {
+                    candidates.add(v);
+                }
+            }
+        }
+
+        // Stable, locality-biased order: pool rank → degree → name
+        candidates.sort(
+                Comparator.<Node>comparingInt(v -> pool.indexOf(v))
+                        .thenComparingInt(v -> graph.getAdjacentNodes(v).size())
+                        .thenComparing(Node::getName)
+        );
+
+        // Pick the first candidate that does NOT close any amenable path when added
+        for (Node v : candidates) {
+            boolean preservesAmenable = true;
+            for (List<Node> semi : amenable) {
+                if (!isMConnectingPath(semi, add1(Z, v), pag)) { // test with Z ∪ {v}
+                    preservesAmenable = false;
+                    break;
+                }
+            }
+            if (preservesAmenable) return v;
+        }
+
+        return null;
+    }
+
+    // tiny helper
+//    private Set<Node> add1(Set<Node> Z, Node v) {
+//        LinkedHashSet<Node> s = new LinkedHashSet<>(Z);
+//        s.add(v);
+//        return s;
+//    }
+
+    @SuppressWarnings("unchecked")
+    private List<Node>[] emptyLayers(int maxRadius) {
+        if (maxRadius < 0) maxRadius = 0;
+        List<Node>[] layers = (List<Node>[]) new List[maxRadius + 1];
+        for (int i = 0; i <= maxRadius; i++) {
+            layers[i] = new ArrayList<>();
+        }
+        return layers;
+    }
+
+    // -------- Context holder --------
+    public static final class PrecomputeContext {
+        public final Node X, Y;
+        public final String graphType;
+        public final int maxRadius, nearWhichEndpoint, maxPathLength;
+
+        public final List<List<Node>> amenable;     // PD-out-of-X paths you must keep open
+        public final Set<Node> forbidden;           // GAC forbidden nodes
+        public final Shells shellsFromX;            // BFS shells seeded by backdoor starts
+        public final Shells shellsFromY;            // Undirected BFS shells from Y
+        public final List<Node> pool;               // candidate variables (ordered)
+        public final Map<Node, Integer> idx;         // candidate -> stable index (for bitmasks)
+        public final Map<Node, Integer> order;       // candidate -> rank in 'pool' (for sorting)
+
+        PrecomputeContext(Node X, Node Y, String graphType,
+                          int maxRadius, int nearWhichEndpoint, int maxPathLength,
+                          List<List<Node>> amenable,
+                          Set<Node> forbidden,
+                          Shells shellsFromX, Shells shellsFromY,
+                          List<Node> pool,
+                          Map<Node, Integer> idx, Map<Node, Integer> order) {
+            this.X = X;
+            this.Y = Y;
+            this.graphType = graphType;
+            this.maxRadius = maxRadius;
+            this.nearWhichEndpoint = nearWhichEndpoint;
+            this.maxPathLength = maxPathLength;
+            this.amenable = amenable;
+            this.forbidden = forbidden;
+            this.shellsFromX = shellsFromX;
+            this.shellsFromY = shellsFromY;
+            this.pool = pool;
+            this.idx = idx;
+            this.order = order;
+        }
+    }
+
+    private List<Node> topKBlockersOnWitness(List<Node> wit, List<Node> pool, Set<Node> forbidden,
+                                             Set<Node> Z, List<List<Node>> amenable,
+                                             String graphType, int K) {
+        List<Node> cand = new ArrayList<>();
+        Set<Node> inWit = new HashSet<>(wit);
+        for (Node v : pool) if (inWit.contains(v) && !forbidden.contains(v) && !Z.contains(v)) cand.add(v);
+        cand.sort(
+                Comparator.<Node>comparingInt(pool::indexOf)
+                        .thenComparingInt(v -> graph.getAdjacentNodes(v).size())
+                        .thenComparing(Node::getName)
+        );
+        // keep only those that don't close any amenable path
+        List<Node> ok = new ArrayList<>();
+        boolean pag = "PAG".equalsIgnoreCase(graphType);
+        for (Node v : cand) {
+            boolean good = true;
+            for (List<Node> semi : amenable)
+                if (!isMConnectingPath(semi, add1(Z, v), pag)) {
+                    good = false;
+                    break;
+                }
+            if (good) ok.add(v);
+            if (ok.size() == K) break;
+        }
+        return ok;
+    }
+
+    public Optional<List<Node>> findBackdoorWitness(Node X, Node Y,
+                                                    Set<Node> Z,
+                                                    Set<Node> ancOfZ,
+                                                    String graphType,
+                                                    int maxPathLength) {
+        List<Node> starts = firstBackdoorNeighbors(X, Y, graphType);
+        if (starts.isEmpty()) return Optional.empty();
+
+        final int edgeLimit = (maxPathLength < 0) ? Integer.MAX_VALUE : maxPathLength;
+
+        for (Node w : starts) {
+            LinkedList<Node> path = new LinkedList<>();
+            path.add(X);
+            path.add(w);
+            HashSet<Node> inPath = new HashSet<>();
+            inPath.add(X);
+            inPath.add(w);
+
+            if (dfsWitness(path, inPath, Y, Z, ancOfZ, graphType, edgeLimit)) {
+                return Optional.of(new ArrayList<>(path));
+            }
+        }
+        return Optional.empty();
+    }
+
+    private boolean dfsWitness(LinkedList<Node> path,
+                               Set<Node> inPath,
+                               Node Y,
+                               Set<Node> Z,
+                               Set<Node> ancOfZ,
+                               String graphType,
+                               int edgeLimit) {
+        if (path.size() - 1 > edgeLimit) return false;
+
+        Node tail = path.getLast();
+        if (tail.equals(Y)) return true;
+
+        for (Edge e : graph.getEdges(tail)) {
+            Node nxt = Edges.traverse(tail, e);
+            if (nxt == null || inPath.contains(nxt)) continue;
+
+            if (path.size() >= 2) {
+                Node prev = path.get(path.size() - 2);
+                if (!tripleKeepsOpen(prev, tail, nxt, Z, ancOfZ, graphType)) continue;
+            }
+
+            path.addLast(nxt);
+            inPath.add(nxt);
+            if (dfsWitness(path, inPath, Y, Z, ancOfZ, graphType, edgeLimit)) return true;
+            inPath.remove(nxt);
+            path.removeLast();
+        }
+        return false;
+    }
+
+    private boolean tripleKeepsOpen(Node a, Node b, Node c,
+                                    Set<Node> Z,
+                                    Set<Node> ancOfZ,
+                                    String graphType) {
+        Edge e1 = graph.getEdge(a, b);
+        Edge e2 = graph.getEdge(c, b);
+        if (e1 == null || e2 == null) return false;
+
+        boolean collider = e1.pointsTowards(b) && e2.pointsTowards(b);
+        if (collider) {
+            return Z.contains(b) || ancOfZ.contains(b);
+        } else {
+            return !Z.contains(b);
+        }
+    }
+
+    private boolean amenableOpen(List<List<Node>> amenable, Set<Node> Z, String graphType) {
+        boolean pag = "PAG".equalsIgnoreCase(graphType);
+        for (List<Node> p : amenable) if (!isMConnectingPath(p, Z, pag)) return false;
+        return true;
+    }
+
+    private LinkedHashSet<Node> minimalTrim(LinkedHashSet<Node> Z,
+                                            List<List<Node>> amenable, String graphType,
+                                            java.util.function.Predicate<Set<Node>> backdoorsBlocked) {
+        boolean pag = "PAG".equalsIgnoreCase(graphType);
+        LinkedHashSet<Node> Zmin = new LinkedHashSet<>(Z);
+        for (Node v : new ArrayList<>(Zmin)) {
+            Zmin.remove(v);
+            boolean ok = true;
+            for (List<Node> semi : amenable) {
+                if (!isMConnectingPath(semi, Zmin, pag)) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (ok && backdoorsBlocked.test(Zmin)) { /* keep v removed */ } else Zmin.add(v);
+        }
+        return Zmin;
+    }
+
+    private Node chooseBlockerOnWitness(List<Node> witness, List<Node> pool, Set<Node> forbidden,
+                                        Set<Node> Z, List<List<Node>> amenable, String graphType) {
+        // candidates from witness, filtered
+        List<Node> cand = new ArrayList<>();
+        Set<Node> inWit = new HashSet<>(witness);
+        for (Node v : pool) if (inWit.contains(v) && !forbidden.contains(v) && !Z.contains(v)) cand.add(v);
+        // prefer endpoint-near first
+        Comparator<Node> byOrder = Comparator.comparingInt(pool::indexOf);
+        Comparator<Node> byDegree = Comparator.comparingInt(v -> graph.getAdjacentNodes(v).size());
+        cand.sort(byOrder.thenComparing(byDegree));
+
+        boolean pag = "PAG".equalsIgnoreCase(graphType);
+        for (Node v : cand) {
+            // quick amenable-preserve check: if adding v closes any amenable, skip
+            boolean ok = true;
+            for (List<Node> semi : amenable) {
+                if (!isMConnectingPath(semi, add1(Z, v), pag)) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (ok) return v;
+        }
+        return null;
+    }
+
+    // Global (per call) caches
+    final Map<Long, Set<Node>> ancCache = new HashMap<>();
+    final Map<Long, Boolean> amenableCache = new HashMap<>();
+    final Map<WKey, Boolean> witnessCache = new HashMap<>();
+
+    private Set<Node> ancOfZ(long zmask, Map<Node, Integer> idx) {
+        return ancCache.computeIfAbsent(zmask, m -> computeAncestorsFromZ(zmask, idx));
+    }
+
+    private Set<Node> computeAncestorsFromZ(long zmask, Map<Node, Integer> idx) {
+        Set<Node> Z = new LinkedHashSet<>();
+        idx.forEach((v, i) -> {
+            if ((zmask & (1L << i)) != 0) Z.add(v);
+        });
+        // If you prefer your existing primitive per-node API:
+        Set<Node> anc = new HashSet<>();
+        for (Node b : graph.getNodes()) if (graph.paths().isAncestorOfAnyZ(b, Z)) anc.add(b);
+        return anc;
+    }
+
+    record WKey(Node prev, Node curr, long zmask) {
+
+        public boolean equals(Object o) {
+                var w = (WKey) o;
+                return prev == w.prev && curr == w.curr && zmask == w.zmask;
+            }
+
+            public int hashCode() {
+                return System.identityHashCode(prev) * 31 + System.identityHashCode(curr) ^ Long.hashCode(zmask);
+            }
+        }
+
+    private Set<Node> add1(Set<Node> Z, Node v) {
+        LinkedHashSet<Node> s = new LinkedHashSet<>(Z);
+        s.add(v);
+        return s;
+    }
+
+    private long maskOf(Set<Node> Z, Map<Node, Integer> idx) {
+        long m = 0L;
+        for (Node v : Z) {
+            Integer i = idx.get(v);
+            if (i != null) m |= (1L << i);
+        }
+        return m;
     }
 
 //    public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint, int nearWhichEndpoint, int maxPathLength) {
@@ -3432,7 +4041,8 @@ public class Paths implements TetradSerializable {
 //
 //        if (amenable.isEmpty()) {
 //            return new ArrayList<>();
-////            throw new IllegalArgumentException("No amenable paths found.");
+
+    /// /            throw new IllegalArgumentException("No amenable paths found.");
 //        }
 //
 //        Set<List<Node>> backdoorPaths = allPaths(source, target, maxPathLength);
@@ -3727,7 +4337,6 @@ public class Paths implements TetradSerializable {
 //    }
 
 
-
 //    private List<List<Node>> getBackdoorPaths(Node X, Node Y, String graphType, int maxLen) {
 //        boolean isPAG = graphType.equals("PAG");
 //        boolean isMAG = graphType.equals("MAG") || graphType.equals("MPDAG") || graphType.equals("DAG");
@@ -3794,7 +4403,6 @@ public class Paths implements TetradSerializable {
 //        Endpoint markAtFrom = e.getEndpoint(from);
 //        return markAtFrom == Endpoint.TAIL; // crude but fast filter
 //    }
-
     private String pathsString(Set<List<Node>> paths, Graph graph) {
         List<List<Node>> _paths = new ArrayList<>(paths);
         StringBuilder b = new StringBuilder();
@@ -3839,7 +4447,7 @@ public class Paths implements TetradSerializable {
 // only legal backdoor first hops.
     public Set<List<Node>> getBackdoorPaths(Node X, Node Y, String graphType, int maxPathLength) {
 
-        if (!(graphType.equals("MPDAG") || graphType.equals("MAG") ||  graphType.equals("PAG"))) {
+        if (!(graphType.equals("MPDAG") || graphType.equals("MAG") || graphType.equals("PAG"))) {
             System.err.println("Invalid graph type: " + graphType);
             throw new IllegalArgumentException("Invalid graph type: " + graphType);
         }
@@ -4014,29 +4622,29 @@ public class Paths implements TetradSerializable {
         return Optional.empty();
     }
 
-    private boolean dfsWitness(LinkedList<Node> path, Set<Node> inPath, Node Y,
-                               Set<Node> Z, Set<Node> ancOfZ,
-                               String graphType, int edgeLimit) {
-        if (path.size() - 1 > edgeLimit) return false;
-        Node tail = path.getLast();
-        if (tail.equals(Y)) return true;
-
-        for (Edge e : graph.getEdges(tail)) {
-            Node nxt = Edges.traverse(tail, e);
-            if (nxt == null || inPath.contains(nxt)) continue;
-
-            if (path.size() >= 2) {
-                Node prev = path.get(path.size() - 2);
-                if (!tripleKeepsOpen(prev, tail, nxt, Z)) continue;
-            }
-            path.addLast(nxt);
-            inPath.add(nxt);
-            if (dfsWitness(path, inPath, Y, Z, ancOfZ, graphType, edgeLimit)) return true;
-            inPath.remove(nxt);
-            path.removeLast();
-        }
-        return false;
-    }
+//    private boolean dfsWitness(LinkedList<Node> path, Set<Node> inPath, Node Y,
+//                               Set<Node> Z, Set<Node> ancOfZ,
+//                               String graphType, int edgeLimit) {
+//        if (path.size() - 1 > edgeLimit) return false;
+//        Node tail = path.getLast();
+//        if (tail.equals(Y)) return true;
+//
+//        for (Edge e : graph.getEdges(tail)) {
+//            Node nxt = Edges.traverse(tail, e);
+//            if (nxt == null || inPath.contains(nxt)) continue;
+//
+//            if (path.size() >= 2) {
+//                Node prev = path.get(path.size() - 2);
+//                if (!tripleKeepsOpen(prev, tail, nxt, Z)) continue;
+//            }
+//            path.addLast(nxt);
+//            inPath.add(nxt);
+//            if (dfsWitness(path, inPath, Y, Z, ancOfZ, graphType, edgeLimit)) return true;
+//            inPath.remove(nxt);
+//            path.removeLast();
+//        }
+//        return false;
+//    }
 
 //    private boolean tripleKeepsOpen(Node a, Node b, Node c,
 //                                    Set<Node> Z) {
@@ -4059,7 +4667,9 @@ public class Paths implements TetradSerializable {
      * In PAG: allow into-X, or undirected/bidirected edges whose other end W
      * can reach X or Y by a directed path.
      */
-    /** Legal first hops for a backdoor in the given graphType (your tested rule). */
+    /**
+     * Legal first hops for a backdoor in the given graphType (your tested rule).
+     */
     private @NotNull List<Node> firstBackdoorNeighbors(Node X, Node Y, String graphType) {
         boolean isPAG = "PAG".equalsIgnoreCase(graphType);
         List<Node> starts = new ArrayList<>();
@@ -4069,17 +4679,19 @@ public class Paths implements TetradSerializable {
             if (!isPAG) {
                 if (e.pointsTowards(X)) starts.add(W);                 // DAG/MPDAG/MAG: X <- W
             } else {
-                boolean intoX   = e.pointsTowards(X);
+                boolean intoX = e.pointsTowards(X);
                 boolean undOrBi = Edges.isUndirectedEdge(e) || Edges.isBidirectedEdge(e);
-                boolean wToX    = graph.paths().existsDirectedPath(W, X);
-                boolean wToY    = graph.paths().existsDirectedPath(W, Y);
+                boolean wToX = graph.paths().existsDirectedPath(W, X);
+                boolean wToY = graph.paths().existsDirectedPath(W, Y);
                 if (intoX || (undOrBi && (wToX || wToY))) starts.add(W);
             }
         }
         return starts;
     }
 
-    /** BFS shells from X, seeded only by backdoor starts. */
+    /**
+     * BFS shells from X, seeded only by backdoor starts.
+     */
     private Shells backdoorShellsFromX(Node X, List<Node> starts, int maxRadius) {
         @SuppressWarnings("unchecked")
         List<Node>[] layers = new ArrayList[maxRadius + 1];
@@ -4087,11 +4699,15 @@ public class Paths implements TetradSerializable {
 
         Set<Node> visited = new HashSet<>();
         Deque<Node> q = new ArrayDeque<>();
-        Map<Node,Integer> dist = new HashMap<>();
+        Map<Node, Integer> dist = new HashMap<>();
 
         for (Node s : starts) {
             visited.add(X);
-            if (visited.add(s)) { q.add(s); dist.put(s, 1); layers[1].add(s); }
+            if (visited.add(s)) {
+                q.add(s);
+                dist.put(s, 1);
+                layers[1].add(s);
+            }
         }
 
         while (!q.isEmpty()) {
@@ -4110,7 +4726,9 @@ public class Paths implements TetradSerializable {
         return new Shells(layers, reach);
     }
 
-    /** Undirected BFS shells from seed (used for Y side). */
+    /**
+     * Undirected BFS shells from seed (used for Y side).
+     */
     private Shells undirectedShells(Node seed, int maxRadius) {
         @SuppressWarnings("unchecked")
         List<Node>[] layers = new ArrayList[maxRadius + 1];
@@ -4118,9 +4736,11 @@ public class Paths implements TetradSerializable {
 
         Set<Node> visited = new HashSet<>();
         Deque<Node> q = new ArrayDeque<>();
-        Map<Node,Integer> dist = new HashMap<>();
+        Map<Node, Integer> dist = new HashMap<>();
 
-        visited.add(seed); q.add(seed); dist.put(seed, 0);
+        visited.add(seed);
+        q.add(seed);
+        dist.put(seed, 0);
 
         while (!q.isEmpty()) {
             Node u = q.remove();
@@ -4138,13 +4758,9 @@ public class Paths implements TetradSerializable {
         return new Shells(layers, visited);
     }
 
-    private static final class Shells {
-        final List<Node>[] layers; // 1..maxRadius
-        final Set<Node> reach;     // union of all layers
-        Shells(List<Node>[] layers, Set<Node> reach){ this.layers=layers; this.reach=reach; }
-    }
-
-    /** Small heuristic used only for sorting candidates (endpoint-nearness). */
+    /**
+     * Small heuristic used only for sorting candidates (endpoint-nearness).
+     */
     private int approxEndpointDistance(Node v, Node X, Node Y, Shells sx, Shells sy) {
         int best = Integer.MAX_VALUE;
         for (int r = 1; r < sx.layers.length; r++) if (sx.layers[r].contains(v)) best = Math.min(best, r);
@@ -4515,53 +5131,42 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Small bundle for path-specific RA: mask (forbidden to condition on) + a seed Z (required blockers).
+     * @param layers 1..maxRadius
+     * @param reach  union of all layers
      */
-    public static final class PathEffectSpec {
-        public final Set<Node> mask;   // nodes RA must NOT condition on
-        public final Set<Node> seedZ;  // nodes RA SHOULD start with in Z (to close excluded causal paths)
+    private record Shells(List<Node>[] layers, Set<Node> reach) {
+    }
 
-        public PathEffectSpec(Set<Node> mask, Set<Node> seedZ) {
-            this.mask = mask;
-            this.seedZ = seedZ;
-        }
+    /**
+     * Small bundle for path-specific RA: mask (forbidden to condition on) + a seed Z (required blockers).
+     *
+     * @param mask  nodes RA must NOT condition on
+     * @param seedZ nodes RA SHOULD start with in Z (to close excluded causal paths)
+     */
+        public record PathEffectSpec(Set<Node> mask, Set<Node> seedZ) {
     }
 
     /**
      * Convenience record for queue elements.
+     *
+     * @param cur  current vertex
+     * @param prev vertex we arrived from (null at start)
      */
-    private static final class PathElem {
-        final Node cur;      // current vertex
-        final Node prev;     // vertex we arrived from (null at start)
-
-        PathElem(Node cur, Node prev) {
-            this.cur = cur;
-            this.prev = prev;
-        }
+        private record PathElem(Node cur, Node prev) {
     }
 
     /**
-     * (prev,cur) pair so we can mark *edges* as visited.
-     */
-    private static final class NodePair {
-        final Node prev, cur;
-
-        NodePair(Node prev, Node cur) {
-            this.prev = prev;
-            this.cur = cur;
-        }
+         * (prev,cur) pair so we can mark *edges* as visited.
+         */
+        private record NodePair(Node prev, Node cur) {
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof NodePair p)) return false;
-            return Objects.equals(prev, p.prev) && Objects.equals(cur, p.cur);
-        }
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (!(o instanceof NodePair p)) return false;
+                return Objects.equals(prev, p.prev) && Objects.equals(cur, p.cur);
+            }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(prev, cur);
-        }
     }
 
     /**
