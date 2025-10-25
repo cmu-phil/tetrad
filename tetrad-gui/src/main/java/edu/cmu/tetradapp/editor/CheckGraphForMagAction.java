@@ -35,7 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * CheckGraphForMpdagAction is an action class that checks if a given graph is a legal MPDAG (Mixed Ancestral Graph) and
+ * CheckGraphForPdagAction is an action class that checks if a given graph is a legal PDAG (Mixed Ancestral Graph) and
  * displays a message to indicate the result.
  */
 public class CheckGraphForMagAction extends AbstractAction {

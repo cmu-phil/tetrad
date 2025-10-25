@@ -630,12 +630,12 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
     private static List<List<Node>> getAmenablePaths(Graph graph, String graphType, Node node1, Node node2) {
         List<List<Node>> amenablePaths;
-        if (graphType.equals("DAG") || graphType.equals("MPDAG") || graphType.equals("MAG")) {
-            amenablePaths = graph.paths().amenablePathsMpdagMag(node1, node2, -1);
+        if (graphType.equals("DAG") || graphType.equals("PDAG") || graphType.equals("MAG")) {
+            amenablePaths = graph.paths().amenablePathsPdagMag(node1, node2, -1);
         } else if (graphType.equals("PAG")) {
             amenablePaths = graph.paths().amenablePathsPag(node1, node2, -1);
         } else {
-            throw new IllegalArgumentException("Graph must be a legal MPDAG, MAG, or PAG: " + graphType);
+            throw new IllegalArgumentException("Graph must be a legal PDAG, MAG, or PAG: " + graphType);
         }
         return amenablePaths;
     }
@@ -875,7 +875,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 } else if ("Semidirected Paths".equals(method)) {
                     allSemidirectedPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Amenable paths".equals(method)) {
-                    allAmenablePathsMpdagMag(graph, textArea, nodes1, nodes2);
+                    allAmenablePathsPdagMag(graph, textArea, nodes1, nodes2);
                 } else if ("Backdoor paths".equals(method)) {
                     allBackdoorPaths(graph, textArea, nodes1, nodes2);
                 } else if ("All Paths".equals(method)) {
@@ -1034,7 +1034,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes1   The list of starting nodes.
      * @param nodes2   The list of ending nodes.
      */
-    private void allAmenablePathsMpdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+    private void allAmenablePathsPdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.setText("""
                 These are semidirected paths from X to Y that start with a directed edge out of X. An 
                 adjustment set should not block any of these paths.
@@ -1046,7 +1046,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         boolean mag = false;
         boolean pag = false;
 
-        if (graph.paths().isLegalMpdag()) {
+        if (graph.paths().isLegalPdag()) {
             mpdag = true;
         } else if (graph.paths().isLegalMag()) {
             mag = true;
@@ -1057,7 +1057,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         if (pag) {
             allAmenablePathsPag(graph, textArea, nodes1, nodes2);
         } else if (!mpdag && !mag) {
-            textArea.append("\nThe graph is not a DAG, CPDAG, MPDAG, MAG or PAG.");
+            textArea.append("\nThe graph is not a DAG, CPDAG, PDAG, MAG or PAG.");
             return;
         }
 
@@ -1065,7 +1065,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> amenable = graph.paths().amenablePathsMpdagMag(node1, node2,
+                List<List<Node>> amenable = graph.paths().amenablePathsPdagMag(node1, node2,
                         parameters.getInt("pathsMaxLengthAdjustment"));
 
                 if (amenable.isEmpty()) {
@@ -1146,17 +1146,17 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         boolean mag = false;
         String graphType;
 
-        if (graph.paths().isLegalMpdag()) {
+        if (graph.paths().isLegalPdag()) {
             mpdag = true;
-            graphType = "MPDAG";
+            graphType = "PDAG";
         } else if (graph.paths().isLegalMag()) {
             mag = true;
             graphType = "MAG";
         } else if (graph.paths().isLegalPag()) {
-            textArea.append("\nThe graph is not a MPDAG, MAG or PAG.");
+            textArea.append("\nThe graph is not a PDAG, MAG or PAG.");
             graphType = "PAG";
         } else {
-            throw new IllegalArgumentException("Graph type is not MPDAG, MAG, or PAG");
+            throw new IllegalArgumentException("Graph type is not PDAG, MAG, or PAG");
         }
 
         boolean pathListed = false;
@@ -1265,7 +1265,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         boolean mag = false;
         boolean pag = false;
 
-        if (graph.paths().isLegalMpdag()) {
+        if (graph.paths().isLegalPdag()) {
             mpdag = true;
         } else if (graph.paths().isLegalMag()) {
             mag = true;
@@ -1522,10 +1522,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         boolean found = false;
 
-        String graphType = "MPDAG";
+        String graphType = "PDAG";
 
-        if (graph.paths().isLegalMpdag()) {
-            graphType = "MPDAG";
+        if (graph.paths().isLegalPdag()) {
+            graphType = "PDAG";
         } else if (graph.paths().isLegalMag()) {
             graphType = "MAG";
         } else if (graph.paths().isLegalPag()) {
@@ -1618,8 +1618,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         if (graph.paths().isLegalDag()) {
             graphType = RecursiveAdjustment.GraphType.DAG.toString();
-        } else if (graph.paths().isLegalMpdag()) {
-            graphType = RecursiveAdjustment.GraphType.MPDAG.toString();
+        } else if (graph.paths().isLegalPdag()) {
+            graphType = RecursiveAdjustment.GraphType.PDAG.toString();
         } else if (graph.paths().isLegalMag()) {
             graphType = RecursiveAdjustment.GraphType.MAG.toString();
         } else if (graph.paths().isLegalPag()) {
@@ -1758,12 +1758,12 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      */
     private boolean hasAmenablePaths(Graph graph, Node x, Node y) {
         int L = parameters.getInt("pathsMaxLengthAdjustment");
-        // Prefer a PAG-aware amenable routine if available, else fall back to MPDAG/MAG version.
+        // Prefer a PAG-aware amenable routine if available, else fall back to PDAG/MAG version.
         if (graph.paths().isLegalPag()) {
             List<List<Node>> aps = graph.paths().amenablePathsPag(x, y, L);
             return aps != null && !aps.isEmpty();
-        } else if (graph.paths().isLegalMpdag() || graph.paths().isLegalMag()) {
-            List<List<Node>> aps = graph.paths().amenablePathsMpdagMag(x, y, L);
+        } else if (graph.paths().isLegalPdag() || graph.paths().isLegalMag()) {
+            List<List<Node>> aps = graph.paths().amenablePathsPdagMag(x, y, L);
             return aps != null && !aps.isEmpty();
         }
         return false;

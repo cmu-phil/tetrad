@@ -53,7 +53,7 @@ public final class RAEnumerate {
     public static String inferGraphType(Graph G) {
         if (G.paths().isLegalPag())   return "PAG";
         if (G.paths().isLegalMag())   return "MAG";
-        if (G.paths().isLegalMpdag()) return "MPDAG";
+        if (G.paths().isLegalPdag()) return "PDAG";
         return "DAG";
     }
 
@@ -417,7 +417,7 @@ public final class RAEnumerate {
         private boolean enforceMinimality = false;
         private long maxMillis = 0L;
         private long perAttemptMillis = 250L;
-        private String graphType;                 // PAG/MAG/MPDAG/DAG
+        private String graphType;                 // PAG/MAG/PDAG/DAG
         private Set<Node> baseForbid = Set.of(); // Forb_G(X,Y)
         private Set<Node> latentMask = Set.of(); // Latents / disallowed adjusters
 

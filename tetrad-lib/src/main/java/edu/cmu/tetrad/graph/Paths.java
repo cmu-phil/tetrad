@@ -206,10 +206,10 @@ public class Paths implements TetradSerializable {
         List<List<Node>> allAmenable;
         if (graph.paths().isLegalPag()) {
             allAmenable = graph.paths().amenablePathsPag(X, Y, -1);
-        } else if (graph.paths().isLegalMpdag() || graph.paths().isLegalMag()) {
-            allAmenable = graph.paths().amenablePathsMpdagMag(X, Y, -1);
+        } else if (graph.paths().isLegalPdag() || graph.paths().isLegalMag()) {
+            allAmenable = graph.paths().amenablePathsPdagMag(X, Y, -1);
         } else {
-            throw new IllegalArgumentException("Expect MPDAG/MAG/PAG for path-specific masking.");
+            throw new IllegalArgumentException("Expect PDAG/MAG/PAG for path-specific masking.");
         }
 
         // Canonicalize path identity by node-name sequence
@@ -401,7 +401,7 @@ public class Paths implements TetradSerializable {
         if (Edges.isUndirectedEdge(e)) return true;
 
         // Otherwise, tail or circle at 'a' is fine:
-        // - In DAG/MPDAG "a -> b": tail at 'a' ⇒ allowed
+        // - In DAG/PDAG "a -> b": tail at 'a' ⇒ allowed
         // - In PAG/MAG "a o-> b" (circle at 'a') also allowed as "possibly out"
         return true;
     }
@@ -635,15 +635,15 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Checks if the given graph is a legal Maximal Partial Directed Acyclic Graph (MPDAG). A MPDAG is considered legal
+     * Checks if the given graph is a legal Maximal Partial Directed Acyclic Graph (PDAG). A PDAG is considered legal
      * if it is equal to a CPDAG where additional edges have been oriented by Knowledge, with Meek rules applied for
      * maximum orientation. The test is performed by attemping to convert the graph to a CPDAG using the DAG to CPDAG
      * transformation and testing whether that graph is a legal CPDAG. Finally, we test to see whether the obtained
      * graph is equal to the original graph.
      *
-     * @return true if the MPDAG is legal, false otherwise.
+     * @return true if the PDAG is legal, false otherwise.
      */
-    public boolean isLegalMpdag() {
+    public boolean isLegalPdag() {
         Graph g = this.graph;
 
         for (Edge e : g.getEdges()) {
@@ -674,7 +674,7 @@ public class Paths implements TetradSerializable {
      * <p>
      * The user may choose to use the rules from Zhang (2008) or the rules from Spirtes et al. (2000).
      *
-     * @return true if the MPDAG is legal, false otherwise.
+     * @return true if the PDAG is legal, false otherwise.
      */
     public boolean isLegalMpag() {
         Graph g = this.graph;
@@ -860,7 +860,7 @@ public class Paths implements TetradSerializable {
      * @return a list of amenable paths from the source node to the destination node, each represented as a list of
      * nodes
      */
-    public List<List<Node>> amenablePathsMpdagMag(Node node1, Node node2, int maxLength) {
+    public List<List<Node>> amenablePathsPdagMag(Node node1, Node node2, int maxLength) {
         List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
@@ -4013,7 +4013,7 @@ public class Paths implements TetradSerializable {
 //        boolean mag = false;
 //        boolean pag = false;
 //
-//        if (graph.paths().isLegalMpdag()) {
+//        if (graph.paths().isLegalPdag()) {
 //            mpdag = true;
 //        } else if (graph.paths().isLegalMag()) {
 //            mag = true;
@@ -4161,19 +4161,19 @@ public class Paths implements TetradSerializable {
 //                                          int maxPathLength) {
 //        if (source == target) return new ArrayList<>();
 //
-//        if (!(graphType.equals("MPDAG") || graphType.equals("MAG") || graphType.equals("PAG"))) {
-//            System.err.println("Expecting graph type = MPDAG, MAG, or PAG: " + graphType);
-//            throw new IllegalArgumentException("Expecting graph type = MPDAG, MAG, or PAG: " + graphType);
+//        if (!(graphType.equals("PDAG") || graphType.equals("MAG") || graphType.equals("PAG"))) {
+//            System.err.println("Expecting graph type = PDAG, MAG, or PAG: " + graphType);
+//            throw new IllegalArgumentException("Expecting graph type = PDAG, MAG, or PAG: " + graphType);
 //        }
 //
-//        final boolean mpdag = graphType.equals("MPDAG");
+//        final boolean mpdag = graphType.equals("PDAG");
 //        final boolean mag = graphType.equals("MAG");
 //        final boolean pag = graphType.equals("PAG");
 //
 //        // --- amenable (semi-directed) paths ---
 //        List<List<Node>> amenable = semidirectedPaths(source, target, -1);
 //
-//        // In CPDAG/MPDAG require first edge visible out of X
+//        // In CPDAG/PDAG require first edge visible out of X
 //        if (mpdag) {
 //            for (List<Node> path : new ArrayList<>(amenable)) {
 //                if (path.size() < 2) {
@@ -4339,7 +4339,7 @@ public class Paths implements TetradSerializable {
 
 //    private List<List<Node>> getBackdoorPaths(Node X, Node Y, String graphType, int maxLen) {
 //        boolean isPAG = graphType.equals("PAG");
-//        boolean isMAG = graphType.equals("MAG") || graphType.equals("MPDAG") || graphType.equals("DAG");
+//        boolean isMAG = graphType.equals("MAG") || graphType.equals("PDAG") || graphType.equals("DAG");
 //
 //        // Step 1: find valid first hops
 //        List<Node> starts = new ArrayList<>();
@@ -4447,12 +4447,12 @@ public class Paths implements TetradSerializable {
 // only legal backdoor first hops.
     public Set<List<Node>> getBackdoorPaths(Node X, Node Y, String graphType, int maxPathLength) {
 
-        if (!(graphType.equals("MPDAG") || graphType.equals("MAG") || graphType.equals("PAG"))) {
+        if (!(graphType.equals("PDAG") || graphType.equals("MAG") || graphType.equals("PAG"))) {
             System.err.println("Invalid graph type: " + graphType);
             throw new IllegalArgumentException("Invalid graph type: " + graphType);
         }
 
-        boolean mpdag = graphType.equals("MPDAG");
+        boolean mpdag = graphType.equals("PDAG");
         boolean mag = graphType.equals("MAG");
 
         // 1) Seed only with legal backdoor first hops (match your removeIf predicates)
@@ -4663,7 +4663,7 @@ public class Paths implements TetradSerializable {
 
     /**
      * Return the first-hop neighbors of X that can begin a backdoor path from X to Y.
-     * In DAG/MPDAG/MAG: require an arrowhead into X (X <- W).
+     * In DAG/PDAG/MAG: require an arrowhead into X (X <- W).
      * In PAG: allow into-X, or undirected/bidirected edges whose other end W
      * can reach X or Y by a directed path.
      */
@@ -4677,7 +4677,7 @@ public class Paths implements TetradSerializable {
             Edge e = graph.getEdge(X, W);
             if (e == null) continue;
             if (!isPAG) {
-                if (e.pointsTowards(X)) starts.add(W);                 // DAG/MPDAG/MAG: X <- W
+                if (e.pointsTowards(X)) starts.add(W);                 // DAG/PDAG/MAG: X <- W
             } else {
                 boolean intoX = e.pointsTowards(X);
                 boolean undOrBi = Edges.isUndirectedEdge(e) || Edges.isBidirectedEdge(e);
@@ -4811,7 +4811,7 @@ public class Paths implements TetradSerializable {
 
     /**
      * Return true iff <a,b,c> is a DEFINITE collider at b, per graph type:
-     * - DAG/MPDAG/MAG: arrowheads into b on both (a,b) and (c,b).
+     * - DAG/PDAG/MAG: arrowheads into b on both (a,b) and (c,b).
      * - PAG: require definite collider (both proximal endpoints at b are arrowheads).
      */
     private boolean formsDefiniteCollider(Node a, Node b, Node c, boolean mpdag, boolean mag) {
@@ -4819,7 +4819,7 @@ public class Paths implements TetradSerializable {
         Edge eb2 = graph.getEdge(c, b);
         if (eb1 == null || eb2 == null) return false;
 
-        // In DAG/MPDAG/MAG, collider iff both edges have arrowheads into b.
+        // In DAG/PDAG/MAG, collider iff both edges have arrowheads into b.
         if (mpdag || mag) {
             return eb1.pointsTowards(b) && eb2.pointsTowards(b);
         }
@@ -4870,7 +4870,7 @@ public class Paths implements TetradSerializable {
     public RAEnumerate.AdjSummary recursiveAdjustment(
             Node source,
             Node target,
-            String graphType,           // "PAG" | "MAG" | "MPDAG" | "DAG"
+            String graphType,           // "PAG" | "MAG" | "PDAG" | "DAG"
             int maxNumSets,
             int maxPathLength,          // <=0 means unlimited
             boolean minimizeEach
@@ -5056,8 +5056,8 @@ public class Paths implements TetradSerializable {
         if (_graphType == RecursiveAdjustment.GraphType.PAG) {
             return graph.paths().amenablePathsPag(source, target, maxLength);
         } else {
-            // DAG/CPDAG/MPDAG/MAG handled here
-            return graph.paths().amenablePathsMpdagMag(source, target, maxLength);
+            // DAG/CPDAG/PDAG/MAG handled here
+            return graph.paths().amenablePathsPdagMag(source, target, maxLength);
         }
     }
 

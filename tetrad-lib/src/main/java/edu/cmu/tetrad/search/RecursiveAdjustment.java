@@ -23,7 +23,7 @@ public final class RecursiveAdjustment {
 
     private static final boolean DEBUG = false; // set false to silence logging
 
-    public enum GraphType{DAG, MPDAG, MAG, PAG}
+    public enum GraphType{DAG, PDAG, MAG, PAG}
 
     private RecursiveAdjustment() {}
 
@@ -93,13 +93,13 @@ public final class RecursiveAdjustment {
     }
 
     private static boolean startsBackdoorFromX(Graph graph, String graphType, Edge e, Node x, Node b, Node y) {
-//        boolean mpdag = graph.paths().isLegalMpdag();
+//        boolean mpdag = graph.paths().isLegalPdag();
 //        boolean mag   = graph.paths().isLegalMag();
 //        boolean pag   = graph.paths().isLegalPag();
 
         GraphType _graphType = GraphType.valueOf(graphType);
 
-        if (_graphType == GraphType.MPDAG) {
+        if (_graphType == GraphType.PDAG) {
             return e.pointsTowards(x) || Edges.isUndirectedEdge(e);
         } else if (_graphType == GraphType.MAG) {
             return e.pointsTowards(x) || Edges.isUndirectedEdge(e) || Edges.isBidirectedEdge(e);

@@ -32,7 +32,7 @@ import java.awt.event.ActionEvent;
 import java.util.HashSet;
 
 /**
- * CheckGraphForMpdagAction is an action class that checks if a given graph is a legal PAG (Mixed Ancesgral Graph) and
+ * CheckGraphForPdagAction is an action class that checks if a given graph is a legal PAG (Mixed Ancesgral Graph) and
  * displays a message to indicate the result.
  */
 public class CheckGraphForPagAction extends AbstractAction {

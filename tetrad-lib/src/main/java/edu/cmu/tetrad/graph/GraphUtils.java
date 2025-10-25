@@ -1991,7 +1991,7 @@ public final class GraphUtils {
      * @param numSmallestSizes the number of smallest adjustment sets to return
      * @param graphType        the type of the graph
      * @return the adjustment sets as a set of sets of nodes
-     * @throws IllegalArgumentException if the input graph is not a legal MPDAG
+     * @throws IllegalArgumentException if the input graph is not a legal PDAG
      */
     public static Set<Set<Node>> visibleEdgeAdjustments1(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
         Graph G2 = getGraphWithoutXToY(G, x, y, graphType);
@@ -2000,7 +2000,7 @@ public final class GraphUtils {
             return new HashSet<>();
         }
 
-        if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
+        if (G2.paths().isLegalPdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
             System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
             return new HashSet<>();
         } else {
@@ -2050,7 +2050,7 @@ public final class GraphUtils {
             return new HashSet<>();
         }
 
-        if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
+        if (G2.paths().isLegalPdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
             System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
             return new HashSet<>();
         } else {
@@ -2084,26 +2084,26 @@ public final class GraphUtils {
      */
     public static Graph getGraphWithoutXToY(Graph G, Node x, Node y, GraphType graphType) {
         if (graphType == GraphType.CPDAG) {
-            return getGraphWithoutXToYMpdag(G, x, y);
+            return getGraphWithoutXToYPdag(G, x, y);
         } else if (graphType == GraphType.PAG) {
             return getGraphWithoutXToYPag(G, x, y);
         } else {
-            throw new IllegalArgumentException("Graph must be a legal MPDAG, PAG, or MAG.");
+            throw new IllegalArgumentException("Graph must be a legal PDAG, PAG, or MAG.");
         }
     }
 
     /**
      * This method returns a graph G2 without the edge between Node x and Node y, creating a Maximum Partially Directed
-     * Acyclic Graph (MPDAG) representation.
+     * Acyclic Graph (PDAG) representation.
      *
      * @param G the original graph
      * @param x the starting node of the edge
      * @param y the ending node of the edge
-     * @return a graph G2 without the edge between Node x and Node y, in MPDAG representation
+     * @return a graph G2 without the edge between Node x and Node y, in PDAG representation
      * @throws IllegalArgumentException if the edge from x to y does not exist, is not directed, or does not point
      *                                  towards y
      */
-    private static Graph getGraphWithoutXToYMpdag(Graph G, Node x, Node y) {
+    private static Graph getGraphWithoutXToYPdag(Graph G, Node x, Node y) {
         Graph G2 = new EdgeListGraph(G);
 
         if (!G2.isAdjacentTo(x, y)) {

@@ -19,7 +19,7 @@ public final class RecursiveAdjustmentCopy {
 
     private static final boolean DEBUG = false; // set false to silence logging
 
-    public enum GraphType{DAG, MPDAG, MAG, PAG}
+    public enum GraphType{DAG, PDAG, MAG, PAG}
 
     // ADD: a tiny mutable budget + optional deadline
     static final class Budget {
@@ -696,11 +696,11 @@ public final class RecursiveAdjustmentCopy {
     }
 
     private static boolean startsBackdoorFromX(Graph graph, GraphType graphType, Edge e, Node x, Node b, Node y) {
-//        boolean mpdag = graph.paths().isLegalMpdag();
+//        boolean mpdag = graph.paths().isLegalPdag();
 //        boolean mag   = graph.paths().isLegalMag();
 //        boolean pag   = graph.paths().isLegalPag();
 
-        if (graphType == GraphType.MPDAG) {
+        if (graphType == GraphType.PDAG) {
             return e.pointsTowards(x) || Edges.isUndirectedEdge(e);
         } else if (graphType == GraphType.MAG) {
             return e.pointsTowards(x) || Edges.isUndirectedEdge(e) || Edges.isBidirectedEdge(e);

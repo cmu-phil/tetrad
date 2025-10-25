@@ -391,7 +391,7 @@ public final class TestGraphUtils {
             // Construct its CPDAG
             Graph cpdag = GraphTransforms.dagToCpdag(graph);
             assertTrue(cpdag.paths().isLegalCpdag());
-            assertTrue(cpdag.paths().isLegalMpdag());
+            assertTrue(cpdag.paths().isLegalPdag());
 
 //                if (!cpdag.paths().isLegalCpdag()) {
 //

@@ -273,9 +273,9 @@ public class IdaEditor extends JPanel {
                 
                 Maathuis, Marloes H., Markus Kalisch, and Peter BÃ¼hlmann. "Estimating high-dimensional intervention effects from observational data." The Annals of Statistics 37.6A (2009): 3133-3164.
                 
-                The IDA algorithm seeks to give a list of sets of possible parents for a given variable Y in an MPDAG (which can be a DAG, a CPDAG, or a CPDAG with extra knowledge orientations after applying the Meek rules) and their corresponding total effects and absolute total effects on Y. It regresses Y on X U S, where X is a possible parent of Y and S is a set of possible parents of X. It reports the absolute values of the minimum regression coefficient or zero if Y is in the regression set. This interface tool reports the minimum and maximum of this range for each pair of distinct nodes in the graph.
+                The IDA algorithm seeks to give a list of sets of possible parents for a given variable Y in an PDAG (which can be a DAG, a CPDAG, or a CPDAG with extra knowledge orientations after applying the Meek rules) and their corresponding total effects and absolute total effects on Y. It regresses Y on X U S, where X is a possible parent of Y and S is a set of possible parents of X. It reports the absolute values of the minimum regression coefficient or zero if Y is in the regression set. This interface tool reports the minimum and maximum of this range for each pair of distinct nodes in the graph.
                 
-                This procedure is carried out for an estimated graph, as, for instance, a graph from a search, which is assumed to be an MPDAG. It also optionally takes a Simulation box as input instead of a Data box, which allows for calculating the true total effects. It is then possible to assess whether this true total effect falls within the bounds given by the minimum and maximum total effects from the estimated MPDAG (in which case zero is reported) or, if not, what the distance to the nearest endpoint of the range is. This distance squared is reported for each pair of distinct nodes.
+                This procedure is carried out for an estimated graph, as, for instance, a graph from a search, which is assumed to be an PDAG. It also optionally takes a Simulation box as input instead of a Data box, which allows for calculating the true total effects. It is then possible to assess whether this true total effect falls within the bounds given by the minimum and maximum total effects from the estimated PDAG (in which case zero is reported) or, if not, what the distance to the nearest endpoint of the range is. This distance squared is reported for each pair of distinct nodes.
                 
                 Finally, summary statistics are given at the bottom of the table if the true DAG is given, as follows: (1) The average squared distance of the true total effect from range of estimated total effects, where this distance is zero if the true total effect falls between the minimum and maximum total effects and the distance to the closest extremal point otherwise; (2) The average minimum squared difference between the true total effect and the various estimated total effects, and (3) The average maximum squared difference between the true total effect and the various estimated total effects.
                 
@@ -283,9 +283,9 @@ public class IdaEditor extends JPanel {
                 
                 IDA Check is available in the Comparison box and can take the following combinations of parents:
                 
-                (a) An estimated MPDAG (as from a search) and a dataset. The variables in these must be the same, and the dataset needs to be continuous. In this case, columns compared to the true model will not be displayed.
+                (a) An estimated PDAG (as from a search) and a dataset. The variables in these must be the same, and the dataset needs to be continuous. In this case, columns compared to the true model will not be displayed.
                 
-                (b) A Simulation box containing a true SEM IM and an estimated MPDAG. In this case, extra columns compared to the true model, as described above, will be displayed.
+                (b) A Simulation box containing a true SEM IM and an estimated PDAG. In this case, extra columns compared to the true model, as described above, will be displayed.
                 
                 The contents of the table may be selected, copied, and pasted into Excel.
                 

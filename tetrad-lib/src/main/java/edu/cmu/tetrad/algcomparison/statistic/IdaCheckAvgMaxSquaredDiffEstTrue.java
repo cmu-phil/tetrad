@@ -85,7 +85,7 @@ public class IdaCheckAvgMaxSquaredDiffEstTrue implements Statistic {
             throw new IllegalArgumentException("Data model is null.");
         }
 
-        if (!estGraph.paths().isLegalMpdag()) {
+        if (!estGraph.paths().isLegalPdag()) {
             return Double.NaN;
         }
 

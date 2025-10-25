@@ -116,8 +116,8 @@ public class LinearAdjustmentRegressionModel implements SessionModel, GraphSourc
 
         if (graph.paths().isLegalDag()) {
             graphType = "DAG";
-        } else if (graph.paths().isLegalMpdag()) {
-            graphType = "MPDAG";
+        } else if (graph.paths().isLegalPdag()) {
+            graphType = "PDAG";
         } else if  (graph.paths().isLegalMag()) {
             graphType = "MAG";
         } else if (graph.paths().isLegalPag()) {

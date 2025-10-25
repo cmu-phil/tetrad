@@ -81,7 +81,7 @@ public class IdaCheckAvgMinSquaredDiffEstTrue implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        if (!estGraph.paths().isLegalMpdag()) {
+        if (!estGraph.paths().isLegalPdag()) {
             return Double.NaN;
         }
 
