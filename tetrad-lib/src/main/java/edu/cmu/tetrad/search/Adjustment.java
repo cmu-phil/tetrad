@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -17,56 +20,196 @@ public final class Adjustment {
 
     // ---- New collider-bias policy ---------------------------------------------------------------
 
-    /** Collider preference policy for selecting blockers on a backdoor witness. */
-    public enum ColliderPolicy {
-        /** No bias; original behavior. */
-        OFF,
-        /** Prefer noncolliders; colliders allowed but penalized. */
-        PREFER_NONCOLLIDERS,
-        /** First try using noncolliders (and ambiguous) only; if impossible, allow colliders. */
-        NONCOLLIDER_FIRST
+    /**
+     * The {@code graph} field represents the primary graph structure associated
+     * with the {@code Adjustment} instance. It is used in various calculations and
+     * operations throughout the class methods to determine adjustment sets, causal
+     * relationships, and graph-based policies.
+     *
+     * This field is final and immutable after the initialization of the {@code Adjustment}
+     * instance, ensuring consistency for all operations that rely on the graph.
+     */
+    private final Graph graph;
+    /**
+     * Specifies the collider preference policy used for selecting blockers on a backdoor witness.
+     * Determines whether noncolliders, colliders, or a mix of both are preferred during adjustment
+     * calculations. Defaults to {@code NONCOLLIDER_FIRST}, meaning noncolliders and ambiguous
+     * nodes are prioritized initially, and colliders are only utilized if necessary.
+     */
+    private ColliderPolicy colliderPolicy = ColliderPolicy.NONCOLLIDER_FIRST;
+    /**
+     * <p>Defines the policy for handling cases where no amenable adjustment paths are
+     * found during adjustment-set computation. Defaults to {@link NoAmenablePolicy#SEARCH}.</p>
+     *
+     * <p>The policy determines how the search proceeds when amenable paths are not identified:</p>
+     * <ul>
+     *   <li>{@link NoAmenablePolicy#SEARCH}: Continue searching for adjustment possibilities.</li>
+     *   <li>{@link NoAmenablePolicy#RETURN_EMPTY_SET}: Return the empty set when no amenable paths are found.</li>
+     *   <li>{@link NoAmenablePolicy#SUPPRESS}: Suppress any result for the pair (i.e., return no sets).</li>
+     * </ul>
+     *
+     * <p>Configure this via {@code setNoAmenablePolicy}.</p>
+     */
+    private NoAmenablePolicy noAmenablePolicy = NoAmenablePolicy.SEARCH;
+
+    /**
+     * Constructor for the Adjustment class, initializing it with the given graph.
+     *
+     * @param graph the graph instance to be used for adjustment calculations
+     */
+    public Adjustment(Graph graph) {
+        this.graph = graph;
     }
 
-    private ColliderPolicy colliderPolicy = ColliderPolicy.OFF;
+    private static Set<Node> amenableBackbone(List<List<Node>> amenable, Node X, Node Y) {
+        if (amenable == null || amenable.isEmpty()) return Collections.emptySet();
+        LinkedHashSet<Node> s = new LinkedHashSet<>();
+        for (List<Node> p : amenable) {
+            for (int i = 1; i < p.size() - 1; i++) {
+                Node v = p.get(i);
+                if (v != X && v != Y) s.add(v);
+            }
+        }
+        return s;
+    }
 
-    /** Set collider preference policy (default PREFER_NONCOLLIDERS). */
+    /**
+     * Compute Forb_G(X,Y) (Perković et al., 2018).
+     */
+    private static Set<Node> getForbiddenForAdjustment(Graph G, String graphType, Node X, Node Y) {
+        Objects.requireNonNull(G);
+        Objects.requireNonNull(X);
+        Objects.requireNonNull(Y);
+        if (X == Y) return Collections.emptySet();
+
+        final String gt = graphType == null ? "DAG" : graphType.toUpperCase(Locale.ROOT);
+
+        Set<Node> fwdFromX = forwardReach(G, gt, Set.of(X));
+        Set<Node> canReachY = backwardFilterByForwardRule(G, gt, Y);
+
+        Set<Node> onSomePDPath = new LinkedHashSet<>(fwdFromX);
+        onSomePDPath.retainAll(canReachY);
+        onSomePDPath.remove(X);
+
+        Set<Node> seeds = new LinkedHashSet<>();
+        seeds.add(X);
+        seeds.addAll(onSomePDPath);
+
+        Set<Node> forb = forwardReach(G, gt, seeds);
+        forb.remove(X);
+        forb.remove(Y);
+        return forb;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private static Set<Node> forwardReach(Graph G, String graphType, Set<Node> starts) {
+        Deque<Node> q = new ArrayDeque<>(starts);
+        Set<Node> seen = new LinkedHashSet<>(starts);
+        while (!q.isEmpty()) {
+            Node a = q.removeFirst();
+            for (Node b : G.getAdjacentNodes(a)) {
+                Edge e = G.getEdge(a, b);
+                if (e == null) continue;
+                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
+                if (seen.add(b)) q.addLast(b);
+            }
+        }
+        return seen;
+    }
+
+    private static boolean isPossiblyOutEdge(String graphType, Edge e, Node a, Node b) {
+        if (e.pointsTowards(a)) return false;
+        if (Edges.isBidirectedEdge(e)) return false;
+        if (Edges.isUndirectedEdge(e)) return true;
+        return true;
+    }
+
+    // ---- Public API ---------------------------------------------------------------------------
+
+    private static Set<Node> backwardFilterByForwardRule(Graph G, String graphType, Node Y) {
+        Set<Node> canReach = new LinkedHashSet<>();
+        Deque<Node> q = new ArrayDeque<>();
+        canReach.add(Y);
+        q.add(Y);
+
+        while (!q.isEmpty()) {
+            Node b = q.removeFirst();
+            for (Node a : G.getAdjacentNodes(b)) {
+                Edge e = G.getEdge(a, b);
+                if (e == null) continue;
+                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
+                if (canReach.add(a)) q.addLast(a);
+            }
+        }
+        return canReach;
+    }
+
+    /**
+     * Sets the collider policy for the Adjustment instance to guide backdoor adjustment
+     * calculations. The policy determines how colliders are handled during the selection
+     * of blockers on backdoor paths. Default NONCOLLIDER_FIRST.
+     *
+     * @param p the collider policy to be applied, must not be null
+     * @return the Adjustment instance with the updated collider policy
+     */
     public Adjustment setColliderPolicy(ColliderPolicy p) {
         this.colliderPolicy = Objects.requireNonNull(p);
         return this;
     }
 
-    // ---- Existing “no amenable” policy ----------------------------------------------------------
-
-    public enum NoAmenablePolicy { SEARCH, RETURN_EMPTY_SET, SUPPRESS }
-
-    private NoAmenablePolicy noAmenablePolicy = NoAmenablePolicy.SEARCH;
-
     /**
-     * Sets the no-amenable policy for the Adjustment instance. Default is SEARCH.
+     * Sets the no-amenable policy for the Adjustment instance. This policy determines
+     * how situations with no amenable adjustment sets should be handled.
+     * Default SEARCH.
+     *
+     * @param p the no-amenable policy to apply, must not be null
+     * @return the Adjustment instance with the updated no-amenable policy
      */
     public Adjustment setNoAmenablePolicy(NoAmenablePolicy p) {
         this.noAmenablePolicy = Objects.requireNonNull(p);
         return this;
     }
 
-    // ---------------------------------------------------------------------------------------------
-
-    private final Graph graph;
-
-    public Adjustment(Graph graph) {
-        this.graph = graph;
-    }
-
-    // ---- Public API ---------------------------------------------------------------------------
-
-    /** Legacy signature preserved; uses the instance colliderPolicy setting. */
+    /**
+     * Computes a list of potential adjustment sets that, if conditioned upon, are capable
+     * of blocking backdoor paths between the given nodes X and Y in a graph. The adjustment
+     * sets are computed based on the provided graph type, path constraints, and specified
+     * policies for handling colliders.
+     *
+     * @param X The source node from which the paths originate.
+     * @param Y The target node to which the paths lead.
+     * @param graphType The type of graph (e.g., directed acyclic graph) used for the adjustment calculation.
+     * @param maxNumSets The maximum number of adjustment sets to return.
+     * @param maxRadius The maximum radius considered in the search for adjustment sets.
+     * @param nearWhichEndpoint Specifies which endpoint (X or Y) to prioritize in the search.
+     * @param maxPathLength The maximum length of paths to consider in the calculation.
+     * @return A list of sets of nodes, each representing a valid adjustment set that satisfies the backdoor
+     *         adjustment criteria, or an empty list if no such set exists.
+     */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength) {
         return adjustmentSets(X, Y, graphType, maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength, this.colliderPolicy);
     }
 
-    /** Overload with explicit ColliderPolicy (per-call override). */
+    /**
+     * Computes a list of potential adjustment sets that, if conditioned upon, are capable of
+     * blocking backdoor paths between the given nodes X and Y in a graph. The adjustment sets
+     * are computed based on the provided graph type, path constraints, and specified policies
+     * for handling colliders.
+     *
+     * @param X The source node from which the paths originate.
+     * @param Y The target node to which the paths lead.
+     * @param graphType The type of graph (e.g., directed acyclic graph) used for the adjustment calculation.
+     * @param maxNumSets The maximum number of adjustment sets to return.
+     * @param maxRadius The maximum radius considered in the search for adjustment sets.
+     * @param nearWhichEndpoint Specifies which endpoint (X or Y) to prioritize in the search.
+     * @param maxPathLength The maximum length of paths to consider in the calculation.
+     * @param colliderPolicy The policy specifying how colliders are handled during backdoor adjustment calculations.
+     * @return A list of sets of nodes, each representing a valid adjustment set that satisfies the backdoor
+     *         adjustment criteria, or an empty list if no such set exists.
+     */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength,
@@ -97,8 +240,6 @@ public final class Adjustment {
         }
         return out;
     }
-
-    // ---- Precompute ---------------------------------------------------------------------------
 
     private PrecomputeContext precomputeContext(Node X, Node Y, String graphType,
                                                 int maxRadius, int nearWhichEndpoint,
@@ -174,46 +315,6 @@ public final class Adjustment {
         }
     }
 
-    private static Set<Node> amenableBackbone(List<List<Node>> amenable, Node X, Node Y) {
-        if (amenable == null || amenable.isEmpty()) return Collections.emptySet();
-        LinkedHashSet<Node> s = new LinkedHashSet<>();
-        for (List<Node> p : amenable) {
-            for (int i = 1; i < p.size() - 1; i++) {
-                Node v = p.get(i);
-                if (v != X && v != Y) s.add(v);
-            }
-        }
-        return s;
-    }
-
-    /**
-     * Compute Forb_G(X,Y) (Perković et al., 2018).
-     */
-    private static Set<Node> getForbiddenForAdjustment(Graph G, String graphType, Node X, Node Y) {
-        Objects.requireNonNull(G);
-        Objects.requireNonNull(X);
-        Objects.requireNonNull(Y);
-        if (X == Y) return Collections.emptySet();
-
-        final String gt = graphType == null ? "DAG" : graphType.toUpperCase(Locale.ROOT);
-
-        Set<Node> fwdFromX = forwardReach(G, gt, Set.of(X));
-        Set<Node> canReachY = backwardFilterByForwardRule(G, gt, Y);
-
-        Set<Node> onSomePDPath = new LinkedHashSet<>(fwdFromX);
-        onSomePDPath.retainAll(canReachY);
-        onSomePDPath.remove(X);
-
-        Set<Node> seeds = new LinkedHashSet<>();
-        seeds.add(X);
-        seeds.addAll(onSomePDPath);
-
-        Set<Node> forb = forwardReach(G, gt, seeds);
-        forb.remove(X);
-        forb.remove(Y);
-        return forb;
-    }
-
     private @NotNull List<Node> firstBackdoorNeighbors(Node X, Node Y, String graphType) {
         boolean isPAG = "PAG".equalsIgnoreCase(graphType);
         List<Node> starts = new ArrayList<>();
@@ -242,8 +343,6 @@ public final class Adjustment {
         }
         return layers;
     }
-
-    // ---- Solver ------------------------------------------------------------------------------
 
     /**
      * Find ONE minimal adjustment set under the given ban set.
@@ -300,6 +399,8 @@ public final class Adjustment {
         return Z;
     }
 
+    // ---- NEW: role-aware candidate ranking on a witness ---------------------------------------
+
     private Optional<List<Node>> findBackdoorWitness(Node X, Node Y,
                                                      Set<Node> Z,
                                                      String graphType,
@@ -319,11 +420,9 @@ public final class Adjustment {
         return Optional.empty();
     }
 
-    // ---- NEW: role-aware candidate ranking on a witness ---------------------------------------
-
-    private enum RoleOnWitness { ENDPOINT, COLLIDER, NONCOLLIDER, AMBIGUOUS, OFFPATH }
-
-    /** Determine node’s role (collider / noncollider / ambiguous) on the given witness path. */
+    /**
+     * Determine node’s role (collider / noncollider / ambiguous) on the given witness path.
+     */
     private RoleOnWitness roleOnWitness(Node v, List<Node> witness) {
         int k = witness.indexOf(v);
         if (k < 0) return RoleOnWitness.OFFPATH;
@@ -407,30 +506,27 @@ public final class Adjustment {
         return candidates.get(0);
     }
 
-    /** Map role → score given the policy (higher = better). */
+    /**
+     * Map role → score given the policy (higher = better).
+     */
     private int roleScore(RoleOnWitness r, ColliderPolicy policy) {
         // Base scores encode the intuition:
         // NONCOLLIDER: strongly preferred; AMBIGUOUS: mild positive; COLLIDER: negative.
-        int base;
-        switch (r) {
-            case NONCOLLIDER: base = 100; break;
-            case AMBIGUOUS:   base =  30; break;
-            case COLLIDER:    base = -80; break;
-            case ENDPOINT:    base = -1000; break; // endpoints are never adjusted; should be filtered
-            case OFFPATH:     base = -200; break;
-            default:          base = 0;
-        }
+        int base = switch (r) {
+            case NONCOLLIDER -> 100;
+            case AMBIGUOUS -> 30;
+            case COLLIDER -> -80;
+            case ENDPOINT -> -1000; // endpoints are never adjusted; should be filtered
+            case OFFPATH -> -200;
+        };
         // Policy modulation: OFF → dampen; PREFER → keep; NONCOLLIDER_FIRST handled via filtering already.
-        switch (policy) {
-            case OFF:
+        return switch (policy) {
+            case OFF ->
                 // Soften the effect but keep the shape
-                return (int)Math.round(base * 0.3);
-            case PREFER_NONCOLLIDERS:
-                return base;
-            case NONCOLLIDER_FIRST:
-            default:
-                return base; // filtering already applied
-        }
+                    (int) Math.round(base * 0.3);
+            case PREFER_NONCOLLIDERS -> base;
+            default -> base; // filtering already applied
+        };
     }
 
     // ---- Path openness check used by DFS ------------------------------------------------------
@@ -548,49 +644,31 @@ public final class Adjustment {
 
     // ---- Utilities ---------------------------------------------------------------------------
 
-    private static Set<Node> forwardReach(Graph G, String graphType, Set<Node> starts) {
-        Deque<Node> q = new ArrayDeque<>(starts);
-        Set<Node> seen = new LinkedHashSet<>(starts);
-        while (!q.isEmpty()) {
-            Node a = q.removeFirst();
-            for (Node b : G.getAdjacentNodes(a)) {
-                Edge e = G.getEdge(a, b);
-                if (e == null) continue;
-                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
-                if (seen.add(b)) q.addLast(b);
-            }
-        }
-        return seen;
-    }
-
-    private static boolean isPossiblyOutEdge(String graphType, Edge e, Node a, Node b) {
-        if (e.pointsTowards(a)) return false;
-        if (Edges.isBidirectedEdge(e)) return false;
-        if (Edges.isUndirectedEdge(e)) return true;
-        return true;
-    }
-
-    private static Set<Node> backwardFilterByForwardRule(Graph G, String graphType, Node Y) {
-        Set<Node> canReach = new LinkedHashSet<>();
-        Deque<Node> q = new ArrayDeque<>();
-        canReach.add(Y);
-        q.add(Y);
-
-        while (!q.isEmpty()) {
-            Node b = q.removeFirst();
-            for (Node a : G.getAdjacentNodes(b)) {
-                Edge e = G.getEdge(a, b);
-                if (e == null) continue;
-                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
-                if (canReach.add(a)) q.addLast(a);
-            }
-        }
-        return canReach;
-    }
-
     private String keyOf(Set<Node> Z) {
         return Z.stream().map(Node::getName).sorted().reduce((a, b) -> a + "," + b).orElse("");
     }
+
+    /**
+     * Collider preference policy for selecting blockers on a backdoor witness.
+     */
+    public enum ColliderPolicy {
+        /**
+         * No bias; original behavior.
+         */
+        OFF,
+        /**
+         * Prefer noncolliders; colliders allowed but penalized.
+         */
+        PREFER_NONCOLLIDERS,
+        /**
+         * First try using noncolliders (and ambiguous) only; if impossible, allow colliders.
+         */
+        NONCOLLIDER_FIRST
+    }
+
+    public enum NoAmenablePolicy {SEARCH, RETURN_EMPTY_SET, SUPPRESS}
+
+    private enum RoleOnWitness {ENDPOINT, COLLIDER, NONCOLLIDER, AMBIGUOUS, OFFPATH}
 
     private static final class PrecomputeContext {
         public final Node X, Y;
@@ -631,5 +709,6 @@ public final class Adjustment {
         }
     }
 
-    private record Shells(List<Node>[] layers, Set<Node> reach) {}
+    private record Shells(List<Node>[] layers, Set<Node> reach) {
+    }
 }
