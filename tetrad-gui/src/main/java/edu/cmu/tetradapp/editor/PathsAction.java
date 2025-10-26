@@ -716,9 +716,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Cycles",
                 "All Paths",
                 "Adjacents",
-                "Adjustment Set(s) (Recursive)",
-                "Adjustment Sets (Full Path Enumeration)",
-                "Recursive Blocking Sets",
+                "Adjustment Sets",
+                "Adjustment Set (Recursive)",
+                "Blocking Sets (Recursive)",
                 "Amenable paths",
                 "Backdoor paths"
         });
@@ -888,11 +888,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     latentConfounderPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Adjacents".equals(method)) {
                     adjacentNodes(graph, textArea, nodes1, nodes2);
-                } else if ("Adjustment Sets (Full Path Enumeration)".equals(method)) {
+                } else if ("Adjustment Sets".equals(method)) {
                     adjustmentSets(graph, textArea, nodes1, nodes2);
-                } else if ("Recursive Blocking Sets".equals(method)) {
+                } else if ("Blocking Sets (Recursive)".equals(method)) {
                     recursiveBlockingSets(graph, textArea, nodes1, nodes2);
-                } else if ("Adjustment Set(s) (Recursive)".equals(method)) {
+                } else if ("Adjustment Set (Recursive)".equals(method)) {
                     recursiveAdjustmentSets(graph, textArea, nodes1, nodes2);
                 } else if ("Cycles".equals(method)) {
                     allCyclicPaths(graph, textArea, nodes1, nodes2);
