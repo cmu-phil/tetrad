@@ -3177,6 +3177,48 @@ public class Paths implements TetradSerializable {
         return GraphUtils.anteriority(graph, X);
     }
 
+    /**
+     * Computes the adjustment sets needed to estimate the causal effect of node X on node Y
+     * in a given graph structure under specified parameters.
+     *
+     * @param X The node representing the cause in the causal relationship.
+     * @param Y The node representing the effect in the causal relationship.
+     * @param graphType The type of the graph (e.g., DAG, MAG, etc.).
+     * @param colliderPolicy A string determining the collider policy for adjustment set computation.
+     *                       Values may be "OFF", "PREFER_NONCOLLIDERS", or "NONCOLLIDER_FIRST".
+     * @param maxNumSets The maximum number of adjustment sets to return.
+     * @param maxRadius The maximum search radius for possible adjustment sets in the graph.
+     * @param nearWhichEndpoint Specifies which endpoint to prioritize in the graph traversal.
+     * @param maxPathLength The maximum allowable length of causal paths considered.
+     * @return A list of sets of nodes, each set representing a valid adjustment set for the causal effect estimation.
+     */
+    public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType, String colliderPolicy,
+                                          int maxNumSets, int maxRadius,
+                                          int nearWhichEndpoint, int maxPathLength) {
+       Adjustment.ColliderPolicy _colliderPolicy = Adjustment.ColliderPolicy.valueOf(colliderPolicy);
+
+        return new Adjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
+                nearWhichEndpoint, maxPathLength, _colliderPolicy);
+    }
+
+    /**
+     * Computes and returns a list of adjustment sets for given nodes and parameters.
+     * Adjustment sets are used in causal inference to determine sets of variables
+     * that need to be conditioned on to block backdoor paths. Assumes the collider
+     * policy is "OFF".
+     *
+     * @param X the source node in the causal graph
+     * @param Y the target node in the causal graph
+     * @param graphType the type of graph being used (e.g., DAG, MAG, PAG)
+     * @param maxNumSets the maximum number of adjustment sets to return
+     * @param maxRadius the maximum radius around variables to consider when
+     *                  searching for adjustment sets
+     * @param nearWhichEndpoint specifies which endpoint (source or target) to
+     *                          prioritize when determining adjustment sets
+     * @param maxPathLength the maximum length of paths to consider in the graph
+     * @return a list of sets of nodes, where each set represents an adjustment set
+     *         that can be used to block backdoor paths between X and Y
+     */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength) {
@@ -3184,20 +3226,19 @@ public class Paths implements TetradSerializable {
                 nearWhichEndpoint, maxPathLength);
     }
 
-    private Set<Node> computeAncestorsFromZ(long zmask, Map<Node, Integer> idx) {
-        Set<Node> Z = new LinkedHashSet<>();
-        idx.forEach((v, i) -> {
-            if ((zmask & (1L << i)) != 0) Z.add(v);
-        });
-        // If you prefer your existing primitive per-node API:
-        Set<Node> anc = new HashSet<>();
-        for (Node b : graph.getNodes()) if (graph.paths().isAncestorOfAnyZ(b, Z)) anc.add(b);
-        return anc;
-    }
-
-    // Enumerate backdoor (non-amenable) simple paths from X to Y up to maxPathLength edges.
-    // Exactly mirrors your working allPaths()+removeIf logic, but prunes at the root by seeding
-    // only legal backdoor first hops.
+    /**
+     * Finds and returns all valid backdoor paths between two nodes in a graph.
+     * A backdoor path is a path that satisfies certain conditions based on the graph type
+     * and causal inference principles. The method supports PDAG, MAG, and PAG graph types.
+     *
+     * @param X the starting node of the path
+     * @param Y the target node to which backdoor paths are sought
+     * @param graphType the type of graph, must be one of "PDAG", "MAG", or "PAG"
+     * @param maxPathLength the maximum number of edges allowed in a path, -1 for no limit
+     * @return a set of all valid backdoor paths, where each path is represented as a list of nodes;
+     *         returns an empty set if no valid backdoor paths are found
+     * @throws IllegalArgumentException if the provided graphType is invalid
+     */
     public Set<List<Node>> getBackdoorPaths(Node X, Node Y, String graphType, int maxPathLength) {
 
         if (!(graphType.equals("PDAG") || graphType.equals("MAG") || graphType.equals("PAG"))) {

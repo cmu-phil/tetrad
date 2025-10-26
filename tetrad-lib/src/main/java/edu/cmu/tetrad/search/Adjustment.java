@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,61 +11,83 @@ import java.util.*;
  * using graph-based methods. It supports tasks such as identifying minimal adjustment sets,
  * determining forbidden nodes for adjustment, and navigating paths and reachability in various graph types.
  * These computations are based on the properties of possibly-directed graphs, backdoor criteria, and
- * other rules from causal inference literature. 
+ * other rules from causal inference literature.
  */
 public final class Adjustment {
-    private final Graph graph;
+
+    // ---- New collider-bias policy ---------------------------------------------------------------
+
+    /** Collider preference policy for selecting blockers on a backdoor witness. */
+    public enum ColliderPolicy {
+        /** No bias; original behavior. */
+        OFF,
+        /** Prefer noncolliders; colliders allowed but penalized. */
+        PREFER_NONCOLLIDERS,
+        /** First try using noncolliders (and ambiguous) only; if impossible, allow colliders. */
+        NONCOLLIDER_FIRST
+    }
+
+    private ColliderPolicy colliderPolicy = ColliderPolicy.OFF;
+
+    /** Set collider preference policy (default PREFER_NONCOLLIDERS). */
+    public Adjustment setColliderPolicy(ColliderPolicy p) {
+        this.colliderPolicy = Objects.requireNonNull(p);
+        return this;
+    }
+
+    // ---- Existing “no amenable” policy ----------------------------------------------------------
+
+    public enum NoAmenablePolicy { SEARCH, RETURN_EMPTY_SET, SUPPRESS }
+
+    private NoAmenablePolicy noAmenablePolicy = NoAmenablePolicy.SEARCH;
 
     /**
-     * Constructs an Adjustment object with the given graph.
-     *
-     * @param graph the Graph object to be used for adjustment computations
+     * Sets the no-amenable policy for the Adjustment instance. Default is SEARCH.
      */
+    public Adjustment setNoAmenablePolicy(NoAmenablePolicy p) {
+        this.noAmenablePolicy = Objects.requireNonNull(p);
+        return this;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private final Graph graph;
+
     public Adjustment(Graph graph) {
         this.graph = graph;
     }
 
-    /**
-     * Computes a list of minimal adjustment sets for a given pair of nodes X and Y in a graph,
-     * based on the specified graph type and constraints. Adjustment sets are sets of nodes
-     * that block backdoor paths between X and Y, ensuring causal inference validity.
-     *
-     * @param X                the source node for adjustment set computation
-     * @param Y                the target node for adjustment set computation
-     * @param graphType        the type of the graph (e.g., DAG, MAG, PAG) dictating adjustment criteria
-     * @param maxNumSets       the maximum number of adjustment sets to compute
-     * @param maxRadius        the maximum BFS radius for shell computation around nodes X and Y
-     * @param nearWhichEndpoint specifies which endpoint to prioritize for proximity-based rule processing
-     * @param maxPathLength    the maximum allowable path length in the backdoor and causality analysis
-     * @return a list of sets of nodes that represent the computed minimal adjustment sets. Each set is a minimal 
-     *         set of nodes that satisfies the backdoor adjustment criteria.
-     */
+    // ---- Public API ---------------------------------------------------------------------------
+
+    /** Legacy signature preserved; uses the instance colliderPolicy setting. */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength) {
+        return adjustmentSets(X, Y, graphType, maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength, this.colliderPolicy);
+    }
+
+    /** Overload with explicit ColliderPolicy (per-call override). */
+    public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
+                                          int maxNumSets, int maxRadius,
+                                          int nearWhichEndpoint, int maxPathLength,
+                                          ColliderPolicy colliderPolicy) {
         List<Set<Node>> out = new ArrayList<>();
         Set<String> seen = new HashSet<>();
 
-        // precompute shells, pool, amenable, forbidden as you already do…
         var ctx = precomputeContext(X, Y, graphType, maxRadius, nearWhichEndpoint, maxPathLength);
 
-        // Worklist of bans; start with “no bans”
         Deque<Set<Node>> bans = new ArrayDeque<>();
         bans.add(Collections.emptySet());
 
         while (!bans.isEmpty() && out.size() < maxNumSets) {
             Set<Node> ban = bans.removeFirst();
 
-            // find one solution under this ban
-            LinkedHashSet<Node> Z = solveOnce(ctx, ban);
+            LinkedHashSet<Node> Z = solveOnce(ctx, ban, colliderPolicy);
             if (Z == null) continue;
 
-            // minimality already enforced inside solveOnce(...)
             String key = keyOf(Z);
             if (seen.add(key)) {
                 out.add(Z);
-
-                // diversify: for every v in Z, create a new run that bans v
                 for (Node v : Z) {
                     Set<Node> ban2 = new LinkedHashSet<>(ban);
                     ban2.add(v);
@@ -77,40 +98,35 @@ public final class Adjustment {
         return out;
     }
 
-    /**
-     * Precomputes a context for graphical analysis based on specified parameters such as source, target,
-     * graph type*/
+    // ---- Precompute ---------------------------------------------------------------------------
+
     private PrecomputeContext precomputeContext(Node X, Node Y, String graphType,
-                                                     int maxRadius, int nearWhichEndpoint,
-                                                     int maxPathLength) {
+                                                int maxRadius, int nearWhichEndpoint,
+                                                int maxPathLength) {
         if (X == null || Y == null || X == Y) throw new IllegalArgumentException("X and Y must differ.");
-
-        // Normalize “no limit”
         if (maxRadius < 0) maxRadius = graph.getNodes().size();    // full reach
-        final boolean pag = "PAG".equalsIgnoreCase(graphType);
 
-        // 1) Amenable (PD-out-of-X) paths you must preserve
+        // 1) Amenable (PD-out-of-X) routes we don't want to accidentally block
         List<List<Node>> amenable = getAmenablePaths(X, Y, graphType, maxPathLength);
-        if (amenable.isEmpty()) {
-            // No PD-out-of-X route => {} is valid later; still return a context
-            amenable = Collections.emptyList();
-        }
+
+        // Backbone = interior nodes on amenable paths (excluding X,Y)
+        Set<Node> amenableBackbone = amenableBackbone(amenable, X, Y);
 
         // 2) Forbidden (Perković GAC)
         Set<Node> forbidden = getForbiddenForAdjustment(graph, graphType, X, Y);
 
-        // 3) Endpoint-local shells (no full backdoor enumeration)
+        // 3) Endpoint-local shells
         List<Node> starts = firstBackdoorNeighbors(X, Y, graphType);
         Shells shellsFromX = starts.isEmpty()
                 ? new Shells(emptyLayers(maxRadius), Set.of())
                 : backdoorShellsFromX(X, starts, maxRadius);
         Shells shellsFromY = undirectedShells(Y, maxRadius);
 
-        // Reachability filter: keep nodes lying on some X–Y path
+        // Reachability filter
         Set<Node> reachX = shellsFromX.reach;
         Set<Node> reachY = shellsFromY.reach;
 
-        // 4) Candidate pool (local to endpoints, reachable, not forbidden, not endpoints)
+        // 4) Candidate pool (local, reachable, not forbidden, not endpoints)
         LinkedHashSet<Node> poolSet = new LinkedHashSet<>();
         for (int r = 1; r <= maxRadius; r++) {
             if (nearWhichEndpoint == 1 || nearWhichEndpoint == 3) {
@@ -120,24 +136,23 @@ public final class Adjustment {
                 poolSet.addAll(shellsFromY.layers[r]);
             }
         }
-        // Intersect with reach both sides
         poolSet.retainAll(reachX);
         poolSet.retainAll(reachY);
         poolSet.remove(X);
         poolSet.remove(Y);
         poolSet.removeAll(forbidden);
 
-        // Optional: prune obvious amenable blockers up front (safe and fast)
-        // Set<Node> A = amenableBlockers(amenable); poolSet.removeAll(A);
+        // SAFETY: never adjust on interior of amenable PD-out-of-X routes.
+        poolSet.removeAll(amenableBackbone);
 
-        // 5) Stable order: nearer to endpoints → lower degree → name
+        // 5) Stable order
         List<Node> pool = new ArrayList<>(poolSet);
         pool.sort(Comparator
                 .comparingInt((Node v) -> approxEndpointDistance(v, X, Y, shellsFromX, shellsFromY))
                 .thenComparingInt(v -> graph.getAdjacentNodes(v).size())
                 .thenComparing(Node::getName));
 
-        // 6) Index maps
+        // 6) Index maps (kept for future BitSet paths / caching)
         Map<Node, Integer> idx = new HashMap<>(pool.size() * 2);
         Map<Node, Integer> order = new HashMap<>(pool.size() * 2);
         for (int i = 0; i < pool.size(); i++) {
@@ -146,30 +161,33 @@ public final class Adjustment {
         }
 
         return new PrecomputeContext(X, Y, graphType, maxRadius, nearWhichEndpoint, maxPathLength,
-                amenable, forbidden, shellsFromX, shellsFromY, pool, idx, order);
+                amenable, amenableBackbone, forbidden, shellsFromX, shellsFromY, pool, idx, order);
     }
 
     private List<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
         RecursiveAdjustment.GraphType _graphType = RecursiveAdjustment.GraphType.valueOf(graphType);
-
         if (source == null || target == null || source == target) return Collections.emptyList();
         if (_graphType == RecursiveAdjustment.GraphType.PAG) {
             return graph.paths().amenablePathsPag(source, target, maxLength);
         } else {
-            // DAG/CPDAG/PDAG/MAG handled here
             return graph.paths().amenablePathsPdagMag(source, target, maxLength);
         }
     }
 
+    private static Set<Node> amenableBackbone(List<List<Node>> amenable, Node X, Node Y) {
+        if (amenable == null || amenable.isEmpty()) return Collections.emptySet();
+        LinkedHashSet<Node> s = new LinkedHashSet<>();
+        for (List<Node> p : amenable) {
+            for (int i = 1; i < p.size() - 1; i++) {
+                Node v = p.get(i);
+                if (v != X && v != Y) s.add(v);
+            }
+        }
+        return s;
+    }
+
     /**
-     * Compute Forb_G(X,Y): possible descendants of X and of any node that lies on
-     * a proper possibly-directed path from X to Y (Perković et al., 2018).
-     * Returns a set of observed + latent nodes (caller may subtract latents if desired).
-     * <p>
-     * NOTE:
-     * - "Possibly-directed" step a -> b is allowed iff the edge has NO arrowhead into 'a'.
-     * (i.e., not e.pointsTowards(a) and not bidirected into 'a').
-     * - We exclude {X, Y} from the returned set (RA already forbids adjusting on them).
+     * Compute Forb_G(X,Y) (Perković et al., 2018).
      */
     private static Set<Node> getForbiddenForAdjustment(Graph G, String graphType, Node X, Node Y) {
         Objects.requireNonNull(G);
@@ -177,40 +195,25 @@ public final class Adjustment {
         Objects.requireNonNull(Y);
         if (X == Y) return Collections.emptySet();
 
-        // Normalize graphType to an enum-ish tag
         final String gt = graphType == null ? "DAG" : graphType.toUpperCase(Locale.ROOT);
 
-        // 1) Nodes reachable from X along possibly-directed forward steps
         Set<Node> fwdFromX = forwardReach(G, gt, Set.of(X));
-
-        // 2) Nodes that can reach Y along possibly-directed forward steps
-        //    (equivalently, forwardReach on the reversed sense: a node v is "backward-reachable"
-        //     if there exists a neighbor u such that the step v -> u is possibly-directed AND u is known to reach Y)
         Set<Node> canReachY = backwardFilterByForwardRule(G, gt, Y);
 
-        // 3) Nodes that lie on at least one proper possibly-directed path X ~> Y
-        //    Intersect (forward from X) with (can reach Y), and remove X itself.
         Set<Node> onSomePDPath = new LinkedHashSet<>(fwdFromX);
         onSomePDPath.retainAll(canReachY);
         onSomePDPath.remove(X);
 
-        // 4) Forbidden = possible descendants of X and of every node on such paths
         Set<Node> seeds = new LinkedHashSet<>();
         seeds.add(X);
         seeds.addAll(onSomePDPath);
 
         Set<Node> forb = forwardReach(G, gt, seeds);
-
-        // 5) Do not return X or Y as "forbidden adjusters" (they're banned elsewhere anyway)
         forb.remove(X);
         forb.remove(Y);
-
         return forb;
     }
 
-    /**
-     * Legal first hops for a backdoor in the given graphType (your tested rule).
-     */
     private @NotNull List<Node> firstBackdoorNeighbors(Node X, Node Y, String graphType) {
         boolean isPAG = "PAG".equalsIgnoreCase(graphType);
         List<Node> starts = new ArrayList<>();
@@ -230,6 +233,7 @@ public final class Adjustment {
         return starts;
     }
 
+    @SuppressWarnings("unchecked")
     private List<Node>[] emptyLayers(int maxRadius) {
         if (maxRadius < 0) maxRadius = 0;
         List<Node>[] layers = (List<Node>[]) new List[maxRadius + 1];
@@ -239,53 +243,46 @@ public final class Adjustment {
         return layers;
     }
 
+    // ---- Solver ------------------------------------------------------------------------------
+
     /**
      * Find ONE minimal adjustment set under the given ban set.
      * Returns null if no solution exists with these bans.
      */
-    private @Nullable LinkedHashSet<Node> solveOnce(PrecomputeContext ctx, Set<Node> ban) {
+    private @Nullable LinkedHashSet<Node> solveOnce(PrecomputeContext ctx, Set<Node> ban,
+                                                    ColliderPolicy colliderPolicy) {
         final Node X = ctx.X, Y = ctx.Y;
         final String graphType = ctx.graphType;
-        final boolean pag = "PAG".equalsIgnoreCase(graphType);
 
-        // Candidate universe and quick lookups
-        final List<Node> pool = ctx.pool;                 // ordered endpoint-near first
+        final List<Node> pool = ctx.pool;
         final Set<Node> poolSet = new HashSet<>(pool);
         final Set<Node> forbidden = ctx.forbidden;
-        final List<List<Node>> amenable = ctx.amenable;
 
-        // Start empty; we'll add only blockers that (1) lie on a witness and (2) don't close amenable paths
+        if (ctx.amenable.isEmpty()) {
+            switch (noAmenablePolicy) {
+                case RETURN_EMPTY_SET:
+                    return new LinkedHashSet<>(Collections.emptySet());
+                case SUPPRESS:
+                    return new LinkedHashSet<>();
+                case SEARCH:
+                default:
+                    // keep going; solver may return {}
+            }
+        }
+
         LinkedHashSet<Node> Z = new LinkedHashSet<>();
-
-        // If there are no PD-out-of-X paths, {} is valid
-//        if (amenable.isEmpty()) return Z;
-
-        Set<Node> _Z = new HashSet<>(Z);
-
-        // Quick helper
-        java.util.function.Supplier<Boolean> amenableOpen =
-                () -> {
-                    for (List<Node> p : amenable) if (!graph.paths().isMConnectingPath(p, _Z, pag)) return false;
-                    return true;
-                };
 
         // 1) Witness-guided growth
         while (true) {
-            if (!amenableOpen.get()) {
-                // Shouldn't happen if chooseBlocker preserves amenable, but guard anyway: fail under this ban
-                return null;
-            }
-
             Optional<List<Node>> wit = findBackdoorWitness(X, Y, Z, graphType, ctx.maxPathLength);
-            if (wit.isEmpty()) break; // all backdoors are blocked → candidate found
+            if (wit.isEmpty()) break; // all backdoors blocked
 
-            Node pick = chooseBlockerOnWitness(wit.get(), pool, poolSet, forbidden, ban, Z, amenable, graphType);
-            if (pick == null) {
-                // No allowable blocker on this witness that preserves amenable (under current bans)
-                return null;
-            }
+            Node pick = chooseBlockerOnWitness(
+                    wit.get(), pool, poolSet, forbidden, ban, Z, ctx.amenableBackbone, graphType, colliderPolicy
+            );
+
+            if (pick == null) return null; // no allowable blocker under this ban
             Z.add(pick);
-            // loop to see if any backdoor remains
         }
 
         // 2) Minimality trim (try-delete)
@@ -293,19 +290,9 @@ public final class Adjustment {
             LinkedHashSet<Node> Zmin = new LinkedHashSet<>(Z);
             for (Node v : new ArrayList<>(Zmin)) {
                 Zmin.remove(v);
-                // must keep amenable open
-                boolean ok = true;
-                for (List<Node> semi : amenable) {
-                    if (!graph.paths().isMConnectingPath(semi, Zmin, pag)) {
-                        ok = false;
-                        break;
-                    }
+                if (findBackdoorWitness(X, Y, Zmin, graphType, ctx.maxPathLength).isPresent()) {
+                    Zmin.add(v);
                 }
-                if (ok) {
-                    // must still block all backdoors (no witness)
-                    if (findBackdoorWitness(X, Y, Zmin, graphType, ctx.maxPathLength).isPresent()) ok = false;
-                }
-                if (!ok) Zmin.add(v);
             }
             Z = Zmin;
         }
@@ -332,15 +319,28 @@ public final class Adjustment {
         return Optional.empty();
     }
 
+    // ---- NEW: role-aware candidate ranking on a witness ---------------------------------------
+
+    private enum RoleOnWitness { ENDPOINT, COLLIDER, NONCOLLIDER, AMBIGUOUS, OFFPATH }
+
+    /** Determine node’s role (collider / noncollider / ambiguous) on the given witness path. */
+    private RoleOnWitness roleOnWitness(Node v, List<Node> witness) {
+        int k = witness.indexOf(v);
+        if (k < 0) return RoleOnWitness.OFFPATH;
+        if (k == 0 || k == witness.size() - 1) return RoleOnWitness.ENDPOINT; // X or Y
+        Node a = witness.get(k - 1), b = v, c = witness.get(k + 1);
+
+        boolean collider = graph.isDefCollider(a, b, c);
+        boolean defNon = graph.isDefNoncollider(a, b, c);
+
+        if (collider) return RoleOnWitness.COLLIDER;
+        if (defNon) return RoleOnWitness.NONCOLLIDER;
+        return RoleOnWitness.AMBIGUOUS;
+    }
+
     /**
-     * Pick a blocker on the current witness path.
-     * Constraints:
-     * - must lie on the witness AND be in the candidate pool (pool/poolSet)
-     * - not in forbidden, not in current Z, not in ban
-     * - adding it must NOT close any amenable path
-     * Tie-break by your pool order (endpoint-near first), then degree, then name.
-     *
-     * @return the chosen Node, or null if no allowable blocker exists under these constraints.
+     * Pick a blocker on the current witness path, honoring colliderPolicy.
+     * Guard: never pick forbidden nodes, amenable backbone, or banned nodes.
      */
     private @Nullable Node chooseBlockerOnWitness(
             List<Node> witness,
@@ -349,78 +349,103 @@ public final class Adjustment {
             Set<Node> forbidden,
             Set<Node> ban,
             Set<Node> Z,
-            List<List<Node>> amenable,
-            String graphType
+            Set<Node> amenableBackbone,
+            String graphType,
+            ColliderPolicy colliderPolicy
     ) {
-        final boolean pag = "PAG".equalsIgnoreCase(graphType);
-
-        // Fast membership for witness nodes
         Set<Node> inWitness = new HashSet<>(witness);
 
-        // Candidates = (pool ∩ witness) \ (forbidden ∪ Z ∪ ban)
+        // Build candidate list from pool ∩ witness (fallback to witness order if pool empty for those)
         List<Node> candidates = new ArrayList<>();
         for (Node v : pool) {
-            if (inWitness.contains(v) && !forbidden.contains(v) && !Z.contains(v) && !ban.contains(v)) {
+            if (inWitness.contains(v)
+                    && !forbidden.contains(v)
+                    && !amenableBackbone.contains(v)
+                    && !Z.contains(v)
+                    && !ban.contains(v)) {
                 candidates.add(v);
             }
         }
-
-        // Optional fallback: allow any witness node that’s also in poolSet (keeps locality bias)
         if (candidates.isEmpty()) {
             for (Node v : witness) {
-                if (poolSet.contains(v) && !forbidden.contains(v) && !Z.contains(v) && !ban.contains(v)) {
+                if (poolSet.contains(v)
+                        && !forbidden.contains(v)
+                        && !amenableBackbone.contains(v)
+                        && !Z.contains(v)
+                        && !ban.contains(v)) {
                     candidates.add(v);
                 }
             }
         }
+        if (candidates.isEmpty()) return null;
 
-        // Stable, locality-biased order: pool rank → degree → name
-        candidates.sort(
-                Comparator.<Node>comparingInt(v -> pool.indexOf(v))
-                        .thenComparingInt(v -> graph.getAdjacentNodes(v).size())
-                        .thenComparing(Node::getName)
-        );
-
-        // Pick the first candidate that does NOT close any amenable path when added
-        for (Node v : candidates) {
-            boolean preservesAmenable = true;
-            for (List<Node> semi : amenable) {
-                if (!graph.paths().isMConnectingPath(semi, add1(Z, v), pag)) { // test with Z ∪ {v}
-                    preservesAmenable = false;
-                    break;
+        // If NONCOLLIDER_FIRST: filter to NONCOLLIDER or AMBIGUOUS; if none, then allow colliders.
+        if (colliderPolicy == ColliderPolicy.NONCOLLIDER_FIRST) {
+            List<Node> noncolOnly = new ArrayList<>();
+            for (Node v : candidates) {
+                RoleOnWitness r = roleOnWitness(v, witness);
+                if (r == RoleOnWitness.NONCOLLIDER || r == RoleOnWitness.AMBIGUOUS) {
+                    noncolOnly.add(v);
                 }
             }
-            if (preservesAmenable) return v;
+            if (!noncolOnly.isEmpty()) candidates = noncolOnly;
         }
 
-        return null;
+        // Rank: primary = role score (noncollider > ambiguous > collider), then stable pool order,
+        // then degree (lower first), then name.
+        candidates.sort((a, b) -> {
+            int ra = roleScore(roleOnWitness(a, witness), colliderPolicy);
+            int rb = roleScore(roleOnWitness(b, witness), colliderPolicy);
+            if (ra != rb) return Integer.compare(rb, ra); // higher score first
+            int ia = pool.indexOf(a), ib = pool.indexOf(b);
+            if (ia != ib) return Integer.compare(ia, ib);
+            int da = graph.getAdjacentNodes(a).size(), db = graph.getAdjacentNodes(b).size();
+            if (da != db) return Integer.compare(da, db);
+            return a.getName().compareTo(b.getName());
+        });
+
+        return candidates.get(0);
     }
 
-    private Set<Node> add1(Set<Node> Z, Node v) {
-        LinkedHashSet<Node> s = new LinkedHashSet<>(Z);
-        s.add(v);
-        return s;
+    /** Map role → score given the policy (higher = better). */
+    private int roleScore(RoleOnWitness r, ColliderPolicy policy) {
+        // Base scores encode the intuition:
+        // NONCOLLIDER: strongly preferred; AMBIGUOUS: mild positive; COLLIDER: negative.
+        int base;
+        switch (r) {
+            case NONCOLLIDER: base = 100; break;
+            case AMBIGUOUS:   base =  30; break;
+            case COLLIDER:    base = -80; break;
+            case ENDPOINT:    base = -1000; break; // endpoints are never adjusted; should be filtered
+            case OFFPATH:     base = -200; break;
+            default:          base = 0;
+        }
+        // Policy modulation: OFF → dampen; PREFER → keep; NONCOLLIDER_FIRST handled via filtering already.
+        switch (policy) {
+            case OFF:
+                // Soften the effect but keep the shape
+                return (int)Math.round(base * 0.3);
+            case PREFER_NONCOLLIDERS:
+                return base;
+            case NONCOLLIDER_FIRST:
+            default:
+                return base; // filtering already applied
+        }
     }
 
-    // Keep uniques by a canonical key
-    private String keyOf(Set<Node> Z) {
-        return Z.stream().map(Node::getName).sorted().reduce((a, b) -> a + "," + b).orElse("");
-    }
+    // ---- Path openness check used by DFS ------------------------------------------------------
 
     private boolean dfsWitness(LinkedList<Node> path, Set<Node> inPath, Node Y,
-                       Set<Node> Z, String graphType, int edgeLimit) {
-
+                               Set<Node> Z, String graphType, int edgeLimit) {
         if (path.size() - 1 > edgeLimit) return false;
 
         Node tail = path.getLast();
         if (tail.equals(Y)) return true;
 
-        // Iterate neighbors of tail
         for (Edge e : graph.getEdges(tail)) {
             Node nxt = Edges.traverse(tail, e);
             if (nxt == null || inPath.contains(nxt)) continue;
 
-            // Enforce m-connection triple rule on the new triple (prev, tail, nxt)
             if (path.size() >= 2) {
                 Node prev = path.get(path.size() - 2);
                 if (!tripleKeepsOpen(prev, tail, nxt, Z)) continue;
@@ -435,23 +460,22 @@ public final class Adjustment {
         return false;
     }
 
-    // Decide if <a,b,c> allows an m-connecting continuation given Z
+    // Same stance you had: avoid blocking through noncolliders in Z; colliders open only if in Z or ancestor-of-Z.
     private boolean tripleKeepsOpen(Node a, Node b, Node c, Set<Node> Z) {
+        boolean collider = graph.isDefCollider(a, b, c);
+        boolean defNoncollider = graph.isDefNoncollider(a, b, c);
 
-        boolean collider = graph.isDefCollider(a, b, c); // use your PAG/MAG logic
         if (collider) {
-            // collider must be conditioned on (or have a descendant in Z) to keep the path open
             return Z.contains(b) || graph.paths().isAncestorOfAnyZ(b, Z);
+        } else if (defNoncollider) {
+            return !Z.contains(b);
         } else {
-            // noncollider must NOT be conditioned on
             return !Z.contains(b);
         }
     }
 
+    // ---- Neighborhood shell builders ----------------------------------------------------------
 
-    /**
-     * BFS shells from X, seeded only by backdoor starts.
-     */
     private Shells backdoorShellsFromX(Node X, List<Node> starts, int maxRadius) {
         @SuppressWarnings("unchecked")
         List<Node>[] layers = new ArrayList[maxRadius + 1];
@@ -461,8 +485,8 @@ public final class Adjustment {
         Deque<Node> q = new ArrayDeque<>();
         Map<Node, Integer> dist = new HashMap<>();
 
+        visited.add(X);
         for (Node s : starts) {
-            visited.add(X);
             if (visited.add(s)) {
                 q.add(s);
                 dist.put(s, 1);
@@ -486,9 +510,6 @@ public final class Adjustment {
         return new Shells(layers, reach);
     }
 
-    /**
-     * Undirected BFS shells from seed (used for Y side).
-     */
     private Shells undirectedShells(Node seed, int maxRadius) {
         @SuppressWarnings("unchecked")
         List<Node>[] layers = new ArrayList[maxRadius + 1];
@@ -518,9 +539,6 @@ public final class Adjustment {
         return new Shells(layers, visited);
     }
 
-    /**
-     * Small heuristic used only for sorting candidates (endpoint-nearness).
-     */
     private int approxEndpointDistance(Node v, Node X, Node Y, Shells sx, Shells sy) {
         int best = Integer.MAX_VALUE;
         for (int r = 1; r < sx.layers.length; r++) if (sx.layers[r].contains(v)) best = Math.min(best, r);
@@ -528,9 +546,8 @@ public final class Adjustment {
         return best == Integer.MAX_VALUE ? 1_000_000_000 : best;
     }
 
-    /**
-     * BFS forward reach under "possibly-directed out of 'a'": edge must NOT have an arrowhead into 'a'.
-     */
+    // ---- Utilities ---------------------------------------------------------------------------
+
     private static Set<Node> forwardReach(Graph G, String graphType, Set<Node> starts) {
         Deque<Node> q = new ArrayDeque<>(starts);
         Set<Node> seen = new LinkedHashSet<>(starts);
@@ -543,40 +560,16 @@ public final class Adjustment {
                 if (seen.add(b)) q.addLast(b);
             }
         }
-        // include the start nodes’ possible descendants, but the caller will tweak X/Y removal
         return seen;
     }
 
-    /**
-     * True iff the edge (a,b) can be used as a possibly-directed step "a -> b",
-     * i.e., the endpoint at 'a' does NOT have an arrowhead.
-     * <p>
-     * Concretely:
-     * - If e.pointsTowards(a) => there's an arrowhead into 'a' ⇒ NOT allowed.
-     * - Bidirected (↔) has arrowheads at both ends ⇒ NOT allowed.
-     * - Undirected (—) / tail at 'a' (a—>b) / circle at 'a' (PAG) ⇒ allowed.
-     */
     private static boolean isPossiblyOutEdge(String graphType, Edge e, Node a, Node b) {
-        // Arrowhead into 'a' disqualifies for possibly-directed step out of 'a'
         if (e.pointsTowards(a)) return false;
-        // Bidirected disqualifies (arrowheads on both ends)
         if (Edges.isBidirectedEdge(e)) return false;
-
-        // Undirected is OK for PD paths in (M)PDAG/PAG semantics
         if (Edges.isUndirectedEdge(e)) return true;
-
-        // Otherwise, tail or circle at 'a' is fine:
-        // - In DAG/PDAG "a -> b": tail at 'a' ⇒ allowed
-        // - In PAG/MAG "a o-> b" (circle at 'a') also allowed as "possibly out"
         return true;
     }
 
-    /**
-     * Compute nodes that can reach Y via a possibly-directed path.
-     * We do this by a reverse-style dynamic programming:
-     * canReach[Y] = true; iteratively mark a as true if exists b with canReach[b] and
-     * step a -> b is possibly-directed (i.e., no arrowhead into a on edge (a,b)).
-     */
     private static Set<Node> backwardFilterByForwardRule(Graph G, String graphType, Node Y) {
         Set<Node> canReach = new LinkedHashSet<>();
         Deque<Node> q = new ArrayDeque<>();
@@ -588,7 +581,6 @@ public final class Adjustment {
             for (Node a : G.getAdjacentNodes(b)) {
                 Edge e = G.getEdge(a, b);
                 if (e == null) continue;
-                // For a to step toward b on a possibly-directed path, the edge must NOT have an arrowhead into 'a'
                 if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
                 if (canReach.add(a)) q.addLast(a);
             }
@@ -596,26 +588,32 @@ public final class Adjustment {
         return canReach;
     }
 
+    private String keyOf(Set<Node> Z) {
+        return Z.stream().map(Node::getName).sorted().reduce((a, b) -> a + "," + b).orElse("");
+    }
+
     private static final class PrecomputeContext {
         public final Node X, Y;
         public final String graphType;
         public final int maxRadius, nearWhichEndpoint, maxPathLength;
 
-        public final List<List<Node>> amenable;     // PD-out-of-X paths you must keep open
-        public final Set<Node> forbidden;           // GAC forbidden nodes
-        public final Shells shellsFromX;            // BFS shells seeded by backdoor starts
-        public final Shells shellsFromY;            // Undirected BFS shells from Y
-        public final List<Node> pool;               // candidate variables (ordered)
-        public final Map<Node, Integer> idx;         // candidate -> stable index (for bitmasks)
-        public final Map<Node, Integer> order;       // candidate -> rank in 'pool' (for sorting)
+        public final List<List<Node>> amenable;       // PD-out-of-X paths
+        public final Set<Node> amenableBackbone;      // interior nodes to avoid adjusting on
+        public final Set<Node> forbidden;             // GAC forbidden
+        public final Shells shellsFromX;
+        public final Shells shellsFromY;
+        public final List<Node> pool;
+        public final Map<Node, Integer> idx;
+        public final Map<Node, Integer> order;
 
         public PrecomputeContext(Node X, Node Y, String graphType,
-                          int maxRadius, int nearWhichEndpoint, int maxPathLength,
-                          List<List<Node>> amenable,
-                          Set<Node> forbidden,
-                          Shells shellsFromX, Shells shellsFromY,
-                          List<Node> pool,
-                          Map<Node, Integer> idx, Map<Node, Integer> order) {
+                                 int maxRadius, int nearWhichEndpoint, int maxPathLength,
+                                 List<List<Node>> amenable,
+                                 Set<Node> amenableBackbone,
+                                 Set<Node> forbidden,
+                                 Shells shellsFromX, Shells shellsFromY,
+                                 List<Node> pool,
+                                 Map<Node, Integer> idx, Map<Node, Integer> order) {
             this.X = X;
             this.Y = Y;
             this.graphType = graphType;
@@ -623,6 +621,7 @@ public final class Adjustment {
             this.nearWhichEndpoint = nearWhichEndpoint;
             this.maxPathLength = maxPathLength;
             this.amenable = amenable;
+            this.amenableBackbone = amenableBackbone;
             this.forbidden = forbidden;
             this.shellsFromX = shellsFromX;
             this.shellsFromY = shellsFromY;
@@ -632,16 +631,5 @@ public final class Adjustment {
         }
     }
 
-    /**
-     * Represents a layered structure of nodes organized in shells (layers) radiating outward from a seed node.
-     * Used for efficient breadth-first search organization and reachability queries in graph traversal.
-     *
-     * @param layers An array of lists containing nodes at each distance level from the seed,
-     *              indexed from 1 to maxRadius. layers[k] contains all nodes exactly k steps
-     *              from the seed node under the traversal rules (backdoor or undirected).
-     * @param reach The complete set of all reachable nodes (union of all layers), used for
-     *             efficient membership testing without scanning the layer array.
-     */
-    private record Shells(List<Node>[] layers, Set<Node> reach) {
-    }
+    private record Shells(List<Node>[] layers, Set<Node> reach) {}
 }
