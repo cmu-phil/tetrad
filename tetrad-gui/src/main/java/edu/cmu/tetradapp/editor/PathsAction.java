@@ -1616,16 +1616,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         String graphType;
 
-        if (graph.paths().isLegalDag()) {
-            graphType = RecursiveAdjustment.GraphType.DAG.toString();
-        } else if (graph.paths().isLegalPdag()) {
+        if (graph.paths().isLegalPdag()) {
             graphType = RecursiveAdjustment.GraphType.PDAG.toString();
         } else if (graph.paths().isLegalMag()) {
             graphType = RecursiveAdjustment.GraphType.MAG.toString();
         } else if (graph.paths().isLegalPag()) {
             graphType = RecursiveAdjustment.GraphType.PAG.toString();
         } else {
-            graphType = RecursiveAdjustment.GraphType.DAG.toString();
+            graphType = RecursiveAdjustment.GraphType.PDAG.toString();
         }
 
         boolean found = false;
