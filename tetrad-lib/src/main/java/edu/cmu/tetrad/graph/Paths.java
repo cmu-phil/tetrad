@@ -3181,20 +3181,18 @@ public class Paths implements TetradSerializable {
      * Computes the adjustment sets needed to estimate the causal effect of node X on node Y
      * in a given graph structure under specified parameters.
      *
-     * @param X The node representing the cause in the causal relationship.
-     * @param Y The node representing the effect in the causal relationship.
-     * @param graphType The type of the graph (e.g., DAG, MAG, etc.).
-     * @param colliderPolicy A string determining the collider policy for adjustment set computation.
-     *                       Values may be "OFF", "PREFER_NONCOLLIDERS", or "NONCOLLIDER_FIRST".
-     * @param maxNumSets The maximum number of adjustment sets to return.
-     * @param maxRadius The maximum search radius for possible adjustment sets in the graph.
+     * @param X                 The node representing the cause in the causal relationship.
+     * @param Y                 The node representing the effect in the causal relationship.
+     * @param graphType         The type of the graph (e.g., DAG, MAG, etc.).
+     * @param maxNumSets        The maximum number of adjustment sets to return.
+     * @param maxRadius         The maximum search radius for possible adjustment sets in the graph.
      * @param nearWhichEndpoint Specifies which endpoint to prioritize in the graph traversal.
-     * @param maxPathLength The maximum allowable length of causal paths considered.
+     * @param maxPathLength     The maximum allowable length of causal paths considered.
+     * @param colliderPolicy    A string determining the collider policy for adjustment set computation.
+     *                          Values may be "OFF", "PREFER_NONCOLLIDERS", or "NONCOLLIDER_FIRST".
      * @return A list of sets of nodes, each set representing a valid adjustment set for the causal effect estimation.
      */
-    public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType, String colliderPolicy,
-                                          int maxNumSets, int maxRadius,
-                                          int nearWhichEndpoint, int maxPathLength) {
+    public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType, int maxNumSets, int maxRadius, int nearWhichEndpoint, int maxPathLength, String colliderPolicy) {
        Adjustment.ColliderPolicy _colliderPolicy = Adjustment.ColliderPolicy.valueOf(colliderPolicy);
 
         return new Adjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
