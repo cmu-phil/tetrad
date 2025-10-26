@@ -8,26 +8,39 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 /**
- * The {@code RecursiveAdjustment} algorithm searches recursively for a
- * (not necessarily minimal) adjustment set between variables X and Y
- * in a causal graph under PAG semantics.
- *
- * <p>This algorithm extends recursive blocking to the adjustment-set problem:
- * it forbids nodes on amenable (causal) paths and recursively adds nodes
- * that block all remaining backdoor paths, returning a graphical candidate
- * adjustment set suitable for causal effect estimation.</p>
+ * The Adjustment class provides methods and utilities for computing adjustment sets in causal inference
+ * using graph-based methods. It supports tasks such as identifying minimal adjustment sets,
+ * determining forbidden nodes for adjustment, and navigating paths and reachability in various graph types.
+ * These computations are based on the properties of possibly-directed graphs, backdoor criteria, and
+ * other rules from causal inference literature. 
  */
 public final class Adjustment {
-
-    private static final boolean DEBUG = false; // set false to silence logging
     private final Graph graph;
 
-    public enum GraphType{PDAG, MAG, PAG}
-
+    /**
+     * Constructs an Adjustment object with the given graph.
+     *
+     * @param graph the Graph object to be used for adjustment computations
+     */
     public Adjustment(Graph graph) {
         this.graph = graph;
     }
 
+    /**
+     * Computes a list of minimal adjustment sets for a given pair of nodes X and Y in a graph,
+     * based on the specified graph type and constraints. Adjustment sets are sets of nodes
+     * that block backdoor paths between X and Y, ensuring causal inference validity.
+     *
+     * @param X                the source node for adjustment set computation
+     * @param Y                the target node for adjustment set computation
+     * @param graphType        the type of the graph (e.g., DAG, MAG, PAG) dictating adjustment criteria
+     * @param maxNumSets       the maximum number of adjustment sets to compute
+     * @param maxRadius        the maximum BFS radius for shell computation around nodes X and Y
+     * @param nearWhichEndpoint specifies which endpoint to prioritize for proximity-based rule processing
+     * @param maxPathLength    the maximum allowable path length in the backdoor and causality analysis
+     * @return a list of sets of nodes that represent the computed minimal adjustment sets. Each set is a minimal 
+     *         set of nodes that satisfies the backdoor adjustment criteria.
+     */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength) {
@@ -64,7 +77,10 @@ public final class Adjustment {
         return out;
     }
 
-    public PrecomputeContext precomputeContext(Node X, Node Y, String graphType,
+    /**
+     * Precomputes a context for graphical analysis based on specified parameters such as source, target,
+     * graph type*/
+    private PrecomputeContext precomputeContext(Node X, Node Y, String graphType,
                                                      int maxRadius, int nearWhichEndpoint,
                                                      int maxPathLength) {
         if (X == null || Y == null || X == Y) throw new IllegalArgumentException("X and Y must differ.");
@@ -155,7 +171,7 @@ public final class Adjustment {
      * (i.e., not e.pointsTowards(a) and not bidirected into 'a').
      * - We exclude {X, Y} from the returned set (RA already forbids adjusting on them).
      */
-    public static Set<Node> getForbiddenForAdjustment(Graph G, String graphType, Node X, Node Y) {
+    private static Set<Node> getForbiddenForAdjustment(Graph G, String graphType, Node X, Node Y) {
         Objects.requireNonNull(G);
         Objects.requireNonNull(X);
         Objects.requireNonNull(Y);
@@ -214,7 +230,6 @@ public final class Adjustment {
         return starts;
     }
 
-    @SuppressWarnings("unchecked")
     private List<Node>[] emptyLayers(int maxRadius) {
         if (maxRadius < 0) maxRadius = 0;
         List<Node>[] layers = (List<Node>[]) new List[maxRadius + 1];
@@ -228,7 +243,7 @@ public final class Adjustment {
      * Find ONE minimal adjustment set under the given ban set.
      * Returns null if no solution exists with these bans.
      */
-    public @Nullable LinkedHashSet<Node> solveOnce(PrecomputeContext ctx, Set<Node> ban) {
+    private @Nullable LinkedHashSet<Node> solveOnce(PrecomputeContext ctx, Set<Node> ban) {
         final Node X = ctx.X, Y = ctx.Y;
         final String graphType = ctx.graphType;
         final boolean pag = "PAG".equalsIgnoreCase(graphType);
@@ -381,7 +396,6 @@ public final class Adjustment {
         return null;
     }
 
-
     private Set<Node> add1(Set<Node> Z, Node v) {
         LinkedHashSet<Node> s = new LinkedHashSet<>(Z);
         s.add(v);
@@ -393,7 +407,7 @@ public final class Adjustment {
         return Z.stream().map(Node::getName).sorted().reduce((a, b) -> a + "," + b).orElse("");
     }
 
-    boolean dfsWitness(LinkedList<Node> path, Set<Node> inPath, Node Y,
+    private boolean dfsWitness(LinkedList<Node> path, Set<Node> inPath, Node Y,
                        Set<Node> Z, String graphType, int edgeLimit) {
 
         if (path.size() - 1 > edgeLimit) return false;
@@ -422,7 +436,7 @@ public final class Adjustment {
     }
 
     // Decide if <a,b,c> allows an m-connecting continuation given Z
-    boolean tripleKeepsOpen(Node a, Node b, Node c, Set<Node> Z) {
+    private boolean tripleKeepsOpen(Node a, Node b, Node c, Set<Node> Z) {
 
         boolean collider = graph.isDefCollider(a, b, c); // use your PAG/MAG logic
         if (collider) {
@@ -582,9 +596,7 @@ public final class Adjustment {
         return canReach;
     }
 
-
-    // -------- Context holder --------
-    public static final class PrecomputeContext {
+    private static final class PrecomputeContext {
         public final Node X, Y;
         public final String graphType;
         public final int maxRadius, nearWhichEndpoint, maxPathLength;
@@ -597,7 +609,7 @@ public final class Adjustment {
         public final Map<Node, Integer> idx;         // candidate -> stable index (for bitmasks)
         public final Map<Node, Integer> order;       // candidate -> rank in 'pool' (for sorting)
 
-        PrecomputeContext(Node X, Node Y, String graphType,
+        public PrecomputeContext(Node X, Node Y, String graphType,
                           int maxRadius, int nearWhichEndpoint, int maxPathLength,
                           List<List<Node>> amenable,
                           Set<Node> forbidden,
@@ -621,10 +633,15 @@ public final class Adjustment {
     }
 
     /**
-     * @param layers 1..maxRadius
-     * @param reach  union of all layers
+     * Represents a layered structure of nodes organized in shells (layers) radiating outward from a seed node.
+     * Used for efficient breadth-first search organization and reachability queries in graph traversal.
+     *
+     * @param layers An array of lists containing nodes at each distance level from the seed,
+     *              indexed from 1 to maxRadius. layers[k] contains all nodes exactly k steps
+     *              from the seed node under the traversal rules (backdoor or undirected).
+     * @param reach The complete set of all reachable nodes (union of all layers), used for
+     *             efficient membership testing without scanning the layer array.
      */
     private record Shells(List<Node>[] layers, Set<Node> reach) {
     }
-
 }
