@@ -277,8 +277,19 @@ public final class Adjustment {
                 poolSet.addAll(shellsFromY.layers[r]);
             }
         }
-        poolSet.retainAll(reachX);
-        poolSet.retainAll(reachY);
+//        poolSet.retainAll(reachX);
+//        poolSet.retainAll(reachY);
+
+        // Replace the two retains with:
+        if (nearWhichEndpoint == 1) {
+            poolSet.retainAll(reachX);
+        } else if (nearWhichEndpoint == 2) {
+            poolSet.retainAll(reachY);
+        } else { // 3 = both
+            poolSet.retainAll(reachX);
+            poolSet.retainAll(reachY);
+        }
+
         poolSet.remove(X);
         poolSet.remove(Y);
         poolSet.removeAll(forbidden);
@@ -293,6 +304,15 @@ public final class Adjustment {
                 .thenComparingInt(v -> graph.getAdjacentNodes(v).size())
                 .thenComparing(Node::getName));
 
+        pool.sort(Comparator
+                .comparingInt((Node v) -> {
+                    if (nearWhichEndpoint == 1) return endpointDistance(v, shellsFromX);
+                    if (nearWhichEndpoint == 2) return endpointDistance(v, shellsFromY);
+                    return Math.min(endpointDistance(v, shellsFromX), endpointDistance(v, shellsFromY));
+                })
+                .thenComparingInt((Node v) -> graph.getAdjacentNodes(v).size())
+                .thenComparing(Node::getName));
+
         // 6) Index maps (kept for future BitSet paths / caching)
         Map<Node, Integer> idx = new HashMap<>(pool.size() * 2);
         Map<Node, Integer> order = new HashMap<>(pool.size() * 2);
@@ -303,6 +323,11 @@ public final class Adjustment {
 
         return new PrecomputeContext(X, Y, graphType, maxRadius, nearWhichEndpoint, maxPathLength,
                 amenable, amenableBackbone, forbidden, shellsFromX, shellsFromY, pool, idx, order);
+    }
+
+    private int endpointDistance(Node v, Shells s) {
+        for (int r = 1; r < s.layers.length; r++) if (s.layers[r].contains(v)) return r;
+        return Integer.MAX_VALUE / 2;
     }
 
     private List<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
