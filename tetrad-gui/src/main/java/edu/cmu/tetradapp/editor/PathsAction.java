@@ -631,9 +631,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     private static List<List<Node>> getAmenablePaths(Graph graph, String graphType, Node node1, Node node2) {
         List<List<Node>> amenablePaths;
         if (graphType.equals("DAG") || graphType.equals("PDAG") || graphType.equals("MAG")) {
-            amenablePaths = graph.paths().amenablePathsPdagMag(node1, node2, -1);
+            amenablePaths = graph.paths().getAmenablePathsPdagMag(node1, node2, -1);
         } else if (graphType.equals("PAG")) {
-            amenablePaths = graph.paths().amenablePathsPag(node1, node2, -1);
+            amenablePaths = graph.paths().getAmenablePathsPag(node1, node2, -1);
         } else {
             throw new IllegalArgumentException("Graph must be a legal PDAG, MAG, or PAG: " + graphType);
         }
@@ -1065,7 +1065,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> amenable = graph.paths().amenablePathsPdagMag(node1, node2,
+                List<List<Node>> amenable = graph.paths().getAmenablePathsPdagMag(node1, node2,
                         parameters.getInt("pathsMaxLengthAdjustment"));
 
                 if (amenable.isEmpty()) {
@@ -1106,7 +1106,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> amenable = graph.paths().amenablePathsPag(node1, node2,
+                List<List<Node>> amenable = graph.paths().getAmenablePathsPag(node1, node2,
                         parameters.getInt("pathsMaxLengthAdjustment"));
 
                 if (amenable.isEmpty()) {
@@ -1750,10 +1750,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         int L = parameters.getInt("pathsMaxLengthAdjustment");
         // Prefer a PAG-aware amenable routine if available, else fall back to PDAG/MAG version.
         if (graph.paths().isLegalPag()) {
-            List<List<Node>> aps = graph.paths().amenablePathsPag(x, y, L);
+            List<List<Node>> aps = graph.paths().getAmenablePathsPag(x, y, L);
             return aps != null && !aps.isEmpty();
         } else if (graph.paths().isLegalPdag() || graph.paths().isLegalMag()) {
-            List<List<Node>> aps = graph.paths().amenablePathsPdagMag(x, y, L);
+            List<List<Node>> aps = graph.paths().getAmenablePathsPdagMag(x, y, L);
             return aps != null && !aps.isEmpty();
         }
         return false;

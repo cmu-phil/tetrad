@@ -760,8 +760,8 @@ public class Paths implements TetradSerializable {
      * @return a list of amenable paths from the source node to the destination node, each represented as a list of
      * nodes
      */
-    public List<List<Node>> amenablePathsPdagMag(Node node1, Node node2, int maxLength) {
-        List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
+    public Set<List<Node>> getAmenablePathsPdagMag(Node node1, Node node2, int maxLength) {
+        Set<List<Node>> amenablePaths = new HashSet<>(semidirectedPaths(node1, node2, maxLength));
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
             Node a = path.getFirst();
@@ -785,8 +785,8 @@ public class Paths implements TetradSerializable {
      * @return a list of amenable paths from the source node to the destination node, each represented as a list of
      * nodes
      */
-    public List<List<Node>> amenablePathsPag(Node node1, Node node2, int maxLength) {
-        List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
+    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength) {
+        Set<List<Node>> amenablePaths = new HashSet<>(semidirectedPaths(node1, node2, maxLength));
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
             Node a = path.getFirst();
@@ -3222,8 +3222,11 @@ public class Paths implements TetradSerializable {
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength) {
+//        String colliderPolicy = Adjustment.ColliderPolicy.OFF.toString();
         return new Adjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength);
+//        return FastAdjustment.adjustmentSets(graph, X, Y, graphType, maxNumSets, maxRadius,
+//                nearWhichEndpoint, maxPathLength, colliderPolicy);
     }
 
     /**
@@ -3347,7 +3350,7 @@ public class Paths implements TetradSerializable {
         final String gt = (graphType != null) ? graphType : RAEnumerate.inferGraphType(G);
 
         // Amenable paths and latent mask (your existing helpers)
-        List<List<Node>> amenable = getAmenablePaths(source, target, gt, -1);
+        Set<List<Node>> amenable = getAmenablePaths(source, target, gt, -1);
 
         Set<Node> latentMask = buildLatentMaskForTotalEffect(
                 G, source, target, amenable, Collections.emptySet(),
@@ -3473,19 +3476,19 @@ public class Paths implements TetradSerializable {
     }
 
     public boolean hasAmenablePaths(Node x, Node y, String graphType, int maxLength) {
-        List<List<Node>> aps = getAmenablePaths(x, y, graphType, maxLength);
+        Set<List<Node>> aps = getAmenablePaths(x, y, graphType, maxLength);
         return aps != null && !aps.isEmpty();
     }
 
-    private List<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
+    private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
         RecursiveAdjustment.GraphType _graphType = RecursiveAdjustment.GraphType.valueOf(graphType);
 
-        if (source == null || target == null || source == target) return Collections.emptyList();
+        if (source == null || target == null || source == target) return Collections.emptySet();
         if (_graphType == RecursiveAdjustment.GraphType.PAG) {
-            return graph.paths().amenablePathsPag(source, target, maxLength);
+            return graph.paths().getAmenablePathsPag(source, target, maxLength);
         } else {
             // DAG/CPDAG/PDAG/MAG handled here
-            return graph.paths().amenablePathsPdagMag(source, target, maxLength);
+            return graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
         }
     }
 

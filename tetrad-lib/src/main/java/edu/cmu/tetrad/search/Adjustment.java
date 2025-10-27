@@ -61,7 +61,7 @@ public final class Adjustment {
         this.graph = graph;
     }
 
-    private static Set<Node> amenableBackbone(List<List<Node>> amenable, Node X, Node Y) {
+    private static Set<Node> amenableBackbone(Set<List<Node>> amenable, Node X, Node Y) {
         if (amenable == null || amenable.isEmpty()) return Collections.emptySet();
         LinkedHashSet<Node> s = new LinkedHashSet<>();
         for (List<Node> p : amenable) {
@@ -248,7 +248,7 @@ public final class Adjustment {
         if (maxRadius < 0) maxRadius = graph.getNodes().size();    // full reach
 
         // 1) Amenable (PD-out-of-X) routes we don't want to accidentally block
-        List<List<Node>> amenable = getAmenablePaths(X, Y, graphType, maxPathLength);
+        Set<List<Node>> amenable = getAmenablePaths(X, Y, graphType, maxPathLength);
 
         // Backbone = interior nodes on amenable paths (excluding X,Y)
         Set<Node> amenableBackbone = amenableBackbone(amenable, X, Y);
@@ -330,13 +330,13 @@ public final class Adjustment {
         return Integer.MAX_VALUE / 2;
     }
 
-    private List<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
+    private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
         RecursiveAdjustment.GraphType _graphType = RecursiveAdjustment.GraphType.valueOf(graphType);
-        if (source == null || target == null || source == target) return Collections.emptyList();
+        if (source == null || target == null || source == target) return Collections.emptySet();
         if (_graphType == RecursiveAdjustment.GraphType.PAG) {
-            return graph.paths().amenablePathsPag(source, target, maxLength);
+            return graph.paths().getAmenablePathsPag(source, target, maxLength);
         } else {
-            return graph.paths().amenablePathsPdagMag(source, target, maxLength);
+            return graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
         }
     }
 
@@ -700,7 +700,7 @@ public final class Adjustment {
         public final String graphType;
         public final int maxRadius, nearWhichEndpoint, maxPathLength;
 
-        public final List<List<Node>> amenable;       // PD-out-of-X paths
+        public final Set<List<Node>> amenable;       // PD-out-of-X paths
         public final Set<Node> amenableBackbone;      // interior nodes to avoid adjusting on
         public final Set<Node> forbidden;             // GAC forbidden
         public final Shells shellsFromX;
@@ -711,7 +711,7 @@ public final class Adjustment {
 
         public PrecomputeContext(Node X, Node Y, String graphType,
                                  int maxRadius, int nearWhichEndpoint, int maxPathLength,
-                                 List<List<Node>> amenable,
+                                 Set<List<Node>> amenable,
                                  Set<Node> amenableBackbone,
                                  Set<Node> forbidden,
                                  Shells shellsFromX, Shells shellsFromY,
