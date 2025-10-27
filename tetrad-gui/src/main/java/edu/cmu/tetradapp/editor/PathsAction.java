@@ -628,8 +628,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         return mask;
     }
 
-    private static List<List<Node>> getAmenablePaths(Graph graph, String graphType, Node node1, Node node2) {
-        List<List<Node>> amenablePaths;
+    private static Set<List<Node>> getAmenablePaths(Graph graph, String graphType, Node node1, Node node2) {
+        Set<List<Node>> amenablePaths;
         if (graphType.equals("DAG") || graphType.equals("PDAG") || graphType.equals("MAG")) {
             amenablePaths = graph.paths().getAmenablePathsPdagMag(node1, node2, -1);
         } else if (graphType.equals("PAG")) {
@@ -929,7 +929,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> paths = graph.paths().directedPaths(node1, node2,
+                Set<List<Node>> paths = graph.paths().directedPaths(node1, node2,
                         parameters.getInt("pathsMaxLength"));
 
                 if (paths.isEmpty()) {
@@ -967,7 +967,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         boolean pathListed = false;
 
         for (Node node1 : nodes1) {
-            List<List<Node>> paths = graph.paths().directedPaths(node1, node1,
+            Set<List<Node>> paths = graph.paths().directedPaths(node1, node1,
                     parameters.getInt("pathsMaxLength"));
 
             if (paths.isEmpty()) {
@@ -1005,7 +1005,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> paths = graph.paths().semidirectedPaths(node1, node2,
+                Set<List<Node>> paths = graph.paths().semidirectedPaths(node1, node2,
                         parameters.getInt("pathsMaxLength"));
 
                 if (paths.isEmpty()) {
@@ -1065,7 +1065,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> amenable = graph.paths().getAmenablePathsPdagMag(node1, node2,
+                Set<List<Node>> amenable = graph.paths().getAmenablePathsPdagMag(node1, node2,
                         parameters.getInt("pathsMaxLengthAdjustment"));
 
                 if (amenable.isEmpty()) {
@@ -1106,7 +1106,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> amenable = graph.paths().getAmenablePathsPag(node1, node2,
+                Set<List<Node>> amenable = graph.paths().getAmenablePathsPag(node1, node2,
                         parameters.getInt("pathsMaxLengthAdjustment"));
 
                 if (amenable.isEmpty()) {
@@ -1198,7 +1198,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
-                listPaths(graph, textArea, new ArrayList<>(backdoor));
+                listPaths(graph, textArea, new HashSet<>(backdoor));
             }
         }
 
@@ -1227,9 +1227,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                Set<List<Node>> _paths = graph.paths().allPaths(node1, node2,
+                Set<List<Node>> paths = graph.paths().allPaths(node1, node2,
                         parameters.getInt("pathsMaxLength"));
-                List<List<Node>> paths = new ArrayList<>(_paths);
 
                 if (paths.isEmpty()) {
                     continue;
@@ -1247,7 +1246,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
-    private void listPaths(Graph graph, JTextArea textArea, List<List<Node>> paths) {
+    private void listPaths(Graph graph, JTextArea textArea, Set<List<Node>> paths) {
         textArea.append("\n\n    Not Blocked:\n");
 
         boolean allowSelectionBias = graph.paths().isLegalPag();
@@ -1329,7 +1328,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> treks = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> treks = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
 
                 if (treks.isEmpty()) {
                     continue;
@@ -1366,9 +1365,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> confounderPaths = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
-                List<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, parameters.getInt("pathsMaxLength"));
-                List<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> confounderPaths = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, parameters.getInt("pathsMaxLength"));
 
                 confounderPaths.removeAll(directPaths1);
 
@@ -1416,9 +1415,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> latentConfounderPaths = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
-                List<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, parameters.getInt("pathsMaxLength"));
-                List<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> latentConfounderPaths = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, parameters.getInt("pathsMaxLength"));
                 latentConfounderPaths.removeAll(directPaths1);
 
                 for (List<Node> _path : directPaths2) {
@@ -1557,7 +1556,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     textArea.append("\n    " + adjustment);
                 }
 
-                List<List<Node>> amenablePaths = getAmenablePaths(graph, graphType, node1, node2);
+                Set<List<Node>> amenablePaths = getAmenablePaths(graph, graphType, node1, node2);
 
                 if (amenablePaths.isEmpty()) {
                     if (!adjustments.isEmpty()) {
@@ -1750,10 +1749,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         int L = parameters.getInt("pathsMaxLengthAdjustment");
         // Prefer a PAG-aware amenable routine if available, else fall back to PDAG/MAG version.
         if (graph.paths().isLegalPag()) {
-            List<List<Node>> aps = graph.paths().getAmenablePathsPag(x, y, L);
+            Set<List<Node>> aps = graph.paths().getAmenablePathsPag(x, y, L);
             return aps != null && !aps.isEmpty();
         } else if (graph.paths().isLegalPdag() || graph.paths().isLegalMag()) {
-            List<List<Node>> aps = graph.paths().getAmenablePathsPdagMag(x, y, L);
+            Set<List<Node>> aps = graph.paths().getAmenablePathsPdagMag(x, y, L);
             return aps != null && !aps.isEmpty();
         }
         return false;

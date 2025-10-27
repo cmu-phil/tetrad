@@ -694,13 +694,13 @@ public class Paths implements TetradSerializable {
      * @param maxLength the maximum length of the paths
      * @return a list of lists containing the directed paths from node1 to node2
      */
-    public List<List<Node>> directedPaths(Node node1, Node node2, int maxLength) {
-        List<List<Node>> paths = new LinkedList<>();
+    public Set<List<Node>> directedPaths(Node node1, Node node2, int maxLength) {
+        Set<List<Node>> paths = new HashSet<>();
         directedPaths(node1, node2, new LinkedList<>(), paths, maxLength);
         return paths;
     }
 
-    private void directedPaths(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+    private void directedPaths(Node node1, Node node2, LinkedList<Node> path, Set<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
@@ -745,8 +745,8 @@ public class Paths implements TetradSerializable {
      * @param maxLength the maximum path length
      * @return a list of all semi-directed paths between the two nodes
      */
-    public List<List<Node>> semidirectedPaths(Node node1, Node node2, int maxLength) {
-        List<List<Node>> paths = new LinkedList<>();
+    public Set<List<Node>> semidirectedPaths(Node node1, Node node2, int maxLength) {
+        Set<List<Node>> paths = new HashSet<>();
         semidirectedPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength);
         return paths;
     }
@@ -802,7 +802,7 @@ public class Paths implements TetradSerializable {
         return amenablePaths;
     }
 
-    private void semidirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+    private void semidirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, Set<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
@@ -1064,13 +1064,13 @@ public class Paths implements TetradSerializable {
      * @param maxLength the maximum length of the treks
      * @return a list of lists of nodes representing each trek from node1 to node2
      */
-    public List<List<Node>> treks(Node node1, Node node2, int maxLength) {
-        List<List<Node>> paths = new LinkedList<>();
+    public Set<List<Node>> treks(Node node1, Node node2, int maxLength) {
+        Set<List<Node>> paths = new HashSet<>();
         treks(node1, node2, new LinkedList<>(), paths, maxLength);
         return paths;
     }
 
-    private void treks(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+    private void treks(Node node1, Node node2, LinkedList<Node> path, Set<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 1) {
             return;
         }

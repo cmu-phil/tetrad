@@ -92,7 +92,7 @@ public class SelectEdgesInAlmostCyclicPaths extends AbstractAction implements Cl
             Node y = edge.getNode2();
 
             {
-                java.util.List<java.util.List<Node>> directedPaths = graph.paths().directedPaths(x, y, 1000);
+                java.util.Set<java.util.List<Node>> directedPaths = graph.paths().directedPaths(x, y, 1000);
 
                 for (java.util.List<Node> path : directedPaths) {
                     for (int i = 0; i < path.size() - 1; i++) {
@@ -107,7 +107,7 @@ public class SelectEdgesInAlmostCyclicPaths extends AbstractAction implements Cl
             }
 
             {
-                java.util.List<java.util.List<Node>> directedPaths = graph.paths().directedPaths(y, x, 1000);
+                java.util.Set<java.util.List<Node>> directedPaths = graph.paths().directedPaths(y, x, 1000);
 
                 for (java.util.List<Node> path : directedPaths) {
                     for (int i = 0; i < path.size() - 1; i++) {

@@ -2568,7 +2568,7 @@ public final class GraphUtils {
         Node x = edge.getNode1();
         Node y = edge.getNode2();
 
-        List<List<Node>> treks = trueGraph.paths().treks(x, y, 3);
+        Set<List<Node>> treks = trueGraph.paths().treks(x, y, 3);
         boolean existsLatentConfounder = false;
 
         for (List<Node> trek : treks) {
@@ -2727,7 +2727,7 @@ public final class GraphUtils {
 
         for (Node x : mag.getNodes()) {
             if (reachableFrom.get(x).contains(x)) {
-                List<List<Node>> paths = mag.paths().directedPaths(x, x, -1);
+                Set<List<Node>> paths = mag.paths().directedPaths(x, x, -1);
                 for (List<Node> path : paths) {
                     for (int i = 1; i < path.size() - 1; i++) {
                         Node y = path.get(i);

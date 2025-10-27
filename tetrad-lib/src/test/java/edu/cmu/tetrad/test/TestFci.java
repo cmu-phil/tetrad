@@ -1028,7 +1028,7 @@ public class TestFci {
 
                     for (Node b : mag.getNodes()) {
                         // List the cycles.
-                        List<List<Node>> cyclicPaths = mag.paths().directedPaths(b, b, -1);
+                        Set<List<Node>> cyclicPaths = mag.paths().directedPaths(b, b, -1);
 
                         for (List<Node> cyclicPath : cyclicPaths) {
                             System.out.println(GraphUtils.pathString(mag, cyclicPath, false));

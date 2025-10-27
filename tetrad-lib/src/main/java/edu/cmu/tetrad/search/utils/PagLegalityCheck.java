@@ -117,14 +117,14 @@ public class PagLegalityCheck {
             Node y = e.getNode2();
 
             if (Edges.isBidirectedEdge(e)) {
-                List<List<Node>> forwardPaths = mag.paths().directedPaths(x, y, 1);
+                Set<List<Node>> forwardPaths = mag.paths().directedPaths(x, y, 1);
                 if (!forwardPaths.isEmpty()) {
-                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y + ". An example path is " + GraphUtils.pathString(mag, forwardPaths.getFirst(), false));
+                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y + ". An example path is " + GraphUtils.pathString(mag, forwardPaths.iterator().next(), false));
                 }
 
-                List<List<Node>> backwardPaths = mag.paths().directedPaths(y, x, 1);
+                Set<List<Node>> backwardPaths = mag.paths().directedPaths(y, x, 1);
                 if (!backwardPaths.isEmpty()) {
-                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x + ". An example path is " + GraphUtils.pathString(mag, backwardPaths.getFirst(), false));
+                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x + ". An example path is " + GraphUtils.pathString(mag, backwardPaths.iterator().next(), false));
                 }
             }
         }
