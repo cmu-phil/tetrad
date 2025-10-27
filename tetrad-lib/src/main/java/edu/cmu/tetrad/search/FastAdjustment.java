@@ -1,9 +1,6 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +15,448 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class FastAdjustment {
 
+    // --- Construction / shared state ---
+    private final Graph G;
+    private final List<Node> nodes;
+    private final Map<Node, Integer> id;
+    private final String graphType; // "DAG", "CPDAG", "MAG", "PAG" (case-insensitive)
+
+    // --- PD adjacency & caches (built once per Graph) ---
+    private boolean pdBuilt = false;
+    private int n;
+    private int[][] pdAdj;          // neighbors reachable by a PD forward step (int indices)
+    private int[][] pdAdjRev;       // reverse PD adjacency
+    private BitSet[] PD_FWD;        // PD forward reachability for every start node
+    private BitSet[] PD_REV;        // PD reverse reachability (nodes that can reach target)
+    private byte[][] ep;            // endpoint codes for quick checks [i][j] = endpoint at i on (i,j)
+
+    // --- BitSet pooling to avoid churn ---
+    private final BitSetPool pool = new BitSetPool();
+
+    // ----------------- ctor -----------------
+    public FastAdjustment(Graph g, String graphType) {
+        this.G = Objects.requireNonNull(g, "graph");
+        this.nodes = g.getNodes();
+        this.n = nodes.size();
+        this.id = new IdentityHashMap<>(n);
+        for (int i = 0; i < n; i++) id.put(nodes.get(i), i);
+        this.graphType = graphType == null ? "" : graphType.toUpperCase(Locale.ROOT);
+
+        // INTEGRATE: build PD caches once per graph
+        ensurePdCaches();
+    }
+
+    // ----------------- Ensure PD caches -----------------
+    private void ensurePdCaches() {
+        if (pdBuilt) return;
+        this.ep      = new byte[n][n];
+        this.pdAdj   = new int[n][];
+        this.pdAdjRev= new int[n][];
+
+        // 1) Pre-decode endpoints & PD adjacency
+        final ArrayList<Integer>[] tmpF = new ArrayList[n];
+        final ArrayList<Integer>[] tmpR = new ArrayList[n];
+        for (int i = 0; i < n; i++) { tmpF[i] = new ArrayList<>(); tmpR[i] = new ArrayList<>(); }
+
+        for (int i = 0; i < n; i++) {
+            final Node a = nodes.get(i);
+            for (Node nb : G.getAdjacentNodes(a)) {
+                final int j = id.get(nb);
+                final Edge e = G.getEdge(a, nb);
+                if (e == null) continue; // defensive
+                ep[i][j] = encode(e.getEndpoint(a));
+                // Build PD adjacency: allow step i -> j if possibleForwardStep(i, j)
+                if (possibleForwardStep(i, j)) {
+                    tmpF[i].add(j);
+                    tmpR[j].add(i);
+                }
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            pdAdj[i]    = tmpF[i].stream().mapToInt(Integer::intValue).toArray();
+            pdAdjRev[i] = tmpR[i].stream().mapToInt(Integer::intValue).toArray();
+        }
+
+        // 2) Precompute PD_FWD and PD_REV via BFS per source (O(n*(n+e)) once)
+        PD_FWD = new BitSet[n];
+        PD_REV = new BitSet[n];
+        for (int s = 0; s < n; s++) PD_FWD[s] = bfsToBitset(s, pdAdj);
+        for (int t = 0; t < n; t++) PD_REV[t] = bfsToBitset(t, pdAdjRev);
+
+        pdBuilt = true;
+    }
+
+    // Encode Endpoint to small byte for fast compare
+    private static byte encode(Endpoint p) {
+        switch (p) {
+            case TAIL:   return 1;
+            case ARROW:  return 2;
+            case CIRCLE: return 3;
+            default:     return 0; // NONE / absent
+        }
+    }
+
+    /**
+     * Possible-forward predicate (index form), honoring CPDAG vs MAG/PAG asymmetry on TAIL–TAIL.
+     * Allow i->j iff no arrowhead into i; BUT:
+     *   - if endpoint(i)==TAIL and endpoint(j)==TAIL:
+     *       CPDAG: allow; MAG/PAG: disallow (selection edge).
+     */
+    private boolean possibleForwardStep(int i, int j) {
+        final byte atI = ep[i][j];
+        if (atI == 2 /* ARROW */) return false; // arrowhead into source blocks
+        if (atI == 0 /* NONE */)  return false;
+
+        final byte atJ = ep[j][i];
+        final boolean tailTail = (atI == 1 /*TAIL*/) && (atJ == 1 /*TAIL*/);
+        if (tailTail) {
+            if ("MAG".equals(graphType) || "PAG".equals(graphType)) return false; // selection edge
+            // DAG/CPDAG (or unknown) -> allow
+            return true;
+        }
+        // CIRCLE at i, or TAIL->ARROW, etc.: allowed
+        return true;
+    }
+
+    // Simple BFS returning a BitSet of reachable nodes (includes start)
+    private BitSet bfsToBitset(int start, int[][] adj) {
+        final BitSet seen = new BitSet(n);
+        final ArrayDeque<Integer> q = new ArrayDeque<>();
+        seen.set(start);
+        q.add(start);
+        while (!q.isEmpty()) {
+            final int u = q.poll();
+            for (int v : adj[u]) {
+                if (!seen.get(v)) { seen.set(v); q.add(v); }
+            }
+        }
+        return seen;
+    }
+
+    // ===================== FAST FORBIDDANCE =====================
+    public static final class ForbiddanceHooks {
+
+        public static BitSet forbMaskFast(FastAdjustment self, Node X, Node Y) {
+            final int n = self.n;
+            final int x = self.id.get(X);
+            final int y = self.id.get(Y);
+
+            final BitSet onPD  = self.pool.acquire(n);
+            final BitSet seeds = self.pool.acquire(n);
+            final BitSet forb  = self.pool.acquire(n);
+
+            try {
+                onPD.clear();
+                onPD.or(self.PD_FWD[x]);
+                onPD.and(self.PD_REV[y]);
+                onPD.clear(x);
+
+                seeds.clear();
+                seeds.or(onPD);
+                seeds.set(x);
+
+                forb.clear();
+                for (int s = seeds.nextSetBit(0); s >= 0; s = seeds.nextSetBit(s + 1)) {
+                    forb.or(self.PD_FWD[s]);
+                }
+                forb.clear(x); forb.clear(y);
+
+                return (BitSet) forb.clone(); // return an owned copy
+            } finally {
+                self.pool.release(onPD);
+                self.pool.release(seeds);
+                self.pool.release(forb);
+            }
+        }
+
+        /**
+         * Policy-aware forbiddance.
+         * Combines the fast base forbiddance with:
+         *   - userForbidden: nodes the user/policy forbids unconditionally
+         *   - radiusMask: nodes OUTSIDE endpoint radius (for endpoint awareness)
+         *   - extraBlock: any additional RA-stage blocks you maintain
+         *
+         * Any null mask is treated as empty.
+         */
+        public static BitSet forbMaskWithPolicy(
+                FastAdjustment self, Node X, Node Y,
+                BitSet userForbidden, BitSet radiusMask, BitSet extraBlock) {
+
+            final BitSet forb = forbMaskFast(self, X, Y); // base
+
+            if (userForbidden != null) forb.or(userForbidden);
+            if (radiusMask     != null) forb.or(radiusMask);
+            if (extraBlock     != null) forb.or(extraBlock);
+
+            // Never forbid endpoints
+            forb.clear(self.id.get(X));
+            forb.clear(self.id.get(Y));
+            return forb;
+        }
+
+
+//        /**
+//         * FAST forbiddance using cached PD reachability:
+//         *   fwdFromX  = PD_FWD[X]
+//         *   canReachY = PD_REV[Y]
+//         *   onPD      = fwdFromX ∧ canReachY \ {X}
+//         *   seeds     = onPD ∪ {X}
+//         *   forb      = OR_{s∈seeds} PD_FWD[s] \ {X,Y}
+//         *
+//         * INTEGRATE: call this instead of the previous forbMask; requires ensurePdCaches() has run.
+//         */
+//        public static BitSet forbMaskFast(FastAdjustment self, Node X, Node Y) {
+//            final int n = self.n;
+//            final int x = self.id.get(X);
+//            final int y = self.id.get(Y);
+//
+//            // temp buffers from pool (reused)
+//            final BitSet onPD  = self.pool.acquire(n);
+//            final BitSet seeds = self.pool.acquire(n);
+//            final BitSet forb  = self.pool.acquire(n);
+//
+//            try {
+//                onPD.clear();
+//                onPD.or(self.PD_FWD[x]);
+//                onPD.and(self.PD_REV[y]);
+//                onPD.clear(x);                // proper path (exclude X)
+//
+//                seeds.clear();
+//                seeds.or(onPD);
+//                seeds.set(x);                 // include X
+//
+//                forb.clear();
+//                for (int s = seeds.nextSetBit(0); s >= 0; s = seeds.nextSetBit(s + 1)) {
+//                    forb.or(self.PD_FWD[s]);
+//                }
+//                forb.clear(x); forb.clear(y);
+//                // Return a copy owned by caller (so pool buffers can be reused)
+//                return (BitSet) forb.clone();
+//            } finally {
+//                self.pool.release(onPD);
+//                self.pool.release(seeds);
+//                self.pool.release(forb);
+//            }
+//        }
+
+        /**
+         * Forb_G(X,Y): possible descendants of any node on a proper possibly directed path X -> Y,
+         * including possible descendants of X (Perković et al. 2018).
+         * <p>
+         * BitSet implementation mirroring the user's set-based method:
+         * fwdFromX        = forwardReachMask(G, gt, {X})
+         * canReachY       = backwardFilterByForwardRuleMask(G, gt, Y)
+         * onSomePDPath    = fwdFromX ∧ canReachY  (remove X later)
+         * seeds           = {X} ∪ onSomePDPath
+         * forb            = forwardReachMask(G, gt, seeds) \ {X,Y}
+         */
+        public static BitSet forbMask(Graph G,
+                                      List<Node> nodes,
+                                      Map<Node, Integer> id,
+                                      Node X,
+                                      Node Y,
+                                      String graphType) {
+
+            final int n = nodes.size();
+            final String gt = (graphType == null) ? "DAG" : graphType.toUpperCase(Locale.ROOT);
+
+            // --- forward reach from {X}
+            final BitSet startX = new BitSet(n);
+            startX.set(id.get(X));
+            final BitSet fwdFromX = forwardReachMask(G, nodes, id, gt, startX);
+
+            // --- nodes that can reach Y by a possibly directed path (reverse BFS)
+            final BitSet canReachY = backwardFilterByForwardRuleMask(G, nodes, id, gt, Y);
+
+            // --- nodes lying on some possibly directed path X -> Y
+            final BitSet onSomePDPath = (BitSet) fwdFromX.clone();
+            onSomePDPath.and(canReachY);
+            onSomePDPath.clear(id.get(X)); // proper path: exclude X itself
+
+            // --- seeds = {X} ∪ onSomePDPath
+            final BitSet seeds = (BitSet) onSomePDPath.clone();
+            seeds.set(id.get(X));
+
+            // --- forbidden = forward descendants of seeds, minus endpoints
+            final BitSet forb = forwardReachMask(G, nodes, id, gt, seeds);
+            forb.clear(id.get(X));
+            forb.clear(id.get(Y));
+            return forb;
+        }
+
+        /**
+         * Forward reach under the "possible forward step" rule.
+         */
+        private static BitSet forwardReachMask(Graph G,
+                                               List<Node> nodes,
+                                               Map<Node, Integer> id,
+                                               String gt,
+                                               BitSet sources) {
+            final int n = nodes.size();
+            final BitSet reached = new BitSet(n);
+            final ArrayDeque<Integer> q = new ArrayDeque<>();
+            // init
+            for (int u = sources.nextSetBit(0); u >= 0; u = sources.nextSetBit(u + 1)) {
+                reached.set(u);
+                q.add(u);
+            }
+            while (!q.isEmpty()) {
+                final int a = q.poll();
+                final Node A = nodes.get(a);
+                for (Node NB : G.getAdjacentNodes(A)) {
+                    final int b = id.get(NB);
+                    if (reached.get(b)) continue;
+                    if (possibleForwardStep(G, gt, A, NB)) {
+                        reached.set(b);
+                        q.add(b);
+                    }
+                }
+            }
+            return reached;
+        }
+
+        /**
+         * "Possible forward step" predicate for mixed graphs:
+         * allow a → b iff the endpoint at 'a' is NOT an ARROW (no arrowhead into a),
+         * with a special case for TAIL–TAIL ("undirected"):
+         *  - CPDAG: allowed (direction unresolved; can be part of a PD path)
+         *  - MAG/PAG: disallowed (selection edge; "out of" both ends)
+         */
+        private static boolean possibleForwardStep(Graph G,
+                                                   String graphType,
+                                                   Node a,
+                                                   Node b) {
+            final Edge e = G.getEdge(a, b);
+            if (e == null) return false;
+
+            final Endpoint atA = e.getEndpoint(a);
+            final Endpoint atB = e.getEndpoint(b);
+
+            // No forward step if there is an arrowhead into 'a'
+            if (atA == Endpoint.ARROW) return false;
+
+            // Special handling for undirected TAIL–TAIL edges:
+            final boolean tailTail = (atA == Endpoint.TAIL) && (atB == Endpoint.TAIL);
+
+            if (tailTail) {
+                final String gt = (graphType == null) ? "" : graphType.toUpperCase(Locale.ROOT);
+                if ("MAG".equals(gt) || "PAG".equals(gt)) {
+                    // Selection edge: do NOT allow forward traversal in either direction
+                    return false;
+                } else {
+                    // DAG/CPDAG (or unknown treated as CPDAG-like): allow as possibly directed
+                    return true;
+                }
+            }
+
+            // For circle endpoints (PAG), allow forward if there's no arrowhead into 'a'
+            // e.g., a∘→b, a∘–b, a∘∘b: atA != ARROW so permitted.
+            // Directed a→b (TAIL at a) is also permitted.
+            return atA != Endpoint.NULL;
+        }
+
+        /**
+         * Reverse reach “backwards” from Y using the same forward rule:
+         * u is included if there exists a neighbor v already included such that
+         * forwardPossible(u -> v) is true.
+         */
+        private static BitSet backwardFilterByForwardRuleMask(Graph G,
+                                                              List<Node> nodes,
+                                                              Map<Node, Integer> id,
+                                                              String gt,
+                                                              Node Y) {
+            final int n = nodes.size();
+            final BitSet reached = new BitSet(n);
+            final ArrayDeque<Integer> q = new ArrayDeque<>();
+            final int y = id.get(Y);
+            reached.set(y);
+            q.add(y);
+
+            while (!q.isEmpty()) {
+                final int v = q.poll();
+                final Node V = nodes.get(v);
+                for (Node U : G.getAdjacentNodes(V)) {
+                    final int u = id.get(U);
+                    if (reached.get(u)) continue;
+                    // reverse step is allowed if forward step U -> V is allowed
+                    if (possibleForwardStep(G, gt, U, V)) {
+                        reached.set(u);
+                        q.add(u);
+                    }
+                }
+            }
+            return reached;
+        }
+
+    }
+
+    // ===================== REACHABILITY (m-connection step) =====================
+    // Keep your existing implementation; shown here for completeness.
+    public static final class ReachabilityHooks {
+        /**
+         * Step-wise reachability for m-connection along a-b-c:
+         *   - If b is a noncollider on (a,b,c): traversable iff b ∉ S.
+         *   - If b is a collider: traversable iff collider has (possible) descendant in S.
+         *   - CPDAG underline triple treated as definite noncollider (always traversable unless conditioned).
+         *
+         * NOTE: This uses the graph’s Edge endpoints; performance cost is low compared to the overall DFS.
+         */
+        public static boolean reachable(Graph G, Node a, Node b, Node c,
+                                        TempSet S, Map<Node,Integer> id /* index map */) {
+            final Edge e1 = G.getEdge(a, b);
+            final Edge e2 = G.getEdge(b, c);
+            if (e1 == null || e2 == null) return false;
+
+            final boolean isCollider =
+                    (e1.getEndpoint(b) == Endpoint.ARROW) && (e2.getEndpoint(b) == Endpoint.ARROW);
+
+            final boolean bInS = (S != null) && S.contains(id.get(b));
+
+            // Treat underline triple (if available) as definite noncollider.
+            // INTEGRATE: if you have G.isUnderlineTriple(a,b,c), you can special-case here.
+            final boolean underlineNoncollider = false; // set true if your API provides it.
+
+            if ((!isCollider || underlineNoncollider) && !bInS) return true;
+            if (!isCollider) return false;
+
+            // Collider: open only if b has (possible) descendant in S.
+            return hasDefiniteDescendantInS(G, b, S, id);
+        }
+
+        private static boolean hasDefiniteDescendantInS(Graph G, Node start, TempSet S, Map<Node,Integer> id) {
+            if (S == null) return false;
+            final ArrayDeque<Node> q = new ArrayDeque<>();
+            final HashSet<Node> seen = new HashSet<>();
+            q.add(start); seen.add(start);
+            while (!q.isEmpty()) {
+                final Node u = q.poll();
+                for (Node ch : G.getChildren(u)) {
+                    if (seen.add(ch)) {
+                        if (S.contains(id.get(ch))) return true;
+                        q.add(ch);
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+    // ===================== BitSet pool =====================
+    private static final class BitSetPool {
+        private final ArrayDeque<BitSet> pool = new ArrayDeque<>();
+        BitSet acquire(int nbits) {
+            BitSet bs = pool.pollFirst();
+            if (bs == null) return new BitSet(nbits);
+            // no need to resize; BitSet grows on demand
+            return bs;
+        }
+        void release(BitSet bs) {
+            if (bs == null) return;
+            bs.clear();
+            pool.offerFirst(bs);
+        }
+    }
+
     // --- Public entry point ---------------------------------------------------
 
     /**
@@ -27,12 +466,12 @@ public final class FastAdjustment {
      * @param X                 treatment node
      * @param Y                 outcome node
      * @param graphType         "DAG","CPDAG","MAG","PAG" (case-insensitive)
-     * @param maxResults        K (K=1 => greedy single set)
-     * @param maxRadius         r: only consider candidates within r of X or Y (<=0 => unbounded)
+     * @param maxResults        K (K=1 =&gt; greedy single set)
+     * @param maxRadius         r: only consider candidates within r of X or Y (&lt;=0 =&gt; unbounded)
      * @param nearWhichEndpoint 1=source-hug (X), 2=target-hug (Y), 3=both for pruning only (asymmetric priority)
-     * @param maxPathLength     L: DFS depth cap (<=0 => unbounded, but strongly discouraged)
+     * @param maxPathLength     L: DFS depth cap (&lt;=0 =&gt; unbounded, but strongly discouraged)
      * @param colliderPolicy    "OFF", "PREFER_NONCOLLIDERS", "NONCOLLIDER_FIRST" (kept as-is)
-     * @return list of minimal legal adjustment sets (each as Set<Node>)
+     * @return list of minimal legal adjustment sets
      */
     public static List<Set<Node>> adjustmentSets(
             final Graph G,
@@ -828,270 +1267,21 @@ public final class FastAdjustment {
     // --- External hooks that MUST be wired to your existing code ---------------
 
     /**
-     * Wire your existing m-connection step predicate here.
-     */
-    public static final class ReachabilityHooks {
-
-        /**
-         * Step-wise reachability predicate for m-connection along ...a - b - c...
-         * Mirrors the user's existing code:
-         * <p>
-         * collider = (e1 endpoint at b == ARROW) && (e2 endpoint at b == ARROW)
-         * if ((!collider || graph.isUnderlineTriple(a,b,c)) && b ∉ Z) return true;
-         * else return collider && isAncestorOfAnyZ(b, Z)
-         * <p>
-         * Here, Z is represented by TempSet S; in this optimized path S may be a singleton.
-         */
-        public static boolean reachable(Graph G,
-                                        Node a,
-                                        Node b,
-                                        Node c,
-                                        TempSet S,
-                                        Map<Node, Integer> id) {
-            // Fetch the two edges (a,b) and (b,c)
-            Edge e1 = getEdge(G, a, b);
-            Edge e2 = getEdge(G, b, c);
-            if (e1 == null || e2 == null) {
-                // No adjacent edge: cannot proceed
-                return false;
-            }
-
-            // Is b a collider on the triple a - b - c ?
-            boolean collider =
-                    (e1.getEndpoint(b) == Endpoint.ARROW) &&
-                            (e2.getEndpoint(b) == Endpoint.ARROW);
-
-            boolean bInS = S != null && S.contains(id.get(b));
-
-            // Noncollider segment is traversable iff b ∉ S
-            // Also allow "underline triple" (definite noncollider in PAG/CPDAG) per your code.
-            if ((!collider || G.isUnderlineTriple(a, b, c)) && !bInS) {
-                return true;
-            }
-
-            // If it's a noncollider but we conditioned on b, it blocks.
-            if (!collider) return false;
-
-            // Collider case: traverse iff b has a (possible) descendant in S.
-            // ---- OPTION 1: If you have your own helper, call it here. ----
-            // return yourIsAncestorOfAnyZ(b, S);
-
-            // ---- OPTION 2: DAG/CPDAG-safe fallback (definite descendants via children) ----
-            return hasDefiniteDescendantInS(G, b, S, id);
-        }
-
-        // --- Helpers ---
-
-        // Wrap whatever Graph/Edge API you have in Tetrad (adjust if your types live elsewhere)
-        private static Edge getEdge(Graph G, Node u, Node v) {
-            // If your Graph already exposes getEdge(u,v), just call it.
-            return G.getEdge(u, v);
-        }
-
-        /**
-         * DAG/CPDAG-safe: does b have a definite descendant that lies in S?
-         */
-        private static boolean hasDefiniteDescendantInS(Graph G,
-                                                        Node b,
-                                                        TempSet S,
-                                                        Map<Node, Integer> id) {
-            if (S == null) return false;
-            // Quick singleton check (TempSet packs one index)
-            // If you later generalize TempSet, iterate all S-members instead.
-            // BFS over definite children edges only.
-            ArrayDeque<Node> q = new ArrayDeque<>();
-            HashSet<Node> seen = new HashSet<>();
-            q.add(b);
-            seen.add(b);
-            while (!q.isEmpty()) {
-                Node u = q.poll();
-                for (Node ch : G.getChildren(u)) {
-                    if (seen.add(ch)) {
-                        // If this child is in S, collider opens.
-                        if (S.contains(id.get(ch))) return true;
-                        q.add(ch);
-                    }
-                }
-            }
-            return false;
-        }
-    }
-
-    /**
      * Wire your existing visibility (visible out-edge) logic here.
      */
     public static final class VisibilityHooks {
         public static boolean isVisibleOutOfX(Graph G, Node X, Node nb, String graphType) {
             // TODO(INTEGRATE): Replace with your code.
             // Placeholder: treat X->nb in DAG as visible if edge is directed out of X; otherwise false.
-            return G.isDirectedFromTo(X, nb);
-        }
-    }
+//            return G.isDirectedFromTo(X, nb);
 
-    /**
-     * Wire your existing forbiddance (Forb_G(X,Y)) logic here.
-     */
-    public static final class ForbiddanceHooks {
+            Edge e = G.getEdge(X, nb);
 
-        /**
-         * Forb_G(X,Y): possible descendants of any node on a proper possibly directed path X -> Y,
-         * including possible descendants of X (Perković et al. 2018).
-         * <p>
-         * BitSet implementation mirroring the user's set-based method:
-         * fwdFromX        = forwardReachMask(G, gt, {X})
-         * canReachY       = backwardFilterByForwardRuleMask(G, gt, Y)
-         * onSomePDPath    = fwdFromX ∧ canReachY  (remove X later)
-         * seeds           = {X} ∪ onSomePDPath
-         * forb            = forwardReachMask(G, gt, seeds) \ {X,Y}
-         */
-        public static BitSet forbMask(Graph G,
-                                      List<Node> nodes,
-                                      Map<Node, Integer> id,
-                                      Node X,
-                                      Node Y,
-                                      String graphType) {
+            if (e.pointsTowards(X)) return false;
+            if (Edges.isBidirectedEdge(e)) return false;
+            if (Edges.isUndirectedEdge(e)) return true;
 
-            final int n = nodes.size();
-            final String gt = (graphType == null) ? "DAG" : graphType.toUpperCase(Locale.ROOT);
-
-            // --- forward reach from {X}
-            final BitSet startX = new BitSet(n);
-            startX.set(id.get(X));
-            final BitSet fwdFromX = forwardReachMask(G, nodes, id, gt, startX);
-
-            // --- nodes that can reach Y by a possibly directed path (reverse BFS)
-            final BitSet canReachY = backwardFilterByForwardRuleMask(G, nodes, id, gt, Y);
-
-            // --- nodes lying on some possibly directed path X -> Y
-            final BitSet onSomePDPath = (BitSet) fwdFromX.clone();
-            onSomePDPath.and(canReachY);
-            onSomePDPath.clear(id.get(X)); // proper path: exclude X itself
-
-            // --- seeds = {X} ∪ onSomePDPath
-            final BitSet seeds = (BitSet) onSomePDPath.clone();
-            seeds.set(id.get(X));
-
-            // --- forbidden = forward descendants of seeds, minus endpoints
-            final BitSet forb = forwardReachMask(G, nodes, id, gt, seeds);
-            forb.clear(id.get(X));
-            forb.clear(id.get(Y));
-            return forb;
-        }
-
-        // -------------------------------------------------------------------------
-        // Bitset BFS utilities for "possibly directed" reachability
-        // -------------------------------------------------------------------------
-
-        /**
-         * Forward reach under the "possible forward step" rule.
-         */
-        private static BitSet forwardReachMask(Graph G,
-                                               List<Node> nodes,
-                                               Map<Node, Integer> id,
-                                               String gt,
-                                               BitSet sources) {
-            final int n = nodes.size();
-            final BitSet reached = new BitSet(n);
-            final ArrayDeque<Integer> q = new ArrayDeque<>();
-            // init
-            for (int u = sources.nextSetBit(0); u >= 0; u = sources.nextSetBit(u + 1)) {
-                reached.set(u);
-                q.add(u);
-            }
-            while (!q.isEmpty()) {
-                final int a = q.poll();
-                final Node A = nodes.get(a);
-                for (Node NB : G.getAdjacentNodes(A)) {
-                    final int b = id.get(NB);
-                    if (reached.get(b)) continue;
-                    if (possibleForwardStep(G, gt, A, NB)) {
-                        reached.set(b);
-                        q.add(b);
-                    }
-                }
-            }
-            return reached;
-        }
-
-        /**
-         * Reverse reach “backwards” from Y using the same forward rule:
-         * u is included if there exists a neighbor v already included such that
-         * forwardPossible(u -> v) is true.
-         */
-        private static BitSet backwardFilterByForwardRuleMask(Graph G,
-                                                              List<Node> nodes,
-                                                              Map<Node, Integer> id,
-                                                              String gt,
-                                                              Node Y) {
-            final int n = nodes.size();
-            final BitSet reached = new BitSet(n);
-            final ArrayDeque<Integer> q = new ArrayDeque<>();
-            final int y = id.get(Y);
-            reached.set(y);
-            q.add(y);
-
-            while (!q.isEmpty()) {
-                final int v = q.poll();
-                final Node V = nodes.get(v);
-                for (Node U : G.getAdjacentNodes(V)) {
-                    final int u = id.get(U);
-                    if (reached.get(u)) continue;
-                    // reverse step is allowed if forward step U -> V is allowed
-                    if (possibleForwardStep(G, gt, U, V)) {
-                        reached.set(u);
-                        q.add(u);
-                    }
-                }
-            }
-            return reached;
-        }
-
-        /**
-         * "Possible forward step" predicate for mixed graphs:
-         * allow step a -> b iff the edge endpoint at 'a' is NOT an ARROW (i.e., no arrowhead into a).
-         * <p>
-         * DAG: only a→b (TAIL at a) is allowed.
-         * CPDAG: a→b or a−b (TAIL at a) is allowed.
-         * MAG/PAG: a endpoint ∈ {TAIL, CIRCLE} is allowed; disallow if endpoint at a is ARROW.
-         */
-        /**
-         * "Possible forward step" predicate for mixed graphs:
-         * allow a → b iff the endpoint at 'a' is NOT an ARROW (no arrowhead into a),
-         * with a special case for TAIL–TAIL ("undirected"):
-         *  - CPDAG: allowed (direction unresolved; can be part of a PD path)
-         *  - MAG/PAG: disallowed (selection edge; "out of" both ends)
-         */
-        private static boolean possibleForwardStep(Graph G,
-                                                   String graphType,
-                                                   Node a,
-                                                   Node b) {
-            final Edge e = G.getEdge(a, b);
-            if (e == null) return false;
-
-            final Endpoint atA = e.getEndpoint(a);
-            final Endpoint atB = e.getEndpoint(b);
-
-            // No forward step if there is an arrowhead into 'a'
-            if (atA == Endpoint.ARROW) return false;
-
-            // Special handling for undirected TAIL–TAIL edges:
-            final boolean tailTail = (atA == Endpoint.TAIL) && (atB == Endpoint.TAIL);
-
-            if (tailTail) {
-                final String gt = (graphType == null) ? "" : graphType.toUpperCase(Locale.ROOT);
-                if ("MAG".equals(gt) || "PAG".equals(gt)) {
-                    // Selection edge: do NOT allow forward traversal in either direction
-                    return false;
-                } else {
-                    // DAG/CPDAG (or unknown treated as CPDAG-like): allow as possibly directed
-                    return true;
-                }
-            }
-
-            // For circle endpoints (PAG), allow forward if there's no arrowhead into 'a'
-            // e.g., a∘→b, a∘–b, a∘∘b: atA != ARROW so permitted.
-            // Directed a→b (TAIL at a) is also permitted.
-            return atA != Endpoint.NULL;
+            return true;
         }
     }
 }

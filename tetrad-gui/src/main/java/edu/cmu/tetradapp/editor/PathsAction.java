@@ -1532,24 +1532,14 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             graphType = "PAG";
         }
 
+        int maxNumSet = parameters.getInt("pathsMaxNumSets");
+        int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
+        int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
+        int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
+
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                int maxNumSet = parameters.getInt("pathsMaxNumSets");
-                int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
-                int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
-                int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
 
-//                // === NEW: Check for amenable (causal) paths ===
-                List<List<Node>> amenablePaths = getAmenablePaths(graph, graphType, node1, node2);
-
-//                if (amenablePaths.isEmpty()) {
-//                    textArea.append("\n\nAdjustment set(s) for " + node1 + " ~~> " + node2 + ":\n");
-//                    textArea.append("No amenable (causal) paths exist between " + node1 + " and " + node2 + ".\n");
-//                    textArea.append("Hence, no adjustment set is needed or defined.\n");
-//                    continue;
-//                }
-
-                // --- Run the all-paths adjustment finder ---
                 List<Set<Node>> adjustments;
                 try {
                     adjustments = graph.paths().adjustmentSets(
@@ -1566,6 +1556,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 for (Set<Node> adjustment : adjustments) {
                     textArea.append("\n    " + adjustment);
                 }
+
+                List<List<Node>> amenablePaths = getAmenablePaths(graph, graphType, node1, node2);
 
                 if (amenablePaths.isEmpty()) {
                     if (!adjustments.isEmpty()) {
