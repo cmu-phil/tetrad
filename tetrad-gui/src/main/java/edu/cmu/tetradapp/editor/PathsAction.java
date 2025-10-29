@@ -1724,85 +1724,85 @@ private void edgeSpecificAdjustment(Graph graph, JTextArea textArea,
     }
 }
 
-    private void recursiveBlockingSets(Graph graph, JTextArea textArea,
-                                       List<Node> nodes1, List<Node> nodes2) {
-        textArea.setText("""
-                A recursive blocking (RB) set for nodes x and y is a set of variables that blocks all 
-                non-inducing paths between x and y (it may leave a direct edge x — y or other inducing paths unblocked).
-                
-                • If there is a direct edge x → y, the RB set isolates the EDGE-SPECIFIC (LOCAL) EFFECT associated 
-                  with that edge. It blocks all alternative non-inducing paths from x to y while leaving the edge 
-                  itself unblocked.
-                
-                • If multiple inducing paths exist between x and y (for example, due to latent confounding), the RB 
-                  set will leave those open as well. In such cases, it does not correspond to a unique adjustment set 
-                  or direct-effect estimate.
-                
-                • Only in special cases—when x and y are amenable and there is a unique directed causal route from 
-                  x to y—will an RB set coincide with an ADJUSTMENT SET for estimating the total effect of x on y.
-                
-                Tip: To assess amenability, select “Amenable paths” above. All amenable paths (those that can be causal) 
-                should remain unblocked; backdoor paths should be blocked.
-                """);
-
-        boolean anyFound = false;
-        int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
-
-        for (Node node1 : nodes1) {
-            for (Node node2 : nodes2) {
-                if (node1 == node2) continue;
-
-                Set<Node> blocking1 = null;
-                Set<Node> blocking2 = null;
-                try {
-                    blocking1 = RecursiveBlocking.blockPathsRecursively(
-                            graph, node1, node2, conditioningSet, Set.of(), maxDistanceFromEndpoint);
-                    blocking2 = RecursiveBlocking.blockPathsRecursively(
-                            graph, node2, node1, conditioningSet, Set.of(), maxDistanceFromEndpoint);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
-                textArea.append("\n\nRecursive blocking sets for <" + node1 + ", " + node2 + ">:\n");
-
-                textArea.append("\nFrom " + node1 + " to " + node2 + ":");
-                textArea.append(blocking1 == null ? "\n    --NONE--" : "\n    " + blocking1);
-
-                textArea.append("\n\nFrom " + node2 + " to " + node1 + ":");
-                textArea.append(blocking2 == null ? "\n    --NONE--" : "\n    " + blocking2);
-
-                boolean foundPair = (blocking1 != null) || (blocking2 != null);
-                anyFound |= foundPair;
-
-                boolean hasEdge = (graph.getEdge(node1, node2) != null);
-                boolean amenable =
-                        hasAmenablePaths(graph, node1, node2) || hasAmenablePaths(graph, node2, node1);
-
-                if (foundPair && hasEdge && amenable) {
-                    textArea.append("\n\nResult: The pair <" + node1 + ", " + node2 + "> is amenable. The above RB set(s) " +
-                            "serve as EDGE-SPECIFIC BLOCKING SETS for isolating the local effect of the edge " +
-                            node1 + " → " + node2 + ".");
-                } else if (foundPair && hasEdge) {
-                    textArea.append("\n\nResult: An edge exists between " + node1 + " and " + node2 +
-                            ", but amenability is not established. The RB set(s) block non-inducing paths,\n " +
-                            "but multiple inducing paths may remain unblocked; thus, these are not guaranteed " +
-                            "to represent valid direct-effect blocking sets.");
-                } else if (foundPair) {
-                    String indep = " _||_ ";
-                    textArea.append("\n\nResult: No edge between " + node1 + " and " + node2 +
-                            ". The RB set(s) are separating sets:\n    " +
-                            node1 + indep + node2 + " | " + (blocking1 == null ? "{}" : blocking1) + " and\n    " +
-                            node1 + indep + node2 + " | " + (blocking2 == null ? "{}" : blocking2));
-                } else {
-                    textArea.append("\n\nResult: No RB sets found for this pair under the current search limits.");
-                }
-            }
-        }
-
-        if (!anyFound) {
-            textArea.append("\n\nNo recursive blocking sets found under the current parameters.");
-        }
-    }
+//    private void recursiveBlockingSets(Graph graph, JTextArea textArea,
+//                                       List<Node> nodes1, List<Node> nodes2) {
+//        textArea.setText("""
+//                A recursive blocking (RB) set for nodes x and y is a set of variables that blocks all
+//                non-inducing paths between x and y (it may leave a direct edge x — y or other inducing paths unblocked).
+//
+//                • If there is a direct edge x → y, the RB set isolates the EDGE-SPECIFIC (LOCAL) EFFECT associated
+//                  with that edge. It blocks all alternative non-inducing paths from x to y while leaving the edge
+//                  itself unblocked.
+//
+//                • If multiple inducing paths exist between x and y (for example, due to latent confounding), the RB
+//                  set will leave those open as well. In such cases, it does not correspond to a unique adjustment set
+//                  or direct-effect estimate.
+//
+//                • Only in special cases—when x and y are amenable and there is a unique directed causal route from
+//                  x to y—will an RB set coincide with an ADJUSTMENT SET for estimating the total effect of x on y.
+//
+//                Tip: To assess amenability, select “Amenable paths” above. All amenable paths (those that can be causal)
+//                should remain unblocked; backdoor paths should be blocked.
+//                """);
+//
+//        boolean anyFound = false;
+//        int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
+//
+//        for (Node node1 : nodes1) {
+//            for (Node node2 : nodes2) {
+//                if (node1 == node2) continue;
+//
+//                Set<Node> blocking1 = null;
+//                Set<Node> blocking2 = null;
+//                try {
+//                    blocking1 = RecursiveBlocking.blockPathsRecursively(
+//                            graph, node1, node2, conditioningSet, Set.of(), maxDistanceFromEndpoint);
+//                    blocking2 = RecursiveBlocking.blockPathsRecursively(
+//                            graph, node2, node1, conditioningSet, Set.of(), maxDistanceFromEndpoint);
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+//
+//                textArea.append("\n\nRecursive blocking sets for <" + node1 + ", " + node2 + ">:\n");
+//
+//                textArea.append("\nFrom " + node1 + " to " + node2 + ":");
+//                textArea.append(blocking1 == null ? "\n    --NONE--" : "\n    " + blocking1);
+//
+//                textArea.append("\n\nFrom " + node2 + " to " + node1 + ":");
+//                textArea.append(blocking2 == null ? "\n    --NONE--" : "\n    " + blocking2);
+//
+//                boolean foundPair = (blocking1 != null) || (blocking2 != null);
+//                anyFound |= foundPair;
+//
+//                boolean hasEdge = (graph.getEdge(node1, node2) != null);
+//                boolean amenable =
+//                        hasAmenablePaths(graph, node1, node2) || hasAmenablePaths(graph, node2, node1);
+//
+//                if (foundPair && hasEdge && amenable) {
+//                    textArea.append("\n\nResult: The pair <" + node1 + ", " + node2 + "> is amenable. The above RB set(s) " +
+//                            "serve as EDGE-SPECIFIC BLOCKING SETS for isolating the local effect of the edge " +
+//                            node1 + " → " + node2 + ".");
+//                } else if (foundPair && hasEdge) {
+//                    textArea.append("\n\nResult: An edge exists between " + node1 + " and " + node2 +
+//                            ", but amenability is not established. The RB set(s) block non-inducing paths,\n " +
+//                            "but multiple inducing paths may remain unblocked; thus, these are not guaranteed " +
+//                            "to represent valid direct-effect blocking sets.");
+//                } else if (foundPair) {
+//                    String indep = " _||_ ";
+//                    textArea.append("\n\nResult: No edge between " + node1 + " and " + node2 +
+//                            ". The RB set(s) are separating sets:\n    " +
+//                            node1 + indep + node2 + " | " + (blocking1 == null ? "{}" : blocking1) + " and\n    " +
+//                            node1 + indep + node2 + " | " + (blocking2 == null ? "{}" : blocking2));
+//                } else {
+//                    textArea.append("\n\nResult: No RB sets found for this pair under the current search limits.");
+//                }
+//            }
+//        }
+//
+//        if (!anyFound) {
+//            textArea.append("\n\nNo recursive blocking sets found under the current parameters.");
+//        }
+//    }
 
     /**
      * Returns true if there exist amenable paths (Perković) from x to y in this graph.
