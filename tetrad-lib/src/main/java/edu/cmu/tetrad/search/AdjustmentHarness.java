@@ -13,25 +13,64 @@ import java.io.PrintWriter;
 import java.util.*;
 
 /**
- * PDAG harness for benchmarking adjustment set generation and estimating total effects.
+ * <p><strong>PDAG harness</strong> for benchmarking adjustment-set generation and total-effect estimation.</p>
  *
- * What it does:
- *  1) Build a random DAG with 20 nodes and ~40 edges.
- *  2) Create a SEM (SemPm, SemIm) on the true graph; simulate data.
- *  3) For every ordered pair (x,y), get up to K adjustment sets via RA.
- *  4) True total effect: SemIm.getTotalEffect(x,y).
- *  5) Sample estimate for each set Z: OLS of y ~ x + Z (coefficient on x).
- *  6) Report MAE vs truth and total time spent in adjustmentSets().
- *  7) Print Z-size breakdown; optionally write adjustment_estimates.csv.
+ * <h2>What it does</h2>
+ * <ol>
+ *   <li>Builds a random DAG with <strong>20</strong> nodes and approximately <strong>40</strong> edges.</li>
+ *   <li>Creates a SEM (<code>SemPm</code>, <code>SemIm</code>) on the true graph and simulates data.</li>
+ *   <li>For every ordered pair <code>(x, y)</code>, obtains up to <em>K</em> adjustment sets via Recursive Adjustment (RA).</li>
+ *   <li>Computes the ground-truth total effect using <code>SemIm.getTotalEffect(x, y)</code>.</li>
+ *   <li>For each candidate set <code>Z</code>, fits OLS: <code>y ~ x + Z</code> and takes the coefficient on <code>x</code> as the estimate.</li>
+ *   <li>Reports mean absolute error (MAE) vs. truth and the total time spent in <code>adjustmentSets()</code>.</li>
+ *   <li>Prints a breakdown of counts by <code>|Z|</code>; optionally writes <code>adjustment_estimates.csv</code>.</li>
+ * </ol>
  *
- * CLI (optional):
- *   --n <int>         sample size (default 5000)
- *   --k <int>         max sets per (x,y) (default 5)
- *   --L <int>         RA path-length cap (default 7)
- *   --rad <int>       RA radius (default 3)
- *   --hug <int>       target hugging (default 1)
- *   --seed <long>     RNG seed (default 12345)
- *   --write-csv       write adjustment_estimates.csv (strategy=tetrad_target)
+ * <h2>CLI (optional)</h2>
+ * <p>Flags and defaults:</p>
+ * <dl>
+ *   <dt><code>--n &lt;int&gt;</code></dt>
+ *   <dd>Sample size (default: <code>5000</code>).</dd>
+ *
+ *   <dt><code>--k &lt;int&gt;</code></dt>
+ *   <dd>Max sets per pair <code>(x,y)</code> (default: <code>5</code>).</dd>
+ *
+ *   <dt><code>--L &lt;int&gt;</code></dt>
+ *   <dd>RA path-length cap (default: <code>7</code>).</dd>
+ *
+ *   <dt><code>--rad &lt;int&gt;</code></dt>
+ *   <dd>RA neighborhood radius (default: <code>3</code>).</dd>
+ *
+ *   <dt><code>--hug &lt;int&gt;</code></dt>
+ *   <dd>Endpoint “hugging” / target bias (default: <code>1</code>).</dd>
+ *
+ *   <dt><code>--seed &lt;long&gt;</code></dt>
+ *   <dd>RNG seed (default: <code>12345</code>).</dd>
+ *
+ *   <dt><code>--write-csv</code></dt>
+ *   <dd>Write <code>adjustment_estimates.csv</code> (strategy = <code>tetrad_target</code>).</dd>
+ * </dl>
+ *
+ * <h2>Output files</h2>
+ * <ul>
+ *   <li><code>adjustment_estimates.csv</code> — one row per pair and per set <code>Z</code> with the OLS estimate and absolute error.</li>
+ *   <li>Console summary — MAE by strategy, total generation time, and counts by <code>|Z|</code>.</li>
+ * </ul>
+ *
+ * <h3>Notes</h3>
+ * <ul>
+ *   <li>“PDAG” here refers to running the RA enumerator on a possibly directed/ancestral graph setting
+ *       (DAG/CPDAG/MPDAG). For PAG semantics use the corresponding PAG-capable RA configuration.</li>
+ *   <li>Adjustment sets returned are trimmed to minimality via a try-delete pass.</li>
+ * </ul>
+ *
+ * <h3>Example</h3>
+ * <pre>{@code
+ * # Default run
+ * java ... Harness --n 5000 --k 5 --L 7 --rad 3 --hug 1 --seed 12345 --write-csv
+ * }</pre>
+ *
+ * @since 1.0
  */
 public class AdjustmentHarness {
 
@@ -41,7 +80,7 @@ public class AdjustmentHarness {
         int K = 5;
         int L = 7;
         int RADIUS = 3;
-        int TGT_HUG = 1;
+        int TGT_HUG = 2;
         long SEED = 12345L;
         boolean WRITE_CSV = false;
 
@@ -65,7 +104,7 @@ public class AdjustmentHarness {
         RandomUtil.getInstance().setSeed(SEED);
 
         // --- 1) Random DAG with ~40 edges ---
-        Graph G = RandomGraph.randomGraph(20, 0, 40, 100, 100, 100, false);
+        Graph G = RandomGraph.randomGraph(30, 0, 60, 100, 100, 100, false);
         List<Node> vars = G.getNodes();
 
         // --- 2) SEM on the true graph + simulate data ---

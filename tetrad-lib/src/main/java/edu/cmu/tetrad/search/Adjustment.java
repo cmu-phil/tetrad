@@ -410,16 +410,29 @@ public final class Adjustment {
         }
 
         // 2) Minimality trim (try-delete)
-        if (!Z.isEmpty()) {
-            LinkedHashSet<Node> Zmin = new LinkedHashSet<>(Z);
-            for (Node v : new ArrayList<>(Zmin)) {
-                Zmin.remove(v);
-                if (findBackdoorWitness(X, Y, Zmin, graphType, ctx.maxPathLength).isPresent()) {
-                    Zmin.add(v);
+//        if (!Z.isEmpty()) {
+//            LinkedHashSet<Node> Zmin = new LinkedHashSet<>(Z);
+//            for (Node v : new ArrayList<>(Zmin)) {
+//                Zmin.remove(v);
+//                if (findBackdoorWitness(X, Y, Zmin, graphType, ctx.maxPathLength).isPresent()) {
+//                    Zmin.add(v);
+//                }
+//            }
+//            Z = Zmin;
+//        }
+
+        boolean changed;
+        do {
+            changed = false;
+            for (Node v : new ArrayList<>(Z)) {
+                Z.remove(v);
+                if (findBackdoorWitness(X, Y, Z, graphType, ctx.maxPathLength).isPresent()) {
+                    Z.add(v);
+                } else {
+                    changed = true;
                 }
             }
-            Z = Zmin;
-        }
+        } while (changed);
 
         return Z;
     }
