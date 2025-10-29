@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.search.Adjustment2;
 import edu.cmu.tetrad.search.RAEnumerate;
 import edu.cmu.tetrad.search.RecursiveAdjustment;
 import edu.cmu.tetrad.search.RecursiveBlocking;
@@ -716,9 +717,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Cycles",
                 "All Paths",
                 "Adjacents",
-                "Adjustment Sets",
-                "Adjustment Set (Recursive)",
-                "Blocking Sets (Recursive)",
+                "Adjustment Sets (for Total Effect)",
+//                "Adjustment Set (Recursive)",
+                "Edge-Specific Adjustment Sets",
                 "Amenable paths",
                 "Backdoor paths"
         });
@@ -888,13 +889,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     latentConfounderPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Adjacents".equals(method)) {
                     adjacentNodes(graph, textArea, nodes1, nodes2);
-                } else if ("Adjustment Sets".equals(method)) {
+                } else if ("Adjustment Sets (for Total Effect)".equals(method)) {
                     adjustmentSets(graph, textArea, nodes1, nodes2);
-                } else if ("Blocking Sets (Recursive)".equals(method)) {
-                    recursiveBlockingSets(graph, textArea, nodes1, nodes2);
-                } else if ("Adjustment Set (Recursive)".equals(method)) {
-                    recursiveAdjustmentSets(graph, textArea, nodes1, nodes2);
-                } else if ("Cycles".equals(method)) {
+                } else if ("Edge-Specific Adjustment Sets".equals(method)) {
+                    edgeSpecificAdjustment(graph, textArea, nodes1, nodes2);
+                }
+//                else if ("Adjustment Set (Recursive)".equals(method)) {
+//                    recursiveAdjustmentSets(graph, textArea, nodes1, nodes2);
+//                }
+                else if ("Cycles".equals(method)) {
                     allCyclicPaths(graph, textArea, nodes1, nodes2);
                 } else {
                     throw new IllegalArgumentException("Unknown method: " + method);
@@ -1589,78 +1592,137 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
-    private void recursiveAdjustmentSets(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
-        textArea.setText("""     
-                An adjustment set is a set of nodes that blocks all paths that can't be causal while leaving
-                all causal paths unblocked. In particular, all confounders of the source and target will be
-                blocked. By conditioning on an adjustment set (if one exists) one can estimate the total 
-                effect of a source on a target. We look for adjustment sets here using a masked version of
-                the recursive blocking set algorithm.
+//    private void recursiveAdjustmentSets(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+//        textArea.setText("""
+//                An adjustment set is a set of nodes that blocks all paths that can't be causal while leaving
+//                all causal paths unblocked. In particular, all confounders of the source and target will be
+//                blocked. By conditioning on an adjustment set (if one exists) one can estimate the total
+//                effect of a source on a target. We look for adjustment sets here using a masked version of
+//                the recursive blocking set algorithm.
+//
+//                To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
+//                into the text field above. Then press Enter. Then select "Amenable Paths" from the above
+//                dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are
+//                blocked, the set is not an adjustment set. Also select "Backdoor paths" from the dropdown.
+//                All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the
+//                set is not an adjustment set.
+//                """);
+//
+//        String graphType;
+//
+//        if (graph.paths().isLegalPdag()) {
+//            graphType = RecursiveAdjustment.GraphType.PDAG.toString();
+//        } else if (graph.paths().isLegalMag()) {
+//            graphType = RecursiveAdjustment.GraphType.MAG.toString();
+//        } else if (graph.paths().isLegalPag()) {
+//            graphType = RecursiveAdjustment.GraphType.PAG.toString();
+//        } else {
+//            graphType = RecursiveAdjustment.GraphType.PDAG.toString();
+//        }
+//
+//        boolean found = false;
+//
+//        final int maxNumSet = parameters.getInt("pathsMaxNumSets");
+//
+//        for (Node node1 : nodes1) {
+//            for (Node node2 : nodes2) {
+//                // Skip degenerate X ~~> X requests.
+//                if (node1 == null || node2 == null || node1 == node2) continue;
+//
+//                // Library entry point
+//                var paths = graph.paths();
+//
+//                // Case split based on amenability (library check)
+//                boolean amenable = paths.hasAmenablePaths(node1, node2, graphType, -1);
+//                textArea.append("\n\n" + node1 + " ~~> " + node2 + ":\n");
+//
+//                // True adjustment-set search via recursive algorithm
+////                if (amenable) {
+//                RAEnumerate.AdjSummary adj;
+//                try {
+//                    adj = paths.recursiveAdjustment(
+//                            node1, node2,
+//                            graphType,
+//                            maxNumSet, -1,
+//                            /* minimizeEach */ true
+//                    );
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    textArea.append("    --ERROR running recursive adjustment search--");
+//                    continue;
+//                }
+//
+//                textArea.append("\n" + adj.toString());
+//
+//                if (!amenable) {
+//                    textArea.append("\n(But no amenable (causal) paths exist.)");
+//                }
+//            }
+//        }
+//
+//        if (!found) {
+//            textArea.append("\nNo adjustment (or candidate separating) sets found.");
+//        }
+//    }
+
+private void edgeSpecificAdjustment(Graph graph, JTextArea textArea,
+                                   List<Node> nodes1, List<Node> nodes2) {
+    textArea.setText("""
+                A edge-specific adjustment set for nodes x and y is a set of variables that blocks all 
+                non-inducing paths between x and y (it may leave a direct edge x — y or other inducing paths unblocked).
                 
-                To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
-                into the text field above. Then press Enter. Then select "Amenable Paths" from the above 
-                dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are 
-                blocked, the set is not an adjustment set. Also select "Backdoor paths" from the dropdown. 
-                All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
-                set is not an adjustment set.
+                • If there is a direct edge x → y, the RB set isolates the EDGE-SPECIFIC (LOCAL) EFFECT associated 
+                  with that edge. It blocks all alternative non-inducing paths from x to y while leaving the edge 
+                  itself unblocked.
+                
+                • If multiple inducing paths exist between x and y (for example, due to latent confounding), the RB 
+                  set will leave those open as well. In such cases, it does not correspond to a unique adjustment set 
+                  or direct-effect estimate.
                 """);
 
-        String graphType;
+    boolean found = false;
+    int maxNumSets = parameters.getInt("pathsMaxNumSets");
+    int maxRadius = parameters.getInt("pathsMaxDistanceFromEndpoint");
+    int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
+    int maxPathLength = parameters.getInt("pathsMaxLengthAdjustment");
 
-        if (graph.paths().isLegalPdag()) {
-            graphType = RecursiveAdjustment.GraphType.PDAG.toString();
-        } else if (graph.paths().isLegalMag()) {
-            graphType = RecursiveAdjustment.GraphType.MAG.toString();
-        } else if (graph.paths().isLegalPag()) {
-            graphType = RecursiveAdjustment.GraphType.PAG.toString();
-        } else {
-            graphType = RecursiveAdjustment.GraphType.PDAG.toString();
-        }
-
-        boolean found = false;
-
-        final int maxNumSet = parameters.getInt("pathsMaxNumSets");
-
-        for (Node node1 : nodes1) {
-            for (Node node2 : nodes2) {
-                // Skip degenerate X ~~> X requests.
-                if (node1 == null || node2 == null || node1 == node2) continue;
-
-                // Library entry point
-                var paths = graph.paths();
-
-                // Case split based on amenability (library check)
-                boolean amenable = paths.hasAmenablePaths(node1, node2, graphType, -1);
-                textArea.append("\n\n" + node1 + " ~~> " + node2 + ":\n");
-
-                // True adjustment-set search via recursive algorithm
-//                if (amenable) {
-                RAEnumerate.AdjSummary adj;
-                try {
-                    adj = paths.recursiveAdjustment(
-                            node1, node2,
-                            graphType,
-                            maxNumSet, -1,
-                            /* minimizeEach */ true
-                    );
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    textArea.append("    --ERROR running recursive adjustment search--");
-                    continue;
-                }
-
-                textArea.append("\n" + adj.toString());
-
-                if (!amenable) {
-                    textArea.append("\n(But no amenable (causal) paths exist.)");
-                }
+    for (Node node1 : nodes1) {
+        for (Node node2 : nodes2) {
+            if (!graph.isAdjacentTo(node1, node2)) {
+                textArea.append("\n\n" + node1 + " and " +  node2 + " are not adjacent.");
+                continue;
             }
-        }
 
-        if (!found) {
-            textArea.append("\nNo adjustment (or candidate separating) sets found.");
+            List<Set<Node>> adjustments;
+
+            boolean avoidAmenable = false;
+
+            try {
+
+                // The type of graph doesn't matter if we're ignoring amenable paths.
+                Adjustment2 adjustment = new Adjustment2(graph);
+                adjustments = adjustment.adjustmentSets(node1, node2, "PAG",
+                        maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength,
+                        Adjustment2.ColliderPolicy.OFF, avoidAmenable, Set.of(), Set.of());
+            } catch (Exception e) {
+                // Skip on error
+                continue;
+            }
+
+            textArea.append("\n\nEdge-specific adjustment sets for " + graph.getEdge(node1, node2) + ":\n");
+
+            for (Set<Node> adjustment : adjustments) {
+                textArea.append("\n    " + adjustment);
+            }
+
+            found = true;
         }
     }
+
+    if (!found) {
+        textArea.append("\n\nNo recursive blocking sets found under the current parameters.");
+    }
+}
 
     private void recursiveBlockingSets(Graph graph, JTextArea textArea,
                                        List<Node> nodes1, List<Node> nodes2) {

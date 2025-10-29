@@ -25,7 +25,7 @@ public final class Adjustment {
      * with the {@code Adjustment} instance. It is used in various calculations and
      * operations throughout the class methods to determine adjustment sets, causal
      * relationships, and graph-based policies.
-     *
+     * <p>
      * This field is final and immutable after the initialization of the {@code Adjustment}
      * instance, ensuring consistency for all operations that rely on the graph.
      */
@@ -177,20 +177,28 @@ public final class Adjustment {
      * sets are computed based on the provided graph type, path constraints, and specified
      * policies for handling colliders.
      *
-     * @param X The source node from which the paths originate.
-     * @param Y The target node to which the paths lead.
-     * @param graphType The type of graph (e.g., directed acyclic graph) used for the adjustment calculation.
-     * @param maxNumSets The maximum number of adjustment sets to return.
-     * @param maxRadius The maximum radius considered in the search for adjustment sets.
+     * @param X                 The source node from which the paths originate.
+     * @param Y                 The target node to which the paths lead.
+     * @param graphType         The type of graph (e.g., directed acyclic graph) used for the adjustment calculation.
+     * @param maxNumSets        The maximum number of adjustment sets to return.
+     * @param maxRadius         The maximum radius considered in the search for adjustment sets.
      * @param nearWhichEndpoint Specifies which endpoint (X or Y) to prioritize in the search.
-     * @param maxPathLength The maximum length of paths to consider in the calculation.
+     * @param maxPathLength     The maximum length of paths to consider in the calculation.
      * @return A list of sets of nodes, each representing a valid adjustment set that satisfies the backdoor
-     *         adjustment criteria, or an empty list if no such set exists.
+     * adjustment criteria, or an empty list if no such set exists.
      */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength) {
         return adjustmentSets(X, Y, graphType, maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength, this.colliderPolicy);
+    }
+
+    public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
+                                          int maxNumSets, int maxRadius,
+                                          int nearWhichEndpoint, int maxPathLength,
+                                          ColliderPolicy colliderPolicy) {
+        return adjustmentSets(X, Y, graphType, maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength,
+                colliderPolicy, true);
     }
 
     /**
@@ -199,25 +207,25 @@ public final class Adjustment {
      * are computed based on the provided graph type, path constraints, and specified policies
      * for handling colliders.
      *
-     * @param X The source node from which the paths originate.
-     * @param Y The target node to which the paths lead.
-     * @param graphType The type of graph (e.g., directed acyclic graph) used for the adjustment calculation.
-     * @param maxNumSets The maximum number of adjustment sets to return.
-     * @param maxRadius The maximum radius considered in the search for adjustment sets.
+     * @param X                 The source node from which the paths originate.
+     * @param Y                 The target node to which the paths lead.
+     * @param graphType         The type of graph (e.g., directed acyclic graph) used for the adjustment calculation.
+     * @param maxNumSets        The maximum number of adjustment sets to return.
+     * @param maxRadius         The maximum radius considered in the search for adjustment sets.
      * @param nearWhichEndpoint Specifies which endpoint (X or Y) to prioritize in the search.
-     * @param maxPathLength The maximum length of paths to consider in the calculation.
-     * @param colliderPolicy The policy specifying how colliders are handled during backdoor adjustment calculations.
+     * @param maxPathLength     The maximum length of paths to consider in the calculation.
+     * @param colliderPolicy    The policy specifying how colliders are handled during backdoor adjustment calculations.
      * @return A list of sets of nodes, each representing a valid adjustment set that satisfies the backdoor
-     *         adjustment criteria, or an empty list if no such set exists.
+     * adjustment criteria, or an empty list if no such set exists.
      */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength,
-                                          ColliderPolicy colliderPolicy) {
+                                          ColliderPolicy colliderPolicy, boolean avoidAmenable) {
         List<Set<Node>> out = new ArrayList<>();
         Set<String> seen = new HashSet<>();
 
-        var ctx = precomputeContext(X, Y, graphType, maxRadius, nearWhichEndpoint, maxPathLength);
+        var ctx = precomputeContext(X, Y, graphType, maxRadius, nearWhichEndpoint, maxPathLength, avoidAmenable);
 
         Deque<Set<Node>> bans = new ArrayDeque<>();
         bans.add(Collections.emptySet());
@@ -243,12 +251,12 @@ public final class Adjustment {
 
     private PrecomputeContext precomputeContext(Node X, Node Y, String graphType,
                                                 int maxRadius, int nearWhichEndpoint,
-                                                int maxPathLength) {
+                                                int maxPathLength, boolean avoidAmenable) {
         if (X == null || Y == null || X == Y) throw new IllegalArgumentException("X and Y must differ.");
         if (maxRadius < 0) maxRadius = graph.getNodes().size();    // full reach
 
         // 1) Amenable (PD-out-of-X) routes we don't want to accidentally block
-        Set<List<Node>> amenable = getAmenablePaths(X, Y, graphType, maxPathLength);
+        Set<List<Node>> amenable = avoidAmenable ? getAmenablePaths(X, Y, graphType, maxPathLength) : new HashSet<>();
 
         // Backbone = interior nodes on amenable paths (excluding X,Y)
         Set<Node> amenableBackbone = amenableBackbone(amenable, X, Y);

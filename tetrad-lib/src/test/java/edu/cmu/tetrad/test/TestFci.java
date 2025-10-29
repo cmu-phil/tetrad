@@ -664,8 +664,8 @@ public class TestFci {
 
         MsepTest msepTest = new MsepTest(g);
 
-        Set<Node> Z = RecursiveBlocking.blockPathsRecursively(g, x, y, new HashSet<Node>(),
-                new HashSet<Node>(), -1);
+        Set<Node> Z = RecursiveBlocking.blockPathsRecursively(g, x, y, new HashSet<>(),
+                new HashSet<>(), -1);
         assertTrue(msepTest.checkIndependence(x, y, Z).isIndependent());
     }
 
