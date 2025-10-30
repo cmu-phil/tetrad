@@ -63,9 +63,12 @@ public final class IsGFci implements IGraphSearch {
     // ----------------------- Ctor -----------------------
 
     /**
-     * @param test  CI test for the FCI/orientation phase (non-null)
-     * @param score instance-specific score used by IS-FGES (non-null)
-     * @param populationScore population score (non-null)
+     * Constructs an instance of IsGFci with a specified independence test, scoring function, and population score.
+     *
+     * @param test the independence test used to evaluate conditional independence relationships
+     * @param score the scoring function used to assign scores to the graph structures
+     * @param populationScore the population score associated with the graph structures
+     * @throws NullPointerException if any of the provided parameters (test, score, or populationScore) is null
      */
     public IsGFci(final IndependenceTest test, final IsScore score, final Score populationScore) {
         if (test == null) throw new NullPointerException("IndependenceTest is null");

@@ -49,8 +49,20 @@ public class IsBicScore implements IsScore {
     // ============================== Ctor ===============================
 
     /**
-     * @param dataSet  training data (discrete)
-     * @param testCase single-row test case, same variables/order as {@code dataSet}
+     * Constructs an instance of the IsBicScore class. This class calculates a Bayesian Information Criterion (BIC)
+     * score for a discrete dataset, taking into account training data and a single-row test case.
+     *
+     * @param dataSet the training dataset, which must be non-null and contain only discrete variables.
+     * @param testCase the test case dataset, expected to be a single-row dataset with the same number and type of
+     *                 variables as the training dataset. Must be non-null.
+     * @throws NullPointerException if either the training dataset or the test case is null.
+     * @throws IllegalArgumentException if:
+     *                                  - The training dataset does not use a VerticalIntDataBox for discrete data.
+     *                                  - Not all variables in the training dataset are discrete.
+     *                                  - The number of variables in the test case does not match the number of
+     *                                    variables in the training dataset.
+     *                                  - The test case does not consist of a single row.
+     *                                  - The training dataset sample size is less than or equal to 0.
      */
     public IsBicScore(final DataSet dataSet, final DataSet testCase) {
         if (dataSet == null || testCase == null) {
@@ -115,6 +127,20 @@ public class IsBicScore implements IsScore {
 
     // ============================ IsScore ==============================
 
+    /**
+     * Computes the local score for a given node in a Bayesian network based on the provided parent
+     * and child configurations.
+     *
+     * The local score is determined by combining the likelihood (population) with a Bayesian
+     * Information Criterion (BIC) penalty, and an instance-specific structure prior. By default,
+     * no additional population structural prior is applied.
+     *
+     * @param node the target node for which the local score is being computed; must be a discrete variable
+     * @param parentsIS the array of parent nodes, specific to the instance; must consist of discrete variables
+     * @param parentsPOP the array of parent nodes based on population data; must consist of discrete variables
+     * @param childrenPOP the array of child nodes based on population data; must consist of discrete variables
+     * @return the computed local score for the given node
+     */
     @Override
     public double localScore(final int node, final int[] parentsIS, final int[] parentsPOP, final int[] childrenPOP) {
         requireDiscrete(node);
@@ -131,16 +157,44 @@ public class IsBicScore implements IsScore {
         return bicPop + structIS;
     }
 
+    /**
+     * Computes the difference in local scores for a given variable y, when a variable x
+     * is added to a conditioning set z, compared to the original set z.
+     *
+     * @param x the variable to add to the conditioning set z
+     * @param y the variable for which the local score difference is computed
+     * @param z the original conditioning set
+     * @param zPOP the population data related to the original conditioning set
+     * @param childPOP the population data related to the child variable
+     * @return the difference in local scores between the sets with and without the variable x
+     */
     @Override
     public double localScoreDiff(final int x, final int y, final int[] z, final int[] zPOP, final int[] childPOP) {
         final int[] zPlusX = appendUniqueSorted(z, x);
         return localScore(y, zPlusX, zPOP, childPOP) - localScore(y, z, zPOP, childPOP);
     }
 
+    /**
+     * Retrieves the list of variable nodes.
+     *
+     * @return a list of Node objects representing the variables
+     */
     @Override
     public List<Node> getVariables() { return variables; }
 
-    /** Preserve name/order but allow identity replacement (e.g., to carry labels). */
+    /**
+     * Sets the list of variables for this object. The provided list must match
+     * the existing variables in both size and order, verified by comparing the
+     * names of each corresponding variable.
+     *
+     * @param variables the new list of variables to be set. Each variable in
+     *                  the list must correspond to the current variables in size
+     *                  and name order.
+     * @throws IllegalArgumentException if the size of the provided list does not
+     *                                  match the existing list of variables or
+     *                                  if any variable name does not match the
+     *                                  name at the corresponding index.
+     */
     public void setVariables(final List<Node> variables) {
         if (variables.size() != this.variables.size()) {
             throw new IllegalArgumentException("Variable size mismatch.");
@@ -159,27 +213,89 @@ public class IsBicScore implements IsScore {
     @Override
     public int getSampleSize() { return sampleSize; }
 
+    /**
+     * Retrieves the training data set that is utilized within this instance.
+     *
+     * @return the current training {@code DataSet} object.
+     */
     @Override
     public DataSet getDataSet() { return trainDataSet; }
 
+    /**
+     * Retrieves the structure prior value, which is used in the scoring
+     * mechanisms of the class to reflect prior beliefs or assumptions
+     * about the structure of the model.
+     *
+     * @return the structure prior value as a double.
+     */
     @Override public double getStructurePrior() { return 0.0; }
+
+    /**
+     * Sets the structure prior value. This method is not utilized in the BIC scoring mechanism.
+     *
+     * @param structurePrior the structure prior value to be set, typically a double representing
+     *                        prior information about the model structure
+     */
     @Override public void setStructurePrior(double structurePrior) { /* not used in BIC */ }
+
+    /**
+     * Retrieves the sample prior value, which is used in the scoring mechanisms
+     * of the class to represent prior assumptions or knowledge about the sample distribution.
+     *
+     * @return the sample prior value as a double.
+     */
     @Override public double getSamplePrior() { return 0.0; }
+
+    /**
+     * Sets the sample prior value. This method is not utilized in the BIC scoring mechanism.
+     *
+     * @param samplePrior the sample prior value to be set, typically a double representing
+     *                    prior knowledge or assumptions about the sample distribution
+     */
     @Override public void setSamplePrior(double samplePrior) { /* not used in BIC */ }
 
+    /**
+     * Searches the list of variables for a node with the specified name and returns it.
+     *
+     * @param targetName the name of the variable to retrieve
+     * @return the {@code Node} with the specified name if found; otherwise, {@code null}
+     */
     @Override
     public Node getVariable(String targetName) {
         for (Node n : variables) if (n.getName().equals(targetName)) return n;
         return null;
     }
 
+    /**
+     * Retrieves the maximum degree allowed for a node in the context of this implementation.
+     *
+     * @return the maximum degree, represented as an integer, which determines the
+     *         maximum number of edges connected to a node.
+     */
     @Override
     public int getMaxDegree() { return 1000; }
 
+    /**
+     * Determines whether the given set of nodes {@code z} implies or determines
+     * the state or value of the node {@code y} based on certain criteria.
+     *
+     * @param z the list of nodes that represent the set of potential determinants
+     * @param y the target node to be evaluated for dependency or determination
+     * @return {@code true} if the set of nodes {@code z} determines the node {@code y};
+     *         otherwise, {@code false}
+     */
     @Override
     public boolean determines(List<Node> z, Node y) { return false; }
 
-    /** For BIC, the version without structure prior is just the BIC term. */
+    /**
+     * Computes the local score for a given node using the BIC metric.
+     *
+     * @param node the index of the node for which the local score is calculated
+     * @param parentsIS an array representing the parent nodes in the IS set (not used in this implementation)
+     * @param parentsPOP an array representing the parent nodes in the POP set
+     * @param childrenPOP an array representing the children nodes in the POP set (not used in this implementation)
+     * @return the local score as a double value
+     */
     @Override
     public double localScore1(int node, int[] parentsIS, int[] parentsPOP, int[] childrenPOP) {
         return bicLocal(node, parentsPOP);
@@ -187,19 +303,75 @@ public class IsBicScore implements IsScore {
 
     // ============================ Tunables =============================
 
+    /**
+     * Retrieves the penalty discount value, which is used in scoring mechanisms
+     * within the class to adjust the influence of complexity penalties.
+     *
+     * @return the penalty discount value as a double.
+     */
     public double getPenaltyDiscount() { return penaltyDiscount; }
+
+    /**
+     * Sets the penalty discount value, which is used in scoring mechanisms
+     * within the class to adjust the influence of complexity penalties.
+     *
+     * @param penaltyDiscount the penalty discount value, must be >= 0
+     * @throws IllegalArgumentException if the penalty discount value is negative
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         if (penaltyDiscount < 0) throw new IllegalArgumentException("penaltyDiscount must be >= 0");
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    /**
+     * Retrieves the K addition value, which is used in the scoring mechanisms
+     * within the class to adjust the evaluation of certain configurations or parameters.
+     *
+     * @return the K addition value as a double.
+     */
     public double getKAddition() { return kAddition; }
+
+    /**
+     * Sets the K addition value, which is used to adjust the evaluation of certain
+     * configurations or parameters in scoring mechanisms within the class.
+     *
+     * @param kAddition the K addition value, must be > 0
+     * @throws IllegalArgumentException if the K addition value is not positive
+     */
     public void setKAddition(double kAddition) { this.kAddition = requirePositive(kAddition, "kAddition"); }
 
+    /**
+     * Retrieves the K deletion value, which is used in the scoring mechanisms
+     * within the class to adjust the evaluation of certain configurations or parameters.
+     *
+     * @return the K deletion value as a double.
+     */
     public double getKDeletion() { return kDeletion; }
+
+    /**
+     * Sets the K deletion value, which is used in the scoring mechanisms within
+     * the class to adjust the evaluation of certain configurations or parameters.
+     *
+     * @param kDeletion the K deletion value, must be > 0
+     * @throws IllegalArgumentException if the K deletion value is not positive
+     */
     public void setKDeletion(double kDeletion) { this.kDeletion = requirePositive(kDeletion, "kDeletion"); }
 
+    /**
+     * Retrieves the K reorientation value, which is used in the scoring mechanisms
+     * within the class to adjust the evaluation of certain configurations or parameters.
+     *
+     * @return the K reorientation value as a double.
+     */
     public double getKReorientation() { return kReorient; }
+
+    /**
+     * Sets the K reorientation value, which is used in the scoring mechanisms within
+     * the class to adjust the evaluation of certain configurations or parameters.
+     *
+     * @param kReorient the K reorientation value, must be > 0
+     * @throws IllegalArgumentException if the K reorientation value is not positive
+     */
     public void setKReorientation(double kReorient) { this.kReorient = requirePositive(kReorient, "kReorientation"); }
 
     // ============================ Internals ============================
@@ -318,7 +490,18 @@ public class IsBicScore implements IsScore {
         return s;
     }
 
-    // Exposed for tests / debugging
+    /**
+     * Computes the parent values for a given row index based on the provided dimensions.
+     * This method determines how a row index maps to its corresponding parent values
+     * for a specific configuration of dimensions, assuming a multi-dimensional
+     * discrete variable space.
+     *
+     * @param rowIndex the row index for which to compute parent values
+     * @param dims an array representing the dimensions of the discrete variables
+     *             (e.g., the number of states for each variable)
+     * @return an array of parent values derived from the given row index, where each
+     *         value corresponds to a specific dimension
+     */
     public int[] getParentValuesForCombination(int rowIndex, int[] dims) {
         int[] values = new int[dims.length];
         for (int i = dims.length - 1; i >= 0; i--) { values[i] = rowIndex % dims[i]; rowIndex /= dims[i]; }

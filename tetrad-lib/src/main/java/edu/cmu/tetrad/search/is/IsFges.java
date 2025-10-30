@@ -22,8 +22,11 @@ public class IsFges extends Fges {
     private Graph populationGraph;
 
     /**
-     * @param isScore          instance-specific score driving local deltas (non-null)
-     * @param populationScore  population score passed to the FGES super-class (non-null)
+     * Constructs an instance of the IsFges class using the provided score objects.
+     *
+     * @param isScore the score used for evaluating individual search structures, must not be null
+     * @param populationScore the score associated with the population graph, must not be null
+     * @throws NullPointerException if any of the provided parameters is null
      */
     public IsFges(final IsScore isScore, final Score populationScore) {
         super(Objects.requireNonNull(populationScore, "populationScore"));
@@ -35,7 +38,10 @@ public class IsFges extends Fges {
     // ---------------------------------------------------------------------
 
     /**
-     * Provide a population graph to bias the IS bumps; nodes are remapped to FGES's variable identities.
+     * Sets the population graph by either assigning it directly or replacing its nodes
+     * with the corresponding search variables using the utility method.
+     *
+     * @param pop the graph representing the population; if null, the population graph is reset to null.
      */
     public void setPopulationGraph(Graph pop) {
         if (pop == null) {
@@ -49,6 +55,15 @@ public class IsFges extends Fges {
     // FGES hook overrides — compute move bumps via IsScore
     // ---------------------------------------------------------------------
 
+    /**
+     * Computes the initial score bump for a given parent-child pair within the search
+     * context using their indices and relevant population graph relationships.
+     *
+     * @param parent the parent node in the current calculation (non-null)
+     * @param child the child node in the current calculation (non-null)
+     * @param idx a mapping of nodes to their respective indices (non-null)
+     * @return the score difference associated with the given parent-child relationship
+     */
     @Override
     protected double initialPairBump(final Node parent, final Node child,
                                      final ConcurrentMap<Node, Integer> idx) {
@@ -60,6 +75,16 @@ public class IsFges extends Fges {
         return isScore.localScoreDiff(p, c, new int[0], popPa, popCh);
     }
 
+    /**
+     * Computes the initial score adjustment for a given parent-child pair in reverse
+     * within the search context, using their indices and relevant relationships in
+     * the population graph.
+     *
+     * @param parent the parent node in the reverse score calculation (non-null)
+     * @param child the child node in the reverse score calculation (non-null)
+     * @param idx a mapping of nodes to their respective indices (non-null)
+     * @return the reverse score difference associated with the given parent-child relationship
+     */
     @Override
     protected double initialPairBumpReverse(final Node parent, final Node child,
                                             final ConcurrentMap<Node, Integer> idx) {
@@ -70,6 +95,19 @@ public class IsFges extends Fges {
         return isScore.localScoreDiff(c, p, new int[0], popPa, popCh);
     }
 
+    /**
+     * Computes the score adjustment for adding an edge into the search graph by considering
+     * the given sets of nodes and the relationships in the population graph.
+     *
+     * @param x the node being evaluated for addition to the graph (non-null)
+     * @param y the target node being connected to (non-null)
+     * @param T the set of nodes representing the current search phase context (non-null)
+     * @param naYX the set of non-adjacents between node y and x (non-null)
+     * @param parentsY the set of nodes that are parents of node y in the current context (non-null)
+     * @param idx a mapping of nodes to their respective indices for score calculations (non-null)
+     * @return the computed score difference for adding the edge between the given nodes
+     * @throws InterruptedException if the operation is interrupted during execution
+     */
     @Override
     protected double insertBump(final Node x, final Node y, final Set<Node> T, final Set<Node> naYX,
                                 final Set<Node> parentsY, final ConcurrentMap<Node, Integer> idx)

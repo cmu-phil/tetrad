@@ -33,6 +33,8 @@ import java.awt.event.ActionEvent;
  */
 public class CheckGraphForMpagAction extends AbstractAction {
 
+
+
     /**
      * The desktop containing the target session editor.
      */
