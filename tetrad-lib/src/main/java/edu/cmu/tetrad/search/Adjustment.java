@@ -18,7 +18,6 @@ import java.util.*;
  * about allowed paths and collateral factors.
  * </p>
  *
- * <h3>Fields</h3>
  * <ul>
  *   <li><code>graph</code>: The causal graph being analyzed.</li>
  *   <li><code>colliderPolicy</code>: A policy defining how colliders are handled during
@@ -28,6 +27,11 @@ import java.util.*;
  * </ul>
  */
 public final class Adjustment {
+
+    /**
+     * Represents the type of graph being analyzed for adjustment set definition.
+     */
+    public enum GraphType{PDAG, MAG, PAG}
     /**
      * Represents the causal graph being analyzed for adjustment set definition.
      */
@@ -228,9 +232,7 @@ public final class Adjustment {
 
     private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
         if (source == null || target == null || source == target) return Collections.emptySet();
-        final String gt = (graphType == null) ? "DAG" : graphType.toUpperCase(Locale.ROOT);
-        RecursiveAdjustment.GraphType _graphType = RecursiveAdjustment.GraphType.valueOf(gt);
-        return (_graphType == RecursiveAdjustment.GraphType.PAG)
+        return ("PAG".equals(graphType))
                 ? graph.paths().getAmenablePathsPag(source, target, maxLength)
                 : graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
     }

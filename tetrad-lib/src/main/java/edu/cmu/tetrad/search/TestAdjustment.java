@@ -23,6 +23,40 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestAdjustment {
 
+    /**
+     * Default constructor for the TestAdjustment class.
+     *
+     * Initializes an instance of the TestAdjustment class. Typically used to
+     * set up the necessary structures or configurations for the adjustment
+     * set validation tests. The constructor assumes no parameters and proceeds
+     * with default initializations if required.
+     */
+    public TestAdjustment() {
+
+    }
+
+    /**
+     * Tests the correctness of adjustment sets generated for random graphs and
+     * verifies whether they respect causal and backdoor path properties. The test
+     * ensures that:
+     *
+     * 1. Amenable (causal) paths between two randomly selected nodes (X, Y) remain
+     *    open given every adjustment set Z. This is validated by checking that these
+     *    paths stay m-connecting under Z.
+     * 2. Backdoor paths between X and Y are blocked given every adjustment set Z.
+     *    This is validated by confirming that these paths become non-m-connecting
+     *    under Z.
+     *
+     * The test executes the following sequence:
+     * - Generates a random directed graph using predefined parameters.
+     * - Selects random pairs of nodes X and Y for multiple iterations.
+     * - Computes adjustment sets for X and Y by invoking the graph's adjustment
+     *   set computation mechanism (paths.adjustmentSets).
+     * - Identifies amenable (causal) paths and backdoor paths between X and Y.
+     * - For each computed adjustment set Z:
+     *   - Verifies that amenable paths remain m-connecting given Z.
+     *   - Verifies that backdoor paths are not m-connecting given Z.
+     **/
     @Test(timeout = 30_000)
     public void testAdjustmentSetsRespectPaths() {
         RandomUtil.getInstance().setSeed(42L);

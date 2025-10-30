@@ -41,6 +41,15 @@ import java.util.*;
  */
 public class TestIGFCI_TCGA {
 
+    /**
+     * Constructs a new instance of the TestIGFCI_TCGA class. This constructor serves as
+     * the initialization method for the class. Currently, it performs no additional
+     * operations beyond creating an instance of TestIGFCI_TCGA.
+     */
+    public TestIGFCI_TCGA() {
+
+    }
+
     // --- Defaults preserved from the legacy version ---
     private static final String DEFAULT_DATA_NAME = "gsva_dis_25";
     private static final String DEFAULT_KNOWLEDGE_NAME = "forbid_pairs_nodes2";
@@ -54,6 +63,21 @@ public class TestIGFCI_TCGA {
     // 90% bootstrap as in the legacy code
     private static final double BOOTSTRAP_FRACTION = 0.9;
 
+    /**
+     * The main entry point of the application. It initializes the execution by parsing command-line arguments,
+     * configuring the options, and calling the execution logic.
+     *
+     * @param args the command-line arguments. Supported arguments include:
+     *             - `-h` or `--help`: displays help information.
+     *             - `-th`: specifies whether thresholding is enabled (expected boolean value).
+     *             - `-alpha`: a legacy parameter kept for compatibility, though unused (expected double value).
+     *             - `-cutoff`: sets the cutoff value (expected double value).
+     *             - `-kappa`: sets the kappa value (expected double value).
+     *             - `-data`: specifies the data name (expected string).
+     *             - `-knowledge`: specifies the knowledge file name (expected string).
+     *             - `-dir`: specifies the directory containing data and knowledge files (expected string).
+     *             - `-bs`: specifies the bootstrap multiplier or index (expected integer).
+     */
     public static void main(String[] args) {
         // Print raw args for reproducibility (legacy behavior)
         System.out.println(Arrays.asList(args));
