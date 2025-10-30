@@ -3193,10 +3193,10 @@ public class Paths implements TetradSerializable {
      * @return A list of sets of nodes, each set representing a valid adjustment set for the causal effect estimation.
      */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType, int maxNumSets, int maxRadius, int nearWhichEndpoint, int maxPathLength, String colliderPolicy) {
-       Adjustment.ColliderPolicy _colliderPolicy = Adjustment.ColliderPolicy.valueOf(colliderPolicy);
+       Adjustment2.ColliderPolicy _colliderPolicy = Adjustment2.ColliderPolicy.valueOf(colliderPolicy);
 
-        return new Adjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
-                nearWhichEndpoint, maxPathLength, _colliderPolicy);
+        return new Adjustment2(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
+                nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of());
 //        return FastAdjustment.adjustmentSets(graph, X, Y, graphType, maxNumSets, maxRadius,
 //                nearWhichEndpoint, maxPathLength, colliderPolicy);
     }

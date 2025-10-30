@@ -719,7 +719,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Adjacents",
                 "Adjustment Sets (for Total Effect)",
 //                "Adjustment Set (Recursive)",
-                "Edge-Specific Adjustment Sets",
+                "Direct-Effect Adjustment Sets (Edge-Specific)\n",
                 "Amenable paths",
                 "Backdoor paths"
         });
@@ -891,7 +891,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     adjacentNodes(graph, textArea, nodes1, nodes2);
                 } else if ("Adjustment Sets (for Total Effect)".equals(method)) {
                     adjustmentSets(graph, textArea, nodes1, nodes2);
-                } else if ("Edge-Specific Adjustment Sets".equals(method)) {
+                } else if ("Direct-Effect Adjustment Sets (Edge-Specific)\n".equals(method)) {
                     edgeSpecificAdjustment(graph, textArea, nodes1, nodes2);
                 }
 //                else if ("Adjustment Set (Recursive)".equals(method)) {
@@ -1668,17 +1668,18 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 private void edgeSpecificAdjustment(Graph graph, JTextArea textArea,
                                    List<Node> nodes1, List<Node> nodes2) {
     textArea.setText("""
-                A edge-specific adjustment set for nodes x and y is a set of variables that blocks all 
-                non-inducing paths between x and y (it may leave a direct edge x — y or other inducing paths unblocked).
-                
-                • If there is a direct edge x → y, the RB set isolates the EDGE-SPECIFIC (LOCAL) EFFECT associated 
-                  with that edge. It blocks all alternative non-inducing paths from x to y while leaving the edge 
-                  itself unblocked.
-                
-                • If multiple inducing paths exist between x and y (for example, due to latent confounding), the RB 
-                  set will leave those open as well. In such cases, it does not correspond to a unique adjustment set 
-                  or direct-effect estimate.
-                """);
+    A Direct-Effect Adjustment Set (Edge-Specific) for nodes x and y is a set of variables 
+    that blocks all non-inducing paths between x and y, while leaving a direct edge x — y 
+    or other inducing paths unblocked.
+    
+    • If there is a direct edge x → y, the RB set isolates the EDGE-SPECIFIC (LOCAL) EFFECT 
+      associated with that edge. It blocks all alternative non-inducing paths from x to y 
+      while leaving the edge itself unblocked.
+    
+    • If multiple inducing paths exist between x and y (for example, due to latent confounding), 
+      the RB set will leave those open as well. In such cases, it does not correspond to a unique 
+      adjustment set or a unique direct-effect estimate.
+    """);
 
     boolean found = false;
     int maxNumSets = parameters.getInt("pathsMaxNumSets");
