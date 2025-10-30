@@ -68,7 +68,7 @@ public class NumVisibleEdgeEst implements Statistic {
     /**
      * Returns the number of X-->Y edges that are visible in the estimated PAG.
      *
-     * @param trueDag
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph.
      * @param estGraph   The estimated graph.
      * @param dataModel  The data model.

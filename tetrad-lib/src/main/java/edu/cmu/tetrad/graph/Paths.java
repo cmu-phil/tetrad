@@ -146,166 +146,6 @@ public class Paths implements TetradSerializable {
         return parents;
     }
 
-    static Set<Node> buildLatentMaskForTotalEffect(Graph graph, Node X, Node Y, Collection<List<Node>> amenablePaths, Set<Node> containing, boolean includeDescendantsOfX, boolean includeDescendantsOfMediators   // <— NEW toggle
-    ) {
-        Set<Node> mask = new HashSet<>();
-
-        // Tier A: interior non-colliders (mediators) on amenable X→Y paths
-        Set<Node> mediators = new HashSet<>();
-        for (List<Node> p : amenablePaths) {
-            if (p.size() < 3) continue;
-            for (int i = 1; i < p.size() - 1; i++) {
-                Node a = p.get(i - 1), b = p.get(i), c = p.get(i + 1);
-                if (!graph.isDefCollider(a, b, c) && b.getNodeType() == NodeType.MEASURED) {
-                    mediators.add(b);
-                    mask.add(b); // forbid the mediator itself
-                }
-            }
-        }
-
-        Map<Node, Set<Node>> descMap = graph.paths().getDescendantsMap();
-
-        // Tier B: Descendants of X (measured)
-        if (includeDescendantsOfX) {
-            for (Node d : descMap.getOrDefault(X, Collections.emptySet())) {
-                if (d != null && d.getNodeType() == NodeType.MEASURED) {
-                    mask.add(d);
-                }
-            }
-        }
-
-        // Tier C: Descendants of any mediator (measured)  <— NEW per GAC
-        if (includeDescendantsOfMediators) {
-            for (Node m : mediators) {
-                for (Node d : descMap.getOrDefault(m, Collections.emptySet())) {
-                    if (d != null && d.getNodeType() == NodeType.MEASURED) {
-                        mask.add(d);
-                    }
-                }
-            }
-        }
-
-        // Cleanup
-        mask.remove(X);
-        mask.remove(Y);
-        if (containing != null) mask.removeAll(containing);
-        mask.removeIf(n -> n == null || n.getNodeType() != NodeType.MEASURED);
-
-        return mask;
-    }
-
-    /**
-     * Compute Forb_G(X,Y): possible descendants of X and of any node that lies on
-     * a proper possibly-directed path from X to Y (Perković et al., 2018).
-     * Returns a set of observed + latent nodes (caller may subtract latents if desired).
-     * <p>
-     * NOTE:
-     * - "Possibly-directed" step a -> b is allowed iff the edge has NO arrowhead into 'a'.
-     * (i.e., not e.pointsTowards(a) and not bidirected into 'a').
-     * - We exclude {X, Y} from the returned set (RA already forbids adjusting on them).
-     */
-    public static Set<Node> getForbiddenForAdjustment(Graph G, Node X, Node Y) {
-        Objects.requireNonNull(G);
-        Objects.requireNonNull(X);
-        Objects.requireNonNull(Y);
-        if (X == Y) return Collections.emptySet();
-
-        // 1) Nodes reachable from X along possibly-directed forward steps
-        Set<Node> fwdFromX = forwardReach(G, Set.of(X));
-
-        // 2) Nodes that can reach Y along possibly-directed forward steps
-        //    (equivalently, forwardReach on the reversed sense: a node v is "backward-reachable"
-        //     if there exists a neighbor u such that the step v -> u is possibly-directed AND u is known to reach Y)
-        Set<Node> canReachY = backwardFilterByForwardRule(G, Y);
-
-        // 3) Nodes that lie on at least one proper possibly-directed path X ~> Y
-        //    Intersect (forward from X) with (can reach Y), and remove X itself.
-        Set<Node> onSomePDPath = new LinkedHashSet<>(fwdFromX);
-        onSomePDPath.retainAll(canReachY);
-        onSomePDPath.remove(X);
-
-        // 4) Forbidden = possible descendants of X and of every node on such paths
-        Set<Node> seeds = new LinkedHashSet<>();
-        seeds.add(X);
-        seeds.addAll(onSomePDPath);
-
-        Set<Node> forb = forwardReach(G, seeds);
-
-        // 5) Do not return X or Y as "forbidden adjusters" (they're banned elsewhere anyway)
-        forb.remove(X);
-        forb.remove(Y);
-
-        return forb;
-    }
-
-    /**
-     * BFS forward reach under "possibly-directed out of 'a'": edge must NOT have an arrowhead into 'a'.
-     */
-    private static Set<Node> forwardReach(Graph G, Set<Node> starts) {
-        Deque<Node> q = new ArrayDeque<>(starts);
-        Set<Node> seen = new LinkedHashSet<>(starts);
-        while (!q.isEmpty()) {
-            Node a = q.removeFirst();
-            for (Node b : G.getAdjacentNodes(a)) {
-                Edge e = G.getEdge(a, b);
-                if (e == null) continue;
-                if (!isPossiblyOutEdge(e, a, b)) continue;
-                if (seen.add(b)) q.addLast(b);
-            }
-        }
-        // include the start nodes’ possible descendants, but the caller will tweak X/Y removal
-        return seen;
-    }
-
-    /**
-     * Compute nodes that can reach Y via a possibly-directed path.
-     * We do this by a reverse-style dynamic programming:
-     * canReach[Y] = true; iteratively mark a as true if exists b with canReach[b] and
-     * step a -> b is possibly-directed (i.e., no arrowhead into a on edge (a,b)).
-     */
-    private static Set<Node> backwardFilterByForwardRule(Graph G, Node Y) {
-        Set<Node> canReach = new LinkedHashSet<>();
-        Deque<Node> q = new ArrayDeque<>();
-        canReach.add(Y);
-        q.add(Y);
-
-        while (!q.isEmpty()) {
-            Node b = q.removeFirst();
-            for (Node a : G.getAdjacentNodes(b)) {
-                Edge e = G.getEdge(a, b);
-                if (e == null) continue;
-                // For a to step toward b on a possibly-directed path, the edge must NOT have an arrowhead into 'a'
-                if (!isPossiblyOutEdge(e, a, b)) continue;
-                if (canReach.add(a)) q.addLast(a);
-            }
-        }
-        return canReach;
-    }
-
-    /**
-     * True iff the edge (a,b) can be used as a possibly-directed step "a -> b",
-     * i.e., the endpoint at 'a' does NOT have an arrowhead.
-     * <p>
-     * Concretely:
-     * - If e.pointsTowards(a) => there's an arrowhead into 'a' ⇒ NOT allowed.
-     * - Bidirected (↔) has arrowheads at both ends ⇒ NOT allowed.
-     * - Undirected (—) / tail at 'a' (a—>b) / circle at 'a' (PAG) ⇒ allowed.
-     */
-    private static boolean isPossiblyOutEdge(Edge e, Node a, Node b) {
-        // Arrowhead into 'a' disqualifies for possibly-directed step out of 'a'
-        if (e.pointsTowards(a)) return false;
-        // Bidirected disqualifies (arrowheads on both ends)
-        if (Edges.isBidirectedEdge(e)) return false;
-
-        // Undirected is OK for PD paths in (M)PDAG/PAG semantics
-        if (Edges.isUndirectedEdge(e)) return true;
-
-        // Otherwise, tail or circle at 'a' is fine:
-        // - In DAG/PDAG "a -> b": tail at 'a' ⇒ allowed
-        // - In PAG/MAG "a o-> b" (circle at 'a') also allowed as "possibly out"
-        return true;
-    }
-
     /**
      * Returns a valid causal order for either a DAG or a CPDAG. (bryanandrews)
      *
@@ -1620,31 +1460,6 @@ public class Paths implements TetradSerializable {
         }
 
         return false;
-    }
-
-    /**
-     * Returns the set of all ancestors of nodes in Z (excluding Z itself).
-     * Traverses only along directed edges (parents) in the graph.
-     */
-    public Set<Node> ancestorsOfZ(Set<Node> Z) {
-        if (Z == null || Z.isEmpty()) return Collections.emptySet();
-
-        ArrayDeque<Node> q = new ArrayDeque<>(Z);
-        HashSet<Node> seen = new HashSet<>(Z);
-
-        while (!q.isEmpty()) {
-            Node t = q.poll();
-            for (Node p : graph.getParents(t)) { // move only through directed parents
-                if (seen.add(p)) {
-                    q.add(p);
-                }
-            }
-        }
-
-        // Optionally exclude Z itself if you only want *strict* ancestors
-//        seen.removeAll(Z);
-
-        return seen;
     }
 
     /**
@@ -3323,21 +3138,6 @@ public class Paths implements TetradSerializable {
 
     /* ----------------- helpers ----------------- */
 
-    public boolean hasAmenablePaths(Node x, Node y, String graphType, int maxLength) {
-        Set<List<Node>> aps = getAmenablePaths(x, y, graphType, maxLength);
-        return aps != null && !aps.isEmpty();
-    }
-
-    private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
-        if (source == null || target == null || source == target) return Collections.emptySet();
-        if ("PAG".equals(graphType)) {
-            return graph.paths().getAmenablePathsPag(source, target, maxLength);
-        } else {
-            // DAG/CPDAG/PDAG/MAG handled here
-            return graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
-        }
-    }
-
     /**
      * Writes the object to the specified ObjectOutputStream.
      *
@@ -3408,48 +3208,6 @@ public class Paths implements TetradSerializable {
     }
 
     // -------- Context holder --------
-    public static final class PrecomputeContext {
-        public final Node X, Y;
-        public final String graphType;
-        public final int maxRadius, nearWhichEndpoint, maxPathLength;
-
-        public final List<List<Node>> amenable;     // PD-out-of-X paths you must keep open
-        public final Set<Node> forbidden;           // GAC forbidden nodes
-        public final Shells shellsFromX;            // BFS shells seeded by backdoor starts
-        public final Shells shellsFromY;            // Undirected BFS shells from Y
-        public final List<Node> pool;               // candidate variables (ordered)
-        public final Map<Node, Integer> idx;         // candidate -> stable index (for bitmasks)
-        public final Map<Node, Integer> order;       // candidate -> rank in 'pool' (for sorting)
-
-        PrecomputeContext(Node X, Node Y, String graphType,
-                          int maxRadius, int nearWhichEndpoint, int maxPathLength,
-                          List<List<Node>> amenable,
-                          Set<Node> forbidden,
-                          Shells shellsFromX, Shells shellsFromY,
-                          List<Node> pool,
-                          Map<Node, Integer> idx, Map<Node, Integer> order) {
-            this.X = X;
-            this.Y = Y;
-            this.graphType = graphType;
-            this.maxRadius = maxRadius;
-            this.nearWhichEndpoint = nearWhichEndpoint;
-            this.maxPathLength = maxPathLength;
-            this.amenable = amenable;
-            this.forbidden = forbidden;
-            this.shellsFromX = shellsFromX;
-            this.shellsFromY = shellsFromY;
-            this.pool = pool;
-            this.idx = idx;
-            this.order = order;
-        }
-    }
-
-    /**
-     * @param layers 1..maxRadius
-     * @param reach  union of all layers
-     */
-    private record Shells(List<Node>[] layers, Set<Node> reach) {
-    }
 
     /**
      * An algorithm to find all cliques in a graph.

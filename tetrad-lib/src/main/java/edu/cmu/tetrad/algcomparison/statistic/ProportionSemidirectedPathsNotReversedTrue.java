@@ -70,7 +70,7 @@ public class ProportionSemidirectedPathsNotReversedTrue implements Statistic {
      * Calculates the proportion of semi(X, Y) paths in the true graph for which there is no semi(Y, Z) path in the
      * estimated graph.
      *
-     * @param trueDag
+     * @param trueDag The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.

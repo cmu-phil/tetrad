@@ -60,7 +60,7 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
+public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -88,7 +88,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvDumb() {
+    public LvLite() {
         // Used for reflection; do not delete it.
     }
 
@@ -105,7 +105,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvDumb(ScoreWrapper score) {
+    public LvLite(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -134,7 +134,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         }
 
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.LvDumb search = new edu.cmu.tetrad.search.LvDumb(score);
+        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));

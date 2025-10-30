@@ -37,7 +37,7 @@ import java.util.Set;
  * @author peterspirtes
  * @version $Id: $Id
  */
-public final class MagToPagLvDumb {
+public final class MagToPagLvLite {
 
     /**
      * The MAG to be converted.
@@ -63,7 +63,7 @@ public final class MagToPagLvDumb {
      *
      * @param mag a {@link Graph} object
      */
-    public MagToPagLvDumb(Graph mag) {
+    public MagToPagLvLite(Graph mag) {
         this.mag = new EdgeListGraph(mag);
     }
 

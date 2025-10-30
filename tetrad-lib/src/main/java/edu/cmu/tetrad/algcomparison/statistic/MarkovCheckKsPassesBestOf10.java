@@ -92,7 +92,7 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
     /**
      * Calculates whether Kolmogorov-Smirnoff P > 0.05.
      *
-     * @param trueDag
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.

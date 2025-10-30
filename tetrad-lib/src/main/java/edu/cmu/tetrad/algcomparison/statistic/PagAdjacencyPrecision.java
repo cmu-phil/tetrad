@@ -66,7 +66,7 @@ public class PagAdjacencyPrecision implements Statistic {
     /**
      * Calculates the adjacency precision of the estimated graph compared to the true graph.
      *
-     * @param trueDag
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.

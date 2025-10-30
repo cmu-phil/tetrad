@@ -67,7 +67,7 @@ public class PagAdjacencyRecall implements Statistic {
     /**
      * Calculates the adjacency recall compared to the true PAG (Partial Ancestral Graph).
      *
-     * @param trueDag
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph (DAG, CPDAG, PAG of the true DAG).
      * @param estGraph   The estimated graph (same type as trueGraph).
      * @param dataModel  The data model.

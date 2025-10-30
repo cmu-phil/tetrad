@@ -257,6 +257,11 @@ public final class MagToPag {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the maximum length of discriminating paths to be considered during processing.
+     *
+     * @param maxDiscriminatingPathLength the maximum length of discriminating paths
+     */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
