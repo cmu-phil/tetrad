@@ -158,7 +158,14 @@ public final class IsGFci implements IGraphSearch {
     }
 
     /**
-     * R0-like collider completion using FGES definites + test-based check on missing a–c.
+     * Modifies the orientation of edges in the given graph based on a set of rules and conditions
+     * that respect definite colliders, adjacency, and separation sets derived from FGES analysis.
+     * This method iterates over the nodes of the graph, examines their adjacencies, and applies
+     * orientation logic to enforce consistency with the FGES graph.
+     *
+     * @param fgesGraph The FGES graph that provides the definite collider and adjacency structure
+     *                  used to guide orientation decisions.
+     * @throws InterruptedException If the thread running this method is interrupted during execution.
      */
     public void modifiedR0(Graph fgesGraph) throws InterruptedException {
         graph.reorientAllWith(Endpoint.CIRCLE);
@@ -236,41 +243,158 @@ public final class IsGFci implements IGraphSearch {
 
     // ----------------------- Accessors -----------------------
 
+    /**
+     * Returns the elapsed time in milliseconds for the execution or process
+     * associated with this instance.
+     *
+     * @return the elapsed time in milliseconds as a long value
+     */
     public long getElapsedTimeMillis() { return elapsedTimeMs; }
+
+    /**
+     * Retrieves the maximum degree for the graph search procedure. The maximum degree
+     * limits the number of edges any single node in the graph can have. A value of -1
+     * indicates that there is no restriction on the maximum degree.
+     *
+     * @return the maximum degree as an integer; a value of -1 indicates no restriction
+     */
     public int getMaxDegree() { return maxDegree; }
+
+    /**
+     * Sets the maximum degree for the graph search procedure. The maximum degree
+     * places a limit on the number of edges any single node in the graph can have.
+     * If set to -1, no restriction is applied to the maximum degree.
+     *
+     * @param maxDegree the maximum degree to be set; must be -1 (indicating no restriction)
+     *                  or a non-negative integer (0 or greater)
+     * @throws IllegalArgumentException if the maxDegree is less than -1
+     */
     public void setMaxDegree(int maxDegree) {
         if (maxDegree < -1) throw new IllegalArgumentException("maxDegree must be -1 or >= 0");
         this.maxDegree = maxDegree;
     }
 
+    /**
+     * Retrieves the Knowledge object associated with this instance.
+     *
+     * @return the Knowledge object representing the knowledge structure
+     */
     public Knowledge getKnowledge() { return knowledge; }
+
+    /**
+     * Sets the knowledge structure for the instance.
+     *
+     * @param knowledge the Knowledge object to be set; must not be null
+     * @throws NullPointerException if the provided knowledge is null
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) throw new NullPointerException("knowledge");
         this.knowledge = knowledge;
     }
 
+    /**
+     * Indicates whether the complete rule set is used in the instance.
+     *
+     * @return true if the complete rule set is used; false otherwise
+     */
     public boolean isCompleteRuleSetUsed() { return completeRuleSetUsed; }
+
+    /**
+     * Sets whether the complete rule set is used in the instance.
+     *
+     * @param completeRuleSetUsed a boolean value indicating whether the complete rule set
+     *                            is enabled. If true, the complete rule set will be utilized;
+     *                            otherwise, it will not.
+     */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) { this.completeRuleSetUsed = completeRuleSetUsed; }
 
+    /**
+     * Retrieves the maximum path length for the graph search procedure.
+     * The maximum path length determines the longest allowable path that the
+     * search algorithm will consider. A value of -1 indicates no restriction
+     * on the path length.
+     *
+     * @return the maximum path length as an integer; a value of -1 indicates
+     * no restriction on path length
+     */
     public int getMaxPathLength() { return maxPathLength; }
+
+    /**
+     * Sets the maximum path length for the graph search procedure.
+     * The maximum path length determines the longest allowable path considered
+     * during the search. If set to -1, it indicates no restriction on the path length.
+     *
+     * @param maxPathLength the maximum path length to be set; must be -*/
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) throw new IllegalArgumentException("maxPathLength must be -1 or >= 0");
         this.maxPathLength = maxPathLength;
     }
 
+    /**
+     * Indicates whether verbose mode is enabled for logging or detailed output.
+     *
+     * @return true if verbose mode is enabled, providing detailed logging or output;
+     *         false if verbose mode is disabled, resulting in minimal or suppressed output.
+     */
     public boolean isVerbose() { return verbose; }
+
+    /**
+     * Sets whether verbose mode is enabled for logging or detailed output.
+     *
+     * @param verbose a boolean value indicating whether verbose mode is enabled.
+     *                If true, detailed logging or output will be provided; if false,
+     *                output will be minimal or suppressed.
+     */
     public void setVerbose(boolean verbose) { this.verbose = verbose; }
 
+    /**
+     * Retrieves the independence test associated with the current instance.
+     *
+     * @return the IndependenceTest object representing the independence test
+     */
     public IndependenceTest getIndependenceTest() { return independenceTest; }
 
+    /**
+     * Returns the covariance matrix associated with this instance.
+     *
+     * @return the ICovarianceMatrix object representing the covariance matrix
+     */
     public ICovarianceMatrix getCovarianceMatrix() { return covarianceMatrix; }
+
+    /**
+     * Sets the covariance matrix for the instance.
+     *
+     * @param covarianceMatrix the covariance matrix to be set; must not be null
+     */
     public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) { this.covarianceMatrix = covarianceMatrix; }
 
+    /**
+     * Returns the output stream used by the instance.
+     *
+     * @return the PrintStream object representing the output stream
+     */
     public PrintStream getOut() { return out; }
+
+    /**
+     * Sets the output stream for the instance.
+     *
+     * @param out the PrintStream to be used as the output stream; must not be null
+     */
     public void setOut(PrintStream out) { this.out = out; }
 
+    /**
+     * Sets whether faithfulness is assumed in the graph search procedure.
+     *
+     * @param faithfulnessAssumed a boolean value indicating whether the assumption of faithfulness is applied.
+     *                            If true, the search enforces the faithfulness condition; otherwise, it does not.
+     */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) { this.faithfulnessAssumed = faithfulnessAssumed; }
 
+    /**
+     * Sets the population graph used in the instance.
+     *
+     * @param populationGraph the population graph to be set; should not be null
+     */
     public void setPopulationGraph(Graph populationGraph) { this.populationGraph = populationGraph; }
 
     // ----------------------- Utilities kept from legacy -----------------------

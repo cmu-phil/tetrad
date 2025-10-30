@@ -61,7 +61,7 @@ public class LocalGraphPrecision implements Statistic {
      * This method calculates the Local Graph Precision. It calculates the precision between the true graph and the
      * estimated graph locally.
      *
-     * @param trueDag
+     * @param trueDag The true graph.
      * @param trueGraph  The true graph.
      * @param estGraph   The estimated graph.
      * @param dataModel  The data model.

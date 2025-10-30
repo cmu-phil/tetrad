@@ -217,6 +217,11 @@ public final class LvLite implements IGraphSearch {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
+    /**
+     * Sets the maximum length of discriminating paths to consider during the search.
+     *
+     * @param maxDiscriminatingPathLength The maximum length of discriminating paths.
+     */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
