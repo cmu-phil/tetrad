@@ -22,10 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.Adjustment2;
-import edu.cmu.tetrad.search.RAEnumerate;
-import edu.cmu.tetrad.search.RecursiveAdjustment;
-import edu.cmu.tetrad.search.RecursiveBlocking;
+import edu.cmu.tetrad.search.Adjustment;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
@@ -1701,10 +1698,10 @@ private void edgeSpecificAdjustment(Graph graph, JTextArea textArea,
             try {
 
                 // The type of graph doesn't matter if we're ignoring amenable paths.
-                Adjustment2 adjustment = new Adjustment2(graph);
+                Adjustment adjustment = new Adjustment(graph);
                 adjustments = adjustment.adjustmentSets(node1, node2, "PAG",
                         maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength,
-                        Adjustment2.ColliderPolicy.OFF, avoidAmenable, Set.of(), Set.of());
+                        Adjustment.ColliderPolicy.OFF, avoidAmenable, Set.of(), Set.of());
             } catch (Exception e) {
                 // Skip on error
                 continue;
