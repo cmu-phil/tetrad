@@ -10,31 +10,82 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 /**
- * Adjustment2 — a variant of Adjustment that supports:
- *  - avoidAmenable toggle
- *  - containing / notFollowed parameters (for FCIT/RB compatibility)
- *  - otherwise identical logic to the latest Adjustment
+ * Represents an adjustment mechanism for defining adjustment sets in causal inference
+ * across different types of graphical models.
+ * <p>
+ * The {@code Adjustment} class provides methods to define valid adjustment sets based on
+ * the structure of the graph, specific node relationships, and user-defined policies
+ * about allowed paths and collateral factors.
+ * </p>
+ *
+ * <h3>Fields</h3>
+ * <ul>
+ *   <li><code>graph</code>: The causal graph being analyzed.</li>
+ *   <li><code>colliderPolicy</code>: A policy defining how colliders are handled during
+ *       adjustment set definition.</li>
+ *   <li><code>noAmenablePolicy</code>: A policy specifying behavior for paths involving
+ *       non-amenable sets of nodes.</li>
+ * </ul>
  */
 public final class Adjustment {
-
+    /**
+     * Represents the causal graph being analyzed for adjustment set definition.
+     */
     private final Graph graph;
+    /**
+     * Represents the policy for handling colliders during adjustment set definition.
+     */
     private ColliderPolicy colliderPolicy = ColliderPolicy.NONCOLLIDER_FIRST;
+    /**
+     * Represents the policy for handling paths involving non-amenable sets of nodes.
+     */
     private NoAmenablePolicy noAmenablePolicy = NoAmenablePolicy.SEARCH;
 
+    /**
+     * Constructs an Adjustment instance with the specified causal graph.
+     *
+     * @param graph The causal graph to be analyzed for adjustment set definition.
+     */
     public Adjustment(Graph graph) { this.graph = graph; }
 
+    /**
+     * Sets the collider policy for handling colliders during adjustment set definition.
+     *
+     * @param p The collider policy to be applied.
+     * @return This Adjustment instance for method chaining.
+     */
     public Adjustment setColliderPolicy(ColliderPolicy p) {
         this.colliderPolicy = Objects.requireNonNull(p);
         return this;
     }
 
+    /**
+     * Sets the policy for handling paths involving non-amenable sets of nodes.
+     *
+     * @param p The no-amenable policy to be applied.
+     * @return This Adjustment instance for method chaining.
+     */
     public Adjustment setNoAmenablePolicy(NoAmenablePolicy p) {
         this.noAmenablePolicy = Objects.requireNonNull(p);
         return this;
     }
 
-    // --- Convenience overload for RB-style use ----------------------------------------------
-
+    /**
+     * Computes a list of adjustment sets for estimating the causal effect of X on Y
+     * within a given graph structure using the Rubin-Bai approach.
+     *
+     * @param X The node representing the cause in the causal relationship.
+     * @param Y The node representing the effect in the causal relationship.
+     * @param graphType The type of graph (e.g., "dag", "pdag", "mag") used for the adjustment computation.
+     * @param maxNumSets The maximum number of adjustment sets to compute.
+     * @param maxRadius The maximum radius for creating shells during adjustment set determination.
+     * @param nearWhichEndpoint Specifies which endpoint (source or target) should dominate the adjustment determination.
+     * @param maxPathLength The maximum allowed path length between X and Y for eligibility in adjustment sets.
+     * @param avoidAmenable Whether to avoid adjustment sets involving amenable paths.
+     * @param notFollowed A set of nodes that should not be followed during path exploration in the graph. Optional.
+     * @param containing A set of nodes that must be included in the adjustment sets. Optional.
+     * @return A list of sets of nodes, where each set represents a possible valid adjustment set for the causal effect.
+     */
     public List<Set<Node>> adjustmentSetsRB(Node X, Node Y, String graphType,
                                             int maxNumSets, int maxRadius,
                                             int nearWhichEndpoint, int maxPathLength,
@@ -47,6 +98,24 @@ public final class Adjustment {
 
     // --- Master entry point -----------------------------------------------------------------
 
+    /**
+     * Computes a list of adjustment sets for estimating the causal effect of X on Y
+     * within a given graph structure. This method uses a breadth-first search strategy
+     * to identify valid adjustment sets based on the provided parameters and collider policy.
+     *
+     * @param X The node representing the cause in the causal relationship.
+     * @param Y The node representing the effect in the causal relationship.
+     * @param graphType The type of graph (e.g., "dag", "pdag", "mag") used for adjustment computation.
+     * @param maxNumSets The maximum number of adjustment sets to compute.
+     * @param maxRadius The maximum radius for creating shells during adjustment set determination.
+     * @param nearWhichEndpoint Specifies which endpoint (source or target) should dominate the adjustment determination.
+     * @param maxPathLength The maximum allowed path length between X and Y for eligibility in adjustment sets.
+     * @param colliderPolicy The policy for handling colliders during adjustment set computation.
+     * @param avoidAmenable Whether to avoid adjustment sets involving amenable paths.
+     * @param notFollowed A set of nodes that should not be followed during path exploration in the graph. Optional.
+     * @param containing A set of nodes that must be included in the adjustment sets. Optional.
+     * @return A list of sets of nodes, where each set represents a possible valid adjustment set for the causal effect.
+     */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength,
@@ -116,16 +185,6 @@ public final class Adjustment {
         else if (nearWhichEndpoint == 2) poolSet.retainAll(shellsFromY.reach);
         else { poolSet.retainAll(shellsFromX.reach); poolSet.retainAll(shellsFromY.reach); }
 
-//        poolSet.remove(X);
-////        poolSet.remove(Y);
-//        if (!rbMode) poolSet.remove(Y);
-//        poolSet.removeAll(forbidden);
-//        poolSet.removeAll(amenableBackbone);
-//        if (notFollowed != null) poolSet.removeAll(notFollowed);
-//
-//        poolSet.remove(X);
-//        if (!rbMode) poolSet.remove(Y);
-
         // In RB (sepset) mode, DO NOT prune candidates by Forb_G or amenable backbone.
         // We need to be able to pick nodes on causal paths (e.g., W on X→W→Z).
         if (!rbMode) {
@@ -134,15 +193,6 @@ public final class Adjustment {
         }
 
         if (notFollowed != null) poolSet.removeAll(notFollowed);
-
-        if (rbMode) poolSet.add(Y); // keep your existing line
-
-//         keep current code …
-//        poolSet.remove(X);
-//        if (!rbMode) poolSet.remove(Y);
-//        poolSet.removeAll(forbidden);
-//        poolSet.removeAll(amenableBackbone);
-//        if (notFollowed != null) poolSet.removeAll(notFollowed);
 
         if (rbMode) poolSet.add(Y);
 
@@ -175,16 +225,6 @@ public final class Adjustment {
                 notFollowed == null ? Set.of() : new HashSet<>(notFollowed),
                 seedZ, rbMode);
     }
-
-//    private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
-//        RecursiveAdjustment.GraphType _graphType = RecursiveAdjustment.GraphType.valueOf(graphType);
-//        if (source == null || target == null || source == target) return Collections.emptySet();
-//        if (_graphType == RecursiveAdjustment.GraphType.PAG) {
-//            return graph.paths().getAmenablePathsPag(source, target, maxLength);
-//        } else {
-//            return graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
-//        }
-//    }
 
     private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
         if (source == null || target == null || source == target) return Collections.emptySet();
@@ -436,7 +476,6 @@ public final class Adjustment {
                                Set<Node> notFollowed, boolean rbMode){
         if (path.size() - 1 > edgeLimit) return false;
         Node tail = path.getLast();
-//        if (tail.equals(Y)) return true;
 
         if (tail.equals(Y)) {
             // If we’re emulating RB, do NOT accept the direct 1-edge path [X,Y].
@@ -481,13 +520,6 @@ public final class Adjustment {
         List<Node> candidates = new ArrayList<>();
 
         for (Node v : pool) {
-//            if (inWitness.contains(v) && !forbidden.contains(v)
-//                    && !amenableBackbone.contains(v)
-//                    && !Z.contains(v)
-//                    && !ban.contains(v)
-//                    && !notFollowed.contains(v))
-//                candidates.add(v);
-
             if (inWitness.contains(v)
                     && (rbMode || !forbidden.contains(v))
                     && (rbMode || !amenableBackbone.contains(v))
@@ -497,8 +529,6 @@ public final class Adjustment {
                 candidates.add(v);
             }
         }
-
-//        if (candidates.isEmpty()) return null;
 
         if (candidates.isEmpty()) {
             for (Node v : witness) {
