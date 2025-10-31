@@ -71,7 +71,7 @@ public class IdaCheckAvgSquaredDifference implements Statistic {
      * Retrieves the value of the statistic, which is the average squared difference between the estimated and true
      * values for a given data model and graphs.
      *
-     * @param trueDag
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.

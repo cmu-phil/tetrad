@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,15 +16,11 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.bayes;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.DataBox;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.data.VerticalIntDataBox;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
@@ -41,7 +37,7 @@ import java.util.*;
  *   <li>Likelihood-ratio test (BN vs. saturated joint over the same variables).</li>
  *   <li>BIC under the convention BIC = 2*LL - k*log(N).</li>
  * </ul>
- *
+ * <p>
  * Notes:
  * <ul>
  *   <li>Degrees of freedom for the BN are \sum_i q_i (r_i - 1), where r_i is the cardinality of X_i
@@ -53,31 +49,49 @@ import java.util.*;
  */
 public final class BayesProperties {
 
-    /** The data set. */
+    /**
+     * The data set.
+     */
     private final DataSet dataSet;
 
-    /** The variables (same order as DataSet columns). */
+    /**
+     * The variables (same order as DataSet columns).
+     */
     private final List<Node> variables;
 
-    /** Sample size. */
+    /**
+     * Sample size.
+     */
     private final int sampleSize;
 
-    /** Number of categories per variable (aligned with variables list). */
+    /**
+     * Number of categories per variable (aligned with variables list).
+     */
     private final int[] numCategories;
 
-    /** LR chi-square statistic. */
+    /**
+     * LR chi-square statistic.
+     */
     private double chisq;
 
-    /** LR degrees of freedom. */
+    /**
+     * LR degrees of freedom.
+     */
     private double dof;
 
-    /** BIC for the BN model (convention: 2*LL - k*log N). */
+    /**
+     * BIC for the BN model (convention: 2*LL - k*log N).
+     */
     private double bic;
 
-    /** BN log-likelihood (unpenalized). */
+    /**
+     * BN log-likelihood (unpenalized).
+     */
     private double likelihood;
 
-    /** Prevents parameterless construction. */
+    /**
+     * Prevents parameterless construction.
+     */
     private BayesProperties() {
         throw new UnsupportedOperationException();
     }
@@ -151,7 +165,7 @@ public final class BayesProperties {
         // ... after computing chisq and df ...
         if (chisq < 0 && Math.abs(chisq) < 1e-9) chisq = 0.0;
         if (chisq < 0) throw new IllegalStateException("Negative LR statistic.");
-        if (df < 0)    throw new IllegalStateException("Negative DOF: parameter counting mismatch.");
+        if (df < 0) throw new IllegalStateException("Negative DOF: parameter counting mismatch.");
 
         // BIC for BN model
         int N = this.dataSet.getNumRows();
@@ -166,45 +180,69 @@ public final class BayesProperties {
         }
 
         this.chisq = chisq;
-        this.dof   = df;
+        this.dof = df;
 
         LikelihoodRet _ret = new LikelihoodRet();
-        _ret.p     = p;
-        _ret.bic   = bic;
+        _ret.p = p;
+        _ret.bic = bic;
         _ret.chiSq = chisq;
-        _ret.dof   = df;
+        _ret.dof = df;
         return _ret;
-
-//        // BIC for BN model under convention 2*LL - k*log N
-//        int N = this.dataSet.getNumRows();
-//        this.bic = 2 * rModel.lik() - rModel.dof() * FastMath.log(N);
-//
-//        double p = StatUtils.getChiSquareP(df, chisq);
-//
-//        LikelihoodRet _ret = new LikelihoodRet();
-//        _ret.p = p;
-//        _ret.bic = bic;
-//        _ret.chiSq = chisq;
-//        _ret.dof = df;
-//        return _ret;
     }
 
-    /** Call after getLikelihoodRatioP(): chi-square statistic. */
-    public double getChisq() { return this.chisq; }
+    /**
+     * Retrieves the chi-squared (chisq) value for the current instance.
+     * The chi-squared statistic is often used to measure the fit of a model
+     * to observed data in statistics.
+     *
+     * @return the chi-squared value as a double
+     */
+    public double getChisq() {
+        return this.chisq;
+    }
 
-    /** Call after getLikelihoodRatioP(): degrees of freedom. */
-    public double getDof() { return this.dof; }
+    /**
+     * Retrieves the degrees of freedom (dof) value for the current instance.
+     *
+     * @return the degrees of freedom as a double
+     */
+    public double getDof() {
+        return this.dof;
+    }
 
-    /** Call after getLikelihoodRatioP(): BIC. */
-    public double getBic() { return this.bic; }
+    /**
+     * Retrieves the Bayesian Information Criterion (BIC) value for the current instance.
+     *
+     * @return the BIC value as a double
+     */
+    public double getBic() {
+        return this.bic;
+    }
 
-    /** Call after getLikelihoodRatioP(): BN log-likelihood. */
-    public double getLikelihood() { return this.likelihood; }
+    /**
+     * Retrieves the likelihood value for the current instance.
+     *
+     * @return the likelihood value as a double
+     */
+    public double getLikelihood() {
+        return this.likelihood;
+    }
 
-    /** Sample size. */
-    public int getSampleSize() { return this.sampleSize; }
+    /**
+     * Retrieves the sample size for the current instance.
+     *
+     * @return the sample size as an integer
+     */
+    public int getSampleSize() {
+        return this.sampleSize;
+    }
 
-    /** Returns the variable with the given name (from this.variables). */
+    /**
+     * Retrieves a variable from the list of variables that matches the specified target name.
+     *
+     * @param targetName the name of the variable to retrieve
+     * @return the variable as a Node object if a match is found; otherwise, returns null
+     */
     public Node getVariable(String targetName) {
         for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
@@ -219,9 +257,8 @@ public final class BayesProperties {
     // =========================
 
     /**
-     * Raw (unpenalized) BN log-likelihood and parameter count (k) for the given graph.
-     * Computes \ell = sum over nodes of local multinomial log-likelihoods.
-     * Parameter count is \sum_i q_i (r_i - 1).
+     * Raw (unpenalized) BN log-likelihood and parameter count (k) for the given graph. Computes \ell = sum over nodes
+     * of local multinomial log-likelihoods. Parameter count is \sum_i q_i (r_i - 1).
      */
     private Ret getLikelihood(Graph graph) {
         double ll = 0.0;
@@ -267,9 +304,8 @@ public final class BayesProperties {
     }
 
     /**
-     * Local multinomial log-likelihood for a node given parents:
-     * \sum_{rows r} \sum_{j} n_{rj} log(n_{rj}/n_r)
-     * (Skip terms with n_{rj} = 0.)
+     * Local multinomial log-likelihood for a node given parents: \sum_{rows r} \sum_{j} n_{rj} log(n_{rj}/n_r) (Skip
+     * terms with n_{rj} = 0.)
      */
     private double localLogLikelihood(int childIdx, int[] parentIdx) {
         // Map: parent assignment -> counts over child states
@@ -308,14 +344,9 @@ public final class BayesProperties {
     // Saturated model helpers
     // =========================
 
-    /** Scope of variables for the given graph within the current DataSet. */
-    private static final class GraphScope {
-        final int[] dsCols;  // DataSet column indices for graph vars, in graph's node iteration order
-        final int[] card;    // cardinalities for those vars, same order
-        GraphScope(int[] dsCols, int[] card) { this.dsCols = dsCols; this.card = card; }
-    }
-
-    /** Build scope: map each graph node to its dataset column and cardinality. */
+    /**
+     * Build scope: map each graph node to its dataset column and cardinality.
+     */
     private GraphScope buildGraphScope(Graph graph) {
         List<Node> gvars = graph.getNodes();
         int m = gvars.size();
@@ -329,7 +360,8 @@ public final class BayesProperties {
             int dsCol = -1;
             for (int c = 0; c < dataSet.getNumColumns(); c++) {
                 if (dataSet.getVariable(c).getName().equals(g.getName())) {
-                    dsCol = c; break;
+                    dsCol = c;
+                    break;
                 }
             }
             if (dsCol < 0) {
@@ -347,7 +379,15 @@ public final class BayesProperties {
         return new GraphScope(dsCols, card);
     }
 
-    /** Saturated joint log-likelihood over the graph's variables only. */
+    /**
+     * Computes the saturated joint log-likelihood for a given graph scope. The saturated joint log-likelihood
+     * measures the total log-probability of all unique joint assignments of the variables defined by the provided
+     * graph scope over the dataset.
+     *
+     * @param scope The graph scope defining the columns of the dataset (dsCols) and their respective cardinalities
+     *              (card) to be considered for the computation.
+     * @return The saturated joint log-likelihood value.
+     */
     private double saturatedJointLogLikelihood(GraphScope scope) {
         // Count unique joint assignments over scope.dsCols
         Map<RowKey, Integer> counts = new HashMap<>();
@@ -367,7 +407,16 @@ public final class BayesProperties {
         return ll;
     }
 
-    /** Saturated parameter count over the graph's variables only: (∏ r_i) − 1. */
+    /**
+     * Computes the saturated parameter count for the given graph scope. The method calculates the
+     * maximum number of parameters that can be estimated for the given graph structure, ensuring
+     * that the result does not exceed the maximum value of an integer.
+     *
+     * @param scope The graph scope containing the cardinality of the variables for the graph.
+     *              This includes the dataset columns and their respective cardinalities.
+     * @return The saturated parameter count. If the calculated value exceeds {@code Integer.MAX_VALUE},
+     *         it returns {@code Integer.MAX_VALUE}.
+     */
     private int saturatedParamCount(GraphScope scope) {
         long prod = 1L;
         for (int r : scope.card) prod *= r;
@@ -375,55 +424,198 @@ public final class BayesProperties {
         return sat > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) sat;
     }
 
-    // =========================
-    // Small helper records/classes
-    // =========================
-
-    /** Parent assignment key for local CPT counting. */
-    private static final class ParentKey {
-        final int[] vals;
-        ParentKey(int[] v) { this.vals = v; }
-        @Override public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ParentKey k)) return false;
-            return Arrays.equals(vals, k.vals);
-        }
-        @Override public int hashCode() { return Arrays.hashCode(vals); }
-    }
-
-    /** Hashable key for joint assignments (saturated counts). */
-    private static final class RowKey {
-        final int[] vals;
-        RowKey(int[] v) { this.vals = v; }
-        @Override public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof RowKey k)) return false;
-            return Arrays.equals(vals, k.vals);
-        }
-        @Override public int hashCode() { return Arrays.hashCode(vals); }
-    }
-
-    /** Tuple for (log-likelihood, parameter count). */
-    private record Ret(double lik, int dof) {
-        @Override public double lik() { return this.lik; }
-        @Override public int dof() { return this.dof; }
-    }
-
-    /** Result container for LR test. */
-    public static class LikelihoodRet {
-        public double p;
-        public double bic;
-        public double chiSq;
-        public double dof;
-        public LikelihoodRet() {}
-    }
-
-    /** Return variable as DiscreteVariable if possible. */
+    /**
+     * Retrieves the variable at the specified index from the list of variables
+     * if it is an instance of DiscreteVariable.
+     *
+     * @param i the index of the variable in the variables list
+     * @return the variable at the specified index as a DiscreteVariable if it exists
+     *         and is of type DiscreteVariable; otherwise, returns null
+     */
     private DiscreteVariable getVariable(int i) {
         if (this.variables.get(i) instanceof DiscreteVariable) {
             return (DiscreteVariable) this.variables.get(i);
         } else {
             return null;
+        }
+    }
+
+    // =========================
+    // Small helper records/classes
+    // =========================
+
+    /**
+     * Scope of variables for the given graph within the current DataSet.
+     */
+    private static final class GraphScope {
+        final int[] dsCols;  // DataSet column indices for graph vars, in graph's node iteration order
+        final int[] card;    // cardinalities for those vars, same order
+
+        /**
+         * Constructs a GraphScope that defines the scope of variables for the given graph
+         * within the current DataSet.
+         *
+         * @param dsCols an array of integers representing the DataSet column indices for graph variables, in the graph's node iteration order.
+         * @param card an array of integers representing the cardinalities for the graph variables, in the same order as the column indices.
+         */
+        GraphScope(int[] dsCols, int[] card) {
+            this.dsCols = dsCols;
+            this.card = card;
+        }
+    }
+
+    /**
+     * Parent assignment key for local CPT counting.
+     */
+    private static final class ParentKey {
+        final int[] vals;
+
+        /**
+         * Constructs a ParentKey instance with the given array of values.
+         *
+         * @param v   the array of values to be stored in this ParentKey
+         */
+        ParentKey(int[] v) {
+            this.vals = v;
+        }
+
+        /**
+         * Compares this object to the specified object for equality. The objects are considered equal if they are of
+         * the same type and their internal arrays of values are equal.
+         *
+         * @param o the object to compare with this instance for equality
+         * @return true if the specified object is equal to this instance; false otherwise
+         */
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ParentKey k)) return false;
+            return Arrays.equals(vals, k.vals);
+        }
+
+        /**
+         * Computes the hash code for this object based on its internal array of values.
+         *
+         * @return an integer hash code derived from the contents of the vals array
+         */
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(vals);
+        }
+    }
+
+    /**
+     * Hashable key for joint assignments (saturated counts).
+     */
+    private static final class RowKey {
+        final int[] vals;
+
+        /**
+         * Constructs a RowKey instance with the given array of values.
+         *
+         * @param v   the array of values to be stored in this RowKey
+         */
+        RowKey(int[] v) {
+            this.vals = v;
+        }
+
+        /**
+         * Returns true if the given object is equal to this RowKey instance.
+         *
+         * @param o   the reference object with which to compare.
+         * @return    true if the objects are equal, false otherwise
+         */
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof RowKey k)) return false;
+            return Arrays.equals(vals, k.vals);
+        }
+
+        /**
+         * Returns the hash code for this object based on its internal array of values.
+         *
+         * @return an integer hash code derived from the contents of the vals array
+         */
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(vals);
+        }
+    }
+
+    /**
+     * Represents a record encapsulating the log-likelihood and degrees of freedom.
+     * This class is used internally to manage and retrieve values related to
+     * Bayesian Network likelihood computations.
+     */
+    private record Ret(double lik, int dof) {
+
+        /**
+         * Returns the log-likelihood value associated with this instance.
+         *
+         * @return the log-likelihood as a double.
+         */
+        @Override
+        public double lik() {
+            return this.lik;
+        }
+
+        /**
+         * Returns the degrees of freedom associated with this instance.
+         *
+         * @return the degrees of freedom as an integer.
+         */
+        @Override
+        public int dof() {
+            return this.dof;
+        }
+    }
+
+    /**
+     * Result container for LR test.
+     */
+    public static class LikelihoodRet {
+
+        /**
+         * Represents the p-value from a statistical test, indicating the probability
+         * of obtaining a result at least as extreme as the one observed, assuming
+         * the null hypothesis is true. A smaller p-value suggests stronger evidence
+         * against the null hypothesis.
+         */
+        public double p;
+
+        /**
+         * Represents the Bayesian Information Criterion (BIC), a model selection
+         * criterion used in statistical analysis. BIC evaluates the goodness of
+         * fit of a statistical model while introducing a penalty term for the number
+         * of parameters in the model to prevent overfitting. A lower BIC value
+         * indicates a better model, balancing complexity and fit.
+         */
+        public double bic;
+
+        /**
+         * Represents the chi-squared statistic value resulting from a statistical test.
+         * It quantifies the disparity between observed and expected frequencies under
+         * the null hypothesis. Higher values indicate a greater discrepancy, which may
+         * signify a weaker fit of the model to the data or suggest that the null
+         * hypothesis may not be valid.
+         */
+        public double chiSq;
+
+        /**
+         * Represents the degrees of freedom (dof) used in statistical tests or model
+         * evaluations. Degrees of freedom refer to the number of independent values or
+         * quantities that can vary in the analysis without violating any constraints.
+         * It is often used to determine critical values or p-values in hypothesis testing.
+         */
+        public double dof;
+
+        /**
+         * Default constructor for the LikelihoodRet class.
+         * Initializes an instance of the LikelihoodRet object, which serves
+         * as a container for results of a likelihood ratio test statistical analysis.
+         */
+        public LikelihoodRet() {
         }
     }
 }

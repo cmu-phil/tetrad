@@ -168,6 +168,17 @@ public class FciOrient {
         return eXY == Endpoint.CIRCLE;
     }
 
+    /**
+     * Finds and returns a set of discriminating paths in the given graph.
+     * A discriminating path is determined based on the criteria provided
+     * such as maximum path length and whether to check XY non-adjacency.
+     *
+     * @param graph the input graph in which to search for discriminating paths
+     * @param maxLen the maximum allowable length of the paths
+     * @param checkXyNonadjacency a boolean indicating whether to verify non-adjacency
+     *                            between certain nodes (X and Y) in the graph
+     * @return a set containing discriminating paths found in the graph
+     */
     public static Set<DiscriminatingPath> listDiscriminatingPaths(
             Graph graph, int maxLen, boolean checkXyNonadjacency) {
 
@@ -180,6 +191,19 @@ public class FciOrient {
         return out;
     }
 
+    /**
+     * Identifies and returns a set of discriminating paths in a given graph that satisfy
+     * specified criteria based on relationships and adjacency between nodes.
+     *
+     * @param graph the graph to be analyzed
+     * @param w the starting node for path evaluation
+     * @param y the target node for path evaluation
+     * @param maxLen the maximum length of the discriminating paths
+     * @param checkEcNonadjacency a flag indicating whether strict edge constraints are applied
+     *        between nodes w and y (true for strict, false for relaxed constraints)
+     * @return a set of discriminating paths that meet the criteria; returns an empty set
+     *         if no such paths exist
+     */
     public static Set<DiscriminatingPath> listDiscriminatingPaths(
             Graph graph, Node w, Node y, int maxLen, boolean checkEcNonadjacency) {
 

@@ -80,7 +80,7 @@ public class IdaAverageSquaredDistance implements Statistic {
      * Calculates the value of the IDA Average Squared Distance statistic. Assumes the true SEM IM has been passed in
      * through the constructor.
      *
-     * @param trueDag
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.

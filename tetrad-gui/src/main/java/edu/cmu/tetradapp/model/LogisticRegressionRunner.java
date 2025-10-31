@@ -557,7 +557,9 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves a list of graph objects associated with the LogisticRegressionRunner.
+     *
+     * @return a list of {@link Graph} objects, or null if no graphs are available.
      */
     @Override
     public List<Graph> getGraphs() {

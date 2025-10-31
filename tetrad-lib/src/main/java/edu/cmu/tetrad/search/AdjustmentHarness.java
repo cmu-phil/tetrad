@@ -74,6 +74,30 @@ import java.util.*;
  */
 public class AdjustmentHarness {
 
+    /**
+     * Constructs an instance of the AdjustmentHarness class. This constructor initializes
+     * the object for use within the program. The class is designed to facilitate the
+     * execution of adjustment-based computations and simulations, as well as other operations
+     * related to graph-based causal inference and effect estimation.
+     */
+    public AdjustmentHarness() {}
+
+    /**
+     * Entry point of the AdjustmentHarness program. This method executes the main logic for generating
+     * graphs, performing simulations, computing adjustment sets, estimating effects, and summarizing results.
+     * The method parses command-line arguments to configure the behavior of the execution.
+     *
+     * Command-line options:
+     * --n: Sample size N (default 5000)
+     * --k: Maximum path length K (default 5)
+     * --L: Maximum adjustment threshold L (default 7)
+     * --rad: Radius for adjustment sets (default 3)
+     * --hug: Target hug criterion (default 2)
+     * --seed: Random seed for reproducibility (default 12345)
+     * --write-csv: Enables writing adjustment estimates to a CSV file
+     *
+     * @param args Command-line arguments for configuring the execution of the program.
+     */
     public static void main(String[] args) {
         // Defaults (PDAG requested)
         int N = 5000;

@@ -31,7 +31,30 @@ public final class Adjustment {
     /**
      * Represents the type of graph being analyzed for adjustment set definition.
      */
-    public enum GraphType{PDAG, MAG, PAG}
+    public enum GraphType{
+
+        /**
+         * Represents a Partially Directed Acyclic Graph (PDAG) within the context of the graph analysis.
+         * A PDAG is a graph type used for describing the structure of causal relationships
+         * while allowing some edges to remain undirected.
+         */
+        PDAG,
+
+        /**
+         * Represents a Maximal Ancestral Graph (MAG) within the context of the graph analysis.
+         * A MAG is a graph type used to encode causal relationships, typically in the presence
+         * of latent variables and selection bias. It allows the representation of both directed
+         * and bidirectional edges while maintaining specific ancestral properties.
+         */
+        MAG,
+
+        /**
+         * Represents a Partial Ancestral Graph (PAG) within the context of the graph analysis.
+         * A PAG is used to depict possible causal structures, accounting for latent variables
+         * and selection bias. It is a graphical representation that includes directed, undirected,
+         * and bidirectional edges, encapsulating causal and non-causal relationships in a compact form.
+         */
+        PAG}
     /**
      * Represents the causal graph being analyzed for adjustment set definition.
      */
@@ -624,9 +647,90 @@ public final class Adjustment {
 
     // --- Enums & records ---------------------------------------------------------------------
 
-    public enum ColliderPolicy { OFF, PREFER_NONCOLLIDERS, NONCOLLIDER_FIRST }
-    public enum NoAmenablePolicy { SEARCH, RETURN_EMPTY_SET, SUPPRESS }
-    private enum RoleOnWitness { ENDPOINT, COLLIDER, NONCOLLIDER, AMBIGUOUS }
+    /**
+     * Represents the policy for handling collider nodes during causal path analysis
+     * in an adjustment context. A collider is a node where two or more directed edges
+     * converge, potentially affecting causal relationships between variables.
+     */
+    public enum ColliderPolicy {
+
+        /**
+         * A constant representing the policy to disregard collider nodes during
+         * causal path analysis. When this policy is selected, collider nodes are
+         * not considered in determining the paths for adjustment in a causal
+         * context. This may simplify the causal analysis but could lead to
+         * ignoring potential collider-related influences.
+         */
+        OFF,
+
+        /**
+         * A constant representing the policy to prioritize non-collider nodes during
+         * causal path analysis. When this policy is applied, paths that do not include
+         * collider nodes are preferred over those that do. This policy aims to minimize
+         * the potential confounding effects of collider nodes in causal adjustment.
+         */
+        PREFER_NONCOLLIDERS,
+
+        /**
+         * A constant representing the policy to prioritize paths that begin with
+         * non-collider nodes during causal path analysis. This policy gives precedence
+         * to adjusting for paths starting with non-colliders, reducing potential biases
+         * introduced by collider nodes at the start of a causal pathway.
+         */
+        NONCOLLIDER_FIRST }
+
+    /**
+     * Represents the policy for handling paths involving non-amenable sets of nodes
+     * during adjustment set computation in causal inference.
+     */
+    public enum NoAmenablePolicy {
+
+        /**
+         * An enumeration constant representing a policy where the system searches
+         * for alternative paths or solutions when encountering non-amenable sets
+         * of nodes during adjustment set computation in causal inference.
+         */
+        SEARCH,
+
+        /**
+         * An enumeration constant representing a policy where the system returns an empty set
+         * when encountering non-amenable sets of nodes during adjustment set computation
+         * in causal inference. This policy indicates no valid solutions will be provided
+         * for such cases.
+         */
+        RETURN_EMPTY_SET,
+
+        /**
+         * An enumeration constant representing a policy where any paths involving
+         * non-amenable sets of nodes during adjustment set computation in causal inference are ignored.
+         * This policy suppresses any consideration or impact of such non-amenable sets in the process.
+         */
+        SUPPRESS }
+    private enum RoleOnWitness {
+
+        /**
+         * Represents the role of an endpoint in the context of a causal discovery algorithm or graph structure.
+         * Indicates whether a node acts as a terminal or boundary point in a causal relationship.
+         */
+        ENDPOINT,
+
+        /**
+         * Represents an intersection point or node in a causal structure where two or more causal paths converge.
+         * Typically indicates a scenario where multiple causes influence a single effect.
+         */
+        COLLIDER,
+
+        /**
+         * Represents a node that does not act as a collider or endpoint in a causal structure.
+         * Indicates a node that is neither a collider nor an endpoint, potentially influencing multiple effects.
+         */
+        NONCOLLIDER,
+
+        /**
+         * Represents a node whose role is ambiguous in the context of causal discovery.
+         * Indicates a node whose role cannot be definitively determined as either a collider, endpoint, or non-collider.
+         */
+        AMBIGUOUS }
 
     private static final class PrecomputeContext {
         final Node X, Y;

@@ -71,7 +71,7 @@ public class IdaCheckAvgMaxSquaredDiffEstTrue implements Statistic {
      * Calculates the average maximum squared difference between the estimated and true values for a given data model
      * and graphs.
      *
-     * @param trueDag
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.

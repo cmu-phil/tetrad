@@ -193,6 +193,24 @@ public final class AdjustmentOld {
         return adjustmentSets(X, Y, graphType, maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength, this.colliderPolicy);
     }
 
+    /**
+     * Computes the valid adjustment sets for estimating the causal effect of X on Y
+     * in a graph. The adjustment sets are subsets of variables that satisfy the backdoor
+     * criterion, ensuring the causal effect can be estimated without confounding biases.
+     *
+     * @param X The node representing the cause variable.
+     * @param Y The node representing the effect variable.
+     * @param graphType A string specifying the type of the graph (e.g., DAG, PAG).
+     * @param maxNumSets The maximum number of adjustment sets to be returned.
+     * @param maxRadius The maximum radius around X and Y to search for adjustment sets.
+     * @param nearWhichEndpoint Specifies which endpoint of the edges to consider when searching
+     *                          for near variables, typically represented as an integer flag.
+     * @param maxPathLength The maximum length of paths to consider when searching for adjustment
+     *                      sets.
+     * @param colliderPolicy The policy for handling colliders in the graph.
+     * @return A list of sets of variables, where each set represents a valid adjustment set
+     *         satisfying the backdoor criterion.
+     */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength,
@@ -202,21 +220,19 @@ public final class AdjustmentOld {
     }
 
     /**
-     * Computes a list of potential adjustment sets that, if conditioned upon, are capable of
-     * blocking backdoor paths between the given nodes X and Y in a graph. The adjustment sets
-     * are computed based on the provided graph type, path constraints, and specified policies
-     * for handling colliders.
+     * Computes a list of adjustment sets for a given pair of nodes in a graph, subject to various criteria and constraints.
+     * Adjustment sets are used in causal inference to control for confounding variables between a source node and a target node.
      *
-     * @param X                 The source node from which the paths originate.
-     * @param Y                 The target node to which the paths lead.
-     * @param graphType         The type of graph (e.g., directed acyclic graph) used for the adjustment calculation.
-     * @param maxNumSets        The maximum number of adjustment sets to return.
-     * @param maxRadius         The maximum radius considered in the search for adjustment sets.
-     * @param nearWhichEndpoint Specifies which endpoint (X or Y) to prioritize in the search.
-     * @param maxPathLength     The maximum length of paths to consider in the calculation.
-     * @param colliderPolicy    The policy specifying how colliders are handled during backdoor adjustment calculations.
-     * @return A list of sets of nodes, each representing a valid adjustment set that satisfies the backdoor
-     * adjustment criteria, or an empty list if no such set exists.
+     * @param X the source node for which the adjustment sets are to be computed
+     * @param Y the target node for which the adjustment sets are to be computed
+     * @param graphType the type of the graph on which the adjustment sets computation is based
+     * @param maxNumSets the maximum number of adjustment sets to compute
+     * @param maxRadius the maximum search radius around the nodes for consideration in the adjustment set
+     * @param nearWhichEndpoint specifies which endpoint of the connection to prioritize during adjustment set creation
+     * @param maxPathLength the maximum length of paths to consider in the graph while finding adjustment sets
+     * @param colliderPolicy the policy that determines how colliders should be handled during adjustment set computation
+     * @param avoidAmenable a boolean flag indicating whether adjustment sets involving certain amenable nodes should be avoided
+     * @return a list of sets of nodes, where each set represents an adjustment set that satisfies the given constraints
      */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
@@ -712,9 +728,77 @@ public final class AdjustmentOld {
         NONCOLLIDER_FIRST
     }
 
-    public enum NoAmenablePolicy {SEARCH, RETURN_EMPTY_SET, SUPPRESS}
+    /**
+     * Policy for handling non-amenable paths during adjustment.
+     */
+    public enum NoAmenablePolicy {
+        /**
+         * Represents a policy option where non-amenable paths are further analyzed
+         * or searched for potential adjustment solutions. This policy attempts to
+         * find compatible adjustments instead of immediately discarding or suppressing them.
+         */
+        SEARCH,
 
-    private enum RoleOnWitness {ENDPOINT, COLLIDER, NONCOLLIDER, AMBIGUOUS, OFFPATH}
+        /**
+         * Represents a policy option where non-amenable paths are immediately discarded,
+         * returning an empty set as the result. This policy does not attempt further analysis
+         * or adjustments for incompatible paths.
+         */
+        RETURN_EMPTY_SET,
+
+        /**
+         * Represents a policy option where non-amenable paths are suppressed,
+         * preventing them from being processed or impacting the overall adjustment logic.
+         * This policy effectively ignores such paths without returning explicit results.
+         */
+        SUPPRESS}
+
+    /**
+     * Represents the role of a node along a witness path in a graph.
+     * The role is used to categorize the node's behavior concerning
+     * backdoor adjustment calculations and path evaluation.
+     */
+    private enum RoleOnWitness {
+
+        /**
+         * Represents the role of a node along a witness path in a graph.
+         * The role is used to categorize the node's behavior concerning
+         * backdoor adjustment calculations and path evaluation.
+         */
+        ENDPOINT,
+
+        /**
+         * Represents a node in a graph that acts as a collider along a witness path.
+         * A collider is a node where two directed edges meet head-to-head. It is
+         * significant in path analysis and backdoor adjustment calculations,
+         * particularly for determining path activation and d-separation.
+         */
+        COLLIDER,
+
+        /**
+         * Represents a node in a graph that does not act as a collider along
+         * a witness path. A non-collider is a node where directed edges do
+         * not meet head-to-head. It is used for path analysis and backdoor
+         * adjustment calculations, particularly for assessing path behavior
+         * and determining d-separation.
+         */
+        NONCOLLIDER,
+
+        /**
+         * Represents a node in a graph where its role along a witness path cannot be
+         * clearly categorized as either a collider or non-collider. The ambiguity arises
+         * due to the specific structure or context of the graph, making its exact role
+         * indeterminate in the context of backdoor adjustment calculations and path analysis.
+         */
+        AMBIGUOUS,
+
+        /**
+         * Indicates that a node is not part of the current witness path in the graph.
+         * Nodes with this role are excluded from consideration in backdoor adjustment
+         * calculations and path evaluations as they do not contribute to the analysis
+         * of the specified path.
+         */
+        OFFPATH}
 
     private static final class PrecomputeContext {
         public final Node X, Y;

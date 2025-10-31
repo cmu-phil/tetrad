@@ -64,7 +64,7 @@ public class CircleRecall implements Statistic {
     /**
      * Calculates the circle recall value for a given true graph, estimated graph, and data model.
      *
-     * @param trueDag
+     * @param trueDag The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.

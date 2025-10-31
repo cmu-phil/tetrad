@@ -38,8 +38,20 @@ public class IsBDeuScore2 implements IsScore {
     // ============================== Ctor ===============================
 
     /**
-     * @param dataSet training data (discrete)
-     * @param testCase single‑row test case, same variables/order as {@code dataSet}
+     * Constructs an instance of the IsBDeuScore2 class with the specified training and test datasets.
+     *
+     * @param dataSet the training dataset, which must contain discrete variables. It is used to extract variable
+     *                information, sampleSize, and data in the form of variable vectors.
+     * @param testCase the test dataset, which must be a single row and align with the training dataset in terms
+     *                 of the number of variables and their discrete nature. It is used to create test variable
+     *                 vectors for computation.
+     *
+     * @throws NullPointerException if either the dataSet or testCase is null.
+     * @throws IllegalArgumentException if any of the following conditions are met:
+     *                                  - The training dataset contains variables that are not discrete.
+     *                                  - The number of variables in the test case does not match the training
+     *                                    dataset.
+     *                                  - The test case is not a single-row dataset.
      */
     public IsBDeuScore2(final DataSet dataSet, final DataSet testCase) {
         if (dataSet == null) throw new NullPointerException("Dataset was not provided.");
@@ -217,6 +229,13 @@ public class IsBDeuScore2 implements IsScore {
 
     @Override public List<Node> getVariables() { return variables; }
 
+    /**
+     * Sets the list of variables for the current instance.
+     * Throws an IllegalArgumentException if there is a mismatch in variable names
+     * between the provided list and the existing list at any index.
+     *
+     * @param variables the list of Node objects representing the variables to be set.
+     */
     public void setVariables(List<Node> variables) {
         for (int i = 0; i < variables.size(); i++) {
             if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
@@ -226,36 +245,125 @@ public class IsBDeuScore2 implements IsScore {
         this.variables = variables;
     }
 
+    /**
+     * Retrieves the sample size used in the computation or analysis.
+     *
+     * @return the sample size as an integer.
+     */
     @Override public int getSampleSize() { return sampleSize; }
 
+    /**
+     * Retrieves the required effect/gain threshold for determining an effect edge.
+     *
+     * @param bump required effect/gain threshold
+     * @return true if the bump is greater than 0, indicating an effect edge.
+     */
     @Override public boolean isEffectEdge(double bump) { return bump > 0; }
 
+    /**
+     * Retrieves the required effect/gain threshold for determining an effect edge.
+     *
+     * @return true if the bump is greater than 0, indicating an effect edge.
+     */
     @Override public DataSet getDataSet() { throw new UnsupportedOperationException(); }
 
+    /**
+     * Retrieves the required effect/gain threshold for determining an effect edge.
+     *
+     * @return true if the bump is greater than 0, indicating an effect edge.
+     */
     @Override public double getStructurePrior() { return structurePrior; }
+
+    /**
+     * Sets the structure prior value for this instance.
+     *
+     * @param v the structure prior value to be set
+     */
     @Override public void setStructurePrior(double v) { this.structurePrior = v; }
 
+    /**
+     * Retrieves the prior probability assigned to the sample during computations or analysis.
+     *
+     * @return the sample prior as a double value.
+     */
     @Override public double getSamplePrior() { return samplePrior; }
+
+    /**
+     * Sets the prior probability assigned to the sample during computations or analysis.
+     *
+     * @param v the sample prior value to be set
+     */
     @Override public void setSamplePrior(double v) { this.samplePrior = v; }
 
+    /**
+     * Retrieves the value of the k_addition parameter.
+     *
+     * @return the k_addition value as a double.
+     */
     public double getKAddition() { return k_addition; }
+
+    /**
+     * Sets the value of the k_addition parameter.
+     *
+     * @param v the k_addition value to be set
+     */
     public void setKAddition(double v) { this.k_addition = v; }
 
+    /**
+     * Retrieves the value of the k_deletion parameter.
+     *
+     * @return the k_deletion value as a double.
+     */
     public double getKDeletion() { return k_deletion; }
+
+    /**
+     * Sets the value of the k_deletion parameter.
+     *
+     * @param v the k_deletion value to be set
+     */
     public void setKDeletion(double v) { this.k_deletion = v; }
 
+    /**
+     * Retrieves the value of the k_reorientation parameter.
+     *
+     * @return the k_reorientation value as a double.
+     */
     public double getKReorientation() { return k_reorient; }
+
+    /**
+     * Sets the value of the k_reorientation parameter.
+     *
+     * @param v the k_reorientation value to be set
+     */
     public void setKReorientation(double v) { this.k_reorient = v; }
 
+    /**
+     * Retrieves the variable node with the specified name.
+     *
+     * @param targetName variable name
+     * @return the variable node with the specified name, or null if not found
+     */
     @Override
     public Node getVariable(String targetName) {
         for (Node node : variables) if (node.getName().equals(targetName)) return node;
         return null;
     }
 
+    /**
+     * Retrieves the maximum degree of the variables in the dataset.
+     *
+     * @return the maximum degree as an integer.
+     */
     @Override
     public int getMaxDegree() { return (int) Math.ceil(Math.log(Math.max(2, sampleSize))); }
 
+    /**
+     * Determines if variable y is determined by variables z.
+     *
+     * @param z list of parent variables
+     * @param y target variable
+     * @return true if y is determined by z, false otherwise
+     */
     @Override
     public boolean determines(List<Node> z, Node y) { return false; }
 
@@ -427,8 +535,24 @@ public class IsBDeuScore2 implements IsScore {
     }
 
     // Exposed for tests / debugging
+
+    /**
+     * Retrieves the parent values for a given node index, row index, and dimensions.
+     *
+     * @param nodeIndex index of the node
+     * @param rowIndex index of the row
+     * @param dims dimensions of the data
+     * @return array of parent values
+     */
     public int[] getParentValues(int nodeIndex, int rowIndex, int[] dims) { return getParentValuesForCombination(rowIndex, dims); }
 
+    /**
+     * Retrieves the parent values for a given row index and dimensions.
+     *
+     * @param rowIndex index of the row
+     * @param dims dimensions of the data
+     * @return array of parent values
+     */
     public int[] getParentValuesForCombination(int rowIndex, int[] dims) {
         int[] values = new int[dims.length];
         for (int i = dims.length - 1; i >= 0; i--) { values[i] = rowIndex % dims[i]; rowIndex /= dims[i]; }
