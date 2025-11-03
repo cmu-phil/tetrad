@@ -15,7 +15,7 @@ import java.util.Set;
  * The methods in this class can be utilized to verify structural and conditional validity of graphs in various
  * applications, such as causal inference and graphical modeling.
  */
-public class GraphLegalityCheck {
+public class PagLegalityCheck {
 
     /**
      * Default private constructor to prevent instantiation of the GraphLegalityCheck class.
@@ -23,7 +23,7 @@ public class GraphLegalityCheck {
      * This class provides static utility methods for checking the legality of Partial Ancestral Graphs (PAG)
      * and Mixed Ancestral Graphs (MAG). Since the class is utility-based, it should not be instantiated.
      */
-    private GraphLegalityCheck() {
+    private PagLegalityCheck() {
 
     }
 
@@ -117,14 +117,14 @@ public class GraphLegalityCheck {
             Node y = e.getNode2();
 
             if (Edges.isBidirectedEdge(e)) {
-                List<List<Node>> forwardPaths = mag.paths().directedPaths(x, y, 1);
+                Set<List<Node>> forwardPaths = mag.paths().directedPaths(x, y, 1);
                 if (!forwardPaths.isEmpty()) {
-                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y + ". An example path is " + GraphUtils.pathString(mag, forwardPaths.getFirst(), false));
+                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y + ". An example path is " + GraphUtils.pathString(mag, forwardPaths.iterator().next(), false));
                 }
 
-                List<List<Node>> backwardPaths = mag.paths().directedPaths(y, x, 1);
+                Set<List<Node>> backwardPaths = mag.paths().directedPaths(y, x, 1);
                 if (!backwardPaths.isEmpty()) {
-                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x + ". An example path is " + GraphUtils.pathString(mag, backwardPaths.getFirst(), false));
+                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x + ". An example path is " + GraphUtils.pathString(mag, backwardPaths.iterator().next(), false));
                 }
             }
         }

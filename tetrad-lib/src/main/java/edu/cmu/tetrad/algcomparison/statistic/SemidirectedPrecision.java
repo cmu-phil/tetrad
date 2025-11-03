@@ -69,6 +69,7 @@ public class SemidirectedPrecision implements Statistic {
     /**
      * Calculates the semi-directed precision value.
      *
+     * @param trueDag  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -76,7 +77,7 @@ public class SemidirectedPrecision implements Statistic {
      * @return The semi-directed precision value.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0, fp = 0;
 
         List<Node> nodes = estGraph.getNodes();

@@ -115,14 +115,14 @@ public class GraphUtils {
         JMenu checkGraph = new JMenu("Check Graph Type");
         JMenuItem checkGraphForDag = new JMenuItem(new CheckGraphFoDagAction(workbench));
         JMenuItem checkGraphForCpdag = new JMenuItem(new CheckGraphForCpdagAction(workbench));
-        JMenuItem checkGraphForMpdag = new JMenuItem(new CheckGraphForMpdagAction(workbench));
+        JMenuItem checkGraphForPdag = new JMenuItem(new CheckGraphForPdagAction(workbench));
         JMenuItem checkGraphForMag = new JMenuItem(new CheckGraphForMagAction(workbench));
         JMenuItem checkGraphForPag = new JMenuItem(new CheckGraphForPagAction(workbench));
 //        JMenuItem checkGraphForMpag = new JMenuItem(new CheckGraphForMpagAction(workbench));
 
         checkGraph.add(checkGraphForDag);
         checkGraph.add(checkGraphForCpdag);
-        checkGraph.add(checkGraphForMpdag);
+        checkGraph.add(checkGraphForPdag);
         checkGraph.add(checkGraphForMag);
         checkGraph.add(checkGraphForPag);
 //        checkGraph.add(checkGraphForMpag);
@@ -131,7 +131,7 @@ public class GraphUtils {
                 KeyStroke.getKeyStroke(KeyEvent.VK_1, InputEvent.ALT_DOWN_MASK));
         checkGraphForCpdag.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_2, InputEvent.ALT_DOWN_MASK));
-        checkGraphForMpdag.setAccelerator(
+        checkGraphForPdag.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_3, InputEvent.ALT_DOWN_MASK));
         checkGraphForMag.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_4, InputEvent.ALT_DOWN_MASK));

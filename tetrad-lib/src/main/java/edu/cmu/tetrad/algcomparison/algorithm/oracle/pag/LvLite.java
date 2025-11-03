@@ -54,13 +54,13 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-POD",
-        command = "BOSS-POD",
+        name = "LV-Dumb",
+        command = "lv-dumb",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class BossPod extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
+public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -88,7 +88,7 @@ public class BossPod extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public BossPod() {
+    public LvLite() {
         // Used for reflection; do not delete it.
     }
 
@@ -105,7 +105,7 @@ public class BossPod extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public BossPod(ScoreWrapper score) {
+    public LvLite(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -134,14 +134,16 @@ public class BossPod extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         }
 
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.BossPod search = new edu.cmu.tetrad.search.BossPod(score);
+        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
+        // DAG to PAG
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -173,7 +175,7 @@ public class BossPod extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      */
     @Override
     public String getDescription() {
-        return "BOSS-POD (BOSS followed by DAG to PAG) using " + this.score.getDescription();
+        return "LV-Dumb (BOSS followed by DAG to PAG) using " + this.score.getDescription();
     }
 
     /**
@@ -202,6 +204,7 @@ public class BossPod extends AbstractBootstrapAlgorithm implements Algorithm, Ta
 
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
+        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
 
         // General
         params.add(Params.TIME_LAG);

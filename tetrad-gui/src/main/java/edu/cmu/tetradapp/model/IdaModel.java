@@ -51,7 +51,7 @@ public class IdaModel implements SessionModel {
     /**
      * Represents the estimated graph associated with the current instance of IdaModel.
      */
-    private final Graph estMpdag;
+    private final Graph estPdag;
     /**
      * Represents the true SemIm object associated with the class IdaModel. It can be null if the object is not
      * available.
@@ -70,14 +70,14 @@ public class IdaModel implements SessionModel {
      */
     private List<String> vars = new LinkedList<>();
     /**
-     * Represents the IdaCheck object associated with the estimated MPDAG. This variable is used to perform checks on
-     * the estimated MPDAG. It is set to null if the estimated MPDAG is not available.
+     * Represents the IdaCheck object associated with the estimated PDAG. This variable is used to perform checks on
+     * the estimated PDAG. It is set to null if the estimated PDAG is not available.
      * <p>
      * Note: This variable is marked as transient, meaning it will not be serialized.
      */
     private transient IdaCheck idaCheckEst;
     /**
-     * Represents the IdaCheck object associated with the true MPDAG. This variable is used in the context of the
+     * Represents the IdaCheck object associated with the true PDAG. This variable is used in the context of the
      * IdaModel class.
      * <p>
      * Note: This variable is marked as transient, meaning it will not be serialized.
@@ -115,11 +115,11 @@ public class IdaModel implements SessionModel {
             throw new IllegalArgumentException("Expecting a data set.");
         }
 
-        if (!graphSource.getGraph().paths().isLegalMpdag()) {
-            throw new IllegalArgumentException("Expecting an MPDAG. (Could be a CPDAG or a DAG.)");
+        if (!graphSource.getGraph().paths().isLegalPdag()) {
+            throw new IllegalArgumentException("Expecting an PDAG. (Could be a CPDAG or a DAG.)");
         }
 
-        this.estMpdag = graphSource.getGraph();
+        this.estPdag = graphSource.getGraph();
 
         // If the data model is a simulation, get the true SEM IM.
         if (dataWrapper instanceof Simulation simulation) {
@@ -149,16 +149,16 @@ public class IdaModel implements SessionModel {
     }
 
     /**
-     * Retrieves the IdaCheck object associated with the estimated MPDAG.
+     * Retrieves the IdaCheck object associated with the estimated PDAG.
      *
-     * @return the IdaCheck object associated with the estimated MPDAG, or null if it is not available.
+     * @return the IdaCheck object associated with the estimated PDAG, or null if it is not available.
      */
     public IdaCheck getIdaCheckEst() {
         if (this.idaCheckEst != null) {
             return this.idaCheckEst;
         }
 
-        this.idaCheckEst = new IdaCheck(this.estMpdag, (DataSet) this.dataModel, trueSemIm);
+        this.idaCheckEst = new IdaCheck(this.estPdag, (DataSet) this.dataModel, trueSemIm);
         return this.idaCheckEst;
     }
 
@@ -176,7 +176,7 @@ public class IdaModel implements SessionModel {
             return null;
         }
 
-        this.idaCheckTrue = new IdaCheck(estMpdag, (DataSet) this.dataModel, trueSemIm);
+        this.idaCheckTrue = new IdaCheck(estPdag, (DataSet) this.dataModel, trueSemIm);
         return this.idaCheckTrue;
     }
 

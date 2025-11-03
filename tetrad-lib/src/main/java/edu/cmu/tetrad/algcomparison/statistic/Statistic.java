@@ -53,6 +53,19 @@ public interface Statistic extends Serializable {
     String getDescription();
 
     /**
+     * Calculates and returns the value of the statistic based on the provided graphs, data model,
+     * and parameters.
+     *
+     * @param trueDag    The true directed acyclic graph (DAG).
+     * @param trueGraph  The true graph, which could be a DAG, a CPDAG, or a PAG derived from the true DAG.
+     * @param estGraph   The estimated graph, which corresponds to the same type as the trueGraph.
+     * @param dataModel  The data model, which may be null.
+     * @param parameters The parameters for the calculation, which may be null.
+     * @return The computed value of the statistic as a double.
+     */
+    double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters);
+
+    /**
      * Returns the value of this statistic, given the true graph and the estimated graph.
      *
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
@@ -61,7 +74,9 @@ public interface Statistic extends Serializable {
      * @param parameters The parameters (can be null).
      * @return The value of the statistic.
      */
-    double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters);
+    default double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        return getValue(null, estGraph, trueGraph, dataModel, parameters);
+    }
 
     /**
      * Returns the value of this statistic, given the true graph and the estimated graph.
@@ -72,7 +87,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        return getValue(trueGraph, estGraph, dataModel, null);
+        return getValue(null, trueGraph,  estGraph, dataModel, null);
     }
 
     /**
@@ -84,7 +99,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph, Parameters parameters) {
-        return getValue(trueGraph, estGraph, null, parameters);
+        return getValue(null, trueGraph, estGraph, null, parameters);
     }
 
     /**
@@ -95,7 +110,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph) {
-        return getValue(trueGraph, estGraph, null, null);
+        return getValue(null, trueGraph, estGraph, null, null);
     }
 
     /**

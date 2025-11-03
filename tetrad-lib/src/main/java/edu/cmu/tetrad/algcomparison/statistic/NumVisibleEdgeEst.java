@@ -68,6 +68,7 @@ public class NumVisibleEdgeEst implements Statistic {
     /**
      * Returns the number of X-->Y edges that are visible in the estimated PAG.
      *
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph.
      * @param estGraph   The estimated graph.
      * @param dataModel  The data model.
@@ -75,7 +76,7 @@ public class NumVisibleEdgeEst implements Statistic {
      * @return The number of X-->Y edges that are visible in the estimated PAG.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
 
         GraphUtils.addEdgeSpecializationMarkup(estGraph);

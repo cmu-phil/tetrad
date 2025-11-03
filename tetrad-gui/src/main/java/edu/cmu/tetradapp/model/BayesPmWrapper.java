@@ -25,13 +25,11 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
 import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
@@ -154,7 +152,7 @@ public class BayesPmWrapper implements SessionModel {
      * @param bayesPm a {@link edu.cmu.tetrad.bayes.BayesPm} object
      * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public BayesPmWrapper(Dag graph, BayesPm bayesPm, Parameters params) {
+    public BayesPmWrapper(Graph graph, BayesPm bayesPm, Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -210,6 +208,43 @@ public class BayesPmWrapper implements SessionModel {
             lowerBound = params.getInt("lowerBoundNumVals", 2);
             upperBound = params.getInt("upperBoundNumVals", 4);
             setBayesPm(graph, lowerBound, upperBound);
+        } else if (params.getString("bayesPmInitializationMode", "range").equals("copy")) {
+//            setBayesPm(graph, pm, lowerBound, upperBound);
+        }else {
+            throw new IllegalStateException("Unrecognized type.");
+        }
+    }
+
+    public BayesPmWrapper(GraphWrapper graphWrapper, BayesPmWrapper pm, Parameters params) {
+        if (graphWrapper == null) {
+            throw new NullPointerException("Graph must not be null.");
+        }
+
+        Dag graph;
+
+        try {
+            graph = new Dag(graphWrapper.getGraph());
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "The parent graph cannot be converted to " + "a DAG.");
+        }
+
+        BayesPm bayesPm = pm.getBayesPm();
+
+        int lowerBound;
+        int upperBound;
+
+        if (params.getString("bayesPmInitializationMode", "range").equals("trinary")) {
+            lowerBound = upperBound = 3;
+            setBayesPm(graph, lowerBound, upperBound);
+        } else if (params.getString("bayesPmInitializationMode", "range").equals("range")) {
+            lowerBound = params.getInt("lowerBoundNumVals", 2);
+            upperBound = params.getInt("upperBoundNumVals", 4);
+            setBayesPm(graph, bayesPm, lowerBound, upperBound);
+        }else if (params.getString("bayesPmInitializationMode", "range").equals("copy")) {
+            lowerBound = params.getInt("lowerBoundNumVals", 2);
+            upperBound = params.getInt("upperBoundNumVals", 4);
+            setBayesPm(graph, bayesPm, lowerBound, upperBound);
         } else {
             throw new IllegalStateException("Unrecognized type.");
         }
@@ -492,6 +527,11 @@ public class BayesPmWrapper implements SessionModel {
 
     private void setBayesPm(Graph graph, int lowerBound, int upperBound) {
         BayesPm b = new BayesPm(graph, lowerBound, upperBound);
+        setBayesPm(b);
+    }
+
+    private void setBayesPm(Graph graph, BayesPm pm, int lowerBound, int upperBound) {
+        BayesPm b = new BayesPm(graph, pm, lowerBound, upperBound);
         setBayesPm(b);
     }
 

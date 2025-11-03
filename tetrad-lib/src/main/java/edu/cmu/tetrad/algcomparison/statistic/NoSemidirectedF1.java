@@ -67,9 +67,9 @@ public class NoSemidirectedF1 implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double precision = new NoSemidirectedPrecision().getValue(trueGraph, estGraph, dataModel, new Parameters());
-        double recall = new NoSemidirectedRecall().getValue(trueGraph, estGraph, dataModel, new Parameters());
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        double precision = new NoSemidirectedPrecision().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
+        double recall = new NoSemidirectedRecall().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
         return 2 * (precision * recall) / (precision + recall);
     }
 

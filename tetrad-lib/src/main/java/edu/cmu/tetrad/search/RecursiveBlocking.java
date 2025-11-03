@@ -73,11 +73,22 @@ public class RecursiveBlocking {
                                                   Set<Node> containing,
                                                   Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
+//        Adjustment2 adjustment = new Adjustment2(graph);
+//        List<Set<Node>> sets = adjustment.adjustmentSets(x, y, "PAG", 1, 8, 1, maxPathLength,
+//                Adjustment2.ColliderPolicy.OFF, false, notFollowed, containing);
+//
+//        if (!sets.isEmpty()) {
+//            return sets.getFirst();
+//        } else {
+//            return null;
+//        }
+
         return blockPathsRecursivelyVisit(
                 graph, x, y, containing, notFollowed,
                 graph.paths().getDescendantsMap(), maxPathLength, null
         );
     }
+
 
     /**
      * Variant of {@link #blockPathsRecursively(Graph, Node, Node, Set, Set, int)} that additionally accepts an optional
@@ -261,7 +272,7 @@ public class RecursiveBlocking {
             return Blockable.UNBLOCKABLE;
         }
         if (path.contains(b)) {
-            return Blockable.UNBLOCKABLE;
+            return Blockable.BLOCKED;
         }
         if (notFollowed.contains(b)) {
             return Blockable.INDETERMINATE;

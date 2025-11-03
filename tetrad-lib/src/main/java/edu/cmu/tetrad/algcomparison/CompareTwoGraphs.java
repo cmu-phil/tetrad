@@ -287,7 +287,7 @@ public class CompareTwoGraphs {
 
         for (Statistic statistic : statistics) {
             try {
-                values.add(statistic.getValue(trueGraph, _targetGraph, dataModel, new Parameters()));
+                values.add(statistic.getValue(trueGraph, trueGraph, _targetGraph, dataModel, new Parameters()));
                 abbr.add(statistic.getAbbreviation());
                 desc.add(statistic.getDescription());
             } catch (Exception ignored) {

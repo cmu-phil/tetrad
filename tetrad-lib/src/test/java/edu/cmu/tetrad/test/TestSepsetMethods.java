@@ -23,6 +23,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.RecursiveBlocking;
+import edu.cmu.tetrad.search.RecursiveBlockingVerbose;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -383,6 +384,39 @@ public class TestSepsetMethods {
         }
 
         assertTrue(allOK);
+    }
+
+    /**
+     * This method is used to test the blockPathsRecursively method for finding a set of nodes that blocks all blockable
+     * paths between two nodes in a graph.
+     */
+    @Test
+    public void test6() {
+
+        Graph graph = GraphUtils.convert("x-->a,a-->b,c-->a,w-->c,x-->w,y-->w");
+
+        System.out.println(graph);
+
+        Set<Node> blocking = null;
+        try {
+            Node x = graph.getNode("x");
+            Node y = graph.getNode("y");
+
+            blocking = RecursiveBlockingVerbose.blockPathsRecursivelyVerbose(
+                    graph, x, y,
+                    new HashSet<>(), Set.of(),
+                    /*maxPathLength*/ -1,
+                    System.out
+            );
+
+            MsepTest test = new MsepTest(graph);
+            System.out.println(test.checkIndependence(x, y, blocking).isIndependent());
+
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println(blocking);
     }
 
     private boolean removeIfInMb(Graph pag, Node x, Node y) {

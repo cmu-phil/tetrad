@@ -92,6 +92,7 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
     /**
      * Calculates whether Kolmogorov-Smirnoff P > 0.05.
      *
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -100,8 +101,8 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
      * @throws IllegalArgumentException if the data model is null.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double p = new MarkovCheckKolmogorovSmirnoffPBestOf10(independenceWrapper, conditioningSetType).getValue(trueGraph, estGraph, dataModel, new Parameters());
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        double p = new MarkovCheckKolmogorovSmirnoffPBestOf10(independenceWrapper, conditioningSetType).getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
         return p > parameters.getDouble(Params.MC_ALPHA) ? 1.0 : 0.0;
     }
 

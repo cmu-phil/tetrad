@@ -81,7 +81,7 @@ public class BicEst implements Statistic {
      * Returns the value of the statistic.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (dataModel.isDiscrete()) {
             DiscreteBicScore score = new DiscreteBicScore((DataSet) dataModel);
 

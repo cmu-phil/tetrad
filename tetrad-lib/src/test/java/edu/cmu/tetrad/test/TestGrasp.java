@@ -3342,7 +3342,7 @@ public final class TestGrasp {
 
                 System.out.println("<x, y> = <" + x + ", " + y + ">");
 
-                List<List<Node>> treks = graph.paths().treks(x, y, 4);
+                Set<List<Node>> treks = graph.paths().treks(x, y, 4);
 
                 if (treks.size() >= 2) {
                     IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>());

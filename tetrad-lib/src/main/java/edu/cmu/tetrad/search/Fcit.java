@@ -289,7 +289,7 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
-        fciOrient.setParallel(false);
+        fciOrient.setParallel(true);
 //        fciOrient.setCompleteRuleSetUsed(true);
 //        fciOrient.setKnowledge(knowledge);
 
@@ -528,7 +528,8 @@ public final class Fcit implements IGraphSearch {
 
         // The final orientation rules were applied just before this step, so this should list only
         // discriminating paths that could not be oriented by them...
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag, -1, false);
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag,
+                -1, false);
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
         for (DiscriminatingPath path : discriminatingPaths) {
             Node x = path.getX();
@@ -625,15 +626,15 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> S = new HashSet<>(B);
                 Set<Node> C = GraphUtils.asSet(cChoice, common);
 
-                // Skip if any c ∈ C is a definite collider x -> c <- y
-                boolean killsDefCollider = false;
+                // We don't want to condition on a known collider.
+                boolean skip = false;
                 for (Node c : C) {
                     if (this.pag.isDefCollider(x, c, y)) {
-                        killsDefCollider = true;
+                        skip = true;
                         break;
                     }
                 }
-                if (killsDefCollider) continue;
+                if (skip) continue;
 
                 S.removeAll(C);
 
@@ -665,7 +666,7 @@ public final class Fcit implements IGraphSearch {
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, superVerbose);
 
-        if (!GraphLegalityCheck.isLegalPagQuiet(this.pag, Set.of())) {
+        if (!PagLegalityCheck.isLegalPagQuiet(this.pag, Set.of())) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
                                                + " reasons, but it didn't lead to a PAG");
@@ -719,7 +720,6 @@ public final class Fcit implements IGraphSearch {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-        setSuperVerbose(verbose);
     }
 
     /**

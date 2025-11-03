@@ -30,7 +30,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import java.util.*;
 
 /**
- * This calculates total effects and absolute total effects for an MPDAG G for all pairs distinct (x, y) of variables,
+ * This calculates total effects and absolute total effects for an PDAG G for all pairs distinct (x, y) of variables,
  * where the total effect is obtained by regressing y on x &cup; S and reporting the regression coefficient. Here, S
  * ranges over sets consisting of possible parents of x in G--that is, a set consisting of the parents of x in G plus
  * some combination of the neighbors for x in G, and excluding any children of x in G. Absolute total effects are
@@ -89,9 +89,9 @@ public class IdaCheck {
     private HashMap<Node, Node> nodeMap;
 
     /**
-     * Constructs a new IDA check for the given MPDAG and data set.
+     * Constructs a new IDA check for the given PDAG and data set.
      *
-     * @param graph     the MPDAG.
+     * @param graph     the PDAG.
      * @param dataSet   the data set.
      * @param trueSemIm the true SEM IM.
      */
@@ -110,17 +110,17 @@ public class IdaCheck {
             throw new IllegalArgumentException("Expecting a continuous data set.");
         }
 
-        // Check to make sure the graph is an MPDAG.
-        if (!graph.paths().isLegalMpdag()) {
-            throw new IllegalArgumentException("Expecting an MPDAG.");
+        // Check to make sure the graph is an PDAG.
+        if (!graph.paths().isLegalPdag()) {
+            throw new IllegalArgumentException("Expecting an PDAG.");
         }
 
-        // Convert the MPDAG to a MPDAG with the same nodes as the data set
+        // Convert the PDAG to a PDAG with the same nodes as the data set
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
 
-        // Check to make sure the set of variables from the MPDAG is the same as the set of variables from the data set.
+        // Check to make sure the set of variables from the PDAG is the same as the set of variables from the data set.
         if (!new HashSet<>(graph.getNodes()).equals(new HashSet<>(dataSet.getVariables()))) {
-            throw new IllegalArgumentException("The variables in the MPDAG do not match the variables in the data set.");
+            throw new IllegalArgumentException("The variables in the PDAG do not match the variables in the data set.");
         }
 
         this.nodes = dataSet.getVariables();

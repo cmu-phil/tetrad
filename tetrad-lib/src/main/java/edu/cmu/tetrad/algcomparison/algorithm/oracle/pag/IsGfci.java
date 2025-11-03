@@ -38,9 +38,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.work_in_progress.IsBDeuScore;
-import edu.cmu.tetrad.search.IsScore;
-import edu.cmu.tetrad.search.IsGFci;
+import edu.cmu.tetrad.search.is.IsBDeuScore2;
+import edu.cmu.tetrad.search.is.IsScore;
+import edu.cmu.tetrad.search.is.IsGFci;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -187,7 +187,7 @@ public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, Has
         DataSet testCase = aligned.subsetRows(new int[]{row});
 
         // Build instance-specific score (ISBDeuScore falls back to population-only if testCase == null)
-        IsScore isScore = new IsBDeuScore(train, testCase);
+        IsScore isScore = new IsBDeuScore2(train, testCase);
 
         // Population score (use algcomparison wrapper consistently)
         Score populationScore = new BdeuScore().getScore(dataModel, parameters);

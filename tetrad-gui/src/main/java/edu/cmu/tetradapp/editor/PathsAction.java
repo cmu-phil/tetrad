@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,12 +16,13 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.search.Adjustment;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
@@ -582,6 +583,61 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         return selectionBox;
     }
 
+    // Build a mask that tells RB "never add these to Z" (treat as latent for this run).
+    static Set<Node> buildLatentMaskForTotalEffect(Graph graph,
+                                                   Node X, Node Y,
+                                                   Collection<List<Node>> amenablePaths,
+                                                   Set<Node> containing,            // seed Z (may be empty)
+                                                   boolean includeDescendantsOfX) { // Tier-B toggle
+        Set<Node> mask = new HashSet<>();
+
+        // --- Tier A: interior non-colliders along amenable X→Y paths ---
+        for (List<Node> p : amenablePaths) {
+            if (p.size() < 3) continue; // no interior nodes on length-2 path X–Y
+            for (int i = 1; i < p.size() - 1; i++) {
+                Node a = p.get(i - 1), b = p.get(i), c = p.get(i + 1);
+                // Mask ONLY if b is a definite non-collider on this triple
+                if (!graph.isDefCollider(a, b, c)) {
+                    mask.add(b);
+                }
+            }
+        }
+
+        // --- Tier B (optional): Descendants of X (measured only) ---
+        if (includeDescendantsOfX) {
+            Map<Node, Set<Node>> descMap = graph.paths().getDescendantsMap(); // recompute per run
+            Set<Node> descX = descMap.getOrDefault(X, Collections.emptySet());
+            for (Node d : descX) {
+                if (d != null && d.getNodeType() == NodeType.MEASURED) {
+                    mask.add(d);
+                }
+            }
+        }
+
+        // --- Sanitize: remove endpoints, latents, and anything the user forced into Z ---
+        mask.remove(X);
+        mask.remove(Y);
+        if (containing != null) {
+            mask.removeAll(containing);
+        }
+        // Keep mask to measured nodes only; true latents are already handled by RB
+        mask.removeIf(n -> n == null || n.getNodeType() != NodeType.MEASURED);
+
+        return mask;
+    }
+
+    private static Set<List<Node>> getAmenablePaths(Graph graph, String graphType, Node node1, Node node2) {
+        Set<List<Node>> amenablePaths;
+        if (graphType.equals("DAG") || graphType.equals("PDAG") || graphType.equals("MAG")) {
+            amenablePaths = graph.paths().getAmenablePathsPdagMag(node1, node2, -1);
+        } else if (graphType.equals("PAG")) {
+            amenablePaths = graph.paths().getAmenablePathsPag(node1, node2, -1);
+        } else {
+            throw new IllegalArgumentException("Graph must be a legal PDAG, MAG, or PAG: " + graphType);
+        }
+        return amenablePaths;
+    }
+
     /**
      * Performs the action when an event occurs.
      *
@@ -658,7 +714,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Cycles",
                 "All Paths",
                 "Adjacents",
-                "Adjustment Sets",
+                "Adjustment Sets (for Total Effect)",
+//                "Adjustment Set (Recursive)",
+                "Direct-Effect Adjustment Sets (Edge-Specific)\n",
                 "Amenable paths",
                 "Backdoor paths"
         });
@@ -796,7 +854,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         return buttonPanel;
     }
 
-
     /**
      * Updates the text area based on the selected method.
      *
@@ -816,7 +873,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 } else if ("Semidirected Paths".equals(method)) {
                     allSemidirectedPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Amenable paths".equals(method)) {
-                    allAmenablePathsMpdagMag(graph, textArea, nodes1, nodes2);
+                    allAmenablePathsPdagMag(graph, textArea, nodes1, nodes2);
                 } else if ("Backdoor paths".equals(method)) {
                     allBackdoorPaths(graph, textArea, nodes1, nodes2);
                 } else if ("All Paths".equals(method)) {
@@ -829,9 +886,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     latentConfounderPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Adjacents".equals(method)) {
                     adjacentNodes(graph, textArea, nodes1, nodes2);
-                } else if ("Adjustment Sets".equals(method)) {
+                } else if ("Adjustment Sets (for Total Effect)".equals(method)) {
                     adjustmentSets(graph, textArea, nodes1, nodes2);
-                } else if ("Cycles".equals(method)) {
+                } else if ("Direct-Effect Adjustment Sets (Edge-Specific)\n".equals(method)) {
+                    edgeSpecificAdjustment(graph, textArea, nodes1, nodes2);
+                }
+//                else if ("Adjustment Set (Recursive)".equals(method)) {
+//                    recursiveAdjustmentSets(graph, textArea, nodes1, nodes2);
+//                }
+                else if ("Cycles".equals(method)) {
                     allCyclicPaths(graph, textArea, nodes1, nodes2);
                 } else {
                     throw new IllegalArgumentException("Unknown method: " + method);
@@ -842,9 +905,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         };
     }
 
-
     private void addConditionNote(JTextArea textArea) {
-        String conditioningSymbol = "â";
+        String conditioningSymbol = "\u2714";
         textArea.append("\n" + conditioningSymbol + " indicates that the marked variable is in the conditioning set; (L) that L is latent.");
     }
 
@@ -867,7 +929,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> paths = graph.paths().directedPaths(node1, node2,
+                Set<List<Node>> paths = graph.paths().directedPaths(node1, node2,
                         parameters.getInt("pathsMaxLength"));
 
                 if (paths.isEmpty()) {
@@ -905,7 +967,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         boolean pathListed = false;
 
         for (Node node1 : nodes1) {
-            List<List<Node>> paths = graph.paths().directedPaths(node1, node1,
+            Set<List<Node>> paths = graph.paths().directedPaths(node1, node1,
                     parameters.getInt("pathsMaxLength"));
 
             if (paths.isEmpty()) {
@@ -922,7 +984,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             textArea.append("\n\nNo directed paths found.");
         }
     }
-
 
     /**
      * Appends all semidirected paths from nodes in list nodes1 to nodes in list nodes2 to the given text area. A
@@ -944,7 +1005,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> paths = graph.paths().semidirectedPaths(node1, node2,
+                Set<List<Node>> paths = graph.paths().semidirectedPaths(node1, node2,
                         parameters.getInt("pathsMaxLength"));
 
                 if (paths.isEmpty()) {
@@ -973,7 +1034,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * @param nodes1   The list of starting nodes.
      * @param nodes2   The list of ending nodes.
      */
-    private void allAmenablePathsMpdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+    private void allAmenablePathsPdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.setText("""
                 These are semidirected paths from X to Y that start with a directed edge out of X. An 
                 adjustment set should not block any of these paths.
@@ -985,18 +1046,18 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         boolean mag = false;
         boolean pag = false;
 
-        if (graph.paths().isLegalMpdag()) {
+        if (graph.paths().isLegalPdag()) {
             mpdag = true;
         } else if (graph.paths().isLegalMag()) {
             mag = true;
-        } else if (!graph.paths().isLegalPag()) {
+        } else if (graph.paths().isLegalPag()) {
             pag = true;
         }
 
         if (pag) {
             allAmenablePathsPag(graph, textArea, nodes1, nodes2);
         } else if (!mpdag && !mag) {
-            textArea.append("\nThe graph is not a DAG, CPDAG, MPDAG, MAG or PAG.");
+            textArea.append("\nThe graph is not a DAG, CPDAG, PDAG, MAG or PAG.");
             return;
         }
 
@@ -1004,7 +1065,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> amenable = graph.paths().amenablePathsMpdagMag(node1, node2,
+                Set<List<Node>> amenable = graph.paths().getAmenablePathsPdagMag(node1, node2,
                         parameters.getInt("pathsMaxLengthAdjustment"));
 
                 if (amenable.isEmpty()) {
@@ -1045,7 +1106,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> amenable = graph.paths().amenablePathsPag(node1, node2,
+                Set<List<Node>> amenable = graph.paths().getAmenablePathsPag(node1, node2,
                         parameters.getInt("pathsMaxLengthAdjustment"));
 
                 if (amenable.isEmpty()) {
@@ -1083,43 +1144,52 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         boolean mpdag = false;
         boolean mag = false;
+        String graphType;
 
-        if (graph.paths().isLegalMpdag()) {
+        if (graph.paths().isLegalPdag()) {
             mpdag = true;
+            graphType = "PDAG";
         } else if (graph.paths().isLegalMag()) {
             mag = true;
-        } else if (!graph.paths().isLegalPag()) {
-            textArea.append("\nThe graph is not a DAG, CPDAG, MPDAG, MAG or PAG.");
-            return;
+            graphType = "MAG";
+        } else if (graph.paths().isLegalPag()) {
+            textArea.append("\nThe graph is not a PDAG, MAG or PAG.");
+            graphType = "PAG";
+        } else {
+            throw new IllegalArgumentException("Graph type is not PDAG, MAG, or PAG");
         }
 
         boolean pathListed = false;
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                Set<List<Node>> _backdoor = graph.paths().allPaths(node1, node2,
-                        parameters.getInt("pathsMaxLengthAdjustment"));
-                List<List<Node>> backdoor = new ArrayList<>(_backdoor);
+                int maxLength = parameters.getInt("pathsMaxLengthAdjustment");
 
-                if (mpdag || mag) {
-                    backdoor.removeIf(path -> path.size() < 2 ||
-                                              !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
-                } else {
-                    backdoor.removeIf(path -> {
-                        if (path.size() < 2) {
-                            return false;
-                        }
-                        Node x = path.get(0);
-                        Node w = path.get(1);
-                        Node y = node2;
-                        return !(graph.getEdge(x, w).pointsTowards(x)
-                                 || Edges.isUndirectedEdge(graph.getEdge(x, w))
-                                 || (Edges.isBidirectedEdge(graph.getEdge(x, w))
-                                     && (graph.paths().existsDirectedPath(w, x)
-                                         || (graph.paths().existsDirectedPath(w, x)
-                                             && graph.paths().existsDirectedPath(w, y)))));
-                    });
-                }
+//                Set<List<Node>> _backdoor = graph.paths().allPaths(node1, node2,
+//                        maxLength);
+//                List<List<Node>> backdoor = new ArrayList<>(_backdoor);
+//
+//                if (mpdag || mag) {
+//                    backdoor.removeIf(path -> path.size() < 2 ||
+//                            !(graph.getEdge(path.getFirst(), path.get(1)).pointsTowards(path.getFirst())));
+//                } else {
+//                    backdoor.removeIf(path -> {
+//                        if (path.size() < 2) {
+//                            return false;
+//                        }
+//                        Node x = path.get(0);
+//                        Node w = path.get(1);
+//                        Node y = node2;
+//                        return !(graph.getEdge(x, w).pointsTowards(x)
+//                                || Edges.isUndirectedEdge(graph.getEdge(x, w))
+//                                || (Edges.isBidirectedEdge(graph.getEdge(x, w))
+//                                && (graph.paths().existsDirectedPath(w, x)
+//                                || (graph.paths().existsDirectedPath(w, x)
+//                                && graph.paths().existsDirectedPath(w, y)))));
+//                    });
+//                }
+
+                Set<List<Node>> backdoor = graph.paths().getBackdoorPaths(node1, node2, graphType, maxLength);
 
                 if (backdoor.isEmpty()) {
                     continue;
@@ -1128,7 +1198,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
-                listPaths(graph, textArea, backdoor);
+                listPaths(graph, textArea, new HashSet<>(backdoor));
             }
         }
 
@@ -1157,9 +1227,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                Set<List<Node>> _paths = graph.paths().allPaths(node1, node2,
+                Set<List<Node>> paths = graph.paths().allPaths(node1, node2,
                         parameters.getInt("pathsMaxLength"));
-                List<List<Node>> paths = new ArrayList<>(_paths);
 
                 if (paths.isEmpty()) {
                     continue;
@@ -1177,7 +1246,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
-    private void listPaths(Graph graph, JTextArea textArea, List<List<Node>> paths) {
+    private void listPaths(Graph graph, JTextArea textArea, Set<List<Node>> paths) {
         textArea.append("\n\n    Not Blocked:\n");
 
         boolean allowSelectionBias = graph.paths().isLegalPag();
@@ -1195,7 +1264,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         boolean mag = false;
         boolean pag = false;
 
-        if (graph.paths().isLegalMpdag()) {
+        if (graph.paths().isLegalPdag()) {
             mpdag = true;
         } else if (graph.paths().isLegalMag()) {
             mag = true;
@@ -1259,7 +1328,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> treks = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> treks = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
 
                 if (treks.isEmpty()) {
                     continue;
@@ -1296,9 +1365,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> confounderPaths = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
-                List<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, parameters.getInt("pathsMaxLength"));
-                List<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> confounderPaths = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, parameters.getInt("pathsMaxLength"));
 
                 confounderPaths.removeAll(directPaths1);
 
@@ -1308,7 +1377,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 confounderPaths.removeIf(path -> path.get(0).getNodeType() != NodeType.MEASURED
-                                                 || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED);
+                        || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED);
 
                 if (confounderPaths.isEmpty()) {
                     continue;
@@ -1346,9 +1415,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> latentConfounderPaths = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
-                List<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, parameters.getInt("pathsMaxLength"));
-                List<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> latentConfounderPaths = graph.paths().treks(node1, node2, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> directPaths1 = graph.paths().directedPaths(node1, node2, parameters.getInt("pathsMaxLength"));
+                Set<List<Node>> directPaths2 = graph.paths().directedPaths(node2, node1, parameters.getInt("pathsMaxLength"));
                 latentConfounderPaths.removeAll(directPaths1);
 
                 for (List<Node> _path : directPaths2) {
@@ -1366,7 +1435,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     }
 
                     if (path.get(0).getNodeType() != NodeType.MEASURED
-                        || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED) {
+                            || path.get(path.size() - 1).getNodeType() != NodeType.MEASURED) {
                         latentConfounderPaths.remove(path);
                     }
                 }
@@ -1452,33 +1521,63 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         boolean found = false;
 
+        String graphType = "PDAG";
+
+        if (graph.paths().isLegalPdag()) {
+            graphType = "PDAG";
+        } else if (graph.paths().isLegalMag()) {
+            graphType = "MAG";
+        } else if (graph.paths().isLegalPag()) {
+            graphType = "PAG";
+        }
+
+        int maxNumSet = parameters.getInt("pathsMaxNumSets");
+        int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
+        int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
+        int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
+
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                int maxNumSet = parameters.getInt("pathsMaxNumSets");
-                int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
-                int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
-                int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
 
                 List<Set<Node>> adjustments;
-
                 try {
-                    adjustments = graph.paths().adjustmentSets(node1, node2, maxNumSet,
-                            maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment);
+                    adjustments = graph.paths().adjustmentSets(
+                            node1, node2, graphType, maxNumSet,
+                            maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment
+                    );
                 } catch (Exception e) {
-
-                    // A message is returned, which we are not printing.
+                    // Skip on error
                     continue;
                 }
 
                 textArea.append("\n\nAdjustment sets for " + node1 + " ~~> " + node2 + ":\n");
 
-                if (adjustments.isEmpty()) {
-                    textArea.append("\n    --NONE--");
-                    continue;
-                }
-
                 for (Set<Node> adjustment : adjustments) {
                     textArea.append("\n    " + adjustment);
+                }
+
+                Set<List<Node>> amenablePaths = getAmenablePaths(graph, graphType, node1, node2);
+
+                if (amenablePaths.isEmpty()) {
+                    if (!adjustments.isEmpty()) {
+                        if (adjustments.getFirst().isEmpty()) {
+                            textArea.append("\n\n    (No amenable paths exist, and adjustment is unnecessary)");
+                        } else {
+                            textArea.append("\n\n    (No amenable paths exist, but adjustment is possible)");
+                        }
+                    } else {
+                        textArea.append("\n\n    (No amenable paths exist, and no adjustment is necessary)");
+                    }
+                } else {
+                    if (!adjustments.isEmpty()) {
+                        if (adjustments.getFirst().isEmpty()) {
+                            textArea.append("\n\n    (Amenable paths exist, but adjustment is unnecessary)");
+                        } else {
+                            textArea.append("\n\n    (Amenable paths exist, and adjustment is necessary)");
+                        }
+                    } else {
+                        textArea.append("\n\n    (No backdoor paths found; no adjustment necessary)");
+                    }
                 }
 
                 found = true;
@@ -1488,6 +1587,235 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         if (!found) {
             textArea.append("\n\nNo adjustment sets found.");
         }
+    }
+
+//    private void recursiveAdjustmentSets(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+//        textArea.setText("""
+//                An adjustment set is a set of nodes that blocks all paths that can't be causal while leaving
+//                all causal paths unblocked. In particular, all confounders of the source and target will be
+//                blocked. By conditioning on an adjustment set (if one exists) one can estimate the total
+//                effect of a source on a target. We look for adjustment sets here using a masked version of
+//                the recursive blocking set algorithm.
+//
+//                To check to see if a particular set of nodes is an adjustment set, type (or paste) the nodes
+//                into the text field above. Then press Enter. Then select "Amenable Paths" from the above
+//                dropdown. All amenable paths (paths that can be causal) should be unblocked. If any are
+//                blocked, the set is not an adjustment set. Also select "Backdoor paths" from the dropdown.
+//                All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the
+//                set is not an adjustment set.
+//                """);
+//
+//        String graphType;
+//
+//        if (graph.paths().isLegalPdag()) {
+//            graphType = RecursiveAdjustment.GraphType.PDAG.toString();
+//        } else if (graph.paths().isLegalMag()) {
+//            graphType = RecursiveAdjustment.GraphType.MAG.toString();
+//        } else if (graph.paths().isLegalPag()) {
+//            graphType = RecursiveAdjustment.GraphType.PAG.toString();
+//        } else {
+//            graphType = RecursiveAdjustment.GraphType.PDAG.toString();
+//        }
+//
+//        boolean found = false;
+//
+//        final int maxNumSet = parameters.getInt("pathsMaxNumSets");
+//
+//        for (Node node1 : nodes1) {
+//            for (Node node2 : nodes2) {
+//                // Skip degenerate X ~~> X requests.
+//                if (node1 == null || node2 == null || node1 == node2) continue;
+//
+//                // Library entry point
+//                var paths = graph.paths();
+//
+//                // Case split based on amenability (library check)
+//                boolean amenable = paths.hasAmenablePaths(node1, node2, graphType, -1);
+//                textArea.append("\n\n" + node1 + " ~~> " + node2 + ":\n");
+//
+//                // True adjustment-set search via recursive algorithm
+////                if (amenable) {
+//                RAEnumerate.AdjSummary adj;
+//                try {
+//                    adj = paths.recursiveAdjustment(
+//                            node1, node2,
+//                            graphType,
+//                            maxNumSet, -1,
+//                            /* minimizeEach */ true
+//                    );
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    textArea.append("    --ERROR running recursive adjustment search--");
+//                    continue;
+//                }
+//
+//                textArea.append("\n" + adj.toString());
+//
+//                if (!amenable) {
+//                    textArea.append("\n(But no amenable (causal) paths exist.)");
+//                }
+//            }
+//        }
+//
+//        if (!found) {
+//            textArea.append("\nNo adjustment (or candidate separating) sets found.");
+//        }
+//    }
+
+private void edgeSpecificAdjustment(Graph graph, JTextArea textArea,
+                                   List<Node> nodes1, List<Node> nodes2) {
+    textArea.setText("""
+    A Direct-Effect Adjustment Set (Edge-Specific) for nodes x and y is a set of variables 
+    that blocks all non-inducing paths between x and y, while leaving a direct edge x — y 
+    or other inducing paths unblocked.
+    
+    • If there is a direct edge x → y, the RB set isolates the EDGE-SPECIFIC (LOCAL) EFFECT 
+      associated with that edge. It blocks all alternative non-inducing paths from x to y 
+      while leaving the edge itself unblocked.
+    
+    • If multiple inducing paths exist between x and y (for example, due to latent confounding), 
+      the RB set will leave those open as well. In such cases, it does not correspond to a unique 
+      adjustment set or a unique direct-effect estimate.
+    """);
+
+    boolean found = false;
+    int maxNumSets = parameters.getInt("pathsMaxNumSets");
+    int maxRadius = parameters.getInt("pathsMaxDistanceFromEndpoint");
+    int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
+    int maxPathLength = parameters.getInt("pathsMaxLengthAdjustment");
+
+    for (Node node1 : nodes1) {
+        for (Node node2 : nodes2) {
+            if (!graph.isAdjacentTo(node1, node2)) {
+                textArea.append("\n\n" + node1 + " and " +  node2 + " are not adjacent.");
+                continue;
+            }
+
+            List<Set<Node>> adjustments;
+
+            boolean avoidAmenable = false;
+
+            try {
+
+                // The type of graph doesn't matter if we're ignoring amenable paths.
+                Adjustment adjustment = new Adjustment(graph);
+                adjustments = adjustment.adjustmentSets(node1, node2, "PAG",
+                        maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength,
+                        Adjustment.ColliderPolicy.OFF, avoidAmenable, Set.of(), Set.of());
+            } catch (Exception e) {
+                // Skip on error
+                continue;
+            }
+
+            textArea.append("\n\nEdge-specific adjustment sets for " + graph.getEdge(node1, node2) + ":\n");
+
+            for (Set<Node> adjustment : adjustments) {
+                textArea.append("\n    " + adjustment);
+            }
+
+            found = true;
+        }
+    }
+
+    if (!found) {
+        textArea.append("\n\nNo recursive blocking sets found under the current parameters.");
+    }
+}
+
+//    private void recursiveBlockingSets(Graph graph, JTextArea textArea,
+//                                       List<Node> nodes1, List<Node> nodes2) {
+//        textArea.setText("""
+//                A recursive blocking (RB) set for nodes x and y is a set of variables that blocks all
+//                non-inducing paths between x and y (it may leave a direct edge x — y or other inducing paths unblocked).
+//
+//                • If there is a direct edge x → y, the RB set isolates the EDGE-SPECIFIC (LOCAL) EFFECT associated
+//                  with that edge. It blocks all alternative non-inducing paths from x to y while leaving the edge
+//                  itself unblocked.
+//
+//                • If multiple inducing paths exist between x and y (for example, due to latent confounding), the RB
+//                  set will leave those open as well. In such cases, it does not correspond to a unique adjustment set
+//                  or direct-effect estimate.
+//
+//                • Only in special cases—when x and y are amenable and there is a unique directed causal route from
+//                  x to y—will an RB set coincide with an ADJUSTMENT SET for estimating the total effect of x on y.
+//
+//                Tip: To assess amenability, select “Amenable paths” above. All amenable paths (those that can be causal)
+//                should remain unblocked; backdoor paths should be blocked.
+//                """);
+//
+//        boolean anyFound = false;
+//        int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
+//
+//        for (Node node1 : nodes1) {
+//            for (Node node2 : nodes2) {
+//                if (node1 == node2) continue;
+//
+//                Set<Node> blocking1 = null;
+//                Set<Node> blocking2 = null;
+//                try {
+//                    blocking1 = RecursiveBlocking.blockPathsRecursively(
+//                            graph, node1, node2, conditioningSet, Set.of(), maxDistanceFromEndpoint);
+//                    blocking2 = RecursiveBlocking.blockPathsRecursively(
+//                            graph, node2, node1, conditioningSet, Set.of(), maxDistanceFromEndpoint);
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+//
+//                textArea.append("\n\nRecursive blocking sets for <" + node1 + ", " + node2 + ">:\n");
+//
+//                textArea.append("\nFrom " + node1 + " to " + node2 + ":");
+//                textArea.append(blocking1 == null ? "\n    --NONE--" : "\n    " + blocking1);
+//
+//                textArea.append("\n\nFrom " + node2 + " to " + node1 + ":");
+//                textArea.append(blocking2 == null ? "\n    --NONE--" : "\n    " + blocking2);
+//
+//                boolean foundPair = (blocking1 != null) || (blocking2 != null);
+//                anyFound |= foundPair;
+//
+//                boolean hasEdge = (graph.getEdge(node1, node2) != null);
+//                boolean amenable =
+//                        hasAmenablePaths(graph, node1, node2) || hasAmenablePaths(graph, node2, node1);
+//
+//                if (foundPair && hasEdge && amenable) {
+//                    textArea.append("\n\nResult: The pair <" + node1 + ", " + node2 + "> is amenable. The above RB set(s) " +
+//                            "serve as EDGE-SPECIFIC BLOCKING SETS for isolating the local effect of the edge " +
+//                            node1 + " → " + node2 + ".");
+//                } else if (foundPair && hasEdge) {
+//                    textArea.append("\n\nResult: An edge exists between " + node1 + " and " + node2 +
+//                            ", but amenability is not established. The RB set(s) block non-inducing paths,\n " +
+//                            "but multiple inducing paths may remain unblocked; thus, these are not guaranteed " +
+//                            "to represent valid direct-effect blocking sets.");
+//                } else if (foundPair) {
+//                    String indep = " _||_ ";
+//                    textArea.append("\n\nResult: No edge between " + node1 + " and " + node2 +
+//                            ". The RB set(s) are separating sets:\n    " +
+//                            node1 + indep + node2 + " | " + (blocking1 == null ? "{}" : blocking1) + " and\n    " +
+//                            node1 + indep + node2 + " | " + (blocking2 == null ? "{}" : blocking2));
+//                } else {
+//                    textArea.append("\n\nResult: No RB sets found for this pair under the current search limits.");
+//                }
+//            }
+//        }
+//
+//        if (!anyFound) {
+//            textArea.append("\n\nNo recursive blocking sets found under the current parameters.");
+//        }
+//    }
+
+    /**
+     * Returns true if there exist amenable paths (Perković) from x to y in this graph.
+     */
+    private boolean hasAmenablePaths(Graph graph, Node x, Node y) {
+        int L = parameters.getInt("pathsMaxLengthAdjustment");
+        // Prefer a PAG-aware amenable routine if available, else fall back to PDAG/MAG version.
+        if (graph.paths().isLegalPag()) {
+            Set<List<Node>> aps = graph.paths().getAmenablePathsPag(x, y, L);
+            return aps != null && !aps.isEmpty();
+        } else if (graph.paths().isLegalPdag() || graph.paths().isLegalMag()) {
+            Set<List<Node>> aps = graph.paths().getAmenablePathsPdagMag(x, y, L);
+            return aps != null && !aps.isEmpty();
+        }
+        return false;
     }
 
     /**

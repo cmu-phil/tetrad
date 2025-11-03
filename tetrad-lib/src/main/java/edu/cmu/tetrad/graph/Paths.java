@@ -16,16 +16,15 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.search.RecursiveBlocking;
-import edu.cmu.tetrad.search.SepsetFinder;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.GraphLegalityCheck;
+import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.*;
@@ -376,15 +375,15 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Checks if the given graph is a legal Maximal Partial Directed Acyclic Graph (MPDAG). A MPDAG is considered legal
+     * Checks if the given graph is a legal Maximal Partial Directed Acyclic Graph (PDAG). A PDAG is considered legal
      * if it is equal to a CPDAG where additional edges have been oriented by Knowledge, with Meek rules applied for
      * maximum orientation. The test is performed by attemping to convert the graph to a CPDAG using the DAG to CPDAG
      * transformation and testing whether that graph is a legal CPDAG. Finally, we test to see whether the obtained
      * graph is equal to the original graph.
      *
-     * @return true if the MPDAG is legal, false otherwise.
+     * @return true if the PDAG is legal, false otherwise.
      */
-    public boolean isLegalMpdag() {
+    public boolean isLegalPdag() {
         Graph g = this.graph;
 
         for (Edge e : g.getEdges()) {
@@ -415,7 +414,7 @@ public class Paths implements TetradSerializable {
      * <p>
      * The user may choose to use the rules from Zhang (2008) or the rules from Spirtes et al. (2000).
      *
-     * @return true if the MPDAG is legal, false otherwise.
+     * @return true if the PDAG is legal, false otherwise.
      */
     public boolean isLegalMpag() {
         Graph g = this.graph;
@@ -446,7 +445,7 @@ public class Paths implements TetradSerializable {
     public boolean isLegalMag() {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        return GraphLegalityCheck.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
+        return PagLegalityCheck.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
     }
 
     /**
@@ -456,7 +455,7 @@ public class Paths implements TetradSerializable {
      */
     public boolean isLegalPag() {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-        return GraphLegalityCheck.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
+        return PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
     }
 
     /**
@@ -527,7 +526,6 @@ public class Paths implements TetradSerializable {
         return components;
     }
 
-
     /**
      * Finds all directed paths from node1 to node2 with a maximum length.
      *
@@ -536,13 +534,13 @@ public class Paths implements TetradSerializable {
      * @param maxLength the maximum length of the paths
      * @return a list of lists containing the directed paths from node1 to node2
      */
-    public List<List<Node>> directedPaths(Node node1, Node node2, int maxLength) {
-        List<List<Node>> paths = new LinkedList<>();
+    public Set<List<Node>> directedPaths(Node node1, Node node2, int maxLength) {
+        Set<List<Node>> paths = new HashSet<>();
         directedPaths(node1, node2, new LinkedList<>(), paths, maxLength);
         return paths;
     }
 
-    private void directedPaths(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+    private void directedPaths(Node node1, Node node2, LinkedList<Node> path, Set<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
@@ -587,8 +585,8 @@ public class Paths implements TetradSerializable {
      * @param maxLength the maximum path length
      * @return a list of all semi-directed paths between the two nodes
      */
-    public List<List<Node>> semidirectedPaths(Node node1, Node node2, int maxLength) {
-        List<List<Node>> paths = new LinkedList<>();
+    public Set<List<Node>> semidirectedPaths(Node node1, Node node2, int maxLength) {
+        Set<List<Node>> paths = new HashSet<>();
         semidirectedPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength);
         return paths;
     }
@@ -602,8 +600,8 @@ public class Paths implements TetradSerializable {
      * @return a list of amenable paths from the source node to the destination node, each represented as a list of
      * nodes
      */
-    public List<List<Node>> amenablePathsMpdagMag(Node node1, Node node2, int maxLength) {
-        List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
+    public Set<List<Node>> getAmenablePathsPdagMag(Node node1, Node node2, int maxLength) {
+        Set<List<Node>> amenablePaths = new HashSet<>(semidirectedPaths(node1, node2, maxLength));
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
             Node a = path.getFirst();
@@ -617,7 +615,6 @@ public class Paths implements TetradSerializable {
         return amenablePaths;
     }
 
-
     /**
      * Finds amenable paths from the given source node to the given destination node with a maximum length, for a PAG.
      * These are semidirected paths that start with a visible edge out of node1.
@@ -628,8 +625,8 @@ public class Paths implements TetradSerializable {
      * @return a list of amenable paths from the source node to the destination node, each represented as a list of
      * nodes
      */
-    public List<List<Node>> amenablePathsPag(Node node1, Node node2, int maxLength) {
-        List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
+    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength) {
+        Set<List<Node>> amenablePaths = new HashSet<>(semidirectedPaths(node1, node2, maxLength));
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
             Node a = path.getFirst();
@@ -645,7 +642,7 @@ public class Paths implements TetradSerializable {
         return amenablePaths;
     }
 
-    private void semidirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+    private void semidirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, Set<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
@@ -907,13 +904,13 @@ public class Paths implements TetradSerializable {
      * @param maxLength the maximum length of the treks
      * @return a list of lists of nodes representing each trek from node1 to node2
      */
-    public List<List<Node>> treks(Node node1, Node node2, int maxLength) {
-        List<List<Node>> paths = new LinkedList<>();
+    public Set<List<Node>> treks(Node node1, Node node2, int maxLength) {
+        Set<List<Node>> paths = new HashSet<>();
         treks(node1, node2, new LinkedList<>(), paths, maxLength);
         return paths;
     }
 
-    private void treks(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
+    private void treks(Node node1, Node node2, LinkedList<Node> path, Set<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 1) {
             return;
         }
@@ -971,6 +968,10 @@ public class Paths implements TetradSerializable {
 
         path.removeLast();
     }
+
+
+    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
+    // length at most 'bound'. Cycle checker in other words.
 
     /**
      * Finds all possible treks between two nodes, including bidirectional treks.
@@ -1114,10 +1115,6 @@ public class Paths implements TetradSerializable {
         path.removeLast();
         return false;
     }
-
-
-    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
-    // length at most 'bound'. Cycle checker in other words.
 
     /**
      * <p>existsSemiDirectedPath.</p>
@@ -1354,21 +1351,34 @@ public class Paths implements TetradSerializable {
      * @return This map.
      */
     public Map<Node, Set<Node>> getDescendantsMap() {
-        Map<Node, Set<Node>> decendantsMap = new HashMap<>();
+        Map<Node, Set<Node>> descendantsMap = new HashMap<>();
+        List<Node> nodes = graph.getNodes();
 
-        for (Node node : graph.getNodes()) {
-            decendantsMap.put(node, new HashSet<>());
+        // Precompute children once (directed-only)
+        Map<Node, List<Node>> children = new HashMap<>();
+        for (Node n : nodes) {
+            children.put(n, new ArrayList<>(graph.getChildren(n)));
         }
 
-        for (Node n1 : graph.getNodes()) {
-            for (Node n2 : graph.getNodes()) {
-                if (isAncestorOfAnyZ(n1, Collections.singleton(n2))) {
-                    decendantsMap.get(n1).add(n2);
+        for (Node s : nodes) {
+            // Reflexive: include s itself as its own descendant (consistent with isAncestorOfAnyZ)
+            Set<Node> desc = new HashSet<>();
+            desc.add(s);
+
+            ArrayDeque<Node> q = new ArrayDeque<>(children.get(s));
+            desc.addAll(children.get(s));
+
+            while (!q.isEmpty()) {
+                Node u = q.poll();
+                for (Node c : children.get(u)) {
+                    if (desc.add(c)) q.add(c);
                 }
             }
+
+            descendantsMap.put(s, desc);
         }
 
-        return decendantsMap;
+        return descendantsMap;
     }
 
     /**
@@ -1378,17 +1388,30 @@ public class Paths implements TetradSerializable {
      */
     public Map<Node, Set<Node>> getAncestorsMap() {
         Map<Node, Set<Node>> ancestorsMap = new HashMap<>();
+        List<Node> nodes = graph.getNodes();
 
-        for (Node node : graph.getNodes()) {
-            ancestorsMap.put(node, new HashSet<>());
+        // Precompute parent lists once (directed-only)
+        Map<Node, List<Node>> parents = new HashMap<>();
+        for (Node n : nodes) {
+            parents.put(n, new ArrayList<>(graph.getParents(n)));
         }
 
-        for (Node n1 : graph.getNodes()) {
-            for (Node n2 : graph.getNodes()) {
-                if (isAncestorOfAnyZ(n1, Collections.singleton(n2))) {
-                    ancestorsMap.get(n2).add(n1);
+        for (Node t : nodes) {
+            // Reflexive: include t itself as its own ancestor (matches isAncestorOfAnyZ)
+            Set<Node> anc = new HashSet<>();
+            anc.add(t);
+
+            ArrayDeque<Node> q = new ArrayDeque<>(parents.get(t));
+            anc.addAll(parents.get(t));
+
+            while (!q.isEmpty()) {
+                Node u = q.poll();
+                for (Node p : parents.get(u)) {
+                    if (anc.add(p)) q.add(p);
                 }
             }
+
+            ancestorsMap.put(t, anc);
         }
 
         return ancestorsMap;
@@ -1402,34 +1425,41 @@ public class Paths implements TetradSerializable {
      * @return true if b is an ancestor of any node in z
      */
     public boolean isAncestorOfAnyZ(Node b, Set<Node> z) {
-        if (z.contains(b)) {
-            return true;
+        if (z == null || z.isEmpty()) return false;
+
+        // Reflexive ancestry: if any z == b we consider it "ancestor of itself"
+        for (Node zi : z) {
+            if (b.equals(zi)) return true;
         }
 
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
+        // Optional fast path — only use if your descendants map is known-good and directed-only + reflexive:
+        // Map<Node, Set<Node>> desc = graph.paths().getDescendantsMap();
+        // Set<Node> bDesc = desc.get(b);
+        // if (bDesc != null) {
+        //     for (Node zi : z) if (bDesc.contains(zi)) return true;
+        // }
 
-        for (Node node : z) {
-            Q.offer(node);
-            V.add(node);
+        // Fallback: explicit upward BFS from all z through directed parents
+        ArrayDeque<Node> q = new ArrayDeque<>();
+        HashSet<Node> seen = new HashSet<>();
+
+        for (Node zi : z) {
+            q.add(zi);
+            seen.add(zi);
         }
 
-        while (!Q.isEmpty()) {
-            Node t = Q.poll();
-            if (t == b) {
-                return true;
-            }
+        while (!q.isEmpty()) {
+            Node t = q.poll();
+            if (b.equals(t)) return true;
 
-            for (Node c : graph.getParents(t)) {
-                if (!V.contains(c)) {
-                    Q.offer(c);
-                    V.add(c);
+            for (Node p : graph.getParents(t)) {   // directed-only
+                if (seen.add(p)) {
+                    q.add(p);
                 }
             }
         }
 
         return false;
-
     }
 
     /**
@@ -1510,6 +1540,103 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+//    /**
+//     * Calculates the possible d-separation nodes between two given Nodes within a graph, using a maximum path length
+//     * constraint.
+//     *
+//     * @param x                         the starting Node for the path
+//     * @param y                         the ending Node for the path
+//     * @param maxPossibleDsepPathLength the maximum length of the path, -1 for unlimited
+//     * @return a List of Nodes representing the possible d-separation nodes
+//     */
+//    public List<Node> possibleDsep(Node x, Node y, int maxPossibleDsepPathLength) {
+//        Set<Node> msep = new HashSet<>();
+//
+//        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
+//        Set<OrderedPair<Node>> V = new HashSet<>();
+//
+//        Map<Node, Set<Node>> previous = new HashMap<>();
+//        previous.put(x, new HashSet<>());
+//
+//        OrderedPair<Node> e = null;
+//        int distance = 0;
+//
+//        Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
+//
+//        for (Node b : adjacentNodes) {
+//            if (y != null && b == y) {
+//                continue;
+//            }
+//            OrderedPair<Node> edge = new OrderedPair<>(x, b);
+//            if (e == null) {
+//                e = edge;
+//            }
+//            Q.offer(edge);
+//            V.add(edge);
+//            addToSet(previous, b, x);
+//            msep.add(b);
+//        }
+//
+//        while (!Q.isEmpty()) {
+//            OrderedPair<Node> t = Q.poll();
+//
+//            if (e == t) {
+//                e = null;
+//                distance++;
+//                if (distance > 0 && distance > (maxPossibleDsepPathLength == -1 ? 1000 : maxPossibleDsepPathLength)) {
+//                    break;
+//                }
+//            }
+//
+//            Node a = t.getFirst();
+//            Node b = t.getSecond();
+//
+//            if (existOnePathWithPossibleParents(previous, b, x, b)) {
+//                msep.add(b);
+//            }
+//
+//            for (Node c : graph.getAdjacentNodes(b)) {
+//                if (c == a) {
+//                    continue;
+//                }
+//                if (c == x) {
+//                    continue;
+//                }
+//                if (y !=null && c == y) {
+//                    continue;
+//                }
+//
+//                addToSet(previous, b, c);
+//
+//                if (graph.isDefCollider(a, b, c) || graph.isAdjacentTo(a, c)) {
+//                    OrderedPair<Node> u = new OrderedPair<>(b, c);
+//                    if (V.contains(u)) {
+//                        continue;
+//                    }
+//
+//                    V.add(u);
+//                    Q.offer(u);
+//
+//                    System.out.println("Updated " + u + " = " + "Q = " + Q + " V = " + V +  " msep: " + msep);
+//
+//                    if (e == null) {
+//                        e = u;
+//                    }
+//                }
+//            }
+//        }
+//
+//        msep.remove(x);
+//        msep.remove(y);
+//
+//        List<Node> _msep = new ArrayList<>(msep);
+//
+//        Collections.sort(_msep);
+//        Collections.reverse(_msep);
+//
+//        return _msep;
+//    }
+
     /**
      * Breadth-first version of the âinducing-path exists?â test.
      *
@@ -1578,7 +1705,6 @@ public class Paths implements TetradSerializable {
 
         return false;                             // Exhausted queue â no inducing path
     }
-
 
     /**
      * Determines whether an inducing path exists between two nodes in a graph. This is a breadth-first implementation.
@@ -1813,103 +1939,6 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-//    /**
-//     * Calculates the possible d-separation nodes between two given Nodes within a graph, using a maximum path length
-//     * constraint.
-//     *
-//     * @param x                         the starting Node for the path
-//     * @param y                         the ending Node for the path
-//     * @param maxPossibleDsepPathLength the maximum length of the path, -1 for unlimited
-//     * @return a List of Nodes representing the possible d-separation nodes
-//     */
-//    public List<Node> possibleDsep(Node x, Node y, int maxPossibleDsepPathLength) {
-//        Set<Node> msep = new HashSet<>();
-//
-//        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
-//        Set<OrderedPair<Node>> V = new HashSet<>();
-//
-//        Map<Node, Set<Node>> previous = new HashMap<>();
-//        previous.put(x, new HashSet<>());
-//
-//        OrderedPair<Node> e = null;
-//        int distance = 0;
-//
-//        Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
-//
-//        for (Node b : adjacentNodes) {
-//            if (y != null && b == y) {
-//                continue;
-//            }
-//            OrderedPair<Node> edge = new OrderedPair<>(x, b);
-//            if (e == null) {
-//                e = edge;
-//            }
-//            Q.offer(edge);
-//            V.add(edge);
-//            addToSet(previous, b, x);
-//            msep.add(b);
-//        }
-//
-//        while (!Q.isEmpty()) {
-//            OrderedPair<Node> t = Q.poll();
-//
-//            if (e == t) {
-//                e = null;
-//                distance++;
-//                if (distance > 0 && distance > (maxPossibleDsepPathLength == -1 ? 1000 : maxPossibleDsepPathLength)) {
-//                    break;
-//                }
-//            }
-//
-//            Node a = t.getFirst();
-//            Node b = t.getSecond();
-//
-//            if (existOnePathWithPossibleParents(previous, b, x, b)) {
-//                msep.add(b);
-//            }
-//
-//            for (Node c : graph.getAdjacentNodes(b)) {
-//                if (c == a) {
-//                    continue;
-//                }
-//                if (c == x) {
-//                    continue;
-//                }
-//                if (y !=null && c == y) {
-//                    continue;
-//                }
-//
-//                addToSet(previous, b, c);
-//
-//                if (graph.isDefCollider(a, b, c) || graph.isAdjacentTo(a, c)) {
-//                    OrderedPair<Node> u = new OrderedPair<>(b, c);
-//                    if (V.contains(u)) {
-//                        continue;
-//                    }
-//
-//                    V.add(u);
-//                    Q.offer(u);
-//
-//                    System.out.println("Updated " + u + " = " + "Q = " + Q + " V = " + V +  " msep: " + msep);
-//
-//                    if (e == null) {
-//                        e = u;
-//                    }
-//                }
-//            }
-//        }
-//
-//        msep.remove(x);
-//        msep.remove(y);
-//
-//        List<Node> _msep = new ArrayList<>(msep);
-//
-//        Collections.sort(_msep);
-//        Collections.reverse(_msep);
-//
-//        return _msep;
-//    }
-
     /**
      * Returns D-SEP(x, y) for a maximal ancestral graph G (or inducing path graph G, as in Causation, Prediction and
      * Search).
@@ -1992,6 +2021,10 @@ public class Paths implements TetradSerializable {
         return null;
     }
 
+    /*======================================================================
+     * 1.  PUBLIC ENTRY POINT
+     *====================================================================*/
+
     private boolean separates(Node x, Node y, boolean allowSelectionBias, Set<Node> combination) {
         if (graph.getNumEdges(x) < graph.getNumEdges(y)) {
             return !isMConnectedTo(x, y, combination, allowSelectionBias);
@@ -1999,6 +2032,10 @@ public class Paths implements TetradSerializable {
             return !isMConnectedTo(y, x, combination, allowSelectionBias);
         }
     }
+
+    /*======================================================================
+     * 2.  COLLIDER-PATH SEARCH  (Zhang 2008, Def. 8, second bullet)
+     *====================================================================*/
 
     /**
      * Determmines whether x and y are d-connected given z.
@@ -2100,6 +2137,8 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    /* ------------------------------------------------------------------ */
+
     /**
      * Checks if the given path is an m-connecting path.
      *
@@ -2145,269 +2184,6 @@ public class Paths implements TetradSerializable {
         }
 
         return true;
-    }
-
-    /**
-     * Checks if the given path is an m-connecting path and doens't contain duplicate nodes.
-     *
-     * @param path               The path to check.
-     * @param conditioningSet    The set of nodes to check reachability against.
-     * @param allowSelectionBias Determines if selection bias is allowed in the m-connection procedure.
-     * @param ancestors          The ancestors of each node in the graph.
-     * @return {@code true} if the given path is an m-connecting path, {@code false} otherwise.
-     */
-    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
-        Edge edge1, edge2;
-
-        Set<Node> pathSet = new HashSet<>();
-
-        for (int i = 0; i < path.size() - 1; i++) {
-            Node node = path.get(i);
-
-            if (pathSet.contains(node)) {
-                return false;
-            } else {
-                pathSet.add(node);
-            }
-        }
-
-        edge2 = graph.getEdge(path.getFirst(), path.get(1));
-
-        for (int i = 0; i < path.size() - 2; i++) {
-            edge1 = edge2;
-            edge2 = graph.getEdge(path.get(i + 1), path.get(i + 2));
-            Node b = path.get(i + 1);
-
-            // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
-            // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
-            // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
-            // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
-            // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
-            // than for PAGs, and we are trying to make an m-connection procedure that works for both.
-            // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
-            // A similar problem can occur in a PAG; we deal with that as well. The idea is to make
-            // "virtual edges" that are directed in the direction of the arrow, so that the reachability
-            // algorithm can eventually find any colliders along the path that may be implied.
-            // jdramsey 2024-04-14
-            if (edge1.getEndpoint(b) == Endpoint.ARROW) {
-                if (!allowSelectionBias && Edges.isUndirectedEdge(edge2)) {
-                    edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
-                } else if (allowSelectionBias && Edges.isNondirectedEdge(edge2)) {
-                    edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
-                }
-            }
-
-            if (!reachable(edge1, edge2, path.get(i), conditioningSet, ancestors)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Detemrmines whether x and y are d-connected given z.
-     *
-     * @param x         a {@link Node} object
-     * @param y         a {@link Node} object
-     * @param z         a {@link Set} object
-     * @param ancestors a {@link Map} object
-     * @param isPag     whether to allow selection bias; if true, then undirected edges X--Y are uniformly treated as
-     *                  X-&gt;L&lt;-Y.
-     * @return true if x and y are d-connected given z; false otherwise.
-     */
-    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean isPag) {
-        class EdgeNode {
-
-            private final Edge edge;
-            private final Node node;
-
-            public EdgeNode(Edge edge, Node node) {
-                this.edge = edge;
-                this.node = node;
-            }
-
-            public int hashCode() {
-                return this.edge.hashCode() + 5 * this.node.hashCode();
-            }
-
-            public boolean equals(Object o) {
-                if (!(o instanceof EdgeNode _o)) {
-                    throw new IllegalArgumentException();
-                }
-                return _o.edge.equals(this.edge) && _o.node.equals(this.node);
-            }
-        }
-
-        Queue<EdgeNode> Q = new ArrayDeque<>();
-        Set<EdgeNode> V = new HashSet<>();
-
-        if (x == y) {
-            return true;
-        }
-
-        for (Edge edge : graph.getEdges(x)) {
-            if (edge.getDistalNode(x) == y) {
-                return true;
-            }
-            EdgeNode edgeNode = new EdgeNode(edge, x);
-            Q.offer(edgeNode);
-            V.add(edgeNode);
-        }
-
-        while (!Q.isEmpty()) {
-            EdgeNode t = Q.poll();
-
-            Edge edge1 = t.edge;
-            Node a = t.node;
-            Node b = edge1.getDistalNode(a);
-
-            for (Edge edge2 : graph.getEdges(b)) {
-                Node c = edge2.getDistalNode(b);
-                if (c == a) {
-                    continue;
-                }
-
-                if (reachable(edge1, edge2, a, z, ancestors)) {
-                    if (c == y) {
-                        return true;
-                    }
-
-                    // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
-                    // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
-                    // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
-                    // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
-                    // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
-                    // than for PAGs, and we are trying to make an m-connection procedure that works for both.
-                    // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
-                    // A similar problem can occur in a PAG; we deal with that as well. The idea is to make
-                    // "virtual edges" that are directed in the direction of the arrow, so that the reachability
-                    // algorithm can eventually find any colliders along the path that may be implied.
-                    // jdramsey 2024-04-14
-                    if (isPag) {
-                        if (edge1.getEndpoint(b) == Endpoint.ARROW) {
-                            if (Edges.isNondirectedEdge(edge2)) {
-                                edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
-                            }
-                        }
-                    } else {
-                        if (edge1.getEndpoint(b) == Endpoint.ARROW) {
-                            if (Edges.isNondirectedEdge(edge2)) {
-                                edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
-                            }
-                        }
-                    }
-
-                    EdgeNode u = new EdgeNode(edge2, b);
-
-                    if (!V.contains(u)) {
-                        V.add(u);
-                        Q.offer(u);
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Assumes node should be in component.
-     */
-    private void collectComponentVisit(Node node, Set<Node> component, List<Node> unsortedNodes) {
-        if (TaskManager.getInstance().isCanceled()) {
-            return;
-        }
-
-        component.add(node);
-        unsortedNodes.remove(node);
-        List<Node> adj = graph.getAdjacentNodes(node);
-
-        for (Node anAdj : adj) {
-            if (!component.contains(anAdj)) {
-                collectComponentVisit(anAdj, component, unsortedNodes);
-            }
-        }
-    }
-
-    /*======================================================================
-     * 1.  PUBLIC ENTRY POINT
-     *====================================================================*/
-
-    /**
-     * Returns true if the edge form A to B is a definitely visible edge in a PAG.
-     *
-     * @param A The one node.
-     * @param B The other node.
-     * @return True if so.
-     */
-    public boolean defVisiblePag(Node A, Node B) {
-
-        // Sanity: we only care about directed A â B edges that exist
-        if (!graph.isParentOf(A, B)) return false;
-
-        for (Node C : graph.getNodes()) {
-
-            if (C == A || C == B) continue;           // trivial exclusions
-            if (graph.isAdjacentTo(C, B)) continue;   // C must NOT touch B
-
-            /* ---------- Clause 1: an edge into A from C ---------------- */
-            if (graph.getEndpoint(C, A) == Endpoint.ARROW) {
-                // Covers both  C â A  and  C â A  (arrowhead at A).
-                return true;
-            }
-
-            /* ---------- Clause 2: collider path C â¦ A ------------------ */
-            if (existsColliderPathInto(C, A, B)) {
-                return true;
-            }
-        }
-        return false;   // no qualifying C found â edge is invisible
-    }
-
-    /*======================================================================
-     * 2.  COLLIDER-PATH SEARCH  (Zhang 2008, Def. 8, second bullet)
-     *====================================================================*/
-
-    /**
-     * True iff there exists a collider path   C = v0 â¦ vk = A (k â¥ 1) that is arrow-headed into A and whose
-     * **interior** vertices are all parents of B.  Endpoints C and A themselves are *not* required to point to B.
-     */
-    private boolean existsColliderPathInto(Node C, Node A, Node B) {
-        return dfsColliderPath(null, C, A, B, new HashSet<>());
-    }
-
-    /* ------------------------------------------------------------------ */
-
-    private boolean dfsColliderPath(Node prev,           // vertex before âcurâ
-                                    Node cur,            // current vertex
-                                    Node targetA,        // destination
-                                    Node B,              // must receive arrows
-                                    Set<Node> onBranch)  // cycle guard
-    {
-        /* (i) Interior-vertex parent-of-B condition */
-        if (prev != null && !cur.equals(targetA)          // interior only
-            && !graph.isParentOf(cur, B)) {
-            return false;                                 // violates clause
-        }
-
-        /* (ii) Endpoint reached: arrowhead into A required */
-        if (cur.equals(targetA)) {
-            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
-        }
-
-        /* (iii) DFS expansion with collider check */
-        onBranch.add(cur);
-        for (Node nxt : graph.getAdjacentNodes(cur)) {
-            if (onBranch.contains(nxt)) continue;         // avoid cycles
-
-            // collider requirement applies once we *have* a predecessor
-            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
-                if (dfsColliderPath(cur, nxt, targetA, B, onBranch)) return true;
-            }
-        }
-        onBranch.remove(cur);
-        return false;
     }
 
 //    /**
@@ -2610,6 +2386,259 @@ public class Paths implements TetradSerializable {
 //
 //        return false;
 //    }
+
+    /**
+     * Checks if the given path is an m-connecting path and doens't contain duplicate nodes.
+     *
+     * @param path               The path to check.
+     * @param conditioningSet    The set of nodes to check reachability against.
+     * @param allowSelectionBias Determines if selection bias is allowed in the m-connection procedure.
+     * @param ancestors          The ancestors of each node in the graph.
+     * @return {@code true} if the given path is an m-connecting path, {@code false} otherwise.
+     */
+    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+        Edge edge1, edge2;
+
+        Set<Node> pathSet = new HashSet<>();
+
+        for (int i = 0; i < path.size() - 1; i++) {
+            Node node = path.get(i);
+
+            if (pathSet.contains(node)) {
+                return false;
+            } else {
+                pathSet.add(node);
+            }
+        }
+
+        edge2 = graph.getEdge(path.getFirst(), path.get(1));
+
+        for (int i = 0; i < path.size() - 2; i++) {
+            edge1 = edge2;
+            edge2 = graph.getEdge(path.get(i + 1), path.get(i + 2));
+            Node b = path.get(i + 1);
+
+            // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
+            // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
+            // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
+            // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
+            // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
+            // than for PAGs, and we are trying to make an m-connection procedure that works for both.
+            // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
+            // A similar problem can occur in a PAG; we deal with that as well. The idea is to make
+            // "virtual edges" that are directed in the direction of the arrow, so that the reachability
+            // algorithm can eventually find any colliders along the path that may be implied.
+            // jdramsey 2024-04-14
+            if (edge1.getEndpoint(b) == Endpoint.ARROW) {
+                if (!allowSelectionBias && Edges.isUndirectedEdge(edge2)) {
+                    edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
+                } else if (allowSelectionBias && Edges.isNondirectedEdge(edge2)) {
+                    edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
+                }
+            }
+
+            if (!reachable(edge1, edge2, path.get(i), conditioningSet, ancestors)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Detemrmines whether x and y are d-connected given z.
+     *
+     * @param x         a {@link Node} object
+     * @param y         a {@link Node} object
+     * @param z         a {@link Set} object
+     * @param ancestors a {@link Map} object
+     * @param isPag     whether to allow selection bias; if true, then undirected edges X--Y are uniformly treated as
+     *                  X-&gt;L&lt;-Y.
+     * @return true if x and y are d-connected given z; false otherwise.
+     */
+    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean isPag) {
+        class EdgeNode {
+
+            private final Edge edge;
+            private final Node node;
+
+            public EdgeNode(Edge edge, Node node) {
+                this.edge = edge;
+                this.node = node;
+            }
+
+            public int hashCode() {
+                return this.edge.hashCode() + 5 * this.node.hashCode();
+            }
+
+            public boolean equals(Object o) {
+                if (!(o instanceof EdgeNode _o)) {
+                    throw new IllegalArgumentException();
+                }
+                return _o.edge.equals(this.edge) && _o.node.equals(this.node);
+            }
+        }
+
+        Queue<EdgeNode> Q = new ArrayDeque<>();
+        Set<EdgeNode> V = new HashSet<>();
+
+        if (x == y) {
+            return true;
+        }
+
+        for (Edge edge : graph.getEdges(x)) {
+            if (edge.getDistalNode(x) == y) {
+                return true;
+            }
+            EdgeNode edgeNode = new EdgeNode(edge, x);
+            Q.offer(edgeNode);
+            V.add(edgeNode);
+        }
+
+        while (!Q.isEmpty()) {
+            EdgeNode t = Q.poll();
+
+            Edge edge1 = t.edge;
+            Node a = t.node;
+            Node b = edge1.getDistalNode(a);
+
+            for (Edge edge2 : graph.getEdges(b)) {
+                Node c = edge2.getDistalNode(b);
+                if (c == a) {
+                    continue;
+                }
+
+                if (reachable(edge1, edge2, a, z, ancestors)) {
+                    if (c == y) {
+                        return true;
+                    }
+
+                    // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
+                    // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
+                    // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
+                    // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
+                    // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
+                    // than for PAGs, and we are trying to make an m-connection procedure that works for both.
+                    // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
+                    // A similar problem can occur in a PAG; we deal with that as well. The idea is to make
+                    // "virtual edges" that are directed in the direction of the arrow, so that the reachability
+                    // algorithm can eventually find any colliders along the path that may be implied.
+                    // jdramsey 2024-04-14
+                    if (isPag) {
+                        if (edge1.getEndpoint(b) == Endpoint.ARROW) {
+                            if (Edges.isNondirectedEdge(edge2)) {
+                                edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
+                            }
+                        }
+                    } else {
+                        if (edge1.getEndpoint(b) == Endpoint.ARROW) {
+                            if (Edges.isNondirectedEdge(edge2)) {
+                                edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
+                            }
+                        }
+                    }
+
+                    EdgeNode u = new EdgeNode(edge2, b);
+
+                    if (!V.contains(u)) {
+                        V.add(u);
+                        Q.offer(u);
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Assumes node should be in component.
+     */
+    private void collectComponentVisit(Node node, Set<Node> component, List<Node> unsortedNodes) {
+        if (TaskManager.getInstance().isCanceled()) {
+            return;
+        }
+
+        component.add(node);
+        unsortedNodes.remove(node);
+        List<Node> adj = graph.getAdjacentNodes(node);
+
+        for (Node anAdj : adj) {
+            if (!component.contains(anAdj)) {
+                collectComponentVisit(anAdj, component, unsortedNodes);
+            }
+        }
+    }
+
+    /**
+     * Returns true if the edge form A to B is a definitely visible edge in a PAG.
+     *
+     * @param A The one node.
+     * @param B The other node.
+     * @return True if so.
+     */
+    public boolean defVisiblePag(Node A, Node B) {
+
+        // Sanity: we only care about directed A â B edges that exist
+        if (!graph.isParentOf(A, B)) return false;
+
+        for (Node C : graph.getNodes()) {
+
+            if (C == A || C == B) continue;           // trivial exclusions
+            if (graph.isAdjacentTo(C, B)) continue;   // C must NOT touch B
+
+            /* ---------- Clause 1: an edge into A from C ---------------- */
+            if (graph.getEndpoint(C, A) == Endpoint.ARROW) {
+                // Covers both  C â A  and  C â A  (arrowhead at A).
+                return true;
+            }
+
+            /* ---------- Clause 2: collider path C â¦ A ------------------ */
+            if (existsColliderPathInto(C, A, B)) {
+                return true;
+            }
+        }
+        return false;   // no qualifying C found â edge is invisible
+    }
+
+    /**
+     * True iff there exists a collider path   C = v0 â¦ vk = A (k â¥ 1) that is arrow-headed into A and whose
+     * **interior** vertices are all parents of B.  Endpoints C and A themselves are *not* required to point to B.
+     */
+    private boolean existsColliderPathInto(Node C, Node A, Node B) {
+        return dfsColliderPath(null, C, A, B, new HashSet<>());
+    }
+
+    private boolean dfsColliderPath(Node prev,           // vertex before âcurâ
+                                    Node cur,            // current vertex
+                                    Node targetA,        // destination
+                                    Node B,              // must receive arrows
+                                    Set<Node> onBranch)  // cycle guard
+    {
+        /* (i) Interior-vertex parent-of-B condition */
+        if (prev != null && !cur.equals(targetA)          // interior only
+                && !graph.isParentOf(cur, B)) {
+            return false;                                 // violates clause
+        }
+
+        /* (ii) Endpoint reached: arrowhead into A required */
+        if (cur.equals(targetA)) {
+            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
+        }
+
+        /* (iii) DFS expansion with collider check */
+        onBranch.add(cur);
+        for (Node nxt : graph.getAdjacentNodes(cur)) {
+            if (onBranch.contains(nxt)) continue;         // avoid cycles
+
+            // collider requirement applies once we *have* a predecessor
+            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
+                if (dfsColliderPath(cur, nxt, targetA, B, onBranch)) return true;
+            }
+        }
+        onBranch.remove(cur);
+        return false;
+    }
 
     /**
      * <p>existsDirectedCycle.</p>
@@ -2877,6 +2906,8 @@ public class Paths implements TetradSerializable {
         return !isMConnectedTo(node1, node2, z, ancestors, allowSelectionBias);
     }
 
+// --- Public API: Recursive (mask-based) adjustment ---
+
     /**
      * Checks if a semi-directed path exists between the given node and any of the nodes in the provided set.
      *
@@ -2962,185 +2993,147 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * An adjustment set for a pair of nodes &lt;source, target&gt; for a CPDAG is a set of nodes that blocks all paths
-     * from the source to the target that cannot contribute to a calculation for the total effect of the source on the
-     * target in any DAG in a CPDAG while not blocking any path from the source to the target that could be causal. In
-     * typical causal graphs, multiple adjustment sets may exist for a given pair of nodes. This method returns up to
-     * maxNumSets adjustment sets for the pair of nodes &lt;source, target&gt; fitting a certain description.
-     * <p>
-     * The description is as follows. We look for adjustment sets of varaibles that are close to either the source or
-     * the target (or either) in the graph. We take all possibly causal paths from the source to the target into account
-     * but only consider other paths up to a certain specified length. (This maximum length can be unlimited for small
-     * graphs.)
-     * <p>
-     * Within this description, we list adjustment sets in order or increasing size.
-     * <p>
-     * Hopefully, these parameters along with the size ordering can help to give guidance for the user to choose the
-     * best adjustment set for their purposes when multiple adjustment sets are possible.
-     * <p>
-     * This currently will only work for DAGs and CPDAGs.
+     * Computes the adjustment sets needed to estimate the causal effect of node X on node Y
+     * in a given graph structure under specified parameters.
      *
-     * @param source                  The source node whose sets will be used for adjustment.
-     * @param target                  The target node whose sets will be adjusted to match the source node.
-     * @param maxNumSets              The maximum number of sets to be adjusted. If this value is less than or equal to
-     *                                0, all sets in the target node will be adjusted to match the source node.
-     * @param maxDistanceFromEndpoint The maximum distance from the endpoint of the trek to consider for adjustment.
-     * @param nearWhichEndpoint       The endpoint(s) to consider for adjustment; 1 = near the source, 2 = near the
-     *                                target, 3 = near either.
-     * @param maxPathLength           The maximum length of the path to consider for backdoor paths. If a value of -1 is
-     *                                given, all paths will be considered.
-     * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;. Return an smpty list if source ==
-     * target or there is no amenable path from source to target.
+     * @param X                 The node representing the cause in the causal relationship.
+     * @param Y                 The node representing the effect in the causal relationship.
+     * @param graphType         The type of the graph (e.g., DAG, MAG, etc.).
+     * @param maxNumSets        The maximum number of adjustment sets to return.
+     * @param maxRadius         The which endpoint to find adjustment sets near, 1 = source, 2 = target, 3 = both.
+     * @param maxPathLength     The maximum allowable length of causal paths considered.
+     * @param colliderPolicy    A string determining the collider policy for adjustment set computation.
+     *                          Values may be "OFF", "PREFER_NONCOLLIDERS", or "NONCOLLIDER_FIRST".
+     * @return A list of sets of nodes, each set representing a valid adjustment set for the causal effect estimation.
      */
-    public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint, int nearWhichEndpoint, int maxPathLength) {
-        if (source == target) {
-            return new ArrayList<>();
-//            throw new IllegalArgumentException("Source and target nodes must be different.");
-        }
+    public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType, int maxNumSets, int maxRadius, int nearWhichEndpoint, int maxPathLength, String colliderPolicy) {
+       Adjustment.ColliderPolicy _colliderPolicy = Adjustment.ColliderPolicy.valueOf(colliderPolicy);
 
-        boolean mpdag = false;
-        boolean mag = false;
-        boolean pag = false;
-
-        if (graph.paths().isLegalMpdag()) {
-            mpdag = true;
-        } else if (graph.paths().isLegalMag()) {
-            mag = true;
-        } else if (!graph.paths().isLegalPag()) {
-            pag = true;
-        }
-
-        List<List<Node>> amenable = semidirectedPaths(source, target, -1);
-
-        // Remove any amenable path that does not start with a visible edge in the CPDAG case.
-        // (The PAG case will be handled later.)
-        for (List<Node> path : new ArrayList<>(amenable)) {
-            if (path.size() < 2) {
-                amenable.remove(path);
-            }
-
-            Node a = path.getFirst();
-            Node b = path.get(1);
-            Edge e = graph.getEdge(a, b);
-
-            if (!e.pointsTowards(b)) {
-                amenable.remove(path);
-            }
-        }
-
-        if (amenable.isEmpty()) {
-            return new ArrayList<>();
-//            throw new IllegalArgumentException("No amenable paths found.");
-        }
-
-        Set<List<Node>> backdoorPaths = allPaths(source, target, maxPathLength);
-
-        if (mpdag || mag) {
-            backdoorPaths.removeIf(path -> path.size() < 2 || !(graph.getEdge(path.getFirst(), path.get(1)).pointsTowards(path.getFirst())));
-        } else {
-            backdoorPaths.removeIf(path -> {
-                if (path.size() < 2) {
-                    return false;
-                }
-                Node x = path.getFirst();
-                Node w = path.get(1);
-                Node y = target;
-                return !(graph.getEdge(x, w).pointsTowards(x) || Edges.isUndirectedEdge(graph.getEdge(x, w)) || Edges.isBidirectedEdge(graph.getEdge(x, w)) && (graph.paths().existsDirectedPath(w, x) || (graph.paths().existsDirectedPath(w, x) && graph.paths().existsDirectedPath(w, y))));
-            });
-        }
-
-        List<Set<Node>> adjustmentSets = new ArrayList<>();
-        Set<Set<Node>> tried = new HashSet<>();
-
-        int i = 1;
-
-        while (i <= maxDistanceFromEndpoint) {
-            Set<Node> _nearEndpoints = new HashSet<>();
-
-            // Add nodes a distance of at most i from one end or the other of each trek, along the trek.
-            // That is, if the trek is a list <a, b, c, d, e>, and i = 0, we would add a and e to the list.
-            // If i = 1, we would add a, b, d, and e to the list. And so on.
-            for (int j = 1; j <= i; j++) {
-                for (List<Node> trek : backdoorPaths) {
-                    if (j >= trek.size()) {
-                        continue;
-                    }
-
-                    if (nearWhichEndpoint == 1 || nearWhichEndpoint == 3) {
-                        Node e1 = trek.get(j);
-
-                        if (!(e1 == source || e1 == target)) {
-                            _nearEndpoints.add(e1);
-                        }
-                    }
-
-                    if (nearWhichEndpoint == 2 || nearWhichEndpoint == 3) {
-                        Node e2 = trek.get(trek.size() - 1 - j);
-
-                        if (!(e2 == source || e2 == target)) {
-                            _nearEndpoints.add(e2);
-                        }
-                    }
-                }
-            }
-
-            List<Node> nearEndpoints = new ArrayList<>(_nearEndpoints);
-
-            List<Set<Node>> possibleAdjustmentSets = new ArrayList<>();
-
-            // Now, using SublistGenerator, we generate all possible subsets of the nodes we just added.
-            SublistGenerator generator = new SublistGenerator(nearEndpoints.size(), nearEndpoints.size());
-            int[] choice;
-
-            while ((choice = generator.next()) != null) {
-                Set<Node> possibleAdjustmentSet = new HashSet<>();
-                for (int j : choice) {
-                    possibleAdjustmentSet.add(nearEndpoints.get(j));
-                }
-                possibleAdjustmentSets.add(possibleAdjustmentSet);
-            }
-
-            // Now, for each set of nodes in possibleAdjustmentSets, we check if it is an adjustment set.
-            // That is, we check if it blocks all backdoorPaths from source to target that are not semi-directed
-            // without blocking any backdoorPaths that are semi-directed.
-
-            ADJ:
-            for (Set<Node> possibleAdjustmentSet : possibleAdjustmentSets) {
-                if (tried.contains(possibleAdjustmentSet)) {
-                    i++;
-                    continue;
-                }
-
-                tried.add(possibleAdjustmentSet);
-
-                for (List<Node> semi : amenable) {
-                    if (!isMConnectingPath(semi, possibleAdjustmentSet, !mpdag)) {
-                        i++;
-                        continue ADJ;
-                    }
-                }
-
-                for (List<Node> _backdoor : backdoorPaths) {
-                    if (isMConnectingPath(_backdoor, possibleAdjustmentSet, !mpdag)) {
-                        i++;
-                        continue ADJ;
-                    }
-                }
-
-                if (!adjustmentSets.contains(possibleAdjustmentSet)) {
-                    adjustmentSets.add(possibleAdjustmentSet);
-                }
-
-                if (adjustmentSets.size() >= maxNumSets) {
-                    return adjustmentSets;
-                }
-            }
-
-            i++;
-        }
-
-        return adjustmentSets;
+        return new Adjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
+                nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of());
     }
+
+    /**
+     * Computes and returns a list of adjustment sets for given nodes and parameters.
+     * Adjustment sets are used in causal inference to determine sets of variables
+     * that need to be conditioned on to block backdoor paths. Assumes the collider
+     * policy is "OFF".
+     *
+     * @param X the source node in the causal graph
+     * @param Y the target node in the causal graph
+     * @param graphType the type of graph being used (e.g., DAG, MAG, PAG)
+     * @param maxNumSets the maximum number of adjustment sets to return
+     * @param maxRadius the maximum distance from endpoint to look for adjsutment sets
+     * @param nearWhichEndpoint The which endpoint to find adjustment sets near, 1 = source, 2 = target, 3 = both.
+     * @param maxPathLength the maximum length of paths to consider in the graph
+     * @return a list of sets of nodes, where each set represents an adjustment set
+     *         that can be used to block backdoor paths between X and Y
+     */
+    public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
+                                          int maxNumSets, int maxRadius,
+                                          int nearWhichEndpoint, int maxPathLength) {
+        return new Adjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
+                nearWhichEndpoint, maxPathLength, Adjustment.ColliderPolicy.OFF, true,
+                Set.of(), Set.of());
+    }
+
+    /**
+     * Finds and returns all valid backdoor paths between two nodes in a graph.
+     * A backdoor path is a path that satisfies certain conditions based on the graph type
+     * and causal inference principles. The method supports PDAG, MAG, and PAG graph types.
+     *
+     * @param X the starting node of the path
+     * @param Y the target node to which backdoor paths are sought
+     * @param graphType the type of graph, must be one of "PDAG", "MAG", or "PAG"
+     * @param maxPathLength the maximum number of edges allowed in a path, -1 for no limit
+     * @return a set of all valid backdoor paths, where each path is represented as a list of nodes;
+     *         returns an empty set if no valid backdoor paths are found
+     * @throws IllegalArgumentException if the provided graphType is invalid
+     */
+    public Set<List<Node>> getBackdoorPaths(Node X, Node Y, String graphType, int maxPathLength) {
+
+        if (!(graphType.equals("PDAG") || graphType.equals("MAG") || graphType.equals("PAG"))) {
+            System.err.println("Invalid graph type: " + graphType);
+            throw new IllegalArgumentException("Invalid graph type: " + graphType);
+        }
+
+        boolean mpdag = graphType.equals("PDAG");
+        boolean mag = graphType.equals("MAG");
+
+        // 1) Seed only with legal backdoor first hops (match your removeIf predicates)
+        List<Node> starts = new ArrayList<>();
+        for (Node w : graph.getAdjacentNodes(X)) {
+            Edge e = graph.getEdge(X, w);
+            if (e == null) continue;
+
+            if (mpdag || mag) {
+                // Require X <- w
+                if (e.pointsTowards(X)) starts.add(w);
+            } else {
+                boolean intoX = e.pointsTowards(X);
+                boolean undOrBi = Edges.isUndirectedEdge(e) || Edges.isBidirectedEdge(e);
+                boolean wToX = graph.paths().existsDirectedPath(w, X);
+                boolean wToY = graph.paths().existsDirectedPath(w, Y);
+                if (intoX || (undOrBi && (wToX || wToY))) {
+                    starts.add(w);
+                }
+            }
+        }
+
+        // Early out if no valid backdoor starts
+        if (starts.isEmpty()) return Collections.emptySet();
+
+        // 2) Enumerate simple paths from X to Y that begin with [X, w] for w in starts.
+        //    Use the SAME length semantics as allPathsVisit: bound on edge count = path.size()-1.
+        List<List<Node>> results = new ArrayList<>();
+        final int edgeLimit = (maxPathLength == -1 ? Integer.MAX_VALUE : maxPathLength);
+
+        for (Node w : starts) {
+            LinkedList<Node> path = new LinkedList<>();
+            path.add(X);
+            path.add(w);
+            HashSet<Node> inPath = new HashSet<>();
+            inPath.add(X);
+            inPath.add(w);
+
+            dfsAllSimplePathsFromSeed(path, inPath, Y, results, edgeLimit);
+        }
+
+        return new HashSet<>(results);
+    }
+
+    // Identical traversal style to your allPathsVisit(), but we’ve already enforced the first edge.
+    // No direction-based pruning here (matches your working enumeration).
+    private void dfsAllSimplePathsFromSeed(LinkedList<Node> path,
+                                           Set<Node> inPath,
+                                           Node Y,
+                                           List<List<Node>> out,
+                                           int edgeLimit) {
+
+        // length bound on EDGE count
+        if (path.size() - 1 > edgeLimit) return;
+
+        Node tail = path.getLast();
+        if (tail.equals(Y)) {
+            // require at least one edge, same as your code
+            if (path.size() > 1) out.add(new ArrayList<>(path));
+            return;
+        }
+
+        for (Edge e : graph.getEdges(tail)) {
+            Node nxt = Edges.traverse(tail, e);
+            if (nxt == null) continue;
+            if (inPath.contains(nxt)) continue; // simple paths only
+
+            path.addLast(nxt);
+            inPath.add(nxt);
+            dfsAllSimplePathsFromSeed(path, inPath, Y, out, edgeLimit);
+            inPath.remove(nxt);
+            path.removeLast();
+        }
+    }
+
+    /* ----------------- helpers ----------------- */
 
     /**
      * Writes the object to the specified ObjectOutputStream.
@@ -3211,58 +3204,7 @@ public class Paths implements TetradSerializable {
         return true;
     }
 
-    /**
-     * Convenience record for queue elements.
-     */
-    private static final class PathElem {
-        final Node cur;      // current vertex
-        final Node prev;     // vertex we arrived from (null at start)
-
-        PathElem(Node cur, Node prev) {
-            this.cur = cur;
-            this.prev = prev;
-        }
-    }
-
-    /**
-     * (prev,cur) pair so we can mark *edges* as visited.
-     */
-    private static final class NodePair {
-        final Node prev, cur;
-
-        NodePair(Node prev, Node cur) {
-            this.prev = prev;
-            this.cur = cur;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof NodePair p)) return false;
-            return Objects.equals(prev, p.prev) && Objects.equals(cur, p.cur);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(prev, cur);
-        }
-    }
-
-    /**
-     * Represents an element in a navigation path consisting of a current node and the previous node.
-     * <p>
-     * This class is primarily used to track the traversal history in a pathfinding context or similar scenarios where
-     * the relationship between nodes in a path needs to be maintained.
-     */
-    static class PathElement {
-        Node current;  // The current node
-        Node previous; // The previous node on the path
-
-        PathElement(Node current, Node previous) {
-            this.current = current;
-            this.previous = previous;
-        }
-    }
+    // -------- Context holder --------
 
     /**
      * An algorithm to find all cliques in a graph.

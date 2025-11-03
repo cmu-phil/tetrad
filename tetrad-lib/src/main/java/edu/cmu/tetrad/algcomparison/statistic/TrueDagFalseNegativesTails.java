@@ -65,16 +65,20 @@ public class TrueDagFalseNegativesTails implements Statistic {
     }
 
     /**
-     * Calculates the number of false negatives for tails compared to the true DAG.
+     * Calculates the number of false negatives for tail endpoints compared to the true Directed Acyclic Graph (DAG).
      *
-     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph   The estimated graph (same type).
-     * @param dataModel  The data model.
-     * @param parameters The parameters.
-     * @return The number of false negatives for tails.
+     * A false negative is identified when a directed edge (with any non-tail endpoint)
+     * exists in the estimated graph but the corresponding ancestorship is valid in the true graph.
+     *
+     * @param trueDag The true Directed Acyclic Graph (DAG).
+     * @param trueGraph The true graph used to validate ancestor relationships.
+     * @param estGraph The estimated graph to evaluate against the true DAG.
+     * @param dataModel The data model providing additional information, though not used in this method.
+     * @param parameters Parameters to influence behavior, though not used in this method.
+     * @return The count of false negatives based on tail endpoints in the estimated graph.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
 //        int tp = 0;
         int fn = 0;
 

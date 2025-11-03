@@ -64,7 +64,7 @@ public class NoCyclicPathsCondition implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         for (Node n : estGraph.getNodes()) {
             if (estGraph.paths().existsDirectedPath(n, n)) {
                 return 0;

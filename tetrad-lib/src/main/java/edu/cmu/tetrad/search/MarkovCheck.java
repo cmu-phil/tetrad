@@ -75,7 +75,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * True, just in case the given graph is a CPDAG (completed partially directed acyclic graph).
      */
-    private final boolean isMpdag;
+    private final boolean isPdag;
     /**
      * List of observers to be notified when changes are made to the model.
      */
@@ -199,7 +199,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public MarkovCheck(Graph graph, IndependenceTest independenceTest, ConditioningSetType setType) {
         this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
-        this.isMpdag = graph.paths().isLegalMpdag();
+        this.isPdag = graph.paths().isLegalPdag();
         this.independenceTest = independenceTest;
         this.setType = setType;
         this.independenceNodes = new ArrayList<>(independenceTest.getVariables());
@@ -1118,8 +1118,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                         if (x == y || z.contains(x) || z.contains(y)) continue;
 
                         if (findSmallestSubset && graph.paths().isMSeparatedFrom(x, y, z, false)) {
-//                        z = removeExtraneousVariables(z, x, y, !isMpdag);
-                            z = SepsetFinder.getSmallestSubset(x, y, z, new HashSet<>(), graph, !isMpdag);
+//                        z = removeExtraneousVariables(z, x, y, !isPdag);
+                            z = SepsetFinder.getSmallestSubset(x, y, z, new HashSet<>(), graph, !isPdag);
                         }
 
                         if (!checkNodeIndependenceAndConditioning(x, y, z)) {
@@ -1149,13 +1149,13 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         calcStats(indep);
     }
 
-//    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y, boolean isMpdag) {
+//    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y, boolean isPdag) {
 //        Set<Node> _z = new HashSet<>(z);
 //
 //        do {
 //            for (Node w : new HashSet<>(_z)) {
 //                _z.remove(w);
-//                if (!graph.paths().isMSeparatedFrom(x, y, _z, !isMpdag)) {
+//                if (!graph.paths().isMSeparatedFrom(x, y, _z, !isPdag)) {
 //                    _z.add(w);
 //                }
 //            }
@@ -1920,8 +1920,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      *
      * @return true if the graph is a CPDAG, false otherwise
      */
-    public boolean isMpdag() {
-        return isMpdag;
+    public boolean isPdag() {
+        return isPdag;
     }
 
     /**

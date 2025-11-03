@@ -139,7 +139,7 @@ public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm
             throw new IllegalArgumentException("FCI-CPW expects a DataSet.");
         }
         if (!dataSet.isContinuous()) {
-            throw new IllegalArgumentException("FCI-CPW currently supports linear skewed data (skewed).");
+            throw new IllegalArgumentException("FCI-CPW currently supports linear data (skewed).");
         }
 
         // Pairwise rule: default 3 (RSKEW). Read PARAM_PAIRWISE_RULE if provided.

@@ -70,7 +70,7 @@ public class NumParametersEst implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (dataModel.isDiscrete()) {
             DiscreteBicScore score = new DiscreteBicScore((DataSet) dataModel);
 

@@ -36,8 +36,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.work_in_progress.IsBDeuScore;
-import edu.cmu.tetrad.search.IsScore;
+import edu.cmu.tetrad.search.is.IsBDeuScore2;
+import edu.cmu.tetrad.search.is.IsScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -165,13 +165,13 @@ public class IsFges extends AbstractBootstrapAlgorithm implements Algorithm, Has
         if (train.isContinuous()) {
             throw new IllegalArgumentException("ISBDeuScore requires discrete data; got continuous.");
         }
-        IsScore isScore = new IsBDeuScore(train, testCase);
+        IsScore isScore = new IsBDeuScore2(train, testCase);
 
         // Population score (discrete BDeu).
         Score populationScore = new edu.cmu.tetrad.algcomparison.score.BdeuScore().getScore(dataModel, parameters);
 
         // Driver
-        edu.cmu.tetrad.search.IsFges alg = new edu.cmu.tetrad.search.IsFges(isScore,
+        edu.cmu.tetrad.search.is.IsFges alg = new edu.cmu.tetrad.search.is.IsFges(isScore,
                 populationScore);
         alg.setKnowledge(this.knowledge);
         alg.setVerbose(parameters.getBoolean(Params.VERBOSE));

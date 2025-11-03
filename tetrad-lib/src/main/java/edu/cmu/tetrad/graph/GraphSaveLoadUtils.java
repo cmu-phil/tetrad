@@ -1084,11 +1084,11 @@ public class GraphSaveLoadUtils {
      *
      * @param g the input graph to be converted
      * @return the adjacency matrix representation of the graph in CPAG format
-     * @throws IllegalArgumentException if the graph is not a MPDAG (including CPDAG or DAG)
+     * @throws IllegalArgumentException if the graph is not a PDAG (including CPDAG or DAG)
      */
     public static String graphToAmatCpag(Graph g) {
-//        if (!(g.paths().isLegalMpdag())) {
-//            throw new IllegalArgumentException("Graph is not a MPDAG (including CPDAG or DAG).");
+//        if (!(g.paths().isLegalPdag())) {
+//            throw new IllegalArgumentException("Graph is not a PDAG (including CPDAG or DAG).");
 //        }
 
         List<Node> vars = g.getNodes();

@@ -64,6 +64,7 @@ public class LegalCpdag implements Statistic {
     /**
      * Calculates the value indicating whether the estimated graph is a Legal CPDAG (1.0) or not (0.0).
      *
+     * @param trueDag The true graph, not used in this implementation
      * @param trueGraph  the true graph, not used in this implementation
      * @param estGraph   the estimated graph to be checked for being a Legal CPDAG
      * @param dataModel  the data model, not used in this implementation
@@ -71,7 +72,7 @@ public class LegalCpdag implements Statistic {
      * @return 1.0 if the estimated graph is a Legal CPDAG, 0.0 otherwise
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (estGraph.paths().isLegalCpdag()) {
             return 1.0;
         } else {

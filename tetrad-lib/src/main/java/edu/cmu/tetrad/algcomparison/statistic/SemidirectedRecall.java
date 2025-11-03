@@ -67,6 +67,7 @@ public class SemidirectedRecall implements Statistic {
      * Calculates the Semidirected-Rec statistic, which is the proportion of (X, Y) where if there is a semidirected
      * path in the true graph, then there is also a semidirected path in the estimated graph.
      *
+     * @param trueDag  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -74,7 +75,7 @@ public class SemidirectedRecall implements Statistic {
      * @return The Semidirected-Rec statistic.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0, fn = 0;
 
         List<Node> nodes = estGraph.getNodes();

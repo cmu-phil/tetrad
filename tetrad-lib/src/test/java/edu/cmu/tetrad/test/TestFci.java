@@ -32,7 +32,7 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.GraphLegalityCheck;
+import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -92,7 +92,7 @@ public class TestFci {
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        GraphLegalityCheck.LegalMagRet legalMag = GraphLegalityCheck.isLegalMag(graph, new HashSet<>(selection));
+        PagLegalityCheck.LegalMagRet legalMag = PagLegalityCheck.isLegalMag(graph, new HashSet<>(selection));
 
         if (!legalMag.isLegalMag()) {
             System.out.println("Not legal mag, reason = " + legalMag.getReason());
@@ -105,7 +105,7 @@ public class TestFci {
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        GraphLegalityCheck.LegalPagRet legalMag = GraphLegalityCheck.isLegalPag(graph, new HashSet<>(selection));
+        PagLegalityCheck.LegalPagRet legalMag = PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection));
 
         if (!legalMag.isLegalPag()) {
             System.out.println("Not legal pag, reason = " + legalMag.getReason());
@@ -664,8 +664,8 @@ public class TestFci {
 
         MsepTest msepTest = new MsepTest(g);
 
-        Set<Node> Z = RecursiveBlocking.blockPathsRecursively(g, x, y, new HashSet<Node>(),
-                new HashSet<Node>(), -1);
+        Set<Node> Z = RecursiveBlocking.blockPathsRecursively(g, x, y, new HashSet<>(),
+                new HashSet<>(), -1);
         assertTrue(msepTest.checkIndependence(x, y, Z).isIndependent());
     }
 
@@ -941,7 +941,7 @@ public class TestFci {
                 List<Node> selection = graph.getNodes().stream()
                         .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-                GraphLegalityCheck.LegalPagRet ret = GraphLegalityCheck.isLegalPag(pag, new HashSet<>(selection));
+                PagLegalityCheck.LegalPagRet ret = PagLegalityCheck.isLegalPag(pag, new HashSet<>(selection));
 
                 if (mag.paths().isLegalMag() && !pag.paths().isLegalPag()) {
                     List<Node> nodes = pag.getNodes();
@@ -1028,7 +1028,7 @@ public class TestFci {
 
                     for (Node b : mag.getNodes()) {
                         // List the cycles.
-                        List<List<Node>> cyclicPaths = mag.paths().directedPaths(b, b, -1);
+                        Set<List<Node>> cyclicPaths = mag.paths().directedPaths(b, b, -1);
 
                         for (List<Node> cyclicPath : cyclicPaths) {
                             System.out.println(GraphUtils.pathString(mag, cyclicPath, false));

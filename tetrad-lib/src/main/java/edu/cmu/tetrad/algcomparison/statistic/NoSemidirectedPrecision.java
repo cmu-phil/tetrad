@@ -66,7 +66,7 @@ public class NoSemidirectedPrecision implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0, fp = 0;
 
         Graph cpdag = GraphTransforms.dagToCpdag(trueGraph);

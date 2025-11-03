@@ -720,7 +720,7 @@ public class TimeLagGraph implements Graph {
      */
     @Override
     public Paths paths() {
-        return this.paths;
+        return new Paths(this);
     }
 
     /**

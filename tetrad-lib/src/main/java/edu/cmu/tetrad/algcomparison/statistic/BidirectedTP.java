@@ -65,7 +65,7 @@ public class BidirectedTP implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         Graph pag = GraphTransforms.dagToPag(trueGraph);
         BidirectedConfusion confusion = new BidirectedConfusion(pag, estGraph);
         return confusion.getTp();

@@ -98,6 +98,7 @@ public class MarkovCheckBinomialPBestOf10 implements Statistic {
      * Calculates the Binomial P value for the Markov check of whether the p-values for the estimated graph are
      * distributed as U(0, 1).
      *
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -106,7 +107,7 @@ public class MarkovCheckBinomialPBestOf10 implements Statistic {
      * @throws IllegalArgumentException if the data model is null.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
 
         if (dataModel == null) {
             throw new IllegalArgumentException("Data model is null.");
