@@ -3000,8 +3000,7 @@ public class Paths implements TetradSerializable {
      * @param Y                 The node representing the effect in the causal relationship.
      * @param graphType         The type of the graph (e.g., DAG, MAG, etc.).
      * @param maxNumSets        The maximum number of adjustment sets to return.
-     * @param maxRadius         The maximum search radius for possible adjustment sets in the graph.
-     * @param nearWhichEndpoint Specifies which endpoint to prioritize in the graph traversal.
+     * @param maxRadius         The which endpoint to find adjustment sets near, 1 = source, 2 = target, 3 = both.
      * @param maxPathLength     The maximum allowable length of causal paths considered.
      * @param colliderPolicy    A string determining the collider policy for adjustment set computation.
      *                          Values may be "OFF", "PREFER_NONCOLLIDERS", or "NONCOLLIDER_FIRST".
@@ -3024,10 +3023,8 @@ public class Paths implements TetradSerializable {
      * @param Y the target node in the causal graph
      * @param graphType the type of graph being used (e.g., DAG, MAG, PAG)
      * @param maxNumSets the maximum number of adjustment sets to return
-     * @param maxRadius the maximum radius around variables to consider when
-     *                  searching for adjustment sets
-     * @param nearWhichEndpoint specifies which endpoint (source or target) to
-     *                          prioritize when determining adjustment sets
+     * @param maxRadius the maximum distance from endpoint to look for adjsutment sets
+     * @param nearWhichEndpoint The which endpoint to find adjustment sets near, 1 = source, 2 = target, 3 = both.
      * @param maxPathLength the maximum length of paths to consider in the graph
      * @return a list of sets of nodes, where each set represents an adjustment set
      *         that can be used to block backdoor paths between X and Y
