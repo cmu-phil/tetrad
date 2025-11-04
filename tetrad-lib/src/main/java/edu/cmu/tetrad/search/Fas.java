@@ -215,7 +215,7 @@ public class Fas implements IFas {
 
         for (int d = 0; d <= depthCap; d++) {
             if (verbose) {
-                System.out.println("Depth: " + d);
+                TetradLogger.getInstance().log("Depth: " + d);
             }
 
             // Run one depth; stop if nothing was removed at this depth (PC-Stable termination)

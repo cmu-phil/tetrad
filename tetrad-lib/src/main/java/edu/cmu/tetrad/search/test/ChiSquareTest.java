@@ -247,9 +247,9 @@ public class ChiSquareTest {
         }
 
         if (df == 0) {
-
-            // If no conditional table had positive degrees of freedom, the test is invalid.
-            return new Result(Double.NaN, Double.NaN, 0, true, false);
+            return new Result(Double.NaN, Double.NaN, 0,
+                    /* isIndep = */ false,
+                    /* isValid = */ false);
         } else {
 
             // Otherwise, we can calculate a p-value for the test.
