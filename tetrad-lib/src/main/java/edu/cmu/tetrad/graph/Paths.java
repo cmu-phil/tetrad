@@ -3000,13 +3000,15 @@ public class Paths implements TetradSerializable {
      * @param Y                 The node representing the effect in the causal relationship.
      * @param graphType         The type of the graph (e.g., DAG, MAG, etc.).
      * @param maxNumSets        The maximum number of adjustment sets to return.
-     * @param maxRadius         The which endpoint to find adjustment sets near, 1 = source, 2 = target, 3 = both.
+     * @param maxRadius         The maximum distance from an endpoint to look for adjustment-set variables.
+     * @param nearWhichEndpoint TThe which endpoint to find adjustment sets near, 1 = source, 2 = target, 3 = both.
      * @param maxPathLength     The maximum allowable length of causal paths considered.
      * @param colliderPolicy    A string determining the collider policy for adjustment set computation.
      *                          Values may be "OFF", "PREFER_NONCOLLIDERS", or "NONCOLLIDER_FIRST".
      * @return A list of sets of nodes, each set representing a valid adjustment set for the causal effect estimation.
      */
-    public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType, int maxNumSets, int maxRadius, int nearWhichEndpoint, int maxPathLength, String colliderPolicy) {
+    public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType, int maxNumSets, int maxRadius, int nearWhichEndpoint,
+                                          int maxPathLength, String colliderPolicy) {
        Adjustment.ColliderPolicy _colliderPolicy = Adjustment.ColliderPolicy.valueOf(colliderPolicy);
 
         return new Adjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
