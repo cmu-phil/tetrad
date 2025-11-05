@@ -1036,8 +1036,11 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      */
     private void allAmenablePathsPdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.setText("""
-                These are potentially directed paths from X to Y that start with a directed edge out of X. An 
-                adjustment set should not block any of these paths.
+                These are potentially directed paths from X to Y that start with a visible edge out of X. An
+                adjustment set should not block any of these paths. Note that a graph is amenable in the 
+                Perkovic et al. (2015) sense for the generalized adjustment criterion (GAC) for (X, Y) just in 
+                case all potentially directed paths from X to Y are amenable in this sense--that is, all 
+                potentially directed paths from X to Y start with a visible edge out of X.
                 """);
 
         addConditionNote(textArea);
@@ -1054,21 +1057,40 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             pag = true;
         }
 
+        RecursiveAdjustment ra = new RecursiveAdjustment(graph);
+
         if (pag) {
             allAmenablePathsPag(graph, textArea, nodes1, nodes2);
+            return;
         } else if (!mpdag && !mag) {
             textArea.append("\nThe graph is not a DAG, CPDAG, PDAG, MAG or PAG.");
             return;
+        }
+
+        String graphType;
+
+        if (mag) {
+            graphType = "MAG";
+        } else {
+            graphType = "PDAG";
         }
 
         boolean pathListed = false;
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                Set<List<Node>> amenable = graph.paths().getAmenablePathsPdagMag(node1, node2,
+
+                boolean amenenable = ra.isGraphAmenable(node1, node2, graphType, -1);
+
+                if (!amenenable) {
+                    textArea.append("\nThe graph is not amenenable for (" + node1 + ", " + node2 +  ").");
+                    continue;
+                }
+
+                Set<List<Node>> paths = graph.paths().getAmenablePathsPdagMag(node1, node2,
                         parameters.getInt("pathsMaxLengthAdjustment"));
 
-                if (amenable.isEmpty()) {
+                if (paths.isEmpty()) {
                     continue;
                 } else {
                     pathListed = true;
@@ -1076,7 +1098,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
-                listPaths(graph, textArea, amenable);
+                listPaths(graph, textArea, paths);
             }
         }
 
@@ -1096,20 +1118,32 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      */
     private void allAmenablePathsPag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.setText("""
-                These are potentially directed paths from X to Y that start with a directed edge out of X. An 
-                adjustment set should not block any of these paths.
+                These are potentially directed paths from X to Y that start with a visible edge out of X. An
+                adjustment set should not block any of these paths. Note that a graph is amenable in the 
+                Perkovic et al. (2015) sense for the generalized adjustment criterion (GAC) for (X, Y) just in 
+                case all potentially directed paths from X to Y are amenable in this sense--that is, all 
+                potentially directed paths from X to Y start with a visible edge out of X.
                 """);
 
         addConditionNote(textArea);
+
+        RecursiveAdjustment ra = new RecursiveAdjustment(graph);
 
         boolean pathListed = false;
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                Set<List<Node>> amenable = graph.paths().getAmenablePathsPag(node1, node2,
+                boolean amenenable = ra.isGraphAmenable(node1, node2, "PAG", -1);
+
+                if (!amenenable) {
+                    textArea.append("\nThe graph is not amenenable for (" + node1 + ", " + node2 +  ").");
+                    continue;
+                }
+
+                Set<List<Node>> paths = graph.paths().getAmenablePathsPag(node1, node2,
                         parameters.getInt("pathsMaxLengthAdjustment"));
 
-                if (amenable.isEmpty()) {
+                if (paths.isEmpty()) {
                     continue;
                 } else {
                     pathListed = true;
@@ -1117,7 +1151,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
-                listPaths(graph, textArea, amenable);
+                listPaths(graph, textArea, paths);
             }
         }
 
@@ -1512,6 +1546,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 All backdoor paths (paths that can't be causal) should be blocked. If any are unblocked, the 
                 set is not an adjustment set.
                 
+                Note that if the graph is not fully directed it is possible that no adjustment set can be
+                read off of the graph; in this case, no adjustment set will be reported.
+                
                 In the below perhaps not all adjustment sets are listed. Rather, the algorithm is designed to
                 find up to a maximum number of adjustment sets that are no more than a certain distance from
                 either the source or the target node, or either. Also, while all amenable paths are taken
@@ -1538,6 +1575,25 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
+                if (node1 == node2) {
+                    continue;
+                }
+
+                textArea.append("\n\nAdjustment sets for " + node1 + " ~~> " + node2 + ":\n");
+
+                boolean graphAmenable =
+                        graph.paths().isGraphAmenable(node1, node2, graphType, maxLengthAdjustment);
+
+                if (!graphAmenable) {
+                    // Not amenable in Perković's sense
+                    textArea.append("\n    (Graph is NOT amenable for " + node1 + "~~>" + node2 +
+                                    "; no valid adjustment set exists by the Perković criterion.)");
+                    // Depending on your NoAmenablePolicy you might also note whether the sets
+                    // above are heuristic / RB-style, etc.
+                    continue;
+                }
+
+                Set<List<Node>> amenablePaths = getAmenablePaths(graph, graphType, node1, node2);
 
                 List<Set<Node>> adjustments;
                 try {
@@ -1550,33 +1606,37 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     continue;
                 }
 
-                textArea.append("\n\nAdjustment sets for " + node1 + " ~~> " + node2 + ":\n");
-
                 for (Set<Node> adjustment : adjustments) {
                     textArea.append("\n    " + adjustment);
                 }
 
-                Set<List<Node>> amenablePaths = getAmenablePaths(graph, graphType, node1, node2);
-
                 if (amenablePaths.isEmpty()) {
+                    // There are no possibly directed X→Y paths, or all such paths were ruled out
                     if (!adjustments.isEmpty()) {
                         if (adjustments.getFirst().isEmpty()) {
-                            textArea.append("\n\n    (No amenable paths exist, and adjustment is unnecessary)");
+                            textArea.append("\n\n    (Graph is amenable for " + node1 + "~~>" + node2 +
+                                            "; no amenable paths exist, and adjustment is unnecessary.)");
                         } else {
-                            textArea.append("\n\n    (No amenable paths exist, but adjustment is possible)");
+                            textArea.append("\n\n    (Graph is amenable for " + node1 + "~~>" + node2 +
+                                            "; no amenable paths exist, but adjustment is possible.)");
                         }
                     } else {
-                        textArea.append("\n\n    (No amenable paths exist, and no adjustment is necessary)");
+                        textArea.append("\n\n    (Graph is amenable for " + node1 + "~~>" + node2 +
+                                        "; no amenable paths exist, and no adjustment is necessary.)");
                     }
                 } else {
+                    // Some possibly directed X→Y paths exist with a visible first edge out of X
                     if (!adjustments.isEmpty()) {
                         if (adjustments.getFirst().isEmpty()) {
-                            textArea.append("\n\n    (Amenable paths exist, but adjustment is unnecessary)");
+                            textArea.append("\n\n    (Graph is amenable for " + node1 + "~~>" + node2 +
+                                            "; amenable paths exist, but adjustment is unnecessary.)");
                         } else {
-                            textArea.append("\n\n    (Amenable paths exist, and adjustment is necessary)");
+                            textArea.append("\n\n    (Graph is amenable for " + node1 + "~~>" + node2 +
+                                            "; amenable paths exist, and adjustment is necessary.)");
                         }
                     } else {
-                        textArea.append("\n\n    (No backdoor paths found; no adjustment necessary)");
+                        textArea.append("\n\n    (Graph is amenable for " + node1 + "~~>" + node2 +
+                                        "; no unblocked backdoor paths found—no adjustment necessary.)");
                     }
                 }
 

@@ -21,7 +21,9 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.RecursiveAdjustment;
+import edu.cmu.tetrad.search.RecursiveBlocking;
+import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.PagLegalityCheck;
@@ -375,8 +377,8 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Checks if the given graph is a legal Maximal Partial Directed Acyclic Graph (PDAG). A PDAG is considered legal
-     * if it is equal to a CPDAG where additional edges have been oriented by Knowledge, with Meek rules applied for
+     * Checks if the given graph is a legal Maximal Partial Directed Acyclic Graph (PDAG). A PDAG is considered legal if
+     * it is equal to a CPDAG where additional edges have been oriented by Knowledge, with Meek rules applied for
      * maximum orientation. The test is performed by attemping to convert the graph to a CPDAG using the DAG to CPDAG
      * transformation and testing whether that graph is a legal CPDAG. Finally, we test to see whether the obtained
      * graph is equal to the original graph.
@@ -642,36 +644,35 @@ public class Paths implements TetradSerializable {
         return amenablePaths;
     }
 
-    private void potentiallyDirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, Set<List<Node>> paths, int maxLength) {
-        if (maxLength != -1 && path.size() > maxLength - 2) {
-            return;
-        }
+    private void potentiallyDirectedPathsVisit(Node node1, Node node2,
+                                               LinkedList<Node> path,
+                                               Set<List<Node>> paths,
+                                               int maxLength) {
 
         path.addLast(node1);
 
+        // Now path.size() - 1 is the number of edges.
+        if (maxLength != -1 && path.size() - 1 > maxLength) {
+            path.removeLast();
+            return;
+        }
+
+        // cycle check
         Set<Node> __path = new HashSet<>(path);
         if (__path.size() < path.size()) {
+            path.removeLast();
             return;
         }
 
         if (path.size() > 1 && node1 == node2) {
-            LinkedList<Node> _path = new LinkedList<>(path);
-            if (!paths.contains(path)) {
-                paths.add(_path);
-            }
+            List<Node> _path = new LinkedList<>(path);
+            paths.add(_path);
         }
 
         for (Edge edge : graph.getEdges(node1)) {
             Node child = Edges.traversePotentiallyDirected(node1, edge);
-
-            if (child == null) {
-                continue;
-            }
-
-            if (child != node2 && path.contains(child)) {
-                continue;
-            }
-
+            if (child == null) continue;
+            if (path.contains(child)) continue;   // forbid any repeats, including node2
             potentiallyDirectedPathsVisit(child, node2, path, paths, maxLength);
         }
 
@@ -2579,26 +2580,28 @@ public class Paths implements TetradSerializable {
      */
     public boolean defVisiblePag(Node A, Node B) {
 
-        // Sanity: we only care about directed A â B edges that exist
+        // Sanity: we only care about directed A -> B edges that exist
         if (!graph.isParentOf(A, B)) return false;
 
         for (Node C : graph.getNodes()) {
 
-            if (C == A || C == B) continue;           // trivial exclusions
-            if (graph.isAdjacentTo(C, B)) continue;   // C must NOT touch B
+            if (C == A || C == B) continue;          // trivial exclusions
+            if (graph.isAdjacentTo(C, B)) continue;  // C must NOT touch B
 
             /* ---------- Clause 1: an edge into A from C ---------------- */
             if (graph.getEndpoint(C, A) == Endpoint.ARROW) {
-                // Covers both  C â A  and  C â A  (arrowhead at A).
+                // Covers both  C -> A  and  C <-> A  (arrowhead at A).
                 return true;
             }
 
-            /* ---------- Clause 2: collider path C â¦ A ------------------ */
+            /* ---------- Clause 2: collider path C ... A ---------------- */
             if (existsColliderPathInto(C, A, B)) {
                 return true;
             }
         }
-        return false;   // no qualifying C found â edge is invisible
+
+        // No qualifying C found => edge A -> B is not visible
+        return false;
     }
 
     /**
@@ -2617,7 +2620,7 @@ public class Paths implements TetradSerializable {
     {
         /* (i) Interior-vertex parent-of-B condition */
         if (prev != null && !cur.equals(targetA)          // interior only
-                && !graph.isParentOf(cur, B)) {
+            && !graph.isParentOf(cur, B)) {
             return false;                                 // violates clause
         }
 
@@ -2993,8 +2996,8 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Computes the adjustment sets needed to estimate the causal effect of node X on node Y
-     * in a given graph structure under specified parameters.
+     * Computes the adjustment sets needed to estimate the causal effect of node X on node Y in a given graph structure
+     * under specified parameters.
      *
      * @param X                 The node representing the cause in the causal relationship.
      * @param Y                 The node representing the effect in the causal relationship.
@@ -3003,53 +3006,54 @@ public class Paths implements TetradSerializable {
      * @param maxRadius         The maximum distance from an endpoint to look for adjustment-set variables.
      * @param nearWhichEndpoint TThe which endpoint to find adjustment sets near, 1 = source, 2 = target, 3 = both.
      * @param maxPathLength     The maximum allowable length of causal paths considered.
-     * @param colliderPolicy    A string determining the collider policy for adjustment set computation.
-     *                          Values may be "OFF", "PREFER_NONCOLLIDERS", or "NONCOLLIDER_FIRST".
+     * @param colliderPolicy    A string determining the collider policy for adjustment set computation. Values may be
+     *                          "OFF", "PREFER_NONCOLLIDERS", or "NONCOLLIDER_FIRST".
      * @return A list of sets of nodes, each set representing a valid adjustment set for the causal effect estimation.
      */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType, int maxNumSets, int maxRadius, int nearWhichEndpoint,
                                           int maxPathLength, String colliderPolicy) {
-       RecursiveAdjustment.ColliderPolicy _colliderPolicy = RecursiveAdjustment.ColliderPolicy.valueOf(colliderPolicy);
+        RecursiveAdjustment.ColliderPolicy _colliderPolicy = RecursiveAdjustment.ColliderPolicy.valueOf(colliderPolicy);
 
         return new RecursiveAdjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of());
     }
 
     /**
-     * Computes and returns a list of adjustment sets for given nodes and parameters.
-     * Adjustment sets are used in causal inference to determine sets of variables
-     * that need to be conditioned on to block backdoor paths. Assumes the collider
-     * policy is "OFF".
+     * Computes and returns a list of adjustment sets for given nodes and parameters. Adjustment sets are used in causal
+     * inference to determine sets of variables that need to be conditioned on to block backdoor paths. Assumes the
+     * collider policy is "OFF".
      *
-     * @param X the source node in the causal graph
-     * @param Y the target node in the causal graph
-     * @param graphType the type of graph being used (e.g., DAG, MAG, PAG)
-     * @param maxNumSets the maximum number of adjustment sets to return
-     * @param maxRadius the maximum distance from endpoint to look for adjsutment sets
+     * @param X                 the source node in the causal graph
+     * @param Y                 the target node in the causal graph
+     * @param graphType         the type of graph being used (e.g., DAG, MAG, PAG)
+     * @param maxNumSets        the maximum number of adjustment sets to return
+     * @param maxRadius         the maximum distance from endpoint to look for adjsutment sets
      * @param nearWhichEndpoint The which endpoint to find adjustment sets near, 1 = source, 2 = target, 3 = both.
-     * @param maxPathLength the maximum length of paths to consider in the graph
-     * @return a list of sets of nodes, where each set represents an adjustment set
-     *         that can be used to block backdoor paths between X and Y
+     * @param maxPathLength     the maximum length of paths to consider in the graph
+     * @return a list of sets of nodes, where each set represents an adjustment set that can be used to block backdoor
+     * paths between X and Y
      */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength) {
-        return new RecursiveAdjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
+        RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph);
+        recursiveAdjustment.setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SUPPRESS);
+        return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, RecursiveAdjustment.ColliderPolicy.OFF, true,
                 Set.of(), Set.of());
     }
 
     /**
-     * Finds and returns all valid backdoor paths between two nodes in a graph.
-     * A backdoor path is a path that satisfies certain conditions based on the graph type
-     * and causal inference principles. The method supports PDAG, MAG, and PAG graph types.
+     * Finds and returns all valid backdoor paths between two nodes in a graph. A backdoor path is a path that satisfies
+     * certain conditions based on the graph type and causal inference principles. The method supports PDAG, MAG, and
+     * PAG graph types.
      *
-     * @param X the starting node of the path
-     * @param Y the target node to which backdoor paths are sought
-     * @param graphType the type of graph, must be one of "PDAG", "MAG", or "PAG"
+     * @param X             the starting node of the path
+     * @param Y             the target node to which backdoor paths are sought
+     * @param graphType     the type of graph, must be one of "PDAG", "MAG", or "PAG"
      * @param maxPathLength the maximum number of edges allowed in a path, -1 for no limit
-     * @return a set of all valid backdoor paths, where each path is represented as a list of nodes;
-     *         returns an empty set if no valid backdoor paths are found
+     * @return a set of all valid backdoor paths, where each path is represented as a list of nodes; returns an empty
+     * set if no valid backdoor paths are found
      * @throws IllegalArgumentException if the provided graphType is invalid
      */
     public Set<List<Node>> getBackdoorPaths(Node X, Node Y, String graphType, int maxPathLength) {
@@ -3204,6 +3208,12 @@ public class Paths implements TetradSerializable {
         }
 
         return true;
+    }
+
+    public boolean isGraphAmenable(Node node1, Node node2, String graphType, int maxLengthAdjustment) {
+        RecursiveAdjustment ra = new RecursiveAdjustment(graph);
+        ra.setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SUPPRESS);
+        return ra.isGraphAmenable(node1, node2, graphType, maxLengthAdjustment);
     }
 
     // -------- Context holder --------
