@@ -578,7 +578,7 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Finds all possibly-directed paths between two nodes up to a maximum length.
+     * Finds all potentially directed paths between two nodes up to a maximum length.
      *
      * @param node1     the starting node
      * @param node2     the ending node

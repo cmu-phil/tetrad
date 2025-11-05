@@ -102,7 +102,7 @@ public final class RecursiveAdjustment {
 
     /**
      * Checks whether the graph is adjustment-amenable relative to (X, Y)
-     * in the sense of Perković et al.: every proper possibly-directed path
+     * in the sense of Perković et al.: every proper potentially directed path
      * from X to Y starts with a visible / directed edge out of X.
      *
      * This uses the same notion of "amenable path" as the main algorithm:
@@ -112,7 +112,7 @@ public final class RecursiveAdjustment {
      * @param X             source node
      * @param Y             target node
      * @param graphType     graph type ("DAG", "PDAG", "MAG", "PAG", etc.)
-     * @param maxPathLength maximum path length for possibly-directed paths; -1 means unlimited
+     * @param maxPathLength maximum path length for potentially directed paths; -1 means unlimited
      * @return true if the graph is amenable w.r.t. (X, Y), false otherwise
      */
     public boolean isGraphAmenable(Node X, Node Y, String graphType, int maxPathLength) {
@@ -215,14 +215,14 @@ public final class RecursiveAdjustment {
             throw new IllegalArgumentException("X and Y must differ.");
         if (maxRadius < 0) maxRadius = graph.getNodes().size();
 
-//        // 1. All possibly-directed (potentially-directed) paths from X to Y
+//        // 1. All potentially directed (potentially-directed) paths from X to Y
 //        Set<List<Node>> pdPaths = graph.paths().potentiallyDirectedPaths(X, Y, maxPathLength);
 //
 //        // 2. Subset of those that are "amenable paths" in your sense
 //        Set<List<Node>> amenablePaths = getAmenablePaths(X, Y, graphType, maxPathLength);
 //
 //        // 3. Graph-level amenability in the sense of Perković et al.:
-//        //    G is amenable w.r.t. (X, Y) iff every proper possibly-directed X→Y path
+//        //    G is amenable w.r.t. (X, Y) iff every proper potentially directed X→Y path
 //        //    starts with a visible/directed edge out of X.
 //        boolean graphAmenable = pdPaths.isEmpty() || pdPaths.equals(amenablePaths);
 
@@ -296,14 +296,14 @@ public final class RecursiveAdjustment {
      * using potentiallyDirectedPaths and the path-level amenable test.
      */
     private boolean isGraphAmenableInternal(Node X, Node Y, String graphType, int maxPathLength) {
-        // All possibly-directed (potentially-directed) paths from X to Y
+        // All potentially directed (potentially-directed) paths from X to Y
         Set<List<Node>> pdPaths = graph.paths().potentiallyDirectedPaths(X, Y, maxPathLength);
 
         // Subset of those that are "amenable paths" in your sense
         Set<List<Node>> amenablePaths = getAmenablePaths(X, Y, graphType, maxPathLength);
 
-        // G is amenable w.r.t. (X, Y) iff every possibly-directed path is amenable.
-        // If there are no possibly-directed paths, amenability holds vacuously.
+        // G is amenable w.r.t. (X, Y) iff every potentially directed path is amenable.
+        // If there are no potentially directed paths, amenability holds vacuously.
         return pdPaths.isEmpty() || pdPaths.equals(amenablePaths);
     }
 

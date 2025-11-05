@@ -13,7 +13,7 @@ import java.util.*;
  * The Adjustment class provides methods and utilities for computing adjustment sets in causal inference
  * using graph-based methods. It supports tasks such as identifying minimal adjustment sets,
  * determining forbidden nodes for adjustment, and navigating paths and reachability in various graph types.
- * These computations are based on the properties of possibly-directed graphs, backdoor criteria, and
+ * These computations are based on the properties of potentially directed graphs, backdoor criteria, and
  * other rules from causal inference literature.
  */
 public final class AdjustmentOld {
