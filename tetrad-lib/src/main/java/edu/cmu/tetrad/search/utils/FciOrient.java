@@ -1114,7 +1114,7 @@ public class FciOrient {
         }
 
         // We do this by finding a shortest path using Dijkstra's shortest path algorithm. We constrain the algorithm
-        // so that the path must be potentially directed (i.e., semidirected), there can be no length 1 or length 2
+        // so that the path must be potentially directed, there can be no length 1 or length 2
         // paths, and all nodes on the path are uncovered. We add further constraints so that the path taken together
         // with the x o-o y edge forms an uncovered cyclic path, and that the path is a potential directed path.
 
@@ -1162,18 +1162,18 @@ public class FciOrient {
      * R10 (Zhang 2008 FCI orientation rule).
      * <p>
      * ASCII version: Suppose alpha o-&gt; gamma, beta -&gt; gamma &lt;- theta. Let p1 be an uncovered potentially directed
-     * (semi-directed) path from alpha to beta, and p2 be an uncovered potentially directed path from alpha to theta.
+     * (potentially directed) path from alpha to beta, and p2 be an uncovered potentially directed path from alpha to theta.
      * Let mu be the vertex adjacent to alpha on p1 (mu could be beta), and omega be the vertex adjacent to alpha on p2
      * (omega could be theta). If mu and omega are distinct and nonadjacent, then orient alpha o-&gt; gamma as alpha -&gt;
      * gamma.
      * <p>
      * Unicode version (same content): Suppose α o→ γ, β → γ ← θ. Let p1 be an uncovered potentially directed
-     * (semi-directed) path from α to β, and p2 be an uncovered potentially directed path from α to θ. Let μ be the
+     * (potentially directed) path from α to β, and p2 be an uncovered potentially directed path from α to θ. Let μ be the
      * vertex adjacent to α on p1 (μ could be β), and ω be the vertex adjacent to α on p2 (ω could be θ). If μ and ω are
      * distinct and nonadjacent, then orient α o→ γ as α → γ.
      * <p>
      * Notes: - "Uncovered" means every consecutive triple on the path is unshielded. - "Potentially directed /
-     * semi-directed" means no arrowhead points toward alpha along the path.
+     * potentially directed" means no arrowhead points toward alpha along the path.
      *
      * @param alpha the node α
      * @param gamma the node γ
@@ -1226,10 +1226,10 @@ public class FciOrient {
 //                        }
 //
 //                        // Now we have our beta, theta, nu, and omega for R10. Next we need to try to find
-//                        // alpha semidirected path p1 starting with <alpha, nu>, and ending with beta, and alpha path
+//                        // alpha potentially directed path p1 starting with <alpha, nu>, and ending with beta, and alpha path
 //                        // p2 starting with <alpha, omega> and ending with theta.
 //
-//                        if (graph.paths().existsSemiDirectedPath(nu, beta) && graph.paths().existsSemiDirectedPath(omega, theta)) {
+//                        if (graph.paths().existsPotentiallyDirectedPath(nu, beta) && graph.paths().existsPotentiallyDirectedPath(omega, theta)) {
 //
 //                            // Now we know we have the paths p1 and p2 as required, so R10 applies! We now need to
 //                            // orient the circle of the alpha o-> gamma edge as a tail.

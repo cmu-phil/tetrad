@@ -26,31 +26,29 @@ import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
-import static edu.cmu.tetrad.graph.GraphUtils.compatible;
-
 /**
  * The bidirected true positives.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public class NumCompatiblePossiblyDirectedEdgeNonAncestors implements Statistic {
+public class NumPotentiallyDirected implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * Constructs a new instance of the statistic.
      */
-    public NumCompatiblePossiblyDirectedEdgeNonAncestors() {
-
+    public NumPotentiallyDirected() {
     }
+
 
     /**
      * {@inheritDoc}
      */
     @Override
     public String getAbbreviation() {
-        return "#CPDENA";
+        return "#X-->Y-PossDir";
     }
 
     /**
@@ -58,7 +56,7 @@ public class NumCompatiblePossiblyDirectedEdgeNonAncestors implements Statistic 
      */
     @Override
     public String getDescription() {
-        return "Number compatible PD X-->Y for which X is not an ancestor of Y in true";
+        return "Number of X-->Y in est where semi(X, Y) && !anc(X, Y) in true CPDAG";
     }
 
     /**
@@ -66,30 +64,24 @@ public class NumCompatiblePossiblyDirectedEdgeNonAncestors implements Statistic 
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        GraphUtils.addEdgeSpecializationMarkup(estGraph);
+        int count = 0;
 
-        Graph pag = GraphTransforms.dagToPag(trueGraph);
-
-        int tp = 0;
-        int fp = 0;
+        Graph cpdag = GraphTransforms.dagToCpdag(trueGraph);
 
         for (Edge edge : estGraph.getEdges()) {
-            Edge trueEdge = pag.getEdge(edge.getNode1(), edge.getNode2());
-            if (!compatible(edge, trueEdge)) continue;
-
-            if (edge.getProperties().contains(Edge.Property.pd)) {
+            if (Edges.isDirectedEdge(edge)) {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (trueGraph.paths().isAncestorOf(x, y)) {
-                    tp++;
-                } else {
-                    fp++;
+                if (new Paths(cpdag).existsPotentiallyDirectedPath(x, y)) {
+                    if (!new Paths(cpdag).existsDirectedPath(x, y)) {
+                        count++;
+                    }
                 }
             }
         }
 
-        return fp;
+        return count;
     }
 
     /**

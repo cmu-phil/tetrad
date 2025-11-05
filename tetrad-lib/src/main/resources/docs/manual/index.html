@@ -428,7 +428,7 @@
 
     <p>Clicking on “Graph—Paths” opens a dialog box that allows you to
         see all the paths between any two variables. You can specify whether you
-        want to see only adjacencies, only directed paths, only semidirected
+        want to see only adjacencies, only directed paths, only potentially directed
         paths, or all treks between the two variables of interest, and the
         maximum length of the paths you are interested in using drop boxes at the
         top of the pane. To apply those settings, click “update.”</p>
@@ -5098,11 +5098,11 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="trimmingStyle_short_desc">Trimming Style: 1 = None, 2 = Adjacencies, 3 = MB DAG, 4 = Semidirected paths</span>
+                    id="trimmingStyle_short_desc">Trimming Style: 1 = None, 2 = Adjacencies, 3 = MB DAG, 4 = Possibly directed paths</span>
             </li>
             <li>Long Description: <span
                     id="trimmingStyle_long_desc">'Adjacencies' trims to the adjacencies the targets, MB DAGs to the Union(MB(targets)) U targets,
-                semidirected trims to nodes with semidirected paths to the targets. </span>
+                potentially directed trims to nodes with potentially directed paths to the targets. </span>
             </li>
             <li>Default Value: <span
                     id="trimmingStyle_default_value">3</span></li>

@@ -59,7 +59,7 @@ import java.util.*;
  *
  * <h3>Notes</h3>
  * <ul>
- *   <li>“PDAG” here refers to running the RA enumerator on a possibly directed/ancestral graph setting
+ *   <li>“PDAG” here refers to running the RA enumerator on a potentially directed/ancestral graph setting
  *       (DAG/CPDAG/MPDAG). For PAG semantics use the corresponding PAG-capable RA configuration.</li>
  *   <li>Adjustment sets returned are trimmed to minimality via a try-delete pass.</li>
  * </ul>

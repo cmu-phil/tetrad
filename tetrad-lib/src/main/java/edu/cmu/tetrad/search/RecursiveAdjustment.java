@@ -26,7 +26,7 @@ import java.util.*;
  *       non-amenable sets of nodes.</li>
  * </ul>
  */
-public final class Adjustment {
+public final class RecursiveAdjustment {
 
     /**
      * Represents the type of graph being analyzed for adjustment set definition.
@@ -73,7 +73,7 @@ public final class Adjustment {
      *
      * @param graph The causal graph to be analyzed for adjustment set definition.
      */
-    public Adjustment(Graph graph) { this.graph = graph; }
+    public RecursiveAdjustment(Graph graph) { this.graph = graph; }
 
     /**
      * Sets the collider policy for handling colliders during adjustment set definition.
@@ -81,7 +81,7 @@ public final class Adjustment {
      * @param p The collider policy to be applied.
      * @return This Adjustment instance for method chaining.
      */
-    public Adjustment setColliderPolicy(ColliderPolicy p) {
+    public RecursiveAdjustment setColliderPolicy(ColliderPolicy p) {
         this.colliderPolicy = Objects.requireNonNull(p);
         return this;
     }
@@ -92,7 +92,7 @@ public final class Adjustment {
      * @param p The no-amenable policy to be applied.
      * @return This Adjustment instance for method chaining.
      */
-    public Adjustment setNoAmenablePolicy(NoAmenablePolicy p) {
+    public RecursiveAdjustment setNoAmenablePolicy(NoAmenablePolicy p) {
         this.noAmenablePolicy = Objects.requireNonNull(p);
         return this;
     }
@@ -318,7 +318,7 @@ public final class Adjustment {
         return layers;
     }
 
-    private Adjustment.Shells backdoorShellsFromX(Node X, List<Node> starts, int maxRadius) {
+    private RecursiveAdjustment.Shells backdoorShellsFromX(Node X, List<Node> starts, int maxRadius) {
         @SuppressWarnings("unchecked")
         List<Node>[] layers = new ArrayList[maxRadius + 1];
         for (int i = 0; i <= maxRadius; i++) layers[i] = new ArrayList<>();
@@ -349,7 +349,7 @@ public final class Adjustment {
             }
         }
         Set<Node> reach = dist.keySet();
-        return new Adjustment.Shells(layers, reach);
+        return new RecursiveAdjustment.Shells(layers, reach);
     }
 
     private static Set<Node> forwardReach(Graph G, String graphType, Set<Node> starts) {

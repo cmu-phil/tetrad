@@ -2640,7 +2640,7 @@ public final class TestGrasp {
         dagStats.add(new SemidirectedPathF1());
         dagStats.add(new NonancestorPrecision());
         dagStats.add(new NonancestorRecall());
-        dagStats.add(new NoSemidirectedF1());
+        dagStats.add(new NoPotentiallyDirectedF1());
 
         Statistics pagStats = new Statistics();
 

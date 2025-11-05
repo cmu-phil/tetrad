@@ -578,16 +578,16 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Finds all semi-directed paths between two nodes up to a maximum length.
+     * Finds all possibly-directed paths between two nodes up to a maximum length.
      *
      * @param node1     the starting node
      * @param node2     the ending node
      * @param maxLength the maximum path length
-     * @return a list of all semi-directed paths between the two nodes
+     * @return a list of all potentially directed paths between the two nodes
      */
-    public Set<List<Node>> semidirectedPaths(Node node1, Node node2, int maxLength) {
+    public Set<List<Node>> potentiallyDirectedPaths(Node node1, Node node2, int maxLength) {
         Set<List<Node>> paths = new HashSet<>();
-        semidirectedPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength);
+        potentiallyDirectedPathsVisit(node1, node2, new LinkedList<>(), paths, maxLength);
         return paths;
     }
 
@@ -601,7 +601,7 @@ public class Paths implements TetradSerializable {
      * nodes
      */
     public Set<List<Node>> getAmenablePathsPdagMag(Node node1, Node node2, int maxLength) {
-        Set<List<Node>> amenablePaths = new HashSet<>(semidirectedPaths(node1, node2, maxLength));
+        Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
             Node a = path.getFirst();
@@ -617,7 +617,7 @@ public class Paths implements TetradSerializable {
 
     /**
      * Finds amenable paths from the given source node to the given destination node with a maximum length, for a PAG.
-     * These are semidirected paths that start with a visible edge out of node1.
+     * These are potentially directed paths that start with a visible edge out of node1.
      *
      * @param node1     the source node
      * @param node2     the destination node
@@ -626,7 +626,7 @@ public class Paths implements TetradSerializable {
      * nodes
      */
     public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength) {
-        Set<List<Node>> amenablePaths = new HashSet<>(semidirectedPaths(node1, node2, maxLength));
+        Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
             Node a = path.getFirst();
@@ -642,7 +642,7 @@ public class Paths implements TetradSerializable {
         return amenablePaths;
     }
 
-    private void semidirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, Set<List<Node>> paths, int maxLength) {
+    private void potentiallyDirectedPathsVisit(Node node1, Node node2, LinkedList<Node> path, Set<List<Node>> paths, int maxLength) {
         if (maxLength != -1 && path.size() > maxLength - 2) {
             return;
         }
@@ -662,7 +662,7 @@ public class Paths implements TetradSerializable {
         }
 
         for (Edge edge : graph.getEdges(node1)) {
-            Node child = Edges.traverseSemiDirected(node1, edge);
+            Node child = Edges.traversePotentiallyDirected(node1, edge);
 
             if (child == null) {
                 continue;
@@ -672,7 +672,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            semidirectedPathsVisit(child, node2, path, paths, maxLength);
+            potentiallyDirectedPathsVisit(child, node2, path, paths, maxLength);
         }
 
         path.removeLast();
@@ -1117,19 +1117,19 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>existsSemiDirectedPath.</p>
+     * <p>existsPotentiallyDirectedPath.</p>
      *
      * @param from a {@link edu.cmu.tetrad.graph.Node} object
      * @param to   a {@link edu.cmu.tetrad.graph.Node} object
      * @return a boolean
      */
-    public boolean existsSemiDirectedPath(Node from, Node to) {
+    public boolean existsPotentiallyDirectedPath(Node from, Node to) {
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
 
         for (Node u : graph.getAdjacentNodes(from)) {
             Edge edge = graph.getEdge(from, u);
-            Node c = GraphUtils.traverseSemiDirected(from, edge);
+            Node c = GraphUtils.traversePotentiallyDirected(from, edge);
 
             if (c == null) {
                 continue;
@@ -1150,7 +1150,7 @@ public class Paths implements TetradSerializable {
 
             for (Node u : graph.getAdjacentNodes(t)) {
                 Edge edge = graph.getEdge(t, u);
-                Node c = GraphUtils.traverseSemiDirected(t, edge);
+                Node c = GraphUtils.traversePotentiallyDirected(t, edge);
 
                 if (c == null) {
                     continue;
@@ -1931,7 +1931,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            if ((existsSemiDirectedPath(r, x)) || existsSemiDirectedPath(r, b)) {
+            if ((existsPotentiallyDirectedPath(r, x)) || existsPotentiallyDirectedPath(r, b)) {
                 return true;
             }
         }
@@ -2732,14 +2732,14 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>existsSemiDirectedPath.</p>
+     * <p>existsPotentiallyDirectedPath.</p>
      *
      * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
      * @param nodes a {@link java.util.Set} object
      * @return a boolean
      */
-    public boolean existsSemiDirectedPath(Node node1, Set<Node> nodes) {
-        return existsSemiDirectedPathVisit(node1, nodes, new LinkedList<>());
+    public boolean existsPotentiallyDirectedPath(Node node1, Set<Node> nodes) {
+        return existsPotentiallyDirectedPathVisit(node1, nodes, new LinkedList<>());
     }
 
     /**
@@ -2909,18 +2909,18 @@ public class Paths implements TetradSerializable {
 // --- Public API: Recursive (mask-based) adjustment ---
 
     /**
-     * Checks if a semi-directed path exists between the given node and any of the nodes in the provided set.
+     * Checks if a potentially directed path exists between the given node and any of the nodes in the provided set.
      *
      * @param node1  The starting node for the path.
      * @param nodes2 The set of nodes to check for a path.
      * @param path   The current path (used for cycle detection).
-     * @return {@code true} if a semi-directed path exists, {@code false} otherwise.
+     * @return {@code true} if a potentially directed path exists, {@code false} otherwise.
      */
-    private boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2, LinkedList<Node> path) {
+    private boolean existsPotentiallyDirectedPathVisit(Node node1, Set<Node> nodes2, LinkedList<Node> path) {
         path.addLast(node1);
 
         for (Edge edge : graph.getEdges(node1)) {
-            Node child = Edges.traverseSemiDirected(node1, edge);
+            Node child = Edges.traversePotentiallyDirected(node1, edge);
 
             if (child == null) {
                 continue;
@@ -2934,7 +2934,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            if (existsSemiDirectedPathVisit(child, nodes2, path)) {
+            if (existsPotentiallyDirectedPathVisit(child, nodes2, path)) {
                 return true;
             }
         }
@@ -2979,7 +2979,7 @@ public class Paths implements TetradSerializable {
      * @return a boolean
      */
     public boolean possibleAncestor(Node node1, Node node2) {
-        return existsSemiDirectedPath(node1, Collections.singleton(node2));
+        return existsPotentiallyDirectedPath(node1, Collections.singleton(node2));
     }
 
     /**
@@ -3009,9 +3009,9 @@ public class Paths implements TetradSerializable {
      */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType, int maxNumSets, int maxRadius, int nearWhichEndpoint,
                                           int maxPathLength, String colliderPolicy) {
-       Adjustment.ColliderPolicy _colliderPolicy = Adjustment.ColliderPolicy.valueOf(colliderPolicy);
+       RecursiveAdjustment.ColliderPolicy _colliderPolicy = RecursiveAdjustment.ColliderPolicy.valueOf(colliderPolicy);
 
-        return new Adjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
+        return new RecursiveAdjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of());
     }
 
@@ -3034,8 +3034,8 @@ public class Paths implements TetradSerializable {
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength) {
-        return new Adjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
-                nearWhichEndpoint, maxPathLength, Adjustment.ColliderPolicy.OFF, true,
+        return new RecursiveAdjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
+                nearWhichEndpoint, maxPathLength, RecursiveAdjustment.ColliderPolicy.OFF, true,
                 Set.of(), Set.of());
     }
 

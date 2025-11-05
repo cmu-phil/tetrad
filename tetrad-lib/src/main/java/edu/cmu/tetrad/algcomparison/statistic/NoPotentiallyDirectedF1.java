@@ -21,27 +21,29 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
-import static edu.cmu.tetrad.graph.GraphUtils.compatible;
-
 /**
- * The bidirected true positives.
+ * Calculates the F1 statistic for adjacencies. See
+ * <p>
+ * <a href="https://en.wikipedia.org/wiki/F1_score">...</a>
+ * <p>
+ * We use what's on this page called the "traditional" F1 statistic.
  *
- * @author josephramsey
+ * @author Joseh Ramsey
  * @version $Id: $Id
  */
-public class NumCompatiblePossiblyDirectedEdgeAncestors implements Statistic {
+public class NoPotentiallyDirectedF1 implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * Constructs a new instance of the statistic.
      */
-    public NumCompatiblePossiblyDirectedEdgeAncestors() {
+    public NoPotentiallyDirectedF1() {
 
     }
 
@@ -50,7 +52,7 @@ public class NumCompatiblePossiblyDirectedEdgeAncestors implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "#CPDEA";
+        return "NoPossDirected-F1";
     }
 
     /**
@@ -58,7 +60,7 @@ public class NumCompatiblePossiblyDirectedEdgeAncestors implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Number compatible PD X-->Y for which X is an ancestor of Y in true";
+        return "F1 statistic for nonancestry comparing the estimated graph to the true graph";
     }
 
     /**
@@ -66,30 +68,9 @@ public class NumCompatiblePossiblyDirectedEdgeAncestors implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        GraphUtils.addEdgeSpecializationMarkup(estGraph);
-
-        Graph pag = GraphTransforms.dagToPag(trueGraph);
-
-        int tp = 0;
-        int fp = 0;
-
-        for (Edge edge : estGraph.getEdges()) {
-            Edge trueEdge = pag.getEdge(edge.getNode1(), edge.getNode2());
-            if (!compatible(edge, trueEdge)) continue;
-
-            if (edge.getProperties().contains(Edge.Property.pd)) {
-                Node x = Edges.getDirectedEdgeTail(edge);
-                Node y = Edges.getDirectedEdgeHead(edge);
-
-                if (trueGraph.paths().isAncestorOf(x, y)) {
-                    tp++;
-                } else {
-                    fp++;
-                }
-            }
-        }
-
-        return tp;
+        double precision = new NoPotentiallyDirectedF1().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
+        double recall = new NoSemidirectedRecall().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
+        return 2 * (precision * recall) / (precision + recall);
     }
 
     /**

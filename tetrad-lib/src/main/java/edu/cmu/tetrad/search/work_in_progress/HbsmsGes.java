@@ -560,7 +560,7 @@ public final class HbsmsGes implements Hbsms {
         List<Node> naYXT = new LinkedList<>(subset);
         naYXT.addAll(HbsmsGes.findNaYX(x, y, graph));
 
-        return GraphUtils.isClique(naYXT, graph) && isSemiDirectedBlocked(x, y, naYXT, graph, new HashSet<>());
+        return GraphUtils.isClique(naYXT, graph) && isPotentiallyDirectedBlocked(x, y, naYXT, graph, new HashSet<>());
 
     }
 
@@ -589,10 +589,10 @@ public final class HbsmsGes implements Hbsms {
     }
 
     /**
-     * Verifies if every semidirected path from y to x contains a node in naYXT.
+     * Verifies if every potentially directed path from y to x contains a node in naYXT.
      */
-    private boolean isSemiDirectedBlocked(Node x, Node y, List<Node> naYXT,
-                                          Graph graph, Set<Node> marked) {
+    private boolean isPotentiallyDirectedBlocked(Node x, Node y, List<Node> naYXT,
+                                              Graph graph, Set<Node> marked) {
         if (naYXT.contains(y)) {
             return true;
         }
@@ -609,7 +609,7 @@ public final class HbsmsGes implements Hbsms {
             if (graph.isAdjacentTo(y, node1) && !graph.isParentOf(node1, y)) {
                 marked.add(node1);
 
-                if (!isSemiDirectedBlocked(x, node1, naYXT, graph, marked)) {
+                if (!isPotentiallyDirectedBlocked(x, node1, naYXT, graph, marked)) {
                     return false;
                 }
 

@@ -22,7 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.Adjustment;
+import edu.cmu.tetrad.search.RecursiveAdjustment;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
@@ -707,7 +707,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         JComboBox<String> methodBox = new JComboBox<>(new String[]{
                 "Directed Paths",
-                "Semidirected Paths",
+                "Possibly Directed Paths",
                 "Treks",
                 "Confounder Paths",
                 "Latent Confounder Paths",
@@ -870,8 +870,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             public void watch() {
                 if ("Directed Paths".equals(method)) {
                     allDirectedPaths(graph, textArea, nodes1, nodes2);
-                } else if ("Semidirected Paths".equals(method)) {
-                    allSemidirectedPaths(graph, textArea, nodes1, nodes2);
+                } else if ("Possibly Directed Paths".equals(method)) {
+                    allPotentiallyDirectedPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Amenable paths".equals(method)) {
                     allAmenablePathsPdagMag(graph, textArea, nodes1, nodes2);
                 } else if ("Backdoor paths".equals(method)) {
@@ -986,15 +986,15 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
-     * Appends all semidirected paths from nodes in list nodes1 to nodes in list nodes2 to the given text area. A
-     * semidirected path is a path that, with additional knowledge, could be causal from source to target.
+     * Appends all potentially directed paths from nodes in list nodes1 to nodes in list nodes2 to the given text area. A
+     * potentially directed path is a path that, with additional knowledge, could be causal from source to target.
      *
      * @param graph    The Graph object representing the graph.
      * @param textArea The JTextArea object to append the paths to.
      * @param nodes1   The list of starting nodes.
      * @param nodes2   The list of ending nodes.
      */
-    private void allSemidirectedPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
+    private void allPotentiallyDirectedPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.setText("""
                 These are paths that with additional knowledge could be causal from source to target.
                 """);
@@ -1005,7 +1005,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                Set<List<Node>> paths = graph.paths().semidirectedPaths(node1, node2,
+                Set<List<Node>> paths = graph.paths().potentiallyDirectedPaths(node1, node2,
                         parameters.getInt("pathsMaxLength"));
 
                 if (paths.isEmpty()) {
@@ -1021,7 +1021,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (!pathListed) {
-            textArea.append("\n\nNo semidirected paths found.");
+            textArea.append("\n\nNo potentially directed paths found.");
         }
     }
 
@@ -1036,7 +1036,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      */
     private void allAmenablePathsPdagMag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.setText("""
-                These are semidirected paths from X to Y that start with a directed edge out of X. An 
+                These are potentially directed paths from X to Y that start with a directed edge out of X. An 
                 adjustment set should not block any of these paths.
                 """);
 
@@ -1096,7 +1096,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      */
     private void allAmenablePathsPag(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         textArea.setText("""
-                These are semidirected paths from X to Y that start with a directed edge out of X. An 
+                These are potentially directed paths from X to Y that start with a directed edge out of X. An 
                 adjustment set should not block any of these paths.
                 """);
 
@@ -1698,10 +1698,10 @@ private void edgeSpecificAdjustment(Graph graph, JTextArea textArea,
             try {
 
                 // The type of graph doesn't matter if we're ignoring amenable paths.
-                Adjustment adjustment = new Adjustment(graph);
+                RecursiveAdjustment adjustment = new RecursiveAdjustment(graph);
                 adjustments = adjustment.adjustmentSets(node1, node2, "PAG",
                         maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength,
-                        Adjustment.ColliderPolicy.OFF, avoidAmenable, Set.of(), Set.of());
+                        RecursiveAdjustment.ColliderPolicy.OFF, avoidAmenable, Set.of(), Set.of());
             } catch (Exception e) {
                 // Skip on error
                 continue;

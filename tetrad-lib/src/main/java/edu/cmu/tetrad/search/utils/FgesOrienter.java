@@ -231,8 +231,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         return nayx;
     }
 
-    // Used to find semidirected undirectedPaths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
+    // Used to find potentially directed undirectedPaths for cycle checking.
+    private static Node traversePotentiallyDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
                 return edge.getNode2();
@@ -1215,7 +1215,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         // point it must be verified that all nodes in s U NaYX are neighbors of Y, since some of
         // the edges g---Y may have been oriented in the interim.
         int cycleBound = -1;
-        return allNeighbors(y, union, graph) && !existsUnblockedSemiDirectedPath(y, x, union, graph, cycleBound);
+        return allNeighbors(y, union, graph) && !existsUnblockedPotentiallyDirectedPath(y, x, union, graph, cycleBound);
     }
 
     // Returns true if all of the members of 'union' are neighbors of y.
@@ -1320,7 +1320,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     // Returns true is a path consisting of undirected and directed edges toward 'to' exists of
     // length at most 'bound'. Cycle checker in other words.
-    private boolean existsUnblockedSemiDirectedPath(Node from, Node to, Set<Node> cond, Graph G, int bound) {
+    private boolean existsUnblockedPotentiallyDirectedPath(Node from, Node to, Set<Node> cond, Graph G, int bound) {
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
         Q.offer(from);
@@ -1340,7 +1340,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
             for (Node u : G.getAdjacentNodes(t)) {
                 Edge edge = G.getEdge(t, u);
-                Node c = FgesOrienter.traverseSemiDirected(t, edge);
+                Node c = FgesOrienter.traversePotentiallyDirected(t, edge);
                 if (c == null) continue;
                 if (cond.contains(c)) continue;
                 if (c == to) return true;

@@ -135,27 +135,27 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(test));
         graph = new EdgeListGraph(graph);
 
-        Graph possiblyDirected = new EdgeListGraph(graph.getNodes());
+        Graph potentiallyDirected = new EdgeListGraph(graph.getNodes());
 
         for (Edge edge : graph.getEdges()) {
             if (edge.pointsTowards(edge.getNode2())) {
-                possiblyDirected.addDirectedEdge(edge.getNode1(), edge.getNode2());
+                potentiallyDirected.addDirectedEdge(edge.getNode1(), edge.getNode2());
             }
         }
 
         int latentCounter = 1;
         Map<Set<Node>, Node> latentNodes = new HashMap<>();
 
-        for (Node x : possiblyDirected.getNodes()) {
-            Set<Node> possibleChildren = new HashSet<>(possiblyDirected.getChildren(x));
+        for (Node x : potentiallyDirected.getNodes()) {
+            Set<Node> possibleChildren = new HashSet<>(potentiallyDirected.getChildren(x));
             Set<Node> possibleParents = new HashSet<>();
 
             for (Node p : possibleChildren) {
-                possibleParents.addAll(possiblyDirected.getParents(p));
+                possibleParents.addAll(potentiallyDirected.getParents(p));
             }
 
             for (Node c : possibleParents) {
-                possibleChildren.addAll(possiblyDirected.getChildren(c));
+                possibleChildren.addAll(potentiallyDirected.getChildren(c));
             }
 
             List<Node> _possibleParents = new ArrayList<>(possibleParents);
@@ -181,7 +181,7 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
                     a2.forEach(children::remove);
                     if (children.isEmpty()) continue;
 
-                    if (!cartesianProduct(parents, children, possiblyDirected)) continue;
+                    if (!cartesianProduct(parents, children, potentiallyDirected)) continue;
 
                     // Verify that the candidate latent node meets orientation-based legitimacy criteria.
                     if (confirmLatentUsingOrientation(graph, parents, children, test)) {
@@ -203,10 +203,10 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
                             fciOrient.finalOrientation(graph);
                         }
 
-                        // Remove edges from parents to children from possiblyDirected
+                        // Remove edges from parents to children from potentiallyDirected
                         for (Node p : parents) {
                             for (Node c : children) {
-                                possiblyDirected.removeEdge(p, c);
+                                potentiallyDirected.removeEdge(p, c);
                             }
                         }
 
@@ -228,14 +228,14 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      *
      * @param parents          The set of parent nodes to be considered.
      * @param children         The set of child nodes to be considered.
-     * @param possiblyDirected The graph in which the edges are checked. The graph may or may not be directed.
+     * @param potentiallyDirected The graph in which the edges are checked. The graph may or may not be directed.
      * @return True if there is an edge in the graph for every pair of nodes from the Cartesian product of parents and
      * children; false otherwise.
      */
-    private static boolean cartesianProduct(Set<Node> parents, Set<Node> children, Graph possiblyDirected) {
+    private static boolean cartesianProduct(Set<Node> parents, Set<Node> children, Graph potentiallyDirected) {
         for (Node p : parents) {
             for (Node c : children) {
-                Edge e = possiblyDirected.getEdge(p, c);
+                Edge e = potentiallyDirected.getEdge(p, c);
                 if (e == null) return false;
             }
         }

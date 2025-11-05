@@ -1195,15 +1195,15 @@ public final class GraphUtils {
             Edge xyEdge = graph.getEdge(x, y);
             graph.removeEdge(xyEdge);
 
-            boolean existsSemidirectedPath;
+            boolean existsPotentiallyDirected;
 
             if (graph instanceof EdgeListGraph) {
-                existsSemidirectedPath = graph.existsSemidirectedPath(x, y);
+                existsPotentiallyDirected = graph.existsPotentiallyDirectedPath(x, y);
             } else {
-                existsSemidirectedPath = new Paths(graph).existsSemiDirectedPath(x, y);
+                existsPotentiallyDirected = new Paths(graph).existsPotentiallyDirectedPath(x, y);
             }
 
-            if (existsSemidirectedPath) {
+            if (existsPotentiallyDirected) {
                 edge.addProperty(Property.dd); // green.
             } else {
                 edge.addProperty(Property.pd); // blue
@@ -1759,13 +1759,13 @@ public final class GraphUtils {
     }
 
     /**
-     * Traverses a semi-directed edge to identify the next node in the traversal.
+     * Traverses a potentially directed edge to identify the next node in the traversal.
      *
      * @param node The starting node of the edge.
-     * @param edge The semi-directed edge to be traversed.
+     * @param edge The potentially directed edge to be traversed.
      * @return The next node in the traversal, or null if no such node exists.
      */
-    public static Node traverseSemiDirected(Node node, Edge edge) {
+    public static Node traversePotentiallyDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL || edge.getEndpoint1() == Endpoint.CIRCLE) {
                 return edge.getNode2();
@@ -1778,7 +1778,7 @@ public final class GraphUtils {
         return null;
     }
 
-    // Used to find semidirected paths for cycle checking.
+    // Used to find possibly paths for cycle checking.
 
     /**
      * Returns a comparison graph based on the specified parameters.
@@ -2377,7 +2377,7 @@ public final class GraphUtils {
      * @param graph         the graph to be trimmed
      * @param trimmingStyle the style indicating how the graph should be trimmed - 1: No trimming - 2: Trim nodes
      *                      adjacent to target nodes - 3: Trim nodes in the Markov blanket of target nodes - 4: Trim
-     *                      semidirected arcs adjacent to target nodes
+     *                      potentially directed arcs adjacent to target nodes
      * @return the trimmed graph
      * @throws IllegalArgumentException if an unknown trimming style is given
      */
@@ -2392,7 +2392,7 @@ public final class GraphUtils {
                 graph = trimMarkovBlanketGraph(targets, graph);
                 break;
             case 4:
-                graph = trimSemidirected(targets, graph);
+                graph = trimPotentiallyDirected(targets, graph);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown trimming style: " + trimmingStyle);
@@ -2463,20 +2463,20 @@ public final class GraphUtils {
     }
 
     /**
-     * Trims a semidirected graph by removing nodes that are not reachable from the target nodes.
+     * Trims a potentially directed graph by removing nodes that are not reachable from the target nodes.
      *
      * @param targets the list of target nodes
      * @param graph   the original graph to be trimmed
      * @return a trimmed graph with only the nodes reachable from the target nodes
      */
-    private static Graph trimSemidirected(List<Node> targets, Graph graph) {
+    private static Graph trimPotentiallyDirected(List<Node> targets, Graph graph) {
         Graph _graph = new EdgeListGraph(graph);
 
         M:
         for (Node m : graph.getNodes()) {
             if (!targets.contains(m)) {
                 for (Node n : targets) {
-                    if (graph.paths().existsSemiDirectedPath(m, n)) {
+                    if (graph.paths().existsPotentiallyDirectedPath(m, n)) {
                         continue M;
                     }
                 }

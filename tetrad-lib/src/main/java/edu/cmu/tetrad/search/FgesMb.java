@@ -243,13 +243,13 @@ public final class FgesMb implements DagScorer {
     }
 
     /**
-     * Traverses a semi-directed graph and returns the connected node based on the given edge.
+     * Traverses a potentially directed graph and returns the connected node based on the given edge.
      *
      * @param node The starting node of the traversal.
      * @param edge The edge connecting the nodes.
      * @return The connected node if the traversal is possible, otherwise null.
      */
-    private static Node traverseSemiDirected(Node node, Edge edge) {
+    private static Node traversePotentiallyDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
                 return edge.getNode2();
@@ -1069,7 +1069,7 @@ public final class FgesMb implements DagScorer {
         Set<Node> union = new HashSet<>(T);
         union.addAll(naYX);
 
-        return isClique(union) && semidirectedPathCondition(y, x, union)
+        return isClique(union) && potentiallyDirectedPathCondition(y, x, union)
                && !violatesKnowledge;
     }
 
@@ -1223,15 +1223,15 @@ public final class FgesMb implements DagScorer {
     }
 
     /**
-     * Checks if there is a semidirected path from the 'from' Node to the 'to' Node satisfying the given condition.
+     * Checks if there is a potentially directed path from the 'from' Node to the 'to' Node satisfying the given condition.
      *
      * @param from The starting Node.
      * @param to   The ending Node.
      * @param cond The Set of Nodes representing the condition.
-     * @return True if there is a semidirected path from 'from' to 'to' satisfying the condition, false otherwise.
+     * @return True if there is a potentially directed path from 'from' to 'to' satisfying the condition, false otherwise.
      * @throws IllegalArgumentException If 'from' and 'to' Nodes are the same.
      */
-    private boolean semidirectedPathCondition(Node from, Node to, Set<Node> cond) {
+    private boolean potentiallyDirectedPathCondition(Node from, Node to, Set<Node> cond) {
         if (from == to) throw new IllegalArgumentException();
 
         Queue<Node> Q = new LinkedList<>();
@@ -1253,7 +1253,7 @@ public final class FgesMb implements DagScorer {
 
             for (Node u : graph.getAdjacentNodes(t)) {
                 Edge edge = graph.getEdge(t, u);
-                Node c = traverseSemiDirected(t, edge);
+                Node c = traversePotentiallyDirected(t, edge);
 
                 if (c == null) {
                     continue;

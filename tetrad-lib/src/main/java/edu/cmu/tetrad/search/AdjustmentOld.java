@@ -355,9 +355,9 @@ public final class AdjustmentOld {
     }
 
     private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
-        Adjustment.GraphType _graphType = Adjustment.GraphType.valueOf(graphType);
+        RecursiveAdjustment.GraphType _graphType = RecursiveAdjustment.GraphType.valueOf(graphType);
         if (source == null || target == null || source == target) return Collections.emptySet();
-        if (_graphType == Adjustment.GraphType.PAG) {
+        if (_graphType == RecursiveAdjustment.GraphType.PAG) {
             return graph.paths().getAmenablePathsPag(source, target, maxLength);
         } else {
             return graph.paths().getAmenablePathsPdagMag(source, target, maxLength);

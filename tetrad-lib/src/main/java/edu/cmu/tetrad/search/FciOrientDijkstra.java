@@ -271,9 +271,9 @@ public class FciOrientDijkstra {
             if (potentiallyDirected) {
                 Set<Edge> edges = _graph.getEdges(node);
 
-                // We need to filter these neighbors to allow only those that pass using TraverseSemidirected.
+                // We need to filter these neighbors to allow only those that pass using TraversePotentiallyDirected.
                 for (Edge edge : edges) {
-                    Node other = Edges.traverseSemiDirected(node, edge);
+                    Node other = Edges.traversePotentiallyDirected(node, edge);
 
                     if (other == null) {
                         continue;
@@ -286,7 +286,7 @@ public class FciOrientDijkstra {
             } else {
                 Set<Edge> edges = _graph.getEdges(node);
 
-                // We need to filter these neighbors to allow only those that pass using TraverseSemidirected.
+                // We need to filter these neighbors to allow only those that pass using TraverseNondirected.
                 for (Edge edge : edges) {
                     Node other = Edges.traverseNondirected(node, edge);
 

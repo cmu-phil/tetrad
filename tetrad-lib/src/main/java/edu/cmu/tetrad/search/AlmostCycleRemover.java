@@ -37,7 +37,7 @@ import static edu.cmu.tetrad.util.TetradLogger.getInstance;
  * This class is meant to be incorporated into a latent variable algorithm and used to remove almost cycles from the
  * graph in the final step.
  * <p>
- * The method works by identifying almost cyclic paths for x &lt;-&gt; y where there is a semidirected path from x to y
+ * The method works by identifying almost cyclic paths for x &lt;-&gt; y where there is a potentially directed path from x to y
  * in the estimated PAG and then removing all unshielded collider orientations into x for these. This removes the need
  * to orient a collider at x for these edges, and so removes the need to orient a path out of x to y. Almost directed
  * paths are symptomatic of unfaithfulness in the data (implying dependencies that should not exist if the output is a
@@ -79,10 +79,10 @@ public class AlmostCycleRemover implements TetradSerializable {
 
         for (Edge edge : pag.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (pag.paths().existsSemiDirectedPath(edge.getNode1(), edge.getNode2())) {
+                if (pag.paths().existsPotentiallyDirectedPath(edge.getNode1(), edge.getNode2())) {
                     B.computeIfAbsent(edge.getNode1(), k -> new HashSet<>());
                     B.get(edge.getNode1()).add(edge);
-                } else if (pag.paths().existsSemiDirectedPath(edge.getNode2(), edge.getNode1())) {
+                } else if (pag.paths().existsPotentiallyDirectedPath(edge.getNode2(), edge.getNode1())) {
                     B.computeIfAbsent(edge.getNode2(), k -> new HashSet<>());
                     B.get(edge.getNode2()).add(edge);
                 }
