@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.List;
 
 /**
- * BOSS-POD is a class that implements the IGraphSearch interface. The BOSS-POD algorithm finds the BOSS DAG for
+ * LV-Dumb is a class that implements the IGraphSearch interface. The LV-Dumb algorithm finds the BOSS DAG for
  * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG, without
  * doing any further latent variable reasoning.
  *
@@ -83,7 +83,7 @@ public final class LvDumb implements IGraphSearch {
     private int maxDiscriminatingPathLength = -1;
 
     /**
-     * BOSS-POD constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
+     * LV-Dumb constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
      * Score object.
      *
      * @param score The Score object to be used for scoring DAGs.
@@ -110,7 +110,7 @@ public final class LvDumb implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("===Starting BOSS-POD===");
+            TetradLogger.getInstance().log("===Starting LV-Dumb===");
         }
 
         if (verbose) {
@@ -156,7 +156,7 @@ public final class LvDumb implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("BOSS-POD finished.");
+            TetradLogger.getInstance().log("LV-Dumb finished.");
         }
 
         return pag;

@@ -3099,18 +3099,18 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         FGES (see FGES, 2016).</p>
 
 
-    <h3>The BOSS-POD Algorithm</h3>
+    <h3>The LV-Dumb Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="BOSS-POD">
+    <div id="LV-Dumb">
 
-        <p>BOSS-POD is a heuristic latent variable algorithm the calculates a DAG (directed
+        <p>LV-Dumb is a heuristic latent variable algorithm the calculates a DAG (directed
             acyclic graph) using the BOSS algorithm (see) and the simply reports the PAG
             (partial ancestral graph) that this DAG belongs to. It is a quite accurate
-            algorithm, but it is not correct. BOSS-POD serves as the initial PAG estimate
+            algorithm, but it is not correct. LV-Dumb serves as the initial PAG estimate
             for the FCIT (FCI-Targeted-testing) algorithm (see), which does the extra work
-            to turn the BOSS-POD PAG estimate into a correct PAG. Note that the BOSS-POD
+            to turn the LV-Dumb PAG estimate into a correct PAG. Note that the LV-Dumb
             algorithm, since it does not do extra work to turn the graph into a correct PAG,
             cannot orient bidirected edges.</p>
 
@@ -3140,7 +3140,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Description</h4>
 
     <div id="FCIT">
-        <p> FCIT with the BOSS-POD (see) output (i.e., runs BOSS, estimates a DAG, then reports the PAG that this
+        <p> FCIT with the LV-Dumb (see) output (i.e., runs BOSS, estimates a DAG, then reports the PAG that this
             DAG belongs to), then does extra work to turn this PAG into a correct PAG for the latent variable
             case. This work consists in using a recursive path blocking algorithm to find certain sepsets
             consistent with the full orientations of interim PAGs. The recursive blocking algorithm is not completely
@@ -3151,7 +3151,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             reduce accuracy of the algorithm, which is optimized using the recursive blocking edge removal step, so
             a parameter is included to allower the to turn the final adjacency sepset section of the algorithm off.</p>
 
-        <p> After each edge removal after the initial BOSS-POD PAG estimate, the edge-reduced PAG is re-oriented
+        <p> After each edge removal after the initial LV-Dumb PAG estimate, the edge-reduced PAG is re-oriented
             so that it is a legal PAG. The implication is that the final graph returned by the algorithm is always
             a legal PAG, so a final legal PAG pipeline need not be applied and is not made available for this
             algorithm.</p>
