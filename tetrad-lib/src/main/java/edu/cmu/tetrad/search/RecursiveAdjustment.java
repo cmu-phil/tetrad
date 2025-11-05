@@ -13,7 +13,7 @@ import java.util.*;
  * Represents an adjustment mechanism for defining adjustment sets in causal inference
  * across different types of graphical models.
  * <p>
- * The {@code Adjustment} class provides methods to define valid adjustment sets based on
+ * The {@code RecursiveAdjustment} class provides methods to define valid adjustment sets based on
  * the structure of the graph, specific node relationships, and user-defined policies
  * about allowed paths and collateral factors.
  * </p>
@@ -22,8 +22,8 @@ import java.util.*;
  *   <li><code>graph</code>: The causal graph being analyzed.</li>
  *   <li><code>colliderPolicy</code>: A policy defining how colliders are handled during
  *       adjustment set definition.</li>
- *   <li><code>noAmenablePolicy</code>: A policy specifying behavior for paths involving
- *       non-amenable sets of nodes.</li>
+ *   <li><code>noAmenablePolicy</code>: A policy specifying behavior when the graph is
+ *       not adjustment-amenable relative to (X, Y) in the sense of Perković et al.</li>
  * </ul>
  */
 public final class RecursiveAdjustment {
@@ -55,21 +55,24 @@ public final class RecursiveAdjustment {
          * and bidirectional edges, encapsulating causal and non-causal relationships in a compact form.
          */
         PAG}
+
     /**
      * Represents the causal graph being analyzed for adjustment set definition.
      */
     private final Graph graph;
+
     /**
      * Represents the policy for handling colliders during adjustment set definition.
      */
     private ColliderPolicy colliderPolicy = ColliderPolicy.NONCOLLIDER_FIRST;
+
     /**
-     * Represents the policy for handling paths involving non-amenable sets of nodes.
+     * Represents the policy for handling non-amenability (in Perković's sense) relative to (X, Y).
      */
     private NoAmenablePolicy noAmenablePolicy = NoAmenablePolicy.SEARCH;
 
     /**
-     * Constructs an Adjustment instance with the specified causal graph.
+     * Constructs a RecursiveAdjustment instance with the specified causal graph.
      *
      * @param graph The causal graph to be analyzed for adjustment set definition.
      */
@@ -79,7 +82,7 @@ public final class RecursiveAdjustment {
      * Sets the collider policy for handling colliders during adjustment set definition.
      *
      * @param p The collider policy to be applied.
-     * @return This Adjustment instance for method chaining.
+     * @return This RecursiveAdjustment instance for method chaining.
      */
     public RecursiveAdjustment setColliderPolicy(ColliderPolicy p) {
         this.colliderPolicy = Objects.requireNonNull(p);
@@ -87,10 +90,10 @@ public final class RecursiveAdjustment {
     }
 
     /**
-     * Sets the policy for handling paths involving non-amenable sets of nodes.
+     * Sets the policy for handling cases where the graph is not amenable relative to (X, Y).
      *
      * @param p The no-amenable policy to be applied.
-     * @return This Adjustment instance for method chaining.
+     * @return This RecursiveAdjustment instance for method chaining.
      */
     public RecursiveAdjustment setNoAmenablePolicy(NoAmenablePolicy p) {
         this.noAmenablePolicy = Objects.requireNonNull(p);
@@ -98,8 +101,30 @@ public final class RecursiveAdjustment {
     }
 
     /**
+     * Checks whether the graph is adjustment-amenable relative to (X, Y)
+     * in the sense of Perković et al.: every proper possibly-directed path
+     * from X to Y starts with a visible / directed edge out of X.
+     *
+     * This uses the same notion of "amenable path" as the main algorithm:
+     * - For PAGs: first edge must be visible and point away from X.
+     * - For DAG/PDAG/MAG: first edge must be directed out of X.
+     *
+     * @param X             source node
+     * @param Y             target node
+     * @param graphType     graph type ("DAG", "PDAG", "MAG", "PAG", etc.)
+     * @param maxPathLength maximum path length for possibly-directed paths; -1 means unlimited
+     * @return true if the graph is amenable w.r.t. (X, Y), false otherwise
+     */
+    public boolean isGraphAmenable(Node X, Node Y, String graphType, int maxPathLength) {
+        if (X == null || Y == null || X == Y) {
+            throw new IllegalArgumentException("X and Y must be distinct non-null nodes.");
+        }
+        return isGraphAmenableInternal(X, Y, graphType, maxPathLength);
+    }
+
+    /**
      * Computes a list of adjustment sets for estimating the causal effect of X on Y
-     * within a given graph structure using the Rubin-Bai approach.
+     * within a given graph structure using the Rubin-Bai / RB-style approach.
      *
      * @param X The node representing the cause in the causal relationship.
      * @param Y The node representing the effect in the causal relationship.
@@ -108,7 +133,7 @@ public final class RecursiveAdjustment {
      * @param maxRadius The maximum radius for creating shells during adjustment set determination.
      * @param nearWhichEndpoint Specifies which endpoint (source or target) should dominate the adjustment determination.
      * @param maxPathLength The maximum allowed path length between X and Y for eligibility in adjustment sets.
-     * @param avoidAmenable Whether to avoid adjustment sets involving amenable paths.
+     * @param avoidAmenable Whether to avoid adjustment sets involving amenable paths (RA-mode vs RB-mode).
      * @param notFollowed A set of nodes that should not be followed during path exploration in the graph. Optional.
      * @param containing A set of nodes that must be included in the adjustment sets. Optional.
      * @return A list of sets of nodes, where each set represents a possible valid adjustment set for the causal effect.
@@ -190,9 +215,23 @@ public final class RecursiveAdjustment {
             throw new IllegalArgumentException("X and Y must differ.");
         if (maxRadius < 0) maxRadius = graph.getNodes().size();
 
-        Set<List<Node>> amenable = avoidAmenable ? getAmenablePaths(X, Y, graphType, maxPathLength)
-                : new HashSet<>();
-        Set<Node> amenableBackbone = amenableBackbone(amenable, X, Y);
+//        // 1. All possibly-directed (potentially-directed) paths from X to Y
+//        Set<List<Node>> pdPaths = graph.paths().potentiallyDirectedPaths(X, Y, maxPathLength);
+//
+//        // 2. Subset of those that are "amenable paths" in your sense
+//        Set<List<Node>> amenablePaths = getAmenablePaths(X, Y, graphType, maxPathLength);
+//
+//        // 3. Graph-level amenability in the sense of Perković et al.:
+//        //    G is amenable w.r.t. (X, Y) iff every proper possibly-directed X→Y path
+//        //    starts with a visible/directed edge out of X.
+//        boolean graphAmenable = pdPaths.isEmpty() || pdPaths.equals(amenablePaths);
+
+        // Path-level "amenable" set is still used for amenableBackbone,
+        // but graph-level amenability is computed via a shared helper.
+        Set<List<Node>> amenablePaths = getAmenablePaths(X, Y, graphType, maxPathLength);
+        boolean graphAmenable = isGraphAmenableInternal(X, Y, graphType, maxPathLength);
+
+        Set<Node> amenableBackbone = amenableBackbone(amenablePaths, X, Y);
         Set<Node> forbidden = getForbiddenForAdjustment(graph, graphType, X, Y);
 
         List<Node> starts = firstBackdoorNeighbors(X, Y, graphType);
@@ -213,7 +252,6 @@ public final class RecursiveAdjustment {
         else { poolSet.retainAll(shellsFromX.reach); poolSet.retainAll(shellsFromY.reach); }
 
         // In RB (sepset) mode, DO NOT prune candidates by Forb_G or amenable backbone.
-        // We need to be able to pick nodes on causal paths (e.g., W on X→W→Z).
         if (!rbMode) {
             poolSet.removeAll(forbidden);
             poolSet.removeAll(amenableBackbone);
@@ -247,21 +285,38 @@ public final class RecursiveAdjustment {
                 if (poolSet.contains(v)) seedZ.add(v);
 
         return new PrecomputeContext(X, Y, graphType, maxRadius, nearWhichEndpoint,
-                maxPathLength, amenable, amenableBackbone, forbidden,
+                maxPathLength, amenablePaths, amenableBackbone, forbidden,
                 shellsFromX, shellsFromY, pool, idx, order,
                 notFollowed == null ? Set.of() : new HashSet<>(notFollowed),
-                seedZ, rbMode);
+                seedZ, rbMode, graphAmenable);
     }
 
+    /**
+     * Internal helper: compute graph-level amenability relative to (X, Y)
+     * using potentiallyDirectedPaths and the path-level amenable test.
+     */
+    private boolean isGraphAmenableInternal(Node X, Node Y, String graphType, int maxPathLength) {
+        // All possibly-directed (potentially-directed) paths from X to Y
+        Set<List<Node>> pdPaths = graph.paths().potentiallyDirectedPaths(X, Y, maxPathLength);
+
+        // Subset of those that are "amenable paths" in your sense
+        Set<List<Node>> amenablePaths = getAmenablePaths(X, Y, graphType, maxPathLength);
+
+        // G is amenable w.r.t. (X, Y) iff every possibly-directed path is amenable.
+        // If there are no possibly-directed paths, amenability holds vacuously.
+        return pdPaths.isEmpty() || pdPaths.equals(amenablePaths);
+    }
+
+    // Uses your existing graph.paths() helpers:
     private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
         if (source == null || target == null || source == target) return Collections.emptySet();
-        return ("PAG".equals(graphType))
+        return ("PAG".equalsIgnoreCase(graphType))
                 ? graph.paths().getAmenablePathsPag(source, target, maxLength)
                 : graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
     }
 
     /**
-     * Compute Forb_G(X,Y) (Perković et al., 2018).
+     * Compute Forb_G(X,Y) (Perković et al.).
      */
     private static Set<Node> getForbiddenForAdjustment(Graph G, String graphType, Node X, Node Y) {
         Objects.requireNonNull(G);
@@ -421,17 +476,24 @@ public final class RecursiveAdjustment {
         return new Shells(layers, visited);
     }
 
-
     // --- Solve once -------------------------------------------------------------------------
 
     private @Nullable LinkedHashSet<Node> solveOnce(PrecomputeContext ctx, Set<Node> ban,
                                                     ColliderPolicy colliderPolicy, boolean rbMode) {
         final Node X = ctx.X, Y = ctx.Y;
-        if (ctx.amenable.isEmpty()) {
+
+        // NEW: graph-level amenability check (Perković) only in RA mode.
+        if (!rbMode && !ctx.graphAmenable) {
             switch (noAmenablePolicy) {
-                case RETURN_EMPTY_SET: return new LinkedHashSet<>(Collections.emptySet());
-                case SUPPRESS:         return new LinkedHashSet<>();
-                default:               /* SEARCH */ ;
+                case RETURN_EMPTY_SET:
+                    // Return {} as the (only) adjustment set
+                    return new LinkedHashSet<>(Collections.emptySet());
+                case SUPPRESS:
+                    // Suppress any output for this (X,Y) pair
+                    return new LinkedHashSet<>();
+                default: /* SEARCH */
+                    // Fall through: allow heuristic search even if not GAC-sound
+                    break;
             }
         }
 
@@ -546,11 +608,11 @@ public final class RecursiveAdjustment {
 
         for (Node v : pool) {
             if (inWitness.contains(v)
-                    && (rbMode || !forbidden.contains(v))
-                    && (rbMode || !amenableBackbone.contains(v))
-                    && !Z.contains(v)
-                    && !ban.contains(v)
-                    && !notFollowed.contains(v)) {
+                && (rbMode || !forbidden.contains(v))
+                && (rbMode || !amenableBackbone.contains(v))
+                && !Z.contains(v)
+                && !ban.contains(v)
+                && !notFollowed.contains(v)) {
                 candidates.add(v);
             }
         }
@@ -560,11 +622,11 @@ public final class RecursiveAdjustment {
                 // In RB-mode, allow witness nodes even if they’re not in poolSet.
                 boolean allow = rbMode || poolSet.contains(v);
                 if (allow
-                        && (rbMode || !forbidden.contains(v))
-                        && (rbMode || !amenableBackbone.contains(v))
-                        && !Z.contains(v)
-                        && !ban.contains(v)
-                        && !notFollowed.contains(v)) {
+                    && (rbMode || !forbidden.contains(v))
+                    && (rbMode || !amenableBackbone.contains(v))
+                    && !Z.contains(v)
+                    && !ban.contains(v)
+                    && !notFollowed.contains(v)) {
                     candidates.add(v);
                 }
             }
@@ -594,7 +656,7 @@ public final class RecursiveAdjustment {
         return candidates.get(0);
     }
 
-    // --- Helper methods (unchanged except signatures simplified) ------------------------------
+    // --- Helper methods ----------------------------------------------------------------------
 
     private boolean tripleKeepsOpen(Node a, Node b, Node c, Set<Node> Z) {
         boolean collider = graph.isDefCollider(a, b, c);
@@ -624,9 +686,6 @@ public final class RecursiveAdjustment {
         return base;
     }
 
-    // (Include getAmenablePaths, firstBackdoorNeighbors, forwardReach, backwardFilterByForwardRule,
-    // getForbiddenForAdjustment, backdoorShellsFromX, undirectedShells, etc., as in your current Adjustment.)
-
     private static String keyOf(Set<Node> Z) {
         return Z.stream().map(Node::getName).sorted().reduce((a, b) -> a + "," + b).orElse("");
     }
@@ -647,90 +706,24 @@ public final class RecursiveAdjustment {
 
     // --- Enums & records ---------------------------------------------------------------------
 
-    /**
-     * Represents the policy for handling collider nodes during causal path analysis
-     * in an adjustment context. A collider is a node where two or more directed edges
-     * converge, potentially affecting causal relationships between variables.
-     */
     public enum ColliderPolicy {
-
-        /**
-         * A constant representing the policy to disregard collider nodes during
-         * causal path analysis. When this policy is selected, collider nodes are
-         * not considered in determining the paths for adjustment in a causal
-         * context. This may simplify the causal analysis but could lead to
-         * ignoring potential collider-related influences.
-         */
         OFF,
-
-        /**
-         * A constant representing the policy to prioritize non-collider nodes during
-         * causal path analysis. When this policy is applied, paths that do not include
-         * collider nodes are preferred over those that do. This policy aims to minimize
-         * the potential confounding effects of collider nodes in causal adjustment.
-         */
         PREFER_NONCOLLIDERS,
+        NONCOLLIDER_FIRST
+    }
 
-        /**
-         * A constant representing the policy to prioritize paths that begin with
-         * non-collider nodes during causal path analysis. This policy gives precedence
-         * to adjusting for paths starting with non-colliders, reducing potential biases
-         * introduced by collider nodes at the start of a causal pathway.
-         */
-        NONCOLLIDER_FIRST }
-
-    /**
-     * Represents the policy for handling paths involving non-amenable sets of nodes
-     * during adjustment set computation in causal inference.
-     */
     public enum NoAmenablePolicy {
-
-        /**
-         * An enumeration constant representing a policy where the system searches
-         * for alternative paths or solutions when encountering non-amenable sets
-         * of nodes during adjustment set computation in causal inference.
-         */
         SEARCH,
-
-        /**
-         * An enumeration constant representing a policy where the system returns an empty set
-         * when encountering non-amenable sets of nodes during adjustment set computation
-         * in causal inference. This policy indicates no valid solutions will be provided
-         * for such cases.
-         */
         RETURN_EMPTY_SET,
+        SUPPRESS
+    }
 
-        /**
-         * An enumeration constant representing a policy where any paths involving
-         * non-amenable sets of nodes during adjustment set computation in causal inference are ignored.
-         * This policy suppresses any consideration or impact of such non-amenable sets in the process.
-         */
-        SUPPRESS }
     private enum RoleOnWitness {
-
-        /**
-         * Represents the role of an endpoint in the context of a causal discovery algorithm or graph structure.
-         * Indicates whether a node acts as a terminal or boundary point in a causal relationship.
-         */
         ENDPOINT,
-
-        /**
-         * Represents an intersection point or node in a causal structure where two or more causal paths converge.
-         * Typically indicates a scenario where multiple causes influence a single effect.
-         */
         COLLIDER,
-
-        /**
-         * Represents a node that does not act as a collider or endpoint in a causal structure.
-         * Indicates a node that is neither a collider nor an endpoint, potentially influencing multiple effects.
-         */
         NONCOLLIDER,
-
-        /**
-         * Represents a node whose role is ambiguous in the context of causal discovery.
-         * Indicates a node whose role cannot be definitively determined as either a collider, endpoint, or non-collider.
-         */
-        AMBIGUOUS }
+        AMBIGUOUS
+    }
 
     private static final class PrecomputeContext {
         final Node X, Y;
@@ -744,12 +737,14 @@ public final class RecursiveAdjustment {
         final Set<Node> notFollowed;
         final LinkedHashSet<Node> seedZ;
         final boolean rbMode;
+        final boolean graphAmenable;
 
         PrecomputeContext(Node X, Node Y, String graphType, int maxRadius, int nearWhichEndpoint,
                           int maxPathLength, Set<List<Node>> amenable, Set<Node> amenableBackbone,
                           Set<Node> forbidden, Shells sx, Shells sy, List<Node> pool,
                           Map<Node,Integer> idx, Map<Node,Integer> order,
-                          Set<Node> notFollowed, LinkedHashSet<Node> seedZ, boolean rbMode) {
+                          Set<Node> notFollowed, LinkedHashSet<Node> seedZ,
+                          boolean rbMode, boolean graphAmenable) {
             this.X = X; this.Y = Y; this.graphType = graphType;
             this.maxRadius = maxRadius; this.nearWhichEndpoint = nearWhichEndpoint;
             this.maxPathLength = maxPathLength;
@@ -757,7 +752,7 @@ public final class RecursiveAdjustment {
             this.forbidden = forbidden; this.shellsFromX = sx; this.shellsFromY = sy;
             this.pool = pool; this.idx = idx; this.order = order;
             this.notFollowed = notFollowed; this.seedZ = seedZ;
-            this.rbMode = rbMode;
+            this.rbMode = rbMode; this.graphAmenable = graphAmenable;
         }
     }
 
