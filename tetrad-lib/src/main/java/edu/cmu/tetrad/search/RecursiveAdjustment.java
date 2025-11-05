@@ -69,7 +69,7 @@ public final class RecursiveAdjustment {
     /**
      * Represents the policy for handling non-amenability (in Perković's sense) relative to (X, Y).
      */
-    private NoAmenablePolicy noAmenablePolicy = NoAmenablePolicy.SEARCH;
+    private NoAmenablePolicy noAmenablePolicy = NoAmenablePolicy.SUPPRESS;
 
     /**
      * Constructs a RecursiveAdjustment instance with the specified causal graph.
@@ -214,17 +214,6 @@ public final class RecursiveAdjustment {
         if (X == null || Y == null || X == Y)
             throw new IllegalArgumentException("X and Y must differ.");
         if (maxRadius < 0) maxRadius = graph.getNodes().size();
-
-//        // 1. All potentially directed (potentially-directed) paths from X to Y
-//        Set<List<Node>> pdPaths = graph.paths().potentiallyDirectedPaths(X, Y, maxPathLength);
-//
-//        // 2. Subset of those that are "amenable paths" in your sense
-//        Set<List<Node>> amenablePaths = getAmenablePaths(X, Y, graphType, maxPathLength);
-//
-//        // 3. Graph-level amenability in the sense of Perković et al.:
-//        //    G is amenable w.r.t. (X, Y) iff every proper potentially directed X→Y path
-//        //    starts with a visible/directed edge out of X.
-//        boolean graphAmenable = pdPaths.isEmpty() || pdPaths.equals(amenablePaths);
 
         // Path-level "amenable" set is still used for amenableBackbone,
         // but graph-level amenability is computed via a shared helper.
