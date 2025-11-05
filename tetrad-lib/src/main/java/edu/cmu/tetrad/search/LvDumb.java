@@ -37,7 +37,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public final class LvLite implements IGraphSearch {
+public final class LvDumb implements IGraphSearch {
     /**
      * The score.
      */
@@ -89,7 +89,7 @@ public final class LvLite implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public LvLite(Score score) {
+    public LvDumb(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
