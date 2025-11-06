@@ -3008,6 +3008,26 @@ public class Paths implements TetradSerializable {
      * @param maxPathLength     The maximum allowable length of causal paths considered.
      * @param colliderPolicy    A string determining the collider policy for adjustment set computation. Values may be
      *                          "OFF", "PREFER_NONCOLLIDERS", or "NONCOLLIDER_FIRST".
+     * @return A list of sets of nodes, each set representing a valid adjustment set for the causal effect estimation.
+     */
+    public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType, int maxNumSets, int maxRadius, int nearWhichEndpoint,
+                                          int maxPathLength, String colliderPolicy) {
+        return adjustmentSets(X, Y, graphType, maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength, colliderPolicy, false);
+    }
+
+    /**
+     * Computes the adjustment sets needed to estimate the causal effect of node X on node Y in a given graph structure
+     * under specified parameters.
+     *
+     * @param X                 The node representing the cause in the causal relationship.
+     * @param Y                 The node representing the effect in the causal relationship.
+     * @param graphType         The type of the graph (e.g., DAG, MAG, etc.).
+     * @param maxNumSets        The maximum number of adjustment sets to return.
+     * @param maxRadius         The maximum distance from an endpoint to look for adjustment-set variables.
+     * @param nearWhichEndpoint TThe which endpoint to find adjustment sets near, 1 = source, 2 = target, 3 = both.
+     * @param maxPathLength     The maximum allowable length of causal paths considered.
+     * @param colliderPolicy    A string determining the collider policy for adjustment set computation. Values may be
+     *                          "OFF", "PREFER_NONCOLLIDERS", or "NONCOLLIDER_FIRST".
      * @param henckelPruning    whether to use Henckel pruning during adjustment set computation.
      * @return A list of sets of nodes, each set representing a valid adjustment set for the causal effect estimation.
      */
@@ -3015,9 +3035,32 @@ public class Paths implements TetradSerializable {
                                           int maxPathLength, String colliderPolicy, boolean henckelPruning) {
         RecursiveAdjustment.ColliderPolicy _colliderPolicy = RecursiveAdjustment.ColliderPolicy.valueOf(colliderPolicy);
 
-        RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph).setUseHenckelPruning(henckelPruning);
+        RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
+                .setUseHenckelPruning(henckelPruning);
         return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of());
+    }
+
+    /**
+     * Computes and returns a list of adjustment sets for given nodes and parameters. Adjustment sets are used in causal
+     * inference to determine sets of variables that need to be conditioned on to block backdoor paths. Assumes the
+     * collider policy is "OFF".
+     *
+     * @param X                 the source node in the causal graph
+     * @param Y                 the target node in the causal graph
+     * @param graphType         the type of graph being used (e.g., DAG, MAG, PAG)
+     * @param maxNumSets        the maximum number of adjustment sets to return
+     * @param maxRadius         the maximum distance from endpoint to look for adjsutment sets
+     * @param nearWhichEndpoint The which endpoint to find adjustment sets near, 1 = source, 2 = target, 3 = both.
+     * @param maxPathLength     the maximum length of paths to consider in the graph
+     * @return a list of sets of nodes, where each set represents an adjustment set that can be used to block backdoor
+     * paths between X and Y
+     */
+    public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
+                                          int maxNumSets, int maxRadius,
+                                          int nearWhichEndpoint, int maxPathLength) {
+        return adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
+                nearWhichEndpoint, maxPathLength, false);
     }
 
     /**

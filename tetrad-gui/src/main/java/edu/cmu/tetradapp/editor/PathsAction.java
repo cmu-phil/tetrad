@@ -1080,6 +1080,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
+                if (node1 == node2) {
+                    continue;
+                }
 
                 boolean amenenable = ra.isGraphAmenable(node1, node2, graphType, -1);
 
@@ -1573,6 +1576,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         int maxDistanceFromEndpoint = parameters.getInt("pathsMaxDistanceFromEndpoint");
         int nearWhichEndpoint = parameters.getInt("pathsNearWhichEndpoint");
         int maxLengthAdjustment = parameters.getInt("pathsMaxLengthAdjustment");
+        boolean henckelPruning = parameters.getBoolean("henckelPruning");
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
@@ -1601,7 +1605,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     adjustments = graph.paths().adjustmentSets(
                             node1, node2, graphType, maxNumSet,
                             maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment,
-                            false);
+                            henckelPruning);
                 } catch (Exception e) {
                     // Skip on error
                     continue;
