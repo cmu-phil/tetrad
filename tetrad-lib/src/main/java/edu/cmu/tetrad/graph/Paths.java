@@ -3008,13 +3008,14 @@ public class Paths implements TetradSerializable {
      * @param maxPathLength     The maximum allowable length of causal paths considered.
      * @param colliderPolicy    A string determining the collider policy for adjustment set computation. Values may be
      *                          "OFF", "PREFER_NONCOLLIDERS", or "NONCOLLIDER_FIRST".
+     * @param henckelPruning    whether to use Henckel pruning during adjustment set computation.
      * @return A list of sets of nodes, each set representing a valid adjustment set for the causal effect estimation.
      */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType, int maxNumSets, int maxRadius, int nearWhichEndpoint,
-                                          int maxPathLength, String colliderPolicy) {
+                                          int maxPathLength, String colliderPolicy, boolean henckelPruning) {
         RecursiveAdjustment.ColliderPolicy _colliderPolicy = RecursiveAdjustment.ColliderPolicy.valueOf(colliderPolicy);
 
-        RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph).setUseHenckelPruning(true);
+        RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph).setUseHenckelPruning(henckelPruning);
         return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of());
     }
@@ -3031,14 +3032,16 @@ public class Paths implements TetradSerializable {
      * @param maxRadius         the maximum distance from endpoint to look for adjsutment sets
      * @param nearWhichEndpoint The which endpoint to find adjustment sets near, 1 = source, 2 = target, 3 = both.
      * @param maxPathLength     the maximum length of paths to consider in the graph
+     * @param henckelPruning    whether to use Henckel pruning during adjustment set computation
      * @return a list of sets of nodes, where each set represents an adjustment set that can be used to block backdoor
      * paths between X and Y
      */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
-                                          int nearWhichEndpoint, int maxPathLength) {
-        RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph);
-        recursiveAdjustment.setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SUPPRESS);
+                                          int nearWhichEndpoint, int maxPathLength, boolean henckelPruning) {
+        RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
+                .setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SUPPRESS)
+                .setUseHenckelPruning(henckelPruning);
         return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, RecursiveAdjustment.ColliderPolicy.OFF, true,
                 Set.of(), Set.of());

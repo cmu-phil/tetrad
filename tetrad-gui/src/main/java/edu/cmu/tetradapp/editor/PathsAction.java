@@ -714,9 +714,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Cycles",
                 "All Paths",
                 "Adjacents",
-                "Adjustment Sets (for Total Effect)",
+                "Adjustment",
 //                "Adjustment Set (Recursive)",
-                "Direct-Effect Adjustment Sets (Edge-Specific)\n",
+                "Edge-specific Adjustment",
                 "Amenable paths",
                 "Backdoor paths"
         });
@@ -818,6 +818,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             params.add("pathsMaxDistanceFromEndpoint");
             params.add("pathsNearWhichEndpoint");
             params.add("pathsMaxLengthAdjustment");
+            params.add("henckelPruning");
 
             Box parameterBox = getParameterBox(params, false, false, parameters);
             new PaddingPanel(parameterBox);
@@ -886,9 +887,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     latentConfounderPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Adjacents".equals(method)) {
                     adjacentNodes(graph, textArea, nodes1, nodes2);
-                } else if ("Adjustment Sets (for Total Effect)".equals(method)) {
+                } else if ("Adjustment".equals(method)) {
                     adjustmentSets(graph, textArea, nodes1, nodes2);
-                } else if ("Direct-Effect Adjustment Sets (Edge-Specific)\n".equals(method)) {
+                } else if ("Edge-specific Adjustment".equals(method)) {
                     edgeSpecificAdjustment(graph, textArea, nodes1, nodes2);
                 }
 //                else if ("Adjustment Set (Recursive)".equals(method)) {
@@ -1599,8 +1600,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 try {
                     adjustments = graph.paths().adjustmentSets(
                             node1, node2, graphType, maxNumSet,
-                            maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment
-                    );
+                            maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment,
+                            false);
                 } catch (Exception e) {
                     // Skip on error
                     continue;

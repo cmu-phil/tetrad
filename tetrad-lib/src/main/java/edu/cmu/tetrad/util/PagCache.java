@@ -70,16 +70,26 @@ public final class PagCache {
     }
 
     private static Graph computePag(Graph graph) {
-        if (graph.paths().isLegalDag()) {
+//        if (graph.paths().isLegalDag()) {
 //            Graph mag = GraphTransforms.dagToMag(graph);
 //            return new MagToPag(mag).convert(false);
+//
+//            // This does the selection bias conversion. Also, we need to check the DAG case first, because
+//            // if you have a selection node, the legal MAG check will choke because it's expecting all
+//            // measured variables. jdramsey 2025-11-6
+////            return PagCache.getInstance().getPag(GraphTransforms.dagToMag(graph));
+//        } else if (graph.paths().isLegalMag()) {
+//            return new MagToPag(graph).convert(false);
+//        } else {
+//            Graph mag = GraphTransforms.zhangMagFromPag(graph);
+//            return new MagToPag(mag).convert(true);
+//        }
 
-            // This does the selection bias conversion. Also, we need to check the DAG case first, because
-            // if you have a selection node, the legal MAG check will choke because it's expecting all
-            // measured variables. jdramsey 2025-11-6
-            return PagCache.getInstance().getPag(GraphTransforms.dagToMag(graph));
+        if (graph.paths().isLegalDag()) {
+            Graph mag = GraphTransforms.dagToMag(graph);
+            return computePagFromMag(mag);   // no getPag() here, avoiding infinite recursion.
         } else if (graph.paths().isLegalMag()) {
-            return new MagToPag(graph).convert(false);
+            return computePagFromMag(graph);
         } else {
             Graph mag = GraphTransforms.zhangMagFromPag(graph);
             return new MagToPag(mag).convert(true);
@@ -237,6 +247,10 @@ public final class PagCache {
             cache.put(g, new Entry(pag, srcSig, signatureOfPag(pag)));
             return pag;
         }
+    }
+
+    private static Graph computePagFromMag(Graph mag) {
+        return new MagToPag(mag).convert(false);
     }
 
     /**

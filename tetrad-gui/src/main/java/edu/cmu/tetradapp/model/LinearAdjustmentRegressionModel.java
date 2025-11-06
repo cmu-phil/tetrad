@@ -125,7 +125,7 @@ public class LinearAdjustmentRegressionModel implements SessionModel, GraphSourc
         }
 
         return graph.paths().adjustmentSets(source, target, graphType, maxNumSets, maxDistanceFromEndpoint, nearWhichEndpoint,
-                maxPathLength);
+                maxPathLength, false);
     }
 
     /**
