@@ -4,10 +4,14 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.MsepTest;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
+
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 
 /**
  * Represents an adjustment mechanism for defining adjustment sets in causal inference
@@ -72,11 +76,26 @@ public final class RecursiveAdjustment {
     private NoAmenablePolicy noAmenablePolicy = NoAmenablePolicy.SUPPRESS;
 
     /**
+     * Optional independence test used for HPM-style pruning (Algorithm 1).
+     * If null, HPM pruning is disabled.
+     */
+    private @Nullable IndependenceTest independenceTest = null;
+
+    /**
+     * Toggle for applying Henckel–Perković–Maathuis style pruning
+     * (Algorithm 1) to any RA solution set.
+     */
+    private boolean useHenckelPruning = false;
+
+    /**
      * Constructs a RecursiveAdjustment instance with the specified causal graph.
      *
      * @param graph The causal graph to be analyzed for adjustment set definition.
      */
-    public RecursiveAdjustment(Graph graph) { this.graph = graph; }
+    public RecursiveAdjustment(Graph graph) {
+        this.graph = graph;
+        this.independenceTest = new MsepTest(graph);
+    }
 
     /**
      * Sets the collider policy for handling colliders during adjustment set definition.
@@ -97,6 +116,26 @@ public final class RecursiveAdjustment {
      */
     public RecursiveAdjustment setNoAmenablePolicy(NoAmenablePolicy p) {
         this.noAmenablePolicy = Objects.requireNonNull(p);
+        return this;
+    }
+
+//    /**
+//     * Sets the independence test to be used for HPM-style pruning.
+//     * If left null, HPM pruning is never applied.
+//     */
+//    public RecursiveAdjustment setIndependenceTest(@Nullable IndependenceTest test) {
+//        this.independenceTest = test;
+//        return this;
+//    }
+
+    /**
+     * Enables or disables Henckel&ndash;Perkovi&#263;&ndash;Maathuis (HPM) pruning
+     * on the RA solutions. HPM pruning assumes linear models and
+     * uses <i>m</i>-separation to remove variables {@code z} for which
+     * {@code Y ⟂ z | X ∪ (Z \ {z})}.
+     */
+    public RecursiveAdjustment setUseHenckelPruning(boolean use) {
+        this.useHenckelPruning = use;
         return this;
     }
 
@@ -465,6 +504,67 @@ public final class RecursiveAdjustment {
         return new Shells(layers, visited);
     }
 
+    /**
+     * Henckel&ndash;Perkovi&#263;&ndash;Maathuis-style pruning (Algorithm&nbsp;1).
+     *
+     * <p>Given a valid adjustment set {@code Z} for ({@code X}, {@code Y}) in graph {@code G},
+     * this method returns a subset {@code Z'} such that:</p>
+     *
+     * <ul>
+     *   <li>{@code Z'} is still a valid adjustment set (under the linear-model assumptions),</li>
+     *   <li>the asymptotic variance of &tau;̂<sub>Y&larr;X</sub> given {@code Z'} is less than
+     *       or equal to that given {@code Z}, and</li>
+     *   <li>the output is order-invariant (Theorem&nbsp;3.9 in Henckel et&nbsp;al., 2020).</li>
+     * </ul>
+     *
+     * <p>Informal implementation:</p>
+     *
+     * <pre>
+     * Z' := Z
+     * for each z in Z':
+     *     if  Y ⟂ z | X ∪ (Z' \ {z})  then
+     *         remove z from Z'
+     * </pre>
+     *
+     * <p>We preserve any seed variables ({@code ctx.seedZ}) that the user forced into
+     * {@code Z} via the {@code containing} argument.</p>
+     */
+    private LinkedHashSet<Node> henckelPrune(PrecomputeContext ctx,
+                                             LinkedHashSet<Node> Z,
+                                             IndependenceTest test) {
+        if (Z.isEmpty()) return Z;
+
+        // Work on a copy to be explicit; we will shrink Z' in-place.
+        LinkedHashSet<Node> Zprime = new LinkedHashSet<>(Z);
+
+        // Single pass in the spirit of Algorithm 1:
+        // for each z in Z': if Y ⟂ z | X ∪ (Z' \ {z}), drop z.
+        for (Node z : new ArrayList<>(Zprime)) {
+            if (ctx.seedZ.contains(z)) {
+                // Respect user "containing" constraints: never prune these.
+                continue;
+            }
+
+            // Build conditioning set: X ∪ (Z' \ {z})
+            List<Node> cond = new ArrayList<>();
+            cond.add(ctx.X);
+            for (Node w : Zprime) {
+                if (!w.equals(z)) cond.add(w);
+            }
+
+            try {
+                IndependenceResult result = test.checkIndependence(ctx.Y, z, new HashSet<>(cond));
+                if (result.isIndependent()) {
+                    Zprime.remove(z);
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return Zprime;
+    }
+
     // --- Solve once -------------------------------------------------------------------------
 
     private @Nullable LinkedHashSet<Node> solveOnce(PrecomputeContext ctx, Set<Node> ban,
@@ -512,6 +612,14 @@ public final class RecursiveAdjustment {
                 else changed = true;
             }
         } while (changed);
+
+        // Optional: HPM-style pruning (Algorithm 1 in Henckel et al. 2020)
+        // Only in RA mode (rbMode == false), and only if explicitly enabled
+        // and an independence test is provided.
+        if (!rbMode && useHenckelPruning && independenceTest != null) {
+            Z = henckelPrune(ctx, Z, independenceTest);
+        }
+
         return Z;
     }
 

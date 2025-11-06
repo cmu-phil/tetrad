@@ -3014,7 +3014,8 @@ public class Paths implements TetradSerializable {
                                           int maxPathLength, String colliderPolicy) {
         RecursiveAdjustment.ColliderPolicy _colliderPolicy = RecursiveAdjustment.ColliderPolicy.valueOf(colliderPolicy);
 
-        return new RecursiveAdjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
+        RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph).setUseHenckelPruning(true);
+        return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of());
     }
 
@@ -3212,7 +3213,6 @@ public class Paths implements TetradSerializable {
 
     public boolean isGraphAmenable(Node node1, Node node2, String graphType, int maxLengthAdjustment) {
         RecursiveAdjustment ra = new RecursiveAdjustment(graph);
-        ra.setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SUPPRESS);
         return ra.isGraphAmenable(node1, node2, graphType, maxLengthAdjustment);
     }
 
