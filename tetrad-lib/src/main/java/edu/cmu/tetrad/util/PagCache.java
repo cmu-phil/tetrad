@@ -53,8 +53,8 @@ public final class PagCache {
     }
 
     /**
-     * Provides access to the singleton instance of the PagCache class.
-     * If the instance does not yet exist, it is created in a thread-safe manner.
+     * Provides access to the singleton instance of the PagCache class. If the instance does not yet exist, it is
+     * created in a thread-safe manner.
      *
      * @return the singleton instance of PagCache
      */
@@ -70,11 +70,16 @@ public final class PagCache {
     }
 
     private static Graph computePag(Graph graph) {
-        if (graph.paths().isLegalMag()) {
+        if (graph.paths().isLegalDag()) {
+//            Graph mag = GraphTransforms.dagToMag(graph);
+//            return new MagToPag(mag).convert(false);
+
+            // This does the selection bias conversion. Also, we need to check the DAG case first, because
+            // if you have a selection node, the legal MAG check will choke because it's expecting all
+            // measured variables. jdramsey 2025-11-6
+            return PagCache.getInstance().getPag(GraphTransforms.dagToMag(graph));
+        } else if (graph.paths().isLegalMag()) {
             return new MagToPag(graph).convert(false);
-        } else if (graph.paths().isLegalDag()) {
-            Graph mag = GraphTransforms.dagToMag(graph);
-            return new MagToPag(mag).convert(false);
         } else {
             Graph mag = GraphTransforms.zhangMagFromPag(graph);
             return new MagToPag(mag).convert(true);
@@ -189,18 +194,18 @@ public final class PagCache {
     }
 
     /**
-     * Clears the internal cache, removing all stored entries.
-     * This method should be called when the cache needs to be reset or discarded.
+     * Clears the internal cache, removing all stored entries. This method should be called when the cache needs to be
+     * reset or discarded.
      */
     public void clear() {
         cache.clear();
     }
 
     /**
-     * Retrieves or computes a PAG (Partial Ancestral Graph) from the given input graph.
-     * If the graph is already in the cache and hasn't been externally modified,
-     * the cached version is returned. Otherwise, a new PAG is computed, stored in the cache, and returned.
-     * The input graph must be either a DAG (Directed Acyclic Graph) or a MAG (Maximal Ancestral Graph).
+     * Retrieves or computes a PAG (Partial Ancestral Graph) from the given input graph. If the graph is already in the
+     * cache and hasn't been externally modified, the cached version is returned. Otherwise, a new PAG is computed,
+     * stored in the cache, and returned. The input graph must be either a DAG (Directed Acyclic Graph) or a MAG
+     * (Maximal Ancestral Graph).
      *
      * @param g the input graph, which must be either a DAG or a MAG
      * @return the corresponding PAG for the provided graph
@@ -235,14 +240,14 @@ public final class PagCache {
     }
 
     /**
-     * Retrieves or computes a PAG (Partial Ancestral Graph) from the given input graph.
-     * This method operates based on the input graph, knowledge, and verbosity setting.
-     * If the graph is already in the cache and hasn't been externally modified, the cached version is returned.
-     * Otherwise, a new PAG is computed and returned.
+     * Retrieves or computes a PAG (Partial Ancestral Graph) from the given input graph. This method operates based on
+     * the input graph, knowledge, and verbosity setting. If the graph is already in the cache and hasn't been
+     * externally modified, the cached version is returned. Otherwise, a new PAG is computed and returned.
      *
-     * @param g the input graph, which must be either a DAG (Directed Acyclic Graph) or a MAG (Maximal Ancestral Graph)
+     * @param g         the input graph, which must be either a DAG (Directed Acyclic Graph) or a MAG (Maximal Ancestral
+     *                  Graph)
      * @param knowledge additional knowledge, which may influence the computation of the PAG
-     * @param verbose a boolean flag indicating whether verbose output should be enabled during the process
+     * @param verbose   a boolean flag indicating whether verbose output should be enabled during the process
      * @return the corresponding PAG for the provided graph and knowledge
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
      */
