@@ -84,7 +84,7 @@ public class SelectEdgesInCyclicPaths extends AbstractAction implements Clipboar
                     Node x = edge.getNode1();
                     Node y = edge.getNode2();
 
-                    if (graph.paths().existsDirectedPath(y, x)) {
+                    if (graph.paths().existsProperDirectedPath(y, x)) {
                         this.workbench.selectEdge(edge);
                     }
                 }
