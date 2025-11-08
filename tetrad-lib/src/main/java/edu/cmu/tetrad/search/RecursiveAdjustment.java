@@ -133,6 +133,9 @@ public final class RecursiveAdjustment {
      * on the RA solutions. HPM pruning assumes linear models and
      * uses <i>m</i>-separation to remove variables {@code z} for which
      * {@code Y ⟂ z | X ∪ (Z \ {z})}.
+     *
+     * @param  use Use Henckel&ndash;Perkovi&#263;&ndash;Maathuis (HPM) pruning.
+     * @return this
      */
     public RecursiveAdjustment setUseHenckelPruning(boolean use) {
         this.useHenckelPruning = use;
@@ -803,22 +806,100 @@ public final class RecursiveAdjustment {
 
     // --- Enums & records ---------------------------------------------------------------------
 
+    /**
+     * Represents the policy to be used for handling collisions in a specific context.
+     * This enumeration defines the various strategies that can be applied
+     * when determining how to prioritize or handle collision scenarios.
+     */
     public enum ColliderPolicy {
+
+        /**
+         * Represents a configuration where collisions are ignored or not considered.
+         * Selecting this option implies that no specific action will be taken
+         * to handle collision scenarios.
+         */
         OFF,
+
+        /**
+         * Denotes a policy where preference is given to non-colliding entities or scenarios
+         * in the context of collision handling. When this policy is selected, strategies
+         * prioritize non-colliding elements over others during decision-making processes.
+         */
         PREFER_NONCOLLIDERS,
+
+        /**
+         * Specifies a policy where non-colliding entities or scenarios are given strict
+         * priority in collision-handling decisions. Under this policy, non-colliding
+         * elements are always handled first before considering other entities in
+         * collision-related processes.
+         */
         NONCOLLIDER_FIRST
     }
 
+    /**
+     * NoAmenablePolicy is an enumeration that defines the possible policies
+     * to handle cases where a certain condition or requirement is not amenable.
+     */
     public enum NoAmenablePolicy {
+
+        /**
+         * Represents a policy option within the NoAmenablePolicy enumeration
+         * that is used to actively search for alternative solutions or options
+         * when a certain condition or requirement is not amenable.
+         */
         SEARCH,
+
+        /**
+         * Represents a policy option within the NoAmenablePolicy enumeration
+         * that signifies returning an empty set when a certain condition
+         * or requirement is not amenable instead of deriving alternative solutions.
+         */
         RETURN_EMPTY_SET,
+
+        /**
+         * Represents a policy option within the NoAmenablePolicy enumeration
+         * that is used to suppress or ignore cases where a certain condition
+         * or requirement is not amenable, without attempting to resolve or return alternatives.
+         */
         SUPPRESS
     }
 
+    /**
+     * Represents the role associated with a witness in a specific context.
+     * The roles define the nature or purpose of the witness involvement.
+     */
     private enum RoleOnWitness {
+
+        /**
+         * Represents the role of an endpoint in a specific context where it is used
+         * within a witness-related structure to denote a terminal point or boundary.
+         * Typically used to classify the involvement type or nature in a graph or
+         * relational framework.
+         */
         ENDPOINT,
+
+        /**
+         * Represents the role of a collider in a specific context, typically within a
+         * witness-related structure. A collider is used to denote a specific type of
+         * relationship or interaction point in a graph or relational framework,
+         * indicating where two or more connections converge.
+         */
         COLLIDER,
+
+        /**
+         * Represents the role of a non-collider in a specific context, typically within a
+         * witness-related structure. A non-collider is used to denote a specific type of
+         * relationship or interaction point in a graph or relational framework,
+         * indicating where two or more connections diverge.
+         */
         NONCOLLIDER,
+
+        /**
+         * Represents the role of an ambiguous node in a specific context, typically within a
+         * witness-related structure. An ambiguous node is used to denote a specific type of
+         * relationship or interaction point in a graph or relational framework,
+         * indicating where two or more connections are uncertain or indeterminate.
+         */
         AMBIGUOUS
     }
 

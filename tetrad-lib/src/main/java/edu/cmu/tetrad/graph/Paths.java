@@ -3257,6 +3257,18 @@ public class Paths implements TetradSerializable {
         return true;
     }
 
+    /**
+     * Determines if the graph is amenable based on the provided nodes, graph type,
+     * and maximum allowable length adjustment.
+     *
+     * @param node1 the first node to be evaluated within the graph
+     * @param node2 the second node to be evaluated within the graph
+     * @param graphType the type of graph to be considered for the operation
+     * @param maxLengthAdjustment the maximum allowed adjustment to the length in
+     *        the graph evaluation
+     * @return true if the graph meets the amenability criteria based on the nodes,
+     *         graph type, and length adjustment; false otherwise
+     */
     public boolean isGraphAmenable(Node node1, Node node2, String graphType, int maxLengthAdjustment) {
         RecursiveAdjustment ra = new RecursiveAdjustment(graph);
         return ra.isGraphAmenable(node1, node2, graphType, maxLengthAdjustment);

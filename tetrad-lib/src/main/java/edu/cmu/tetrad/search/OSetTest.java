@@ -13,6 +13,21 @@ import static org.junit.Assert.*;
 public class OSetTest {
 
     /**
+     * Default constructor for the OSetTest class.
+     *
+     * This class includes a set of unit tests designed to validate
+     * the behavior of causal graph-based methods for computing
+     * O-sets in both directed acyclic graphs (DAGs) and their
+     * equivalence-class representations (CPDAGs). The tests focus
+     * on verifying the correctness of O-set computations under
+     * various causal structures and scenarios, such as the presence
+     * of confounding variables or the absence of backdoor paths.
+     */
+    public OSetTest() {
+
+    }
+
+    /**
      * Build a simple Henckel-style DAG:
      *
      * <pre>

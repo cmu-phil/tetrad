@@ -19,6 +19,11 @@ public final class OSet {
      * O_G(X -> Y) for a DAG.
      * cn_G(X -> Y) = all vertices on a directed path from X to Y, excluding X but including Y.
      * O_G(X -> Y) = pa_G(cn_G(X -> Y)) \ (cn_G(X -> Y) ∪ {X}).
+     *
+     * @param dag The DAG
+     * @param X The source
+     * @param Y The target
+     * @return The O-set of (X, Y))
      */
     public static Set<Node> oSetDag(Graph dag, Node X, Node Y) {
         if (!dag.paths().isLegalDag())
@@ -62,6 +67,12 @@ public final class OSet {
     /**
      * O_G(X -> Y) for an amenable CPDAG or maxPDAG.
      * Uses potentially-directed paths from X to Y to find causal nodes.
+     *
+     * @param cpdag The CPDAG
+     * @param X The source node X
+     * @param Y The target node Y
+     * @param maxPathLength The maximum path length to consider
+     * @return The O-set of (X, Y)
      */
     public static Set<Node> oSetCpdag(Graph cpdag, Node X, Node Y, int maxPathLength) {
         if (X == null || Y == null || X.equals(Y))
