@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -89,6 +89,13 @@ public class IdaCheck {
     private HashMap<Node, Node> nodeMap;
 
     /**
+     * Indicates whether the optimal IDA results should be displayed (Witte et al. 2020). Typically used as a flag to
+     * determine if specific computations or results related to the optimal IDA should be shown in the context of
+     * analyzing total effects or related metrics between nodes.
+     */
+    private boolean showOptimalIda = false;
+
+    /**
      * Constructs a new IDA check for the given PDAG and data set.
      *
      * @param graph     the PDAG.
@@ -123,18 +130,33 @@ public class IdaCheck {
             throw new IllegalArgumentException("The variables in the PDAG do not match the variables in the data set.");
         }
 
+//        this.nodes = dataSet.getVariables();
+//        this.totalEffects = new HashMap<>();
+//        this.absTotalEffects = new HashMap<>();
+//        this.ida = new Ida(dataSet, graph, nodes);
+//        this.ida.setIdaType(showOptimalIda ? Ida.IDA_TYPE.OPTIMAL : Ida.IDA_TYPE.REGULAR);
+//        this.pairs = calcOrderedPairs();
+//
+//        for (OrderedPair<Node> pair : calcOrderedPairs()) {
+//            LinkedList<Double> totalEffects = ida.getTotalEffects(pair.getFirst(), pair.getSecond());
+//            LinkedList<Double> absTotalEffects = ida.getAbsTotalEffects(pair.getFirst(), pair.getSecond());
+//            this.totalEffects.put(pair, totalEffects);
+//            this.absTotalEffects.put(pair, absTotalEffects);
+//        }
+
         this.nodes = dataSet.getVariables();
         this.totalEffects = new HashMap<>();
         this.absTotalEffects = new HashMap<>();
         this.ida = new Ida(dataSet, graph, nodes);
+
+        // Default: REGULAR vs OPTIMAL, depending on flag
+        this.ida.setIdaType(showOptimalIda ? Ida.IDA_TYPE.OPTIMAL : Ida.IDA_TYPE.REGULAR);
+
+        // Precompute all ordered pairs once
         this.pairs = calcOrderedPairs();
 
-        for (OrderedPair<Node> pair : calcOrderedPairs()) {
-            LinkedList<Double> totalEffects = ida.getTotalEffects(pair.getFirst(), pair.getSecond());
-            LinkedList<Double> absTotalEffects = ida.getAbsTotalEffects(pair.getFirst(), pair.getSecond());
-            this.totalEffects.put(pair, totalEffects);
-            this.absTotalEffects.put(pair, absTotalEffects);
-        }
+        // Fill totalEffects / absTotalEffects respecting current idaType
+        computeIdaResults();
 
         this.trueSemIm = trueSemIm;
 
@@ -148,6 +170,28 @@ public class IdaCheck {
                 Node _node = trueSemIm.getSemPm().getGraph().getNode(node.getName());
                 nodeMap.put(node, _node);
             }
+        }
+    }
+
+    /**
+     * (Re)computes totalEffects and absTotalEffects for all ordered pairs
+     * using the current IDA type (REGULAR vs OPTIMAL).
+     */
+    private void computeIdaResults() {
+        // Make sure Ida is in sync with the flag
+        ida.setIdaType(showOptimalIda ? Ida.IDA_TYPE.OPTIMAL : Ida.IDA_TYPE.REGULAR);
+
+        // Clear old results
+        this.totalEffects.clear();
+        this.absTotalEffects.clear();
+
+        // Recompute for all pairs
+        for (OrderedPair<Node> pair : this.pairs) {
+            LinkedList<Double> total = ida.getTotalEffects(pair.getFirst(), pair.getSecond());
+            LinkedList<Double> abs = ida.getAbsTotalEffects(pair.getFirst(), pair.getSecond());
+
+            this.totalEffects.put(pair, total);
+            this.absTotalEffects.put(pair, abs);
         }
     }
 
@@ -391,6 +435,28 @@ public class IdaCheck {
         }
 
         return OrderedPairs;
+    }
+
+    /**
+     * Sets whether the "show optimal IDA" option is enabled or disabled.
+     *
+     * @param selected a boolean value indicating whether to enable or disable the "show optimal IDA" option.
+     */
+    public void setShowOptimalIda(boolean selected) {
+        this.showOptimalIda = selected;
+    }
+
+    /**
+     * Checks if the "show optimal IDA" option is enabled.
+     *
+     * @return true if the "show optimal IDA" option is enabled, false otherwise.
+     */
+    public boolean isShowOptimalIda() {
+        return this.showOptimalIda;
+    }
+
+    public void recompute() {
+        computeIdaResults();
     }
 }
 
