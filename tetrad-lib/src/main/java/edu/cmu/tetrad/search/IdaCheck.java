@@ -93,7 +93,7 @@ public class IdaCheck {
      * determine if specific computations or results related to the optimal IDA should be shown in the context of
      * analyzing total effects or related metrics between nodes.
      */
-    private boolean showOptimalIda = false;
+    private boolean showOptimalIda = true;
 
     /**
      * Constructs a new IDA check for the given PDAG and data set.
