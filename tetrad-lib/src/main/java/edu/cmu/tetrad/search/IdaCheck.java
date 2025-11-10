@@ -231,9 +231,17 @@ public class IdaCheck {
      * @return the minimum total effect value between the two nodes.
      * @throws IllegalArgumentException if the nodes x and y are the same.
      */
+//    public double getMinTotalEffect(Node x, Node y) {
+//        if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
+//        LinkedList<Double> effects = this.totalEffects.get(new OrderedPair<>(x, y));
+//        return effects.getFirst();
+//    }
     public double getMinTotalEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
         LinkedList<Double> effects = this.totalEffects.get(new OrderedPair<>(x, y));
+        if (effects == null || effects.isEmpty()) {
+            return Double.NaN;  // not O-set-eligible
+        }
         return effects.getFirst();
     }
 
@@ -245,9 +253,17 @@ public class IdaCheck {
      * @return the maximum total effect value between the two nodes.
      * @throws IllegalArgumentException if the nodes x and y are the same.
      */
+//    public double getMaxTotalEffect(Node x, Node y) {
+//        if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
+//        LinkedList<Double> effects = this.totalEffects.get(new OrderedPair<>(x, y));
+//        return effects.getLast();
+//    }
     public double getMaxTotalEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
         LinkedList<Double> effects = this.totalEffects.get(new OrderedPair<>(x, y));
+        if (effects == null || effects.isEmpty()) {
+            return Double.NaN;  // not O-set-eligible
+        }
         return effects.getLast();
     }
 
@@ -261,17 +277,24 @@ public class IdaCheck {
      */
     public double getIdaMinEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
-        LinkedList<Double> effects = this.absTotalEffects.get(new OrderedPair<>(x, y));
-        LinkedList<Double> totalEffects = this.totalEffects.get(new OrderedPair<>(x, y));
-        Double first = effects.getFirst();
-        double ret = Double.NaN;
 
-        for (Double totalEffect : totalEffects) {
-            if (Math.abs(totalEffect) == first) {
-                ret = totalEffect;
-            }
+        OrderedPair<Node> key = new OrderedPair<>(x, y);
+        LinkedList<Double> abs = this.absTotalEffects.get(key);
+        LinkedList<Double> total = this.totalEffects.get(key);
+
+        if (abs == null || abs.isEmpty() || total == null || total.isEmpty()) {
+            return Double.NaN; // not O-set-eligible
         }
 
+        double targetAbs = abs.getFirst();  // smallest |effect|
+        double ret = Double.NaN;
+
+        for (double te : total) {
+            if (Math.abs(te) == targetAbs) {
+                ret = te;
+                break;
+            }
+        }
         return ret;
     }
 
@@ -284,10 +307,13 @@ public class IdaCheck {
      * @return the squared distance between the two nodes.
      */
     public double getSquaredDistance(OrderedPair<Node> pair) {
-        Node x = pair.getFirst();
-        Node y = pair.getSecond();
+        LinkedList<Double> effects = this.totalEffects.get(pair);
+        if (effects == null || effects.isEmpty()) {
+            return Double.NaN;  // no O-IDA effects for this pair
+        }
+
         double trueTotalEffect = getTrueTotalEffect(pair);
-        double distance = ida.distance(this.totalEffects.get(new OrderedPair<>(x, y)), trueTotalEffect);
+        double distance = ida.distance(effects, trueTotalEffect);
         return distance * distance;
     }
 
@@ -299,18 +325,25 @@ public class IdaCheck {
      * @return the average of the squared distances between the true total effects and the IDA effect ranges.
      */
     public double getAverageSquaredDistance(List<OrderedPair<Node>> pairs) {
-        List<OrderedPair<Node>> _pairs = getOrderedPairs();
+        List<OrderedPair<Node>> allPairs = getOrderedPairs();
         double sum = 0.0;
+        int count = 0;
 
         for (OrderedPair<Node> pair : pairs) {
-            if (!_pairs.contains(pair)) {
+            if (!allPairs.contains(pair)) {
                 throw new IllegalArgumentException("The pair " + pair + " is not in the dataset.");
             }
 
+            LinkedList<Double> effects = this.totalEffects.get(pair);
+            if (effects == null || effects.isEmpty()) {
+                continue;  // not O-set-eligible
+            }
+
             sum += getSquaredDistance(pair);
+            count++;
         }
 
-        return sum / pairs.size();
+        return count == 0 ? Double.NaN : sum / count;
     }
 
     /**
@@ -352,18 +385,25 @@ public class IdaCheck {
      * @return the average of the squared differences between the minimum total effects and the true total effects.
      */
     public double getAvgMinSquaredDiffEstTrue(List<OrderedPair<Node>> pairs) {
-        List<OrderedPair<Node>> _pairs = getOrderedPairs();
+        List<OrderedPair<Node>> allPairs = getOrderedPairs();
         double sum = 0.0;
+        int count = 0;
 
         for (OrderedPair<Node> pair : pairs) {
-            if (!_pairs.contains(pair)) {
+            if (!allPairs.contains(pair)) {
                 throw new IllegalArgumentException("The pair " + pair + " is not in the dataset.");
             }
 
+            LinkedList<Double> effects = this.totalEffects.get(pair);
+            if (effects == null || effects.isEmpty()) {
+                continue;  // not O-set-eligible
+            }
+
             sum += getSquaredMinTrueDistance(pair);
+            count++;
         }
 
-        return sum / pairs.size();
+        return count == 0 ? Double.NaN : sum / count;
     }
 
     /**
@@ -405,18 +445,25 @@ public class IdaCheck {
      * @return the average of the squared differences between the maximum total effects and the true total effects.
      */
     public double getAvgMaxSquaredDiffEstTrue(List<OrderedPair<Node>> pairs) {
-        List<OrderedPair<Node>> _pairs = getOrderedPairs();
+        List<OrderedPair<Node>> allPairs = getOrderedPairs();
         double sum = 0.0;
+        int count = 0;
 
         for (OrderedPair<Node> pair : pairs) {
-            if (!_pairs.contains(pair)) {
+            if (!allPairs.contains(pair)) {
                 throw new IllegalArgumentException("The pair " + pair + " is not in the dataset.");
             }
 
+            LinkedList<Double> effects = this.totalEffects.get(pair);
+            if (effects == null || effects.isEmpty()) {
+                continue;  // not O-set-eligible
+            }
+
             sum += getSquaredMaxTrueDist(pair);
+            count++;
         }
 
-        return sum / pairs.size();
+        return count == 0 ? Double.NaN : sum / count;
     }
 
     /**

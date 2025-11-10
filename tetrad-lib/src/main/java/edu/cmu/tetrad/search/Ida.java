@@ -76,20 +76,17 @@ public class Ida {
      */
     private final ICovarianceMatrix allCovariances;
     /**
+     * True if the input graph is a DAG (as opposed to a CPDAG / PDAG).
+     */
+    private final boolean dag;
+    /**
      * Represents the type of IDA (Intervention Calculus when the DAG is Absent). This variable can have one of the
      * values defined in the {@code IDA_TYPE} enum. It is used to differentiate between the regular IDA type and the
      * optimal IDA type.
      */
     private IDA_TYPE idaType = IDA_TYPE.OPTIMAL;
-
     /**
-     * True if the input graph is a DAG (as opposed to a CPDAG / PDAG).
-     */
-    private final boolean dag;
-
-    /**
-     * Optional maximum path length for O-set search in CPDAG mode.
-     * Use -1 (or any negative) for "no limit".
+     * Optional maximum path length for O-set search in CPDAG mode. Use -1 (or any negative) for "no limit".
      */
     private int maxLengthAdjustment = -1;
 
@@ -255,7 +252,7 @@ public class Ida {
 
                     // 2) Apply Meek rules to propagate orientations
                     MeekRules rules = new MeekRules();
-                    rules.setMeekPreventCycles(true);
+                    rules.setRevertToUnshieldedColliders(false);
                     rules.orientImplied(gPrime);
 
                     // 3) Compute the O-set for (X, Y) in gPrime
@@ -275,26 +272,40 @@ public class Ida {
                         continue;
                     }
 
-                    // If the O-set is null, Witte et al. treat the total effect as 0 (no amenable causal path)
+                    // If the O-set is null, this DAG is not O-set-eligible for (x,y), which must mean this
+                    // is not a legal CPDAG. That is, we took a CPDAG, oriented the undirected edges about
+                    // X, and applied the Meek rules, so all possibly oriented edges from X to Y are out of
+                    // X, which means the O-Set is defined. Then it's just a matter of whether there are any
+                    // such paths at all; if not, the total effect is zero for this orientation.
                     if (oSet == null) {
-                        // Not O-set eligible: total effect undefined / zero
-                        beta = 0.0;
-                    } else {
-                        // O-set is defined, even if empty; estimate effect by regressing on X ∪ oSet
-                        Set<Node> regressorsSet = new LinkedHashSet<>();
-                        regressorsSet.add(x);
-                        regressorsSet.addAll(oSet);
+                        if (!gPrime.paths().isGraphAmenable(x, y, "PDAG", -1)) {
+                            throw new IllegalArgumentException("PDAG is weirdly not amenable for " + x + " ~~> " + y
+                                + "; that must not have been a legal CPDAG.");
+                        } else {
 
-                        // Super-paranoid safety check: make sure Y is not in the regressor set
-                        regressorsSet.remove(y);
-
-                        List<Node> regressors = new ArrayList<>(regressorsSet);
-
-                        System.out.println(x + " to " + y + " regressors (OPTIMAL IDA): " + regressors
-                                           + "   O-set=" + oSet);
-
-                        beta = getBeta(regressors, x, y);
+                            // In this case it's amenable, but there are no amenable paths from X to Y, so the
+                            // total effect is zero.
+                            beta = 0.0;
+                            totalEffects.add(beta);
+                            continue;
+                        }
                     }
+
+                    // O-set is defined, even if empty; estimate effect by regressing on X ∪ oSet
+                    Set<Node> regressorsSet = new LinkedHashSet<>();
+                    regressorsSet.add(x);
+                    regressorsSet.addAll(oSet);
+
+                    // Super-paranoid safety check: make sure Y is not in the regressor set
+                    regressorsSet.remove(y);
+
+                    List<Node> regressors = new ArrayList<>(regressorsSet);
+
+                    System.out.println(x + " to " + y + " regressors (OPTIMAL IDA): " + regressors
+                                       + "   O-set=" + oSet);
+
+                    beta = getBeta(regressors, x, y);
+//                    }
                 }
 
                 totalEffects.add(beta);
@@ -381,6 +392,10 @@ public class Ida {
         }
     }
 
+    public IDA_TYPE getIdaType() {
+        return idaType;
+    }
+
     public void setIdaType(IDA_TYPE idaType) {
         if (idaType == null) {
             throw new NullPointerException("IDA type must not be null.");
@@ -388,16 +403,12 @@ public class Ida {
         this.idaType = idaType;
     }
 
-    public IDA_TYPE getIdaType() {
-        return idaType;
+    public int getMaxLengthAdjustment() {
+        return maxLengthAdjustment;
     }
 
     public void setMaxLengthAdjustment(int maxLengthAdjustment) {
         this.maxLengthAdjustment = maxLengthAdjustment;
-    }
-
-    public int getMaxLengthAdjustment() {
-        return maxLengthAdjustment;
     }
 
     /**
