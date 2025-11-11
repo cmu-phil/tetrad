@@ -621,20 +621,21 @@ public class Paths implements TetradSerializable {
      * Finds amenable paths from the given source node to the given destination node with a maximum length, for a PAG.
      * These are potentially directed paths that start with a visible edge out of node1.
      *
-     * @param node1     the source node
-     * @param node2     the destination node
-     * @param maxLength the maximum length of the paths
+     * @param node1        the source node
+     * @param node2        the destination node
+     * @param maxLength    the maximum length of the paths
+     * @param forceVisible the set of nodes out of X to force visibility for
      * @return a list of amenable paths from the source node to the destination node, each represented as a list of
      * nodes
      */
-    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength) {
+    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
         Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
             Node a = path.getFirst();
             Node b = path.get(1);
 
-            boolean visible = graph.paths().defVisiblePag(a, b);
+            boolean visible = forceVisible.contains(b) || graph.paths().defVisiblePag(a, b);
 
             if (!(visible && graph.getEdge(a, b).pointsTowards(b))) {
                 amenablePaths.remove(path);
@@ -3038,7 +3039,7 @@ public class Paths implements TetradSerializable {
         RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
                 .setUseHenckelPruning(henckelPruning).setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
         return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
-                nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of());
+                nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of(), Set.of());
     }
 
     /**
@@ -3089,7 +3090,7 @@ public class Paths implements TetradSerializable {
                         : RecursiveAdjustment.RaMode.VALID);
         return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, RecursiveAdjustment.ColliderPolicy.OFF, true,
-                Set.of(), Set.of());
+                Set.of(), Set.of(), Set.of());
     }
 
     /**
@@ -3260,20 +3261,20 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Determines if the graph is amenable based on the provided nodes, graph type,
-     * and maximum allowable length adjustment.
+     * Determines if the graph is amenable based on the provided nodes, graph type, and maximum allowable length
+     * adjustment.
      *
-     * @param node1 the first node to be evaluated within the graph
-     * @param node2 the second node to be evaluated within the graph
-     * @param graphType the type of graph to be considered for the operation
-     * @param maxLengthAdjustment the maximum allowed adjustment to the length in
-     *        the graph evaluation
-     * @return true if the graph meets the amenability criteria based on the nodes,
-     *         graph type, and length adjustment; false otherwise
+     * @param node1               the first node to be evaluated within the graph
+     * @param node2               the second node to be evaluated within the graph
+     * @param graphType           the type of graph to be considered for the operation
+     * @param maxLengthAdjustment the maximum allowed adjustment to the length in the graph evaluation
+     * @param forceVisibility
+     * @return true if the graph meets the amenability criteria based on the nodes, graph type, and length adjustment;
+     * false otherwise
      */
-    public boolean isGraphAmenable(Node node1, Node node2, String graphType, int maxLengthAdjustment) {
+    public boolean isGraphAmenable(Node node1, Node node2, String graphType, int maxLengthAdjustment, Set<Node> forceVisibility) {
         RecursiveAdjustment ra = new RecursiveAdjustment(graph);
-        return ra.isGraphAmenable(node1, node2, graphType, maxLengthAdjustment);
+        return ra.isGraphAmenable(node1, node2, graphType, maxLengthAdjustment, forceVisibility);
     }
 
     // -------- Context holder --------

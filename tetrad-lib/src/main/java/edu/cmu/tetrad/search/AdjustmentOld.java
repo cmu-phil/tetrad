@@ -358,7 +358,7 @@ public final class AdjustmentOld {
         RecursiveAdjustment.GraphType _graphType = RecursiveAdjustment.GraphType.valueOf(graphType);
         if (source == null || target == null || source == target) return Collections.emptySet();
         if (_graphType == RecursiveAdjustment.GraphType.PAG) {
-            return graph.paths().getAmenablePathsPag(source, target, maxLength);
+            return graph.paths().getAmenablePathsPag(source, target, maxLength, Set.of());
         } else {
             return graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
         }

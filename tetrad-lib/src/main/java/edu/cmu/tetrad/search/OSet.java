@@ -31,7 +31,7 @@ public final class OSet {
         if (X == null || Y == null || X.equals(Y))
             throw new IllegalArgumentException("X and Y must be distinct non-null nodes.");
 
-        if (!dag.paths().isGraphAmenable(X, Y, "PDAG", -1)) {
+        if (!dag.paths().isGraphAmenable(X, Y, "PDAG", -1, Set.of())) {
             return null; // O-set are only defined when a total effect can be calculated.
         }
 
@@ -95,7 +95,7 @@ public final class OSet {
             return oSetDag(cpdag, X, Y);
         }
 
-        if (!cpdag.paths().isGraphAmenable(X, Y, "PDAG", -1)) {
+        if (!cpdag.paths().isGraphAmenable(X, Y, "PDAG", -1, Set.of())) {
             return null; // O-set are only defined when a total effect can be calculated.
         }
 

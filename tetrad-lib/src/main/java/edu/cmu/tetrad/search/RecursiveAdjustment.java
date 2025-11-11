@@ -152,25 +152,24 @@ public final class RecursiveAdjustment {
     }
 
     /**
-     * Checks whether the graph is adjustment-amenable relative to (X, Y)
-     * in the sense of Perković et al.: every proper potentially directed path
-     * from X to Y starts with a visible / directed edge out of X.
+     * Checks whether the graph is adjustment-amenable relative to (X, Y) in the sense of Perković et al.: every proper
+     * potentially directed path from X to Y starts with a visible / directed edge out of X.
+     * <p>
+     * This uses the same notion of "amenable path" as the main algorithm: - For PAGs: first edge must be visible and
+     * point away from X. - For DAG/PDAG/MAG: first edge must be directed out of X.
      *
-     * This uses the same notion of "amenable path" as the main algorithm:
-     * - For PAGs: first edge must be visible and point away from X.
-     * - For DAG/PDAG/MAG: first edge must be directed out of X.
-     *
-     * @param X             source node
-     * @param Y             target node
-     * @param graphType     graph type ("DAG", "PDAG", "MAG", "PAG", etc.)
-     * @param maxPathLength maximum path length for potentially directed paths; -1 means unlimited
+     * @param X               source node
+     * @param Y               target node
+     * @param graphType       graph type ("DAG", "PDAG", "MAG", "PAG", etc.)
+     * @param maxPathLength   maximum path length for potentially directed paths; -1 means unlimited
+     * @param forceVisibility
      * @return true if the graph is amenable w.r.t. (X, Y), false otherwise
      */
-    public boolean isGraphAmenable(Node X, Node Y, String graphType, int maxPathLength) {
+    public boolean isGraphAmenable(Node X, Node Y, String graphType, int maxPathLength, Set<Node> forceVisibility) {
         if (X == null || Y == null || X == Y) {
             throw new IllegalArgumentException("X and Y must be distinct non-null nodes.");
         }
-        return isGraphAmenableInternal(X, Y, graphType, maxPathLength);
+        return isGraphAmenableInternal(X, Y, graphType, maxPathLength, forceVisibility);
     }
 
     /**
@@ -196,27 +195,30 @@ public final class RecursiveAdjustment {
                                             @Nullable Set<Node> notFollowed,
                                             @Nullable Set<Node> containing) {
         return adjustmentSets(X, Y, graphType, maxNumSets, maxRadius, nearWhichEndpoint,
-                maxPathLength, colliderPolicy, avoidAmenable, notFollowed, containing);
+                maxPathLength, colliderPolicy, avoidAmenable, notFollowed, containing, Set.of());
     }
 
     // --- Master entry point -----------------------------------------------------------------
 
     /**
-     * Computes a list of adjustment sets for estimating the causal effect of X on Y
-     * within a given graph structure. This method uses a breadth-first search strategy
-     * to identify valid adjustment sets based on the provided parameters and collider policy.
+     * Computes a list of adjustment sets for estimating the causal effect of X on Y within a given graph structure.
+     * This method uses a breadth-first search strategy to identify valid adjustment sets based on the provided
+     * parameters and collider policy.
      *
-     * @param X The node representing the cause in the causal relationship.
-     * @param Y The node representing the effect in the causal relationship.
-     * @param graphType The type of graph (e.g., "dag", "pdag", "mag") used for adjustment computation.
-     * @param maxNumSets The maximum number of adjustment sets to compute.
-     * @param maxRadius The maximum radius for creating shells during adjustment set determination.
-     * @param nearWhichEndpoint Specifies which endpoint (source or target) should dominate the adjustment determination.
-     * @param maxPathLength The maximum allowed path length between X and Y for eligibility in adjustment sets.
-     * @param colliderPolicy The policy for handling colliders during adjustment set computation.
-     * @param avoidAmenable Whether to avoid adjustment sets involving amenable paths.
-     * @param notFollowed A set of nodes that should not be followed during path exploration in the graph. Optional.
-     * @param containing A set of nodes that must be included in the adjustment sets. Optional.
+     * @param X                 The node representing the cause in the causal relationship.
+     * @param Y                 The node representing the effect in the causal relationship.
+     * @param graphType         The type of graph (e.g., "dag", "pdag", "mag") used for adjustment computation.
+     * @param maxNumSets        The maximum number of adjustment sets to compute.
+     * @param maxRadius         The maximum radius for creating shells during adjustment set determination.
+     * @param nearWhichEndpoint Specifies which endpoint (source or target) should dominate the adjustment
+     *                          determination.
+     * @param maxPathLength     The maximum allowed path length between X and Y for eligibility in adjustment sets.
+     * @param colliderPolicy    The policy for handling colliders during adjustment set computation.
+     * @param avoidAmenable     Whether to avoid adjustment sets involving amenable paths.
+     * @param notFollowed       A set of nodes that should not be followed during path exploration in the graph.
+     *                          Optional.
+     * @param containing        A set of nodes that must be included in the adjustment sets. Optional.
+     * @param forceVisibility
      * @return A list of sets of nodes, where each set represents a possible valid adjustment set for the causal effect.
      */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
@@ -224,13 +226,13 @@ public final class RecursiveAdjustment {
                                           int nearWhichEndpoint, int maxPathLength,
                                           ColliderPolicy colliderPolicy, boolean avoidAmenable,
                                           @Nullable Set<Node> notFollowed,
-                                          @Nullable Set<Node> containing) {
+                                          @Nullable Set<Node> containing, Set<Node> forceVisibility) {
         List<Set<Node>> out = new ArrayList<>();
         Set<String> seen = new HashSet<>();
         boolean rbMode = !avoidAmenable;
 
         var ctx = precomputeContext(X, Y, graphType, maxRadius, nearWhichEndpoint,
-                maxPathLength, avoidAmenable, notFollowed, containing);
+                maxPathLength, avoidAmenable, notFollowed, containing, forceVisibility);
 
         Deque<Set<Node>> bans = new ArrayDeque<>();
         bans.add(Collections.emptySet());
@@ -259,7 +261,7 @@ public final class RecursiveAdjustment {
                                                 int maxRadius, int nearWhichEndpoint,
                                                 int maxPathLength, boolean avoidAmenable,
                                                 @Nullable Set<Node> notFollowed,
-                                                @Nullable Set<Node> containing) {
+                                                @Nullable Set<Node> containing, Set<Node> forceVisibility) {
         boolean rbMode = !avoidAmenable;
 
         if (X == null || Y == null || X == Y)
@@ -268,8 +270,8 @@ public final class RecursiveAdjustment {
 
         // Path-level "amenable" set is still used for amenableBackbone,
         // but graph-level amenability is computed via a shared helper.
-        Set<List<Node>> amenablePaths = getAmenablePaths(X, Y, graphType, maxPathLength);
-        boolean graphAmenable = isGraphAmenableInternal(X, Y, graphType, maxPathLength);
+        Set<List<Node>> amenablePaths = getAmenablePaths(X, Y, graphType, maxPathLength, forceVisibility);
+        boolean graphAmenable = isGraphAmenableInternal(X, Y, graphType, maxPathLength, forceVisibility);
 
         Set<Node> amenableBackbone = amenableBackbone(amenablePaths, X, Y);
         Set<Node> forbidden = getForbiddenForAdjustment(graph, graphType, X, Y);
@@ -355,12 +357,12 @@ public final class RecursiveAdjustment {
      * Internal helper: compute graph-level amenability relative to (X, Y)
      * using potentiallyDirectedPaths and the path-level amenable test.
      */
-    private boolean isGraphAmenableInternal(Node X, Node Y, String graphType, int maxPathLength) {
+    private boolean isGraphAmenableInternal(Node X, Node Y, String graphType, int maxPathLength, Set<Node> forceVisibility) {
         // All potentially directed (potentially-directed) paths from X to Y
         Set<List<Node>> pdPaths = graph.paths().potentiallyDirectedPaths(X, Y, maxPathLength);
 
         // Subset of those that are "amenable paths" in your sense
-        Set<List<Node>> amenablePaths = getAmenablePaths(X, Y, graphType, maxPathLength);
+        Set<List<Node>> amenablePaths = getAmenablePaths(X, Y, graphType, maxPathLength, forceVisibility);
 
         // G is amenable w.r.t. (X, Y) iff every potentially directed path is amenable.
         // If there are no potentially directed paths, amenability holds vacuously.
@@ -368,10 +370,10 @@ public final class RecursiveAdjustment {
     }
 
     // Uses your existing graph.paths() helpers:
-    private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
+    private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength, Set<Node> forceVisibility) {
         if (source == null || target == null || source == target) return Collections.emptySet();
         return ("PAG".equalsIgnoreCase(graphType))
-                ? graph.paths().getAmenablePathsPag(source, target, maxLength)
+                ? graph.paths().getAmenablePathsPag(source, target, maxLength, forceVisibility)
                 : graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
     }
 

@@ -278,7 +278,7 @@ public class Ida {
                     // X, which means the O-Set is defined. Then it's just a matter of whether there are any
                     // such paths at all; if not, the total effect is zero for this orientation.
                     if (oSet == null) {
-                        if (!gPrime.paths().isGraphAmenable(x, y, "PDAG", -1)) {
+                        if (!gPrime.paths().isGraphAmenable(x, y, "PDAG", -1, Set.of())) {
                             throw new IllegalArgumentException("PDAG is weirdly not amenable for " + x + " ~~> " + y
                                 + "; that must not have been a legal CPDAG.");
                         } else {

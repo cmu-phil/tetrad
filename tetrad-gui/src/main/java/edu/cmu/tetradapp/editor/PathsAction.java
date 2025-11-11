@@ -635,7 +635,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         if (graphType.equals("DAG") || graphType.equals("PDAG") || graphType.equals("MAG")) {
             amenablePaths = graph.paths().getAmenablePathsPdagMag(node1, node2, -1);
         } else if (graphType.equals("PAG")) {
-            amenablePaths = graph.paths().getAmenablePathsPag(node1, node2, -1);
+            amenablePaths = graph.paths().getAmenablePathsPag(node1, node2, -1, Set.of());
         } else {
             throw new IllegalArgumentException("Graph must be a legal PDAG, MAG, or PAG: " + graphType);
         }
@@ -1091,7 +1091,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     continue;
                 }
 
-                boolean amenenable = ra.isGraphAmenable(node1, node2, graphType, -1);
+                boolean amenenable = ra.isGraphAmenable(node1, node2, graphType, -1, Set.of());
 
                 if (!amenenable) {
                     textArea.append("\nThe graph is not amenenable for (" + node1 + ", " + node2 + ").");
@@ -1144,7 +1144,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                boolean amenenable = ra.isGraphAmenable(node1, node2, "PAG", -1);
+                boolean amenenable = ra.isGraphAmenable(node1, node2, "PAG", -1, Set.of());
 
                 if (!amenenable) {
                     textArea.append("\nThe graph is not amenenable for (" + node1 + ", " + node2 + ").");
@@ -1152,7 +1152,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
 
                 Set<List<Node>> paths = graph.paths().getAmenablePathsPag(node1, node2,
-                        parameters.getInt("pathsMaxLengthAdjustment"));
+                        parameters.getInt("pathsMaxLengthAdjustment"), Set.of());
 
                 if (paths.isEmpty()) {
                     continue;
@@ -1594,7 +1594,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\nAdjustment sets for " + node1 + " ~~> " + node2 + ":\n");
 
                 boolean graphAmenable =
-                        graph.paths().isGraphAmenable(node1, node2, graphType, maxLengthAdjustment);
+                        graph.paths().isGraphAmenable(node1, node2, graphType, maxLengthAdjustment, Set.of());
 
                 if (!graphAmenable) {
                     // Not amenable in Perković's sense
@@ -1717,7 +1717,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 // 1) Amenability check (Perković / Henckel condition)
                 boolean amenable = graph.paths().isGraphAmenable(
-                        node1, node2, "PDAG", maxLengthAdjustment);
+                        node1, node2, "PDAG", maxLengthAdjustment, Set.of());
 
                 if (!amenable) {
                     textArea.append("    (Graph is NOT amenable for " + node1 + " ~~> " + node2 +
@@ -1825,7 +1825,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                             .setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
                     adjustments = adjustment.adjustmentSets(node1, node2, "PAG",
                             maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength,
-                            RecursiveAdjustment.ColliderPolicy.OFF, avoidAmenable, Set.of(), Set.of());
+                            RecursiveAdjustment.ColliderPolicy.OFF, avoidAmenable, Set.of(), Set.of(), Set.of());
                 } catch (Exception e) {
                     // Skip on error
                     continue;
@@ -1933,7 +1933,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         int L = parameters.getInt("pathsMaxLengthAdjustment");
         // Prefer a PAG-aware amenable routine if available, else fall back to PDAG/MAG version.
         if (graph.paths().isLegalPag()) {
-            Set<List<Node>> aps = graph.paths().getAmenablePathsPag(x, y, L);
+            Set<List<Node>> aps = graph.paths().getAmenablePathsPag(x, y, L, Set.of());
             return aps != null && !aps.isEmpty();
         } else if (graph.paths().isLegalPdag() || graph.paths().isLegalMag()) {
             Set<List<Node>> aps = graph.paths().getAmenablePathsPdagMag(x, y, L);

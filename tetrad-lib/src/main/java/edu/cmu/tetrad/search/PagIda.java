@@ -333,7 +333,7 @@
                         }
 
                         if (oSet == null) {
-                            if (!gPrime.paths().isGraphAmenable(x, y, "PDAG", -1)) {
+                            if (!gPrime.paths().isGraphAmenable(x, y, "PDAG", -1, Set.of())) {
                                 throw new IllegalArgumentException("PDAG is weirdly not amenable for " + x + " ~~> " + y
                                                                    + "; that must not have been a legal CPDAG.");
                             } else {
@@ -408,6 +408,8 @@
                 return totalEffects;
             }
 
+            Set<Node> forceVisible = new HashSet<>();
+
             // Enumerate all local orientation patterns around X on the circle-edges,
             // then for each pattern:
             //   - run FCI final rules,
@@ -444,6 +446,8 @@
                         new FciOrient(R0R4StrategyTestBased.defaultConfiguration(this.graph, new Knowledge()));
                 finalFciRules.finalOrientation(gPrime);
 
+                System.out.println(x + " to " + y + " gPrime: " + gPrime);
+
                 // 0) If there is no potentially directed X ~> Y path, treat this completion as "effect 0".
                 Set<List<Node>> pdPaths = gPrime.paths().potentiallyDirectedPaths(x, y, maxLengthAdjustment);
                 if (pdPaths == null || pdPaths.isEmpty()) {
@@ -456,12 +460,12 @@
                     return;
                 }
 
-                // 2) Must itself be a legal PAG or PDAG/DAG.
-                if (!(gPrime.paths().isLegalPag()
-                      || gPrime.paths().isLegalPdag()
-                      || gPrime.paths().isLegalDag())) {
-                    return;
-                }
+//                // 2) Must itself be a legal PAG or PDAG/DAG.
+//                if (!(gPrime.paths().isLegalPag()
+//                      || gPrime.paths().isLegalPdag()
+//                      || gPrime.paths().isLegalDag())) {
+//                    return;
+//                }
 
                 // Decide which graph type semantics to use for amenability / RA:
                 //   - if completion is a DAG/PDAG, use PDAG semantics;
@@ -474,12 +478,13 @@
                 }
 
                 // 3) (X,Y) must be amenable in this refinement under the chosen semantics.
-                if (!gPrime.paths().isGraphAmenable(x, y, graphTypeForAmenability, maxLengthAdjustment)) {
+                if (!gPrime.paths().isGraphAmenable(x, y, "PAG", maxLengthAdjustment, new HashSet<>(gPrime.getChildren(x)))) {
+                    System.out.println("gPrime not amenable for " + x + " ~~> " + y);
                     return;
                 }
 
                 // 4) If all that passes, run RA + regression to collect one beta.
-                collectEffectsFromRefinement(gPrime, x, y, graphTypeForAmenability, totalEffects);
+                collectEffectsFromRefinement(gPrime, x, y, "PAG", totalEffects, new HashSet<>(gPrime.getChildren(x)));
                 return;
             }
 
@@ -569,14 +574,14 @@
                                                   Node x,
                                                   Node y,
                                                   String graphTypeForRA,
-                                                  List<Double> totalEffects) {
+                                                  List<Double> totalEffects, Set<Node> forceVisibility) {
             try {
                 RecursiveAdjustment ra = new RecursiveAdjustment(gPrime);
 
                 int maxNumSets = 1;                        // take one minimal adjustment set
                 int maxRadius = gPrime.getNodes().size();  // allow full radius
                 int nearWhichEndpoint = 3;                 // 1=X, 2=Y, 3=both
-                boolean avoidAmenable = false;             // RA-mode, not RB-mode
+                boolean avoidAmenable = true;             // RA-mode, not RB-mode
                 Set<Node> notFollowed = null;
                 Set<Node> containing = null;
 
@@ -590,8 +595,10 @@
                         RecursiveAdjustment.ColliderPolicy.NONCOLLIDER_FIRST,
                         avoidAmenable,
                         notFollowed,
-                        containing
-                );
+                        containing,
+                        forceVisibility);
+
+                System.out.println("adjSets: " + adjSets);
 
                 if (adjSets == null || adjSets.isEmpty()) {
                     // Amenable but RA could not find an adjustment set; skip.
@@ -617,186 +624,6 @@
                 TetradLogger.getInstance().log(e.getMessage());
             }
         }
-
-//        /**
-//         * Return the set of orientation codes {0,1,2,3} that are compatible with
-//         * the coarse PAG on edge e between X and W.
-//         *
-//         * Codes:
-//         *   0: X -> W   (TAIL at X, ARROW at W)
-//         *   1: X <- W   (ARROW at X, TAIL at W)
-//         *   2: X <-> W  (ARROW at X, ARROW at W)
-//         *   3: X --- W  (TAIL at X, TAIL at W)
-//         */
-//        private int[] allowedOrientationCodesForEdge(Edge e, Node x, Node w) {
-//            Endpoint oldAtX = graph.getEndpoint(x, w);      // should be CIRCLE by construction
-//            Endpoint oldAtW = graph.getEndpoint(w, x);
-//
-//            List<Integer> allowed = new ArrayList<>();
-//
-//            for (int code = 0; code < 4; code++) {
-//                Endpoint newAtX;
-//                Endpoint newAtW;
-//
-//                switch (code) {
-//                    case 0 -> { // X -> W
-//                        newAtX = Endpoint.TAIL;
-//                        newAtW = Endpoint.ARROW;
-//                    }
-//                    case 1 -> { // X <- W
-//                        newAtX = Endpoint.ARROW;
-//                        newAtW = Endpoint.TAIL;
-//                    }
-//                    case 2 -> { // X <-> W
-//                        newAtX = Endpoint.ARROW;
-//                        newAtW = Endpoint.ARROW;
-//                    }
-//                    case 3 -> { // X --- W
-//                        newAtX = Endpoint.TAIL;
-//                        newAtW = Endpoint.TAIL;
-//                    }
-//                    default -> {
-//                        continue;
-//                    }
-//                }
-//
-//                // Must refine both endpoints (oldAtX is CIRCLE, oldAtW may be TAIL/ARROW/CIRCLE).
-//                if (endpointRefines(oldAtX, newAtX) && endpointRefines(oldAtW, newAtW)) {
-//                    allowed.add(code);
-//                }
-//            }
-//
-//            int[] out = new int[allowed.size()];
-//            for (int i = 0; i < allowed.size(); i++) out[i] = allowed.get(i);
-//            return out;
-//        }
-
-//        private void enumeratePagOrientations(int idx,
-//                                              Graph current,
-//                                              Node x,
-//                                              Node y,
-//                                              List<Edge> orientable,
-//                                              List<int[]> optionsPerEdge,
-//                                              LinkedList<Double> totalEffects) {
-//
-//            if (idx == orientable.size()) {
-//                // We have a fully specified local orientation around X in 'current'.
-//                // Now check refinement/legality/amenability and, if all good, run RA.
-//                handleOnePagRefinement(current, x, y, totalEffects);
-//                return;
-//            }
-//
-//            Edge e = orientable.get(idx);
-//            Node n1 = e.getNode1();
-//            Node n2 = e.getNode2();
-//            Node w = n1.equals(x) ? n2 : n1;
-//
-//            int[] codes = optionsPerEdge.get(idx);
-//
-//            for (int code : codes) {
-//                Graph gNext = new EdgeListGraph(current);
-//
-//                // Remove whatever edge is currently between X and W.
-//                if (gNext.isAdjacentTo(x, w)) {
-//                    gNext.removeEdge(x, w);
-//                }
-//
-//                Endpoint ex;
-//                Endpoint ew;
-//
-//                switch (code) {
-//                    case 0 -> { // X -> W
-//                        ex = Endpoint.TAIL;
-//                        ew = Endpoint.ARROW;
-//                    }
-//                    case 1 -> { // X <- W
-//                        ex = Endpoint.ARROW;
-//                        ew = Endpoint.TAIL;
-//                    }
-//                    case 2 -> { // X <-> W
-//                        ex = Endpoint.ARROW;
-//                        ew = Endpoint.ARROW;
-//                    }
-//                    case 3 -> { // X --- W
-//                        ex = Endpoint.TAIL;
-//                        ew = Endpoint.TAIL;
-//                    }
-//                    default -> {
-//                        continue;
-//                    }
-//                }
-//
-//                Edge newEdge = new Edge(x, w, ex, ew);
-//                gNext.addEdge(newEdge);
-//
-//                // Recurse to orient the next X-circle edge.
-//                enumeratePagOrientations(idx + 1, gNext, x, y, orientable, optionsPerEdge, totalEffects);
-//            }
-//        }
-
-//        private void handleOnePagRefinement(Graph gPrime,
-//                                            Node x,
-//                                            Node y,
-//                                            LinkedList<Double> totalEffects) {
-//
-//            // 1) Check that gPrime is a refinement of the original PAG.
-//            if (!isRefinementOf(this.graph, gPrime)) {
-//                return;
-//            }
-//
-//            // 2) Check that it's a legal PAG.
-//            if (!gPrime.paths().isLegalPag()) {
-//                return;
-//            }
-//
-//            // 3) Check amenability in the Perković sense.
-//            if (!gPrime.paths().isGraphAmenable(x, y, "PAG", maxLengthAdjustment)) {
-//                return;
-//            }
-//
-//            // 4) Run RecursiveAdjustment / GAC on gPrime to get an adjustment set
-//            RecursiveAdjustment ra = new RecursiveAdjustment(gPrime);
-//
-//            int maxNumSets = 1;
-//            int maxRadius = gPrime.getNodes().size();
-//            int nearWhichEndpoint = 3;  // both
-//            boolean avoidAmenable = false;
-//            Set<Node> notFollowed = null;
-//            Set<Node> containing = null;
-//
-//            List<Set<Node>> adjSets = ra.adjustmentSets(
-//                    x, y,
-//                    "PAG",
-//                    maxNumSets,
-//                    maxRadius,
-//                    nearWhichEndpoint,
-//                    maxLengthAdjustment,
-//                    RecursiveAdjustment.ColliderPolicy.NONCOLLIDER_FIRST,
-//                    avoidAmenable,
-//                    notFollowed,
-//                    containing
-//            );
-//
-//            if (adjSets == null || adjSets.isEmpty()) {
-//                return;
-//            }
-//
-//            Set<Node> Z = adjSets.get(0);
-//
-//            // Build X ∪ Z as regressors, drop Y if necessary.
-//            Set<Node> regressorsSet = new LinkedHashSet<>();
-//            regressorsSet.add(x);
-//            regressorsSet.addAll(Z);
-//            regressorsSet.remove(y);
-//
-//            List<Node> regressors = new ArrayList<>(regressorsSet);
-//
-//            System.out.println(x + " to " + y + " regressors (PAG-IDA / RA-based): "
-//                               + regressors + "   Z=" + Z);
-//
-//            double beta = getBeta(regressors, x, y);
-//            totalEffects.add(beta);
-//        }
 
         /**
          * This method calculates the absolute total effects of node x on node y.
