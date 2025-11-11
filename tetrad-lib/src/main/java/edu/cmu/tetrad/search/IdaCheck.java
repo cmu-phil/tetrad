@@ -84,6 +84,11 @@ public class IdaCheck {
     private final SemIm trueSemIm;
 
     /**
+     * The graph being used to estimate IDA.
+     */
+    private final Graph graph;
+
+    /**
      * A map from nodes in the estimated model to nodes in the SEM IM.
      */
     private HashMap<Node, Node> nodeMap;
@@ -124,25 +129,12 @@ public class IdaCheck {
 
         // Convert the PDAG to a PDAG with the same nodes as the data set
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
+        this.graph = graph;
 
         // Check to make sure the set of variables from the PDAG is the same as the set of variables from the data set.
         if (!new HashSet<>(graph.getNodes()).equals(new HashSet<>(dataSet.getVariables()))) {
             throw new IllegalArgumentException("The variables in the PDAG do not match the variables in the data set.");
         }
-
-//        this.nodes = dataSet.getVariables();
-//        this.totalEffects = new HashMap<>();
-//        this.absTotalEffects = new HashMap<>();
-//        this.ida = new Ida(dataSet, graph, nodes);
-//        this.ida.setIdaType(showOptimalIda ? Ida.IDA_TYPE.OPTIMAL : Ida.IDA_TYPE.REGULAR);
-//        this.pairs = calcOrderedPairs();
-//
-//        for (OrderedPair<Node> pair : calcOrderedPairs()) {
-//            LinkedList<Double> totalEffects = ida.getTotalEffects(pair.getFirst(), pair.getSecond());
-//            LinkedList<Double> absTotalEffects = ida.getAbsTotalEffects(pair.getFirst(), pair.getSecond());
-//            this.totalEffects.put(pair, totalEffects);
-//            this.absTotalEffects.put(pair, absTotalEffects);
-//        }
 
         this.nodes = dataSet.getVariables();
         this.totalEffects = new HashMap<>();
@@ -504,6 +496,13 @@ public class IdaCheck {
 
     public void recompute() {
         computeIdaResults();
+    }
+
+    /**
+     * The graph being used to estimate IDA.
+     */
+    public Graph getGraph() {
+        return graph.copy();
     }
 }
 

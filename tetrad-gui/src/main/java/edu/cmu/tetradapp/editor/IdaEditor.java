@@ -65,7 +65,7 @@ public class IdaEditor extends JPanel {
     private JLabel squaredDiffMinTotalLabel = null;
 
     /**
-     *
+     * The label for the squared difference between maximum total effect and true total effect.
      */
     private JLabel squaredDiffMaxTotalLabel = null;
 
@@ -223,10 +223,12 @@ public class IdaEditor extends JPanel {
         Box horiz = Box.createHorizontalBox();
         Box vert = Box.createVerticalBox();
 
-        Box box = Box.createHorizontalBox();
-        box.add(showOptimalIda);
-        box.add(Box.createHorizontalGlue());
-        vert.add(box);
+        if (idaCheckEst.getGraph().paths().isLegalPdag()) {
+            Box box = Box.createHorizontalBox();
+            box.add(showOptimalIda);
+            box.add(Box.createHorizontalGlue());
+            vert.add(box);
+        }
 
         Box horiz2 = Box.createHorizontalBox();
         horiz2.add(label);
