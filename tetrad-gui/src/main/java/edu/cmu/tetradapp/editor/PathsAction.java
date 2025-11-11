@@ -1612,7 +1612,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     adjustments = graph.paths().adjustmentSets(
                             node1, node2, graphType, maxNumSet,
                             maxDistanceFromEndpoint, nearWhichEndpoint, maxLengthAdjustment,
-                            henckelPruning);
+                            henckelPruning, true);
                 } catch (Exception e) {
                     // Skip on error
                     continue;
@@ -1821,7 +1821,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 try {
 
                     // The type of graph doesn't matter if we're ignoring amenable paths.
-                    RecursiveAdjustment adjustment = new RecursiveAdjustment(graph);
+                    RecursiveAdjustment adjustment = new RecursiveAdjustment(graph)
+                            .setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
                     adjustments = adjustment.adjustmentSets(node1, node2, "PAG",
                             maxNumSets, maxRadius, nearWhichEndpoint, maxPathLength,
                             RecursiveAdjustment.ColliderPolicy.OFF, avoidAmenable, Set.of(), Set.of());

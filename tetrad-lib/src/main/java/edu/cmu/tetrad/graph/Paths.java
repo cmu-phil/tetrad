@@ -3036,7 +3036,7 @@ public class Paths implements TetradSerializable {
         RecursiveAdjustment.ColliderPolicy _colliderPolicy = RecursiveAdjustment.ColliderPolicy.valueOf(colliderPolicy);
 
         RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
-                .setUseHenckelPruning(henckelPruning);
+                .setUseHenckelPruning(henckelPruning).setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
         return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of());
     }
@@ -3060,7 +3060,7 @@ public class Paths implements TetradSerializable {
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength) {
         return adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
-                nearWhichEndpoint, maxPathLength, false);
+                nearWhichEndpoint, maxPathLength, false, false);
     }
 
     /**
@@ -3081,10 +3081,12 @@ public class Paths implements TetradSerializable {
      */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
-                                          int nearWhichEndpoint, int maxPathLength, boolean henckelPruning) {
+                                          int nearWhichEndpoint, int maxPathLength, boolean henckelPruning,
+                                          boolean oSetCompatible) {
         RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
                 .setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SUPPRESS)
-                .setUseHenckelPruning(henckelPruning);
+                .setUseHenckelPruning(henckelPruning).setRaMode(oSetCompatible ? RecursiveAdjustment.RaMode.O_COMPATIBLE
+                        : RecursiveAdjustment.RaMode.VALID);
         return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, RecursiveAdjustment.ColliderPolicy.OFF, true,
                 Set.of(), Set.of());

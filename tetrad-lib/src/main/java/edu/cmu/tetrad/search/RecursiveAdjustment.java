@@ -60,6 +60,10 @@ public final class RecursiveAdjustment {
          */
         PAG}
 
+    public enum RaMode { VALID, O_COMPATIBLE }
+
+    private RaMode raMode = RaMode.VALID;
+
     /**
      * Represents the causal graph being analyzed for adjustment set definition.
      */
@@ -139,6 +143,11 @@ public final class RecursiveAdjustment {
      */
     public RecursiveAdjustment setUseHenckelPruning(boolean use) {
         this.useHenckelPruning = use;
+        return this;
+    }
+
+    public RecursiveAdjustment setRaMode(RaMode mode) {
+//        this.raMode = Objects.requireNonNull(mode);
         return this;
     }
 
@@ -265,6 +274,21 @@ public final class RecursiveAdjustment {
         Set<Node> amenableBackbone = amenableBackbone(amenablePaths, X, Y);
         Set<Node> forbidden = getForbiddenForAdjustment(graph, graphType, X, Y);
 
+        // Parents of amenable backbone ∪ {Y}, excluding forbidden and descendants of X.
+        Set<Node> oCandidates = new LinkedHashSet<>();
+
+        Set<Node> amenableRegion = new LinkedHashSet<>(amenableBackbone);
+        amenableRegion.add(Y);
+
+        for (Node a : amenableRegion) {
+            for (Node p : graph.getParents(a)) {
+                if (p.equals(X)) continue;
+                if (forbidden.contains(p)) continue;
+                // optionally: skip descendants of X, if not already in 'forbidden'
+                oCandidates.add(p);
+            }
+        }
+
         List<Node> starts = firstBackdoorNeighbors(X, Y, graphType);
         Shells shellsFromX = starts.isEmpty()
                 ? new Shells(emptyLayers(maxRadius), Set.of())
@@ -286,6 +310,10 @@ public final class RecursiveAdjustment {
         if (!rbMode) {
             poolSet.removeAll(forbidden);
             poolSet.removeAll(amenableBackbone);
+
+            if (raMode == RaMode.O_COMPATIBLE) {
+                poolSet.retainAll(oCandidates);
+            }
         }
 
         if (notFollowed != null) poolSet.removeAll(notFollowed);
@@ -319,6 +347,7 @@ public final class RecursiveAdjustment {
                 maxPathLength, amenablePaths, amenableBackbone, forbidden,
                 shellsFromX, shellsFromY, pool, idx, order,
                 notFollowed == null ? Set.of() : new HashSet<>(notFollowed),
+                new HashSet<>(oCandidates),
                 seedZ, rbMode, graphAmenable);
     }
 
@@ -598,7 +627,7 @@ public final class RecursiveAdjustment {
             Node pick = chooseBlockerOnWitness(wit.get(), ctx.pool,
                     new HashSet<>(ctx.pool), ctx.forbidden, ban, Z,
                     ctx.amenableBackbone, ctx.graphType, colliderPolicy,
-                    ctx.notFollowed, rbMode);
+                    ctx.notFollowed, ctx.oCandidates, rbMode);
             if (pick == null) return null;
             Z.add(pick);
         }
@@ -702,6 +731,7 @@ public final class RecursiveAdjustment {
                                                   String graphType,
                                                   ColliderPolicy colliderPolicy,
                                                   Set<Node> notFollowed,
+                                                  Set<Node> oCandidates,
                                                   boolean rbMode) {
         Set<Node> inWitness = new HashSet<>(witness);
         List<Node> candidates = new ArrayList<>();
@@ -712,7 +742,9 @@ public final class RecursiveAdjustment {
                 && (rbMode || !amenableBackbone.contains(v))
                 && !Z.contains(v)
                 && !ban.contains(v)
-                && !notFollowed.contains(v)) {
+                && !notFollowed.contains(v)
+                // NEW: in O_COMPATIBLE mode, only allow O-candidates
+                && (raMode != RaMode.O_COMPATIBLE || oCandidates.contains(v))) {
                 candidates.add(v);
             }
         }
@@ -726,7 +758,9 @@ public final class RecursiveAdjustment {
                     && (rbMode || !amenableBackbone.contains(v))
                     && !Z.contains(v)
                     && !ban.contains(v)
-                    && !notFollowed.contains(v)) {
+                    && !notFollowed.contains(v)
+                    // NEW: in O_COMPATIBLE mode, only allow O-candidates
+                    && (raMode != RaMode.O_COMPATIBLE || oCandidates.contains(v))) {
                     candidates.add(v);
                 }
             }
@@ -913,6 +947,7 @@ public final class RecursiveAdjustment {
         final List<Node> pool;
         final Map<Node,Integer> idx, order;
         final Set<Node> notFollowed;
+        final Set<Node> oCandidates;
         final LinkedHashSet<Node> seedZ;
         final boolean rbMode;
         final boolean graphAmenable;
@@ -921,14 +956,15 @@ public final class RecursiveAdjustment {
                           int maxPathLength, Set<List<Node>> amenable, Set<Node> amenableBackbone,
                           Set<Node> forbidden, Shells sx, Shells sy, List<Node> pool,
                           Map<Node,Integer> idx, Map<Node,Integer> order,
-                          Set<Node> notFollowed, LinkedHashSet<Node> seedZ,
+                          Set<Node> notFollowed, Set<Node> oCandidates,
+                          LinkedHashSet<Node> seedZ,
                           boolean rbMode, boolean graphAmenable) {
             this.X = X; this.Y = Y; this.graphType = graphType;
             this.maxRadius = maxRadius; this.nearWhichEndpoint = nearWhichEndpoint;
             this.maxPathLength = maxPathLength;
             this.amenable = amenable; this.amenableBackbone = amenableBackbone;
             this.forbidden = forbidden; this.shellsFromX = sx; this.shellsFromY = sy;
-            this.pool = pool; this.idx = idx; this.order = order;
+            this.pool = pool; this.idx = idx; this.order = order; this.oCandidates = oCandidates;
             this.notFollowed = notFollowed; this.seedZ = seedZ;
             this.rbMode = rbMode; this.graphAmenable = graphAmenable;
         }

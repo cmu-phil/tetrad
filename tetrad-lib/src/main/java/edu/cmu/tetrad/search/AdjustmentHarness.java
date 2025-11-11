@@ -164,7 +164,8 @@ public class AdjustmentHarness {
                 Node y = vars.get(j);
 
                 long t0 = System.nanoTime();
-                List<Set<Node>> sets = G.paths().adjustmentSets(x, y, GRAPH_TYPE, K, RADIUS, TGT_HUG, L, false);
+                List<Set<Node>> sets = G.paths().adjustmentSets(x, y, GRAPH_TYPE, K, RADIUS, TGT_HUG, L,
+                        false, false);
                 long t1 = System.nanoTime();
                 double genMsPair = (t1 - t0) / 1_000_000.0;
                 adjCallNanos += (t1 - t0);

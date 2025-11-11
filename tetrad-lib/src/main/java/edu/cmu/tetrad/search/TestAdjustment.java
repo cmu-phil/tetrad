@@ -82,7 +82,7 @@ public class TestAdjustment {
             Node y = nodes.get(j);
 
             List<Set<Node>> sets = graph.paths().adjustmentSets(
-                    x, y, GRAPH_TYPE, MAX_SETS, RADIUS, TGT_HUG, L, false);
+                    x, y, GRAPH_TYPE, MAX_SETS, RADIUS, TGT_HUG, L, false, false);
 
             Set<List<Node>> amenablePaths = graph.paths().getAmenablePathsPdagMag(x, y, L);
             if (amenablePaths == null) amenablePaths = java.util.Collections.emptySet();
