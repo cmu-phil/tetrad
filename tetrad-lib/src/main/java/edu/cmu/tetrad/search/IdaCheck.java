@@ -147,7 +147,7 @@ public class IdaCheck {
         this.nodes = dataSet.getVariables();
         this.totalEffects = new HashMap<>();
         this.absTotalEffects = new HashMap<>();
-        this.ida = new PagIda(dataSet, graph, nodes);
+        this.ida = new PagIda(dataSet, graph);
 
         // Default: REGULAR vs OPTIMAL, depending on flag
         this.ida.setIdaType(showOptimalIda ? PagIda.IDA_TYPE.OPTIMAL : PagIda.IDA_TYPE.REGULAR);

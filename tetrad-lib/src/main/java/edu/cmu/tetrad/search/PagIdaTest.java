@@ -48,7 +48,7 @@ public class PagIdaTest {
         pag.addEdge(new Edge(Y, Z, Endpoint.CIRCLE, Endpoint.CIRCLE));
 
         // ---------- 3. Run PagIda on the PAG ----------
-        PagIda ida = new PagIda(data, pag, Collections.singletonList(X));
+        PagIda ida = new PagIda(data, pag);
         ida.setMaxLengthAdjustment(-1);  // no path-length limit
 
         LinkedList<Double> effects = ida.getTotalEffects(X, Z);
