@@ -76,7 +76,7 @@ public class IdaCheck {
     /**
      * The instance of IDA used in this class to calculate node effects and distances.
      */
-    private final Ida ida;
+    private final PagIda ida;
 
     /**
      * The true SEM IM, if given.
@@ -118,8 +118,8 @@ public class IdaCheck {
         }
 
         // Check to make sure the graph is an PDAG.
-        if (!graph.paths().isLegalPdag()) {
-            throw new IllegalArgumentException("Expecting an PDAG.");
+        if (!(graph.paths().isLegalPdag() || graph.paths().isLegalPag())) {
+            throw new IllegalArgumentException("Expecting an PDAG or PAG    .");
         }
 
         // Convert the PDAG to a PDAG with the same nodes as the data set
@@ -147,10 +147,10 @@ public class IdaCheck {
         this.nodes = dataSet.getVariables();
         this.totalEffects = new HashMap<>();
         this.absTotalEffects = new HashMap<>();
-        this.ida = new Ida(dataSet, graph, nodes);
+        this.ida = new PagIda(dataSet, graph, nodes);
 
         // Default: REGULAR vs OPTIMAL, depending on flag
-        this.ida.setIdaType(showOptimalIda ? Ida.IDA_TYPE.OPTIMAL : Ida.IDA_TYPE.REGULAR);
+        this.ida.setIdaType(showOptimalIda ? PagIda.IDA_TYPE.OPTIMAL : PagIda.IDA_TYPE.REGULAR);
 
         // Precompute all ordered pairs once
         this.pairs = calcOrderedPairs();
@@ -179,7 +179,7 @@ public class IdaCheck {
      */
     private void computeIdaResults() {
         // Make sure Ida is in sync with the flag
-        ida.setIdaType(showOptimalIda ? Ida.IDA_TYPE.OPTIMAL : Ida.IDA_TYPE.REGULAR);
+        ida.setIdaType(showOptimalIda ? PagIda.IDA_TYPE.OPTIMAL : PagIda.IDA_TYPE.REGULAR);
 
         // Clear old results
         this.totalEffects.clear();

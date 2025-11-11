@@ -115,8 +115,8 @@ public class IdaModel implements SessionModel {
             throw new IllegalArgumentException("Expecting a data set.");
         }
 
-        if (!graphSource.getGraph().paths().isLegalPdag()) {
-            throw new IllegalArgumentException("Expecting an PDAG. (Could be a CPDAG or a DAG.)");
+        if (!(graphSource.getGraph().paths().isLegalPdag() || graphSource.getGraph().paths().isLegalPag())) {
+            throw new IllegalArgumentException("Expecting an PDAG. (Could be a CPDAG or a DAG or a PAG.)");
         }
 
         this.estPdag = graphSource.getGraph();
