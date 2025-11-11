@@ -57,7 +57,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Cstar
  * @see NodeEffects
  */
-public class PagIda {
+public class PdagPagIda {
 
     /**
      * The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm)
@@ -104,7 +104,7 @@ public class PagIda {
      * @throws NullPointerException If either {@code dataSet} or {@code graph} is null.
      * @throws IllegalArgumentException If the graph is not a DAG, CPDAG, PDAG, or PAG, or if the dataset is not continuous.
      */
-    public PagIda(DataSet dataSet, Graph graph) {
+    public PdagPagIda(DataSet dataSet, Graph graph) {
         if (dataSet == null) {
             throw new NullPointerException("Data set must not be null.");
         }
