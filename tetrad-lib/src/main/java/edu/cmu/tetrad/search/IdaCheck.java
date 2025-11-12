@@ -139,7 +139,7 @@ public class IdaCheck {
         this.nodes = dataSet.getVariables();
         this.totalEffects = new HashMap<>();
         this.absTotalEffects = new HashMap<>();
-        this.ida = new PdagPagIda(dataSet, graph);
+        this.ida = new PdagPagIda(dataSet, graph, List.of());
         this.pairs = calcOrderedPairs();
 
         // Fill totalEffects / absTotalEffects respecting current idaType

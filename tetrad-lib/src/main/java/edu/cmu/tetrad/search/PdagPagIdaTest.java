@@ -14,6 +14,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -48,7 +49,7 @@ public class PdagPagIdaTest {
         pag.addEdge(new Edge(Y, Z, Endpoint.CIRCLE, Endpoint.CIRCLE));
 
         // ---------- 3. Run PagIda on the PAG ----------
-        PdagPagIda ida = new PdagPagIda(data, pag);
+        PdagPagIda ida = new PdagPagIda(data, pag, List.of());
         ida.setMaxLengthAdjustment(-1);  // no path-length limit
 
         LinkedList<Double> effects = ida.getTotalEffects(X, Z);
