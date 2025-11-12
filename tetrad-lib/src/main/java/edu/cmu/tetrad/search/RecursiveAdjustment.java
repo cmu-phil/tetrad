@@ -4,22 +4,19 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
-import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.test.IndependenceResult;
-
 /**
- * Represents an adjustment mechanism for defining adjustment sets in causal inference
- * across different types of graphical models.
+ * Represents an adjustment mechanism for defining adjustment sets in causal inference across different types of
+ * graphical models.
  * <p>
- * The {@code RecursiveAdjustment} class provides methods to define valid adjustment sets based on
- * the structure of the graph, specific node relationships, and user-defined policies
- * about allowed paths and collateral factors.
+ * The {@code RecursiveAdjustment} class provides methods to define valid adjustment sets based on the structure of the
+ * graph, specific node relationships, and user-defined policies about allowed paths and collateral factors.
  * </p>
  *
  * <ul>
@@ -33,61 +30,24 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 public final class RecursiveAdjustment {
 
     /**
-     * Represents the type of graph being analyzed for adjustment set definition.
-     */
-    public enum GraphType{
-
-        /**
-         * Represents a Partially Directed Acyclic Graph (PDAG) within the context of the graph analysis.
-         * A PDAG is a graph type used for describing the structure of causal relationships
-         * while allowing some edges to remain undirected.
-         */
-        PDAG,
-
-        /**
-         * Represents a Maximal Ancestral Graph (MAG) within the context of the graph analysis.
-         * A MAG is a graph type used to encode causal relationships, typically in the presence
-         * of latent variables and selection bias. It allows the representation of both directed
-         * and bidirectional edges while maintaining specific ancestral properties.
-         */
-        MAG,
-
-        /**
-         * Represents a Partial Ancestral Graph (PAG) within the context of the graph analysis.
-         * A PAG is used to depict possible causal structures, accounting for latent variables
-         * and selection bias. It is a graphical representation that includes directed, undirected,
-         * and bidirectional edges, encapsulating causal and non-causal relationships in a compact form.
-         */
-        PAG}
-
-    public enum RaMode { VALID, O_COMPATIBLE }
-
-    private RaMode raMode = RaMode.VALID;
-
-    /**
      * Represents the causal graph being analyzed for adjustment set definition.
      */
     private final Graph graph;
-
+    private RaMode raMode = RaMode.VALID;
     /**
      * Represents the policy for handling colliders during adjustment set definition.
      */
     private ColliderPolicy colliderPolicy = ColliderPolicy.NONCOLLIDER_FIRST;
-
     /**
      * Represents the policy for handling non-amenability (in Perković's sense) relative to (X, Y).
      */
     private NoAmenablePolicy noAmenablePolicy = NoAmenablePolicy.SUPPRESS;
-
     /**
-     * Optional independence test used for HPM-style pruning (Algorithm 1).
-     * If null, HPM pruning is disabled.
+     * Optional independence test used for HPM-style pruning (Algorithm 1). If null, HPM pruning is disabled.
      */
-    private @Nullable IndependenceTest independenceTest = null;
-
+    private @Nullable MsepTest msepTest = null;
     /**
-     * Toggle for applying Henckel–Perković–Maathuis style pruning
-     * (Algorithm 1) to any RA solution set.
+     * Toggle for applying Henckel–Perković–Maathuis style pruning (Algorithm 1) to any RA solution set.
      */
     private boolean useHenckelPruning = false;
 
@@ -98,7 +58,96 @@ public final class RecursiveAdjustment {
      */
     public RecursiveAdjustment(Graph graph) {
         this.graph = graph;
-        this.independenceTest = new MsepTest(graph);
+        this.msepTest = new MsepTest(graph);
+    }
+
+    /**
+     * Compute Forb_G(X,Y) (Perković et al.).
+     */
+    private static Set<Node> getForbiddenForAdjustment(Graph G, String graphType, Node X, Node Y) {
+        Objects.requireNonNull(G);
+        Objects.requireNonNull(X);
+        Objects.requireNonNull(Y);
+        if (X == Y) return Collections.emptySet();
+
+        final String gt = graphType == null ? "DAG" : graphType.toUpperCase(Locale.ROOT);
+
+        Set<Node> fwdFromX = forwardReach(G, gt, Set.of(X));
+        Set<Node> canReachY = backwardFilterByForwardRule(G, gt, Y);
+
+        Set<Node> onSomePDPath = new LinkedHashSet<>(fwdFromX);
+        onSomePDPath.retainAll(canReachY);
+        onSomePDPath.remove(X);
+
+        Set<Node> seeds = new LinkedHashSet<>();
+        seeds.add(X);
+        seeds.addAll(onSomePDPath);
+
+        Set<Node> forb = forwardReach(G, gt, seeds);
+        forb.remove(X);
+        forb.remove(Y);
+        return forb;
+    }
+
+    private static Set<Node> forwardReach(Graph G, String graphType, Set<Node> starts) {
+        Deque<Node> q = new ArrayDeque<>(starts);
+        Set<Node> seen = new LinkedHashSet<>(starts);
+        while (!q.isEmpty()) {
+            Node a = q.removeFirst();
+            for (Node b : G.getAdjacentNodes(a)) {
+                Edge e = G.getEdge(a, b);
+                if (e == null) continue;
+                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
+                if (seen.add(b)) q.addLast(b);
+            }
+        }
+        return seen;
+    }
+
+    private static Set<Node> backwardFilterByForwardRule(Graph G, String graphType, Node Y) {
+        Set<Node> canReach = new LinkedHashSet<>();
+        Deque<Node> q = new ArrayDeque<>();
+        canReach.add(Y);
+        q.add(Y);
+
+        while (!q.isEmpty()) {
+            Node b = q.removeFirst();
+            for (Node a : G.getAdjacentNodes(b)) {
+                Edge e = G.getEdge(a, b);
+                if (e == null) continue;
+                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
+                if (canReach.add(a)) q.addLast(a);
+            }
+        }
+        return canReach;
+    }
+
+    private static boolean isPossiblyOutEdge(String graphType, Edge e, Node a, Node b) {
+        if (e.pointsTowards(a)) return false;
+        if (Edges.isBidirectedEdge(e)) return false;
+        if (Edges.isUndirectedEdge(e)) return true;
+        return true;
+    }
+
+//    /**
+//     * Sets the independence test to be used for HPM-style pruning.
+//     * If left null, HPM pruning is never applied.
+//     */
+//    public RecursiveAdjustment setIndependenceTest(@Nullable IndependenceTest test) {
+//        this.independenceTest = test;
+//        return this;
+//    }
+
+    private static String keyOf(Set<Node> Z) {
+        return Z.stream().map(Node::getName).sorted().reduce((a, b) -> a + "," + b).orElse("");
+    }
+
+    private static Set<Node> amenableBackbone(Set<List<Node>> amenable, Node X, Node Y) {
+        LinkedHashSet<Node> s = new LinkedHashSet<>();
+        for (List<Node> p : amenable)
+            for (int i = 1; i < p.size() - 1; i++)
+                if (p.get(i) != X && p.get(i) != Y) s.add(p.get(i));
+        return s;
     }
 
     /**
@@ -123,28 +172,22 @@ public final class RecursiveAdjustment {
         return this;
     }
 
-//    /**
-//     * Sets the independence test to be used for HPM-style pruning.
-//     * If left null, HPM pruning is never applied.
-//     */
-//    public RecursiveAdjustment setIndependenceTest(@Nullable IndependenceTest test) {
-//        this.independenceTest = test;
-//        return this;
-//    }
+    // --- Master entry point -----------------------------------------------------------------
 
     /**
-     * Enables or disables Henckel&ndash;Perkovi&#263;&ndash;Maathuis (HPM) pruning
-     * on the RA solutions. HPM pruning assumes linear models and
-     * uses <i>m</i>-separation to remove variables {@code z} for which
+     * Enables or disables Henckel&ndash;Perkovi&#263;&ndash;Maathuis (HPM) pruning on the RA solutions. HPM pruning
+     * assumes linear models and uses <i>m</i>-separation to remove variables {@code z} for which
      * {@code Y ⟂ z | X ∪ (Z \ {z})}.
      *
-     * @param  use Use Henckel&ndash;Perkovi&#263;&ndash;Maathuis (HPM) pruning.
+     * @param use Use Henckel&ndash;Perkovi&#263;&ndash;Maathuis (HPM) pruning.
      * @return this
      */
     public RecursiveAdjustment setUseHenckelPruning(boolean use) {
         this.useHenckelPruning = use;
         return this;
     }
+
+    // --- Precompute context -----------------------------------------------------------------
 
     public RecursiveAdjustment setRaMode(RaMode mode) {
 //        this.raMode = Objects.requireNonNull(mode);
@@ -173,19 +216,21 @@ public final class RecursiveAdjustment {
     }
 
     /**
-     * Computes a list of adjustment sets for estimating the causal effect of X on Y
-     * within a given graph structure using the Rubin-Bai / RB-style approach.
+     * Computes a list of adjustment sets for estimating the causal effect of X on Y within a given graph structure
+     * using the Rubin-Bai / RB-style approach.
      *
-     * @param X The node representing the cause in the causal relationship.
-     * @param Y The node representing the effect in the causal relationship.
-     * @param graphType The type of graph (e.g., "dag", "pdag", "mag") used for the adjustment computation.
-     * @param maxNumSets The maximum number of adjustment sets to compute.
-     * @param maxRadius The maximum radius for creating shells during adjustment set determination.
-     * @param nearWhichEndpoint Specifies which endpoint (source or target) should dominate the adjustment determination.
-     * @param maxPathLength The maximum allowed path length between X and Y for eligibility in adjustment sets.
-     * @param avoidAmenable Whether to avoid adjustment sets involving amenable paths (RA-mode vs RB-mode).
-     * @param notFollowed A set of nodes that should not be followed during path exploration in the graph. Optional.
-     * @param containing A set of nodes that must be included in the adjustment sets. Optional.
+     * @param X                 The node representing the cause in the causal relationship.
+     * @param Y                 The node representing the effect in the causal relationship.
+     * @param graphType         The type of graph (e.g., "dag", "pdag", "mag") used for the adjustment computation.
+     * @param maxNumSets        The maximum number of adjustment sets to compute.
+     * @param maxRadius         The maximum radius for creating shells during adjustment set determination.
+     * @param nearWhichEndpoint Specifies which endpoint (source or target) should dominate the adjustment
+     *                          determination.
+     * @param maxPathLength     The maximum allowed path length between X and Y for eligibility in adjustment sets.
+     * @param avoidAmenable     Whether to avoid adjustment sets involving amenable paths (RA-mode vs RB-mode).
+     * @param notFollowed       A set of nodes that should not be followed during path exploration in the graph.
+     *                          Optional.
+     * @param containing        A set of nodes that must be included in the adjustment sets. Optional.
      * @return A list of sets of nodes, where each set represents a possible valid adjustment set for the causal effect.
      */
     public List<Set<Node>> adjustmentSetsRB(Node X, Node Y, String graphType,
@@ -197,8 +242,6 @@ public final class RecursiveAdjustment {
         return adjustmentSets(X, Y, graphType, maxNumSets, maxRadius, nearWhichEndpoint,
                 maxPathLength, colliderPolicy, avoidAmenable, notFollowed, containing, Set.of());
     }
-
-    // --- Master entry point -----------------------------------------------------------------
 
     /**
      * Computes a list of adjustment sets for estimating the causal effect of X on Y within a given graph structure.
@@ -255,8 +298,6 @@ public final class RecursiveAdjustment {
         return out;
     }
 
-    // --- Precompute context -----------------------------------------------------------------
-
     private PrecomputeContext precomputeContext(Node X, Node Y, String graphType,
                                                 int maxRadius, int nearWhichEndpoint,
                                                 int maxPathLength, boolean avoidAmenable,
@@ -306,7 +347,10 @@ public final class RecursiveAdjustment {
         }
         if (nearWhichEndpoint == 1) poolSet.retainAll(shellsFromX.reach);
         else if (nearWhichEndpoint == 2) poolSet.retainAll(shellsFromY.reach);
-        else { poolSet.retainAll(shellsFromX.reach); poolSet.retainAll(shellsFromY.reach); }
+        else {
+            poolSet.retainAll(shellsFromX.reach);
+            poolSet.retainAll(shellsFromY.reach);
+        }
 
         // In RB (sepset) mode, DO NOT prune candidates by Forb_G or amenable backbone.
         if (!rbMode) {
@@ -354,8 +398,8 @@ public final class RecursiveAdjustment {
     }
 
     /**
-     * Internal helper: compute graph-level amenability relative to (X, Y)
-     * using potentiallyDirectedPaths and the path-level amenable test.
+     * Internal helper: compute graph-level amenability relative to (X, Y) using potentiallyDirectedPaths and the
+     * path-level amenable test.
      */
     private boolean isGraphAmenableInternal(Node X, Node Y, String graphType, int maxPathLength, Set<Node> forceVisibility) {
         // All potentially directed (potentially-directed) paths from X to Y
@@ -375,34 +419,6 @@ public final class RecursiveAdjustment {
         return ("PAG".equalsIgnoreCase(graphType))
                 ? graph.paths().getAmenablePathsPag(source, target, maxLength, forceVisibility)
                 : graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
-    }
-
-    /**
-     * Compute Forb_G(X,Y) (Perković et al.).
-     */
-    private static Set<Node> getForbiddenForAdjustment(Graph G, String graphType, Node X, Node Y) {
-        Objects.requireNonNull(G);
-        Objects.requireNonNull(X);
-        Objects.requireNonNull(Y);
-        if (X == Y) return Collections.emptySet();
-
-        final String gt = graphType == null ? "DAG" : graphType.toUpperCase(Locale.ROOT);
-
-        Set<Node> fwdFromX = forwardReach(G, gt, Set.of(X));
-        Set<Node> canReachY = backwardFilterByForwardRule(G, gt, Y);
-
-        Set<Node> onSomePDPath = new LinkedHashSet<>(fwdFromX);
-        onSomePDPath.retainAll(canReachY);
-        onSomePDPath.remove(X);
-
-        Set<Node> seeds = new LinkedHashSet<>();
-        seeds.add(X);
-        seeds.addAll(onSomePDPath);
-
-        Set<Node> forb = forwardReach(G, gt, seeds);
-        forb.remove(X);
-        forb.remove(Y);
-        return forb;
     }
 
     private @NotNull List<Node> firstBackdoorNeighbors(Node X, Node Y, String graphType) {
@@ -469,46 +485,6 @@ public final class RecursiveAdjustment {
         return new RecursiveAdjustment.Shells(layers, reach);
     }
 
-    private static Set<Node> forwardReach(Graph G, String graphType, Set<Node> starts) {
-        Deque<Node> q = new ArrayDeque<>(starts);
-        Set<Node> seen = new LinkedHashSet<>(starts);
-        while (!q.isEmpty()) {
-            Node a = q.removeFirst();
-            for (Node b : G.getAdjacentNodes(a)) {
-                Edge e = G.getEdge(a, b);
-                if (e == null) continue;
-                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
-                if (seen.add(b)) q.addLast(b);
-            }
-        }
-        return seen;
-    }
-
-    private static Set<Node> backwardFilterByForwardRule(Graph G, String graphType, Node Y) {
-        Set<Node> canReach = new LinkedHashSet<>();
-        Deque<Node> q = new ArrayDeque<>();
-        canReach.add(Y);
-        q.add(Y);
-
-        while (!q.isEmpty()) {
-            Node b = q.removeFirst();
-            for (Node a : G.getAdjacentNodes(b)) {
-                Edge e = G.getEdge(a, b);
-                if (e == null) continue;
-                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
-                if (canReach.add(a)) q.addLast(a);
-            }
-        }
-        return canReach;
-    }
-
-    private static boolean isPossiblyOutEdge(String graphType, Edge e, Node a, Node b) {
-        if (e.pointsTowards(a)) return false;
-        if (Edges.isBidirectedEdge(e)) return false;
-        if (Edges.isUndirectedEdge(e)) return true;
-        return true;
-    }
-
     private Shells undirectedShells(Node seed, int maxRadius) {
         @SuppressWarnings("unchecked")
         List<Node>[] layers = new ArrayList[maxRadius + 1];
@@ -565,7 +541,7 @@ public final class RecursiveAdjustment {
      */
     private LinkedHashSet<Node> henckelPrune(PrecomputeContext ctx,
                                              LinkedHashSet<Node> Z,
-                                             IndependenceTest test) {
+                                             MsepTest msep) {
         if (Z.isEmpty()) return Z;
 
         // Work on a copy to be explicit; we will shrink Z' in-place.
@@ -586,13 +562,9 @@ public final class RecursiveAdjustment {
                 if (!w.equals(z)) cond.add(w);
             }
 
-            try {
-                IndependenceResult result = test.checkIndependence(ctx.Y, z, new HashSet<>(cond));
-                if (result.isIndependent()) {
-                    Zprime.remove(z);
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+            IndependenceResult result = msep.checkIndependence(ctx.Y, z, new HashSet<>(cond));
+            if (result.isIndependent()) {
+                Zprime.remove(z);
             }
         }
 
@@ -634,24 +606,24 @@ public final class RecursiveAdjustment {
             Z.add(pick);
         }
 
-        boolean changed;
-        do {
-            changed = false;
-            for (Node v : new ArrayList<>(Z)) {
-                if (ctx.seedZ.contains(v)) continue;
-                Z.remove(v);
-                if (findBackdoorWitness(X, Y, Z, ctx.graphType,
-                        ctx.maxPathLength, ctx.notFollowed, rbMode).isPresent())
-                    Z.add(v);
-                else changed = true;
-            }
-        } while (changed);
+//        boolean changed;
+//        do {
+//            changed = false;
+//            for (Node v : new ArrayList<>(Z)) {
+//                if (ctx.seedZ.contains(v)) continue;
+//                Z.remove(v);
+//                if (findBackdoorWitness(X, Y, Z, ctx.graphType,
+//                        ctx.maxPathLength, ctx.notFollowed, rbMode).isPresent())
+//                    Z.add(v);
+//                else changed = true;
+//            }
+//        } while (changed);
 
         // Optional: HPM-style pruning (Algorithm 1 in Henckel et al. 2020)
         // Only in RA mode (rbMode == false), and only if explicitly enabled
         // and an independence test is provided.
-        if (!rbMode && useHenckelPruning && independenceTest != null) {
-            Z = henckelPrune(ctx, Z, independenceTest);
+        if (!rbMode && useHenckelPruning && msepTest != null) {
+            Z = henckelPrune(ctx, Z, msepTest);
         }
 
         return Z;
@@ -691,7 +663,7 @@ public final class RecursiveAdjustment {
 
     private boolean dfsWitness(LinkedList<Node> path, Set<Node> inPath, Node Y,
                                Set<Node> Z, String graphType, int edgeLimit,
-                               Set<Node> notFollowed, boolean rbMode){
+                               Set<Node> notFollowed, boolean rbMode) {
         if (path.size() - 1 > edgeLimit) return false;
         Node tail = path.getLast();
 
@@ -822,119 +794,129 @@ public final class RecursiveAdjustment {
         return base;
     }
 
-    private static String keyOf(Set<Node> Z) {
-        return Z.stream().map(Node::getName).sorted().reduce((a, b) -> a + "," + b).orElse("");
-    }
-
     private int endpointDistance(Node v, Shells s) {
         for (int r = 1; r < s.layers.length; r++)
             if (s.layers[r].contains(v)) return r;
         return Integer.MAX_VALUE / 2;
     }
 
-    private static Set<Node> amenableBackbone(Set<List<Node>> amenable, Node X, Node Y) {
-        LinkedHashSet<Node> s = new LinkedHashSet<>();
-        for (List<Node> p : amenable)
-            for (int i = 1; i < p.size() - 1; i++)
-                if (p.get(i) != X && p.get(i) != Y) s.add(p.get(i));
-        return s;
+    /**
+     * Represents the type of graph being analyzed for adjustment set definition.
+     */
+    public enum GraphType {
+
+        /**
+         * Represents a Partially Directed Acyclic Graph (PDAG) within the context of the graph analysis. A PDAG is a
+         * graph type used for describing the structure of causal relationships while allowing some edges to remain
+         * undirected.
+         */
+        PDAG,
+
+        /**
+         * Represents a Maximal Ancestral Graph (MAG) within the context of the graph analysis. A MAG is a graph type
+         * used to encode causal relationships, typically in the presence of latent variables and selection bias. It
+         * allows the representation of both directed and bidirectional edges while maintaining specific ancestral
+         * properties.
+         */
+        MAG,
+
+        /**
+         * Represents a Partial Ancestral Graph (PAG) within the context of the graph analysis. A PAG is used to depict
+         * possible causal structures, accounting for latent variables and selection bias. It is a graphical
+         * representation that includes directed, undirected, and bidirectional edges, encapsulating causal and
+         * non-causal relationships in a compact form.
+         */
+        PAG
     }
+
+    public enum RaMode {VALID, O_COMPATIBLE}
 
     // --- Enums & records ---------------------------------------------------------------------
 
     /**
-     * Represents the policy to be used for handling collisions in a specific context.
-     * This enumeration defines the various strategies that can be applied
-     * when determining how to prioritize or handle collision scenarios.
+     * Represents the policy to be used for handling collisions in a specific context. This enumeration defines the
+     * various strategies that can be applied when determining how to prioritize or handle collision scenarios.
      */
     public enum ColliderPolicy {
 
         /**
-         * Represents a configuration where collisions are ignored or not considered.
-         * Selecting this option implies that no specific action will be taken
-         * to handle collision scenarios.
+         * Represents a configuration where collisions are ignored or not considered. Selecting this option implies that
+         * no specific action will be taken to handle collision scenarios.
          */
         OFF,
 
         /**
-         * Denotes a policy where preference is given to non-colliding entities or scenarios
-         * in the context of collision handling. When this policy is selected, strategies
-         * prioritize non-colliding elements over others during decision-making processes.
+         * Denotes a policy where preference is given to non-colliding entities or scenarios in the context of collision
+         * handling. When this policy is selected, strategies prioritize non-colliding elements over others during
+         * decision-making processes.
          */
         PREFER_NONCOLLIDERS,
 
         /**
-         * Specifies a policy where non-colliding entities or scenarios are given strict
-         * priority in collision-handling decisions. Under this policy, non-colliding
-         * elements are always handled first before considering other entities in
-         * collision-related processes.
+         * Specifies a policy where non-colliding entities or scenarios are given strict priority in collision-handling
+         * decisions. Under this policy, non-colliding elements are always handled first before considering other
+         * entities in collision-related processes.
          */
         NONCOLLIDER_FIRST
     }
 
     /**
-     * NoAmenablePolicy is an enumeration that defines the possible policies
-     * to handle cases where a certain condition or requirement is not amenable.
+     * NoAmenablePolicy is an enumeration that defines the possible policies to handle cases where a certain condition
+     * or requirement is not amenable.
      */
     public enum NoAmenablePolicy {
 
         /**
-         * Represents a policy option within the NoAmenablePolicy enumeration
-         * that is used to actively search for alternative solutions or options
-         * when a certain condition or requirement is not amenable.
+         * Represents a policy option within the NoAmenablePolicy enumeration that is used to actively search for
+         * alternative solutions or options when a certain condition or requirement is not amenable.
          */
         SEARCH,
 
         /**
-         * Represents a policy option within the NoAmenablePolicy enumeration
-         * that signifies returning an empty set when a certain condition
-         * or requirement is not amenable instead of deriving alternative solutions.
+         * Represents a policy option within the NoAmenablePolicy enumeration that signifies returning an empty set when
+         * a certain condition or requirement is not amenable instead of deriving alternative solutions.
          */
         RETURN_EMPTY_SET,
 
         /**
-         * Represents a policy option within the NoAmenablePolicy enumeration
-         * that is used to suppress or ignore cases where a certain condition
-         * or requirement is not amenable, without attempting to resolve or return alternatives.
+         * Represents a policy option within the NoAmenablePolicy enumeration that is used to suppress or ignore cases
+         * where a certain condition or requirement is not amenable, without attempting to resolve or return
+         * alternatives.
          */
         SUPPRESS
     }
 
     /**
-     * Represents the role associated with a witness in a specific context.
-     * The roles define the nature or purpose of the witness involvement.
+     * Represents the role associated with a witness in a specific context. The roles define the nature or purpose of
+     * the witness involvement.
      */
     private enum RoleOnWitness {
 
         /**
-         * Represents the role of an endpoint in a specific context where it is used
-         * within a witness-related structure to denote a terminal point or boundary.
-         * Typically used to classify the involvement type or nature in a graph or
-         * relational framework.
+         * Represents the role of an endpoint in a specific context where it is used within a witness-related structure
+         * to denote a terminal point or boundary. Typically used to classify the involvement type or nature in a graph
+         * or relational framework.
          */
         ENDPOINT,
 
         /**
-         * Represents the role of a collider in a specific context, typically within a
-         * witness-related structure. A collider is used to denote a specific type of
-         * relationship or interaction point in a graph or relational framework,
-         * indicating where two or more connections converge.
+         * Represents the role of a collider in a specific context, typically within a witness-related structure. A
+         * collider is used to denote a specific type of relationship or interaction point in a graph or relational
+         * framework, indicating where two or more connections converge.
          */
         COLLIDER,
 
         /**
-         * Represents the role of a non-collider in a specific context, typically within a
-         * witness-related structure. A non-collider is used to denote a specific type of
-         * relationship or interaction point in a graph or relational framework,
-         * indicating where two or more connections diverge.
+         * Represents the role of a non-collider in a specific context, typically within a witness-related structure. A
+         * non-collider is used to denote a specific type of relationship or interaction point in a graph or relational
+         * framework, indicating where two or more connections diverge.
          */
         NONCOLLIDER,
 
         /**
-         * Represents the role of an ambiguous node in a specific context, typically within a
-         * witness-related structure. An ambiguous node is used to denote a specific type of
-         * relationship or interaction point in a graph or relational framework,
-         * indicating where two or more connections are uncertain or indeterminate.
+         * Represents the role of an ambiguous node in a specific context, typically within a witness-related structure.
+         * An ambiguous node is used to denote a specific type of relationship or interaction point in a graph or
+         * relational framework, indicating where two or more connections are uncertain or indeterminate.
          */
         AMBIGUOUS
     }
@@ -947,7 +929,7 @@ public final class RecursiveAdjustment {
         final Set<Node> amenableBackbone, forbidden;
         final Shells shellsFromX, shellsFromY;
         final List<Node> pool;
-        final Map<Node,Integer> idx, order;
+        final Map<Node, Integer> idx, order;
         final Set<Node> notFollowed;
         final Set<Node> oCandidates;
         final LinkedHashSet<Node> seedZ;
@@ -957,20 +939,32 @@ public final class RecursiveAdjustment {
         PrecomputeContext(Node X, Node Y, String graphType, int maxRadius, int nearWhichEndpoint,
                           int maxPathLength, Set<List<Node>> amenable, Set<Node> amenableBackbone,
                           Set<Node> forbidden, Shells sx, Shells sy, List<Node> pool,
-                          Map<Node,Integer> idx, Map<Node,Integer> order,
+                          Map<Node, Integer> idx, Map<Node, Integer> order,
                           Set<Node> notFollowed, Set<Node> oCandidates,
                           LinkedHashSet<Node> seedZ,
                           boolean rbMode, boolean graphAmenable) {
-            this.X = X; this.Y = Y; this.graphType = graphType;
-            this.maxRadius = maxRadius; this.nearWhichEndpoint = nearWhichEndpoint;
+            this.X = X;
+            this.Y = Y;
+            this.graphType = graphType;
+            this.maxRadius = maxRadius;
+            this.nearWhichEndpoint = nearWhichEndpoint;
             this.maxPathLength = maxPathLength;
-            this.amenable = amenable; this.amenableBackbone = amenableBackbone;
-            this.forbidden = forbidden; this.shellsFromX = sx; this.shellsFromY = sy;
-            this.pool = pool; this.idx = idx; this.order = order; this.oCandidates = oCandidates;
-            this.notFollowed = notFollowed; this.seedZ = seedZ;
-            this.rbMode = rbMode; this.graphAmenable = graphAmenable;
+            this.amenable = amenable;
+            this.amenableBackbone = amenableBackbone;
+            this.forbidden = forbidden;
+            this.shellsFromX = sx;
+            this.shellsFromY = sy;
+            this.pool = pool;
+            this.idx = idx;
+            this.order = order;
+            this.oCandidates = oCandidates;
+            this.notFollowed = notFollowed;
+            this.seedZ = seedZ;
+            this.rbMode = rbMode;
+            this.graphAmenable = graphAmenable;
         }
     }
 
-    private record Shells(List<Node>[] layers, Set<Node> reach) { }
+    private record Shells(List<Node>[] layers, Set<Node> reach) {
+    }
 }
