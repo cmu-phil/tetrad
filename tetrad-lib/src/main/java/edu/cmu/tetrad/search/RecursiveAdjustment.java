@@ -189,6 +189,12 @@ public final class RecursiveAdjustment {
 
     // --- Precompute context -----------------------------------------------------------------
 
+    /**
+     * Sets the Recursive Adjustment (RA) mode.
+     *
+     * @param mode the RA mode to be set; must not be null
+     * @return the current instance of RecursiveAdjustment
+     */
     public RecursiveAdjustment setRaMode(RaMode mode) {
 //        this.raMode = Objects.requireNonNull(mode);
         return this;
@@ -205,7 +211,7 @@ public final class RecursiveAdjustment {
      * @param Y               target node
      * @param graphType       graph type ("DAG", "PDAG", "MAG", "PAG", etc.)
      * @param maxPathLength   maximum path length for potentially directed paths; -1 means unlimited
-     * @param forceVisibility
+     * @param forceVisibility Whether to force visibility of certain nodes during adjustment set computation.
      * @return true if the graph is amenable w.r.t. (X, Y), false otherwise
      */
     public boolean isGraphAmenable(Node X, Node Y, String graphType, int maxPathLength, Set<Node> forceVisibility) {
@@ -261,7 +267,7 @@ public final class RecursiveAdjustment {
      * @param notFollowed       A set of nodes that should not be followed during path exploration in the graph.
      *                          Optional.
      * @param containing        A set of nodes that must be included in the adjustment sets. Optional.
-     * @param forceVisibility
+     * @param forceVisibility   Whether to force visibility of certain nodes during adjustment set computation.
      * @return A list of sets of nodes, where each set represents a possible valid adjustment set for the causal effect.
      */
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
@@ -829,7 +835,24 @@ public final class RecursiveAdjustment {
         PAG
     }
 
-    public enum RaMode {VALID, O_COMPATIBLE}
+    /**
+     * The RaMode enum represents the modes in which a specific operation or functionality can be executed.
+     * It defines two modes:
+     */
+    public enum RaMode {
+
+        /**
+         * Represents a valid mode in the RaMode enumeration.
+         * This mode signifies that the operation or functionality
+         * is executed under valid conditions.
+         */
+        VALID,
+
+        /**
+         * Represents a mode in the RaMode enumeration.
+         * This mode indicates compatibility with specific conditions or requirements.
+         */
+        O_COMPATIBLE}
 
     // --- Enums & records ---------------------------------------------------------------------
 

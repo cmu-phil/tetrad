@@ -55,26 +55,42 @@ import static org.apache.commons.math3.util.FastMath.min;
  */
 public class PdagPagIda {
 
-    /** The CPDAG/PAG under analysis. */
+    /**
+     * The CPDAG/PAG under analysis.
+     */
     private final Graph graph;
-    /** Map node name -> column index in covariance matrix. */
+    /**
+     * Map node name -> column index in covariance matrix.
+     */
     private final Map<String, Integer> nodeIndices;
-    /** Covariance matrix of the data. */
+    /**
+     * Covariance matrix of the data.
+     */
     private final ICovarianceMatrix allCovariances;
 
-    /** True if the input was a DAG. */
+    /**
+     * True if the input was a DAG.
+     */
     private final boolean dag;
-    /** True if the input was a PAG. */
+    /**
+     * True if the input was a PAG.
+     */
     private final boolean pag;
     private final List<Node> possibleCauses;
 
-    /** IDA mode. */
+    /**
+     * IDA mode.
+     */
     private IDA_TYPE idaType = IDA_TYPE.OPTIMAL;
 
-    /** Optional path-length bound for O-set and PD-path routines (-1 = no limit). */
+    /**
+     * Optional path-length bound for O-set and PD-path routines (-1 = no limit).
+     */
     private int maxLengthAdjustment = -1;
 
-    /** If true, when running RA on a refinement PAG we pass children(X) as force-visible (your prior behavior). */
+    /**
+     * If true, when running RA on a refinement PAG we pass children(X) as force-visible (your prior behavior).
+     */
     private boolean forceChildrenVisibleInRA = true;
 
     /**
@@ -84,9 +100,9 @@ public class PdagPagIda {
         if (dataSet == null) throw new NullPointerException("Data set must not be null.");
         if (graph == null) throw new NullPointerException("Graph must not be null.");
 
-        boolean isDag  = graph.paths().isLegalDag();
+        boolean isDag = graph.paths().isLegalDag();
         boolean isPdag = graph.paths().isLegalPdag();
-        boolean isPag  = graph.paths().isLegalPag();
+        boolean isPag = graph.paths().isLegalPag();
         if (!(isDag || isPdag || isPag)) {
             throw new IllegalArgumentException("Expecting a DAG/CPDAG/PDAG or PAG.");
         }
@@ -97,10 +113,6 @@ public class PdagPagIda {
         this.graph = graph;
         this.possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
         this.allCovariances = new CovarianceMatrix(dataSet);
-//        this.nodeIndices = new HashMap<>();
-//        for (int i = 0; i < graph.getNodes().size(); i++) {
-//            this.nodeIndices.put(graph.getNodes().get(i).getName(), i);
-//        }
 
         this.nodeIndices = new HashMap<>();
         List<Node> covVars = this.allCovariances.getVariables(); // dataset/covariance order
@@ -123,7 +135,16 @@ public class PdagPagIda {
         };
     }
 
-    /** fine must have same nodes/adjacencies as coarse and endpoints refine. */
+    /**
+     * Determines whether one graph is a refinement of another.
+     * A graph is considered a refinement of another if they share
+     * the same nodes and the endpoints of edges in the finer graph
+     * refine those in the coarser graph without alteration of the skeleton.
+     *
+     * @param coarse the coarse (less detailed) graph
+     * @param fine the fine (more detailed) graph
+     * @return true if the fine graph is a refinement of the coarse graph, false otherwise
+     */
     public static boolean isRefinementOf(Graph coarse, Graph fine) {
         Set<Node> A = new HashSet<>(coarse.getNodes());
         Set<Node> B = new HashSet<>(fine.getNodes());
@@ -152,11 +173,25 @@ public class PdagPagIda {
 
     // --------------------------- Public API ---------------------------
 
+    /**
+     * Calculates the total effects of one variable on another.
+     *
+     * @param x the source node for which total effects are to be computed
+     * @param y the target node influenced by the source node
+     * @return a LinkedList containing the total effects of x on y
+     */
     public LinkedList<Double> getTotalEffects(Node x, Node y) {
         if (pag) return getTotalEffectsPagInternal(x, y);
         return getTotalEffectsPdagInternal(x, y);
     }
 
+    /**
+     * Calculates the absolute total effects of one variable on another.
+     *
+     * @param x the source node for which total effects are to be computed
+     * @param y the target node influenced by the source node
+     * @return a LinkedList containing the absolute total effects of x on y
+     */
     public LinkedList<Double> getAbsTotalEffects(Node x, Node y) {
         LinkedList<Double> eff = getTotalEffects(x, y);
         LinkedList<Double> out = new LinkedList<>();
@@ -165,21 +200,46 @@ public class PdagPagIda {
         return out;
     }
 
+    /**
+     * Sets the IDA type for the instance.
+     *
+     * @param idaType the IDA type to be set. It must not be null.
+     *                Possible values are defined in the {@code IDA_TYPE} enum, which includes
+     *                options such as {@code REGULAR} and {@code OPTIMAL}.
+     * @throws NullPointerException if the provided idaType is null.
+     */
     public void setIdaType(IDA_TYPE idaType) {
         if (idaType == null) throw new NullPointerException("IDA type must not be null.");
         this.idaType = idaType;
     }
 
+    /**
+     * Sets the maximum length adjustment value for internal computations.
+     * This parameter is used to limit the search or computational adjustments
+     * within the defined maximum length.
+     *
+     * @param maxLengthAdjustment the maximum adjustment value to set
+     */
     public void setMaxLengthAdjustment(int maxLengthAdjustment) {
         this.maxLengthAdjustment = maxLengthAdjustment;
     }
 
-    public void setForceChildrenVisibleInRA(boolean b) { this.forceChildrenVisibleInRA = b; }
+    /**
+     * Sets whether the children nodes should be forcibly marked as visible
+     * during refinement adjustment (RA) processes.
+     *
+     * @param b a boolean value indicating whether to force the visibility
+     *          of children nodes in the refinement adjustment process.
+     *          If true, the visibility of children nodes is forced.
+     */
+    public void setForceChildrenVisibleInRA(boolean b) {
+        this.forceChildrenVisibleInRA = b;
+    }
 
     // --------------------------- PDAG / CPDAG branch ---------------------------
 
     private LinkedList<Double> getTotalEffectsPdagInternal(Node x, Node y) {
-        List<Node> parents  = this.graph.getParents(x);
+        List<Node> parents = this.graph.getParents(x);
         List<Node> children = this.graph.getChildren(x);
         List<Node> siblings = new ArrayList<>(this.graph.getAdjacentNodes(x));
         siblings.removeAll(parents);
@@ -233,7 +293,7 @@ public class PdagPagIda {
                     Set<Node> oSet;
                     try {
                         if (dag) oSet = OSet.oSetDag(gPrime, x, y);
-                        else     oSet = OSet.oSetCpdag(gPrime, x, y, maxLengthAdjustment);
+                        else oSet = OSet.oSetCpdag(gPrime, x, y, maxLengthAdjustment);
                     } catch (Exception e) {
                         totalEffects.add(0.0);
                         continue;
@@ -263,28 +323,15 @@ public class PdagPagIda {
 
     // --------------------------- PAG branch with incremental FCI per step ---------------------------
 
-//    private LinkedList<Double> getTotalEffectsPagInternal(Node x, Node y) {
-//        LinkedList<Double> totalEffects = new LinkedList<>();
-//        Graph base = this.graph; // original PAG
-//
-//        // Quick: if no possibly-directed path at all, effect is 0.
-//        Set<List<Node>> pdPaths = base.paths().potentiallyDirectedPaths(x, y, maxLengthAdjustment);
-//        if (pdPaths == null || pdPaths.isEmpty()) {
-//            totalEffects.add(0.0);
-//            return totalEffects;
-//        }
-//
-//        // Start DFS from the base, with its current circle-at-X edges.
-//        dfsPagAroundX(base, x, y, totalEffects);
-//        Collections.sort(totalEffects);
-//        return totalEffects;
-//    }
     private LinkedList<Double> getTotalEffectsPagInternal(Node x, Node y) {
         LinkedList<Double> totalEffects = new LinkedList<>();
         Graph base = this.graph;
 
         Set<List<Node>> pdPaths = base.paths().potentiallyDirectedPaths(x, y, maxLengthAdjustment);
-        if (pdPaths == null || pdPaths.isEmpty()) { totalEffects.add(0.0); return totalEffects; }
+        if (pdPaths == null || pdPaths.isEmpty()) {
+            totalEffects.add(0.0);
+            return totalEffects;
+        }
 
         dfsPagAroundX(base, x, y, totalEffects);
         if (totalEffects.isEmpty()) totalEffects.add(0.0); // optional
@@ -292,7 +339,9 @@ public class PdagPagIda {
         return totalEffects;
     }
 
-    /** Depth-first search over local orientations at X with FCI propagation after each edge orientation. */
+    /**
+     * Depth-first search over local orientations at X with FCI propagation after each edge orientation.
+     */
     private void dfsPagAroundX(Graph current, Node x, Node y, List<Double> out) {
         // Collect the edges incident to X whose endpoint at X is still a circle.
         List<Edge> orientable = new ArrayList<>();
@@ -319,13 +368,11 @@ public class PdagPagIda {
         tryPagStep(current, x, other, baseAtX, baseAtO, Endpoint.ARROW, Endpoint.TAIL, y, out);
         // Try X <-> other (ARROW at X, ARROW at other)
         tryPagStep(current, x, other, baseAtX, baseAtO, Endpoint.ARROW, Endpoint.ARROW, y, out);
-
-//        if ("X13".equals(x.getName()) && "X12".equals(other.getName())) {
-//            System.out.println(current.getEdge(x, other));
-//        }
     }
 
-    /** One branching move: refine a single X–other edge, run FCI, prune if needed, then recurse. */
+    /**
+     * One branching move: refine a single X–other edge, run FCI, prune if needed, then recurse.
+     */
     private void tryPagStep(Graph current,
                             Node x,
                             Node other,
@@ -372,24 +419,12 @@ public class PdagPagIda {
     /**
      * Leaf evaluation for a PAG refinement: check amenability, then run RA to get one adjustment set and a beta.
      */
-//    private void evaluatePagLeaf(Graph gPrime, Node x, Node y, List<Double> out) {
-//        // Sanity: still at least one PD path
-//        Set<List<Node>> pdPaths = gPrime.paths().potentiallyDirectedPaths(x, y, maxLengthAdjustment);
-//        if (pdPaths == null || pdPaths.isEmpty()) { out.add(0.0); return; }
-//
-//        // Must refine the original PAG.
-//        if (!isRefinementOf(this.graph, gPrime)) return;
-//
-//        // Amenability in the Perković sense (no forced-visibility here).
-//        if (!gPrime.paths().isGraphAmenable(x, y, "PAG", maxLengthAdjustment, Set.of())) return;
-//
-//        // Collect one RA set and regress.
-//        collectEffectsFromRefinementPag(gPrime, x, y, out,
-//                forceChildrenVisibleInRA ? new HashSet<>(gPrime.getChildren(x)) : Set.of());
-//    }
     private void evaluatePagLeaf(Graph gPrime, Node x, Node y, List<Double> out) {
         Set<List<Node>> pdPaths = gPrime.paths().potentiallyDirectedPaths(x, y, maxLengthAdjustment);
-        if (pdPaths == null || pdPaths.isEmpty()) { out.add(0.0); return; }
+        if (pdPaths == null || pdPaths.isEmpty()) {
+            out.add(0.0);
+            return;
+        }
 
         if (!isRefinementOf(this.graph, gPrime)) return;
 
@@ -402,7 +437,17 @@ public class PdagPagIda {
         );
     }
 
-    /** Runs RA on gPrime and adds one beta to out if successful. */
+    /**
+     * Collects effects from a refined PAG (Partial Ancestral Graph) based on the specified parameters.
+     * The method computes adjustment sets using Recursive Adjustment (RA) and calculates
+     * total effects, which are appended to the provided output list.
+     *
+     * @param gPrime           A refined PAG (Partial Ancestral Graph) used for effect calculations.
+     * @param x                The source variable node.
+     * @param y                The target variable node.
+     * @param out              A list to collect the computed effect values.
+     * @param forceVisibility  A set of nodes to be forcefully marked as visible during the refinement adjustment process.
+     */
     private void collectEffectsFromRefinementPag(Graph gPrime,
                                                  Node x,
                                                  Node y,
@@ -447,7 +492,15 @@ public class PdagPagIda {
 
     // --------------------------- Helpers ---------------------------
 
-    /** Distance from a set of effects to a true effect (used by callers that need it). */
+    /**
+     * Computes the minimum distance between a true causal effect and a set of estimated effects.
+     * If the true effect lies within the range of the estimated effects, the distance is returned as 0.
+     * Otherwise, the distance is the smallest absolute difference between the true effect and the closest extreme of the range of estimated effects.
+     *
+     * @param effects a LinkedList of estimated causal effects
+     * @param trueEffect the true causal effect to compute the distance to
+     * @return the minimum distance between the true causal effect and the set of estimated effects
+     */
     public double distance(LinkedList<Double> effects, double trueEffect) {
         effects = new LinkedList<>(effects);
         if (effects.isEmpty()) return trueEffect;
@@ -459,7 +512,19 @@ public class PdagPagIda {
         return min(abs(trueEffect - minv), abs(trueEffect - maxv));
     }
 
-    /** Linear regression coefficient for parent->child with given regressors (X must be included). */
+    /**
+     * Computes the regression coefficient (beta) that represents the strength
+     * of the relationship between the parent and the child node, given a set of regressors.
+     * The method ensures that the parent node is included in the regressors list
+     * and calculates the beta using covariance matrices.
+     *
+     * @param regressors the list of nodes used as regressors, which must include the parent node
+     * @param parent the parent node whose influence on the child node is being calculated
+     * @param child the child node influenced by the parent
+     * @return the regression coefficient (beta) for the parent node with respect to the child node
+     * @throws IllegalArgumentException if the regressors list does not contain the parent node
+     * @throws RuntimeException if a singularity occurs during matrix inversion
+     */
     private double getBeta(List<Node> regressors, Node parent, Node child) {
         if (!regressors.contains(parent))
             throw new IllegalArgumentException("Regressors must contain parent node.");
@@ -479,10 +544,13 @@ public class PdagPagIda {
 
 
     /**
-     * Returns a map from nodes in V \ {Y} to their minimum effects.
+     * Calculates the minimum total effects of all potential cause nodes on the specified target node y.
+     * For each possible cause node x, the total effect of x on y is computed and the minimum effect is recorded.
+     * Only nodes present in the graph are processed.
      *
-     * @param y The child variable
-     * @return Thia map.
+     * @param y the target node for which the minimum total effects from possible cause nodes are to be calculated
+     * @return a map where each key is a possible cause node and each value is the minimum total effect of that
+     *         node on y
      */
     public Map<Node, Double> calculateMinimumTotalEffectsOnY(Node y) {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
@@ -498,20 +566,104 @@ public class PdagPagIda {
 
     // --------------------------- Types ---------------------------
 
-    public enum IDA_TYPE { REGULAR, OPTIMAL }
+    /**
+     * The {@code IDA_TYPE} enum represents the different algorithmic approaches
+     * available in IDA (Intervention Distribution Adjustment) processes.
+     *
+     * It specifies the method to be used during computations, primarily affecting
+     * how causal effects and related measures are calculated. This enum is used
+     * to configure and define the operational strategy within the context of
+     * graph-based causal inference and adjustment.
+     */
+    public enum IDA_TYPE {
 
-    /** Convenience container used elsewhere in Tetrad. */
+        /**
+         * Represents the standard algorithmic approach in the IDA (Intervention Distribution
+         * Adjustment) process.
+         *
+         * The {@code REGULAR} value indicates the use of the default method for performing
+         * computations in graph-based causal inference and adjustment. It prescribes the
+         * baseline approach for determining causal effects and other related measures.
+         */
+        REGULAR,
+
+        /**
+         * Represents the optimal algorithmic approach in the IDA (Intervention Distribution
+         * Adjustment) process.
+         *
+         * The {@code OPTIMAL} value indicates a computational method designed to achieve
+         * the best possible outcome in terms of efficiency or accuracy during the calculation
+         * of causal effects and related measures within graph-based causal inference and
+         * adjustment.
+         */
+        OPTIMAL}
+
+    /**
+     * Convenience container used elsewhere in Tetrad.
+     */
     public static class NodeEffects {
         private List<Node> nodes;
         private LinkedList<Double> effects;
-        NodeEffects(List<Node> nodes, LinkedList<Double> effects) { this.nodes = nodes; this.effects = effects; }
-        public List<Node> getNodes() { return nodes; }
-        public void setNodes(List<Node> nodes) { this.nodes = nodes; }
-        public LinkedList<Double> getEffects() { return effects; }
-        public void setEffects(LinkedList<Double> effects) { this.effects = effects; }
+
+        /**
+         * Constructs a NodeEffects object with specified nodes and their corresponding effects.
+         *
+         * @param nodes   the list of nodes to be included in this container
+         * @param effects the list of effect values corresponding to the nodes
+         */
+        NodeEffects(List<Node> nodes, LinkedList<Double> effects) {
+            this.nodes = nodes;
+            this.effects = effects;
+        }
+
+        /**
+         * Retrieves the list of nodes contained in this object.
+         *
+         * @return the list of nodes
+         */
+        public List<Node> getNodes() {
+            return nodes;
+        }
+
+        /**
+         * Sets the list of nodes in this object.
+         *
+         * @param nodes the list of nodes to be set
+         */
+        public void setNodes(List<Node> nodes) {
+            this.nodes = nodes;
+        }
+
+        /**
+         * Retrieves the list of effect values associated with the nodes.
+         *
+         * @return a LinkedList of Double values representing the effects
+         */
+        public LinkedList<Double> getEffects() {
+            return effects;
+        }
+
+        /**
+         * Sets the list of effect values associated with the nodes.
+         *
+         * @param effects the LinkedList of Double values representing the effects to be set
+         */
+        public void setEffects(LinkedList<Double> effects) {
+            this.effects = effects;
+        }
+
+        /**
+         * Converts the object to a readable string representation by iterating through
+         * the nodes and their corresponding effects, appending them in the format
+         * "node=effect" with a space delimiter.
+         *
+         * @return a string representation where each node and its corresponding effect
+         *         are paired and separated by a space
+         */
         public String toString() {
             StringBuilder b = new StringBuilder();
-            for (int i = 0; i < nodes.size(); i++) b.append(nodes.get(i)).append("=").append(effects.get(i)).append(" ");
+            for (int i = 0; i < nodes.size(); i++)
+                b.append(nodes.get(i)).append("=").append(effects.get(i)).append(" ");
             return b.toString();
         }
     }
