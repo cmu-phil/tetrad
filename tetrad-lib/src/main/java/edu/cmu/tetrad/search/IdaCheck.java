@@ -76,7 +76,7 @@ public class IdaCheck {
     /**
      * The instance of IDA used in this class to calculate node effects and distances.
      */
-    private final PdagPagIda ida;
+    private final Ida ida;
 
     /**
      * The true SEM IM, if given.
@@ -139,7 +139,7 @@ public class IdaCheck {
         this.nodes = dataSet.getVariables();
         this.totalEffects = new HashMap<>();
         this.absTotalEffects = new HashMap<>();
-        this.ida = new PdagPagIda(dataSet, graph, List.of());
+        this.ida = new Ida(dataSet, graph, List.of());
         this.pairs = calcOrderedPairs();
 
         // Fill totalEffects / absTotalEffects respecting current idaType
@@ -166,7 +166,7 @@ public class IdaCheck {
      */
     private void computeIdaResults() {
         // Make sure Ida is in sync with the flag
-        ida.setIdaType(showOptimalIda ? PdagPagIda.IDA_TYPE.OPTIMAL : PdagPagIda.IDA_TYPE.REGULAR);
+        ida.setIdaType(showOptimalIda ? Ida.IDA_TYPE.OPTIMAL : Ida.IDA_TYPE.REGULAR);
 
         // Clear old results
         this.totalEffects.clear();
