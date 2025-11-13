@@ -69,7 +69,7 @@ public final class PagCache {
         return local;
     }
 
-    private static Graph computePag(Graph graph) {
+    private static Graph computePag(Graph graph, Knowledge knowledge) {
 //        if (graph.paths().isLegalDag()) {
 //            Graph mag = GraphTransforms.dagToMag(graph);
 //            return new MagToPag(mag).convert(false);
@@ -87,9 +87,9 @@ public final class PagCache {
 
         if (graph.paths().isLegalDag()) {
             Graph mag = GraphTransforms.dagToMag(graph);
-            return computePagFromMag(mag);   // no getPag() here, avoiding infinite recursion.
+            return computePagFromMag(mag, knowledge);   // no getPag() here, avoiding infinite recursion.
         } else if (graph.paths().isLegalMag()) {
-            return computePagFromMag(graph);
+            return computePagFromMag(graph, knowledge);
         } else {
             Graph mag = GraphTransforms.zhangMagFromPag(graph);
             return new MagToPag(mag).convert(true);
@@ -211,6 +211,10 @@ public final class PagCache {
         cache.clear();
     }
 
+    public @NotNull Graph getPag(Graph g) {
+        return getPag(g, new Knowledge());
+    }
+
     /**
      * Retrieves or computes a PAG (Partial Ancestral Graph) from the given input graph. If the graph is already in the
      * cache and hasn't been externally modified, the cached version is returned. Otherwise, a new PAG is computed,
@@ -221,7 +225,7 @@ public final class PagCache {
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
      */
-    public @NotNull Graph getPag(Graph g) {
+    public @NotNull Graph getPag(Graph g,  Knowledge knowledge) {
         if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
             throw new IllegalArgumentException("Graph must be a DAG or a MAG.");
         }
@@ -233,7 +237,7 @@ public final class PagCache {
                 // Guard against external mutation of the cached PAG
                 long currentPagSig = signatureOfPag(e.pag);
                 if (currentPagSig != e.pagSig) {
-                    Graph rebuilt = computePag(g);
+                    Graph rebuilt = computePag(g, knowledge);
                     syncInPlace(e.pag, rebuilt);               // preserve identity
                     e.pagSig = signatureOfPag(e.pag);          // update sig after sync
                 }
@@ -242,32 +246,33 @@ public final class PagCache {
         }
 
         // Miss or source changed: build fresh
-        final Graph pag = computePag(g);
+        final Graph pag = computePag(g, knowledge);
         synchronized (cache) {
             cache.put(g, new Entry(pag, srcSig, signatureOfPag(pag)));
             return pag;
         }
     }
 
-    private static Graph computePagFromMag(Graph mag) {
-        return new MagToPag(mag).convert(false);
+    private static Graph computePagFromMag(Graph mag, Knowledge knowledge) {
+        MagToPag magToPag = new MagToPag(mag);
+        magToPag.setKnowledge(knowledge);
+        return magToPag.convert(false);
     }
 
-    /**
-     * Retrieves or computes a PAG (Partial Ancestral Graph) from the given input graph. This method operates based on
-     * the input graph, knowledge, and verbosity setting. If the graph is already in the cache and hasn't been
-     * externally modified, the cached version is returned. Otherwise, a new PAG is computed and returned.
-     *
-     * @param g         the input graph, which must be either a DAG (Directed Acyclic Graph) or a MAG (Maximal Ancestral
-     *                  Graph)
-     * @param knowledge additional knowledge, which may influence the computation of the PAG
-     * @param verbose   a boolean flag indicating whether verbose output should be enabled during the process
-     * @return the corresponding PAG for the provided graph and knowledge
-     * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
-     */
-    public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean verbose) {
-        return getPag(g);
-    }
+//    /**
+//     * Retrieves or computes a PAG (Partial Ancestral Graph) from the given input graph. This method operates based on
+//     * the input graph, knowledge, and verbosity setting. If the graph is already in the cache and hasn't been
+//     * externally modified, the cached version is returned. Otherwise, a new PAG is computed and returned.
+//     *
+//     * @param g         the input graph, which must be either a DAG (Directed Acyclic Graph) or a MAG (Maximal Ancestral
+//     *                  Graph)
+//     * @param knowledge additional knowledge, which may influence the computation of the PAG
+//     * @return the corresponding PAG for the provided graph and knowledge
+//     * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
+//     */
+//    public @NotNull Graph getPag(Graph g, Knowledge knowledge) {
+//        return getPag(g, knowledge);
+//    }
 
     private static final class Entry {
         final Graph pag;      // the object we always return (identity preserved)

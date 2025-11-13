@@ -342,7 +342,11 @@ public class GraphTransforms {
      */
     @NotNull
     public static Graph dagToPag(Graph graph) {
-        return PagCache.getInstance().getPag(graph);
+        return dagToPag(graph, new Knowledge());
+    }
+
+    public static Graph dagToPag(Graph graph, Knowledge knowledge) {
+        return PagCache.getInstance().getPag(graph, knowledge);
     }
 
     /**

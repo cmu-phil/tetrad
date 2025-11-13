@@ -183,6 +183,7 @@ public final class MagToPag {
         fciOrient.setMaxDiscriminatingPathLength(-1);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
 
         for (Node y : pag.getNodes()) {
             List<Node> adjy = pag.getAdjacentNodes(y);

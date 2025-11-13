@@ -360,7 +360,6 @@ public final class Fci implements IGraphSearch {
 
         // R0 with selected collider rule (replaces vanilla ruleR0 here)
         if (verbose) TetradLogger.getInstance().log("Applying R0 (" + r0ColliderRule + ").");
-        orientR0(pag, this.sepsets);
 
         // Optional possible-dsep step (unchanged)
         R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(test, knowledge, verbose);
@@ -371,7 +370,10 @@ public final class Fci implements IGraphSearch {
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
+        fciOrient.fciOrientbk(this.knowledge, pag, pag.getNodes());
+        orientR0(pag, this.sepsets);
 
         if (this.doPossibleDsep) {
             TetradLogger.getInstance().log("Doing possible dsep search.");
@@ -402,7 +404,9 @@ public final class Fci implements IGraphSearch {
             // Reset marks and re-apply R0 with the chosen rule.
             pag.reorientAllWith(Endpoint.CIRCLE);
             if (verbose) TetradLogger.getInstance().log("Re-applying R0 after possible-dsep (" + r0ColliderRule + ").");
+            fciOrient.fciOrientbk(this.knowledge, pag, pag.getNodes());
             orientR0(pag, this.sepsets);
+            fciOrient.finalOrientation(pag);
 
             // Refresh unshielded triples after structural changes
             unshieldedTriples = collectUnshieldedTriplesAsGraphTriples(pag);
@@ -410,7 +414,7 @@ public final class Fci implements IGraphSearch {
 
         // Proceed with the remaining FCI orientation rules as usual
         if (verbose) TetradLogger.getInstance().log("Starting final FCI orientation.");
-        fciOrient.finalOrientation(pag);
+
         if (verbose) TetradLogger.getInstance().log("Finished final FCI orientation.");
 
         if (guaranteePag) {
