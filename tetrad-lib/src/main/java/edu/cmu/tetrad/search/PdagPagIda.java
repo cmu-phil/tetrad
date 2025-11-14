@@ -94,7 +94,18 @@ public class PdagPagIda {
     private boolean forceChildrenVisibleInRA = true;
 
     /**
-     * Constructor: accepts DAG/CPDAG/PDAG or PAG and a continuous dataset.
+     * Constructs a new instance of the PdagPagIda class which is used for
+     * processing a dataset and graph combination while ensuring the provided
+     * graph is a valid DAG, CPDAG/PDAG, or PAG, and the dataset is continuous.
+     *
+     * @param dataSet the continuous dataset to be processed; must not be null
+     * @param graph the graph associated with the dataset; must be a valid DAG,
+     *        CPDAG/PDAG, or PAG, and must not be null
+     * @param possibleCauses a list of nodes representing potential causes; this
+     *        list will be substituted with the variables present in the dataset
+     * @throws NullPointerException if the dataSet or graph is null
+     * @throws IllegalArgumentException if the graph is not a legal DAG, CPDAG/PDAG,
+     *         or PAG, or if the dataset is not continuous
      */
     public PdagPagIda(DataSet dataSet, Graph graph, List<Node> possibleCauses) {
         if (dataSet == null) throw new NullPointerException("Data set must not be null.");

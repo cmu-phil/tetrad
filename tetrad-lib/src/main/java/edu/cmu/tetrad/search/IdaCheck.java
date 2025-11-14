@@ -489,12 +489,22 @@ public class IdaCheck {
         return this.showOptimalIda;
     }
 
+    /**
+     * Recomputes the total effects and absolute total effects for all ordered pairs
+     * of nodes in the graph. The method utilizes the current IDA type, which can
+     * be either regular or optimal depending on the "show optimal IDA" flag.
+     *
+     * This method clears any previously computed effects and recalculates them
+     * using the current state of the graph and IDA configuration.
+     */
     public void recompute() {
         computeIdaResults();
     }
 
     /**
-     * The graph being used to estimate IDA.
+     * Returns a copy of the graph associated with this instance.
+     *
+     * @return a copy of the graph.
      */
     public Graph getGraph() {
         return graph.copy();

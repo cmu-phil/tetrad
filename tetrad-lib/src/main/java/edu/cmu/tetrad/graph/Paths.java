@@ -3077,6 +3077,7 @@ public class Paths implements TetradSerializable {
      * @param nearWhichEndpoint The which endpoint to find adjustment sets near, 1 = source, 2 = target, 3 = both.
      * @param maxPathLength     the maximum length of paths to consider in the graph
      * @param henckelPruning    whether to use Henckel pruning during adjustment set computation
+     * @param oSetCompatible    whether to use O-set compatibility during adjustment set computation
      * @return a list of sets of nodes, where each set represents an adjustment set that can be used to block backdoor
      * paths between X and Y
      */
@@ -3268,7 +3269,7 @@ public class Paths implements TetradSerializable {
      * @param node2               the second node to be evaluated within the graph
      * @param graphType           the type of graph to be considered for the operation
      * @param maxLengthAdjustment the maximum allowed adjustment to the length in the graph evaluation
-     * @param forceVisibility
+     * @param forceVisibility     whether to force visibility during the graph evaluation
      * @return true if the graph meets the amenability criteria based on the nodes, graph type, and length adjustment;
      * false otherwise
      */

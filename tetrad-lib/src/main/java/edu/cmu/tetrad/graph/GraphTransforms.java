@@ -345,6 +345,13 @@ public class GraphTransforms {
         return dagToPag(graph, new Knowledge());
     }
 
+    /**
+     * Converts a Directed Acyclic Graph (DAG) to a Partial Ancestral Graph (PAG) using the provided DAG and knowledge.
+     *
+     * @param graph     The input Directed Acyclic Graph (DAG) to be converted.
+     * @param knowledge Background knowledge used to guide the conversion process.
+     * @return The resulting Partial Ancestral Graph (PAG) obtained from the input DAG and knowledge.
+     */
     public static Graph dagToPag(Graph graph, Knowledge knowledge) {
         return PagCache.getInstance().getPag(graph, knowledge);
     }

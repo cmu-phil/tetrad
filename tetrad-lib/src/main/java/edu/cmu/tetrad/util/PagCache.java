@@ -211,6 +211,17 @@ public final class PagCache {
         cache.clear();
     }
 
+    /**
+     * Retrieves or computes a Partial Ancestral Graph (PAG) from the given input graph.
+     * If the input graph is already cached and has not been externally modified, the
+     * cached version is returned. Otherwise, a new PAG is computed with default knowledge.
+     * The input graph must be either a Directed Acyclic Graph (DAG) or a Maximal Ancestral
+     * Graph (MAG).
+     *
+     * @param g the input graph, which must be either a DAG or a MAG
+     * @return the corresponding PAG for the provided graph
+     * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
+     */
     public @NotNull Graph getPag(Graph g) {
         return getPag(g, new Knowledge());
     }
@@ -222,6 +233,7 @@ public final class PagCache {
      * (Maximal Ancestral Graph).
      *
      * @param g the input graph, which must be either a DAG or a MAG
+     * @param knowledge the knowledge object containing additional information for PAG computation
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
      */

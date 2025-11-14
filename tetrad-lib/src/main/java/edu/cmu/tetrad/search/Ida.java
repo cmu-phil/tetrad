@@ -392,10 +392,22 @@ public class Ida {
         }
     }
 
+    /**
+     * Retrieves the IDA_TYPE associated with this instance.
+     *
+     * @return The IDA_TYPE value, which can be REGULAR or OPTIMAL, representing the type of Intervention-based Directed Acyclic analysis.
+     */
     public IDA_TYPE getIdaType() {
         return idaType;
     }
 
+    /**
+     * Sets the IDA type for this instance. The IDA type determines the classification of
+     * Intervention-based Directed Acyclic analysis (e.g., REGULAR or OPTIMAL).
+     *
+     * @param idaType The IDA_TYPE value to be set. Must not be null.
+     * @throws NullPointerException If the idaType is null.
+     */
     public void setIdaType(IDA_TYPE idaType) {
         if (idaType == null) {
             throw new NullPointerException("IDA type must not be null.");
@@ -403,10 +415,21 @@ public class Ida {
         this.idaType = idaType;
     }
 
+    /**
+     * Returns the maximum length adjustment value.
+     *
+     * @return the maximum length adjustment as an integer
+     */
     public int getMaxLengthAdjustment() {
         return maxLengthAdjustment;
     }
 
+    /**
+     * Sets the maximum length adjustment value.
+     * This value determines the adjustment that can be applied to the maximum length property of the object.
+     *
+     * @param maxLengthAdjustment the integer value to set as the maximum length adjustment
+     */
     public void setMaxLengthAdjustment(int maxLengthAdjustment) {
         this.maxLengthAdjustment = maxLengthAdjustment;
     }
