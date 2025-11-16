@@ -1,22 +1,20 @@
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.graph.*;
-import org.junit.Test;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
- * Utility class containing test helper methods for graph comparison,
- * temporary file writing, and adjacency matrix parsing.
- * These methods are primarily intended for use in unit tests
- * involving graph serialization, deserialization, and format-specific operations.
+ * Utility class containing test helper methods for graph comparison, temporary file writing, and adjacency matrix
+ * parsing. These methods are primarily intended for use in unit tests involving graph serialization, deserialization,
+ * and format-specific operations.
  */
 public class GraphFormatTestUtils {
 
@@ -40,12 +38,11 @@ public class GraphFormatTestUtils {
     }
 
     /**
-     * Writes the given contents to a temporary file with the specified suffix.
-     * The file is created with a default prefix and is automatically set to be
-     * deleted on JVM termination.
+     * Writes the given contents to a temporary file with the specified suffix. The file is created with a default
+     * prefix and is automatically set to be deleted on JVM termination.
      *
      * @param contents the string content to be written to the temporary file
-     * @param suffix the suffix to append to the temporary file name (e.g., ".txt")
+     * @param suffix   the suffix to append to the temporary file name (e.g., ".txt")
      * @return the temporary file to which the contents were written
      * @throws Exception if an error occurs during file creation or writing
      */
@@ -57,12 +54,11 @@ public class GraphFormatTestUtils {
     }
 
     /**
-     * Parses an adjacency matrix represented as a string into a 2D integer array.
-     * The input string is expected to include a header row and quoted row names
-     * followed by the matrix entries. The size of the matrix is determined by
+     * Parses an adjacency matrix represented as a string into a 2D integer array. The input string is expected to
+     * include a header row and quoted row names followed by the matrix entries. The size of the matrix is determined by
      * the number of variables in the provided list.
      *
-     * @param s the string representation of the adjacency matrix
+     * @param s    the string representation of the adjacency matrix
      * @param vars the list of nodes corresponding to the matrix rows and columns
      * @return a 2D integer array representing the adjacency matrix
      */
