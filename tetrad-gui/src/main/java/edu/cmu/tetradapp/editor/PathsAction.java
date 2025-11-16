@@ -718,9 +718,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Cycles",
                 "All Paths",
                 "Adjacents",
-                "Adjustment",
-                "O-set Adjustment",
-//                "Adjustment Set (Recursive)",
+                "Recursive Adjustment",
+                "O-sets",
                 "Edge-specific Adjustment",
                 "Amenable paths",
                 "Backdoor paths"
@@ -892,17 +891,13 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                     latentConfounderPaths(graph, textArea, nodes1, nodes2);
                 } else if ("Adjacents".equals(method)) {
                     adjacentNodes(graph, textArea, nodes1, nodes2);
-                } else if ("Adjustment".equals(method)) {
+                } else if ("Recursive Adjustment".equals(method)) {
                     adjustmentSets(graph, textArea, nodes1, nodes2);
-                } else if ("O-set Adjustment".equals(method)) {
+                } else if ("O-sets".equals(method)) {
                     oSetAdjustmentSets(graph, textArea, nodes1, nodes2);
                 } else if ("Edge-specific Adjustment".equals(method)) {
                     edgeSpecificAdjustment(graph, textArea, nodes1, nodes2);
-                }
-//                else if ("Adjustment Set (Recursive)".equals(method)) {
-//                    recursiveAdjustmentSets(graph, textArea, nodes1, nodes2);
-//                }
-                else if ("Cycles".equals(method)) {
+                } else if ("Cycles".equals(method)) {
                     allCyclicPaths(graph, textArea, nodes1, nodes2);
                 } else {
                     throw new IllegalArgumentException("Unknown method: " + method);
