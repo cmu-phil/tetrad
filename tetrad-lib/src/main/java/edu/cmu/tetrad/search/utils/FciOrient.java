@@ -373,7 +373,7 @@ public class FciOrient {
      *
      * @param graph                The graph to orient.
      * @param unshieldedTriples    The set of unshielded triples oriented by R0. This set is updated with new triples.
-     * @param excludeSelectionBias
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      */
     public void ruleR0(Graph graph, Set<Triple> unshieldedTriples, boolean excludeSelectionBias) {
         graph.reorientAllWith(Endpoint.CIRCLE);

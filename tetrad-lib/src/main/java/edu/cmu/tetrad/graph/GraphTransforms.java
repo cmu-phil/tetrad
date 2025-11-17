@@ -338,7 +338,7 @@ public class GraphTransforms {
      * Converts a Directed Acyclic Graph (DAG) to a Partial Ancestral Graph (PAG) using the DagToPag algorithm.
      *
      * @param graph                The input DAG to be converted.
-     * @param excludeSelectionBias
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      * @return The resulting PAG obtained from the input DAG.
      */
     @NotNull
@@ -351,7 +351,7 @@ public class GraphTransforms {
      *
      * @param graph                The input Directed Acyclic Graph (DAG) to be converted.
      * @param knowledge            Background knowledge used to guide the conversion process.
-     * @param excludeSelectionBias
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      * @return The resulting Partial Ancestral Graph (PAG) obtained from the input DAG and knowledge.
      */
     public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias) {

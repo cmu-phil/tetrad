@@ -416,6 +416,7 @@ public class Paths implements TetradSerializable {
      * <p>
      * The user may choose to use the rules from Zhang (2008) or the rules from Spirtes et al. (2000).
      *
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      * @return true if the PDAG is legal, false otherwise.
      */
     public boolean isLegalMpag(boolean excludeSelectionBias) {

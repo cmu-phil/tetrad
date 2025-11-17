@@ -145,7 +145,7 @@ public final class LvDumb implements IGraphSearch {
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
         dagToPag.setKnowledge(knowledge);
         dagToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        Graph pag = dagToPag.convert(true, isExcludeSelectionBias());
+        Graph pag = dagToPag.convert(true, excludeSelectionBias);
 
 
 //        Graph pag = new MagToPag(mag).convert(false);
@@ -227,10 +227,11 @@ public final class LvDumb implements IGraphSearch {
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
-    public boolean isExcludeSelectionBias() {
-        return excludeSelectionBias;
-    }
-
+    /**
+     * Sets whether to exclude selection bias during the search process.
+     *
+     * @param excludeSelectionBias true to exclude selection bias, false otherwise
+     */
     public void setExcludeSelectionBias(boolean excludeSelectionBias) {
         this.excludeSelectionBias = excludeSelectionBias;
     }

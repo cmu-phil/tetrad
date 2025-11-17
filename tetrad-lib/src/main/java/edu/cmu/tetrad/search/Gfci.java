@@ -745,6 +745,11 @@ public class Gfci implements IGraphSearch {
         this.useMaxP = useMaxP;
     }
 
+    /**
+     * Sets whether selection bias should be excluded during the search process.
+     *
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
+     */
     public void setExcludeSelectionBias(boolean excludeSelectionBias) {
         this.excludeSelectionBias = excludeSelectionBias;
     }

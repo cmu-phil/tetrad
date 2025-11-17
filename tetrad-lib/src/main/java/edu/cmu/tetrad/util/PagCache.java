@@ -224,7 +224,7 @@ public final class PagCache {
      * Graph (MAG).
      *
      * @param g                    the input graph, which must be either a DAG or a MAG
-     * @param excludeSelectionBias
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
      */

@@ -82,6 +82,13 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * A boolean variable that determines whether to exclude selection bias in the BOSS-FCI algorithm.
+     * When set to true, the algorithm applies adjustments to handle or mitigate selection bias in the data,
+     * potentially improving causal inference in scenarios impacted by such biases.
+     * The default value is false, meaning selection bias is not excluded.
+     */
     private boolean excludeSelectionBias = false;
 
     /**
@@ -265,6 +272,11 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         this.score = score;
     }
 
+    /**
+     * Sets whether selection bias should be excluded during the search process.
+     *
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
+     */
     public void setExcludeSelectionBias(boolean excludeSelectionBias) {
         this.excludeSelectionBias = excludeSelectionBias;
     }

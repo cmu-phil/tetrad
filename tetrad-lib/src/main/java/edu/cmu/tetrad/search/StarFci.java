@@ -519,6 +519,11 @@ public abstract class StarFci implements IGraphSearch {
         this.replicatingGraph = replicatingGraph;
     }
 
+    /**
+     * Sets whether selection bias should be excluded during the search process.
+     *
+     * @param excludeSelectionBias A boolean indicating whether to exclude selection bias (true) or not (false).
+     */
     public void setExcludeSelectionBias(boolean excludeSelectionBias) {
         this.excludeSelectionBias = excludeSelectionBias;
     }
