@@ -169,14 +169,13 @@ public class FciOrient {
     }
 
     /**
-     * Finds and returns a set of discriminating paths in the given graph.
-     * A discriminating path is determined based on the criteria provided
-     * such as maximum path length and whether to check XY non-adjacency.
+     * Finds and returns a set of discriminating paths in the given graph. A discriminating path is determined based on
+     * the criteria provided such as maximum path length and whether to check XY non-adjacency.
      *
-     * @param graph the input graph in which to search for discriminating paths
-     * @param maxLen the maximum allowable length of the paths
-     * @param checkXyNonadjacency a boolean indicating whether to verify non-adjacency
-     *                            between certain nodes (X and Y) in the graph
+     * @param graph               the input graph in which to search for discriminating paths
+     * @param maxLen              the maximum allowable length of the paths
+     * @param checkXyNonadjacency a boolean indicating whether to verify non-adjacency between certain nodes (X and Y)
+     *                            in the graph
      * @return a set containing discriminating paths found in the graph
      */
     public static Set<DiscriminatingPath> listDiscriminatingPaths(
@@ -192,17 +191,16 @@ public class FciOrient {
     }
 
     /**
-     * Identifies and returns a set of discriminating paths in a given graph that satisfy
-     * specified criteria based on relationships and adjacency between nodes.
+     * Identifies and returns a set of discriminating paths in a given graph that satisfy specified criteria based on
+     * relationships and adjacency between nodes.
      *
-     * @param graph the graph to be analyzed
-     * @param w the starting node for path evaluation
-     * @param y the target node for path evaluation
-     * @param maxLen the maximum length of the discriminating paths
-     * @param checkEcNonadjacency a flag indicating whether strict edge constraints are applied
-     *        between nodes w and y (true for strict, false for relaxed constraints)
-     * @return a set of discriminating paths that meet the criteria; returns an empty set
-     *         if no such paths exist
+     * @param graph               the graph to be analyzed
+     * @param w                   the starting node for path evaluation
+     * @param y                   the target node for path evaluation
+     * @param maxLen              the maximum length of the discriminating paths
+     * @param checkEcNonadjacency a flag indicating whether strict edge constraints are applied between nodes w and y
+     *                            (true for strict, false for relaxed constraints)
+     * @return a set of discriminating paths that meet the criteria; returns an empty set if no such paths exist
      */
     public static Set<DiscriminatingPath> listDiscriminatingPaths(
             Graph graph, Node w, Node y, int maxLen, boolean checkEcNonadjacency) {
@@ -230,7 +228,7 @@ public class FciOrient {
             Endpoint e_yv = graph.getEndpoint(y, v); // endpoint at v on edge y—v
             Endpoint e_vy = graph.getEndpoint(v, y); // endpoint at y on edge v—y
             if (e_yv != Endpoint.CIRCLE) continue;   // circle at v
-            if (e_vy != Endpoint.ARROW)  continue;   // arrowhead into y
+            if (e_vy != Endpoint.ARROW) continue;   // arrowhead into y
 
             discriminatingPathBfs(w, v, y, graph, out, maxLen, checkEcNonadjacency);
         }
@@ -318,23 +316,24 @@ public class FciOrient {
      * Performs FCI orientation on the given graph, including R0 and either the Spirtes or Zhang final orientation
      * rules.
      *
-     * @param graph             The graph to orient.
-     * @param unshieldedTriples The set of unshielded triples oriented by R0. This set is updated with new triples.
+     * @param graph                The graph to orient.
+     * @param unshieldedTriples    The set of unshielded triples oriented by R0. This set is updated with new triples.
+     * @param excludeSelectionBias whether to exclude selection bias
      */
-    public void orient(Graph graph, Set<Triple> unshieldedTriples) {
+    public void orient(Graph graph, Set<Triple> unshieldedTriples, boolean excludeSelectionBias) {
 
         if (verbose) {
             this.logger.log("Starting FCI orientation.");
         }
 
-        ruleR0(graph, unshieldedTriples);
+        ruleR0(graph, unshieldedTriples, excludeSelectionBias);
 
         if (this.verbose) {
             logger.log("R0");
         }
 
         // Step CI D. (Zhang's step R4.)
-        finalOrientation(graph);
+        finalOrientation(graph, excludeSelectionBias);
     }
 
     /**
@@ -372,12 +371,13 @@ public class FciOrient {
     /**
      * Orients unshielded colliders in the graph. (FCI Step C, Zhang's step F3, rule R0.)
      *
-     * @param graph             The graph to orient.
-     * @param unshieldedTriples The set of unshielded triples oriented by R0. This set is updated with new triples.
+     * @param graph                The graph to orient.
+     * @param unshieldedTriples    The set of unshielded triples oriented by R0. This set is updated with new triples.
+     * @param excludeSelectionBias
      */
-    public void ruleR0(Graph graph, Set<Triple> unshieldedTriples) {
+    public void ruleR0(Graph graph, Set<Triple> unshieldedTriples, boolean excludeSelectionBias) {
         graph.reorientAllWith(Endpoint.CIRCLE);
-        fciOrientbk(this.knowledge, graph, graph.getNodes());
+        fciOrientbk(this.knowledge, graph, graph.getNodes(), excludeSelectionBias);
 
         List<Node> nodes = graph.getNodes();
 
@@ -437,15 +437,32 @@ public class FciOrient {
     }
 
     /**
-     * Orients the graph (in place) according to rules in the graph (FCI step D).
-     * <p>
-     * Zhang's rules R1-R10.
+     * Determines the final orientation of the given graph based on the rule set being used. Selection bias is not
+     * excluded.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph the graph object whose edges are to be oriented
      */
     public void finalOrientation(Graph graph) {
         if (this.completeRuleSetUsed) {
-            zhangFinalOrientation(graph);
+            zhangFinalOrientation(graph, false);
+        } else {
+            spirtesFinalOrientation(graph);
+        }
+    }
+
+    /**
+     * Orients the graph (in place) according to rules in the graph (FCI step D).
+     * <p>
+     * Zhang's rules R1-R10.
+     * <p>
+     * If selection bias is excluded, rules R5-R7 are not applied; applies only to Zhang final orientation.
+     *
+     * @param graph                a {@link Graph} object
+     * @param excludeSelectionBias whether to exclude selection bias
+     */
+    public void finalOrientation(Graph graph, boolean excludeSelectionBias) {
+        if (this.completeRuleSetUsed) {
+            zhangFinalOrientation(graph, excludeSelectionBias);
         } else {
             spirtesFinalOrientation(graph);
         }
@@ -484,11 +501,12 @@ public class FciOrient {
 
     /**
      * Applies Zhang's final orientation algorithm (in place) to the given graph using the rules R1-R10. These are arrow
-     * and tail complete.
+     * and tail complete. If selection bias is excluded, rules R5-R7 are not applied.
      *
-     * @param graph the graph to apply the final orientation algorithm to
+     * @param graph                the graph to apply the final orientation algorithm to
+     * @param excludeSelectionBias whether to exclude selection bias
      */
-    private void zhangFinalOrientation(Graph graph) {
+    private void zhangFinalOrientation(Graph graph, boolean excludeSelectionBias) {
         this.changeFlag = true;
         boolean firstTime = true;
 
@@ -509,18 +527,21 @@ public class FciOrient {
         }
 
         if (isCompleteRuleSetUsed()) {
-            // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
-            // R5 once.
-            ruleR5(graph);
 
-            // Now, by a further remark on page 102, we apply R6,R7 as many times
-            // as possible.
-            this.changeFlag = true;
+            if (!excludeSelectionBias) {
+                // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
+                // R5 once.
+                ruleR5(graph);
 
-            while (this.changeFlag && !Thread.currentThread().isInterrupted()) {
-                this.changeFlag = false;
-                ruleR6(graph);
-                ruleR7(graph);
+                // Now, by a further remark on page 102, we apply R6,R7 as many times
+                // as possible.
+                this.changeFlag = true;
+
+                while (this.changeFlag && !Thread.currentThread().isInterrupted()) {
+                    this.changeFlag = false;
+                    ruleR6(graph);
+                    ruleR7(graph);
+                }
             }
 
             // Finally, we apply R8-R10 as many times as possible.
@@ -693,8 +714,7 @@ public class FciOrient {
     }
 
     /**
-     * R4: If u = ⟨θ, …, α, β, γ⟩ is a discriminating path between θ and γ for β,
-     * and β o−∗ γ, then:
+     * R4: If u = ⟨θ, …, α, β, γ⟩ is a discriminating path between θ and γ for β, and β o−∗ γ, then:
      * <ul>
      *   <li>If β ∈ Sepset(θ, γ), orient β o−∗ γ as β → γ;</li>
      *   <li>Otherwise, orient the triple ⟨α, β, γ⟩ as α ↔ β ↔ γ.</li>
@@ -823,14 +843,13 @@ public class FciOrient {
     }
 
     /**
-     * R5: For every remaining α o−o β, if there exists an uncovered circle path
-     * p = ⟨α, γ, …, θ, β⟩ between α and β such that α and θ are not adjacent
-     * and β and γ are not adjacent, then orient α o−o β and every edge on p
-     * as undirected (−−).
+     * R5: For every remaining α o−o β, if there exists an uncovered circle path p = ⟨α, γ, …, θ, β⟩ between α and β
+     * such that α and θ are not adjacent and β and γ are not adjacent, then orient α o−o β and every edge on p as
+     * undirected (−−).
      *
      * <p>This rule converts circle paths into undirected chains when they form
-     * an uncovered circle path between α and β, thereby ensuring that the
-     * resulting PAG correctly represents selection bias relationships.</p>
+     * an uncovered circle path between α and β, thereby ensuring that the resulting PAG correctly represents selection
+     * bias relationships.</p>
      *
      * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
      */
@@ -885,12 +904,11 @@ public class FciOrient {
     }
 
     /**
-     * R6: If α — β o−∗ γ (where α and γ may or may not be adjacent),
-     * then orient β o−∗ γ as β −∗ γ.
+     * R6: If α — β o−∗ γ (where α and γ may or may not be adjacent), then orient β o−∗ γ as β −∗ γ.
      *
      * <p>This rule orients the circle endpoint on β o−∗ γ as a tail when β
-     * is connected to α by an undirected edge, ensuring propagation of
-     * definite non-collider structure along the chain.</p>
+     * is connected to α by an undirected edge, ensuring propagation of definite non-collider structure along the
+     * chain.</p>
      *
      * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
      */
@@ -939,12 +957,10 @@ public class FciOrient {
     }
 
     /**
-     * R7: If α −∘ β o−∗ γ, and α and γ are not adjacent, then orient
-     * β o−∗ γ as β −∗ γ.
+     * R7: If α −∘ β o−∗ γ, and α and γ are not adjacent, then orient β o−∗ γ as β −∗ γ.
      *
      * <p>This rule resolves the circle at β by extending the orientation
-     * consistently along the partially directed chain from α to γ, provided
-     * that α and γ are nonadjacent.</p>
+     * consistently along the partially directed chain from α to γ, provided that α and γ are nonadjacent.</p>
      *
      * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
      */
@@ -1033,8 +1049,8 @@ public class FciOrient {
      * R8: If α → β → γ or α −∘ β → γ, and α ∘→ γ, then orient α ∘→ γ as α → γ.
      *
      * <p>This rule orients the circle endpoint on α ∘→ γ when α already reaches γ
-     * through an intermediate directed or partially directed chain, ensuring
-     * transitive consistency of arrow directions.</p>
+     * through an intermediate directed or partially directed chain, ensuring transitive consistency of arrow
+     * directions.</p>
      *
      * @param a     The node α.
      * @param c     The node γ.
@@ -1084,15 +1100,12 @@ public class FciOrient {
     }
 
     /**
-     * R9: Suppose α ∘→ γ, and let
-     * p = ⟨α, β, θ, …, γ⟩ be an uncovered, potentially-directed path from α to γ
-     * such that γ and β are not adjacent.
-     * Then orient α ∘→ γ as α → γ.
+     * R9: Suppose α ∘→ γ, and let p = ⟨α, β, θ, …, γ⟩ be an uncovered, potentially-directed path from α to γ such that
+     * γ and β are not adjacent. Then orient α ∘→ γ as α → γ.
      *
      * <p>This rule finalizes the circle endpoint on α ∘→ γ when α can reach γ
-     * through an uncovered potentially-directed path that begins with a
-     * non-adjacent β, ensuring consistency with the causal flow implied by the
-     * rest of the graph.</p>
+     * through an uncovered potentially-directed path that begins with a non-adjacent β, ensuring consistency with the
+     * causal flow implied by the rest of the graph.</p>
      *
      * @param a     The node α.
      * @param c     The node γ.
@@ -1161,16 +1174,16 @@ public class FciOrient {
     /**
      * R10 (Zhang 2008 FCI orientation rule).
      * <p>
-     * ASCII version: Suppose alpha o-&gt; gamma, beta -&gt; gamma &lt;- theta. Let p1 be an uncovered potentially directed
-     * (potentially directed) path from alpha to beta, and p2 be an uncovered potentially directed path from alpha to theta.
-     * Let mu be the vertex adjacent to alpha on p1 (mu could be beta), and omega be the vertex adjacent to alpha on p2
-     * (omega could be theta). If mu and omega are distinct and nonadjacent, then orient alpha o-&gt; gamma as alpha -&gt;
-     * gamma.
+     * ASCII version: Suppose alpha o-&gt; gamma, beta -&gt; gamma &lt;- theta. Let p1 be an uncovered potentially
+     * directed (potentially directed) path from alpha to beta, and p2 be an uncovered potentially directed path from
+     * alpha to theta. Let mu be the vertex adjacent to alpha on p1 (mu could be beta), and omega be the vertex adjacent
+     * to alpha on p2 (omega could be theta). If mu and omega are distinct and nonadjacent, then orient alpha o-&gt;
+     * gamma as alpha -&gt; gamma.
      * <p>
      * Unicode version (same content): Suppose α o→ γ, β → γ ← θ. Let p1 be an uncovered potentially directed
-     * (potentially directed) path from α to β, and p2 be an uncovered potentially directed path from α to θ. Let μ be the
-     * vertex adjacent to α on p1 (μ could be β), and ω be the vertex adjacent to α on p2 (ω could be θ). If μ and ω are
-     * distinct and nonadjacent, then orient α o→ γ as α → γ.
+     * (potentially directed) path from α to β, and p2 be an uncovered potentially directed path from α to θ. Let μ be
+     * the vertex adjacent to α on p1 (μ could be β), and ω be the vertex adjacent to α on p2 (ω could be θ). If μ and ω
+     * are distinct and nonadjacent, then orient α o→ γ as α → γ.
      * <p>
      * Notes: - "Uncovered" means every consecutive triple on the path is unshielded. - "Potentially directed /
      * potentially directed" means no arrowhead points toward alpha along the path.
@@ -1440,15 +1453,27 @@ public class FciOrient {
     /**
      * Orient the edges of a graph based on the given knowledge.
      *
-     * @param bk        The knowledge containing forbidden and required edges.
-     * @param graph     The graph to be oriented.
-     * @param variables The list of nodes in the graph.
+     * @param bk                   The knowledge containing forbidden and required edges.
+     * @param graph                The graph to be oriented.
+     * @param variables            The list of nodes in the graph.
+     * @param excludeSelectionBias If true, selection bias is excluded and forbidden edges are enforced in the standard
+     *                             way. If false (default), selection bias is allowed and we do NOT enforce forbidden
+     *                             edges by forcing an arrowhead.
      */
-    public void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
+    public void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables, boolean excludeSelectionBias) {
         if (verbose) {
             this.logger.log("Starting BK Orientation.");
         }
 
+        // -------------------------------------------------------------------------
+        // Forbidden edges: "from -> to" is forbidden.
+        //
+        // If selection bias is EXCLUDED (excludeSelectionBias == true):
+        //     enforce by orienting  to  *-> from  (standard FCI behavior)
+        //
+        // If selection bias is ALLOWED (excludeSelectionBias == false):
+        //     do NOT enforce via orientation; leave endpoints unchanged.
+        // -------------------------------------------------------------------------
         for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -1456,23 +1481,27 @@ public class FciOrient {
 
             KnowledgeEdge edge = it.next();
 
-            //match strings to variables in the graph.
             Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
             Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
             }
-
             if (graph.getEdge(from, to) == null) {
                 continue;
             }
 
+            // If we ALLOW selection bias, we skip enforcement entirely.
+            if (!excludeSelectionBias) {
+                continue;
+            }
+
+            // Enforce forbidden edge when selection bias is excluded.
             if (!FciOrient.isArrowheadAllowed(to, from, graph, knowledge)) {
                 return;
             }
 
-            // Orient to*->from
+            // Orient: to *-> from   (arrowhead at 'from')
             setEndpoint(graph, to, from, Endpoint.ARROW);
 
             if (verbose) {
@@ -1482,6 +1511,10 @@ public class FciOrient {
             this.changeFlag = true;
         }
 
+        // -------------------------------------------------------------------------
+        // Required edges: "from -> to" must hold.
+        // Unaffected by selection bias policy.
+        // -------------------------------------------------------------------------
         for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -1489,14 +1522,12 @@ public class FciOrient {
 
             KnowledgeEdge edge = it.next();
 
-            //match strings to variables in this graph
             Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
             Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
             }
-
             if (graph.getEdge(from, to) == null) {
                 continue;
             }
@@ -1505,6 +1536,7 @@ public class FciOrient {
                 return;
             }
 
+            // Orient: from ---*> to  (tail at from, arrow at to)
             setEndpoint(graph, to, from, Endpoint.TAIL);
             setEndpoint(graph, from, to, Endpoint.ARROW);
 

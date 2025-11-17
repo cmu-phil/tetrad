@@ -69,7 +69,7 @@ public class PagCacheTest {
     /** Reference PAG for a DAG, computed without the cache (mirrors PagCache.computePag(DAG)). */
     private static Graph referencePagFromDag(Graph dag) {
         Graph mag = GraphTransforms.dagToMag(dag);
-        return new MagToPag(mag).convert(false);
+        return new MagToPag(mag).convert(false, false);
     }
 
     // ----------------------- tests -----------------------
@@ -97,8 +97,8 @@ public class PagCacheTest {
         PagCache cache = PagCache.getInstance();
         cache.clear();
 
-        Graph pag1 = cache.getPag(dag);
-        Graph pag2 = cache.getPag(dag);
+        Graph pag1 = cache.getPag(dag, false);
+        Graph pag2 = cache.getPag(dag, false);
 
         assertTrue(pag1 == pag2, "PagCache should return the SAME PAG object across calls for the same source graph");
         assertEquals("PAG structure should match reference conversion", canon(referencePagFromDag(dag)), canon(pag1));
@@ -127,7 +127,7 @@ public class PagCacheTest {
         PagCache cache = PagCache.getInstance();
         cache.clear();
 
-        Graph pag1 = cache.getPag(dag);
+        Graph pag1 = cache.getPag(dag, false);
         String expected = canon(referencePagFromDag(dag));
 
         // Mutate the returned PAG (simulate a naughty caller changing endpoints)
@@ -144,7 +144,7 @@ public class PagCacheTest {
         pag1.setEndpoint(v, u, vuNew);
 
         // Ask again: cache should detect mutation and repair the same object in place
-        Graph pag2 = cache.getPag(dag);
+        Graph pag2 = cache.getPag(dag, false);
 
         assertTrue(pag1 == pag2, "After external mutation, cache must repair IN PLACE (identity preserved)");
         assertEquals("Repaired PAG should match the reference structure", expected, canon(pag2));
@@ -179,7 +179,7 @@ public class PagCacheTest {
         PagCache cache = PagCache.getInstance();
         cache.clear();
 
-        Graph pag1 = cache.getPag(dag);
+        Graph pag1 = cache.getPag(dag, false);
         String canon1 = canon(pag1);
 
         // Mutate the SOURCE graph structurally: add edge A->C
@@ -188,11 +188,11 @@ public class PagCacheTest {
         dag.addEdge(Edges.directedEdge(A, C));
 
         // Now getPag should recompute and return a DIFFERENT object (entry replaced)
-        Graph pag2 = cache.getPag(dag);
+        Graph pag2 = cache.getPag(dag, false);
         assertTrue(pag1 != pag2, "Changing the SOURCE graph should replace the cached PAG instance");
 
         // Repeated calls after rebuild should preserve the new identity
-        Graph pag3 = cache.getPag(dag);
+        Graph pag3 = cache.getPag(dag, false);
         assertTrue(pag2 == pag3, "After rebuild, identity should be stable across calls");
 
         // And the new contents should differ from the old canonical structure

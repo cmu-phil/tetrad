@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.graph;
 
@@ -337,23 +337,25 @@ public class GraphTransforms {
     /**
      * Converts a Directed Acyclic Graph (DAG) to a Partial Ancestral Graph (PAG) using the DagToPag algorithm.
      *
-     * @param graph The input DAG to be converted.
+     * @param graph                The input DAG to be converted.
+     * @param excludeSelectionBias
      * @return The resulting PAG obtained from the input DAG.
      */
     @NotNull
-    public static Graph dagToPag(Graph graph) {
-        return dagToPag(graph, new Knowledge());
+    public static Graph dagToPag(Graph graph, boolean excludeSelectionBias) {
+        return dagToPag(graph, new Knowledge(), excludeSelectionBias);
     }
 
     /**
      * Converts a Directed Acyclic Graph (DAG) to a Partial Ancestral Graph (PAG) using the provided DAG and knowledge.
      *
-     * @param graph     The input Directed Acyclic Graph (DAG) to be converted.
-     * @param knowledge Background knowledge used to guide the conversion process.
+     * @param graph                The input Directed Acyclic Graph (DAG) to be converted.
+     * @param knowledge            Background knowledge used to guide the conversion process.
+     * @param excludeSelectionBias
      * @return The resulting Partial Ancestral Graph (PAG) obtained from the input DAG and knowledge.
      */
-    public static Graph dagToPag(Graph graph, Knowledge knowledge) {
-        return PagCache.getInstance().getPag(graph, knowledge);
+    public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias) {
+        return PagCache.getInstance().getPag(graph, knowledge, excludeSelectionBias);
     }
 
     /**
@@ -382,8 +384,7 @@ public class GraphTransforms {
 
         List<Node> allNodes = dag.getNodes();
 
-        Set<Node> selection = new HashSet<>(allNodes.stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList());
+        Set<Node> selection = new HashSet<>(allNodes.stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList());
 
         graph.reorientAllWith(Endpoint.TAIL);
 
@@ -417,11 +418,9 @@ public class GraphTransforms {
     public static Graph calcAdjacencyGraph(Graph dag) {
         List<Node> allNodes = dag.getNodes();
 
-        List<Node> selection = allNodes.stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+        List<Node> selection = allNodes.stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        List<Node> measured = allNodes.stream()
-                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
+        List<Node> measured = allNodes.stream().filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
 
         Graph graph = new EdgeListGraph(measured);
 
@@ -493,11 +492,12 @@ public class GraphTransforms {
     /**
      * Converts a maximal ancestral graph (MAG) into a partial ancestral graph (PAG).
      *
-     * @param mag the maximal ancestral graph (MAG) to be converted
+     * @param mag                  the maximal ancestral graph (MAG) to be converted
+     * @param excludeSelectionBias whether to exclude selection bias
      * @return the resulting partial ancestral graph (PAG)
      */
-    public static Graph magToPag(Graph mag) {
-        return new MagToPag(mag).convert(true);
+    public static Graph magToPag(Graph mag, boolean excludeSelectionBias) {
+        return new MagToPag(mag).convert(true, excludeSelectionBias);
     }
 }
 

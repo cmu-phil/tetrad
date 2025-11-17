@@ -115,6 +115,7 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         Graph graph;
@@ -141,7 +142,7 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph trueGraph = new EdgeListGraph(graph);
-        return GraphTransforms.dagToPag(trueGraph);
+        return GraphTransforms.dagToPag(trueGraph, false);
     }
 
     /**
@@ -173,6 +174,7 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
+        parameters.add(Params.EXCLUDE_SELECTION_BIAS);
 
         parameters.add(Params.VERBOSE);
 

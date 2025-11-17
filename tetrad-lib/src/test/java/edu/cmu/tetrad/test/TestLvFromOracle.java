@@ -74,7 +74,7 @@ public class TestLvFromOracle {
     private void testAlgorithms(Graph dag, int rep, File dir, File dir2) {
         MsepTest msepTest = new MsepTest(dag);
         GraphScore score = new GraphScore(dag);
-        Graph truePag = GraphTransforms.dagToPag(dag);
+        Graph truePag = GraphTransforms.dagToPag(dag, false);
 
         LV_ALGORITHMS algorithm = LV_ALGORITHMS.LV_LITE;
 

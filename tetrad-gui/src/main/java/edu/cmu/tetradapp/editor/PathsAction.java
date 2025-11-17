@@ -1286,40 +1286,44 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
-    private void listPaths(Graph graph, JTextArea textArea, Set<List<Node>> paths) {
+    private void listPaths(Graph graph,
+                           JTextArea textArea,
+                           Set<List<Node>> paths) {
+        listPaths(graph, textArea, paths, Collections.emptySet(), false);
+    }
+
+    /**
+     * Lists paths, separating them into m-connecting (Not Blocked) and blocked,
+     * given a conditioning set and a selection-bias policy.
+     *
+     * @param graph               the graph
+     * @param textArea            the text area to print into
+     * @param paths               the set of candidate paths
+     * @param conditioningSet     the conditioning set
+     * @param excludeSelectionBias if true, selection bias is excluded in the
+     *                             m-connection procedure; if false, selection bias
+     *                             is allowed (PAG-style semantics).
+     */
+    private void listPaths(Graph graph,
+                           JTextArea textArea,
+                           Set<List<Node>> paths,
+                           Set<Node> conditioningSet,
+                           boolean excludeSelectionBias) {
+
         textArea.append("\n\n    Not Blocked:\n");
 
-        boolean allowSelectionBias = graph.paths().isLegalPag();
-
-        for (Edge edge : graph.getEdges()) {
-            if (edge.getEndpoint1() == Endpoint.CIRCLE || edge.getEndpoint2() == Endpoint.CIRCLE) {
-                allowSelectionBias = true;
-                break;
-            }
-        }
-
         boolean found1 = false;
-
-        boolean mpdag = false;
-        boolean mag = false;
-        boolean pag = false;
-
-        if (graph.paths().isLegalPdag()) {
-            mpdag = true;
-        } else if (graph.paths().isLegalMag()) {
-            mag = true;
-        } else if (!graph.paths().isLegalPag()) {
-            pag = true;
-        }
+        boolean selectionBiasAllowed = !excludeSelectionBias;
 
         for (List<Node> path : paths) {
             if (path.size() < 2) {
                 continue;
             }
 
-            if (graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
-                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet,
-                        !mpdag, allowSelectionBias));
+            // m-connecting given the current selection-bias policy
+            if (graph.paths().isMConnectingPath(path, conditioningSet, excludeSelectionBias)) {
+                textArea.append("\n    " +
+                                GraphUtils.pathString(graph, path, conditioningSet, selectionBiasAllowed, false));
                 found1 = true;
             }
         }
@@ -1337,9 +1341,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 continue;
             }
 
-            if (!graph.paths().isMConnectingPath(path, conditioningSet, !mpdag)) {
-                textArea.append("\n    " + GraphUtils.pathString(graph, path, conditioningSet, true,
-                        allowSelectionBias));
+            if (!graph.paths().isMConnectingPath(path, conditioningSet, excludeSelectionBias)) {
+                textArea.append("\n    " +
+                                GraphUtils.pathString(graph, path, conditioningSet, selectionBiasAllowed, false));
                 found2 = true;
             }
         }

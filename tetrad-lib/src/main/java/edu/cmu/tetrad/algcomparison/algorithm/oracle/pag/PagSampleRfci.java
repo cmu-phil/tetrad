@@ -44,7 +44,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "PAG-Sampling-RFCI",
+        name = "dPAG-Sampling-RFCI",
         command = "pag-sampling-rfci",
         algoType = AlgType.allow_latent_common_causes
 )
@@ -137,7 +137,7 @@ public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorit
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph trueGraph = new EdgeListGraph(graph);
-        return GraphTransforms.dagToPag(trueGraph);
+        return GraphTransforms.dagToPag(trueGraph, false);
     }
 
     /**

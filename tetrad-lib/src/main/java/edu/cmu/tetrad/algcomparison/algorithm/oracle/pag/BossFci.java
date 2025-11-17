@@ -82,6 +82,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+    private boolean excludeSelectionBias = false;
 
     /**
      * No-arg constructor. Used for reflection; do not delete.
@@ -133,6 +134,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         search.setKnowledge(knowledge);
@@ -151,7 +153,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.dagToPag(graph);
+        return GraphTransforms.dagToPag(graph, excludeSelectionBias);
     }
 
     /**
@@ -193,6 +195,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         params.add(Params.NUM_THREADS);
         params.add(Params.GUARANTEE_PAG);
         params.add(Params.USE_MAX_P_HEURISTIC);
+        params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.VERBOSE);
 
         // Parameters
@@ -260,6 +263,10 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
+    }
+
+    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
+        this.excludeSelectionBias = excludeSelectionBias;
     }
 }
 

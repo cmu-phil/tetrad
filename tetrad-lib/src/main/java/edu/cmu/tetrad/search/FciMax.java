@@ -64,7 +64,7 @@ import java.util.concurrent.RecursiveTask;
  * @see FciOrient
  * @see Knowledge
  */
-@Deprecated(since = "7.9", forRemoval = false)
+@Deprecated(since = "7.9", forRemoval = true)
 public final class FciMax implements IGraphSearch {
     /**
      * The independence test.
@@ -114,6 +114,10 @@ public final class FciMax implements IGraphSearch {
      * Sets whether to guarantee a partially directed acyclic graph (PAG).
      */
     private boolean guaranteePag;
+    /**
+     * Whether to exclude selection bias in search.
+     */
+    private boolean excludeSelectionBias = false;
 
     /**
      * Constructor.
@@ -176,7 +180,7 @@ public final class FciMax implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
-        fciOrient.fciOrientbk(this.knowledge, pag, pag.getNodes());
+        fciOrient.fciOrientbk(this.knowledge, pag, pag.getNodes(), excludeSelectionBias);
 
         Set<Triple> unshieldedColldiders = new HashSet<>();
 
@@ -190,7 +194,7 @@ public final class FciMax implements IGraphSearch {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        fciOrient.finalOrientation(pag);
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished final FCI orientation.");
@@ -198,7 +202,7 @@ public final class FciMax implements IGraphSearch {
 
         if (guaranteePag) {
             pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColldiders, verbose,
-                    new HashSet<>());
+                    new HashSet<>(), excludeSelectionBias);
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -475,6 +479,10 @@ public final class FciMax implements IGraphSearch {
      */
     public void setGuaranteePag(boolean guaranteePag) {
         this.guaranteePag = guaranteePag;
+    }
+
+    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
+        this.excludeSelectionBias = excludeSelectionBias;
     }
 }
 

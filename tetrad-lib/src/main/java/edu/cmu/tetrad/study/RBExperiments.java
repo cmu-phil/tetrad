@@ -239,7 +239,7 @@ public class RBExperiments {
 
         // get the true underlying PAG
 
-        Graph PAG_True = GraphTransforms.dagToPag(dag);
+        Graph PAG_True = GraphTransforms.dagToPag(dag, false);
 
         PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());
 

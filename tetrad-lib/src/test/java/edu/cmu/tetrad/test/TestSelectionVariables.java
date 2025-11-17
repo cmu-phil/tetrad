@@ -65,7 +65,7 @@ public final class TestSelectionVariables {
 //        DagToPag dagToPag = new DagToPag(dag);
 //        Graph pag = dagToPag.convert();
 
-        Graph pag = PagCache.getInstance().getPag(GraphTransforms.dagToMag(dag));
+        Graph pag = PagCache.getInstance().getPag(GraphTransforms.dagToMag(dag), false);
 
         nodes.remove(s);
 

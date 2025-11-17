@@ -1174,6 +1174,10 @@ public final class Params {
      * Constant <code>IS_ALPHA="isAlpha"</code>
      */
     public static final String INSTANCE_SPECIFIC_ALPHA = "instanceSpecificAlpha";
+    /**
+     * Constant <code>EXCLUDE_SELECTION_BIAS="excludeSelectionBias"</code>
+     */
+    public static final String EXCLUDE_SELECTION_BIAS = "excludeSelectionBias";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

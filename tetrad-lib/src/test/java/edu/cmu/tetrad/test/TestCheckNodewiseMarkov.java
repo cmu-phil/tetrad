@@ -259,7 +259,7 @@ public class TestCheckNodewiseMarkov {
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
-        Graph truePAG = GraphTransforms.dagToPag(trueGraph);
+        Graph truePAG = GraphTransforms.dagToPag(trueGraph, false);
         // record truePAG
         File truePAGFile = new File(simulationDir, "truePAG.txt");
         try (Writer out = new FileWriter(truePAGFile)) {

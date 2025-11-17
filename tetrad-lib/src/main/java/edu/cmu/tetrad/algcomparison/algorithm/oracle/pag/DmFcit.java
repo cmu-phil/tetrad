@@ -389,7 +389,7 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.dagToPag(graph);
+        return GraphTransforms.dagToPag(graph, false);
     }
 
     /**

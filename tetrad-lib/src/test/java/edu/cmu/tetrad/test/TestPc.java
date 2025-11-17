@@ -648,7 +648,7 @@ public class TestPc {
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(10000, false);
-            Graph comparison = GraphTransforms.dagToPag(dag);
+            Graph comparison = GraphTransforms.dagToPag(dag, false);
             IndTestFisherZ test = new IndTestFisherZ(data, 0.1);
 
 

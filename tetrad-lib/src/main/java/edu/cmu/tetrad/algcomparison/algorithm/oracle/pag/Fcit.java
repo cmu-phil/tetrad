@@ -160,8 +160,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // FCIT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDepth(parameters.getInt(Params.DEPTH));
-//        search.setCheckAdjacencySepsets(parameters.getBoolean(Params.CHECK_ADJACENCY_SEPSETS));
-//        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.BOSS);
@@ -188,7 +187,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.dagToPag(graph);
+        return GraphTransforms.dagToPag(graph, false);
     }
 
     /**
@@ -230,6 +229,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.FCIT_STARTS_WITH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
+        params.add(Params.EXCLUDE_SELECTION_BIAS);
 
         // General
         params.add(Params.TIME_LAG);

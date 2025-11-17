@@ -68,6 +68,7 @@ public final class Fci implements IGraphSearch {
     private boolean logMaxPTies = false;
     private java.io.PrintStream logStream = System.out;
     private boolean replicatingGraph = false;
+    private boolean excludeSelectionBias = false;
 
     /**
      * Constructs an instance of the Fci algorithm using the specified independence test.
@@ -372,7 +373,7 @@ public final class Fci implements IGraphSearch {
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
-        fciOrient.fciOrientbk(this.knowledge, pag, pag.getNodes());
+        fciOrient.fciOrientbk(this.knowledge, pag, pag.getNodes(), excludeSelectionBias);
         orientR0(pag, this.sepsets);
 
         if (this.doPossibleDsep) {
@@ -404,9 +405,9 @@ public final class Fci implements IGraphSearch {
             // Reset marks and re-apply R0 with the chosen rule.
             pag.reorientAllWith(Endpoint.CIRCLE);
             if (verbose) TetradLogger.getInstance().log("Re-applying R0 after possible-dsep (" + r0ColliderRule + ").");
-            fciOrient.fciOrientbk(this.knowledge, pag, pag.getNodes());
+            fciOrient.fciOrientbk(this.knowledge, pag, pag.getNodes(), excludeSelectionBias);
             orientR0(pag, this.sepsets);
-            fciOrient.finalOrientation(pag);
+            fciOrient.finalOrientation(pag, excludeSelectionBias);
 
             // Refresh unshielded triples after structural changes
             unshieldedTriples = collectUnshieldedTriplesAsGraphTriples(pag);
@@ -418,7 +419,7 @@ public final class Fci implements IGraphSearch {
         if (verbose) TetradLogger.getInstance().log("Finished final FCI orientation.");
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedTriples, verbose, new HashSet<>());
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedTriples, verbose, new HashSet<>(), excludeSelectionBias);
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -753,6 +754,15 @@ public final class Fci implements IGraphSearch {
      */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
+    }
+
+    /**
+     * Sets whether selection bias is allowed.
+     *
+     * @param excludeSelectionBias a boolean value indicating if selection bias should be excluded.
+     */
+    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
+        this.excludeSelectionBias = excludeSelectionBias;
     }
 
     /**

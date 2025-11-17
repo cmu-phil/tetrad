@@ -116,7 +116,7 @@ public class TestRfciBsc {
 //        dagToPag.setCompleteRuleSetUsed(false);
 //        Graph PAG_True = dagToPag.convert();
 
-        Graph PAG_True = GraphTransforms.dagToPag(dag);
+        Graph PAG_True = GraphTransforms.dagToPag(dag, false);
 
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
@@ -193,7 +193,7 @@ public class TestRfciBsc {
 //        dagToPag.setCompleteRuleSetUsed(false);
 //        Graph PAG_True = dagToPag.convert();
 
-        Graph PAG_True = GraphTransforms.dagToPag(dag);
+        Graph PAG_True = GraphTransforms.dagToPag(dag, false);
 
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 

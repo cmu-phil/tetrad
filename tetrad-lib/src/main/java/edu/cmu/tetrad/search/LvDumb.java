@@ -81,6 +81,7 @@ public final class LvDumb implements IGraphSearch {
      * of any length. Setting this value to a positive integer constrains the maximum length of such paths.
      */
     private int maxDiscriminatingPathLength = -1;
+    private boolean excludeSelectionBias = false;
 
     /**
      * LV-Dumb constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
@@ -144,7 +145,7 @@ public final class LvDumb implements IGraphSearch {
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
         dagToPag.setKnowledge(knowledge);
         dagToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        Graph pag = dagToPag.convert(true);
+        Graph pag = dagToPag.convert(true, isExcludeSelectionBias());
 
 
 //        Graph pag = new MagToPag(mag).convert(false);
@@ -224,6 +225,14 @@ public final class LvDumb implements IGraphSearch {
      */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
+    }
+
+    public boolean isExcludeSelectionBias() {
+        return excludeSelectionBias;
+    }
+
+    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
+        this.excludeSelectionBias = excludeSelectionBias;
     }
 }
 

@@ -242,12 +242,12 @@ public class Comparison {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
+            result.setCorrectResult(GraphTransforms.dagToPag(trueDag, false));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES_FCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             FgesFci search = new FgesFci(test, score);
             result.setResultGraph(search.search());
-            result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
+            result.setCorrectResult(GraphTransforms.dagToPag(trueDag, false));
         } else {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }

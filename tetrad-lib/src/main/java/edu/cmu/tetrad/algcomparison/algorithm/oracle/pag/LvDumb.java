@@ -144,9 +144,11 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         // DAG to PAG
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setKnowledge(this.knowledge);
 
         try {
@@ -164,7 +166,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.dagToPag(graph);
+        return GraphTransforms.dagToPag(graph, false);
     }
 
     /**
@@ -207,6 +209,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
 
         // General
+        params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 

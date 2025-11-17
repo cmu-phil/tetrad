@@ -2667,7 +2667,7 @@ public final class TestGrasp {
             Graph trueGraph = RandomGraph.randomGraph(20, 8, 40,
                     100, 100, 100, false);
 
-            Graph truePag = GraphTransforms.dagToPag(trueGraph);
+            Graph truePag = GraphTransforms.dagToPag(trueGraph, false);
 
             trueGraphMap.put(i, new HashMap<>());
             trueGraphs.add(trueGraph);

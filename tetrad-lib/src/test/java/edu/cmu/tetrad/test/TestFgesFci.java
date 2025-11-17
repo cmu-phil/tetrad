@@ -115,7 +115,7 @@ public class TestFgesFci {
 //        dagToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = GraphTransforms.dagToPag(dag);
+        Graph truePag = GraphTransforms.dagToPag(dag, false);
 
         outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
 
@@ -213,7 +213,7 @@ public class TestFgesFci {
 //            dagToPag.setCompleteRuleSetUsed(false);
 //            Graph pag2 = dagToPag.convert();
 
-            Graph pag2 = GraphTransforms.dagToPag(dag);
+            Graph pag2 = GraphTransforms.dagToPag(dag, false);
 
             assertEquals(pag2, pag1);
         }

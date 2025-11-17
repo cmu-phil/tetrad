@@ -387,7 +387,7 @@ public class DmFciT2 extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.dagToPag(graph);
+        return GraphTransforms.dagToPag(graph, false);
     }
 
     /**

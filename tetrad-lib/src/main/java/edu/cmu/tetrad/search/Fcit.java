@@ -137,6 +137,7 @@ public final class Fcit implements IGraphSearch {
      */
     private @NotNull Graph pag = new EdgeListGraph();
     private boolean replicatingGraph = false;
+    private boolean excludeSelectionBias = false;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -202,14 +203,14 @@ public final class Fcit implements IGraphSearch {
 
     private static void redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                             Set<Triple> initialColliders, boolean completeRuleSetUsed,
-                                            SepsetMap sepsets, boolean superVerbose) {
+                                            SepsetMap sepsets, boolean excludeSelectionBias, boolean superVerbose) {
         // GFCI reorientation...
         GraphUtils.reorientWithCircles(pag, superVerbose);
-        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
         adjustForExtraSepsets(sepsets, pag, superVerbose);
-        fciOrient.finalOrientation(pag);
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
     }
 
     /**
@@ -425,7 +426,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         // The main procedure.
-        this.pag = GraphTransforms.dagToPag(dag, knowledge);
+        this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias);
 
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
@@ -437,7 +438,7 @@ public final class Fcit implements IGraphSearch {
 
         do {
             System.out.println("Round: " + (++round));
-        } while (removeEdgesRecursively(checks));
+        } while (removeEdgesRecursively(checks, excludeSelectionBias));
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -519,7 +520,7 @@ public final class Fcit implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(Set<IndependenceCheck> checks) {
+    private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias) {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -552,7 +553,7 @@ public final class Fcit implements IGraphSearch {
         for (Result result : results) {
             Edge edge = result.edge();
             Set<Node> b = result.cond();
-            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive");
+            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias);
             changed |= didChange;
         }
 
@@ -657,14 +658,14 @@ public final class Fcit implements IGraphSearch {
         return null;
     }
 
-    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type) {
+    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias) {
         Edge _edge = pag.getEdge(x, y);
         Graph _pag = new EdgeListGraph(pag);
 
         this.pag.removeEdge(_edge);
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
-        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, superVerbose);
+        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
 
         if (!PagLegalityCheck.isLegalPagQuiet(this.pag, Set.of())) {
             if (verbose) {
@@ -779,6 +780,10 @@ public final class Fcit implements IGraphSearch {
      */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
+    }
+
+    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
+        this.excludeSelectionBias = excludeSelectionBias;
     }
 
     /**

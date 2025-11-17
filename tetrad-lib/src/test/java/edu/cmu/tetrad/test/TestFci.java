@@ -332,7 +332,7 @@ public class TestFci {
 //        DagToPag dagToPag = new DagToPag(trueGraph);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = dagToPag(trueGraph);
+        Graph truePag = dagToPag(trueGraph, false);
 
         assertEquals(graph, truePag);
     }
@@ -850,7 +850,7 @@ public class TestFci {
             dag = GraphUtils.replaceNodes(dag, independence.getVariables());
             GraphScore score = new GraphScore(dag);
 
-            Graph _pag = new MagToPag(GraphTransforms.dagToMag(dag)).convert(true);
+            Graph _pag = new MagToPag(GraphTransforms.dagToMag(dag)).convert(true, false);
             if (!_pag.paths().isLegalPag()) {
                 throw new IllegalArgumentException("_Pag not a legal PAG.");
             }
@@ -881,7 +881,7 @@ public class TestFci {
                     }
 
                     MagToPag dagToPag = new MagToPag(mag);
-                    Graph reconstitutedPag = dagToPag.convert(true);
+                    Graph reconstitutedPag = dagToPag.convert(true, false);
 
                     for (Edge pagEdge : pag.getEdges()) {
                         Edge reconstitutedPagEdge = reconstitutedPag.getEdge(pagEdge.getNode1(), pagEdge.getNode2());
@@ -981,7 +981,7 @@ public class TestFci {
                     }
 
                     MagToPag dagToPag = new MagToPag(mag);
-                    Graph reconstitutedPag = dagToPag.convert(true);
+                    Graph reconstitutedPag = dagToPag.convert(true, false);
 
                     for (Edge pagEdge : pag.getEdges()) {
                         Edge reconstitutedPagEdge = reconstitutedPag.getEdge(pagEdge.getNode1(), pagEdge.getNode2());
@@ -1010,7 +1010,7 @@ public class TestFci {
             Graph dag = RandomGraph.randomGraph(20, 6, 20, 100, 100, 100, false);
             MagToPag dagToPag = new MagToPag(GraphTransforms.dagToMag(dag));
             dagToPag.setVerbose(false);
-            Graph pag = dagToPag.convert(true);
+            Graph pag = dagToPag.convert(true, false);
 
             Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
@@ -1044,7 +1044,7 @@ public class TestFci {
             // to what it was.
             assertTrue(legalMag);
 
-            Graph pag2 = new MagToPag(mag).convert(true);
+            Graph pag2 = new MagToPag(mag).convert(true, false);
             assertEquals(pag2, pag);
         }
     }

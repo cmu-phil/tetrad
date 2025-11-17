@@ -132,7 +132,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
             return GraphTransforms.dagToCpdag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
-            return PagCache.getInstance().getPag(graph);
+            return PagCache.getInstance().getPag(graph, true);
         } else {
             params.set("graphComparisonType", "DAG");
             return new EdgeListGraph(graph);

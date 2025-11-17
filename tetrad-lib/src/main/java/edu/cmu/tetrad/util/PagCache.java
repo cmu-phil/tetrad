@@ -69,7 +69,7 @@ public final class PagCache {
         return local;
     }
 
-    private static Graph computePag(Graph graph, Knowledge knowledge) {
+    private static Graph computePag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias) {
 //        if (graph.paths().isLegalDag()) {
 //            Graph mag = GraphTransforms.dagToMag(graph);
 //            return new MagToPag(mag).convert(false);
@@ -87,12 +87,12 @@ public final class PagCache {
 
         if (graph.paths().isLegalDag()) {
             Graph mag = GraphTransforms.dagToMag(graph);
-            return computePagFromMag(mag, knowledge);   // no getPag() here, avoiding infinite recursion.
+            return computePagFromMag(mag, knowledge, excludeSelectionBias);   // no getPag() here, avoiding infinite recursion.
         } else if (graph.paths().isLegalMag()) {
-            return computePagFromMag(graph, knowledge);
+            return computePagFromMag(graph, knowledge, excludeSelectionBias);
         } else {
             Graph mag = GraphTransforms.zhangMagFromPag(graph);
-            return new MagToPag(mag).convert(true);
+            return new MagToPag(mag).convert(true, excludeSelectionBias);
         }
     }
 
@@ -203,6 +203,12 @@ public final class PagCache {
         return h;
     }
 
+    private static Graph computePagFromMag(Graph mag, Knowledge knowledge, boolean excludeSelectionBias) {
+        MagToPag magToPag = new MagToPag(mag);
+        magToPag.setKnowledge(knowledge);
+        return magToPag.convert(false, excludeSelectionBias);
+    }
+
     /**
      * Clears the internal cache, removing all stored entries. This method should be called when the cache needs to be
      * reset or discarded.
@@ -212,18 +218,18 @@ public final class PagCache {
     }
 
     /**
-     * Retrieves or computes a Partial Ancestral Graph (PAG) from the given input graph.
-     * If the input graph is already cached and has not been externally modified, the
-     * cached version is returned. Otherwise, a new PAG is computed with default knowledge.
-     * The input graph must be either a Directed Acyclic Graph (DAG) or a Maximal Ancestral
+     * Retrieves or computes a Partial Ancestral Graph (PAG) from the given input graph. If the input graph is already
+     * cached and has not been externally modified, the cached version is returned. Otherwise, a new PAG is computed
+     * with default knowledge. The input graph must be either a Directed Acyclic Graph (DAG) or a Maximal Ancestral
      * Graph (MAG).
      *
-     * @param g the input graph, which must be either a DAG or a MAG
+     * @param g                    the input graph, which must be either a DAG or a MAG
+     * @param excludeSelectionBias
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
      */
-    public @NotNull Graph getPag(Graph g) {
-        return getPag(g, new Knowledge());
+    public @NotNull Graph getPag(Graph g, boolean excludeSelectionBias) {
+        return getPag(g, new Knowledge(), excludeSelectionBias);
     }
 
     /**
@@ -232,12 +238,13 @@ public final class PagCache {
      * stored in the cache, and returned. The input graph must be either a DAG (Directed Acyclic Graph) or a MAG
      * (Maximal Ancestral Graph).
      *
-     * @param g the input graph, which must be either a DAG or a MAG
-     * @param knowledge the knowledge object containing additional information for PAG computation
+     * @param g                    the input graph, which must be either a DAG or a MAG
+     * @param knowledge            the knowledge object containing additional information for PAG computation
+     * @param excludeSelectionBias whether to exclude selection bias during PAG computation
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
      */
-    public @NotNull Graph getPag(Graph g,  Knowledge knowledge) {
+    public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias) {
         if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
             throw new IllegalArgumentException("Graph must be a DAG or a MAG.");
         }
@@ -249,7 +256,7 @@ public final class PagCache {
                 // Guard against external mutation of the cached PAG
                 long currentPagSig = signatureOfPag(e.pag);
                 if (currentPagSig != e.pagSig) {
-                    Graph rebuilt = computePag(g, knowledge);
+                    Graph rebuilt = computePag(g, knowledge, excludeSelectionBias);
                     syncInPlace(e.pag, rebuilt);               // preserve identity
                     e.pagSig = signatureOfPag(e.pag);          // update sig after sync
                 }
@@ -258,17 +265,11 @@ public final class PagCache {
         }
 
         // Miss or source changed: build fresh
-        final Graph pag = computePag(g, knowledge);
+        final Graph pag = computePag(g, knowledge, excludeSelectionBias);
         synchronized (cache) {
             cache.put(g, new Entry(pag, srcSig, signatureOfPag(pag)));
             return pag;
         }
-    }
-
-    private static Graph computePagFromMag(Graph mag, Knowledge knowledge) {
-        MagToPag magToPag = new MagToPag(mag);
-        magToPag.setKnowledge(knowledge);
-        return magToPag.convert(false);
     }
 
 //    /**

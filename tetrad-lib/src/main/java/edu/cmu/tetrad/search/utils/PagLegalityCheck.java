@@ -48,7 +48,7 @@ public class PagLegalityCheck {
             return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
         }
 
-        Graph pag2 = GraphTransforms.dagToPag(mag);
+        Graph pag2 = GraphTransforms.dagToPag(mag, false);
 
         if (!pag.equals(pag2)) {
             String edgeMismatch = "";
@@ -187,7 +187,7 @@ public class PagLegalityCheck {
         if (!isLegalMagQuiet(mag, selection)) return false;
 
         // 3) Reconstitute PAG from the implied MAG.
-        Graph pag2 = GraphTransforms.dagToPag(mag);
+        Graph pag2 = GraphTransforms.dagToPag(mag, false);
 
         // Mirror verbose logic:
         // If graphs differ, only fail if there exists an original edge that doesn't match.
