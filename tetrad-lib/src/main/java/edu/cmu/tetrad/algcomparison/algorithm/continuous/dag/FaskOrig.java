@@ -57,6 +57,7 @@ import static edu.cmu.tetrad.util.Params.*;
 //        dataType = DataType.Continuous
 //)
 //@Experimental
+@Deprecated
 public class FaskOrig extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
     @Serial
     private static final long serialVersionUID = 23L;

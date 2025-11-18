@@ -135,6 +135,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @see Knowledge
  * @see Lofs
  */
+@Deprecated
 public final class FaskOrig implements IGraphSearch {
 
 
