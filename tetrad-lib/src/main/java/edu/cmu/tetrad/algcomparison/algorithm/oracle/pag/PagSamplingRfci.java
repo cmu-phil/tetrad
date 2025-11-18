@@ -49,7 +49,7 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 //@Experimental
-public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge {
+public class PagSamplingRfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge {
 
     /**
      * Constant <code>PAG_SAMPLING_RFCI_PARAMETERS</code>
@@ -93,7 +93,7 @@ public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorit
     /**
      * Constructs a new instance of the PagSampleRfci algorithm.
      */
-    public PagSampleRfci() {
+    public PagSamplingRfci() {
     }
 
     /**
