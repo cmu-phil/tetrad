@@ -31,35 +31,24 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 /**
- * Nov 19, 2018 11:04:51 AM
  *
- * @author Kevin V. Bui (kvb2@pitt.edu)
- * @version $Id: $Id
+ * Nov 17, 2025 10:53:31 PM
+ *
+ * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  */
-public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileReader implements CovarianceDataReader {
+public class FullCovarianceDataFileReader extends AbstractCovarianceDataFileReader implements CovarianceDataReader {
 
-    /**
-     * Constructs a lower triangular covariance data file reader.
-     *
-     * @param dataFile the data file.
-     * @param delimiter the delimiter.
-     */
-    public LowerCovarianceDataFileReader(Path dataFile, Delimiter delimiter) {
+    public FullCovarianceDataFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Reads in the covariance data.
-     */
     @Override
     public CovarianceData readInData() throws IOException {
         int numOfCases = getNumberOfCases();
         List<String> variables = getVariables();
         double[][] data = getCovarianceData(variables.size());
 
-        return new LowerCovarianceData(numOfCases, variables, data);
+        return new FullCovarianceData(numOfCases, variables, data);
     }
 
     private double[][] getCovarianceData(int matrixSize) throws IOException {
@@ -82,6 +71,7 @@ public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileRea
             int colNum = 0;
             int col = 0;
             int row = 0;
+            final int dataLimit = matrixSize - 1;
 
             StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
@@ -99,13 +89,15 @@ public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileRea
 
                         if (hasSeenNonblankChar && !skip) {
                             if (lineDataNum >= 3) {
-                                if (col > row) {
-                                    String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-//                                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+                                if (row >= matrixSize) {
+                                    String errMsg = String.format("Excess data on line %d.  Extracted %d rows but expected %d.", lineNum, row + 1, matrixSize);
                                     throw new DataReaderException(errMsg);
-                                } else if (col < row) {
-                                    String errMsg = String.format("Insufficent data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-//                                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+                                }
+                                if (col > dataLimit) {
+                                    String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, matrixSize);
+                                    throw new DataReaderException(errMsg);
+                                } else if (col < dataLimit) {
+                                    String errMsg = String.format("Insufficent data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, matrixSize);
                                     throw new DataReaderException(errMsg);
                                 } else {
                                     String value = dataBuilder.toString().trim();
@@ -114,7 +106,6 @@ public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileRea
                                     colNum++;
                                     if (value.isEmpty()) {
                                         String errMsg = String.format("Missing value on line %d at column %d.", lineNum, colNum);
-//                                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                         throw new DataReaderException(errMsg);
                                     } else {
                                         try {
@@ -123,7 +114,6 @@ public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileRea
                                             data[col][row] = covariance;
                                         } catch (NumberFormatException exception) {
                                             String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-//                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg, exception);
                                             throw new DataReaderException(errMsg);
                                         }
                                     }
@@ -186,9 +176,12 @@ public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileRea
                                     }
 
                                     if (isDelimiter) {
-                                        if (col > row) {
-                                            String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-//                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+                                        if (row >= matrixSize) {
+                                            String errMsg = String.format("Excess data on line %d.  Extracted %d rows but expected %d.", lineNum, row + 1, matrixSize);
+                                            throw new DataReaderException(errMsg);
+                                        }
+                                        if (col > dataLimit) {
+                                            String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, matrixSize);
                                             throw new DataReaderException(errMsg);
                                         }
 
@@ -198,7 +191,6 @@ public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileRea
                                         colNum++;
                                         if (value.isEmpty()) {
                                             String errMsg = String.format("Missing value on line %d at column %d.", lineNum, colNum);
-//                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                             throw new DataReaderException(errMsg);
                                         } else {
                                             try {
@@ -207,7 +199,6 @@ public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileRea
                                                 data[col][row] = covariance;
                                             } catch (NumberFormatException exception) {
                                                 String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-//                                                LowerCovarianceDataFileReader.LOGGER.error(errMsg, exception);
                                                 throw new DataReaderException(errMsg);
                                             }
                                         }
@@ -227,13 +218,15 @@ public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileRea
 
             if (hasSeenNonblankChar && !skip) {
                 if (lineDataNum >= 3) {
-                    if (col > row) {
-                        String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-//                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+                    if (row >= matrixSize) {
+                        String errMsg = String.format("Excess data on line %d.  Extracted %d rows but expected %d.", lineNum, row + 1, matrixSize);
                         throw new DataReaderException(errMsg);
-                    } else if (col < row) {
-                        String errMsg = String.format("Insufficent data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-//                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+                    }
+                    if (col > dataLimit) {
+                        String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, matrixSize);
+                        throw new DataReaderException(errMsg);
+                    } else if (col < dataLimit) {
+                        String errMsg = String.format("Insufficent data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, matrixSize);
                         throw new DataReaderException(errMsg);
                     } else {
                         String value = dataBuilder.toString().trim();
@@ -242,7 +235,6 @@ public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileRea
                         colNum++;
                         if (value.isEmpty()) {
                             String errMsg = String.format("Missing value on line %d at column %d.", lineNum, colNum);
-//                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                             throw new DataReaderException(errMsg);
                         } else {
                             try {
@@ -251,25 +243,31 @@ public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileRea
                                 data[col][row] = covariance;
                             } catch (NumberFormatException exception) {
                                 String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-//                                LowerCovarianceDataFileReader.LOGGER.error(errMsg, exception);
                                 throw new DataReaderException(errMsg);
                             }
                         }
+
+                        row++;
                     }
                 }
+            }
+
+            if (row < matrixSize) {
+                String errMsg = String.format("Insufficient data.  Expect %d rows but only read in %d.", matrixSize, row);
+                throw new DataReaderException(errMsg);
             }
         }
 
         return data;
     }
 
-    private static final class LowerCovarianceData implements CovarianceData {
+    private static final class FullCovarianceData implements CovarianceData {
 
         private final int numberOfCases;
         private final List<String> variables;
         private final double[][] data;
 
-        private LowerCovarianceData(int numberOfCases, List<String> variables, double[][] data) {
+        private FullCovarianceData(int numberOfCases, List<String> variables, double[][] data) {
             this.numberOfCases = numberOfCases;
             this.variables = variables;
             this.data = data;
@@ -299,4 +297,5 @@ public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileRea
             return this.data;
         }
     }
+
 }
