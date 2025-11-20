@@ -193,7 +193,6 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         parameters.add(Params.EXCLUDE_SELECTION_BIAS);
         parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.GUARANTEE_PAG);
-
         parameters.add(Params.VERBOSE);
 
         return parameters;

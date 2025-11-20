@@ -1289,7 +1289,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     private void listPaths(Graph graph,
                            JTextArea textArea,
                            Set<List<Node>> paths) {
-        listPaths(graph, textArea, paths, Collections.emptySet(), false);
+        listPaths(graph, textArea, paths, conditioningSet, false);
     }
 
     /**
@@ -1313,7 +1313,6 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         textArea.append("\n\n    Not Blocked:\n");
 
         boolean found1 = false;
-        boolean selectionBiasAllowed = !excludeSelectionBias;
 
         for (List<Node> path : paths) {
             if (path.size() < 2) {
@@ -1323,7 +1322,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
             // m-connecting given the current selection-bias policy
             if (graph.paths().isMConnectingPath(path, conditioningSet, excludeSelectionBias)) {
                 textArea.append("\n    " +
-                                GraphUtils.pathString(graph, path, conditioningSet, selectionBiasAllowed, false));
+                                GraphUtils.pathString(graph, path, conditioningSet, true, excludeSelectionBias));
                 found1 = true;
             }
         }
@@ -1343,7 +1342,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
             if (!graph.paths().isMConnectingPath(path, conditioningSet, excludeSelectionBias)) {
                 textArea.append("\n    " +
-                                GraphUtils.pathString(graph, path, conditioningSet, selectionBiasAllowed, false));
+                                GraphUtils.pathString(graph, path, conditioningSet, true, excludeSelectionBias));
                 found2 = true;
             }
         }
