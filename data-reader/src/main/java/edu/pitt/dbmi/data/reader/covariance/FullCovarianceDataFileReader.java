@@ -111,7 +111,6 @@ public class FullCovarianceDataFileReader extends AbstractCovarianceDataFileRead
                                         try {
                                             double covariance = Double.parseDouble(value);
                                             data[row][col] = covariance;
-                                            data[col][row] = covariance;
                                         } catch (NumberFormatException exception) {
                                             String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
                                             throw new DataReaderException(errMsg);
@@ -196,7 +195,6 @@ public class FullCovarianceDataFileReader extends AbstractCovarianceDataFileRead
                                             try {
                                                 double covariance = Double.parseDouble(value);
                                                 data[row][col] = covariance;
-                                                data[col][row] = covariance;
                                             } catch (NumberFormatException exception) {
                                                 String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
                                                 throw new DataReaderException(errMsg);
@@ -240,7 +238,6 @@ public class FullCovarianceDataFileReader extends AbstractCovarianceDataFileRead
                             try {
                                 double covariance = Double.parseDouble(value);
                                 data[row][col] = covariance;
-                                data[col][row] = covariance;
                             } catch (NumberFormatException exception) {
                                 String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
                                 throw new DataReaderException(errMsg);
@@ -258,7 +255,22 @@ public class FullCovarianceDataFileReader extends AbstractCovarianceDataFileRead
             }
         }
 
+        checkSymmetry(data);
+
         return data;
+    }
+
+    private void checkSymmetry(double[][] data) throws DataReaderException {
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data[i].length; j++) {
+                if (i != j) {
+                    if (Double.compare(data[i][j], data[j][i]) != 0) {
+                        String errMsg = String.format("Non-symmetric matrix.  COV(%d,%d)=%f is not equal to COV(%d,%d)=%f.", i, j, data[i][j], j, i, data[j][i]);
+                        throw new DataReaderException(errMsg);
+                    }
+                }
+            }
+        }
     }
 
     private static final class FullCovarianceData implements CovarianceData {
