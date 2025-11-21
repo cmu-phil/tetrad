@@ -182,7 +182,6 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.OUTPUT_CPDAG);
         params.add(Params.SEED);
         params.add(Params.VERBOSE);
-//        params.add(Params.MC_ALPHA);
 
         return params;
     }
