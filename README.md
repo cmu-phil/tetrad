@@ -5,9 +5,7 @@ contributors, some history, documentation, descriptions, links for our various p
 
 # News
 
-We are trying out a new Tetrad [ReadTheDocs manual](https://tetrad-manual.readthedocs.io/en/latest/).
-
-Let us know if you can think of improvements we can make.
+We are trying out a new Tetrad [ReadTheDocs manual](https://tetrad-manual.readthedocs.io/en/latest/). Let us know if you can think of improvements we can make.
 
 ## Tetrad Application
 
