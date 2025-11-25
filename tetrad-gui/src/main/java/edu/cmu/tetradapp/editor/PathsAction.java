@@ -715,8 +715,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 "All Paths",
                 "Adjacents",
                 "Adjustment Sets (for Total Effect)",
-//                "Adjustment Set (Recursive)",
-                "Direct-Effect Adjustment Sets (Edge-Specific)\n",
+                "Direct-Effect Adjustment Sets (Edge-Specific)",
                 "Amenable paths",
                 "Backdoor paths"
         });

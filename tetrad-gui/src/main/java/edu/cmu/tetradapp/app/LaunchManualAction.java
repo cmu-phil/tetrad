@@ -1,23 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.app;
 
 import javax.swing.*;
@@ -28,35 +8,45 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * Closes the frontmost session of the given desktop.
+ * Launches the online Tetrad manual in the system browser.
  *
  * @author josephramsey
  */
 final class LaunchManualAction extends AbstractAction {
 
-    /**
-     * Creates a new close session action for the given desktop.
-     */
+    // TODO: update this to the final RTD URL you decide to use (stable vs latest, etc.).
+    private static final String MANUAL_URL =
+            "https://tetrad-manual.readthedocs.io/en/latest/";
+
     public LaunchManualAction() {
         super("Launch Manual");
     }
 
-    /**
-     * This method handles the action performed when a specific event is triggered.
-     *
-     * @param e the event to be processed
-     */
+    @Override
     public void actionPerformed(ActionEvent e) {
-        Desktop d = Desktop.getDesktop();
+        if (!Desktop.isDesktopSupported()) {
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Desktop browsing is not supported on this platform.\n" +
+                    "You can open the manual manually at:\n" + MANUAL_URL,
+                    "Launch Manual",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
+
+        Desktop desktop = Desktop.getDesktop();
         try {
-            d.browse(new URI("https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/" +
-                             "tetrad-lib/src/main/resources/docs/manual/index.html"));
-        } catch (IOException | URISyntaxException e2) {
-            e2.printStackTrace();
+            desktop.browse(new URI(MANUAL_URL));
+        } catch (IOException | URISyntaxException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Unable to open the manual in your browser.\n" +
+                    "You can still access it at:\n" + MANUAL_URL,
+                    "Launch Manual",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 }
-
-
-
-

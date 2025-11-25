@@ -47,7 +47,7 @@ public final class SimulationTypes {
     /**
      * Constant <code>ADDITIVE_NOISE_MODEL="Additive Noise SEM"</code>
      */
-    public static final String NONLINEAR_ADDITIVE_SEM = "Nonlienar Additive SEM (CAM)";
+    public static final String NONLINEAR_ADDITIVE_SEM = "Nonlinear Additive SEM (CAM)";
     /**
      * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
      */
