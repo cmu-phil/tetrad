@@ -3,6 +3,10 @@
 Please visit our [Tetrad web page](https://www.cmu.edu/dietrich/philosophy/tetrad/) for current links, a list of
 contributors, some history, documentation, descriptions, links for our various projects, Javadocs, and more.
 
+# News
+
+We are trying out a new Tetrad [ReadTheDocs manual](https://tetrad-manual.readthedocs.io/en/latest/). Let us know if you can think of improvements we can make.
+
 ## Tetrad Application
 
 See our instructions
