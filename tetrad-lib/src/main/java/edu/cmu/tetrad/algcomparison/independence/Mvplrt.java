@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.test.IndTestMvpLrt;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -86,9 +87,9 @@ public class Mvplrt implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
+        parameters.add(Params.ALPHA);
         parameters.add("fDegree");
-        parameters.add("discretize");
+        parameters.add(Params.DISCRETIZE);
         return parameters;
     }
 

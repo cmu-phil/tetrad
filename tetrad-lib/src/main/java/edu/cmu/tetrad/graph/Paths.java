@@ -3110,8 +3110,28 @@ public class Paths implements TetradSerializable {
     public List<Set<Node>> adjustmentSets(Node X, Node Y, String graphType,
                                           int maxNumSets, int maxRadius,
                                           int nearWhichEndpoint, int maxPathLength) {
-        return adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
-                nearWhichEndpoint, maxPathLength, false, false);
+        return new Adjustment(graph).adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
+                nearWhichEndpoint, maxPathLength, Adjustment.ColliderPolicy.OFF, true,
+                Set.of(), Set.of());
+//
+//
+//        Set<Node> _X = Set.of(X);
+//        Set<Node> _Y = Set.of(Y);
+//
+//        AdjustmentMultiple am = new AdjustmentMultiple(graph)
+//                .setColliderPolicy(Adjustment.ColliderPolicy.OFF)
+//                .setNoAmenablePolicy(Adjustment.NoAmenablePolicy.SUPPRESS);
+//
+//        return am.adjustmentSets(
+//                _X, _Y,
+//                graphType,
+//                maxNumSets,
+//                maxRadius,
+//                nearWhichEndpoint,
+//                maxPathLength,
+//                true,
+//                Set.of(),
+//                Set.of());
     }
 
     /**

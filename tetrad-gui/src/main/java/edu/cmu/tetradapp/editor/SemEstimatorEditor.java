@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -48,10 +48,7 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serial;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -405,6 +402,31 @@ public final class SemEstimatorEditor extends JPanel {
             return editorWindow.getRootPane().getContentPane();
         } else {
             return editorWindow;
+        }
+    }
+
+    public void exportSemImToLavaan(Window parent, SemIm semIm, File file) {
+        SemLavaanOptionsDialog dialog = new SemLavaanOptionsDialog(parent);
+        dialog.showDialog();
+
+        if (!dialog.isApproved()) {
+            return; // user cancelled
+        }
+
+        String lav = SemLavaanRenderer.semImToLavaan(
+                semIm,
+                dialog.isIncludeIntercepts(),
+                dialog.isIncludeVariances(),
+                dialog.isIncludeCovariances(),
+                dialog.isFixParameters()
+        );
+
+        try {
+            FileWriter writer = new FileWriter(file);
+            writer.write(lav);
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -930,7 +952,7 @@ public final class SemEstimatorEditor extends JPanel {
 
             saveSemAsXml.addActionListener(e -> {
                 try {
-                    File outfile = EditorUtils.getSaveFile("semIm", "xml", getComp(),
+                    File outfile = EditorUtils.getSaveFile("sem-im", "xml", getComp(),
                             false, "Save SEM IM as XML...");
 
                     SemIm im = (SemIm) SemEstimatorEditor.this.oneEditorPanel.getSemIm();
@@ -946,6 +968,16 @@ public final class SemEstimatorEditor extends JPanel {
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
+            });
+
+            JMenuItem saveSemAsLavaan = new JMenuItem("Save SEM as Lavaan");
+            file.add(saveSemAsLavaan);
+
+            saveSemAsLavaan.addActionListener(e -> {
+                File outfile = EditorUtils.getSaveFile("sem-im", "lav", getComp(),
+                        false, "Save SEM IM as XML...");
+                SemIm im = (SemIm) SemEstimatorEditor.this.oneEditorPanel.getSemIm();
+                exportSemImToLavaan(JOptionUtils.getCenteringFrame(), im, outfile);
             });
 
             JCheckBoxMenuItem covariances

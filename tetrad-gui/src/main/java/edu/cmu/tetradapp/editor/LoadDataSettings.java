@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -28,6 +28,7 @@ import edu.cmu.tetradapp.util.StringTextField;
 import edu.pitt.dbmi.data.reader.*;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceData;
 import edu.pitt.dbmi.data.reader.covariance.CovarianceDataReader;
+import edu.pitt.dbmi.data.reader.covariance.FullCovarianceDataFileReader;
 import edu.pitt.dbmi.data.reader.covariance.LowerCovarianceDataFileReader;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
 import edu.pitt.dbmi.data.reader.metadata.MetadataFileReader;
@@ -37,8 +38,10 @@ import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.reader.util.TextFileUtils;
+import edu.pitt.dbmi.data.reader.validation.ValidationCode;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
 import edu.pitt.dbmi.data.reader.validation.covariance.CovarianceValidation;
+import edu.pitt.dbmi.data.reader.validation.covariance.FullCovarianceDataFileValidation;
 import edu.pitt.dbmi.data.reader.validation.covariance.LowerCovarianceDataFileValidation;
 import edu.pitt.dbmi.data.reader.validation.tabular.TabularColumnFileValidation;
 import edu.pitt.dbmi.data.reader.validation.tabular.TabularColumnValidation;
@@ -112,9 +115,14 @@ public final class LoadDataSettings extends JPanel {
     private JRadioButton tabularRadioButton;
 
     /**
-     * The covariance data radio button.
+     * The covariance (lower triangle) data radio button.
      */
-    private JRadioButton covarianceRadioButton;
+    private JRadioButton covarianceLowerTriangleRadioButton;
+
+    /**
+     * The covariance (square) data radio button.
+     */
+    private JRadioButton covarianceSquareRadioButton;
 
     /**
      * The continuous data radio button.
@@ -331,12 +339,14 @@ public final class LoadDataSettings extends JPanel {
         Box fileTypeBox = Box.createHorizontalBox();
 
         this.tabularRadioButton = new JRadioButton("Tabular data");
-        this.covarianceRadioButton = new JRadioButton("Covariance data (lower triangle)");
+        this.covarianceLowerTriangleRadioButton = new JRadioButton("Covariance data (lower triangle)");
+        this.covarianceSquareRadioButton = new JRadioButton("Covariance data (square)");
 
         // We need to group the radio buttons, otherwise all can be selected
         ButtonGroup fileTypeBtnGrp = new ButtonGroup();
         fileTypeBtnGrp.add(this.tabularRadioButton);
-        fileTypeBtnGrp.add(this.covarianceRadioButton);
+        fileTypeBtnGrp.add(this.covarianceLowerTriangleRadioButton);
+        fileTypeBtnGrp.add(this.covarianceSquareRadioButton);
 
         // Tabular data is selected by default
         this.tabularRadioButton.setSelected(true);
@@ -385,7 +395,35 @@ public final class LoadDataSettings extends JPanel {
         });
 
         // Event listener
-        this.covarianceRadioButton.addActionListener((ActionEvent actionEvent) -> {
+        this.covarianceLowerTriangleRadioButton.addActionListener((ActionEvent actionEvent) -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+            if (button.isSelected()) {
+                // No need metadata file
+                this.metadataFileButton.setEnabled(false);
+
+                // When Covariance data is selected, data type can only be Continuous,
+                this.contRadioButton.setSelected(true);
+
+                //will disallow the users to choose Discrete and mixed data
+                this.discRadioButton.setEnabled(false);
+                this.mixedRadioButton.setEnabled(false);
+
+                // Both Yes and No of Variable names in first row need to be disabled
+                // Because the first row should be number of cases
+                this.firstRowVarNamesYesRadioButton.setEnabled(false);
+                this.firstRowVarNamesNoRadioButton.setEnabled(false);
+
+                // select None for Case IDs, disable other options,
+                // since no Case column should be in covariance data
+                this.idNoneRadioButton.setSelected(true);
+                this.idUnlabeledFirstColRadioButton.setEnabled(false);
+                this.idLabeledColRadioButton.setEnabled(false);
+                this.idStringField.setEnabled(false);
+            }
+        });
+
+        // Event listener
+        this.covarianceSquareRadioButton.addActionListener((ActionEvent actionEvent) -> {
             JRadioButton button = (JRadioButton) actionEvent.getSource();
             if (button.isSelected()) {
                 // No need metadata file
@@ -425,8 +463,9 @@ public final class LoadDataSettings extends JPanel {
         // Option 2
         Box fileTypeOption2Box = Box.createHorizontalBox();
         // Make this longer since the text is long - Zhou
-        fileTypeOption2Box.setPreferredSize(new Dimension(300, 30));
-        fileTypeOption2Box.add(this.covarianceRadioButton);
+//        fileTypeOption2Box.setPreferredSize(new Dimension(400, 30));
+        fileTypeOption2Box.add(this.covarianceLowerTriangleRadioButton);
+        fileTypeOption2Box.add(this.covarianceSquareRadioButton);
 
         // Add to file type box
         fileTypeBox.add(fileTypeLabelBox);
@@ -1214,8 +1253,18 @@ public final class LoadDataSettings extends JPanel {
                 // At this point, no need to use the column validation results at all
                 return tabularDataValidation.validate(dataColumns, hasHeader);
             }
-        } else if (this.covarianceRadioButton.isSelected()) {
+        } else if (this.covarianceLowerTriangleRadioButton.isSelected()) {
             CovarianceValidation covarianceValidation = new LowerCovarianceDataFileValidation(file.toPath(), delimiter);
+
+            // Header in first row is required
+            // Cpvariance never has missing value marker
+            covarianceValidation.setCommentMarker(commentMarker);
+            setQuoteChar(covarianceValidation);
+
+            // No case ID on covarianced data
+            return covarianceValidation.validate();
+        } else if (covarianceSquareRadioButton.isSelected()) {
+            CovarianceValidation covarianceValidation = new FullCovarianceDataFileValidation(file.toPath(), delimiter);
 
             // Header in first row is required
             // Cpvariance never has missing value marker
@@ -1318,9 +1367,20 @@ public final class LoadDataSettings extends JPanel {
                 // Box Data to DataModel to display in spreadsheet
                 dataModel = DataConvertUtils.toDataModel(data);
             }
-        } else if (this.covarianceRadioButton.isSelected()) {
+        } else if (this.covarianceLowerTriangleRadioButton.isSelected()) {
             // Covariance data can only be continuous
             CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader(file.toPath(), delimiter);
+
+            dataFileReader.setCommentMarker(commentMarker);
+            setQuoteChar(dataFileReader);
+
+            CovarianceData covarianceData = dataFileReader.readInData();
+
+            // Box Dataset to DataModel
+            dataModel = DataConvertUtils.toDataModel(covarianceData);
+        } else if (this.covarianceSquareRadioButton.isSelected()) {
+            // Covariance data can only be continuous
+            CovarianceDataReader dataFileReader = new FullCovarianceDataFileReader(file.toPath(), delimiter);
 
             dataFileReader.setCommentMarker(commentMarker);
             setQuoteChar(dataFileReader);

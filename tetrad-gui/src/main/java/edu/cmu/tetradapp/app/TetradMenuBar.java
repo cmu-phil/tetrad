@@ -225,6 +225,7 @@ final class TetradMenuBar extends JMenuBar {
         helpMenu.add(new LicenseAction());
         helpMenu.add(new ContributorsAction());
         helpMenu.addSeparator();
+        helpMenu.add(new LaunchWebsiteAction());
         helpMenu.add(new LaunchManualAction());
         helpMenu.add(new LaunchFlowchartAction());
         helpMenu.add(getSuggestionBoxItem(desktop, helpMenu));
