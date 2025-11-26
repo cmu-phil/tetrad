@@ -38,10 +38,24 @@ import java.util.List;
  */
 public class FullCovarianceDataFileReader extends AbstractCovarianceDataFileReader implements CovarianceDataReader {
 
+    /**
+     * Constructs a FullCovarianceDataFileReader with the specified data file path and delimiter.
+     *
+     * @param dataFile  the path to the data file to be read.
+     * @param delimiter the delimiter used to parse the data file.
+     */
     public FullCovarianceDataFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
     }
 
+    /**
+     * Reads and processes the covariance data file, constructing a {@link CovarianceData} object
+     * containing the number of cases, variables, and the covariance matrix data from the file.
+     *
+     * @return a {@link CovarianceData} object that encapsulates the number of cases, list of variables,
+     *         and covariance data matrix.
+     * @throws IOException if an error occurs while reading the data file.
+     */
     @Override
     public CovarianceData readInData() throws IOException {
         int numOfCases = getNumberOfCases();

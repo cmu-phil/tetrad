@@ -31,10 +31,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class converts a SemIm into xml.
- *
- * @author Matt Easterday
- * @version $Id: $Id
+ * This class provides functionality for rendering a parameterized structural equation model (SEM)
+ * into lavaan syntax. Lavaan is an R package for structural equation modeling.
+ * The syntax can include intercepts, variances, covariances, and regression paths.
+ * It supports options to fix parameters or include starting values.
  */
 public class SemLavaanRenderer {
 
@@ -44,12 +44,27 @@ public class SemLavaanRenderer {
     private SemLavaanRenderer() {
     }
 
+    /**
+     * Converts a SemIm (parameterized SEM) into lavaan syntax (.lav) using default configurations.
+     *
+     * @param semIm The structural equation model (SEM) representation to be converted into lavaan syntax.
+     * @return A String representation of the SEM model in lavaan syntax.
+     */
     public static String semImToLavaan(SemIm semIm) {
         return semImToLavaan(semIm, true, true, true, false);
     }
 
     /**
-     * Converts a SemIm (parameterized SEM) into lavaan syntax (.lav).
+     * Converts a SemIm (parameterized Structural Equation Model) into lavaan syntax (.lav)
+     * with advanced configuration options.
+     *
+     * @param semIm The structural equation model (SEM) representation to be converted into lavaan syntax.
+     * @param includeIntercepts A boolean flag indicating whether to include intercept terms in the output.
+     * @param includeVariances A boolean flag specifying whether to include residual variances in the output.
+     * @param includeCovariances A boolean flag specifying whether to include residual covariances in the output.
+     * @param fixParameters If true, generates fixed values for the parameters;
+     *                      otherwise uses starting values in the lavaan syntax.
+     * @return A String representation of the SEM model in lavaan syntax.
      */
     public static String semImToLavaan(SemIm semIm, boolean includeIntercepts, boolean includeVariances,
                                        boolean includeCovariances, boolean fixParameters) {

@@ -35,6 +35,11 @@ public final class AdjustmentMultiple {
     private RecursiveAdjustment.ColliderPolicy colliderPolicy = RecursiveAdjustment.ColliderPolicy.NONCOLLIDER_FIRST;
     private RecursiveAdjustment.NoAmenablePolicy noAmenablePolicy = RecursiveAdjustment.NoAmenablePolicy.SEARCH;
 
+    /**
+     * Constructs an instance of AdjustmentMultiple with the provided graph.
+     *
+     * @param graph the graph to be used for adjustment calculations; must not be null
+     */
     public AdjustmentMultiple(Graph graph) {
         this.graph = Objects.requireNonNull(graph);
     }
@@ -171,11 +176,23 @@ public final class AdjustmentMultiple {
         return s;
     }
 
+    /**
+     * Sets the collider policy for the AdjustmentMultiple instance.
+     *
+     * @param p the collider policy to be set; must not be null
+     * @return the current instance of AdjustmentMultiple with the updated collider policy
+     */
     public AdjustmentMultiple setColliderPolicy(RecursiveAdjustment.ColliderPolicy p) {
         this.colliderPolicy = Objects.requireNonNull(p);
         return this;
     }
 
+    /**
+     * Sets the no amenable policy for the adjustment process.
+     *
+     * @param p the no amenable policy to be applied, must not be null
+     * @return the current instance of AdjustmentMultiple, allowing method chaining
+     */
     public AdjustmentMultiple setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy p) {
         this.noAmenablePolicy = Objects.requireNonNull(p);
         return this;
@@ -190,10 +207,11 @@ public final class AdjustmentMultiple {
      * @param maxNumSets        maximum number of adjustment sets to return.
      * @param maxRadius         currently ignored (kept for API compatibility).
      * @param nearWhichEndpoint currently ignored (kept for API compatibility).
-     * @param maxPathLength     maximum length of witness paths; if < 0, treated as "unbounded".
+     * @param maxPathLength     maximum length of witness paths; if &lt; 0, treated as "unbounded".
      * @param avoidAmenable     if true, never adjust on the amenable backbone (Perković-style GAC).
      * @param notFollowed       nodes never to follow during witness search or to include in Z.
      * @param containing        nodes that must be included in every adjustment set.
+     * @return List of adjustment sets
      */
     public List<Set<Node>> adjustmentSets(Set<Node> X,
                                           Set<Node> Y,

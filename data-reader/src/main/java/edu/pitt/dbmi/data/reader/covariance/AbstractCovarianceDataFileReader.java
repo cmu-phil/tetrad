@@ -39,6 +39,12 @@ import java.util.List;
  */
 public abstract class AbstractCovarianceDataFileReader extends DataFileReader {
 
+    /**
+     * Constructs an AbstractCovarianceDataFileReader with the specified data file and delimiter.
+     *
+     * @param dataFile  the path to the data file to be read.
+     * @param delimiter the delimiter used to parse the data file.
+     */
     public AbstractCovarianceDataFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
     }
