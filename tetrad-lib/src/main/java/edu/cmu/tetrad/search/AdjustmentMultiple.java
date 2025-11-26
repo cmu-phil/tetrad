@@ -4,51 +4,179 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
 /**
  * Recursive adjustment for the case of multiple treatments X and multiple outcomes Y.
- *
- * Semantics: X and Y are disjoint non-empty sets of nodes. An output set Z is intended
- * to be a (generalized) adjustment set for estimating the joint intervention effect
- * p(Y | do(X)) in the sense of the generalized adjustment criterion (Perković et al.).
- *
- * This class mirrors the structure of {@link Adjustment}, but is written explicitly
- * for set-valued X and Y:
- *
- *  - forbidden nodes Forb_G(X,Y) are computed for the sets X,Y;
- *  - amenable paths are collected over all x in X, y in Y;
- *  - recursive search blocks noncausal backdoor paths between any x∈X and any y∈Y;
- *  - a final minimality pass tries to remove superfluous nodes from Z.
- *
- * Some of the "engineering" heuristics of Adjustment (shells, nearWhichEndpoint, etc.)
- * are intentionally *not* replicated here. The parameters are kept for API compatibility,
- * but the current implementation:
- *
- *  - ignores maxRadius and nearWhichEndpoint in the pool construction, and
- *  - uses the full candidate pool (minus forbidden / amenable backbone / notFollowed).
+ * <p>
+ * Semantics: X and Y are disjoint non-empty sets of nodes. An output set Z is intended to be a (generalized) adjustment
+ * set for estimating the joint intervention effect p(Y | do(X)) in the sense of the generalized adjustment criterion
+ * (Perković et al.).
+ * <p>
+ * This class mirrors the structure of {@link RecursiveAdjustment}, but is written explicitly for set-valued X and Y:
+ * <p>
+ * - forbidden nodes Forb_G(X,Y) are computed for the sets X,Y; - amenable paths are collected over all x in X, y in Y;
+ * - recursive search blocks noncausal backdoor paths between any x∈X and any y∈Y; - a final minimality pass tries to
+ * remove superfluous nodes from Z.
+ * <p>
+ * Some of the "engineering" heuristics of Adjustment (shells, nearWhichEndpoint, etc.) are intentionally *not*
+ * replicated here. The parameters are kept for API compatibility, but the current implementation:
+ * <p>
+ * - ignores maxRadius and nearWhichEndpoint in the pool construction, and - uses the full candidate pool (minus
+ * forbidden / amenable backbone / notFollowed).
  */
 public final class AdjustmentMultiple {
 
     private final Graph graph;
 
     // Reuse the existing enums from Adjustment for policy configuration.
-    private Adjustment.ColliderPolicy colliderPolicy = Adjustment.ColliderPolicy.NONCOLLIDER_FIRST;
-    private Adjustment.NoAmenablePolicy noAmenablePolicy = Adjustment.NoAmenablePolicy.SEARCH;
+    private RecursiveAdjustment.ColliderPolicy colliderPolicy = RecursiveAdjustment.ColliderPolicy.NONCOLLIDER_FIRST;
+    private RecursiveAdjustment.NoAmenablePolicy noAmenablePolicy = RecursiveAdjustment.NoAmenablePolicy.SEARCH;
 
     public AdjustmentMultiple(Graph graph) {
         this.graph = Objects.requireNonNull(graph);
     }
 
-    public AdjustmentMultiple setColliderPolicy(Adjustment.ColliderPolicy p) {
+    // Helper: BFS distances from a set of sources over the undirected skeleton.
+    private static Map<Node, Integer> bfsDistances(Graph G, Set<Node> sources) {
+        Map<Node, Integer> dist = new HashMap<>();
+        Deque<Node> q = new ArrayDeque<>();
+        for (Node s : sources) {
+            dist.put(s, 0);
+            q.addLast(s);
+        }
+        while (!q.isEmpty()) {
+            Node u = q.removeFirst();
+            int du = dist.get(u);
+            for (Node v : G.getAdjacentNodes(u)) {
+                if (!dist.containsKey(v)) {
+                    dist.put(v, du + 1);
+                    q.addLast(v);
+                }
+            }
+        }
+        return dist;
+    }
+
+    /**
+     * Forb_G(X,Y) for sets X,Y (Perković et al. 2018).
+     */
+    private static Set<Node> getForbiddenForAdjustmentMulti(Graph G,
+                                                            String graphType,
+                                                            Set<Node> X,
+                                                            Set<Node> Y) {
+        Objects.requireNonNull(G);
+        if (X.isEmpty() || Y.isEmpty()) return Collections.emptySet();
+
+        // Forward reach from all X along possibly-out edges.
+        Set<Node> fwdFromX = forwardReach(G, graphType, X);
+
+        // Nodes that can (in forward sense) reach any y∈Y.
+        Set<Node> canReachY = backwardFilterByForwardRuleMulti(G, graphType, Y);
+
+        // Nodes on some possibly directed path from X to Y.
+        Set<Node> onSomePDPath = new LinkedHashSet<>(fwdFromX);
+        onSomePDPath.retainAll(canReachY);
+        onSomePDPath.removeAll(X);
+
+        // Seeds = X ∪ onSomePDPath
+        Set<Node> seeds = new LinkedHashSet<>(X);
+        seeds.addAll(onSomePDPath);
+
+        // Forb = forward reach from seeds, minus X and Y.
+        Set<Node> forb = forwardReach(G, graphType, seeds);
+        forb.removeAll(X);
+        forb.removeAll(Y);
+        return forb;
+    }
+
+    private static Set<Node> forwardReach(Graph G,
+                                          String graphType,
+                                          Set<Node> starts) {
+        Deque<Node> q = new ArrayDeque<>(starts);
+        Set<Node> seen = new LinkedHashSet<>(starts);
+        while (!q.isEmpty()) {
+            Node a = q.removeFirst();
+            for (Node b : G.getAdjacentNodes(a)) {
+                Edge e = G.getEdge(a, b);
+                if (e == null) continue;
+                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
+                if (seen.add(b)) q.addLast(b);
+            }
+        }
+        return seen;
+    }
+
+    // -------------------------------------------------------------------------
+    // Master recursive search, adapted to multi X,Y
+    // -------------------------------------------------------------------------
+
+    private static Set<Node> backwardFilterByForwardRuleMulti(Graph G,
+                                                              String graphType,
+                                                              Set<Node> Y) {
+        Set<Node> canReach = new LinkedHashSet<>();
+        Deque<Node> q = new ArrayDeque<>();
+
+        canReach.addAll(Y);
+        q.addAll(Y);
+
+        while (!q.isEmpty()) {
+            Node b = q.removeFirst();
+            for (Node a : G.getAdjacentNodes(b)) {
+                Edge e = G.getEdge(a, b);
+                if (e == null) continue;
+                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
+                if (canReach.add(a)) q.addLast(a);
+            }
+        }
+        return canReach;
+    }
+
+    // -------------------------------------------------------------------------
+    // Precomputation for multi X,Y
+    // -------------------------------------------------------------------------
+
+    private static boolean isPossiblyOutEdge(String graphType,
+                                             Edge e,
+                                             Node a,
+                                             Node b) {
+        if (e.pointsTowards(a)) return false;          // arrowhead into a: no
+        if (Edges.isBidirectedEdge(e)) return false;   // ↔ edges never "out"
+        if (Edges.isUndirectedEdge(e)) return true;    // – edges can be "out"
+        return true;                                   // tail at a is fine
+    }
+
+    private static String keyOf(Set<Node> Z) {
+        return Z.stream()
+                .map(Node::getName)
+                .sorted()
+                .reduce((a, b) -> a + "," + b)
+                .orElse("");
+    }
+
+    private static Set<Node> amenableBackboneMulti(Set<List<Node>> amenable,
+                                                   Set<Node> X,
+                                                   Set<Node> Y) {
+        LinkedHashSet<Node> s = new LinkedHashSet<>();
+        for (List<Node> p : amenable) {
+            for (int i = 1; i < p.size() - 1; i++) {
+                Node v = p.get(i);
+                if (!X.contains(v) && !Y.contains(v)) {
+                    s.add(v);
+                }
+            }
+        }
+        return s;
+    }
+
+    public AdjustmentMultiple setColliderPolicy(RecursiveAdjustment.ColliderPolicy p) {
         this.colliderPolicy = Objects.requireNonNull(p);
         return this;
     }
 
-    public AdjustmentMultiple setNoAmenablePolicy(Adjustment.NoAmenablePolicy p) {
+    public AdjustmentMultiple setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy p) {
         this.noAmenablePolicy = Objects.requireNonNull(p);
         return this;
     }
@@ -56,16 +184,16 @@ public final class AdjustmentMultiple {
     /**
      * Entry point analogous to Adjustment.adjustmentSetsRB, but for set-valued X and Y.
      *
-     * @param X               set of treatment nodes (non-empty, pairwise distinct from Y)
-     * @param Y               set of outcome nodes (non-empty, pairwise distinct from X)
-     * @param graphType       "dag", "pdag", "mag", or "pag" (case-insensitive); defaults to "dag" if null.
-     * @param maxNumSets      maximum number of adjustment sets to return.
-     * @param maxRadius       currently ignored (kept for API compatibility).
+     * @param X                 set of treatment nodes (non-empty, pairwise distinct from Y)
+     * @param Y                 set of outcome nodes (non-empty, pairwise distinct from X)
+     * @param graphType         "dag", "pdag", "mag", or "pag" (case-insensitive); defaults to "dag" if null.
+     * @param maxNumSets        maximum number of adjustment sets to return.
+     * @param maxRadius         currently ignored (kept for API compatibility).
      * @param nearWhichEndpoint currently ignored (kept for API compatibility).
-     * @param maxPathLength   maximum length of witness paths; if < 0, treated as "unbounded".
-     * @param avoidAmenable   if true, never adjust on the amenable backbone (Perković-style GAC).
-     * @param notFollowed     nodes never to follow during witness search or to include in Z.
-     * @param containing      nodes that must be included in every adjustment set.
+     * @param maxPathLength     maximum length of witness paths; if < 0, treated as "unbounded".
+     * @param avoidAmenable     if true, never adjust on the amenable backbone (Perković-style GAC).
+     * @param notFollowed       nodes never to follow during witness search or to include in Z.
+     * @param containing        nodes that must be included in every adjustment set.
      */
     public List<Set<Node>> adjustmentSets(Set<Node> X,
                                           Set<Node> Y,
@@ -82,10 +210,6 @@ public final class AdjustmentMultiple {
                 colliderPolicy, avoidAmenable, notFollowed, containing);
     }
 
-    // -------------------------------------------------------------------------
-    // Master recursive search, adapted to multi X,Y
-    // -------------------------------------------------------------------------
-
     private List<Set<Node>> adjustmentSetsInternal(Set<Node> X,
                                                    Set<Node> Y,
                                                    @Nullable String graphType,
@@ -93,7 +217,7 @@ public final class AdjustmentMultiple {
                                                    int maxRadius,
                                                    int nearWhichEndpoint,
                                                    int maxPathLength,
-                                                   Adjustment.ColliderPolicy colliderPolicy,
+                                                   RecursiveAdjustment.ColliderPolicy colliderPolicy,
                                                    boolean avoidAmenable,
                                                    @Nullable Set<Node> notFollowed,
                                                    @Nullable Set<Node> containing) {
@@ -138,7 +262,7 @@ public final class AdjustmentMultiple {
     }
 
     // -------------------------------------------------------------------------
-    // Precomputation for multi X,Y
+    // Single solve (multi X,Y)
     // -------------------------------------------------------------------------
 
     private PrecomputeContextMulti precomputeContextMulti(Set<Node> X,
@@ -242,26 +366,9 @@ public final class AdjustmentMultiple {
                 distFromCenter);
     }
 
-    // Helper: BFS distances from a set of sources over the undirected skeleton.
-    private static Map<Node, Integer> bfsDistances(Graph G, Set<Node> sources) {
-        Map<Node, Integer> dist = new HashMap<>();
-        Deque<Node> q = new ArrayDeque<>();
-        for (Node s : sources) {
-            dist.put(s, 0);
-            q.addLast(s);
-        }
-        while (!q.isEmpty()) {
-            Node u = q.removeFirst();
-            int du = dist.get(u);
-            for (Node v : G.getAdjacentNodes(u)) {
-                if (!dist.containsKey(v)) {
-                    dist.put(v, du + 1);
-                    q.addLast(v);
-                }
-            }
-        }
-        return dist;
-    }
+    // -------------------------------------------------------------------------
+    // Witness search: any x∈X to any y∈Y
+    // -------------------------------------------------------------------------
 
     /**
      * Collect amenable paths between any x∈X and any y∈Y.
@@ -277,7 +384,7 @@ public final class AdjustmentMultiple {
             for (Node y : Y) {
                 if (x.equals(y)) continue;
                 if ("PAG".equalsIgnoreCase(graphType)) {
-                    out.addAll(graph.paths().getAmenablePathsPag(x, y, maxLength));
+                    out.addAll(graph.paths().getAmenablePathsPag(x, y, maxLength, Set.of()));
                 } else {
                     out.addAll(graph.paths().getAmenablePathsPdagMag(x, y, maxLength));
                 }
@@ -286,93 +393,9 @@ public final class AdjustmentMultiple {
         return out;
     }
 
-    /**
-     * Forb_G(X,Y) for sets X,Y (Perković et al. 2018).
-     */
-    private static Set<Node> getForbiddenForAdjustmentMulti(Graph G,
-                                                            String graphType,
-                                                            Set<Node> X,
-                                                            Set<Node> Y) {
-        Objects.requireNonNull(G);
-        if (X.isEmpty() || Y.isEmpty()) return Collections.emptySet();
-
-        // Forward reach from all X along possibly-out edges.
-        Set<Node> fwdFromX = forwardReach(G, graphType, X);
-
-        // Nodes that can (in forward sense) reach any y∈Y.
-        Set<Node> canReachY = backwardFilterByForwardRuleMulti(G, graphType, Y);
-
-        // Nodes on some possibly directed path from X to Y.
-        Set<Node> onSomePDPath = new LinkedHashSet<>(fwdFromX);
-        onSomePDPath.retainAll(canReachY);
-        onSomePDPath.removeAll(X);
-
-        // Seeds = X ∪ onSomePDPath
-        Set<Node> seeds = new LinkedHashSet<>(X);
-        seeds.addAll(onSomePDPath);
-
-        // Forb = forward reach from seeds, minus X and Y.
-        Set<Node> forb = forwardReach(G, graphType, seeds);
-        forb.removeAll(X);
-        forb.removeAll(Y);
-        return forb;
-    }
-
-    private static Set<Node> forwardReach(Graph G,
-                                          String graphType,
-                                          Set<Node> starts) {
-        Deque<Node> q = new ArrayDeque<>(starts);
-        Set<Node> seen = new LinkedHashSet<>(starts);
-        while (!q.isEmpty()) {
-            Node a = q.removeFirst();
-            for (Node b : G.getAdjacentNodes(a)) {
-                Edge e = G.getEdge(a, b);
-                if (e == null) continue;
-                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
-                if (seen.add(b)) q.addLast(b);
-            }
-        }
-        return seen;
-    }
-
-    private static Set<Node> backwardFilterByForwardRuleMulti(Graph G,
-                                                              String graphType,
-                                                              Set<Node> Y) {
-        Set<Node> canReach = new LinkedHashSet<>();
-        Deque<Node> q = new ArrayDeque<>();
-
-        canReach.addAll(Y);
-        q.addAll(Y);
-
-        while (!q.isEmpty()) {
-            Node b = q.removeFirst();
-            for (Node a : G.getAdjacentNodes(b)) {
-                Edge e = G.getEdge(a, b);
-                if (e == null) continue;
-                if (!isPossiblyOutEdge(graphType, e, a, b)) continue;
-                if (canReach.add(a)) q.addLast(a);
-            }
-        }
-        return canReach;
-    }
-
-    private static boolean isPossiblyOutEdge(String graphType,
-                                             Edge e,
-                                             Node a,
-                                             Node b) {
-        if (e.pointsTowards(a)) return false;          // arrowhead into a: no
-        if (Edges.isBidirectedEdge(e)) return false;   // ↔ edges never "out"
-        if (Edges.isUndirectedEdge(e)) return true;    // – edges can be "out"
-        return true;                                   // tail at a is fine
-    }
-
-    // -------------------------------------------------------------------------
-    // Single solve (multi X,Y)
-    // -------------------------------------------------------------------------
-
     private @Nullable LinkedHashSet<Node> solveOnceMulti(PrecomputeContextMulti ctx,
                                                          Set<Node> ban,
-                                                         Adjustment.ColliderPolicy colliderPolicy,
+                                                         RecursiveAdjustment.ColliderPolicy colliderPolicy,
                                                          boolean rbMode) {
         if (ctx.amenable.isEmpty()) {
             switch (noAmenablePolicy) {
@@ -436,10 +459,6 @@ public final class AdjustmentMultiple {
         return Z;
     }
 
-    // -------------------------------------------------------------------------
-    // Witness search: any x∈X to any y∈Y
-    // -------------------------------------------------------------------------
-
     private Optional<List<Node>> findBackdoorWitnessMulti(Set<Node> X,
                                                           Set<Node> Y,
                                                           Set<Node> Z,
@@ -481,6 +500,10 @@ public final class AdjustmentMultiple {
         }
         return Optional.empty();
     }
+
+    // -------------------------------------------------------------------------
+    // Blocker choice (unchanged except for parameter types)
+    // -------------------------------------------------------------------------
 
     private boolean dfsWitnessMulti(LinkedList<Node> path,
                                     Set<Node> inPath,
@@ -525,6 +548,10 @@ public final class AdjustmentMultiple {
         return false;
     }
 
+    // -------------------------------------------------------------------------
+    // Local helper methods (triple openness, roles, keys, backbone)
+    // -------------------------------------------------------------------------
+
     /**
      * First backdoor neighbors of x relative to the outcome set Y.
      */
@@ -566,10 +593,6 @@ public final class AdjustmentMultiple {
         return starts;
     }
 
-    // -------------------------------------------------------------------------
-    // Blocker choice (unchanged except for parameter types)
-    // -------------------------------------------------------------------------
-
     private @Nullable Node chooseBlockerOnWitness(List<Node> witness,
                                                   List<Node> pool,
                                                   Set<Node> poolSet,
@@ -578,7 +601,7 @@ public final class AdjustmentMultiple {
                                                   Set<Node> Z,
                                                   Set<Node> amenableBackbone,
                                                   String graphType,
-                                                  Adjustment.ColliderPolicy colliderPolicy,
+                                                  RecursiveAdjustment.ColliderPolicy colliderPolicy,
                                                   Set<Node> notFollowed,
                                                   boolean rbMode) {
 
@@ -613,7 +636,7 @@ public final class AdjustmentMultiple {
 
         if (candidates.isEmpty()) return null;
 
-        if (colliderPolicy == Adjustment.ColliderPolicy.NONCOLLIDER_FIRST) {
+        if (colliderPolicy == RecursiveAdjustment.ColliderPolicy.NONCOLLIDER_FIRST) {
             List<Node> noncol = new ArrayList<>();
             for (Node v : candidates) {
                 RoleOnWitness r = roleOnWitness(v, witness);
@@ -638,10 +661,6 @@ public final class AdjustmentMultiple {
         return candidates.get(0);
     }
 
-    // -------------------------------------------------------------------------
-    // Local helper methods (triple openness, roles, keys, backbone)
-    // -------------------------------------------------------------------------
-
     private boolean tripleKeepsOpen(Node a, Node b, Node c, Set<Node> Z) {
         boolean collider = graph.isDefCollider(a, b, c);
         boolean defNon = graph.isDefNoncollider(a, b, c);
@@ -664,7 +683,7 @@ public final class AdjustmentMultiple {
         return RoleOnWitness.AMBIGUOUS;
     }
 
-    private int roleScore(RoleOnWitness r, Adjustment.ColliderPolicy p) {
+    private int roleScore(RoleOnWitness r, RecursiveAdjustment.ColliderPolicy p) {
         int base = switch (r) {
             case NONCOLLIDER -> 100;
             case AMBIGUOUS -> 30;
@@ -673,29 +692,6 @@ public final class AdjustmentMultiple {
         };
         // For now, we ignore p beyond the NONCOLLIDER_FIRST filter above.
         return base;
-    }
-
-    private static String keyOf(Set<Node> Z) {
-        return Z.stream()
-                .map(Node::getName)
-                .sorted()
-                .reduce((a, b) -> a + "," + b)
-                .orElse("");
-    }
-
-    private static Set<Node> amenableBackboneMulti(Set<List<Node>> amenable,
-                                                   Set<Node> X,
-                                                   Set<Node> Y) {
-        LinkedHashSet<Node> s = new LinkedHashSet<>();
-        for (List<Node> p : amenable) {
-            for (int i = 1; i < p.size() - 1; i++) {
-                Node v = p.get(i);
-                if (!X.contains(v) && !Y.contains(v)) {
-                    s.add(v);
-                }
-            }
-        }
-        return s;
     }
 
     // -------------------------------------------------------------------------
