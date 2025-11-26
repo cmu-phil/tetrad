@@ -694,6 +694,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
             if ("SELECT_ALL".equals(node.getName())) {
                 PathsAction.this.nodes2 = new ArrayList<>(graph.getNodes());
+            } else {
                 PathsAction.this.nodes2 = Collections.singletonList(node);
             }
 
