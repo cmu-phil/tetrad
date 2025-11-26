@@ -139,6 +139,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -157,7 +158,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.dagToPag(graph);
+        return GraphTransforms.dagToPag(graph, false);
     }
 
     /**
@@ -205,6 +206,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.USE_MAX_P_HEURISTIC);
+        params.add(Params.EXCLUDE_SELECTION_BIAS);
 
         // General
         params.add(Params.TIME_LAG);

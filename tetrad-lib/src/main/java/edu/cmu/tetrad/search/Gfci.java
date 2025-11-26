@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -38,7 +38,6 @@ import java.io.PrintStream;
 import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
-import static edu.cmu.tetrad.graph.GraphUtils.fciOrientbk;
 
 /**
  * *-FCI implements a template modification of GFCI that starts with a given Markov CPDAG and then fixes that result to
@@ -134,7 +133,7 @@ public class Gfci implements IGraphSearch {
      * process.
      */
     private boolean useMaxP;
-    private boolean replicatingGraph;
+    private boolean excludeSelectionBias = false;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -251,32 +250,32 @@ public class Gfci implements IGraphSearch {
         }
     }
 
-    /**
-     * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
-     * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
-     *
-     * @param graph The graph in which the nodes reside.
-     * @param a     The first node in the triple.
-     * @param b     The second node in the triple.
-     * @param c     The third node in the triple.
-     * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
-     */
-    private static boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
-        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
-    }
+//    /**
+//     * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
+//     * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
+//     *
+//     * @param graph The graph in which the nodes reside.
+//     * @param a     The first node in the triple.
+//     * @param b     The second node in the triple.
+//     * @param c     The third node in the triple.
+//     * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
+//     */
+//    private static boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
+//        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
+//    }
 
-    /**
-     * Checks if the given nodes are unshielded colliders when considering the given graph.
-     *
-     * @param graph the graph to consider
-     * @param a     the first node
-     * @param b     the second node
-     * @param c     the third node
-     * @return true if the nodes are unshielded colliders, false otherwise
-     */
-    private static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
-        return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
-    }
+//    /**
+//     * Checks if the given nodes are unshielded colliders when considering the given graph.
+//     *
+//     * @param graph the graph to consider
+//     * @param a     the first node
+//     * @param b     the second node
+//     * @param c     the third node
+//     * @return true if the nodes are unshielded colliders, false otherwise
+//     */
+//    private static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
+//        return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
+//    }
 
     /**
      * Generates a list of all possible choices for sublists from the adjacency list with sizes up to the given depth
@@ -303,24 +302,24 @@ public class Gfci implements IGraphSearch {
         return choices;
     }
 
-    /**
-     * Creates a set of nodes by selecting elements from the adjacency list based on the given indices.
-     *
-     * @param choice A list of integers representing the indices of nodes to be included in the combination.
-     * @param adj    A list of nodes representing the adjacency list from which the nodes are selected.
-     * @return A set of nodes selected from the adjacency list based on the indices in the choice list.
-     */
-    private static Set<Node> combination(List<Integer> choice, List<Node> adj) {
-
-        // Create a set of nodes from the subset of adjx represented by choice.
-        Set<Node> combination = new HashSet<>();
-
-        for (int i : choice) {
-            combination.add(adj.get(i));
-        }
-
-        return combination;
-    }
+//    /**
+//     * Creates a set of nodes by selecting elements from the adjacency list based on the given indices.
+//     *
+//     * @param choice A list of integers representing the indices of nodes to be included in the combination.
+//     * @param adj    A list of nodes representing the adjacency list from which the nodes are selected.
+//     * @return A set of nodes selected from the adjacency list based on the indices in the choice list.
+//     */
+//    private static Set<Node> combination(List<Integer> choice, List<Node> adj) {
+//
+//        // Create a set of nodes from the subset of adjx represented by choice.
+//        Set<Node> combination = new HashSet<>();
+//
+//        for (int i : choice) {
+//            combination.add(adj.get(i));
+//        }
+//
+//        return combination;
+//    }
 
     /**
      * Runs the graph and returns the search PAG.
@@ -404,7 +403,16 @@ public class Gfci implements IGraphSearch {
 
         pag.reorientAllWith(Endpoint.CIRCLE);
 
-        fciOrientbk(knowledge, pag, pag.getNodes());
+
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
+        strategy.setDepth(-1);
+        strategy.setMaxLength(-1);
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setVerbose(verbose);
+
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
 
         for (Node y : nodes) {
             List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
@@ -539,22 +547,14 @@ public class Gfci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
-        strategy.setDepth(-1);
-        strategy.setMaxLength(-1);
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setVerbose(verbose);
-
-        fciOrient.finalOrientation(pag);
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished implied orientation.");
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>());
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>(), excludeSelectionBias);
         }
 
         if (verbose) {
@@ -746,12 +746,12 @@ public class Gfci implements IGraphSearch {
     }
 
     /**
-     * Sets the state of the replicatingGraph property.
+     * Sets whether selection bias should be excluded during the search process.
      *
-     * @param replicatingGraph a boolean value indicating whether the graph is in a replicating state.
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      */
-    public void setReplicatingGraph(boolean replicatingGraph) {
-        this.replicatingGraph = replicatingGraph;
+    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
+        this.excludeSelectionBias = excludeSelectionBias;
     }
 }
 

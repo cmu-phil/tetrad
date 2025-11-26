@@ -607,7 +607,7 @@ public class TimeoutComparison {
 
                     if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphSaveLoadUtils.saveGraph(GraphTransforms.dagToPag(graph), file4, false);
+                        GraphSaveLoadUtils.saveGraph(GraphTransforms.dagToPag(graph, true), file4, false);
                     }
                 }
 
@@ -1238,7 +1238,7 @@ public class TimeoutComparison {
             comparisonGraph = GraphTransforms.dagToCpdag(dag);
         } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
             Graph trueGraph1 = new EdgeListGraph(trueGraph);
-            comparisonGraph = GraphTransforms.dagToPag(trueGraph1);
+            comparisonGraph = GraphTransforms.dagToPag(trueGraph1, true);
         } else {
             throw new IllegalArgumentException("Unrecognized graph type.");
         }

@@ -70,7 +70,7 @@ public class CheckGraphForMpagAction extends AbstractAction {
             return;
         }
 
-        if (graph.paths().isLegalMpag()) {
+        if (graph.paths().isLegalMpag(true)) {
             JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "Graph is a legal MPAG.");
         } else {
             JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "Graph is not a legal MPAG.");

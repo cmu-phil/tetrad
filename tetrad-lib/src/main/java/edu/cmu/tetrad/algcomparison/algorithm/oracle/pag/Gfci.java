@@ -111,7 +111,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         }
 
         edu.cmu.tetrad.search.Gfci search = new edu.cmu.tetrad.search.Gfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
-        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
+//        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setKnowledge(this.knowledge);
@@ -122,6 +122,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setOut(System.out);
 
         return search.search();
@@ -136,7 +137,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.dagToPag(graph);
+        return GraphTransforms.dagToPag(graph, false);
     }
 
     /**
@@ -179,6 +180,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.USE_MAX_P_HEURISTIC);
         parameters.add(Params.NUM_THREADS);
         parameters.add(Params.START_FROM_COMPLETE_GRAPH);
+        parameters.add(Params.EXCLUDE_SELECTION_BIAS);
 
         parameters.add(Params.VERBOSE);
         return parameters;

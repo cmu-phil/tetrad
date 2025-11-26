@@ -125,6 +125,7 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         Graph graph;
         double fdrQ = parameters.getDouble(Params.FDR_Q);
@@ -150,7 +151,7 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph trueGraph = new EdgeListGraph(graph);
-        return GraphTransforms.dagToPag(trueGraph);
+        return GraphTransforms.dagToPag(trueGraph, false);
     }
 
     /**
@@ -189,9 +190,9 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.EXCLUDE_SELECTION_BIAS);
         parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.GUARANTEE_PAG);
-
         parameters.add(Params.VERBOSE);
 
         return parameters;

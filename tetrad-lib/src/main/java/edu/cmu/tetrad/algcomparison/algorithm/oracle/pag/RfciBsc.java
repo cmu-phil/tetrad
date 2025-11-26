@@ -143,7 +143,7 @@ public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, Ha
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph trueGraph = new EdgeListGraph(graph);
-        return GraphTransforms.dagToPag(trueGraph);
+        return GraphTransforms.dagToPag(trueGraph, false);
     }
 
     /**

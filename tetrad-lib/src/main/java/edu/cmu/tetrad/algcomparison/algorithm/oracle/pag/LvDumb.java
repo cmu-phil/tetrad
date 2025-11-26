@@ -60,7 +60,7 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
+public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -77,7 +77,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents BOSS-POD algorithm.
+     * This class represents LV-Dumb algorithm.
      *
      * <p>
      * The FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
@@ -88,7 +88,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvLite() {
+    public LvDumb() {
         // Used for reflection; do not delete it.
     }
 
@@ -105,7 +105,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvLite(ScoreWrapper score) {
+    public LvDumb(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -134,7 +134,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         }
 
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(score);
+        edu.cmu.tetrad.search.LvDumb search = new edu.cmu.tetrad.search.LvDumb(score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -144,9 +144,11 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         // DAG to PAG
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setKnowledge(this.knowledge);
 
         try {
@@ -164,7 +166,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.dagToPag(graph);
+        return GraphTransforms.dagToPag(graph, false);
     }
 
     /**
@@ -207,6 +209,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
 
         // General
+        params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 

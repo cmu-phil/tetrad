@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 
@@ -66,7 +67,7 @@ public class BidirectedTrue implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        Graph pag = GraphTransforms.dagToPag(trueGraph);
+        Graph pag = GraphTransforms.dagToPag(trueGraph, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         int t = 0;
 

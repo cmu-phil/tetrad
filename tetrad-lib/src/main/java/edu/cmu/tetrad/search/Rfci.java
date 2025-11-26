@@ -91,6 +91,7 @@ public final class Rfci implements IGraphSearch {
      */
     private boolean verbose;
     private boolean replicatingGraph = false;
+    private boolean excludeSelectionBias = false;
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.
@@ -203,10 +204,10 @@ public final class Rfci implements IGraphSearch {
         orient.setCompleteRuleSetUsed(true);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        orient.fciOrientbk(getKnowledge(), this.graph, this.variables);
+        orient.fciOrientbk(getKnowledge(), this.graph, this.variables, excludeSelectionBias);
         ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
 
-        orient.finalOrientation(this.graph);
+        orient.finalOrientation(this.graph, excludeSelectionBias);
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
@@ -558,6 +559,15 @@ public final class Rfci implements IGraphSearch {
      */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
+    }
+
+    /**
+     * Sets whether selection bias should be excluded during the search process.
+     *
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
+     */
+    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
+        this.excludeSelectionBias = excludeSelectionBias;
     }
 }
 

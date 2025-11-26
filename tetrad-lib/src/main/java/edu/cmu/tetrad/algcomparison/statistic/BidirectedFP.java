@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 
@@ -66,7 +67,7 @@ public class BidirectedFP implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        Graph pag = GraphTransforms.dagToPag(trueGraph);
+        Graph pag = GraphTransforms.dagToPag(trueGraph, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         BidirectedConfusion confusion = new BidirectedConfusion(pag, estGraph);
         return confusion.getFp();
     }

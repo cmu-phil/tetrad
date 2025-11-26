@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -44,17 +45,17 @@ import java.io.Serial;
 import java.util.*;
 
 /**
- * BOSS-DC (Best Order Score Search Divide and Conquer)
+ * Restricted BOSS.
  *
  * @author bryanandrews
  * @author josephramsey
  * @version $Id: $Id
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "Restricted-BOSS",
-//        command = "r-boss",
-//        algoType = AlgType.forbid_latent_common_causes
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "Restricted-BOSS",
+        command = "r-boss",
+        algoType = AlgType.forbid_latent_common_causes
+)
 @Bootstrapping
 public class RestrictedBoss extends AbstractBootstrapAlgorithm
         implements Algorithm, TakesScoreWrapper, ReturnsBootstrapGraphs, LatentStructureAlgorithm {

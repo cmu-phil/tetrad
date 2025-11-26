@@ -65,7 +65,7 @@ public class IdaEditor extends JPanel {
     private JLabel squaredDiffMinTotalLabel = null;
 
     /**
-     *
+     * The label for the squared difference between maximum total effect and true total effect.
      */
     private JLabel squaredDiffMaxTotalLabel = null;
 
@@ -122,6 +122,27 @@ public class IdaEditor extends JPanel {
                     squaredDiffMaxTotalLabel.setText("Average Max Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMaxSquaredDiffEstTrue(visiblePairs)));
                 }
             }
+        });
+
+        JCheckBox showOptimalIda = new JCheckBox("Show Optimal IDA");
+        showOptimalIda.setSelected(idaCheckEst.isShowOptimalIda());
+        showOptimalIda.addActionListener(e -> {
+            idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
+            idaCheckEst.recompute();  // recompute totalEffects/absTotalEffects
+
+            // Rebuild the table model with updated results
+            List<OrderedPair<Node>> pairs1 = idaCheckEst.getOrderedPairs();
+            IdaTableModel newModel = new IdaTableModel(pairs1, idaCheckEst, idaModel.getTrueSemIm());
+            table.setModel(newModel);
+
+            // If you want the sorter to keep working:
+            TableRowSorter<IdaTableModel> newSorter = new TableRowSorter<>(newModel);
+            table.setRowSorter(newSorter);
+
+            table.revalidate();
+            table.repaint();
+
+            setSummaryText(numberFormat, idaCheckEst, pairs);
         });
 
         // Create the text field
@@ -202,6 +223,13 @@ public class IdaEditor extends JPanel {
         Box horiz = Box.createHorizontalBox();
         Box vert = Box.createVerticalBox();
 
+        if (idaCheckEst.getGraph().paths().isLegalPdag()) {
+            Box box = Box.createHorizontalBox();
+            box.add(showOptimalIda);
+            box.add(Box.createHorizontalGlue());
+            vert.add(box);
+        }
+
         Box horiz2 = Box.createHorizontalBox();
         horiz2.add(label);
         horiz2.add(filterText);
@@ -213,16 +241,15 @@ public class IdaEditor extends JPanel {
 
         if (idaModel.getTrueSemIm() != null) {
             avgSquaredDistLabel = new JLabel();
-            avgSquaredDistLabel.setText("Average Squared Distance: " + numberFormat.format(idaCheckEst.getAverageSquaredDistance(pairs)));
             addStatToBox(avgSquaredDistLabel, statsBox);
 
             squaredDiffMinTotalLabel = new JLabel();
-            squaredDiffMinTotalLabel.setText("Average Min Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMinSquaredDiffEstTrue(pairs)));
             addStatToBox(squaredDiffMinTotalLabel, statsBox);
 
             squaredDiffMaxTotalLabel = new JLabel();
-            squaredDiffMaxTotalLabel.setText("Avearege Max Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMaxSquaredDiffEstTrue(pairs)));
             addStatToBox(squaredDiffMaxTotalLabel, statsBox);
+
+            setSummaryText(numberFormat, idaCheckEst, pairs);
         }
 
         horiz.add(vert);
@@ -242,6 +269,12 @@ public class IdaEditor extends JPanel {
 
         revalidate();
         repaint();
+    }
+
+    private void setSummaryText(NumberFormat numberFormat, IdaCheck idaCheckEst, List<OrderedPair<Node>> pairs) {
+        avgSquaredDistLabel.setText("Average Squared Distance: " + numberFormat.format(idaCheckEst.getAverageSquaredDistance(pairs)));
+        squaredDiffMinTotalLabel.setText("Average Min Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMinSquaredDiffEstTrue(pairs)));
+        squaredDiffMaxTotalLabel.setText("Avearege Max Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMaxSquaredDiffEstTrue(pairs)));
     }
 
     /**

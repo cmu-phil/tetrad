@@ -172,7 +172,6 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
     public List<String> getParameters() {
         ArrayList<String> params = new ArrayList<>();
 
-        // Flags
         params.add(Params.GRASP_DEPTH);
         params.add(Params.GRASP_SINGULAR_DEPTH);
         params.add(Params.GRASP_NONSINGULAR_DEPTH);
@@ -185,8 +184,6 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.SEED);
         params.add(Params.VERBOSE);
-
-        // Parameters
         params.add(Params.NUM_STARTS);
 
         return params;

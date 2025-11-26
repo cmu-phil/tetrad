@@ -165,10 +165,11 @@ public final class MagToPag {
     /**
      * This method does the conversion of MAG to PAG.
      *
-     * @param checkMag Whether to check if the MAG is legal before conversion.
+     * @param checkMag           Whether to check if the MAG is legal before conversion.
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      * @return Returns the converted PAG.
      */
-    public Graph convert(boolean checkMag) {
+    public Graph convert(boolean checkMag, boolean excludeSelectionBias) {
         if (checkMag && !this.mag.paths().isLegalMag()) {
             throw new IllegalArgumentException("Not legal mag");
         }
@@ -183,6 +184,7 @@ public final class MagToPag {
         fciOrient.setMaxDiscriminatingPathLength(-1);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
 
         for (Node y : pag.getNodes()) {
             List<Node> adjy = pag.getAdjacentNodes(y);
@@ -201,7 +203,7 @@ public final class MagToPag {
         }
 
 //        fciOrient.ruleR0(pag, new HashSet<>());
-        fciOrient.finalOrientation(pag);
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
 
         return pag;
     }

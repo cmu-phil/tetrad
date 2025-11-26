@@ -30,7 +30,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Lofs;
+import edu.cmu.tetrad.search.Pairwise;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -96,10 +96,10 @@ public class Tanh extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         List<DataSet> dataSets = new ArrayList<>();
         dataSets.add(SimpleDataLoader.getContinuousDataSet(dataSet));
 
-        Lofs lofs = new Lofs(this.externalGraph, dataSets);
-        lofs.setRule(Lofs.Rule.Tanh);
+        Pairwise pairwise = new Pairwise(this.externalGraph, dataSets);
+        pairwise.setRule(Pairwise.Rule.Tanh);
 
-        return lofs.orient();
+        return pairwise.orient();
     }
 
     /**

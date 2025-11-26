@@ -60,12 +60,12 @@ public class SemidirectedRecall implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Proportion of (X, Y) where if semidirected path in true then also in est";
+        return "Proportion of (X, Y) where if potentially directed path in true then also in est";
     }
 
     /**
-     * Calculates the Semidirected-Rec statistic, which is the proportion of (X, Y) where if there is a semidirected
-     * path in the true graph, then there is also a semidirected path in the estimated graph.
+     * Calculates the Semidirected-Rec statistic, which is the proportion of (X, Y) where if there is a potentially directed
+     * path in the true graph, then there is also a potentially directed path in the estimated graph.
      *
      * @param trueDag  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
@@ -86,8 +86,8 @@ public class SemidirectedRecall implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.paths().existsSemiDirectedPath(x, Collections.singleton(y))) {
-                    if (estGraph.paths().existsSemiDirectedPath(x, Collections.singleton(y))) {
+                if (trueGraph.paths().existsPotentiallyDirectedPath(x, Collections.singleton(y))) {
+                    if (estGraph.paths().existsPotentiallyDirectedPath(x, Collections.singleton(y))) {
                         tp++;
                     } else {
                         fn++;

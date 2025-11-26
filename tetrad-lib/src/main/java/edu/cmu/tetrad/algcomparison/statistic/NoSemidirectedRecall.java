@@ -59,7 +59,7 @@ public class NoSemidirectedRecall implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Proportion of (X, Y) where if no semidirected path in true then also not in est";
+        return "Proportion of (X, Y) where if no potentially directed path in true then also not in est";
     }
 
     /**
@@ -77,8 +77,8 @@ public class NoSemidirectedRecall implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!cpdag.paths().existsSemiDirectedPath(x, y)) {
-                    if (!estGraph.paths().existsSemiDirectedPath(x, y)) {
+                if (!cpdag.paths().existsPotentiallyDirectedPath(x, y)) {
+                    if (!estGraph.paths().existsPotentiallyDirectedPath(x, y)) {
                         tp++;
                     } else {
                         fn++;

@@ -73,7 +73,7 @@ public class NumDefinitelyNotDirectedPaths implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (!new Paths(cpdag).existsSemiDirectedPath(x, y)) {
+                if (!new Paths(cpdag).existsPotentiallyDirectedPath(x, y)) {
                     count++;
                 }
             }

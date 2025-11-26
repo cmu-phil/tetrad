@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 
@@ -34,14 +35,14 @@ import static edu.cmu.tetrad.graph.GraphUtils.compatible;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class NumCompatiblePossiblyDirectedEdgeAncestors implements Statistic {
+public class NumCompatiblePotentiallyDirectedEdgeNonAncestors implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * Constructs a new instance of the statistic.
      */
-    public NumCompatiblePossiblyDirectedEdgeAncestors() {
+    public NumCompatiblePotentiallyDirectedEdgeNonAncestors() {
 
     }
 
@@ -50,7 +51,7 @@ public class NumCompatiblePossiblyDirectedEdgeAncestors implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "#CPDEA";
+        return "#CPDENA";
     }
 
     /**
@@ -58,7 +59,7 @@ public class NumCompatiblePossiblyDirectedEdgeAncestors implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Number compatible PD X-->Y for which X is an ancestor of Y in true";
+        return "Number compatible PD X-->Y for which X is not an ancestor of Y in true";
     }
 
     /**
@@ -68,7 +69,7 @@ public class NumCompatiblePossiblyDirectedEdgeAncestors implements Statistic {
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         GraphUtils.addEdgeSpecializationMarkup(estGraph);
 
-        Graph pag = GraphTransforms.dagToPag(trueGraph);
+        Graph pag = GraphTransforms.dagToPag(trueGraph, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         int tp = 0;
         int fp = 0;
@@ -89,7 +90,7 @@ public class NumCompatiblePossiblyDirectedEdgeAncestors implements Statistic {
             }
         }
 
-        return tp;
+        return fp;
     }
 
     /**

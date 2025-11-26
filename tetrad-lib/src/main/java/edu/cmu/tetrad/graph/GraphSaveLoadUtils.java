@@ -283,48 +283,70 @@ public class GraphSaveLoadUtils {
      * @return a graph.
      */
     public static Graph loadGraphAmatCpdag(File file) {
-        try {
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                String varNames = reader.readLine();
-                String[] tokens = varNames.split("[ \t\"]+");
-
-                List<Node> nodes = new ArrayList<>();
-                for (String token : tokens) {
-                    if (!token.isBlank()) {
-                        nodes.add(new GraphNode(token));
-                    }
-                }
-
-                Graph graph = new EdgeListGraph(nodes);
-                int[][] m = new int[nodes.size()][nodes.size()];
-
-                for (int i = 0; i < nodes.size(); i++) {
-                    String line = reader.readLine();
-                    tokens = line.split("[ \t]+");
-
-                    for (int j = 1; j <= nodes.size(); j++) {
-                        m[i][j - 1] = Integer.parseInt(tokens[j]);
-                    }
-                }
-
-                for (int i = 0; i < nodes.size(); i++) {
-                    for (int j = 0; j < nodes.size(); j++) {
-                        Node n1 = nodes.get(i);
-                        Node n2 = nodes.get(j);
-
-                        int e1 = m[i][j];
-                        int e2 = m[j][i];
-
-                        if (e1 == 0 && e2 == 1) {
-                            graph.addDirectedEdge(n1, n2);
-                        } else if (e1 == 1 && e2 == 1) {
-                            graph.addUndirectedEdge(n1, n2);
-                        }
-                    }
-                }
-
-                return graph;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            // 1. Read header with variable names
+            String header = reader.readLine();
+            if (header == null) {
+                throw new IllegalArgumentException("Empty file: " + file);
             }
+
+            String[] tokens = header.split("[ \t\"]+");
+
+            List<Node> nodes = new ArrayList<>();
+            for (String token : tokens) {
+                if (!token.isBlank()) {
+                    nodes.add(new GraphNode(token));
+                }
+            }
+
+            int p = nodes.size();
+            int[][] m = new int[p][p];
+
+            // 2. Read matrix rows: each row = "name 0 1 0 ..."
+            for (int i = 0; i < p; i++) {
+                String line = reader.readLine();
+                if (line == null) {
+                    throw new IllegalArgumentException(
+                            "Unexpected end of file while reading row " + i + " of " + p);
+                }
+
+                tokens = line.trim().split("[ \t]+");
+                if (tokens.length < p + 1) {
+                    throw new IllegalArgumentException(
+                            "Row " + i + " has too few columns: " + line);
+                }
+
+                for (int j = 0; j < p; j++) {
+                    m[i][j] = Integer.parseInt(tokens[j + 1]); // skip row-name token
+                }
+            }
+
+            // 3. Build graph from m (amat.cpdag semantics)
+            Graph graph = new EdgeListGraph(nodes);
+
+            for (int i = 0; i < p; i++) {
+                for (int j = i + 1; j < p; j++) { // i < j: handle each unordered pair once
+                    int e_ij = m[i][j];
+                    int e_ji = m[j][i];
+
+                    Node ni = nodes.get(i);
+                    Node nj = nodes.get(j);
+
+                    if (e_ij == 0 && e_ji == 1) {
+                        // i -> j
+                        graph.addDirectedEdge(ni, nj);
+                    } else if (e_ij == 1 && e_ji == 0) {
+                        // j -> i
+                        graph.addDirectedEdge(nj, ni);
+                    } else if (e_ij == 1 && e_ji == 1) {
+                        // undirected i -- j
+                        graph.addUndirectedEdge(ni, nj);
+                    }
+                    // else: e_ij == e_ji == 0 → no edge
+                }
+            }
+
+            return graph;
         } catch (IOException e) {
             throw new RuntimeException("Error reading from file.", e);
         }
@@ -340,71 +362,82 @@ public class GraphSaveLoadUtils {
      * @return a graph.
      */
     public static Graph loadGraphAmatPag(File file) {
-        try {
-            String fileName = "example.txt";
-
-            // Use try-with-resources to ensure that the file is closed after reading
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                String varNames = reader.readLine();
-                String[] tokens = varNames.split("[ \t\"]+");
-
-                List<Node> nodes = new ArrayList<>();
-                for (String token : tokens) {
-                    if (!token.isBlank()) {
-                        nodes.add(new GraphNode(token));
-                    }
-                }
-
-                Graph graph = new EdgeListGraph(nodes);
-                int[][] m = new int[nodes.size()][nodes.size()];
-
-                for (int i = 0; i < nodes.size(); i++) {
-                    String line = reader.readLine();
-                    tokens = line.split("[ \t]+");
-
-                    for (int j = 1; j <= nodes.size(); j++) {
-                        m[i][j - 1] = Integer.parseInt(tokens[j]);
-                    }
-                }
-
-                for (int i = 0; i < nodes.size(); i++) {
-                    for (int j = i + 1; j < nodes.size(); j++) {
-                        Node n1 = nodes.get(i);
-                        Node n2 = nodes.get(j);
-
-                        int e1 = m[i][j];
-                        int e2 = m[j][i];
-
-                        Endpoint e1a = switch (e1) {
-                            case 0 -> Endpoint.NULL;
-                            case 1 -> Endpoint.CIRCLE;
-                            case 2 -> Endpoint.ARROW;
-                            case 3 -> Endpoint.TAIL;
-                            default -> throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
-                        };
-
-                        Endpoint e2a = switch (e2) {
-                            case 0 -> Endpoint.NULL;
-                            case 1 -> Endpoint.CIRCLE;
-                            case 2 -> Endpoint.ARROW;
-                            case 3 -> Endpoint.TAIL;
-                            default -> throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
-                        };
-
-                        if (e1a != Endpoint.NULL && e2a != Endpoint.NULL) {
-                            Edge edge = new Edge(n1, n2, e1a, e2a);
-                            graph.addEdge(edge);
-                        } else if (e1a != Endpoint.NULL || e2a != Endpoint.NULL) {
-                            throw new IllegalArgumentException("Invalid endpoint combination: " + e1a + " " + e2a);
-                        }
-                    }
-                }
-
-                return graph;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            // 1. Read header line with variable names
+            String header = reader.readLine();
+            if (header == null) {
+                throw new IllegalArgumentException("Empty file: " + file);
             }
+
+            String[] tokens = header.split("[ \t\"]+");
+
+            List<Node> nodes = new ArrayList<>();
+            for (String token : tokens) {
+                if (!token.isBlank()) {
+                    nodes.add(new GraphNode(token));
+                }
+            }
+
+            int p = nodes.size();
+            int[][] m = new int[p][p];
+
+            // 2. Read matrix rows
+            for (int i = 0; i < p; i++) {
+                String line = reader.readLine();
+                if (line == null) {
+                    throw new IllegalArgumentException(
+                            "Unexpected end of file while reading row " + i + " of " + p);
+                }
+
+                tokens = line.trim().split("[ \t]+");
+                if (tokens.length < p + 1) {
+                    throw new IllegalArgumentException(
+                            "Row " + i + " has too few entries: " + line);
+                }
+
+                for (int j = 0; j < p; j++) {
+                    m[i][j] = Integer.parseInt(tokens[j + 1]); // skip row-name token
+                }
+            }
+
+            // 3. Build graph
+            Graph graph = new EdgeListGraph(nodes);
+
+            for (int i = 0; i < p; i++) {
+                for (int j = i + 1; j < p; j++) {
+                    int markAtJ = m[i][j]; // mark at node j
+                    int markAtI = m[j][i]; // mark at node i
+
+                    Endpoint epI = codeToEndpoint(markAtI);
+                    Endpoint epJ = codeToEndpoint(markAtJ);
+
+                    if (epI == Endpoint.NULL && epJ == Endpoint.NULL) {
+                        continue; // no edge
+                    } else if (epI == Endpoint.NULL || epJ == Endpoint.NULL) {
+                        throw new IllegalArgumentException(
+                                "Invalid endpoint combination between " +
+                                nodes.get(i) + " and " + nodes.get(j) +
+                                ": " + epI + " " + epJ);
+                    }
+
+                    graph.addEdge(new Edge(nodes.get(i), nodes.get(j), epI, epJ));
+                }
+            }
+
+            return graph;
         } catch (IOException e) {
-            throw new RuntimeException("Error reading from file.", e);
+            throw new RuntimeException("Error reading from file " + file, e);
         }
+    }
+
+    private static Endpoint codeToEndpoint(int code) {
+        return switch (code) {
+            case 0 -> Endpoint.NULL;
+            case 1 -> Endpoint.CIRCLE;
+            case 2 -> Endpoint.ARROW;
+            case 3 -> Endpoint.TAIL;
+            default -> throw new IllegalArgumentException("Unexpected endpoint code: " + code);
+        };
     }
 
 //    public static Graph loadGraphPcalg(File file) {
@@ -1086,51 +1119,51 @@ public class GraphSaveLoadUtils {
      * @return the adjacency matrix representation of the graph in CPAG format
      * @throws IllegalArgumentException if the graph is not a PDAG (including CPDAG or DAG)
      */
-    public static String graphToAmatCpag(Graph g) {
-//        if (!(g.paths().isLegalPdag())) {
-//            throw new IllegalArgumentException("Graph is not a PDAG (including CPDAG or DAG).");
-//        }
-
+    public static String graphToAmatCpdag(Graph g) {
         List<Node> vars = g.getNodes();
+        int p = vars.size();
+        int[][] m = new int[p][p]; // defaults to 0
 
-        int[][] m = new int[vars.size()][vars.size()];
+        for (int i = 0; i < p; i++) {
+            Node ni = vars.get(i);
+            for (int j = 0; j < p; j++) {
+                if (i == j) continue;
 
-        for (int i = 0; i < vars.size(); i++) {
-            for (int j = 0; j < vars.size(); j++) {
-                if (i == j) {
-                    continue;
-                }
+                Node nj = vars.get(j);
+                Edge e = g.getEdge(ni, nj);
+                if (e == null) continue;
 
-                Node node1 = vars.get(i);
-                Node node2 = vars.get(j);
-
-                if (g.isAdjacentTo(node1, node2)) {
-                    Edge edge = g.getEdge(node1, node2);
-
-                    if (Edges.isDirectedEdge(edge)) {
-                        if (edge.pointsTowards(node2)) {
-                            m[j][i] = 1;
-                        }
-                    } else if (Edges.isUndirectedEdge(edge)) {
-                        m[i][j] = 1;
+                if (Edges.isDirectedEdge(e)) {
+                    // e is some A -> B. Use pointsTowards to see which way.
+                    if (e.pointsTowards(nj)) {
+                        // ni -> nj
+                        m[i][j] = 0;
                         m[j][i] = 1;
+                    } else if (e.pointsTowards(ni)) {
+                        // nj -> ni
+                        m[i][j] = 1;
+                        m[j][i] = 0;
                     }
+                } else if (Edges.isUndirectedEdge(e)) {
+                    // undirected ni -- nj
+                    m[i][j] = 1;
+                    m[j][i] = 1;
                 }
             }
         }
 
         StringBuilder sb = new StringBuilder();
 
+        // Header: column names
         for (Node node : vars) {
             sb.append("\"").append(node.getName()).append("\" ");
         }
-
         sb.append("\n");
 
-        for (int i = 0; i < vars.size(); i++) {
+        // Rows: row name + entries
+        for (int i = 0; i < p; i++) {
             sb.append("\"").append(vars.get(i).getName()).append("\" ");
-
-            for (int j = 0; j < vars.size(); j++) {
+            for (int j = 0; j < p; j++) {
                 sb.append(m[i][j]).append(" ");
             }
             sb.append("\n");
@@ -1149,72 +1182,61 @@ public class GraphSaveLoadUtils {
      * @return a {@link java.lang.String} object
      */
     public static String graphToAmatPag(Graph g) {
-//        if (!(g.paths().isLegalPag() || g.paths().isLegalMag())) {
-//            throw new IllegalArgumentException("Graph is not a PAG or MAG.");
-//        }
+        // Optional but sensible: enforce PAG/MAG if you want
+        // if (!(g.paths().isLegalPag() || g.paths().isLegalMag())) {
+        //     throw new IllegalArgumentException("Graph is not a PAG or MAG.");
+        // }
 
         List<Node> vars = g.getNodes();
+        int p = vars.size();
+        int[][] m = new int[p][p]; // initialized to 0
 
-        int[][] m = new int[vars.size()][vars.size()];
+        for (int i = 0; i < p; i++) {
+            Node ni = vars.get(i);
+            for (int j = 0; j < p; j++) {
+                if (i == j) continue;
 
-        for (int i = 0; i < vars.size(); i++) {
+                Node nj = vars.get(j);
+                Edge e = g.getEdge(ni, nj);
+                if (e == null) continue;
 
-            for (int j = 0; j < vars.size(); j++) {
-                if (i == j) {
-                    continue;
-                }
+                // Endpoint at node i and node j
+                Endpoint epI = e.getEndpoint(ni);
+                Endpoint epJ = e.getEndpoint(nj);
 
-                Node node1 = vars.get(i);
-                Node node2 = vars.get(j);
-
-                if (g.isAdjacentTo(node1, node2)) {
-                    Edge edge = g.getEdge(node1, node2);
-
-                    Endpoint endpoint1 = edge.getEndpoint1();
-
-                    if (endpoint1 == Endpoint.CIRCLE) {
-                        m[j][i] = 1;
-                    } else if (endpoint1 == Endpoint.ARROW) {
-                        m[j][i] = 2;
-                    } else if (endpoint1 == Endpoint.TAIL) {
-                        m[j][i] = 3;
-                    } else {
-                        m[j][i] = 0;
-                    }
-
-                    Endpoint endpoint2 = edge.getEndpoint2();
-
-                    if (endpoint2 == Endpoint.CIRCLE) {
-                        m[i][j] = 1;
-                    } else if (endpoint2 == Endpoint.ARROW) {
-                        m[i][j] = 2;
-                    } else if (endpoint2 == Endpoint.TAIL) {
-                        m[i][j] = 3;
-                    } else {
-                        m[i][j] = 0;
-                    }
-                }
+                // pcalg amat.pag: entry [row i, col j] is mark at *column* node j
+                m[i][j] = encodeEndpoint(epJ); // mark at nj
+                m[j][i] = encodeEndpoint(epI); // mark at ni
             }
         }
 
         StringBuilder sb = new StringBuilder();
 
+        // Header line: column names
         for (Node node : vars) {
             sb.append("\"").append(node.getName()).append("\" ");
         }
-
         sb.append("\n");
 
-        for (int i = 0; i < vars.size(); i++) {
+        // Rows: row name + row entries
+        for (int i = 0; i < p; i++) {
             sb.append("\"").append(vars.get(i).getName()).append("\" ");
-
-            for (int j = 0; j < vars.size(); j++) {
+            for (int j = 0; j < p; j++) {
                 sb.append(m[i][j]).append(" ");
             }
             sb.append("\n");
         }
 
         return sb.toString();
+    }
+
+    private static int encodeEndpoint(Endpoint ep) {
+        return switch (ep) {
+            case CIRCLE -> 1;
+            case ARROW  -> 2;
+            case TAIL   -> 3;
+            default     -> 0; // NULL or anything else
+        };
     }
 
     /**

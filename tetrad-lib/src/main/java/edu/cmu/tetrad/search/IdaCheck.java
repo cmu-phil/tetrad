@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -84,9 +84,21 @@ public class IdaCheck {
     private final SemIm trueSemIm;
 
     /**
+     * The graph being used to estimate IDA.
+     */
+    private final Graph graph;
+
+    /**
      * A map from nodes in the estimated model to nodes in the SEM IM.
      */
     private HashMap<Node, Node> nodeMap;
+
+    /**
+     * Indicates whether the optimal IDA results should be displayed (Witte et al. 2020). Typically used as a flag to
+     * determine if specific computations or results related to the optimal IDA should be shown in the context of
+     * analyzing total effects or related metrics between nodes.
+     */
+    private boolean showOptimalIda = true;
 
     /**
      * Constructs a new IDA check for the given PDAG and data set.
@@ -111,12 +123,13 @@ public class IdaCheck {
         }
 
         // Check to make sure the graph is an PDAG.
-        if (!graph.paths().isLegalPdag()) {
-            throw new IllegalArgumentException("Expecting an PDAG.");
+        if (!(graph.paths().isLegalPdag() || graph.paths().isLegalPag())) {
+            throw new IllegalArgumentException("Expecting an PDAG or PAG    .");
         }
 
         // Convert the PDAG to a PDAG with the same nodes as the data set
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
+        this.graph = graph;
 
         // Check to make sure the set of variables from the PDAG is the same as the set of variables from the data set.
         if (!new HashSet<>(graph.getNodes()).equals(new HashSet<>(dataSet.getVariables()))) {
@@ -126,15 +139,11 @@ public class IdaCheck {
         this.nodes = dataSet.getVariables();
         this.totalEffects = new HashMap<>();
         this.absTotalEffects = new HashMap<>();
-        this.ida = new Ida(dataSet, graph, nodes);
+        this.ida = new Ida(dataSet, graph, List.of());
         this.pairs = calcOrderedPairs();
 
-        for (OrderedPair<Node> pair : calcOrderedPairs()) {
-            LinkedList<Double> totalEffects = ida.getTotalEffects(pair.getFirst(), pair.getSecond());
-            LinkedList<Double> absTotalEffects = ida.getAbsTotalEffects(pair.getFirst(), pair.getSecond());
-            this.totalEffects.put(pair, totalEffects);
-            this.absTotalEffects.put(pair, absTotalEffects);
-        }
+        // Fill totalEffects / absTotalEffects respecting current idaType
+        computeIdaResults();
 
         this.trueSemIm = trueSemIm;
 
@@ -148,6 +157,28 @@ public class IdaCheck {
                 Node _node = trueSemIm.getSemPm().getGraph().getNode(node.getName());
                 nodeMap.put(node, _node);
             }
+        }
+    }
+
+    /**
+     * (Re)computes totalEffects and absTotalEffects for all ordered pairs
+     * using the current IDA type (REGULAR vs OPTIMAL).
+     */
+    private void computeIdaResults() {
+        // Make sure Ida is in sync with the flag
+        ida.setIdaType(showOptimalIda ? Ida.IDA_TYPE.OPTIMAL : Ida.IDA_TYPE.REGULAR);
+
+        // Clear old results
+        this.totalEffects.clear();
+        this.absTotalEffects.clear();
+
+        // Recompute for all pairs
+        for (OrderedPair<Node> pair : this.pairs) {
+            LinkedList<Double> total = ida.getTotalEffects(pair.getFirst(), pair.getSecond());
+            LinkedList<Double> abs = ida.getAbsTotalEffects(pair.getFirst(), pair.getSecond());
+
+            this.totalEffects.put(pair, total);
+            this.absTotalEffects.put(pair, abs);
         }
     }
 
@@ -187,9 +218,17 @@ public class IdaCheck {
      * @return the minimum total effect value between the two nodes.
      * @throws IllegalArgumentException if the nodes x and y are the same.
      */
+//    public double getMinTotalEffect(Node x, Node y) {
+//        if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
+//        LinkedList<Double> effects = this.totalEffects.get(new OrderedPair<>(x, y));
+//        return effects.getFirst();
+//    }
     public double getMinTotalEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
         LinkedList<Double> effects = this.totalEffects.get(new OrderedPair<>(x, y));
+        if (effects == null || effects.isEmpty()) {
+            return Double.NaN;  // not O-set-eligible
+        }
         return effects.getFirst();
     }
 
@@ -201,9 +240,17 @@ public class IdaCheck {
      * @return the maximum total effect value between the two nodes.
      * @throws IllegalArgumentException if the nodes x and y are the same.
      */
+//    public double getMaxTotalEffect(Node x, Node y) {
+//        if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
+//        LinkedList<Double> effects = this.totalEffects.get(new OrderedPair<>(x, y));
+//        return effects.getLast();
+//    }
     public double getMaxTotalEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
         LinkedList<Double> effects = this.totalEffects.get(new OrderedPair<>(x, y));
+        if (effects == null || effects.isEmpty()) {
+            return Double.NaN;  // not O-set-eligible
+        }
         return effects.getLast();
     }
 
@@ -217,17 +264,24 @@ public class IdaCheck {
      */
     public double getIdaMinEffect(Node x, Node y) {
         if (x == y) throw new IllegalArgumentException("Expecting the nodes x and y to be distinct.");
-        LinkedList<Double> effects = this.absTotalEffects.get(new OrderedPair<>(x, y));
-        LinkedList<Double> totalEffects = this.totalEffects.get(new OrderedPair<>(x, y));
-        Double first = effects.getFirst();
-        double ret = Double.NaN;
 
-        for (Double totalEffect : totalEffects) {
-            if (Math.abs(totalEffect) == first) {
-                ret = totalEffect;
-            }
+        OrderedPair<Node> key = new OrderedPair<>(x, y);
+        LinkedList<Double> abs = this.absTotalEffects.get(key);
+        LinkedList<Double> total = this.totalEffects.get(key);
+
+        if (abs == null || abs.isEmpty() || total == null || total.isEmpty()) {
+            return Double.NaN; // not O-set-eligible
         }
 
+        double targetAbs = abs.getFirst();  // smallest |effect|
+        double ret = Double.NaN;
+
+        for (double te : total) {
+            if (Math.abs(te) == targetAbs) {
+                ret = te;
+                break;
+            }
+        }
         return ret;
     }
 
@@ -240,10 +294,13 @@ public class IdaCheck {
      * @return the squared distance between the two nodes.
      */
     public double getSquaredDistance(OrderedPair<Node> pair) {
-        Node x = pair.getFirst();
-        Node y = pair.getSecond();
+        LinkedList<Double> effects = this.totalEffects.get(pair);
+        if (effects == null || effects.isEmpty()) {
+            return Double.NaN;  // no O-IDA effects for this pair
+        }
+
         double trueTotalEffect = getTrueTotalEffect(pair);
-        double distance = ida.distance(this.totalEffects.get(new OrderedPair<>(x, y)), trueTotalEffect);
+        double distance = ida.distance(effects, trueTotalEffect);
         return distance * distance;
     }
 
@@ -255,18 +312,25 @@ public class IdaCheck {
      * @return the average of the squared distances between the true total effects and the IDA effect ranges.
      */
     public double getAverageSquaredDistance(List<OrderedPair<Node>> pairs) {
-        List<OrderedPair<Node>> _pairs = getOrderedPairs();
+        List<OrderedPair<Node>> allPairs = getOrderedPairs();
         double sum = 0.0;
+        int count = 0;
 
         for (OrderedPair<Node> pair : pairs) {
-            if (!_pairs.contains(pair)) {
+            if (!allPairs.contains(pair)) {
                 throw new IllegalArgumentException("The pair " + pair + " is not in the dataset.");
             }
 
+            LinkedList<Double> effects = this.totalEffects.get(pair);
+            if (effects == null || effects.isEmpty()) {
+                continue;  // not O-set-eligible
+            }
+
             sum += getSquaredDistance(pair);
+            count++;
         }
 
-        return sum / pairs.size();
+        return count == 0 ? Double.NaN : sum / count;
     }
 
     /**
@@ -308,18 +372,25 @@ public class IdaCheck {
      * @return the average of the squared differences between the minimum total effects and the true total effects.
      */
     public double getAvgMinSquaredDiffEstTrue(List<OrderedPair<Node>> pairs) {
-        List<OrderedPair<Node>> _pairs = getOrderedPairs();
+        List<OrderedPair<Node>> allPairs = getOrderedPairs();
         double sum = 0.0;
+        int count = 0;
 
         for (OrderedPair<Node> pair : pairs) {
-            if (!_pairs.contains(pair)) {
+            if (!allPairs.contains(pair)) {
                 throw new IllegalArgumentException("The pair " + pair + " is not in the dataset.");
             }
 
+            LinkedList<Double> effects = this.totalEffects.get(pair);
+            if (effects == null || effects.isEmpty()) {
+                continue;  // not O-set-eligible
+            }
+
             sum += getSquaredMinTrueDistance(pair);
+            count++;
         }
 
-        return sum / pairs.size();
+        return count == 0 ? Double.NaN : sum / count;
     }
 
     /**
@@ -361,18 +432,25 @@ public class IdaCheck {
      * @return the average of the squared differences between the maximum total effects and the true total effects.
      */
     public double getAvgMaxSquaredDiffEstTrue(List<OrderedPair<Node>> pairs) {
-        List<OrderedPair<Node>> _pairs = getOrderedPairs();
+        List<OrderedPair<Node>> allPairs = getOrderedPairs();
         double sum = 0.0;
+        int count = 0;
 
         for (OrderedPair<Node> pair : pairs) {
-            if (!_pairs.contains(pair)) {
+            if (!allPairs.contains(pair)) {
                 throw new IllegalArgumentException("The pair " + pair + " is not in the dataset.");
             }
 
+            LinkedList<Double> effects = this.totalEffects.get(pair);
+            if (effects == null || effects.isEmpty()) {
+                continue;  // not O-set-eligible
+            }
+
             sum += getSquaredMaxTrueDist(pair);
+            count++;
         }
 
-        return sum / pairs.size();
+        return count == 0 ? Double.NaN : sum / count;
     }
 
     /**
@@ -391,6 +469,45 @@ public class IdaCheck {
         }
 
         return OrderedPairs;
+    }
+
+    /**
+     * Sets whether the "show optimal IDA" option is enabled or disabled.
+     *
+     * @param selected a boolean value indicating whether to enable or disable the "show optimal IDA" option.
+     */
+    public void setShowOptimalIda(boolean selected) {
+        this.showOptimalIda = selected;
+    }
+
+    /**
+     * Checks if the "show optimal IDA" option is enabled.
+     *
+     * @return true if the "show optimal IDA" option is enabled, false otherwise.
+     */
+    public boolean isShowOptimalIda() {
+        return this.showOptimalIda;
+    }
+
+    /**
+     * Recomputes the total effects and absolute total effects for all ordered pairs
+     * of nodes in the graph. The method utilizes the current IDA type, which can
+     * be either regular or optimal depending on the "show optimal IDA" flag.
+     *
+     * This method clears any previously computed effects and recalculates them
+     * using the current state of the graph and IDA configuration.
+     */
+    public void recompute() {
+        computeIdaResults();
+    }
+
+    /**
+     * Returns a copy of the graph associated with this instance.
+     *
+     * @return a copy of the graph.
+     */
+    public Graph getGraph() {
+        return graph.copy();
     }
 }
 

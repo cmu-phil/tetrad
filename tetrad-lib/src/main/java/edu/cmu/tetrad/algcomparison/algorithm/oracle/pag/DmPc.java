@@ -142,7 +142,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.dagToPag(graph);
+        return GraphTransforms.dagToPag(graph, false);
     }
 
     /**

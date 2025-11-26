@@ -64,7 +64,7 @@ public class GSquare implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestGSquare test = new IndTestGSquare(SimpleDataLoader.getDiscreteDataSet(dataSet), parameters.getDouble("test"));
+        IndTestGSquare test = new IndTestGSquare(SimpleDataLoader.getDiscreteDataSet(dataSet), parameters.getDouble(Params.ALPHA));
         test.setMinCountPerCell(parameters.getDouble(Params.MIN_COUNT_PER_CELL));
 
         if (parameters.getInt(Params.CELL_TABLE_TYPE) == 1) {

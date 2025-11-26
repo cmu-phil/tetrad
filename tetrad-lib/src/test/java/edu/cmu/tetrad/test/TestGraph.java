@@ -315,7 +315,8 @@ public final class TestGraph {
         graph.addDirectedEdge(x4, x3);
 
         try {
-            List<Set<Node>> adjustmentSets = graph.paths().adjustmentSets(x1, x3, "PDAG", 4, 2, 1, 6);
+            List<Set<Node>> adjustmentSets = graph.paths().adjustmentSets(x1, x3, "PDAG", 4,
+                    2, 1, 6, false, false);
             System.out.println(adjustmentSets);
         } catch (Exception e) {
             System.out.println("No adjustment set: " + e.getMessage());
@@ -340,8 +341,10 @@ public final class TestGraph {
                 Node y = graph.getNodes().get(j);
 
                 try {
-                    List<Set<Node>> adjustmentSetsNearSource = graph.paths().adjustmentSets(x, y, "PDAG", 8, 2, 1, 6);
-                    List<Set<Node>> adjustmentSetsNearTarget = graph.paths().adjustmentSets(x, y, "PDAG", 8, 2, 2, 6);
+                    List<Set<Node>> adjustmentSetsNearSource = graph.paths().adjustmentSets(x, y, "PDAG",
+                            8, 2, 1, 6, false, false);
+                    List<Set<Node>> adjustmentSetsNearTarget = graph.paths().adjustmentSets(x, y, "PDAG",
+                            8, 2, 2, 6, false, false);
 
                     System.out.println("x " + x + " y " + y);
                     System.out.println("    AdjustmentSets near source: " + adjustmentSetsNearSource);
@@ -378,13 +381,15 @@ public final class TestGraph {
 
                     List<Set<Node>> adjustmentSetsNearSource = new ArrayList<>();
                     try {
-                        adjustmentSetsNearSource = graph.paths().adjustmentSets(x, y, "PDAG", 4, 4, 1, 8);
+                        adjustmentSetsNearSource = graph.paths().adjustmentSets(x, y, "PDAG", 4, 4, 1,
+                                8, false, false);
                     } catch (Exception e) {
                         System.out.println("No adjustment set new source: " + e.getMessage());
                     }
                     List<Set<Node>> adjustmentSetsNearTarget = new ArrayList<>();
                     try {
-                        adjustmentSetsNearTarget = graph.paths().adjustmentSets(x, y, "PDAG", 4, 4, 2, 8);
+                        adjustmentSetsNearTarget = graph.paths().adjustmentSets(x, y, "PDAG", 4, 4,
+                                2, 8, false, false);
                     } catch (Exception e) {
                         System.out.println("No adjustment set new target: " + e.getMessage());
                     }

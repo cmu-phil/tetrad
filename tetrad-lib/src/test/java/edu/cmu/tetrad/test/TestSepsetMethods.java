@@ -100,7 +100,7 @@ public class TestSepsetMethods {
             }
             case PAG -> {
                 graph = RandomGraph.randomDag(nodes, numLatentsForPag, numEdges, 100, 100, 100, false);
-                graph = GraphTransforms.dagToPag(graph);
+                graph = GraphTransforms.dagToPag(graph, false);
             }
             default -> throw new IllegalArgumentException("Unknown graph type: " + graphType);
         }
@@ -293,7 +293,7 @@ public class TestSepsetMethods {
         Graph dag = RandomGraph.randomDag(20, 10, 40, 100,
                 100, 100, false);
 
-        Graph pag = new MagToPag(dag).convert(true);
+        Graph pag = new MagToPag(dag).convert(true, false);
 
         for (Node x : pag.getNodes()) {
             for (Node y : pag.getNodes()) {
@@ -333,7 +333,7 @@ public class TestSepsetMethods {
             Graph dag = RandomGraph.randomDag(15, 5, 40, 100,
                     100, 100, false);
 
-            Graph pag = new MagToPag(GraphTransforms.dagToMag(dag)).convert(true);
+            Graph pag = new MagToPag(GraphTransforms.dagToMag(dag)).convert(true, false);
 
 
             for (Node x : pag.getNodes()) {

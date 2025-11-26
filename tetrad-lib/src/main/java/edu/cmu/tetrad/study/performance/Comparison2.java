@@ -192,11 +192,11 @@ public class Comparison2 {
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
                 Fci search = new Fci(test);
                 result.setResultGraph(search.search());
-                result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
+                result.setCorrectResult(GraphTransforms.dagToPag(trueDag, false));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES_FCI) {
                 FgesFci search = new FgesFci(test, score);
                 result.setResultGraph(search.search());
-                result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
+                result.setCorrectResult(GraphTransforms.dagToPag(trueDag, false));
             } else {
                 throw new IllegalArgumentException("Unrecognized algorithm.");
             }
@@ -432,14 +432,14 @@ public class Comparison2 {
             }
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
+            result.setCorrectResult(GraphTransforms.dagToPag(trueDag, false));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES_FCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
             FgesFci search = new FgesFci(test, score);
             result.setResultGraph(search.search());
-            result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
+            result.setCorrectResult(GraphTransforms.dagToPag(trueDag, false));
         } else {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }

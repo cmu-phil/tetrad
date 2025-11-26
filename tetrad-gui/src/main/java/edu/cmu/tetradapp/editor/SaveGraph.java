@@ -230,7 +230,7 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                String text = GraphSaveLoadUtils.graphToAmatCpag(graph);
+                String text = GraphSaveLoadUtils.graphToAmatCpdag(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);

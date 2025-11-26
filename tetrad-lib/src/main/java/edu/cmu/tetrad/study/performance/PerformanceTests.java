@@ -878,7 +878,7 @@ public class PerformanceTests {
 
         this.out.println(outGraph);
 
-        System.out.println(MisclassificationUtils.edgeMisclassifications(outGraph, GraphTransforms.dagToPag(dag)));
+        System.out.println(MisclassificationUtils.edgeMisclassifications(outGraph, GraphTransforms.dagToPag(dag, false)));
 
         long time4 = MillisecondTimes.timeMillis();
 
@@ -1490,7 +1490,7 @@ public class PerformanceTests {
 //            dagToPag.setMaxPathLength(maxPathLength);
 //            Graph truePag = dagToPag.convert();
 
-            Graph truePag = GraphTransforms.dagToPag(dag);
+            Graph truePag = GraphTransforms.dagToPag(dag, false);
 
             System.out.println("True PAG_of_the_true_DAG done");
 

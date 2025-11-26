@@ -36,14 +36,14 @@ import java.io.Serial;
  * @author Joseh Ramsey
  * @version $Id: $Id
  */
-public class NoSemidirectedF1 implements Statistic {
+public class NoPotentiallyDirectedF1 implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * Constructs a new instance of the statistic.
      */
-    public NoSemidirectedF1() {
+    public NoPotentiallyDirectedF1() {
 
     }
 
@@ -52,7 +52,7 @@ public class NoSemidirectedF1 implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "NoSemidirected-F1";
+        return "NoPossDirected-F1";
     }
 
     /**
@@ -68,7 +68,7 @@ public class NoSemidirectedF1 implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double precision = new NoSemidirectedPrecision().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
+        double precision = new NoPotentiallyDirectedF1().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
         double recall = new NoSemidirectedRecall().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
         return 2 * (precision * recall) / (precision + recall);
     }

@@ -109,7 +109,7 @@ public final class SemIm implements Im, ISemIm {
     private List<Parameter> meanParameters;
     /**
      * Matrix of error covariances. errCovar[i][j] is the covariance of the error term of getExoNodes().get(i) and
-     * getExoNodes().get(j), with the special case (duh!) that errCovar[i][i] is the variance of getExoNodes.get(i). The
+     * getExoNodes().get(j), with the special case that errCovar[i][i] is the variance of getExoNodes.get(i). The
      * values of these may be changed, but the array itself may not.
      */
     private Matrix errCovar;

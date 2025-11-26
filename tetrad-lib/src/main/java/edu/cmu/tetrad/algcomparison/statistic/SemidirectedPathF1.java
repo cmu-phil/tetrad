@@ -63,7 +63,7 @@ public class SemidirectedPathF1 implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "F1 statistic for semidirected paths comparing the estimated graph to the true graph";
+        return "F1 statistic for potentially directed paths comparing the estimated graph to the true graph";
     }
 
     /**

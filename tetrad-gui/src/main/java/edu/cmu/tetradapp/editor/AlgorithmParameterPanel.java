@@ -22,7 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.PagSampleRfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.PagSamplingRfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RfciBsc;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
@@ -124,7 +124,7 @@ public class AlgorithmParameterPanel extends JPanel {
             this.mainPanel.add(createSubPanel(title, params, parameters));
             this.mainPanel.add(Box.createVerticalStrut(10));
 
-        } else if (algorithm instanceof PagSampleRfci) {
+        } else if (algorithm instanceof PagSamplingRfci) {
             String title = algorithm.getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
 
             Set<String> params = new LinkedHashSet<>();
@@ -135,13 +135,13 @@ public class AlgorithmParameterPanel extends JPanel {
 
             title = "RFCI Parameters";
             params.clear();
-            params.addAll(PagSampleRfci.RFCI_PARAMETERS);
+            params.addAll(PagSamplingRfci.RFCI_PARAMETERS);
             this.mainPanel.add(createSubPanel(title, params, parameters));
             this.mainPanel.add(Box.createVerticalStrut(10));
 
             title = "Probabilistic Test Parameters";
             params.clear();
-            params.addAll(PagSampleRfci.PROBABILISTIC_TEST_PARAMETERS);
+            params.addAll(PagSamplingRfci.PROBABILISTIC_TEST_PARAMETERS);
             this.mainPanel.add(createSubPanel(title, params, parameters));
             this.mainPanel.add(Box.createVerticalStrut(10));
         } else {

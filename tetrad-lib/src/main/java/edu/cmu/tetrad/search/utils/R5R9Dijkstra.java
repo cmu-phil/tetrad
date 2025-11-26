@@ -39,7 +39,7 @@ import java.util.*;
  * We report distances as total weights along the shortest path from the start node to the y node, where by default the
  * weight of each edge is 1. We report unreachable nodes as at a distance of Integer.MAX_VALUE. Edges in the graph are
  * dynamically calculated by the algorithm using two methods--looking for o-o edges only, suitable for the R5 rule, and
- * looking for edges along potentially directed paths (i.e., semidirected paths), suitable for the R9 rule. The end node
+ * looking for edges along potentially directed paths (i.e., potentially directed paths), suitable for the R9 rule. The end node
  * is used to stop the algorithm once that node has been visited, so that a shortest path has been found.
  * <p>
  * The algorithm is constrained to avoid certain paths. The start *-* end edge itself and start *-* z *-* end paths are
@@ -259,7 +259,7 @@ public class R5R9Dijkstra {
      * nodes. The nodes are just the nodes in the underlying Tetrad graph, and neighbors are determined dynamically
      * based on the edges in the graph. There are two modes of operation, one for potentially directed graphs and one
      * for nondirected graphs. In the potentially directed mode, the algorithm will only traverse edges that are
-     * semidirected, i.e., edges that are all directable in one direction but not the other. This is suitable for R9. In
+     * potentially directed, i.e., edges that are all directable in one direction but not the other. This is suitable for R9. In
      * the nondirected mode, the algorithm will traverse nondirected edges only in both directions. This is suitable for
      * R5.
      */
@@ -298,14 +298,14 @@ public class R5R9Dijkstra {
             // Peter--here is the choice point between R5 and R9.
             if (rule == Rule.R9) {
 
-                // For R9 we follow semidirected (potentially directed) paths.
+                // For R9 we follow potentially directed paths.
 
                 // R9
                 Set<edu.cmu.tetrad.graph.Edge> edges = tetradGraph.getEdges(node);
 
-                // We need to filter these neighbors to allow only those that pass using TraverseSemidirected.
+                // We need to filter these neighbors to allow only those that pass using TraversePotentiallyDirected.
                 for (Edge edge : edges) {
-                    Node other = Edges.traverseSemiDirected(node, edge);
+                    Node other = Edges.traversePotentiallyDirected(node, edge);
 
                     if (other == null) {
                         continue;
@@ -322,7 +322,7 @@ public class R5R9Dijkstra {
                 // R5
                 Set<edu.cmu.tetrad.graph.Edge> edges = tetradGraph.getEdges(node);
 
-                // We need to filter these neighbors to allow only those that pass using TraverseSemidirected.
+                // We need to filter these neighbors to allow only those that pass using TraversePotentiallyDirected.
                 for (Edge edge : edges) {
                     Node other = Edges.traverseNondirected(node, edge);
 

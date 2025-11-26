@@ -31,13 +31,13 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.List;
 
 /**
- * BOSS-POD is a class that implements the IGraphSearch interface. The BOSS-POD algorithm finds the BOSS DAG for
+ * LV-Dumb is a class that implements the IGraphSearch interface. The LV-Dumb algorithm finds the BOSS DAG for
  * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG, without
  * doing any further latent variable reasoning.
  *
  * @author josephramsey
  */
-public final class LvLite implements IGraphSearch {
+public final class LvDumb implements IGraphSearch {
     /**
      * The score.
      */
@@ -81,15 +81,16 @@ public final class LvLite implements IGraphSearch {
      * of any length. Setting this value to a positive integer constrains the maximum length of such paths.
      */
     private int maxDiscriminatingPathLength = -1;
+    private boolean excludeSelectionBias = false;
 
     /**
-     * BOSS-POD constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
+     * LV-Dumb constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
      * Score object.
      *
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public LvLite(Score score) {
+    public LvDumb(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -110,7 +111,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("===Starting BOSS-POD===");
+            TetradLogger.getInstance().log("===Starting LV-Dumb===");
         }
 
         if (verbose) {
@@ -144,7 +145,7 @@ public final class LvLite implements IGraphSearch {
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
         dagToPag.setKnowledge(knowledge);
         dagToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        Graph pag = dagToPag.convert(true);
+        Graph pag = dagToPag.convert(true, excludeSelectionBias);
 
 
 //        Graph pag = new MagToPag(mag).convert(false);
@@ -156,7 +157,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("BOSS-POD finished.");
+            TetradLogger.getInstance().log("LV-Dumb finished.");
         }
 
         return pag;
@@ -224,6 +225,15 @@ public final class LvLite implements IGraphSearch {
      */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
+    }
+
+    /**
+     * Sets whether to exclude selection bias during the search process.
+     *
+     * @param excludeSelectionBias true to exclude selection bias, false otherwise
+     */
+    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
+        this.excludeSelectionBias = excludeSelectionBias;
     }
 }
 

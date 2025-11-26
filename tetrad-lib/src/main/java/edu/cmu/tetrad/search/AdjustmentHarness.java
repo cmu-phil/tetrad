@@ -59,7 +59,7 @@ import java.util.*;
  *
  * <h3>Notes</h3>
  * <ul>
- *   <li>“PDAG” here refers to running the RA enumerator on a possibly directed/ancestral graph setting
+ *   <li>“PDAG” here refers to running the RA enumerator on a potentially directed/ancestral graph setting
  *       (DAG/CPDAG/MPDAG). For PAG semantics use the corresponding PAG-capable RA configuration.</li>
  *   <li>Adjustment sets returned are trimmed to minimality via a try-delete pass.</li>
  * </ul>
@@ -164,7 +164,8 @@ public class AdjustmentHarness {
                 Node y = vars.get(j);
 
                 long t0 = System.nanoTime();
-                List<Set<Node>> sets = G.paths().adjustmentSets(x, y, GRAPH_TYPE, K, RADIUS, TGT_HUG, L);
+                List<Set<Node>> sets = G.paths().adjustmentSets(x, y, GRAPH_TYPE, K, RADIUS, TGT_HUG, L,
+                        false, false);
                 long t1 = System.nanoTime();
                 double genMsPair = (t1 - t0) / 1_000_000.0;
                 adjCallNanos += (t1 - t0);

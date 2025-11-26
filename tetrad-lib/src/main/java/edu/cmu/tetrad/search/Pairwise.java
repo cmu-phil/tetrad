@@ -58,7 +58,7 @@ import static org.apache.commons.math3.util.FastMath.pow;
  * @see Rule
  * @see Knowledge
  */
-public class Lofs {
+public class Pairwise {
     /**
      * The graph to be oriented.
      */
@@ -102,7 +102,7 @@ public class Lofs {
     /**
      * The (LoFS) score to use.
      */
-    private Lofs.Score score = Lofs.Score.andersonDarling;
+    private Pairwise.Score score = Pairwise.Score.andersonDarling;
     /**
      * The self-loop strength, if applicable.
      */
@@ -132,7 +132,7 @@ public class Lofs {
      *                 dataset are given, the data will be concatenated (pooled).
      * @throws java.lang.IllegalArgumentException if any.
      */
-    public Lofs(Graph graph, List<DataSet> dataSets)
+    public Pairwise(Graph graph, List<DataSet> dataSets)
             throws IllegalArgumentException {
 
         if (graph == null) {
@@ -244,7 +244,7 @@ public class Lofs {
      * @param score This score.
      * @see Score
      */
-    public void setScore(Lofs.Score score) {
+    public void setScore(Pairwise.Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -388,10 +388,10 @@ public class Lofs {
             laggedSkeleton.addUndirectedEdge(node0, node1);
         }
 
-        Lofs lofs = new Lofs(laggedSkeleton, timeSeriesDataSets);
-        lofs.setKnowledge(knowledge);
-        lofs.setRule(Rule.R1);
-        Graph _graph = lofs.orient();
+        Pairwise pairwise = new Pairwise(laggedSkeleton, timeSeriesDataSets);
+        pairwise.setKnowledge(knowledge);
+        pairwise.setRule(Rule.R1);
+        Graph _graph = pairwise.orient();
 
         graph.removeEdges(new ArrayList<>(graph.getEdges()));
 
@@ -1692,24 +1692,24 @@ public class Lofs {
      * @throws IllegalStateException If the specified score type is not supported.
      */
     private double score(Node y, List<Node> parents) {
-        if (this.score == Lofs.Score.andersonDarling) {
+        if (this.score == Pairwise.Score.andersonDarling) {
             return andersonDarlingPASquare(y, parents);
-        } else if (this.score == Lofs.Score.kurtosis) {
+        } else if (this.score == Pairwise.Score.kurtosis) {
             return abs(kurtosis(residuals(y, parents, true)));
-        } else if (this.score == Lofs.Score.entropy) {
+        } else if (this.score == Pairwise.Score.entropy) {
             return entropy(y, parents);
-        } else if (this.score == Lofs.Score.skew) {
+        } else if (this.score == Pairwise.Score.skew) {
             return abs(skewness(residuals(y, parents, true)));
-        } else if (this.score == Lofs.Score.fifthMoment) {
+        } else if (this.score == Pairwise.Score.fifthMoment) {
             return abs(standardizedFifthMoment(residuals(y, parents, true)));
-        } else if (this.score == Lofs.Score.absoluteValue) {
+        } else if (this.score == Pairwise.Score.absoluteValue) {
             return meanAbsolute(y, parents);
-        } else if (this.score == Lofs.Score.exp) {
+        } else if (this.score == Pairwise.Score.exp) {
             return expScoreUnstandardized(y, parents);
-        } else if (this.score == Lofs.Score.other) {
+        } else if (this.score == Pairwise.Score.other) {
             double[] _f = residuals(y, parents, true);
             return score(_f);
-        } else if (this.score == Lofs.Score.logcosh) {
+        } else if (this.score == Pairwise.Score.logcosh) {
             return logCoshScore(y, parents);
         }
 
@@ -1724,24 +1724,24 @@ public class Lofs {
      * @throws IllegalStateException if an unrecognized score type is encountered
      */
     private double score(double[] col) {
-        if (this.score == Lofs.Score.andersonDarling) {
+        if (this.score == Pairwise.Score.andersonDarling) {
             return new AndersonDarlingTest(col).getASquaredStar();
-        } else if (this.score == Lofs.Score.entropy) {
+        } else if (this.score == Pairwise.Score.entropy) {
             return maxEntApprox(col);
-        } else if (this.score == Lofs.Score.kurtosis) {
+        } else if (this.score == Pairwise.Score.kurtosis) {
             col = DataTransforms.standardizeData(col);
             return -abs(kurtosis(col));
-        } else if (this.score == Lofs.Score.skew) {
+        } else if (this.score == Pairwise.Score.skew) {
             return abs(skewness(col));
-        } else if (this.score == Lofs.Score.fifthMoment) {
+        } else if (this.score == Pairwise.Score.fifthMoment) {
             return abs(standardizedFifthMoment(col));
-        } else if (this.score == Lofs.Score.absoluteValue) {
+        } else if (this.score == Pairwise.Score.absoluteValue) {
             return StatUtils.meanAbsolute(col);
-        } else if (this.score == Lofs.Score.exp) {
+        } else if (this.score == Pairwise.Score.exp) {
             return expScoreUnstandardized(col);
-        } else if (this.score == Lofs.Score.other) {
+        } else if (this.score == Pairwise.Score.other) {
             return abs(kurtosis(col));
-        } else if (this.score == Lofs.Score.logcosh) {
+        } else if (this.score == Pairwise.Score.logcosh) {
             return StatUtils.logCoshScore(col);
         }
 

@@ -13,7 +13,7 @@ import java.util.*;
  * The Adjustment class provides methods and utilities for computing adjustment sets in causal inference
  * using graph-based methods. It supports tasks such as identifying minimal adjustment sets,
  * determining forbidden nodes for adjustment, and navigating paths and reachability in various graph types.
- * These computations are based on the properties of possibly-directed graphs, backdoor criteria, and
+ * These computations are based on the properties of potentially directed graphs, backdoor criteria, and
  * other rules from causal inference literature.
  */
 public final class AdjustmentOld {
@@ -355,10 +355,10 @@ public final class AdjustmentOld {
     }
 
     private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength) {
-        Adjustment.GraphType _graphType = Adjustment.GraphType.valueOf(graphType);
+        RecursiveAdjustment.GraphType _graphType = RecursiveAdjustment.GraphType.valueOf(graphType);
         if (source == null || target == null || source == target) return Collections.emptySet();
-        if (_graphType == Adjustment.GraphType.PAG) {
-            return graph.paths().getAmenablePathsPag(source, target, maxLength);
+        if (_graphType == RecursiveAdjustment.GraphType.PAG) {
+            return graph.paths().getAmenablePathsPag(source, target, maxLength, Set.of());
         } else {
             return graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
         }
