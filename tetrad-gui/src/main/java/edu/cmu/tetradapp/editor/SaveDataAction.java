@@ -171,7 +171,7 @@ final class SaveDataAction extends AbstractAction {
                         "Output file could not be opened: " + file);
             }
 
-            DataWriter.writeCovMatrix((ICovarianceMatrix) dataModel, out, this.nf);
+            DataWriter.writeCovMatrixSquare((ICovarianceMatrix) dataModel, out, this.nf);
 
             out.close();
         } else if (dataModel instanceof DataModelList list) {
@@ -220,7 +220,7 @@ final class SaveDataAction extends AbstractAction {
                                 "Output file could not be opened: " + name.replace(" ", "_") + ".txt");
                     }
 
-                    DataWriter.writeCovMatrix((ICovarianceMatrix) _dataModel, out, this.nf);
+                    DataWriter.writeCovMatrixSquare((ICovarianceMatrix) _dataModel, out, this.nf);
                 }
             }
         } else {
