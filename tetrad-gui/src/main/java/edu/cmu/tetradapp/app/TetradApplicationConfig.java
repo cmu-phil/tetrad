@@ -254,6 +254,8 @@ public class TetradApplicationConfig {
             return loader.loadClass(className.trim());
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("The class name " + className + " could not be found", e);
+        } catch (NoClassDefFoundError e) {
+            throw new IllegalStateException("The class definition " + className + " could not be found", e);
         }
     }
 

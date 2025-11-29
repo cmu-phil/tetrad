@@ -433,6 +433,15 @@
                     edu.cmu.tetradapp.editor.datamanip.UnmixParamsEditor
                 </params-editor-class>
             </model>
+            <model name="NTad Explorer" acronym="NTads" help="ntadexplore"
+                   category="Manipulation of Data">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.datamanip.NtadExplorerWrapper</model-class>
+                <editor-class>edu.cmu.tetradapp.editor.NtadExplorerEditor</editor-class>
+            </model>
             <model name="Expand Discrete Columns" acronym="Expand Columns" help="expandColumns"
                    category="Manipulation of Data">
                 <logger>
