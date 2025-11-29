@@ -20,6 +20,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.NtadExplorer;
@@ -48,7 +49,7 @@ public class NtadExplorerEditor extends JPanel {
 
     private final NtadExplorerWrapper wrapper;
 
-    private final DataSet dataSet;
+    private final DataModel dataSet;
 
     private final DefaultListModel<Node> availableModel = new DefaultListModel<>();
     private final DefaultListModel<Node> selectedModel = new DefaultListModel<>();
@@ -69,7 +70,7 @@ public class NtadExplorerEditor extends JPanel {
         }
 
         this.wrapper = wrapper;
-        this.dataSet = wrapper.getDataSet();
+        this.dataSet = wrapper.getDataModel();
 
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(5, 5, 5, 5));

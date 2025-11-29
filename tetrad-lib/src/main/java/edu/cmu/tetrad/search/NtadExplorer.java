@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.util.RankTests;
@@ -36,7 +35,7 @@ public final class NtadExplorer {
      * ccaTest.ntad(ntad).
      */
     public static List<NtadResult> listRankDeficientNtads(
-            DataSet data,
+            CorrelationMatrix data,
             List<Node> vars,
             int blockSize,
             int maxResults,
@@ -63,11 +62,18 @@ public final class NtadExplorer {
         for (int i = 0; i < nVars; i++) {
             Node v = sortedVars.get(i);
             // Adjust if your DataSet API uses a different method name.
-            colIndex[i] = data.getColumn(v);
+
+            for (int j = 0; j < data.getVariableNames().size(); j++) {
+                if (data.getVariableNames().get(j).equals(v.getName())) {
+                    colIndex[i] = j;
+                    break;
+                }
+            }
+//            colIndex[i] = data.getColumn(v);
         }
 
         SimpleMatrix Scond = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
-        int nEff = data.getNumRows();
+        int nEff = data.getSampleSize();
 
         // 3. Enumerate A combinations: indices into sortedVars
         int[] aPos = new int[blockSize];

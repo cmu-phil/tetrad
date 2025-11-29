@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomMim;
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -45,7 +46,7 @@ public final class NtadExplorerHarness {
 
         List<NtadExplorer.NtadResult> results =
                 NtadExplorer.listRankDeficientNtads(
-                        data,
+                        new CorrelationMatrix(data),
                         vars,
                         blockSize,
                         maxResults,
@@ -85,7 +86,7 @@ public final class NtadExplorerHarness {
 
         List<NtadExplorer.NtadResult> results =
                 NtadExplorer.listRankDeficientNtads(
-                        data,
+                        new CorrelationMatrix(data),
                         vars,
                         blockSize,
                         maxResults,

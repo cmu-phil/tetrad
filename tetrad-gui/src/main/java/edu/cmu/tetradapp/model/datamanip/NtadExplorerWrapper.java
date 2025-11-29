@@ -20,10 +20,7 @@
 
 package edu.cmu.tetradapp.model.datamanip;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.NtadExplorer;
 import edu.cmu.tetrad.search.ntad_test.Cca;
@@ -59,7 +56,7 @@ public class NtadExplorerWrapper extends DataWrapper implements TetradSerializab
     /**
      * The underlying dataset we will analyze. We assume the first DataModel is a DataSet.
      */
-    private final DataSet dataSet;
+    private final DataModel dataModel;
 
     /**
      * Latest list of N-tad results, computed by runNtadSearch(...).
@@ -115,12 +112,7 @@ public class NtadExplorerWrapper extends DataWrapper implements TetradSerializab
             throw new IllegalArgumentException("No data models in the provided DataWrapper.");
         }
 
-        DataModel first = originals.get(0);
-        if (!(first instanceof DataSet)) {
-            throw new IllegalArgumentException("NtadExplorerWrapper expects a DataSet as the first DataModel.");
-        }
-
-        this.dataSet = (DataSet) first;
+        this.dataModel = originals.getFirst();
 
         // Pass-through: we just reuse the original DataModelList so downstream boxes
         // see the same data.
@@ -145,17 +137,30 @@ public class NtadExplorerWrapper extends DataWrapper implements TetradSerializab
         List<Node> useVars;
 
         if (vars == null || vars.isEmpty()) {
-            useVars = new ArrayList<>(dataSet.getVariables());
+            useVars = new ArrayList<>(dataModel.getVariables());
         } else {
             useVars = new ArrayList<>(vars);
         }
 
         // Construct a CCA test from the dataset. Adjust constructor args to match your Cca.
         boolean correlations = true;
-        int ess = dataSet.getNumRows();
-        Cca ccaTest = new Cca(new CorrelationMatrix(dataSet).getMatrix().getData(), correlations, ess);
+        int ess;
+        Cca ccaTest;
+        CorrelationMatrix cm;
 
-        List<NtadExplorer.NtadResult> found = NtadExplorer.listRankDeficientNtads(dataSet, useVars, blockSize, maxResults, alpha, ccaTest);
+        if (dataModel instanceof CovarianceMatrix) {
+            cm = new CorrelationMatrix((CovarianceMatrix) dataModel);
+            ess = ((CovarianceMatrix) dataModel).getSampleSize();
+            ccaTest = new Cca(cm.getMatrix().getData(), correlations, ess);
+        } else if (dataModel instanceof DataSet) {
+            cm = new CorrelationMatrix((DataSet) dataModel);
+            ess = ((DataSet) dataModel).getNumRows();
+            ccaTest = new Cca(cm.getMatrix().getData(), correlations, ess);
+        } else {
+            throw new IllegalArgumentException("Unsupported data model type: " + dataModel.getClass().getName());
+        }
+
+        List<NtadExplorer.NtadResult> found = NtadExplorer.listRankDeficientNtads(cm, useVars, blockSize, maxResults, alpha, ccaTest);
 
         results.clear();
         results.addAll(found);
@@ -173,8 +178,8 @@ public class NtadExplorerWrapper extends DataWrapper implements TetradSerializab
     /**
      * Convenience accessor for the dataset.
      */
-    public DataSet getDataSet() {
-        return dataSet;
+    public DataModel getDataModel() {
+        return dataModel;
     }
 
 //    /**
