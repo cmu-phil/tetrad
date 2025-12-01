@@ -21,7 +21,7 @@ import java.util.*;
  * - recursive search blocks noncausal backdoor paths between any x∈X and any y∈Y; - a final minimality pass tries to
  * remove superfluous nodes from Z.
  */
-public final class AdjustmentMultiple {
+public final class RecursiveAdjustmentMultiple {
 
     private final Graph graph;
 
@@ -34,7 +34,7 @@ public final class AdjustmentMultiple {
      *
      * @param graph the graph to be used for adjustment calculations; must not be null
      */
-    public AdjustmentMultiple(Graph graph) {
+    public RecursiveAdjustmentMultiple(Graph graph) {
         this.graph = Objects.requireNonNull(graph);
     }
 
@@ -176,7 +176,7 @@ public final class AdjustmentMultiple {
      * @param p the collider policy to be set; must not be null
      * @return the current instance of AdjustmentMultiple with the updated collider policy
      */
-    public AdjustmentMultiple setColliderPolicy(RecursiveAdjustment.ColliderPolicy p) {
+    public RecursiveAdjustmentMultiple setColliderPolicy(RecursiveAdjustment.ColliderPolicy p) {
         this.colliderPolicy = Objects.requireNonNull(p);
         return this;
     }
@@ -187,7 +187,7 @@ public final class AdjustmentMultiple {
      * @param p the no amenable policy to be applied, must not be null
      * @return the current instance of AdjustmentMultiple, allowing method chaining
      */
-    public AdjustmentMultiple setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy p) {
+    public RecursiveAdjustmentMultiple setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy p) {
         this.noAmenablePolicy = Objects.requireNonNull(p);
         return this;
     }

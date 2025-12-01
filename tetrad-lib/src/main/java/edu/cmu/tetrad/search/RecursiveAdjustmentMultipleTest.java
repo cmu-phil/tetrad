@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
  *  - For simple multi-X/Y examples, sets are sensible (e.g., shared backdoor).
  *  - Basic behavior doesn’t depend on heuristics like nearWhichEndpoint.
  */
-public class AdjustmentMultipleTest {
+public class RecursiveAdjustmentMultipleTest {
 
     // --- Helpers ----------------------------------------------------------
 
@@ -82,7 +82,7 @@ public class AdjustmentMultipleTest {
         Set<Node> notFollowed = null;
         Set<Node> containing = null;
 
-        AdjustmentMultiple multi = new AdjustmentMultiple(g);
+        RecursiveAdjustmentMultiple multi = new RecursiveAdjustmentMultiple(g);
 
         List<Set<Node>> sets =
                 multi.adjustmentSets(
@@ -137,7 +137,7 @@ public class AdjustmentMultipleTest {
         Set<Node> notFollowed = null;
         Set<Node> containing = null;
 
-        AdjustmentMultiple multi = new AdjustmentMultiple(g);
+        RecursiveAdjustmentMultiple multi = new RecursiveAdjustmentMultiple(g);
 
         List<Set<Node>> sets =
                 multi.adjustmentSets(
@@ -193,7 +193,7 @@ public class AdjustmentMultipleTest {
         g.addEdge(Edges.directedEdge(X, M2));
         g.addEdge(Edges.directedEdge(M2, Y));
 
-        AdjustmentMultiple multi = new AdjustmentMultiple(g);
+        RecursiveAdjustmentMultiple multi = new RecursiveAdjustmentMultiple(g);
 
         String graphType = "DAG";
         int maxNumSets = 100;
