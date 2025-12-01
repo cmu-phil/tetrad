@@ -20,12 +20,6 @@ import java.util.*;
  * - forbidden nodes Forb_G(X,Y) are computed for the sets X,Y; - amenable paths are collected over all x in X, y in Y;
  * - recursive search blocks noncausal backdoor paths between any x∈X and any y∈Y; - a final minimality pass tries to
  * remove superfluous nodes from Z.
- * <p>
- * Some of the "engineering" heuristics of Adjustment (shells, nearWhichEndpoint, etc.) are intentionally *not*
- * replicated here. The parameters are kept for API compatibility, but the current implementation:
- * <p>
- * - ignores maxRadius and nearWhichEndpoint in the pool construction, and - uses the full candidate pool (minus
- * forbidden / amenable backbone / notFollowed).
  */
 public final class AdjustmentMultiple {
 
@@ -420,7 +414,7 @@ public final class AdjustmentMultiple {
                 case RETURN_EMPTY_SET:
                     return new LinkedHashSet<>(Collections.emptySet());
                 case SUPPRESS:
-                    return new LinkedHashSet<>();
+                    return null;  // i.e., no solution in this graph
                 case SEARCH:
                 default:
                     // fall through

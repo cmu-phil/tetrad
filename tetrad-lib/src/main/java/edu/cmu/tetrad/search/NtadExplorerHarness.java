@@ -75,7 +75,15 @@ public final class NtadExplorerHarness {
     }
 
     /**
-     * Same as runDemo, but allows passing a custom sublist of variables instead of all.
+     * Runs the NTAD Explorer demo using the specified dataset, variable list, CCA test, and parameters.
+     * This method outputs results with details on rank-deficient NTADs for the given configurations.
+     *
+     * @param data       The dataset to be analyzed.
+     * @param vars       A list of variables to consider for NTAD analysis.
+     * @param ccaTest    An instance of CCA (Canonical Correlation Analysis) prepared using the same dataset.
+     * @param blockSize  The size m of each block (A, B) used in the NTAD analysis, where each NTAD uses 2m variables.
+     * @param maxResults The maximum number of rank-deficient NTAD results to output.
+     * @param alpha      The significance level for the rank-deficiency test.
      */
     public static void runDemo(DataSet data,
                                List<Node> vars,
@@ -124,8 +132,11 @@ public final class NtadExplorerHarness {
     }
 
     /**
-     * Optional: a very simple main() that you can wire up to a data file. You'll need to adjust the data-loading and
-     * Cca construction to match your codebase.
+     * The entry point of the application. It demonstrates the creation of a random graph,
+     * parameterized estimation, data simulation, and NTAD exploration using Canonical Correlation Analysis (CCA).
+     *
+     * @param args Command-line arguments passed to the application.
+     * @throws Exception if any error occurs during the execution of the process.
      */
     public static void main(String[] args) throws Exception {
         Graph graph = new RandomMim().createGraph(new Parameters());

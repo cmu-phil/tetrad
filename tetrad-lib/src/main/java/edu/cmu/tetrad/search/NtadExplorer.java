@@ -25,14 +25,18 @@ public final class NtadExplorer {
     }
 
     /**
-     * Scan the given variable subset for rank-deficient m×m blocks (A,B), where |A| = |B| = blockSize, A and B are
-     * disjoint subsets of vars, and rank(Σ_AB) < blockSize according to Wilks' Lambda at level alpha.
-     * <p>
-     * The sublist 'vars' is first sorted alphabetically by name to give a canonical order. Pairs (A,B) are enumerated
-     * in lexicographic order over that sorted list. Up to maxResults rank-deficient blocks are returned.
-     * <p>
-     * The p-value stored in each result is the p-value for H0: rank(Σ_AB) ≤ blockSize - 1, as returned by
-     * ccaTest.ntad(ntad).
+     * Identifies and returns a list of rank-deficient NTAD (near-total aggregate decomposition) results,
+     * based on the given correlation matrix and other input parameters.
+     * This method divides variables into two blocks (A and B) of the specified size and evaluates
+     * rank deficiencies based on canonical correlation analysis.
+     *
+     * @param data the correlation matrix containing the data to analyze.
+     * @param vars the list of variables to consider for forming blocks A and B.
+     * @param blockSize the size of each block (A and B) to analyze.
+     * @param maxResults the maximum number of rank-deficient NTAD results to return.
+     * @param alpha the significance level for Wilks test used in rank estimation.
+     * @param ccaTest the object used to perform canonical correlation analysis (CCA).
+     * @return a list of {@code NtadResult} objects, where each result represents a pair of rank-deficient blocks (A and B).
      */
     public static List<NtadResult> listRankDeficientNtads(
             CorrelationMatrix data,
@@ -159,8 +163,16 @@ public final class NtadExplorer {
     }
 
     /**
-     * Lexicographic next-combination generator over {0, ..., n-1}. 'comb' is a k-length array of strictly increasing
-     * indices. Returns true if updated to the next combination; false if there is none.
+     * Generates the next lexicographical combination of k elements chosen from a total of n elements.
+     * If the combination reaches the final possible state, the method resets and returns false.
+     *
+     * @param comb the current combination, represented as an array of integers. This array should
+     *             initially contain the indices of the current combination in ascending order.
+     *             It will be updated in-place to represent the next combination.
+     * @param n the total number of elements to choose from.
+     * @param k the number of elements to include in each combination.
+     * @return {@code true} if the next combination was successfully generated, or {@code false}
+     *         if there are no more combinations and the sequence in the array has reached its terminal state.
      */
     private static boolean nextCombination(int[] comb, int n, int k) {
         int i = k - 1;
@@ -178,19 +190,54 @@ public final class NtadExplorer {
     }
 
     /**
-     * Record for one rank-deficient n-tad (A,B).
+     * Represents the result of a near-total aggregate decomposition (NTAD) analysis.
+     * Instances of this class are immutable and store information about two block
+     * structures (Block A and Block B) along with their properties, including block size,
+     * rank, and p-value based on a canonical correlation analysis (CCA).
      */
     public static final class NtadResult implements TetradSerializable {
 
         @Serial
         private static final long serialVersionUID = 23L;
 
+        /**
+         * A list representing the nodes in Block A associated with an NTAD analysis result.
+         * Block A is one of the two groups of nodes analyzed during the Nonparametric Test
+         * for Associations in Data (NTAD) process, and this field contains the nodes that
+         * belong to the first group.
+         *
+         * This field is initialized during the creation of an instance of the NtadResult
+         * class and remains immutable throughout the lifecycle of the object.
+         */
         private final List<Node> blockA;
+        /**
+         * Represents the list of nodes in Block B associated with the NTAD (Network-Theoretic Analysis of Dependence) analysis.
+         * Block B corresponds to one of the two substructures examined in the analysis, where each node contributes
+         * to the statistical and structural properties being evaluated.
+         */
         private final List<Node> blockB;
+        /**
+         * Represents the size of the block structures involved in the NTAD analysis.
+         */
         private final int blockSize;
+        /**
+         * Represents the rank of the canonical correlation analysis (CCA) result.
+         */
         private final int rank;
+        /**
+         * Represents the p-value from the statistical test associated with the analysis.
+         */
         private final double pValue;
 
+        /**
+         * Constructs an instance of NtadResult with specified properties.
+         *
+         * @param blockA the list of nodes in Block A associated with the NTAD analysis
+         * @param blockB the list of nodes in Block B associated with the NTAD analysis
+         * @param blockSize the size of the block structures involved in the analysis
+         * @param rank the rank of the canonical correlation analysis (CCA) result
+         * @param pValue the p-value from the statistical test associated with the analysis
+         */
         public NtadResult(List<Node> blockA,
                           List<Node> blockB,
                           int blockSize,
@@ -203,29 +250,57 @@ public final class NtadExplorer {
             this.pValue = pValue;
         }
 
+        /**
+         * Returns the list of nodes in Block A associated with the NTAD analysis result.
+         *
+         * @return an unmodifiable list of nodes in Block A
+         */
         public List<Node> getBlockA() {
             return blockA;
         }
 
+        /**
+         * Returns the list of nodes in Block B associated with the NTAD analysis result.
+         *
+         * @return an unmodifiable list of nodes in Block B
+         */
         public List<Node> getBlockB() {
             return blockB;
         }
 
+        /**
+         * Retrieves the block size associated with the NTAD analysis result.
+         *
+         * @return the size of the block structures involved in the analysis
+         */
         public int getBlockSize() {
             return blockSize;
         }
 
+        /**
+         * Retrieves the rank of the canonical correlation analysis (CCA) result.
+         *
+         * @return the rank associated with the analysis
+         */
         public int getRank() {
             return rank;
         }
 
         /**
-         * p-value for H0: rank(Σ_AB) ≤ blockSize - 1 (Wilks test used in CCA).
+         * Retrieves the p-value from the statistical test associated with the NTAD analysis result.
+         *
+         * @return the p-value as a double
          */
         public double getPValue() {
             return pValue;
         }
 
+        /**
+         * Returns a string representation of the NtadResult object,
+         * including the values of its fields: blockA, blockB, blockSize, rank, and pValue.
+         *
+         * @return a string representation of the current NtadResult instance
+         */
         @Override
         public String toString() {
             return "NtadResult{" +
