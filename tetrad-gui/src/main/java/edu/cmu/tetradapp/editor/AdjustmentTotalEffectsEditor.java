@@ -74,7 +74,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
 
         this.tableModel = new ResultTableModel(model);
         this.resultTable = new JTable(tableModel);
-        this.resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.resultTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.resultTable.setAutoCreateRowSorter(true); // enable column-header sorting
 
         initUI();
@@ -195,9 +195,26 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         }
     }
 
+//    private void onViewRegression(ActionEvent e) {
+//        int rowIndex = resultTable.getSelectedRow();
+//        if (rowIndex < 0) {
+//            JOptionPane.showMessageDialog(this,
+//                    "Please select a row first.",
+//                    "No selection",
+//                    JOptionPane.INFORMATION_MESSAGE);
+//            return;
+//        }
+//
+//        // Account for sorting: convert view index to model index.
+//        int modelIndex = resultTable.convertRowIndexToModel(rowIndex);
+//        ResultRow row = model.getResultRow(modelIndex);
+//        showRegressionDialog(row);
+//    }
+
     private void onViewRegression(ActionEvent e) {
-        int rowIndex = resultTable.getSelectedRow();
-        if (rowIndex < 0) {
+        int[] selected = resultTable.getSelectedRows();
+
+        if (selected.length == 0) {
             JOptionPane.showMessageDialog(this,
                     "Please select a row first.",
                     "No selection",
@@ -205,8 +222,18 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
             return;
         }
 
-        // Account for sorting: convert view index to model index.
-        int modelIndex = resultTable.convertRowIndexToModel(rowIndex);
+        if (selected.length > 1) {
+            JOptionPane.showMessageDialog(this,
+                    "Multiple rows are selected. Please select exactly one row\n" +
+                    "to view its regression result.",
+                    "Multiple selections",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        // Exactly one row.
+        int viewIndex = selected[0];
+        int modelIndex = resultTable.convertRowIndexToModel(viewIndex);
         ResultRow row = model.getResultRow(modelIndex);
         showRegressionDialog(row);
     }
