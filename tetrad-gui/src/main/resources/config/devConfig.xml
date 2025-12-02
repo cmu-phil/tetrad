@@ -1218,16 +1218,16 @@
                 <editor-class>edu.cmu.tetradapp.editor.LogisticRegressionEditor
                 </editor-class>
             </model>
-            <model name="Linear Adjustment" acronym="Linear Adjustment"
-                   help="indep_facts" category="Independence Facts Comparison">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="comparison" description="Comparison" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.LinearAdjustmentRegressionModel
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentRegressionEditor</editor-class>
-            </model>
+<!--            <model name="Linear Adjustment" acronym="Linear Adjustment"-->
+<!--                   help="indep_facts" category="Independence Facts Comparison">-->
+<!--                <logger>-->
+<!--                    <event id="info" description="Information" default="on"/>-->
+<!--                    <event id="comparison" description="Comparison" default="on"/>-->
+<!--                </logger>-->
+<!--                <model-class>edu.cmu.tetradapp.model.LinearAdjustmentRegressionModel-->
+<!--                </model-class>-->
+<!--                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentRegressionEditor</editor-class>-->
+<!--            </model>-->
             <model name="Adjustment Total Effects" acronym="Adjustment Total Effects"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>

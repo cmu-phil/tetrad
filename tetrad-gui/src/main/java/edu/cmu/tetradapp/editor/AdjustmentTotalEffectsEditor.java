@@ -1,68 +1,81 @@
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel;
 import edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel.ResultRow;
-import edu.cmu.tetrad.regression.RegressionResult;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
- * Editor panel for the "Adjustment & Total Effects" regression tool.
+ * Editor panel for the {@code "Adjustment & Total Effects"} regression tool.
  *
- * Lets the user:
- *  - specify treatments X and outcomes Y (single or sets),
- *  - tweak RA parameters,
- *  - run computation,
- *  - see a table of (X-set, Y, Z, total effects),
- *  - view the full regression result for a selected row.
+ * <p>Lets the user:</p>
+ *
+ * <ul>
+ *   <li>Specify treatments <i>X</i> and outcomes <i>Y</i> via text fields
+ *       (names and/or wildcards).</li>
+ *   <li>Choose between:
+ *     <ul>
+ *       <li><b>PAIRWISE</b>: total effects for all (x, y) in X&times;Y
+ *           (single-pair recursive adjustment).</li>
+ *       <li><b>JOINT</b>: joint intervention {@code p(Y | do(X))} using
+ *           {@code RecursiveAdjustmentMultiple}.</li>
+ *     </ul>
+ *   </li>
+ *   <li>Tweak recursive adjustment (RA) parameters.</li>
+ *   <li>Run the computation.</li>
+ *   <li>See a table of (X-set, Y, Z, total effects).</li>
+ *   <li>View the full regression result for a selected row.</li>
+ * </ul>
  */
 public final class AdjustmentTotalEffectsEditor extends JPanel {
 
     private final AdjustmentTotalEffectsModel model;
     private final Graph graph;
-    private final DataSet dataSet;
 
-    // UI controls
-    private final JRadioButton singlePairRadio = new JRadioButton("Single pair (X, Y)");
-    private final JRadioButton jointRadio = new JRadioButton("Joint intervention (X set, Y set)");
+    // Mode controls
+    private final JRadioButton pairwiseRadio =
+            new JRadioButton("Total effects for all X–Y pairs");
+    private final JRadioButton jointRadio =
+            new JRadioButton("Joint intervention: p(Y | do(X))");
 
-    private final JComboBox<Node> sourceCombo = new JComboBox<>();
-    private final JComboBox<Node> targetCombo = new JComboBox<>();
-
+    // Text fields for X and Y (used in both modes)
     private final JTextField treatmentsField = new JTextField();
     private final JTextField outcomesField = new JTextField();
 
-    private final JButton runButton = new JButton("Compute adjustment sets and effects");
+    // Buttons
+    private final JButton runButton =
+            new JButton("Compute adjustment sets and effects");
     private final JButton paramsButton = new JButton("Edit parameters...");
     private final JButton viewRegressionButton = new JButton("View regression...");
 
+    // Table
     private final JTable resultTable;
     private final ResultTableModel tableModel;
 
-    // Card container for single vs joint selection
-    private final JPanel modeCardPanel = new JPanel(new CardLayout());
-
+    /**
+     * Constructs an editor for managing and displaying total effects adjustments
+     * within the adjustment model. The editor initializes user interface components
+     * and sets up event listeners to allow interaction with adjustment data.
+     *
+     * @param model the adjustment total effects model to be edited; must not be null
+     */
     public AdjustmentTotalEffectsEditor(AdjustmentTotalEffectsModel model) {
         this.model = Objects.requireNonNull(model);
-//        this.graph = model.getGraph();
-        this.dataSet = model.getDataSet();
         this.graph = model.getGraph();
 
         this.tableModel = new ResultTableModel(model);
         this.resultTable = new JTable(tableModel);
+        this.resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.resultTable.setAutoCreateRowSorter(true); // enable column-header sorting
 
         initUI();
         initListeners();
@@ -80,43 +93,25 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
 
         // Mode radio buttons
         ButtonGroup modeGroup = new ButtonGroup();
-        modeGroup.add(singlePairRadio);
+        modeGroup.add(pairwiseRadio);
         modeGroup.add(jointRadio);
-        singlePairRadio.setSelected(true);
+        pairwiseRadio.setSelected(true);
 
-        JPanel modePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel modePanel = new JPanel(new GridLayout(0, 1));
         modePanel.add(new JLabel("Mode:"));
-        modePanel.add(singlePairRadio);
+        modePanel.add(pairwiseRadio);
         modePanel.add(jointRadio);
 
         topPanel.add(modePanel, BorderLayout.NORTH);
 
-        // Single pair panel
-        JPanel singlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        singlePanel.add(new JLabel("Source (X):"));
-        List<Node> nodes = graph.getNodes();
-        Collections.sort(nodes);
+        // X/Y input panel
+        JPanel xyPanel = new JPanel(new GridLayout(2, 2, 5, 5));
+        xyPanel.add(new JLabel("Treatments (X):"));
+        xyPanel.add(treatmentsField);
+        xyPanel.add(new JLabel("Outcomes (Y):"));
+        xyPanel.add(outcomesField);
 
-        for (Node n : nodes) {
-            sourceCombo.addItem(n);
-            targetCombo.addItem(n);
-        }
-
-        singlePanel.add(sourceCombo);
-        singlePanel.add(new JLabel("Target (Y):"));
-        singlePanel.add(targetCombo);
-
-        // Joint mode panel
-        JPanel jointPanel = new JPanel(new GridLayout(2, 2, 5, 5));
-        jointPanel.add(new JLabel("Treatments (X set):"));
-        jointPanel.add(treatmentsField);
-        jointPanel.add(new JLabel("Outcomes (Y set):"));
-        jointPanel.add(outcomesField);
-
-        modeCardPanel.add(singlePanel, "single");
-        modeCardPanel.add(jointPanel, "joint");
-
-        topPanel.add(modeCardPanel, BorderLayout.CENTER);
+        topPanel.add(xyPanel, BorderLayout.CENTER);
 
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -129,31 +124,14 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         add(topPanel, BorderLayout.NORTH);
 
         // --- Center: result table ------------------------------------------
-        resultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        resultTable.setAutoCreateRowSorter(true);
         JScrollPane scrollPane = new JScrollPane(resultTable);
         add(scrollPane, BorderLayout.CENTER);
-
-        // Initialize card layout
-        updateModePanels();
     }
 
     private void initListeners() {
-        singlePairRadio.addActionListener(e -> updateModePanels());
-        jointRadio.addActionListener(e -> updateModePanels());
-
         runButton.addActionListener(this::onRun);
         paramsButton.addActionListener(this::onEditParams);
         viewRegressionButton.addActionListener(this::onViewRegression);
-    }
-
-    private void updateModePanels() {
-        CardLayout cl = (CardLayout) modeCardPanel.getLayout();
-        if (singlePairRadio.isSelected()) {
-            cl.show(modeCardPanel, "single");
-        } else {
-            cl.show(modeCardPanel, "joint");
-        }
     }
 
     // ---------------------------------------------------------------------
@@ -166,7 +144,6 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
             model.recompute();
             tableModel.fireTableDataChanged();
         } catch (IllegalArgumentException ex) {
-            ex.printStackTrace();
             JOptionPane.showMessageDialog(this,
                     ex.getMessage(),
                     "Invalid selection",
@@ -228,7 +205,9 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
             return;
         }
 
-        ResultRow row = model.getResultRow(rowIndex);
+        // Account for sorting: convert view index to model index.
+        int modelIndex = resultTable.convertRowIndexToModel(rowIndex);
+        ResultRow row = model.getResultRow(modelIndex);
         showRegressionDialog(row);
     }
 
@@ -237,28 +216,34 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
     // ---------------------------------------------------------------------
 
     private void updateModelFromUI() {
-        if (singlePairRadio.isSelected()) {
-            Node x = (Node) sourceCombo.getSelectedItem();
-            Node y = (Node) targetCombo.getSelectedItem();
-            if (x == null || y == null) {
-                throw new IllegalArgumentException("Please select both a source and a target.");
-            }
-            model.setX(Collections.singleton(x));
-            model.setY(Collections.singleton(y));
-        } else {
-            Set<Node> X = parseNodeList(treatmentsField.getText().trim());
-            Set<Node> Y = parseNodeList(outcomesField.getText().trim());
-            if (X.isEmpty() || Y.isEmpty()) {
-                throw new IllegalArgumentException("Treatments and outcomes sets must not be empty.");
-            }
-            model.setX(X);
-            model.setY(Y);
+        Set<Node> X = parseNodeList(treatmentsField.getText().trim());
+        Set<Node> Y = parseNodeList(outcomesField.getText().trim());
+
+        if (X.isEmpty() || Y.isEmpty()) {
+            throw new IllegalArgumentException("Treatments and outcomes sets must not be empty.");
         }
+
+        model.setX(X);
+        model.setY(Y);
+
+        model.setEffectMode(
+                pairwiseRadio.isSelected()
+                        ? AdjustmentTotalEffectsModel.EffectMode.PAIRWISE
+                        : AdjustmentTotalEffectsModel.EffectMode.JOINT
+        );
     }
 
     /**
-     * Parse a comma/space-separated list of node names.
-     * (Easy extension point for regex or wildcards later.)
+     * Parse a comma- or space-separated list of node names, supporting simple wildcards:
+     *
+     * <ul>
+     *   <li><code>*</code> matches any substring;</li>
+     *   <li><code>?</code> matches any single character.</li>
+     * </ul>
+     *
+     * <p>Example: {@code "X*, Y1, Z?"} matches all nodes starting with {@code "X"},
+     * the node {@code "Y1"}, and nodes whose names start with {@code "Z"} and
+     * have one extra character.</p>
      */
     private Set<Node> parseNodeList(String text) {
         LinkedHashSet<Node> nodes = new LinkedHashSet<>();
@@ -268,13 +253,63 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         for (String tok : tokens) {
             String name = tok.trim();
             if (name.isEmpty()) continue;
-            Node n = graph.getNode(name);
-            if (n == null) {
-                throw new IllegalArgumentException("Unknown variable: " + name);
+
+            boolean hasWildcard = name.contains("*") || name.contains("?");
+
+            if (!hasWildcard) {
+                Node n = graph.getNode(name);
+                if (n == null) {
+                    throw new IllegalArgumentException("Unknown variable: " + name);
+                }
+                nodes.add(n);
+            } else {
+                // Use wildcardToRegex instead of Pattern.quote/replace.
+                String regex = wildcardToRegex(name);
+                Pattern p = Pattern.compile(regex);
+
+                boolean matchedAny = false;
+                for (Node n : graph.getNodes()) {
+                    if (p.matcher(n.getName()).matches()) {
+                        nodes.add(n);
+                        matchedAny = true;
+                    }
+                }
+                if (!matchedAny) {
+                    throw new IllegalArgumentException(
+                            "Wildcard pattern \"" + name + "\" matched no variables.");
+                }
             }
-            nodes.add(n);
         }
         return nodes;
+    }
+
+    // Convert a shell-style wildcard pattern (*, ?) into a proper regex.
+    private static String wildcardToRegex(String pattern) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("^");
+        for (int i = 0; i < pattern.length(); i++) {
+            char c = pattern.charAt(i);
+            switch (c) {
+                case '*':
+                    sb.append(".*");
+                    break;
+                case '?':
+                    sb.append(".");
+                    break;
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case '.': case '[': case ']': case '{': case '}':
+                case '(': case ')': case '+': case '-':
+                case '^': case '$': case '|':
+                    sb.append("\\").append(c);
+                    break;
+                default:
+                    sb.append(c);
+            }
+        }
+        sb.append("$");
+        return sb.toString();
     }
 
     // ---------------------------------------------------------------------
@@ -289,7 +324,6 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         regressors.addAll(row.X);
         regressors.addAll(row.Z);
 
-        // Columns: you may trim this if RegressionResult doesn't provide t/p values.
         final String[] colNames = {"Variable", "Beta", "SE", "t", "p"};
 
         double[] coef = result.getCoef();
@@ -352,6 +386,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
                 return false;
             }
         });
+        table.setAutoCreateRowSorter(true);
 
         JScrollPane scroll = new JScrollPane(table);
 
@@ -365,15 +400,6 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         dialog.setLayout(new BorderLayout());
         dialog.add(scroll, BorderLayout.CENTER);
 
-        // Optional: if RegressionResult has an R² method, you can show it here.
-        // For example:
-        // try {
-        //     double r2 = result.getRSquared();  // or getRSquare() depending on API
-        //     JLabel info = new JLabel("R² = " + String.format("%.4f", r2));
-        //     info.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        //     dialog.add(info, BorderLayout.SOUTH);
-        // } catch (NoSuchMethodError ignored) { }
-
         dialog.pack();
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
@@ -386,8 +412,9 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
     private static final class ResultTableModel extends AbstractTableModel {
         private final AdjustmentTotalEffectsModel model;
 
+        // NOTE: changed last columns: one for total effect, one for |total effect|
         private static final String[] COLS = {
-                "#", "X set", "Y", "Adjustment set Z", "Total effects (betas)"
+                "#", "X", "Y", "Adjustment set Z", "Total effect", "Abs total effect"
         };
 
         ResultTableModel(AdjustmentTotalEffectsModel model) {
@@ -410,19 +437,41 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         }
 
         @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            // Let the sorter know that the effect columns are numeric.
+            return switch (columnIndex) {
+                case 0 -> Integer.class;
+                case 4, 5 -> Double.class;
+                default -> String.class;
+            };
+        }
+
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             List<ResultRow> rows = model.getResults();
             if (rowIndex < 0 || rowIndex >= rows.size()) return null;
             ResultRow r = rows.get(rowIndex);
 
-            switch (columnIndex) {
-                case 0:  return rowIndex + 1;
-                case 1:  return r.formatXSet();
-                case 2:  return r.formatYSet();
-                case 3:  return r.formatZSet();
-                case 4:  return r.formatBetas();
-                default: return null;
+            // Primary beta = effect for the first X in the row (sensible in PAIRWISE mode;
+            // in JOINT mode it is still well-defined but represents the "first" X).
+            double primaryBeta = Double.NaN;
+            if (r.betas != null && r.betas.length > 0) {
+                primaryBeta = r.betas[0];
             }
+
+            return switch (columnIndex) {
+                case 0 -> rowIndex + 1;
+                case 1 -> r.formatXSet();
+                case 2 -> r.formatYSet();
+                case 3 -> r.formatZSet();
+                case 4 ->
+                    // Total effect (numeric, no variable name).
+                        primaryBeta;
+                case 5 ->
+                    // Absolute total effect.
+                        Math.abs(primaryBeta);
+                default -> null;
+            };
         }
 
         @Override
