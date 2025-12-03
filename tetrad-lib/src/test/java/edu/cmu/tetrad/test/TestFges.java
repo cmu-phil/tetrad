@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.test;
 
+import ai.djl.util.RandomUtils;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
@@ -713,13 +714,15 @@ public class TestFges {
 
     @Test
     public void testFromGraphWithRequiredKnowledge() {
+        RandomUtil.getInstance().setSeed(42);
+
         final int numNodes = 20;
         final int numIterations = 20;
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
             Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
-            Graph knowledgeGraph = edu.cmu.tetrad.graph.RandomGraph.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph knowledgeGraph = edu.cmu.tetrad.graph.RandomGraph.randomGraph(numNodes, 0, numNodes, 10, 10, 10, false);
             knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
 
             Knowledge knowledge = requiredKnowledge(knowledgeGraph);
