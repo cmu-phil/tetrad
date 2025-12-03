@@ -9,11 +9,12 @@ import static org.junit.Assert.*;
 
 /**
  * Sanity checks for AdjustmentMultiple:
- *  - For simple DAGs, it returns the expected back-door adjustment sets.
- *  - For simple multi-X/Y examples, sets are sensible (e.g., shared backdoor).
- *  - Basic behavior doesn’t depend on heuristics like nearWhichEndpoint.
  */
 public class RecursiveAdjustmentMultipleTest {
+
+    public RecursiveAdjustmentMultipleTest() {
+
+    }
 
     // --- Helpers ----------------------------------------------------------
 
@@ -52,6 +53,10 @@ public class RecursiveAdjustmentMultipleTest {
 
     // --- Tests ------------------------------------------------------------
 
+    /**
+     * Tests the adjustment set computation for a simple Directed Acyclic Graph (DAG)
+     * with a single treatment-outcome pair.
+     */
     @Test
     public void testSinglePairSimpleDAG() {
         // Graph:
@@ -105,6 +110,10 @@ public class RecursiveAdjustmentMultipleTest {
         assertSameSolutionFamilies(expected, sets);
     }
 
+    /**
+     * Tests the adjustment set computation for a Directed Acyclic Graph (DAG) with multiple treatments
+     * sharing a common backdoor path to the outcome.
+     */
     @Test
     public void testMultiTreatmentSharedBackdoor() {
         // Graph:
@@ -165,6 +174,10 @@ public class RecursiveAdjustmentMultipleTest {
         assertTrue("Expected {W} as a multi-treatment adjustment set", foundW);
     }
 
+    /**
+     * Tests whether specifying different possible endpoint options in the adjustment set computation
+     * produces solutions from the same only slightly reordered but identical solution families.
+     */
     @Test
     public void testNearWhichEndpointDoesNotChangeSolutions() {
         // Slightly more complex DAG where ordering might matter:

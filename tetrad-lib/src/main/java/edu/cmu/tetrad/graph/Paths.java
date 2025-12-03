@@ -3137,10 +3137,10 @@ public class Paths implements TetradSerializable {
                                           int nearWhichEndpoint, int maxPathLength, boolean henckelPruning,
                                           boolean oSetCompatible) {
         RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
-                .setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SUPPRESS);
-//                .setUseHenckelPruning(henckelPruning);
-//                .setRaMode(oSetCompatible ? RecursiveAdjustment.RaMode.O_COMPATIBLE
-//                        : RecursiveAdjustment.RaMode.VALID);
+                .setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SUPPRESS)
+                .setUseHenckelPruning(henckelPruning)
+                .setRaMode(oSetCompatible ? RecursiveAdjustment.RaMode.O_COMPATIBLE
+                        : RecursiveAdjustment.RaMode.VALID);
         return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, RecursiveAdjustment.ColliderPolicy.OFF, true,
                 Set.of(), Set.of(), Set.of());
