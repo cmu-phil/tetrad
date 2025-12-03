@@ -128,16 +128,21 @@ public class GraphTransforms {
             }
         }
 
-        List<Node> order = graph.getNodes();
-        order.sort((node1, node2) -> {
-            if (graph.paths().isAncestorOf(node1, node2)) {
-                return -1;
-            } else if (graph.paths().isAncestorOf(node2, node1)) {
-                return 1;
-            } else {
-                return 0;
-            }
-        });
+        // This method failed on an example that was a valid CPDAG. jdramsey 2025-12-3
+//        List<Node> order = graph.getNodes();
+//        order.sort((node1, node2) -> {
+//            if (graph.paths().isAncestorOf(node1, node2)) {
+//                return -1;
+//            } else if (graph.paths().isAncestorOf(node2, node1)) {
+//                return 1;
+//            } else {
+//                return 0;
+//            }
+//        });
+
+        // Replacing with this method.
+        List<Node> order = graph.paths().getValidOrder(graph.getNodes(), true);
+
 
         MeekRules rules = new MeekRules();
         rules.setMeekPreventCycles(true);
