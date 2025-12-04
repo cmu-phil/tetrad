@@ -557,6 +557,122 @@ public class DataSubsetEditor extends JPanel {
     }
 
     // ------------------------------------------------------------------------
+    // Public API – state accessors
+    // ------------------------------------------------------------------------
+
+    /**
+     * Names of selected variables, in the order shown in the Selected list.
+     */
+    public java.util.List<String> getSelectedVariableNames() {
+        java.util.List<String> names = new java.util.ArrayList<>();
+        for (int i = 0; i < selectedModel.size(); i++) {
+            names.add(selectedModel.get(i).getName());
+        }
+        return names;
+    }
+
+    /**
+     * The raw row specification string, e.g. "1-100, 150, 200-250".
+     */
+    public String getRowSpec() {
+        return rowSpecField.getText();
+    }
+
+    /**
+     * The currently selected sampling mode.
+     */
+    public SamplingMode getSamplingMode() {
+        return (SamplingMode) samplingModeCombo.getSelectedItem();
+    }
+
+    /**
+     * The current sample size from the spinner.
+     */
+    public int getSampleSize() {
+        Object value = sampleSizeSpinner.getValue();
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        return sourceDataSet.getNumRows();
+    }
+
+    /**
+     * The seed field contents as text.
+     */
+    public String getSeedText() {
+        return seedField.getText();
+    }
+
+    /**
+     * Apply previously saved state to the editor. Any argument may be null to
+     * leave the corresponding control at its default.
+     *
+     * @param selectedVarNames names of variables that should appear in the
+     *                         Selected list (in this order).
+     * @param rowSpec          row specification string, or null.
+     * @param samplingMode     sampling mode, or null.
+     * @param sampleSize       sample size, or null.
+     * @param seedText         seed as text, or null.
+     */
+    public void applyState(
+            java.util.List<String> selectedVarNames,
+            String rowSpec,
+            SamplingMode samplingMode,
+            Integer sampleSize,
+            String seedText) {
+
+        // Restore variable selection.
+        if (selectedVarNames != null && !selectedVarNames.isEmpty()) {
+            availableModel.clear();
+            selectedModel.clear();
+
+            java.util.List<Node> allVars = sourceDataSet.getVariables();
+            java.util.Map<String, Node> byName = new java.util.LinkedHashMap<>();
+
+            for (Node v : allVars) {
+                byName.put(v.getName(), v);
+            }
+
+            java.util.Set<Node> selectedNodes = new java.util.LinkedHashSet<>();
+
+            // Add selected in the saved order, skipping any that no longer exist.
+            for (String name : selectedVarNames) {
+                Node v = byName.get(name);
+                if (v != null && !selectedNodes.contains(v)) {
+                    selectedNodes.add(v);
+                }
+            }
+
+            for (Node v : selectedNodes) {
+                selectedModel.addElement(v);
+            }
+
+            // Everything else goes in Available, preserving dataset order.
+            for (Node v : allVars) {
+                if (!selectedNodes.contains(v)) {
+                    availableModel.addElement(v);
+                }
+            }
+        }
+
+        if (rowSpec != null) {
+            rowSpecField.setText(rowSpec);
+        }
+
+        if (samplingMode != null) {
+            samplingModeCombo.setSelectedItem(samplingMode);
+        }
+
+        if (sampleSize != null && sampleSize > 0) {
+            sampleSizeSpinner.setValue(sampleSize);
+        }
+
+        if (seedText != null) {
+            seedField.setText(seedText);
+        }
+    }
+
+    // ------------------------------------------------------------------------
     // Sampling mode enum
     // ------------------------------------------------------------------------
 

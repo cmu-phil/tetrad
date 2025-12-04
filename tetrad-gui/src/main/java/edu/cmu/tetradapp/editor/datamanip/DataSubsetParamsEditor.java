@@ -35,6 +35,11 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
     private DataSubsetEditor dataSubsetEditor;
     private Parameters parameters;
     private DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, 0), new ArrayList<>());
+    private java.util.List<String> initialSelectedVarNames;
+    private String initialRowSpec;
+    private DataSubsetEditor.SamplingMode initialSamplingMode;
+    private Integer initialSampleSize;
+    private String initialSeedText;
 
     public DataSubsetParamsEditor() {
         setLayout(new BorderLayout());
@@ -42,12 +47,43 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
         setup();
     }
 
+//    @Override
+//    public boolean finalizeEdit() {
+//        if (dataSubsetEditor != null) {
+//            DataSet subset = dataSubsetEditor.createSubset();
+//            if (subset != null) {
+//                parameters.set("dataSubsetParamsEditorSubset", subset);
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
+
     @Override
     public boolean finalizeEdit() {
         if (dataSubsetEditor != null) {
             DataSet subset = dataSubsetEditor.createSubset();
             if (subset != null) {
+                // Keep your existing subset result.
                 parameters.set("dataSubsetParamsEditorSubset", subset);
+
+                // NEW: persist UI state so it can be restored later.
+                parameters.set("dataSubsetSelectedVarNames",
+                        dataSubsetEditor.getSelectedVariableNames());
+                parameters.set("dataSubsetRowSpec",
+                        dataSubsetEditor.getRowSpec());
+
+                DataSubsetEditor.SamplingMode mode = dataSubsetEditor.getSamplingMode();
+                if (mode != null) {
+                    parameters.set("dataSubsetSamplingMode", mode.name());
+                }
+
+                parameters.set("dataSubsetSampleSize",
+                        dataSubsetEditor.getSampleSize());
+                parameters.set("dataSubsetSeed",
+                        dataSubsetEditor.getSeedText());
+
                 return true;
             }
         }
@@ -55,9 +91,57 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
         return false;
     }
 
+//    @Override
+//    public void setParams(Parameters params) {
+//        this.parameters = params;
+//    }
+
     @Override
     public void setParams(Parameters params) {
         this.parameters = params;
+
+        Object selNamesObj = params.get("dataSubsetSelectedVarNames");
+        if (selNamesObj instanceof java.util.List) {
+            @SuppressWarnings("unchecked")
+            java.util.List<String> names = (java.util.List<String>) selNamesObj;
+            this.initialSelectedVarNames = new java.util.ArrayList<>(names);
+        }
+
+        Object rowSpecObj = params.get("dataSubsetRowSpec");
+        if (rowSpecObj instanceof String) {
+            this.initialRowSpec = (String) rowSpecObj;
+        }
+
+        Object modeObj = params.get("dataSubsetSamplingMode");
+        if (modeObj instanceof String) {
+            try {
+                this.initialSamplingMode =
+                        DataSubsetEditor.SamplingMode.valueOf((String) modeObj);
+            } catch (IllegalArgumentException ignored) {
+                // unknown enum value; leave null
+            }
+        }
+
+        Object sizeObj = params.get("dataSubsetSampleSize");
+        if (sizeObj instanceof Number) {
+            this.initialSampleSize = ((Number) sizeObj).intValue();
+        }
+
+        Object seedObj = params.get("dataSubsetSeed");
+        if (seedObj instanceof String) {
+            this.initialSeedText = (String) seedObj;
+        }
+
+        // If the editor already exists, apply immediately.
+        if (dataSubsetEditor != null) {
+            dataSubsetEditor.applyState(
+                    initialSelectedVarNames,
+                    initialRowSpec,
+                    initialSamplingMode,
+                    initialSampleSize,
+                    initialSeedText
+            );
+        }
     }
 
     @Override
@@ -85,7 +169,25 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
     public void setup() {
         Box box = Box.createVerticalBox();
         box.setBorder(new EmptyBorder(5, 5, 5, 5));
+
         dataSubsetEditor = new DataSubsetEditor(dataSet);
+
+        // NEW: restore previous state if we have any.
+        if (initialSelectedVarNames != null ||
+            initialRowSpec != null ||
+            initialSamplingMode != null ||
+            initialSampleSize != null ||
+            initialSeedText != null) {
+
+            dataSubsetEditor.applyState(
+                    initialSelectedVarNames,
+                    initialRowSpec,
+                    initialSamplingMode,
+                    initialSampleSize,
+                    initialSeedText
+            );
+        }
+
         box.add(dataSubsetEditor);
         add(box, BorderLayout.CENTER);
         revalidate();
