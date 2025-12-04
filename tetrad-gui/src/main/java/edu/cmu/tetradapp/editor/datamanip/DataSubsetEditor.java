@@ -45,12 +45,23 @@ public class DataSubsetEditor extends JPanel {
     private final JSpinner sampleSizeSpinner =
             new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
     private final JTextField seedField = new IntTextField(40, 6);
+    private final List<Node> originalVarOrder;
 
     // Button to paste variable names.
-    private final JButton pasteVarListButton = new JButton("Paste variable list...");
+    private final JButton pasteVarListButton = new JButton("Paste...");
 
+    /**
+     * Constructs a new DataSubsetEditor, initializing it with the provided data set.
+     * This editor allows for defining a subset or resampling of the dataset by configuring
+     * variables, row specifications, sampling modes, and sample sizes.
+     *
+     * @param dataSet the data set to be managed and edited. Must not be null.
+     *                It provides the variables and data for the subset editor to work with.
+     */
     public DataSubsetEditor(DataSet dataSet) {
         this.sourceDataSet = Objects.requireNonNull(dataSet, "dataSet");
+        this.originalVarOrder = new ArrayList<>(dataSet.getVariables());
+
         setPreferredSize(new Dimension(600, 600));
 
         initVariableModels();
@@ -69,6 +80,63 @@ public class DataSubsetEditor extends JPanel {
         }
     }
 
+    private Box buildSortPopup() {
+        Box popupBox = Box.createHorizontalBox();
+        JButton sortButton = new JButton("Sort");
+        sortButton.setFocusable(false);
+        JPopupMenu popup = buildAvailablePopupMenu();
+        sortButton.addActionListener(e ->
+                popup.show(sortButton, 0, sortButton.getHeight()));
+        popupBox.add(sortButton);
+        return popupBox;
+    }
+
+    private JPopupMenu buildAvailablePopupMenu() {
+        JPopupMenu menu = new JPopupMenu();
+
+        JMenuItem sortItem = new JMenuItem("Sort A–Z");
+        sortItem.addActionListener(e -> sortAvailableAlphabetically());
+        menu.add(sortItem);
+
+        JMenuItem restoreItem = new JMenuItem("Restore dataset order");
+        restoreItem.addActionListener(e -> restoreAvailableOriginalOrder());
+        menu.add(restoreItem);
+
+        return menu;
+    }
+
+    private void sortAvailableAlphabetically() {
+        // Extract current available nodes into a list
+        List<Node> avail = new ArrayList<>();
+        for (int i = 0; i < availableModel.size(); i++) {
+            avail.add(availableModel.get(i));
+        }
+
+        // Sort by name
+        avail.sort(Comparator.comparing(Node::getName, String.CASE_INSENSITIVE_ORDER));
+
+        // Rebuild the model
+        availableModel.clear();
+        for (Node v : avail) {
+            availableModel.addElement(v);
+        }
+    }
+
+    private void restoreAvailableOriginalOrder() {
+        // Selected nodes should stay selected; we only reorder what's in Available.
+        Set<Node> selectedNodes = new LinkedHashSet<>();
+        for (int i = 0; i < selectedModel.size(); i++) {
+            selectedNodes.add(selectedModel.get(i));
+        }
+
+        availableModel.clear();
+        for (Node v : originalVarOrder) {
+            if (!selectedNodes.contains(v)) {
+                availableModel.addElement(v);
+            }
+        }
+    }
+
     private void initGui() {
         setLayout(new BorderLayout(10, 10));
 
@@ -80,17 +148,22 @@ public class DataSubsetEditor extends JPanel {
     }
 
     private JPanel buildVariablesPanel() {
-        JPanel panel = new JPanel(new BorderLayout(5, 5));
-        panel.setBorder(new TitledBorder("Variables"));
+//        JPanel panel = new JPanel(new BorderLayout(5, 5));
+//        panel.setBorder(new TitledBorder("Variables"));
 
         availableList.setPreferredSize(new Dimension(225, 600));
         selectedList.setPreferredSize(new Dimension(225, 600));
-
 
         // Left list (available).
         availableList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         JScrollPane availableScroll = new JScrollPane(availableList);
         availableScroll.setBorder(new TitledBorder("Available variables"));
+
+        JPanel availablePanel = new JPanel();
+        availablePanel.setLayout(new BorderLayout());
+//        availablePanel.add(buildSortPopup(), BorderLayout.SOUTH);
+        availablePanel.add(availableScroll, BorderLayout.CENTER);
+        availablePanel.setBorder(new TitledBorder("Variables"));
 
         // Right list (selected).
         selectedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -104,8 +177,8 @@ public class DataSubsetEditor extends JPanel {
         JButton removeButton = new JButton("<");
         JButton addAllButton = new JButton(">>");
         JButton removeAllButton = new JButton("<<");
-        JButton upButton = new JButton("Up");
-        JButton downButton = new JButton("Down");
+        JButton upButton = new JButton("Move Up");
+        JButton downButton = new JButton("Move Down");
 
         addButton.addActionListener(e -> moveSelected(availableList, availableModel, selectedModel));
         removeButton.addActionListener(e -> moveSelected(selectedList, selectedModel, availableModel));
@@ -132,32 +205,42 @@ public class DataSubsetEditor extends JPanel {
         buttonPanel.add(center(pasteVarListButton));
         buttonPanel.add(Box.createVerticalGlue());
 
-        JPanel centerPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 0;
-        c.weightx = 0.5;
-        c.weighty = 1.0;
-        c.fill = GridBagConstraints.BOTH;
-        centerPanel.add(availableScroll, c);
+        Box centerPanel = Box.createHorizontalBox();
 
-        c.gridx = 1;
-        c.gridy = 0;
-        c.weightx = 0.0;
-        c.weighty = 1.0;
-        c.fill = GridBagConstraints.VERTICAL;
-        centerPanel.add(buttonPanel, c);
+        Box available = Box.createVerticalBox();
+        available.add(availableScroll);
+        available.add(buildSortPopup());
 
-        c.gridx = 2;
-        c.gridy = 0;
-        c.weightx = 0.5;
-        c.weighty = 1.0;
-        c.fill = GridBagConstraints.BOTH;
-        centerPanel.add(selectedScroll, c);
+        centerPanel.add(available);
+        centerPanel.add(buttonPanel);
+        centerPanel.add(selectedScroll);
 
-        panel.add(centerPanel, BorderLayout.CENTER);
+//        JPanel centerPanel = new JPanel(new GridBagLayout());
+//        GridBagConstraints c = new GridBagConstraints();
+//        c.gridx = 0;
+//        c.gridy = 0;
+//        c.weightx = 0.5;
+//        c.weighty = 1.0;
+//        c.fill = GridBagConstraints.BOTH;
+//        centerPanel.add(availableScroll, c);
+//
+//        c.gridx = 1;
+//        c.gridy = 0;
+//        c.weightx = 0.0;
+//        c.weighty = 1.0;
+//        c.fill = GridBagConstraints.VERTICAL;
+//        centerPanel.add(buttonPanel, c);
+//
+//        c.gridx = 2;
+//        c.gridy = 0;
+//        c.weightx = 0.5;
+//        c.weighty = 1.0;
+//        c.fill = GridBagConstraints.BOTH;
+//        centerPanel.add(selectedScroll, c);
 
-        return panel;
+        availablePanel.add(centerPanel, BorderLayout.CENTER);
+
+        return availablePanel;
     }
 
     private Box center(JComponent component) {
