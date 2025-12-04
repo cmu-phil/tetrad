@@ -12,6 +12,14 @@ import static org.junit.Assert.*;
  */
 public class RecursiveAdjustmentMultipleTest {
 
+    /**
+     * Constructor for the RecursiveAdjustmentMultipleTest class.
+     * This class is used for testing scenarios involving the computation
+     * of adjustment sets in Directed Acyclic Graphs (DAGs).
+     * It provides methods for testing single treatment-outcome pairs,
+     * multiple treatments with shared backdoor paths, and validation
+     * of solution consistency under different configurations.
+     */
     public RecursiveAdjustmentMultipleTest() {
 
     }
