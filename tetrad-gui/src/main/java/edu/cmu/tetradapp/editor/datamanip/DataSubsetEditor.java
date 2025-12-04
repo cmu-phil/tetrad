@@ -13,14 +13,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Editor for creating a subset / resample of a DataSet.
+ * Editor for creating a subset or resample of a {@link edu.cmu.tetrad.data.DataSet}.
  * <p>
- * Features: - Two-list variable selector (available vs selected). - Row selection via comma-separated ranges (1-based:
- * "1-100, 150, 200-250"). - Sampling mode: use as-is, shuffle, subsample, bootstrap. - Sample size and random seed for
- * reproducibility. - "Paste variable list..." button to paste variable names and auto-select them.
+ * Features:
+ * <ul>
+ *   <li>Two-list variable selector (available vs. selected).</li>
+ *   <li>Row selection via comma-separated ranges (1-based),
+ *       e.g. {@code "1-100, 150, 200-250"}.</li>
+ *   <li>Sampling modes: use as-is, shuffle, subsample, or bootstrap.</li>
+ *   <li>Sample size and random seed controls for reproducibility.</li>
+ *   <li>"Paste variable list..." button to paste variable names and auto-select them.</li>
+ * </ul>
  * <p>
- * The createSubset() method returns a new DataSet with the chosen variables (in the chosen order) and rows (possibly
- * resampled).
+ * The {@link #createSubset()} method returns a new {@link edu.cmu.tetrad.data.DataSet}
+ * with the chosen variables (in the chosen order) and rows (possibly resampled).
  */
 public class DataSubsetEditor extends JPanel {
 
@@ -45,6 +51,7 @@ public class DataSubsetEditor extends JPanel {
 
     public DataSubsetEditor(DataSet dataSet) {
         this.sourceDataSet = Objects.requireNonNull(dataSet, "dataSet");
+        setPreferredSize(new Dimension(600, 600));
 
         initVariableModels();
         initGui();
@@ -76,8 +83,9 @@ public class DataSubsetEditor extends JPanel {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.setBorder(new TitledBorder("Variables"));
 
-        availableList.setPreferredSize(new Dimension(225, 500));
-        selectedList.setPreferredSize(new Dimension(225, 500));
+        availableList.setPreferredSize(new Dimension(225, 600));
+        selectedList.setPreferredSize(new Dimension(225, 600));
+
 
         // Left list (available).
         availableList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -90,38 +98,39 @@ public class DataSubsetEditor extends JPanel {
         selectedScroll.setBorder(new TitledBorder("Selected variables"));
 
         // Middle buttons.
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
+        Box buttonPanel = Box.createVerticalBox();
 
         JButton addButton = new JButton(">");
-        JButton addAllButton = new JButton(">>");
         JButton removeButton = new JButton("<");
+        JButton addAllButton = new JButton(">>");
         JButton removeAllButton = new JButton("<<");
         JButton upButton = new JButton("Up");
         JButton downButton = new JButton("Down");
 
         addButton.addActionListener(e -> moveSelected(availableList, availableModel, selectedModel));
-        addAllButton.addActionListener(e -> moveAll(availableModel, selectedModel));
         removeButton.addActionListener(e -> moveSelected(selectedList, selectedModel, availableModel));
+        addAllButton.addActionListener(e -> moveAll(availableModel, selectedModel));
         removeAllButton.addActionListener(e -> moveAll(selectedModel, availableModel));
         upButton.addActionListener(e -> moveSelectedUp(selectedList, selectedModel));
         downButton.addActionListener(e -> moveSelectedDown(selectedList, selectedModel));
 
         pasteVarListButton.addActionListener(e -> showPasteVariableListDialog());
 
-        buttonPanel.add(addButton);
+        buttonPanel.add(Box.createVerticalGlue());
+        buttonPanel.add(center(addButton));
         buttonPanel.add(Box.createVerticalStrut(5));
-        buttonPanel.add(addAllButton);
+        buttonPanel.add(center(removeButton));
         buttonPanel.add(Box.createVerticalStrut(5));
-        buttonPanel.add(removeButton);
+        buttonPanel.add(center(addAllButton));
         buttonPanel.add(Box.createVerticalStrut(5));
-        buttonPanel.add(removeAllButton);
+        buttonPanel.add(center(removeAllButton));
         buttonPanel.add(Box.createVerticalStrut(15));
-        buttonPanel.add(upButton);
+        buttonPanel.add(center(upButton));
         buttonPanel.add(Box.createVerticalStrut(5));
-        buttonPanel.add(downButton);
+        buttonPanel.add(center(downButton));
         buttonPanel.add(Box.createVerticalStrut(15));
-        buttonPanel.add(pasteVarListButton);
+        buttonPanel.add(center(pasteVarListButton));
+        buttonPanel.add(Box.createVerticalGlue());
 
         JPanel centerPanel = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
@@ -149,6 +158,14 @@ public class DataSubsetEditor extends JPanel {
         panel.add(centerPanel, BorderLayout.CENTER);
 
         return panel;
+    }
+
+    private Box center(JComponent component) {
+        Box box = Box.createHorizontalBox();
+        box.add(Box.createHorizontalGlue());
+        box.add(component);
+        box.add(Box.createHorizontalGlue());
+        return box;
     }
 
     private JPanel buildRowsPanel() {
@@ -515,9 +532,6 @@ public class DataSubsetEditor extends JPanel {
     /**
      * Returns a new DataSet that is a subset / resample of the sourceDataSet, according to the current editor
      * settings.
-     * <p>
-     * NOTE: This implementation assumes the existence of subsetColumns(...) and subsetRows(...) methods on DataSet (or
-     * equivalent). If your actual API differs, adjust this method accordingly.
      */
     public DataSet createSubset() {
         // 1. Determine selected variables.
@@ -562,6 +576,8 @@ public class DataSubsetEditor extends JPanel {
 
     /**
      * Names of selected variables, in the order shown in the Selected list.
+     *
+     * @return List of variable names
      */
     public java.util.List<String> getSelectedVariableNames() {
         java.util.List<String> names = new java.util.ArrayList<>();
@@ -573,6 +589,8 @@ public class DataSubsetEditor extends JPanel {
 
     /**
      * The raw row specification string, e.g. "1-100, 150, 200-250".
+     *
+     * @return The row specification string
      */
     public String getRowSpec() {
         return rowSpecField.getText();
@@ -580,6 +598,8 @@ public class DataSubsetEditor extends JPanel {
 
     /**
      * The currently selected sampling mode.
+     *
+     * @return The sampling mode
      */
     public SamplingMode getSamplingMode() {
         return (SamplingMode) samplingModeCombo.getSelectedItem();
@@ -587,6 +607,8 @@ public class DataSubsetEditor extends JPanel {
 
     /**
      * The current sample size from the spinner.
+     *
+     * @return The sample size.
      */
     public int getSampleSize() {
         Object value = sampleSizeSpinner.getValue();
@@ -598,6 +620,8 @@ public class DataSubsetEditor extends JPanel {
 
     /**
      * The seed field contents as text.
+     *
+     * @return The seed text
      */
     public String getSeedText() {
         return seedField.getText();
@@ -676,18 +700,51 @@ public class DataSubsetEditor extends JPanel {
     // Sampling mode enum
     // ------------------------------------------------------------------------
 
+    /**
+     * Sampling modes for subset creation.
+     */
     public enum SamplingMode {
+
+        /**
+         * Sampling mode that uses rows as they are without applying any modifications.
+         */
         USE_AS_IS("Use rows as-is"),
+
+        /**
+         * Sampling mode that randomizes the order of rows.
+         */
         SHUFFLE("Shuffle rows"),
+
+        /**
+         * Represents a sampling mode that selects a subset of data without replacement.
+         * This means each selected element is unique and will not appear more than once
+         * in the sampled subset.
+         */
         SUBSAMPLE("Subsample (without replacement)"),
+
+        /**
+         * Sampling mode that selects a subset of data with replacement.
+         * This means elements can be selected multiple times, potentially leading to duplicates
+         * in the sampled subset.
+         */
         BOOTSTRAP("Bootstrap (with replacement)");
 
         private final String label;
 
+        /**
+         * Constructs a SamplingMode with the specified label.
+         *
+         * @param label the string label representing this sampling mode.
+         */
         SamplingMode(String label) {
             this.label = label;
         }
 
+        /**
+         * Returns the string representation of this sampling mode.
+         *
+         * @return the string label associated with this sampling mode.
+         */
         @Override
         public String toString() {
             return label;
