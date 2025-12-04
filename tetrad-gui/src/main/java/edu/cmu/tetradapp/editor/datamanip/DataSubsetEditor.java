@@ -75,7 +75,9 @@ public class DataSubsetEditor extends JPanel {
     // ------------------------------------------------------------------------
 
     private void initVariableModels() {
-        for (Node v : sourceDataSet.getVariables()) {
+        List<Node> variables = sourceDataSet.getVariables();
+
+        for (Node v : variables) {
             availableModel.addElement(v);
         }
     }
@@ -148,26 +150,22 @@ public class DataSubsetEditor extends JPanel {
     }
 
     private JPanel buildVariablesPanel() {
-//        JPanel panel = new JPanel(new BorderLayout(5, 5));
-//        panel.setBorder(new TitledBorder("Variables"));
-
-        availableList.setPreferredSize(new Dimension(225, 600));
-        selectedList.setPreferredSize(new Dimension(225, 600));
 
         // Left list (available).
         availableList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         JScrollPane availableScroll = new JScrollPane(availableList);
+        availableScroll.setPreferredSize(new Dimension(225, 600));
         availableScroll.setBorder(new TitledBorder("Available variables"));
 
         JPanel availablePanel = new JPanel();
         availablePanel.setLayout(new BorderLayout());
-//        availablePanel.add(buildSortPopup(), BorderLayout.SOUTH);
         availablePanel.add(availableScroll, BorderLayout.CENTER);
         availablePanel.setBorder(new TitledBorder("Variables"));
 
         // Right list (selected).
         selectedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         JScrollPane selectedScroll = new JScrollPane(selectedList);
+        selectedScroll.setPreferredSize(new Dimension(225, 600));
         selectedScroll.setBorder(new TitledBorder("Selected variables"));
 
         // Middle buttons.
@@ -214,29 +212,6 @@ public class DataSubsetEditor extends JPanel {
         centerPanel.add(available);
         centerPanel.add(buttonPanel);
         centerPanel.add(selectedScroll);
-
-//        JPanel centerPanel = new JPanel(new GridBagLayout());
-//        GridBagConstraints c = new GridBagConstraints();
-//        c.gridx = 0;
-//        c.gridy = 0;
-//        c.weightx = 0.5;
-//        c.weighty = 1.0;
-//        c.fill = GridBagConstraints.BOTH;
-//        centerPanel.add(availableScroll, c);
-//
-//        c.gridx = 1;
-//        c.gridy = 0;
-//        c.weightx = 0.0;
-//        c.weighty = 1.0;
-//        c.fill = GridBagConstraints.VERTICAL;
-//        centerPanel.add(buttonPanel, c);
-//
-//        c.gridx = 2;
-//        c.gridy = 0;
-//        c.weightx = 0.5;
-//        c.weighty = 1.0;
-//        c.fill = GridBagConstraints.BOTH;
-//        centerPanel.add(selectedScroll, c);
 
         availablePanel.add(centerPanel, BorderLayout.CENTER);
 
