@@ -378,7 +378,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
 
-            <model name="Data Subset"
+            <model name="Subset Data"
                    acronym="Data Subset" help="data_subset" category="Manipulation of Data">
                 <model-class>edu.cmu.tetradapp.model.datamanip.DataSubsetModel
                 </model-class>
@@ -787,21 +787,21 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <model name="Bootstrap Sample"
-                   acronym="Bootstrap" help="data" category="Row operations">
-                <logger>
-                    <event id="sampleSize" description="Sample Size"
-                           default="on"/>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="data" description="Data"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.BootstrapSamplerWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
-                <params-editor-class>
-                    edu.cmu.tetradapp.editor.BootstrapSamplerParamsEditor
-                </params-editor-class>
-            </model>
+<!--            <model name="Bootstrap Sample"-->
+<!--                   acronym="Bootstrap" help="data" category="Row operations">-->
+<!--                <logger>-->
+<!--                    <event id="sampleSize" description="Sample Size"-->
+<!--                           default="on"/>-->
+<!--                    <event id="info" description="Information" default="on"/>-->
+<!--                    <event id="data" description="Data"/>-->
+<!--                </logger>-->
+<!--                <model-class>edu.cmu.tetradapp.model.BootstrapSamplerWrapper-->
+<!--                </model-class>-->
+<!--                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
+<!--                <params-editor-class>-->
+<!--                    edu.cmu.tetradapp.editor.BootstrapSamplerParamsEditor-->
+<!--                </params-editor-class>-->
+<!--            </model>-->
             <model name="Split By Cases" acronym="Split Cases" help="split"
                    category="Row operations">
                 <logger>
