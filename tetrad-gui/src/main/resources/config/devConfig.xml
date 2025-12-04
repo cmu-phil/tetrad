@@ -378,6 +378,16 @@
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
 
+            <model name="Data Subset"
+                   acronym="Data Subset" help="data_subset" category="Manipulation of Data">
+                <model-class>edu.cmu.tetradapp.model.datamanip.DataSubsetModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.datamanip.DataSubsetParamsEditor
+                </params-editor-class>
+            </model>
+
             <!-- Merge Deterministic Variables for interventional data, added by Zhou -->
             <model name="Merge Deterministic Interventional Variables" acronym="Determinism" help="data"
                    category="Manipulation of Data">
