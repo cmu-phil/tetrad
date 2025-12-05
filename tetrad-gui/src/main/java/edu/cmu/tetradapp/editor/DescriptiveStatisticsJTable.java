@@ -124,7 +124,7 @@ public class DescriptiveStatisticsJTable extends JTable implements DataModelCont
                 JTable table = (JTable) e.getSource();
                 TableCellEditor editor = table.getCellEditor();
                 if (editor != null) {
-                    editor.stopCellEditing();
+//                    editor.stopCellEditing();
                 }
             }
         });

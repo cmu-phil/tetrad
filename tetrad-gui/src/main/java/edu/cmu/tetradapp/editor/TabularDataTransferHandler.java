@@ -210,9 +210,6 @@ class TabularDataTransferHandler extends TransferHandler {
                     return false;
                 }
 
-                boolean shouldAsk = false;
-                boolean shiftDown = true;
-
                 BufferedReader preReader = new BufferedReader(
                         new CharArrayReader(s.toCharArray()));
 
@@ -222,39 +219,12 @@ class TabularDataTransferHandler extends TransferHandler {
                 int numTokens = preTokenizer.countTokens();
 
                 for (int col = startCol; col < startCol + numTokens; col++) {
-                    Object value = tabularData.getValueAt(startRow, col);
-                    if (!"".equals(value) && !(null == value)) {
-                        shouldAsk = true;
-                    }
-
                     if (startRow - getNumLeadingRows() >= tabularData.getDataSet().getNumRows() ||
                         startCol - getNumLeadingCols() >= tabularData.getDataSet().getNumColumns()) {
-                        shouldAsk = false;
-                        shiftDown = false;
                     }
                 }
 
-                if (shouldAsk) {
-                    String[] choices = {
-                            "Shift corresponding cells down to make room",
-                            "Replace corresponding cells"};
-
-                    Object choice = JOptionPane.showInputDialog(
-                            JOptionUtils.centeringComp(),
-                            "How should the clipboard contents be pasted?",
-                            "Paste Contents", JOptionPane.INFORMATION_MESSAGE,
-                            null, choices, choices[0]);
-
-                    // Null means the user cancelled the input.
-                    if (choice == null) {
-                        return false;
-                    }
-
-                    shiftDown = choice.equals(choices[0]);
-                }
-
-                // NEW: pass headerPaste into doPaste
-                doPaste(s, startRow, startCol, shiftDown, headerPaste, tabularData);
+                doPaste(s, startRow, startCol, false, headerPaste, tabularData);
             } catch (UnsupportedFlavorException | IOException e) {
                 e.printStackTrace();
             }

@@ -178,7 +178,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
                 JTable table = (JTable) e.getSource();
                 TableCellEditor editor = table.getCellEditor();
                 if (editor != null) {
-                    editor.stopCellEditing();
+//                    editor.stopCellEditing();
                 }
             }
         });
