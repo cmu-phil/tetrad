@@ -731,25 +731,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         tools.add(new DescriptiveStatsAction(this));
         tools.add(new QQPlotAction(this));
 
-//        final int vkBackSpace = KeyEvent.VK_BACK_SPACE;
-//        final int vkDelete = KeyEvent.VK_DELETE;
-//
-//        KeyStroke backspaceKeystroke = KeyStroke.getKeyStroke(vkBackSpace, 0);
-//        KeyStroke deleteKeystroke = KeyStroke.getKeyStroke(vkDelete, 0);
-//
-//        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(backspaceKeystroke,
-//                "DELETE");
-//        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(deleteKeystroke,
-//                "DELETE");
-//
-//        Action deleteAction = new AbstractAction() {
-//            public void actionPerformed(ActionEvent e) {
-//                deleteSelectedRowsOrColumnsActionListener.actionPerformed(null);
-//            }
-//        };
-//
-//        getActionMap().put("DELETE", deleteAction);
-
         return menuBar;
     }
 

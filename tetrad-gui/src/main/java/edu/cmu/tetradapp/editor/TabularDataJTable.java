@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.JOptionUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -172,16 +171,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         });
 
         setTransferHandler(new TabularDataTransferHandler());
-
-        addFocusListener(new FocusAdapter() {
-            public void focusLost(FocusEvent e) {
-                JTable table = (JTable) e.getSource();
-                TableCellEditor editor = table.getCellEditor();
-                if (editor != null) {
-//                    editor.stopCellEditing();
-                }
-            }
-        });
     }
 
     /**
@@ -218,10 +207,14 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
      */
     public void setValueAt(Object aValue, int row, int column) {
         try {
+            if (column >= getColumnCount()) {
+                ((TabularDataTable) dataModel).setMinColumnCount(column + 1);
+                ((AbstractTableModel) getModel()).fireTableStructureChanged();
+            }
+
             super.setValueAt(aValue, row, column);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e
-                    .getMessage(), "Error", JOptionPane.WARNING_MESSAGE);
+            e.printStackTrace();
         }
     }
 

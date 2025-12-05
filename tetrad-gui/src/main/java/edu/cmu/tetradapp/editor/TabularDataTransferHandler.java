@@ -219,11 +219,13 @@ class TabularDataTransferHandler extends TransferHandler {
                 int numTokens = preTokenizer.countTokens();
 
                 for (int col = startCol; col < startCol + numTokens; col++) {
+
                     if (startRow - getNumLeadingRows() >= tabularData.getDataSet().getNumRows() ||
                         startCol - getNumLeadingCols() >= tabularData.getDataSet().getNumColumns()) {
                     }
                 }
 
+                // NEW: pass headerPaste into doPaste
                 doPaste(s, startRow, startCol, false, headerPaste, tabularData);
             } catch (UnsupportedFlavorException | IOException e) {
                 e.printStackTrace();
