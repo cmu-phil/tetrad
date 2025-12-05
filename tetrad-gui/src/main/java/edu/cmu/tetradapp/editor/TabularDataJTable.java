@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
@@ -31,6 +31,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -42,6 +43,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.Map;
@@ -194,7 +196,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 
             if (o != null) {
                 String tooltip = this.columnToTooltip.get(o.toString());
-//				System.out.println("tooltip " + o + " "+ tooltip);
                 if (tooltip != null) {
                     jc.setToolTipText(tooltip);
                 }
@@ -233,10 +234,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         }
         if (row == 1) {
             return new VariableNameEditor();
-        } //		else if (column == 1 && row >= 2) {
-        //			return new MultiplierEditor();
-        //		}
-        else if (row > 1) {
+        } else if (row > 1) {
             return new DataCellEditor();
         }
 
@@ -249,10 +247,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     public TableCellRenderer getCellRenderer(int row, int column) {
         if (column == 0) {
             return new RowNumberRenderer();
-        } //		else if (column == 1 && row >= 1) {
-        //			return new MultiplierRenderer();
-        //		}
-        else {
+        } else {
             if (row == 0 || row == 1) {
                 return new VariableNameRenderer();
             }
@@ -290,54 +285,83 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         return getDataSet();
     }
 
-    /**
-     * <p>deleteSelected.</p>
-     */
     public void deleteSelected() {
-        TabularDataTable model = (TabularDataTable) getModel();
-        DataSet dataSet = model.getDataSet();
+        DataSet dataSet = getDataSet();
 
-        // When getRowSelectionAllowed() is false, getColumnSelectionAllowed() must be true, vise versa.
-        // But both can be true since we can select a data cell - Zhou
-        if (getColumnSelectionAllowed()) {
-            int[] selectedCols = getSelectedColumns();
+        int[] selectedRows = getSelectedRows();
+        int[] selectedCols = getSelectedColumns();
 
-            TableCellEditor editor = getCellEditor();
+        boolean rowSelAllowed = getRowSelectionAllowed();
+        boolean colSelAllowed = getColumnSelectionAllowed();
 
-            if (editor != null) {
-                editor.stopCellEditing();
-            }
+        // Heuristics for "whole columns" vs "whole rows":
+        boolean wholeColumns =
+                colSelAllowed && !rowSelAllowed && selectedCols.length > 0;
+
+        boolean wholeRows =
+                rowSelAllowed && !colSelAllowed && selectedRows.length > 0;
+
+        if (wholeColumns) {
+
+            // Sort display columns ascending, then iterate from right to left.
+            Arrays.sort(selectedCols);
 
             for (int i = selectedCols.length - 1; i >= 0; i--) {
-//            for (int i = 0; i < selectedCols.length; i++) {
-                // Adjust to 0 base
-                selectedCols[i] -= getNumLeadingCols();
-                // Then remove each individual column from model
-                dataSet.removeColumn(selectedCols[i]);
+                int displayCol = selectedCols[i];
+
+                // Skip non-data leading column (row index, etc.).
+                if (displayCol < getNumLeadingCols()) {
+                    continue;
+                }
+
+                int dataCol = displayCol - getNumLeadingCols();
+
+                // Re-check against the *current* number of columns.
+                if (dataCol >= 0 && dataCol < dataSet.getNumColumns()) {
+                    dataSet.removeColumn(dataCol);
+                }
             }
 
-            // Using this causes error - Zhou
-            //dataSet.removeCols(selectedCols);
-        } else if (getRowSelectionAllowed()) {
-            int[] selectedRows = getSelectedRows();
-
-            TableCellEditor editor = getCellEditor();
-
-            if (editor != null) {
-                editor.stopCellEditing();
-            }
-
-            for (int i = 0; i < selectedRows.length; i++) {
-                selectedRows[i] -= 2;
-            }
-
-            dataSet.removeRows(selectedRows);
-        } else {
-            throw new IllegalStateException("Only row deletion and column deltion supported.");
+            ((AbstractTableModel) getModel()).fireTableStructureChanged();
+            return;
         }
 
-        firePropertyChange("modelChanged", null, null);
-        model.fireTableDataChanged();
+        if (wholeRows) {
+            // Delete rows from bottom to top so indices stay valid.
+            for (int i = selectedRows.length - 1; i >= 0; i--) {
+                int displayRow = selectedRows[i];
+
+                // Skip leading non-data rows (header, variable names).
+                if (displayRow < getNumLeadingRows()) continue;
+
+                int dataRow = displayRow - getNumLeadingRows();
+
+                if (dataRow >= 0 && dataRow < dataSet.getNumRows()) {
+                    int[] _dataRow = new int[]{dataRow};
+                    dataSet.removeRows(_dataRow);
+                }
+            }
+
+            ((AbstractTableModel) getModel()).fireTableDataChanged();
+            return;
+        }
+
+        // Fallback: arbitrary cell selection => clear cells.
+        for (int displayRow : selectedRows) {
+            for (int displayCol : selectedCols) {
+                if (displayRow < getNumLeadingRows()) continue;
+                if (displayCol < getNumLeadingCols()) continue;
+
+                // Let the table/model interpret null as "missing".
+                setValueAt(null, displayRow, displayCol);
+            }
+        }
+
+        ((AbstractTableModel) getModel()).fireTableDataChanged();
+    }
+
+    private int getNumLeadingRows() {
+        return 2;
     }
 
     /**
@@ -463,9 +487,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     }
 
     private int getNumLeadingCols() {
-        /*
-	  The number of initial "special" columns not used to display the data set.
-         */
         return 1;
     }
 
@@ -481,11 +502,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 
         DataSet dataSet = getDataSet();
         int dataCol = col - getNumLeadingCols();
-        // int dataCol = col;
 
         if (dataCol < dataSet.getNumColumns()) {
             Node variable = dataSet.getVariable(dataCol);
-            /** {@inheritDoc} */
             return ((Variable) variable).checkValue(token);
         } else {
             return true;

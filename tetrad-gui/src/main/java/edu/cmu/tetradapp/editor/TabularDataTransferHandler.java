@@ -117,22 +117,20 @@ class TabularDataTransferHandler extends TransferHandler {
                         continue;
                     }
 
-//                    String name = (String) (tabularData.getValueAt(1, displayCol));
-//
-//                    if (name == null) {
-//                        continue;
-//                    }
+                    // Always treat null header as empty string so we don't drop the column.
+                    String name = (String) tabularData.getValueAt(1, displayCol);
+                    if (name == null) {
+                        name = "";
+                    }
 
                     if (displayRow == 1) {
-                        String s = (String) tabularData.getValueAt(1, displayCol);
+                        String s = name;
 
                         if (s.trim().equals("")) {
                             s = "C" + (displayCol - 1);
                         }
 
-                        String val = s;
-
-                        buf.append(val).append("\t");
+                        buf.append(s).append("\t");
                     } else {
                         int dataRow = displayRow - getNumLeadingRows();
                         int dataCol = displayCol - getNumLeadingCols();
@@ -150,10 +148,8 @@ class TabularDataTransferHandler extends TransferHandler {
                                     if (datumObj instanceof Number) {
                                         datumString = datumObj.toString();
                                     } else if (datumObj instanceof String) {
-
-                                        // Let's quote all Strings...
+                                        // Quote all Strings.
                                         datumString = "\"" + datumObj + "\"";
-
                                     } else {
                                         throw new IllegalArgumentException();
                                     }
