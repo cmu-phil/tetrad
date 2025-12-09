@@ -541,7 +541,6 @@ public final class Fcit2 implements IGraphSearch {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
 
-        boolean changed = false;
         Graph _pag = this.pag.copy();
 
         // The final orientation rules were applied just before this step, so this should list only
