@@ -150,7 +150,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
             }
         }
 
-        edu.cmu.tetrad.search.Fcit search = new edu.cmu.tetrad.search.Fcit(test, score);
+        edu.cmu.tetrad.search.Fcit2 search = new edu.cmu.tetrad.search.Fcit2(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -163,11 +163,11 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.BOSS);
+            search.setStartWith(edu.cmu.tetrad.search.Fcit2.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.GRASP);
+            search.setStartWith(edu.cmu.tetrad.search.Fcit2.START_WITH.GRASP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
-            search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.SP);
+            search.setStartWith(edu.cmu.tetrad.search.Fcit2.START_WITH.SP);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
         }
