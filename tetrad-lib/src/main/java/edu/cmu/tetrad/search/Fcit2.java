@@ -308,8 +308,8 @@ public final class Fcit2 implements IGraphSearch {
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(true);
-//        fciOrient.setCompleteRuleSetUsed(true);
-//        fciOrient.setKnowledge(knowledge);
+        fciOrient.setCompleteRuleSetUsed(true);
+        fciOrient.setKnowledge(knowledge);
 
         Graph dag;
         List<Node> best;
