@@ -450,7 +450,6 @@ public final class Fcit2 implements IGraphSearch {
         // In what follows, we look for sepsets to remove edges. After every removal we rebuild the PAG and
         // optionally check to see if the Zhang MAG in the PAG is a legal MAG, and if not, reset the PAG
         // and any changed sepsets) to the previous state. Repeat until no more edges are removed.
-//        Set<IndependenceCheck> checks = new HashSet<>();
         int round = 0;
 
         do {
