@@ -33,7 +33,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 
 /**
@@ -137,7 +136,24 @@ public final class Fcit2 implements IGraphSearch {
      * instantiated to an empty graph structure.
      */
     private @NotNull Graph pag = new EdgeListGraph();
+    /**
+     * Indicates whether the graph should be replicated during the search process.
+     * <p>
+     * This variable controls whether a duplicate of the graph is maintained throughout the execution of the algorithm.
+     * When set to {@code true}, modifications to the graph during the search process will not overwrite the original
+     * graph, preserving its state for potential reuse or reference. This may increase memory usage but provides a
+     * safeguard against unintended alterations of the initial graph structure.
+     * <p>
+     * The default value is {@code false}.
+     */
     private boolean replicatingGraph = false;
+    /**
+     * A flag indicating whether selection bias should be excluded during the search process.
+     * <p>
+     * If set to {@code true}, the algorithm will explicitly attempt to omit selection bias in its computation,
+     * affecting the inferred graph's causal relationships. This may be useful in datasets where selection bias is known
+     * or suspected to interfere with causal inference. If {@code false}, selection bias is not accounted for.
+     */
     private boolean excludeSelectionBias = false;
 
     /**
@@ -219,12 +235,12 @@ public final class Fcit2 implements IGraphSearch {
      * independence evidence and ensuring consistency with known independence and causality constraints. This method
      * identifies and orients specific edges in the PAG to maintain its validity.
      * <p>
-     * The method performs the following steps: (a) Iterates over all edges in the separation set map's key set. (S)
-     * For each edge, identifies adjacent nodes in the PAG and finds their common neighbors. (c) Removes adjacency
-     * between the nodes if applicable and logs the operation if verbose mode is enabled. (d) Examines each common
-     * neighbor, checking whether it is part of the separation set for the given nodes. If it is not part of the
-     * separation set and does not create a forbidden collider, the endpoints of the edge between the common neighbor
-     * and the adjacent nodes are adjusted to a directed orientation. (e) Logs oriented relationships in verbose mode.
+     * The method performs the following steps: (a) Iterates over all edges in the separation set map's key set. (S) For
+     * each edge, identifies adjacent nodes in the PAG and finds their common neighbors. (c) Removes adjacency between
+     * the nodes if applicable and logs the operation if verbose mode is enabled. (d) Examines each common neighbor,
+     * checking whether it is part of the separation set for the given nodes. If it is not part of the separation set
+     * and does not create a forbidden collider, the endpoints of the edge between the common neighbor and the adjacent
+     * nodes are adjusted to a directed orientation. (e) Logs oriented relationships in verbose mode.
      * <p>
      * This adjustment ensures proper handling of induced dependencies and maintains the correctness of the causal
      * structure represented by the PAG. The orientation of edges follows the rules
@@ -512,12 +528,12 @@ public final class Fcit2 implements IGraphSearch {
      * Attempts to remove additional edges from the current PAG by exploiting discriminating paths that could not be
      * oriented by the final FCI orientation rules. For each candidate edge, the method:
      * <p>
-     * 1. Gathers unresolved discriminating paths involving the edge. 2. Uses recursive blocking to propose
-     * conditioning sets that would separate the endpoints. 3. Runs the independence test on those candidate sets.
-     * 4. If independence is found, tries to remove the edge and re-orient the graph accordingly.
+     * 1. Gathers unresolved discriminating paths involving the edge. 2. Uses recursive blocking to propose conditioning
+     * sets that would separate the endpoints. 3. Runs the independence test on those candidate sets. 4. If independence
+     * is found, tries to remove the edge and re-orient the graph accordingly.
      * <p>
-     * If {@code guaranteePag} is true, removals that would yield an illegal MAG are reverted; otherwise, illegal
-     * PAG states may persist. Verbose logging records each attempted removal and orientation.
+     * If {@code guaranteePag} is true, removals that would yield an illegal MAG are reverted; otherwise, illegal PAG
+     * states may persist. Verbose logging records each attempted removal and orientation.
      *
      * @return true if at least one edge was removed, false otherwise
      */
@@ -646,7 +662,7 @@ public final class Fcit2 implements IGraphSearch {
                             redoGfciOrientation(__pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, _sepsets, excludeSelectionBias, superVerbose);
 
                             if (__pag.paths().isMaximal()) {
-                                resultList.add(new Result(x1, y1, S, C));
+                                resultList.add(new Result(x1, y1, S));
                             }
                         }
                     }
@@ -661,7 +677,6 @@ public final class Fcit2 implements IGraphSearch {
                         Node x = result.x();
                         Node y = result.y();
                         Set<Node> S = result.S();
-                        Set<Node> C = result.C();
 
                         try {
                             if (this.test.checkIndependence(x, y, S).isIndependent()) {
@@ -690,21 +705,11 @@ public final class Fcit2 implements IGraphSearch {
             Node x = result.x();
             Node y = result.y();
             Set<Node> S = result.S();
-            Set<Node> C = result.C();
 
             Edge edge = this.pag.getEdge(x, y);
 
             this.pag.removeEdge(edge);
             this.sepsets.set(x, y, S);
-
-            List<Node> adj = this.pag.getAdjacentNodes(x);
-            adj.retainAll(this.pag.getAdjacentNodes(y));
-
-            for (Node c : adj) {
-                if (S.contains(c)) continue;
-                this.pag.setEndpoint(x, c, Endpoint.ARROW);
-                this.pag.setEndpoint(y, c, Endpoint.ARROW);
-            }
 
             if (verbose) {
                 TetradLogger.getInstance().log("Removing " + edge + " for recursive reasons.");
@@ -844,7 +849,7 @@ public final class Fcit2 implements IGraphSearch {
         INITIAL_GRAPH
     }
 
-    private record Result(Node x, Node y, Set<Node> S, Set<Node> C) {
+    private record Result(Node x, Node y, Set<Node> S) {
     }
 }
 
