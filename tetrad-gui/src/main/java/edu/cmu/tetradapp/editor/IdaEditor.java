@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,6 +20,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.OrderedPair;
 import edu.cmu.tetrad.search.IdaCheck;
@@ -28,8 +29,6 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.IdaModel;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -37,8 +36,10 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.regex.PatternSyntaxException;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * An editor for the results of the IDA check. This editor can be sorted by clicking on the column headers, up or down.
@@ -47,27 +48,75 @@ import java.util.regex.PatternSyntaxException;
  * For an estimated graph, the table will have 3 columns: Pair, Min Est Effect, and Max Est Effect. For a true graph,
  * the table will have 5 columns: Pair, Min Est Effect, Max Est Effect, Min True Effect, and Max True Effect.
  *
+ * <p>
+ * The revised version of this editor adds explicit controls for specifying:
+ * <ul>
+ *     <li>a set of treatment variables X, and</li>
+ *     <li>a set of outcome variables Y</li>
+ * </ul>
+ * The IDA table is then restricted to ordered pairs (X, Y) with X in the treatment set and Y in the outcome set.
+ * Variable names may include simple wildcards "*" and "?" as in the Adjustment / Total Effects component.
+ *
  * @author josephramsey
- * @version $Id: $Id
  * @see IdaModel
  * @see edu.cmu.tetrad.search.Ida
  */
 public class IdaEditor extends JPanel {
 
     /**
+     * The underlying model.
+     */
+    private final IdaModel idaModel;
+
+    /**
+     * The underlying IDA checker over the estimated graph.
+     */
+    private final IdaCheck idaCheckEst;
+
+    /**
+     * All legal ordered pairs for the current IDA checker (all distinct pairs of nodes).
+     */
+    private final List<OrderedPair<Node>> allPairs;
+    /**
+     * Swing components that need to be accessed from listeners.
+     */
+    private final JTable table;
+    private final NumberFormat numberFormat;
+    /**
+     * Text fields for specifying treatments (X) and outcomes (Y).
+     * These support simple wildcards "*", "?".
+     */
+    private final JTextField treatmentsField = new JTextField();
+    private final JTextField outcomesField = new JTextField();
+    /**
+     * "Run" button to recompute the table for the current X/Y selection.
+     */
+    private final JButton runButton = new JButton("Run");
+    /**
+     * Checkbox to toggle use of Optimal IDA (if available).
+     */
+    private final JCheckBox showOptimalIda = new JCheckBox("Show Optimal IDA");
+    /**
+     * The subset of ordered pairs currently displayed in the table
+     * (respecting the X/Y selections).
+     */
+    private List<OrderedPair<Node>> currentPairs = new ArrayList<>();
+    private IdaTableModel tableModel;
+    private TableRowSorter<IdaTableModel> sorter;
+    /**
      * The label for the average squared distance.
      */
-    private JLabel avgSquaredDistLabel = null;
+    private JLabel avgSquaredDistLabel;
 
     /**
      * The label for the squared difference between minimum total effect and true total effect.
      */
-    private JLabel squaredDiffMinTotalLabel = null;
+    private JLabel squaredDiffMinTotalLabel;
 
     /**
      * The label for the squared difference between maximum total effect and true total effect.
      */
-    private JLabel squaredDiffMaxTotalLabel = null;
+    private JLabel squaredDiffMaxTotalLabel;
 
     /**
      * Constructs a new IDA editor for the given IDA model.
@@ -75,170 +124,85 @@ public class IdaEditor extends JPanel {
      * @param idaModel the IDA model.
      */
     public IdaEditor(IdaModel idaModel) {
-        IdaCheck idaCheckEst = idaModel.getIdaCheckEst();
+        this.idaModel = idaModel;
+        this.idaCheckEst = idaModel.getIdaCheckEst();
+        this.allPairs = new ArrayList<>(idaCheckEst.getOrderedPairs());
+        this.numberFormat = NumberFormatUtil.getInstance().getNumberFormat();
 
-        // Grab the legal ordered pairs (i.e., all possible pairs of distinct nodes)
-        List<OrderedPair<Node>> pairs = idaCheckEst.getOrderedPairs();
+        setLayout(new BorderLayout());
 
-        // Create a table idaCheckEst for the results of the IDA check
-        IdaTableModel tableModel = new IdaTableModel(pairs, idaCheckEst, idaModel.getTrueSemIm());
-        this.setLayout(new BorderLayout());
+        // Initial empty selection, user must choose X and Y then click Run.
+        this.currentPairs = new ArrayList<>();
 
-        // Add the table to the left
-        JTable table = new JTable(tableModel);
-        NumberFormat numberFormat = NumberFormatUtil.getInstance().getNumberFormat();
+        // Table and sorter
+        this.tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
+        this.table = new JTable(tableModel);
         NumberFormatRenderer numberRenderer = new NumberFormatRenderer(numberFormat);
         table.setDefaultRenderer(Double.class, numberRenderer);
         table.setAutoCreateRowSorter(true);
         table.setFillsViewportHeight(true);
 
-        this.add(new JScrollPane(table));
-
-        // Create a TableRowSorter and set it to the JTable
-        TableRowSorter<IdaTableModel> sorter = new TableRowSorter<>(tableModel);
+        this.sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
 
+        // When the user sorts, recompute the summary statistics using only visible rows.
         sorter.addRowSorterListener(e -> {
             if (e.getType() == RowSorterEvent.Type.SORTED) {
-                List<OrderedPair<Node>> pairs1 = idaCheckEst.getOrderedPairs();
-
                 List<OrderedPair<Node>> visiblePairs = new ArrayList<>();
                 int rowCount = table.getRowCount();
 
                 for (int i = 0; i < rowCount; i++) {
                     int modelIndex = table.convertRowIndexToModel(i);
-                    visiblePairs.add(pairs1.get(modelIndex));
-                }
-
-                if (avgSquaredDistLabel != null) {
-                    avgSquaredDistLabel.setText("Average Squared Distance: " + numberFormat.format(idaCheckEst.getAverageSquaredDistance(visiblePairs)));
-                }
-
-                if (squaredDiffMinTotalLabel != null) {
-                    squaredDiffMinTotalLabel.setText("Average Min Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMinSquaredDiffEstTrue(visiblePairs)));
-                }
-
-                if (squaredDiffMaxTotalLabel != null) {
-                    squaredDiffMaxTotalLabel.setText("Average Max Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMaxSquaredDiffEstTrue(visiblePairs)));
-                }
-            }
-        });
-
-        JCheckBox showOptimalIda = new JCheckBox("Show Optimal IDA");
-        showOptimalIda.setSelected(idaCheckEst.isShowOptimalIda());
-        showOptimalIda.addActionListener(e -> {
-            idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
-            idaCheckEst.recompute();  // recompute totalEffects/absTotalEffects
-
-            // Rebuild the table model with updated results
-            List<OrderedPair<Node>> pairs1 = idaCheckEst.getOrderedPairs();
-            IdaTableModel newModel = new IdaTableModel(pairs1, idaCheckEst, idaModel.getTrueSemIm());
-            table.setModel(newModel);
-
-            // If you want the sorter to keep working:
-            TableRowSorter<IdaTableModel> newSorter = new TableRowSorter<>(newModel);
-            table.setRowSorter(newSorter);
-
-            table.revalidate();
-            table.repaint();
-
-            setSummaryText(numberFormat, idaCheckEst, pairs);
-        });
-
-        // Create the text field
-        JLabel label = new JLabel("Regexes (semicolon separated):");
-        JTextField filterText = new JTextField(15);
-        filterText.setMaximumSize(new Dimension(500, 20));
-        label.setLabelFor(filterText);
-
-        // Create a listener for the text field that will update the table's row sort
-        filterText.getDocument().addDocumentListener(new DocumentListener() {
-
-            /**
-             * Filters the table based on the text in the text field.
-             */
-            private void filter() {
-                String text = filterText.getText();
-                if (text.trim().isEmpty()) {
-                    sorter.setRowFilter(null);
-                } else {
-                    String[] textParts = text.split(";+");
-                    List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
-                    for (String part : textParts) {
-                        try {
-                            String trim = part.trim();
-
-                            // Swap escapes for parentheses and pipes
-                            trim = trim.replace("\\(", "<+++<");
-                            trim = trim.replace("\\)", ">+++>");
-                            trim = trim.replace("\\|", "|+++|");
-                            trim = trim.replace("(", "\\(");
-                            trim = trim.replace(")", "\\)");
-                            trim = trim.replace("|", "\\|");
-                            trim = trim.replace("<+++<", "(");
-                            trim = trim.replace(">+++>", ")");
-                            trim = trim.replace("|+++|", "|");
-
-                            filters.add(RowFilter.regexFilter(trim));
-                        } catch (PatternSyntaxException e) {
-                            // ignore
-                        }
+                    if (modelIndex >= 0 && modelIndex < currentPairs.size()) {
+                        visiblePairs.add(currentPairs.get(modelIndex));
                     }
-                    sorter.setRowFilter(RowFilter.orFilter(filters));
                 }
-            }
 
-            /**
-             * Inserts text into the text field.
-             *
-             * @param e the document event.
-             */
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                filter();
-            }
-
-            /**
-             * Removes text from the text field.
-             *
-             * @param e the document event.
-             */
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                filter();
-            }
-
-            /**
-             * Changes text in the text field.
-             *
-             * @param e the document event.
-             */
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                // this method won't be called for plain text fields
+                if (idaModel.getTrueSemIm() != null && !visiblePairs.isEmpty()) {
+                    setSummaryText(numberFormat, idaCheckEst, visiblePairs);
+                }
             }
         });
 
-        // Add your label and text field to a panel
-        Box horiz = Box.createHorizontalBox();
-        Box vert = Box.createVerticalBox();
-
+        // Show Optimal IDA checkbox – only relevant if the estimated graph is a legal PDAG.
         if (idaCheckEst.getGraph().paths().isLegalPdag()) {
-            Box box = Box.createHorizontalBox();
-            box.add(showOptimalIda);
-            box.add(Box.createHorizontalGlue());
-            vert.add(box);
+            showOptimalIda.setSelected(idaCheckEst.isShowOptimalIda());
+            showOptimalIda.addActionListener(e -> {
+                idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
+                idaCheckEst.recompute();
+                recomputeTable();
+            });
+        } else {
+            showOptimalIda.setEnabled(false);
         }
 
-        Box horiz2 = Box.createHorizontalBox();
-        horiz2.add(label);
-        horiz2.add(filterText);
+        // Top control panel: X/Y fields, Run button, and (if available) Optimal IDA checkbox.
+        Box controlsBox = Box.createVerticalBox();
 
-        vert.add(horiz2);
-        vert.add(new JScrollPane(table));
+        Box xyRow = Box.createHorizontalBox();
+        xyRow.add(new JLabel("Treatments (X):"));
+        xyRow.add(Box.createHorizontalStrut(5));
+        xyRow.add(treatmentsField);
+        xyRow.add(Box.createHorizontalStrut(15));
+        xyRow.add(new JLabel("Outcomes (Y):"));
+        xyRow.add(Box.createHorizontalStrut(5));
+        xyRow.add(outcomesField);
+        controlsBox.add(xyRow);
+
+        // After fields are constructed
+        lockTextFieldHeight(treatmentsField);
+        lockTextFieldHeight(outcomesField);
+
+        Box buttonRow = Box.createHorizontalBox();
+        buttonRow.add(runButton);
+        buttonRow.add(Box.createHorizontalStrut(15));
+        buttonRow.add(showOptimalIda);
+        buttonRow.add(Box.createHorizontalGlue());
+        controlsBox.add(Box.createVerticalStrut(5));
+        controlsBox.add(buttonRow);
+
+        // Stats box
         Box statsBox = Box.createVerticalBox();
-        vert.add(statsBox);
-
         if (idaModel.getTrueSemIm() != null) {
             avgSquaredDistLabel = new JLabel();
             addStatToBox(avgSquaredDistLabel, statsBox);
@@ -248,15 +212,33 @@ public class IdaEditor extends JPanel {
 
             squaredDiffMaxTotalLabel = new JLabel();
             addStatToBox(squaredDiffMaxTotalLabel, statsBox);
-
-            setSummaryText(numberFormat, idaCheckEst, pairs);
         }
 
-        horiz.add(vert);
+        // Main "Table" tab layout
+        Box mainBox = Box.createVerticalBox();
+        mainBox.add(controlsBox);
+        mainBox.add(Box.createVerticalStrut(5));
+        mainBox.add(new JScrollPane(table));
+        if (idaModel.getTrueSemIm() != null) {
+            mainBox.add(Box.createVerticalStrut(5));
+            mainBox.add(statsBox);
+        }
 
+        // Wire up "Run" button
+        runButton.addActionListener(e -> {
+            try {
+                recomputeTable();
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(this,
+                        ex.getMessage(),
+                        "Invalid selection",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Tabbed pane with Table + Help
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-
-        tabbedPane.addTab("Table", horiz);
+        tabbedPane.addTab("Table", mainBox);
         tabbedPane.addTab("Help", new JScrollPane(getHelp()));
 
         add(tabbedPane, BorderLayout.CENTER);
@@ -271,10 +253,44 @@ public class IdaEditor extends JPanel {
         repaint();
     }
 
-    private void setSummaryText(NumberFormat numberFormat, IdaCheck idaCheckEst, List<OrderedPair<Node>> pairs) {
-        avgSquaredDistLabel.setText("Average Squared Distance: " + numberFormat.format(idaCheckEst.getAverageSquaredDistance(pairs)));
-        squaredDiffMinTotalLabel.setText("Average Min Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMinSquaredDiffEstTrue(pairs)));
-        squaredDiffMaxTotalLabel.setText("Avearege Max Squared Difference Est True: " + numberFormat.format(idaCheckEst.getAvgMaxSquaredDiffEstTrue(pairs)));
+    /**
+     * Convert a shell-style wildcard pattern (*, ?) into a proper regular expression.
+     */
+    private static String wildcardToRegex(String pattern) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("^");
+        for (int i = 0; i < pattern.length(); i++) {
+            char c = pattern.charAt(i);
+            switch (c) {
+                case '*':
+                    sb.append(".*");
+                    break;
+                case '?':
+                    sb.append(".");
+                    break;
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case '.':
+                case '[':
+                case ']':
+                case '{':
+                case '}':
+                case '(':
+                case ')':
+                case '+':
+                case '-':
+                case '^':
+                case '$':
+                case '|':
+                    sb.append("\\").append(c);
+                    break;
+                default:
+                    sb.append(c);
+            }
+        }
+        sb.append("$");
+        return sb.toString();
     }
 
     /**
@@ -290,6 +306,12 @@ public class IdaEditor extends JPanel {
         statsBox.add(horiz3);
     }
 
+    private static void lockTextFieldHeight(JTextField field) {
+        Dimension pref = field.getPreferredSize();
+        // Allow infinite width, but fix the height to the preferred height
+        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, pref.height));
+    }
+
     /**
      * Returns a text area containing a description of the IDA checker.
      *
@@ -302,138 +324,172 @@ public class IdaEditor extends JPanel {
         textArea.setOpaque(true);
         textArea.setEditable(false);
         textArea.setText("""
-                The original reference for the IDA algorithm is the following:
+                The original reference for the IDA algorithm is:
                 
-                Maathuis, Marloes H., Markus Kalisch, and Peter BÃ¼hlmann. "Estimating high-dimensional intervention effects from observational data." The Annals of Statistics 37.6A (2009): 3133-3164.
+                Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann (2009).
+                "Estimating high-dimensional intervention effects from observational data."
+                The Annals of Statistics 37(6A): 3133–3164.
                 
-                The IDA algorithm seeks to give a list of sets of possible parents for a given variable Y in an PDAG (which can be a DAG, a CPDAG, or a CPDAG with extra knowledge orientations after applying the Meek rules) and their corresponding total effects and absolute total effects on Y. It regresses Y on X U S, where X is a possible parent of Y and S is a set of possible parents of X. It reports the absolute values of the minimum regression coefficient or zero if Y is in the regression set. This interface tool reports the minimum and maximum of this range for each pair of distinct nodes in the graph.
+                This panel implements IDA for a given estimated graph and data set.
+                Each row of the table corresponds to an ordered pair (X, Y), where:
                 
-                This procedure is carried out for an estimated graph, as, for instance, a graph from a search, which is assumed to be an PDAG. It also optionally takes a Simulation box as input instead of a Data box, which allows for calculating the true total effects. It is then possible to assess whether this true total effect falls within the bounds given by the minimum and maximum total effects from the estimated PDAG (in which case zero is reported) or, if not, what the distance to the nearest endpoint of the range is. This distance squared is reported for each pair of distinct nodes.
+                  • X is a treatment (intervention) variable, and
+                  • Y is an outcome variable.
                 
-                Finally, summary statistics are given at the bottom of the table if the true DAG is given, as follows: (1) The average squared distance of the true total effect from range of estimated total effects, where this distance is zero if the true total effect falls between the minimum and maximum total effects and the distance to the closest extremal point otherwise; (2) The average minimum squared difference between the true total effect and the various estimated total effects, and (3) The average maximum squared difference between the true total effect and the various estimated total effects.
+                The table reports, for each (X, Y):
                 
-                The tables may be sorted in increasing order by clicking on the column header one wishes to sort or in descending order by clicking the column header twice. Also, a facility is provided to specify a semicolon-separated list of regexes to select rows in the table, where rows matching any of the regexes are displayed.
+                  • the minimum and maximum estimated causal effect of X on Y
+                    over all valid adjustment sets implied by the graph, and
+                  • if a true SEM is available, the corresponding true total effect
+                    and a squared-distance diagnostic.
                 
-                IDA Check is available in the Comparison box and can take the following combinations of parents:
+                Treatments (X) and outcomes (Y) are configured at the top of the
+                Table tab.  You may enter:
                 
-                (a) An estimated PDAG (as from a search) and a dataset. The variables in these must be the same, and the dataset needs to be continuous. In this case, columns compared to the true model will not be displayed.
+                  • a comma/space separated list of variable names, e.g.
+                        X1, X2, X3
+                  • or wildcard patterns using "*" and "?", e.g.
+                        X*      (all variables whose names start with "X")
+                        ?bar    (any one-letter prefix followed by "bar")
                 
-                (b) A Simulation box containing a true SEM IM and an estimated PDAG. In this case, extra columns compared to the true model, as described above, will be displayed.
+                The IDA table is restricted to all ordered pairs (X, Y) with
+                X in the treatment set and Y in the outcome set.  If either set
+                is empty, no table is produced.
                 
-                The contents of the table may be selected, copied, and pasted into Excel.
+                Press "Run" after changing the X or Y fields to recompute the IDA
+                results.  If "Show Optimal IDA" is available and checked, the
+                algorithm uses the Optimal IDA variant; otherwise, it uses the
+                standard IDA procedure. Optimal IDA is based on the O-set of Witte
+                et al. (2020), “On efficient adjustment in causal graphs,” JMLR
+                21(246):1–45.
                 
-                The abbreviation "TE" in the table headers stands for "Total Effect." The abbreviation "Abs TE" stands for "Absolute Total Effect." The abbreviation "Sq Dist" stands for "Squared Distance." The first column shows "X <- Y," where Y is being used to predict X for every pair <X, Y> of distinct variables in the graph. The second and third columns are the minimum and maximum estimated total effects, respectively. The fourth column is the IDA Min Effect, which is the estimated total effect that is closest to zero. The fifth column is the true total effect, and the sixth column is the squared distance from the true total effect, where if the true total effect falls between the minimum and maximum total effect zero is reported. If the true model is not given, the last two columns are not included.
-                
-                A field is provided, allowing the users to specify using regexes (regular expressions) to display only a subset of the rows in a table. At the user's discretion, the expressions deviate slightly from usual regular expressions in that the characters '(', ')', and '|' do not need to be escaped '\\(', '\\)', '\\|") to match an expression with those characters. Rather, to use those characters to control the regexes, the escape sequences should be used. This is because independence facts like "Ind(X, Y | Z)" are common for Tetrad. Note that when a table is subsetted using regexes, the statistics at the bottom of the table will be updated to reflect the subsetted table. Semicolons separate the regexes. This modification to the usual regexes can be turned off by unchecking a checkbox in the interface.                
+                The three statistics at the bottom summarize performance using
+                only the rows currently visible in the table (i.e., after sorting
+                or filtering).  They are intended primarily for simulation studies
+                where the true effects are known.
                 """);
-
         return textArea;
     }
 
     /**
-     * A table model for the results of the IDA check. This table can be sorted by clicking on the column headers, up or
-     * down. The table can be copied and pasted into a text file or into Excel.
+     * Recomputes {@link #currentPairs}, rebuilds the table model, and refreshes the summary
+     * statistics based on the current X/Y selections.
      */
-    private static class IdaTableModel extends AbstractTableModel {
-        /**
-         * The column names for the table. The first column is the pair of nodes, the second column is the minimum total
-         * effect, the third column is the maximum total effect, the fourth column is the minimum absolute total effect,
-         * the fifth column is the true total effect, and the sixth column is the squared distance from the true total
-         * effect, where if the true total effect falls between the minimum and maximum total effect zero is reported.
-         * If the true model is not given, the last two columns are not included.
-         */
-        private final String[] columnNames = {"Pair", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};
-        /**
-         * The data for the table.
-         */
-        private final Object[][] data;
+    private void recomputeTable() {
+        Graph graph = idaCheckEst.getGraph();
 
-        /**
-         * Constructs a new table estModel for the results of the IDA check.
-         */
-        public IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, SemIm trueSemIm) {
+        Set<Node> X = parseNodeList(graph, treatmentsField.getText().trim());
+        Set<Node> Y = parseNodeList(graph, outcomesField.getText().trim());
 
-            // Create the data for the table
-            this.data = new Object[pairs.size()][trueSemIm == null ? 4 : 6];
+        if (X.isEmpty() || Y.isEmpty()) {
+            throw new IllegalArgumentException("Treatments (X) and outcomes (Y) sets must not be empty.");
+        }
 
-            // Fill in the data for the table
-            for (int i = 0; i < pairs.size(); i++) {
-                OrderedPair<Node> pair = pairs.get(i);
-                String edge = pair.getSecond() + " <- " + pair.getFirst();
-                double minTotalEffect = estModel.getMinTotalEffect(pair.getFirst(), pair.getSecond());
-                double maxTotalEffect = estModel.getMaxTotalEffect(pair.getFirst(), pair.getSecond());
-                double minAbsTotalEffect = estModel.getIdaMinEffect(pair.getFirst(), pair.getSecond());
-
-                if (trueSemIm == null) {
-                    this.data[i][0] = edge;
-                    this.data[i][1] = minTotalEffect;
-                    this.data[i][2] = maxTotalEffect;
-                    this.data[i][3] = minAbsTotalEffect;
-                } else {
-                    double trueTotalEffect = estModel.getTrueTotalEffect(pair);
-                    double squaredDistance = estModel.getSquaredDistance(pair);
-                    this.data[i][0] = edge;
-                    this.data[i][1] = minTotalEffect;
-                    this.data[i][2] = maxTotalEffect;
-                    this.data[i][3] = minAbsTotalEffect;
-                    this.data[i][4] = trueTotalEffect;
-                    this.data[i][5] = squaredDistance;
-                }
+        // Restrict allPairs to those matching X x Y.
+        List<OrderedPair<Node>> newPairs = new ArrayList<>();
+        for (OrderedPair<Node> pair : allPairs) {
+            Node x = pair.getFirst();
+            Node y = pair.getSecond();
+            if (X.contains(x) && Y.contains(y)) {
+                newPairs.add(pair);
             }
         }
 
-        /**
-         * Returns the number of rows in the table.
-         *
-         * @return the number of rows in the table.
-         */
-        @Override
-        public int getRowCount() {
-            return this.data.length;
+        if (newPairs.isEmpty()) {
+            throw new IllegalArgumentException("No ordered pairs (X, Y) matched the given treatments/outcomes.");
         }
 
-        /**
-         * Returns the number of columns in the table.
-         *
-         * @return the number of columns in the table.
-         */
-        @Override
-        public int getColumnCount() {
-            return data[0].length;
+        this.currentPairs = newPairs;
+
+        this.tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
+        table.setModel(tableModel);
+
+        this.sorter = new TableRowSorter<>(tableModel);
+        table.setRowSorter(sorter);
+
+        // Reattach the sorter listener for statistics on visible rows.
+        sorter.addRowSorterListener(e -> {
+            if (e.getType() == RowSorterEvent.Type.SORTED) {
+                List<OrderedPair<Node>> visiblePairs = new ArrayList<>();
+                int rowCount = table.getRowCount();
+
+                for (int i = 0; i < rowCount; i++) {
+                    int modelIndex = table.convertRowIndexToModel(i);
+                    if (modelIndex >= 0 && modelIndex < currentPairs.size()) {
+                        visiblePairs.add(currentPairs.get(modelIndex));
+                    }
+                }
+
+                if (idaModel.getTrueSemIm() != null && !visiblePairs.isEmpty()) {
+                    setSummaryText(numberFormat, idaCheckEst, visiblePairs);
+                }
+            }
+        });
+
+        if (idaModel.getTrueSemIm() != null) {
+            setSummaryText(numberFormat, idaCheckEst, currentPairs);
         }
 
-        /**
-         * Returns the name of the column at the given index.
-         *
-         * @param col the index of the column.
-         * @return the name of the column at the given index.
-         */
-        @Override
-        public String getColumnName(int col) {
-            return this.columnNames[col];
-        }
+        table.revalidate();
+        table.repaint();
+    }
 
-        /**
-         * Returns the value at the given row and column.
-         *
-         * @param row the row.
-         * @param col the column.
-         * @return the value at the given row and column.
-         */
-        @Override
-        public Object getValueAt(int row, int col) {
-            return this.data[row][col];
-        }
+    /**
+     * Parse a comma/whitespace separated list of node names, allowing "*" and "?" wildcards,
+     * relative to the given graph.
+     */
+    private Set<Node> parseNodeList(Graph graph, String text) {
+        LinkedHashSet<Node> nodes = new LinkedHashSet<>();
+        if (text == null || text.isEmpty()) return nodes;
 
-        /**
-         * Returns the class of the column at the given index.
-         *
-         * @param c the index of the column.
-         * @return the class of the column at the given index.
-         */
-        @Override
-        public Class<?> getColumnClass(int c) {
-            return getValueAt(0, c).getClass();
+        String[] tokens = text.split("[,\\s]+");
+        for (String tok : tokens) {
+            String name = tok.trim();
+            if (name.isEmpty()) continue;
+
+            boolean hasWildcard = name.contains("*") || name.contains("?");
+
+            if (!hasWildcard) {
+                Node n = graph.getNode(name);
+                if (n == null) {
+                    throw new IllegalArgumentException("Unknown variable: " + name);
+                }
+                nodes.add(n);
+            } else {
+                String regex = wildcardToRegex(name);
+                Pattern p = Pattern.compile(regex);
+
+                boolean matchedAny = false;
+                for (Node n : graph.getNodes()) {
+                    if (p.matcher(n.getName()).matches()) {
+                        nodes.add(n);
+                        matchedAny = true;
+                    }
+                }
+                if (!matchedAny) {
+                    throw new IllegalArgumentException(
+                            "Wildcard pattern \"" + name + "\" matched no variables.");
+                }
+            }
+        }
+        return nodes;
+    }
+
+    /**
+     * Updates the three summary statistics labels in the stats box.
+     */
+    private void setSummaryText(NumberFormat numberFormat, IdaCheck idaCheckEst, List<OrderedPair<Node>> pairs) {
+        if (avgSquaredDistLabel != null) {
+            avgSquaredDistLabel.setText("Average Squared Distance: "
+                                        + numberFormat.format(idaCheckEst.getAverageSquaredDistance(pairs)));
+        }
+        if (squaredDiffMinTotalLabel != null) {
+            squaredDiffMinTotalLabel.setText("Average Min Squared Diff (est vs true): "
+                                             + numberFormat.format(idaCheckEst.getAvgMinSquaredDiffEstTrue(pairs)));
+        }
+        if (squaredDiffMaxTotalLabel != null) {
+            squaredDiffMaxTotalLabel.setText("Average Max Squared Diff (est vs true): "
+                                             + numberFormat.format(idaCheckEst.getAvgMaxSquaredDiffEstTrue(pairs)));
         }
     }
 
@@ -469,6 +525,89 @@ public class IdaEditor extends JPanel {
             super.setValue(value);
         }
     }
+
 }
 
+/**
+ * Table model for the IDA results.
+ *
+ * This is unchanged in spirit from the previous implementation: rows correspond
+ * to ordered pairs in the given list, and columns contain the various IDA
+ * effect summaries supplied by {@link IdaCheck}.
+ */
+class IdaTableModel extends AbstractTableModel {
+
+    /**
+     * The column names for the table. The first column is the pair of nodes, the second column is the minimum total
+     * effect, the third column is the maximum total effect, the fourth column is the minimum absolute total effect,
+     * the fifth column is the true total effect, and the sixth column is the squared distance from the true total
+     * effect, where if the true total effect falls between the minimum and maximum total effect zero is reported.
+     * If the true model is not given, the last two columns are not included.
+     */
+    private final String[] columnNames = {"Pair", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};
+
+    /**
+     * The data for the table.
+     */
+    private final Object[][] data;
+
+    /**
+     * Constructs a new table model for the results of the IDA check.
+     *
+     * @param pairs      the ordered pairs of nodes in the graph.
+     * @param estModel   the IDA check on the estimated graph.
+     * @param trueSemIm  the true SEM instantiated model, or null if not available.
+     */
+    IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, SemIm trueSemIm) {
+        boolean hasTrue = trueSemIm != null;
+        data = new Object[pairs.size()][hasTrue ? 6 : 3];
+
+        for (int i = 0; i < pairs.size(); i++) {
+            OrderedPair<Node> pair = pairs.get(i);
+            String edge = pair.getFirst().getName() + " ~~> " + pair.getSecond().getName();
+            double minTotalEffect = estModel.getMinTotalEffect(pair.getFirst(), pair.getSecond());
+            double maxTotalEffect = estModel.getMaxTotalEffect(pair.getFirst(), pair.getSecond());
+
+            data[i][0] = edge;
+            data[i][1] = minTotalEffect;
+            data[i][2] = maxTotalEffect;
+
+            if (hasTrue) {
+                double minAbsTotalEffect = estModel.getIdaMinEffect(pair.getFirst(), pair.getSecond());
+                double trueTotalEffect = estModel.getTrueTotalEffect(pair);
+                double squaredDistance = estModel.getSquaredDistance(pair);
+
+                data[i][3] = minAbsTotalEffect;
+                data[i][4] = trueTotalEffect;
+                data[i][5] = squaredDistance;
+            }
+        }
+    }
+
+    @Override
+    public int getRowCount() {
+        return data.length;
+    }
+
+    @Override
+    public int getColumnCount() {
+        return data.length == 0 ? 3 : data[0].length;
+    }
+
+    @Override
+    public String getColumnName(int col) {
+        return columnNames[col];
+    }
+
+    @Override
+    public Class<?> getColumnClass(int col) {
+        if (col == 0) return String.class;
+        return Double.class;
+    }
+
+    @Override
+    public Object getValueAt(int row, int col) {
+        return data[row][col];
+    }
+}
 
