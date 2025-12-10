@@ -67,6 +67,7 @@ public class ParameterTab extends JPanel {
             SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.NONLINEAR_ADDITIVE_SEM,
             SimulationTypes.ADDITIVE_NOISE_SEM,
+            SimulationTypes.POST_NONLINEAR_MODEL,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES

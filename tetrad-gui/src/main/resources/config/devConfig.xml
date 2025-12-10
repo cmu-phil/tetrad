@@ -1248,6 +1248,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.AdjustmentTotalEffectsEditor</editor-class>
             </model>
+            <model name="IDA Check" acronym="IDA Check"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.IdaModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.IdaEditor</editor-class>
+            </model>
         </models>
         <display-component image="searchIcon.gif"/>
         <model-chooser title="Types of Regression"/>
@@ -1335,16 +1345,6 @@
                 <model-class>edu.cmu.tetradapp.model.MarkovCheckIndTestModel
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.MarkovCheckEditor</editor-class>
-            </model>
-            <model name="IDA Check" acronym="IDA Check"
-                   help="indep_facts" category="Independence Facts Comparison">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="comparison" description="Comparison" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.IdaModel
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.IdaEditor</editor-class>
             </model>
             <!--            <model name="Grid Search" acronym="Grid Search"-->
             <!--                   help="indep_facts" category="Independence Facts Comparison">-->

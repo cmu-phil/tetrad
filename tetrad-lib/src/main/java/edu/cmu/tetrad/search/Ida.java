@@ -116,10 +116,6 @@ public class Ida {
             throw new IllegalArgumentException("Expecting an PDAG.");
         }
 
-        if (!(graph.paths().isLegalPdag())) {
-            throw new IllegalArgumentException("Expecting an PDAG.");
-        }
-
         this.dag = graph.paths().isLegalDag();  // or isDAG(), adjust to your API
 
         // Check that the dataset is continuous.
