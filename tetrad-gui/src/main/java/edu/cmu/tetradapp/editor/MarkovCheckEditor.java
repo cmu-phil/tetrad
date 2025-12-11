@@ -100,7 +100,7 @@ public class MarkovCheckEditor extends JPanel {
     /**
      * The label for the test.
      */
-    private final JLabel testLabel = new JLabel("Test:");
+    private final JLabel testLabel = new JLabel("Independence Test:");
     /**
      * The label for the conditioning set.
      */
@@ -347,6 +347,8 @@ public class MarkovCheckEditor extends JPanel {
         this.model = model;
         refreshTestList();
 
+        indTestJComboBox.setToolTipText("Choose the independence test used in the Markov check.");
+
         indTestJComboBox.addActionListener(e -> {
             class MyWatchedProcess extends WatchedProcess {
 
@@ -479,9 +481,20 @@ public class MarkovCheckEditor extends JPanel {
         scroll.setPreferredSize(new Dimension(600, 400));
 
         JTabbedPane pane = new JTabbedPane();
+
+        // In a change listener:
+        pane.addChangeListener(e -> {
+            String v = (pane.getSelectedIndex() == 1) ? "dep" : "indep";
+            Preferences.userRoot().put("markovCheckerTab", v);
+        });
+
         pane.addTab("Check Markov", indep);
         pane.addTab("Check Dependent Distribution", dep);
         pane.addTab("Help", new PaddingPanel(scroll));
+
+        // After creating the tabbedPane
+        String savedTab = Preferences.userRoot().get("markovCheckerTab", "indep");
+        pane.setSelectedIndex("dep".equals(savedTab) ? 1 : 0);
 
         new WatchedProcess() {
             @Override
@@ -1100,6 +1113,8 @@ public class MarkovCheckEditor extends JPanel {
         tableIndep.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
         tableIndep.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
 
+        tableIndep.getColumnModel().getColumn(2).setPreferredWidth(120); // "P-value or Bump"
+
         JTableHeader header = tableIndep.getTableHeader();
 
         header.addMouseListener(new MouseAdapter() {
@@ -1142,10 +1157,27 @@ public class MarkovCheckEditor extends JPanel {
         setLabelTexts();
 
         Box a4 = Box.createVerticalBox();
+
+        Box a4a = Box.createHorizontalBox();
+        JLabel summaryTitle = new JLabel("Uniformity of p-values under H0");
+//        summaryTitle.setFont(summaryTitle.getFont().deriveFont(Font.BOLD));
+        a4a.add(Box.createHorizontalGlue());
+        a4a.add(summaryTitle);
+        a4a.add(Box.createHorizontalGlue());
+        a4.add(a4a);
+
+
         histogramPanelIndep = new JPanel();
         histogramPanelIndep.setLayout(new BorderLayout());
         histogramPanelIndep.setBorder(new EmptyBorder(10, 10, 10, 10));
         histogramPanelIndep.add(createHistogramPanel(model.getResults(true)), BorderLayout.CENTER);
+
+        histogramPanelIndep.setToolTipText(
+                "Histogram of p-values for implied independencies; " +
+                "if the graph is Markov and the test is calibrated, " +
+                "these should be roughly uniform."
+        );
+
         a4.add(histogramPanelIndep);
 
         Box a5 = Box.createHorizontalBox();
@@ -1470,6 +1502,7 @@ public class MarkovCheckEditor extends JPanel {
         tableDep.getColumnModel().getColumn(3).setPreferredWidth(100);
         tableDep.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
         tableDep.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
+        tableDep.getColumnModel().getColumn(2).setPreferredWidth(120); // "P-value or Bump"
 
         JTableHeader header = tableDep.getTableHeader();
 
