@@ -31,13 +31,13 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.List;
 
 /**
- * LV-Dumb is a class that implements the IGraphSearch interface. The LV-Dumb algorithm finds the BOSS DAG for
+ * LV-Heuristic is a class that implements the IGraphSearch interface. The LV-Heuristic algorithm finds the BOSS DAG for
  * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG, without
  * doing any further latent variable reasoning.
  *
  * @author josephramsey
  */
-public final class LvDumb implements IGraphSearch {
+public final class LvHeuristic implements IGraphSearch {
     /**
      * The score.
      */
@@ -84,13 +84,13 @@ public final class LvDumb implements IGraphSearch {
     private boolean excludeSelectionBias = false;
 
     /**
-     * LV-Dumb constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
+     * LV-Heuristic constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
      * Score object.
      *
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public LvDumb(Score score) {
+    public LvHeuristic(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -111,7 +111,7 @@ public final class LvDumb implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("===Starting LV-Dumb===");
+            TetradLogger.getInstance().log("===Starting LV-Heuristic===");
         }
 
         if (verbose) {
@@ -157,7 +157,7 @@ public final class LvDumb implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("LV-Dumb finished.");
+            TetradLogger.getInstance().log("LV-Heuristic finished.");
         }
 
         return pag;

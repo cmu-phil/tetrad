@@ -54,13 +54,13 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-Dumb",
-        command = "lv-dumb",
+        name = "LV-Heuristic",
+        command = "lv-heuristic",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
+public class LvHeuristic extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -77,7 +77,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents LV-Dumb algorithm.
+     * This class represents LV-Heuristic algorithm.
      *
      * <p>
      * The FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
@@ -88,7 +88,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvDumb() {
+    public LvHeuristic() {
         // Used for reflection; do not delete it.
     }
 
@@ -105,7 +105,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvDumb(ScoreWrapper score) {
+    public LvHeuristic(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -134,7 +134,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         }
 
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.LvDumb search = new edu.cmu.tetrad.search.LvDumb(score);
+        edu.cmu.tetrad.search.LvHeuristic search = new edu.cmu.tetrad.search.LvHeuristic(score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -177,7 +177,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      */
     @Override
     public String getDescription() {
-        return "LV-Dumb (BOSS followed by DAG to PAG) using " + this.score.getDescription();
+        return "LV-Heuristic (BOSS followed by DAG to PAG) using " + this.score.getDescription();
     }
 
     /**

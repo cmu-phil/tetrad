@@ -20,14 +20,8 @@ import java.util.*;
  * - forbidden nodes Forb_G(X,Y) are computed for the sets X,Y; - amenable paths are collected over all x in X, y in Y;
  * - recursive search blocks noncausal backdoor paths between any x∈X and any y∈Y; - a final minimality pass tries to
  * remove superfluous nodes from Z.
- * <p>
- * Some of the "engineering" heuristics of Adjustment (shells, nearWhichEndpoint, etc.) are intentionally *not*
- * replicated here. The parameters are kept for API compatibility, but the current implementation:
- * <p>
- * - ignores maxRadius and nearWhichEndpoint in the pool construction, and - uses the full candidate pool (minus
- * forbidden / amenable backbone / notFollowed).
  */
-public final class AdjustmentMultiple {
+public final class RecursiveAdjustmentMultiple {
 
     private final Graph graph;
 
@@ -40,7 +34,7 @@ public final class AdjustmentMultiple {
      *
      * @param graph the graph to be used for adjustment calculations; must not be null
      */
-    public AdjustmentMultiple(Graph graph) {
+    public RecursiveAdjustmentMultiple(Graph graph) {
         this.graph = Objects.requireNonNull(graph);
     }
 
@@ -182,7 +176,7 @@ public final class AdjustmentMultiple {
      * @param p the collider policy to be set; must not be null
      * @return the current instance of AdjustmentMultiple with the updated collider policy
      */
-    public AdjustmentMultiple setColliderPolicy(RecursiveAdjustment.ColliderPolicy p) {
+    public RecursiveAdjustmentMultiple setColliderPolicy(RecursiveAdjustment.ColliderPolicy p) {
         this.colliderPolicy = Objects.requireNonNull(p);
         return this;
     }
@@ -193,7 +187,7 @@ public final class AdjustmentMultiple {
      * @param p the no amenable policy to be applied, must not be null
      * @return the current instance of AdjustmentMultiple, allowing method chaining
      */
-    public AdjustmentMultiple setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy p) {
+    public RecursiveAdjustmentMultiple setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy p) {
         this.noAmenablePolicy = Objects.requireNonNull(p);
         return this;
     }
@@ -420,7 +414,7 @@ public final class AdjustmentMultiple {
                 case RETURN_EMPTY_SET:
                     return new LinkedHashSet<>(Collections.emptySet());
                 case SUPPRESS:
-                    return new LinkedHashSet<>();
+                    return null;  // i.e., no solution in this graph
                 case SEARCH:
                 default:
                     // fall through

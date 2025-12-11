@@ -25,6 +25,8 @@ import edu.cmu.tetrad.data.DataSet;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -56,6 +58,22 @@ public class DataDisplay extends JPanel implements DataModelContainer,
     public DataDisplay(DataSet dataSet) {
         this.tabularDataJTable = new TabularDataJTable(dataSet);
         this.tabularDataJTable.addPropertyChangeListener(this);
+
+        // Map Delete / Backspace on the table itself.
+        InputMap im = tabularDataJTable.getInputMap(JComponent.WHEN_FOCUSED);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "tableDelete");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "tableDelete");
+
+        tabularDataJTable.getActionMap().put("tableDelete", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Either call your existing listener:
+//                deleteSelectedRowsOrColumnsActionListener.actionPerformed(e);
+                // or directly:
+                tabularDataJTable.deleteSelected();
+            }
+        });
+
         setLayout(new BorderLayout());
         add(new JScrollPane(getDataDisplayJTable()), BorderLayout.CENTER);
     }

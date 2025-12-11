@@ -24,9 +24,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.simulation.AdditiveNoiseSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
@@ -2195,12 +2193,16 @@ public class GridSearchEditor extends JPanel {
                 case 3:
                     yield edu.cmu.tetrad.algcomparison.simulation.GpSemSimulation.class;
                 case 4:
-                    yield AdditiveNoiseSimulation.class;
+                    yield AdditiveAnmSimulator.class;
                 case 5:
-                    yield edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation.class;
+                    yield AdditiveNoiseSimulation.class;
                 case 6:
-                    yield edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation.class;
+                    yield PostnonlinearCausalModel.class;
                 case 7:
+                    yield edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation.class;
+                case 8:
+                    yield edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation.class;
+                case 9:
                     yield edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation.class;
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + simulationString);

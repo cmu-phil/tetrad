@@ -117,22 +117,20 @@ class TabularDataTransferHandler extends TransferHandler {
                         continue;
                     }
 
-                    String name = (String) (tabularData.getValueAt(1, displayCol));
-
+                    // Always treat null header as empty string so we don't drop the column.
+                    String name = (String) tabularData.getValueAt(1, displayCol);
                     if (name == null) {
-                        continue;
+                        name = "";
                     }
 
                     if (displayRow == 1) {
-                        String s = (String) tabularData.getValueAt(1, displayCol);
+                        String s = name;
 
                         if (s.trim().equals("")) {
                             s = "C" + (displayCol - 1);
                         }
 
-                        String val = s;
-
-                        buf.append(val).append("\t");
+                        buf.append(s).append("\t");
                     } else {
                         int dataRow = displayRow - getNumLeadingRows();
                         int dataCol = displayCol - getNumLeadingCols();
@@ -150,10 +148,8 @@ class TabularDataTransferHandler extends TransferHandler {
                                     if (datumObj instanceof Number) {
                                         datumString = datumObj.toString();
                                     } else if (datumObj instanceof String) {
-
-                                        // Let's quote all Strings...
+                                        // Quote all Strings.
                                         datumString = "\"" + datumObj + "\"";
-
                                     } else {
                                         throw new IllegalArgumentException();
                                     }
@@ -193,8 +189,14 @@ class TabularDataTransferHandler extends TransferHandler {
                 TabularDataJTable tabularData = (TabularDataJTable) c;
                 String s = (String) t.getTransferData(DataFlavor.stringFlavor);
 
-                int startRow = tabularData.getSelectedRow();
-                int startCol = tabularData.getSelectedColumn();
+                int selectedRow = tabularData.getSelectedRow();
+                int selectedCol = tabularData.getSelectedColumn();
+
+                // Header/column paste if user targets the header row (1) or above (0).
+                boolean headerPaste = selectedRow <= 1;
+
+                int startRow = selectedRow;
+                int startCol = selectedCol;
 
                 if (startRow == 0) {
                     startRow = 1;
@@ -208,9 +210,6 @@ class TabularDataTransferHandler extends TransferHandler {
                     return false;
                 }
 
-                boolean shouldAsk = false;
-                boolean shiftDown = true;
-
                 BufferedReader preReader = new BufferedReader(
                         new CharArrayReader(s.toCharArray()));
 
@@ -220,38 +219,14 @@ class TabularDataTransferHandler extends TransferHandler {
                 int numTokens = preTokenizer.countTokens();
 
                 for (int col = startCol; col < startCol + numTokens; col++) {
-                    Object value = tabularData.getValueAt(startRow, col);
-                    if (!"".equals(value) && !(null == value)) {
-                        shouldAsk = true;
-                    }
 
                     if (startRow - getNumLeadingRows() >= tabularData.getDataSet().getNumRows() ||
                         startCol - getNumLeadingCols() >= tabularData.getDataSet().getNumColumns()) {
-                        shouldAsk = false;
-                        shiftDown = false;
                     }
                 }
 
-                if (shouldAsk) {
-                    String[] choices = {
-                            "Shift corresponding cells down to make room",
-                            "Replace corresponding cells"};
-
-                    Object choice = JOptionPane.showInputDialog(
-                            JOptionUtils.centeringComp(),
-                            "How should the clipboard contents be pasted?",
-                            "Paste Contents", JOptionPane.INFORMATION_MESSAGE,
-                            null, choices, choices[0]);
-
-                    // Null means the user cancelled the input.
-                    if (choice == null) {
-                        return false;
-                    }
-
-                    shiftDown = choice.equals(choices[0]);
-                }
-
-                doPaste(s, startRow, startCol, shiftDown, tabularData);
+                // NEW: pass headerPaste into doPaste
+                doPaste(s, startRow, startCol, false, headerPaste, tabularData);
             } catch (UnsupportedFlavorException | IOException e) {
                 e.printStackTrace();
             }
@@ -295,8 +270,10 @@ class TabularDataTransferHandler extends TransferHandler {
     }
 
     private void doPaste(String s, int startRow, int startCol,
-                         boolean shiftDown, TabularDataJTable tabularData) {
+                         boolean shiftDown, boolean headerPaste,
+                         TabularDataJTable tabularData) {
 
+        // Convert to DataSet (0-based) indices.
         startRow -= getNumLeadingRows();
         startCol -= getNumLeadingCols();
 
@@ -310,7 +287,7 @@ class TabularDataTransferHandler extends TransferHandler {
         RegexTokenizer lines = new RegexTokenizer(s, Pattern.compile("\n"), '"');
         lines.setQuoteSensitive(false);
 
-        // Read the variable names.
+        // Read the variable names (header line).
         String line = lines.nextToken();
         RegexTokenizer _names = new RegexTokenizer(line, Pattern.compile("\t"), '"');
         List<String> varNames = new ArrayList<>();
@@ -341,9 +318,6 @@ class TabularDataTransferHandler extends TransferHandler {
             if (pasteCols == -1) {
                 pasteCols = _cols;
             }
-//            } else if (pasteCols != _cols) {
-////                throw new IllegalArgumentException("Number of tokens per row not uniform.");
-//            }
         }
 
         if (varNames.size() != pasteCols) {
@@ -351,12 +325,49 @@ class TabularDataTransferHandler extends TransferHandler {
                                                "match the number of columns.");
         }
 
-        // Resize the dataset if necessary to accomodate the new data.
         DataSet dataSet = tabularData.getDataSet();
         int originalCols = dataSet.getNumColumns();
 
-        // Make the dataset big enough, making sure not to use the parsed
-        // variable names to create new columns.
+        // === NEW: confirmation if header paste will overwrite differently named columns ===
+        if (headerPaste && originalCols > 0) {
+            int firstCol = startCol;
+            int lastCol = startCol + pasteCols - 1;
+            int overlapLastCol = Math.min(lastCol, originalCols - 1);
+
+            boolean hasMismatch = false;
+
+            for (int col = firstCol; col <= overlapLastCol; col++) {
+                String existingName = dataSet.getVariable(col).getName();
+                String newName = varNames.get(col - firstCol);
+                if (existingName == null) existingName = "";
+                if (newName == null) newName = "";
+                if (!existingName.equals(newName)) {
+                    hasMismatch = true;
+                    break;
+                }
+            }
+
+            if (hasMismatch) {
+                Object[] options = {"Yes", "No"};
+                int choice = JOptionPane.showOptionDialog(
+                        JOptionUtils.centeringComp(),
+                        "The new columns have different names from the old columns. Do you want to overwrite them?",
+                        "Overwrite columns?",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE,
+                        null,
+                        options,
+                        options[1]  // "No" is the default
+                );
+
+                if (choice != JOptionPane.YES_OPTION) {
+                    // User chose "No" or closed the dialog: abort paste.
+                    return;
+                }
+            }
+        }
+
+        // Resize the dataset if necessary to accommodate the new data.
         dataSet.ensureColumns(startCol + pasteCols, varNames);
 
         if (shiftDown) {
@@ -367,33 +378,63 @@ class TabularDataTransferHandler extends TransferHandler {
 
         int newCols = dataSet.getNumColumns();
 
-        // Use variable names from the paste where possible, without changing
-        // any existing variable names. If necessary, append numbers.
-        for (int j = originalCols; j < newCols; j++) {
-            Node node = dataSet.getVariable(j);
-            int index = (j - (originalCols - 1)) + ((originalCols - 1) - startCol);
+        // === NEW: set variable names for all pasted columns in header-paste mode ===
+        if (headerPaste) {
+            for (int j = 0; j < pasteCols; j++) {
+                int colIndex = startCol + j;
+                if (colIndex >= newCols) break;
 
-            if (index < 0) {
-                continue;
+                String newName = varNames.get(j);
+                if (newName == null) newName = "";
+                newName = newName.trim();
+
+                Node node = dataSet.getVariable(colIndex);
+
+                if (!newName.isEmpty()) {
+                    // Avoid duplicate names pointing to different variables.
+                    String finalName = newName;
+                    Node existing = dataSet.getVariable(finalName);
+                    if (existing != null && existing != node) {
+                        int i = 0;
+                        String candidate;
+                        do {
+                            candidate = newName + "_" + (++i);
+                        } while (dataSet.getVariable(candidate) != null);
+                        finalName = candidate;
+                    }
+                    node.setName(finalName);
+                }
+                // If the new header is empty, you can either leave the old name
+                // or assign a default like "C<index>". For now, leave old name.
             }
+        } else {
+            // Original behavior: only name newly created columns, do not touch existing ones.
+            for (int j = originalCols; j < newCols; j++) {
+                Node node = dataSet.getVariable(j);
+                int index = (j - (originalCols - 1)) + ((originalCols - 1) - startCol);
 
-            String name = varNames.get(index);
+                if (index < 0 || index >= varNames.size()) {
+                    continue;
+                }
 
-            if (dataSet.getVariable(name) == null) {
-                node.setName(name);
-            } else {
-                int i = 0;
-                String _name;
+                String name = varNames.get(index);
 
-                do {
-                    _name = name + "_" + (++i);
-                } while (dataSet.getVariable(_name) != null);
+                if (dataSet.getVariable(name) == null) {
+                    node.setName(name);
+                } else {
+                    int i = 0;
+                    String _name;
 
-                node.setName(_name);
+                    do {
+                        _name = name + "_" + (++i);
+                    } while (dataSet.getVariable(_name) != null);
+
+                    node.setName(_name);
+                }
             }
         }
 
-        // Copy existing data down, if requested.
+        // Copy existing data down, if requested. (unchanged)
         if (shiftDown) {
             for (int i = pasteRows - 1; i >= 0; i--) {
                 for (int j = 0; j < pasteCols; j++) {
@@ -414,9 +455,10 @@ class TabularDataTransferHandler extends TransferHandler {
             }
         }
 
+        // Now actually paste the new values.
         lines = new RegexTokenizer(s, Pattern.compile("\n"), '"');
         lines.setQuoteSensitive(false);
-        lines.nextToken();
+        lines.nextToken(); // skip header
 
         for (int i = 0; i < pasteRows; i++) {
             line = lines.nextToken();

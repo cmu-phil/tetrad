@@ -22,6 +22,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.RecursiveAdjustment;
+import edu.cmu.tetrad.search.RecursiveAdjustmentMultiple;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -3137,11 +3138,19 @@ public class Paths implements TetradSerializable {
                                           boolean oSetCompatible) {
         RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
                 .setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SUPPRESS)
-                .setUseHenckelPruning(henckelPruning).setRaMode(oSetCompatible ? RecursiveAdjustment.RaMode.O_COMPATIBLE
+                .setUseHenckelPruning(henckelPruning)
+                .setRaMode(oSetCompatible ? RecursiveAdjustment.RaMode.O_COMPATIBLE
                         : RecursiveAdjustment.RaMode.VALID);
         return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, RecursiveAdjustment.ColliderPolicy.OFF, true,
                 Set.of(), Set.of(), Set.of());
+
+//        RecursiveAdjustmentMultiple recursiveAdjustment2 = new RecursiveAdjustmentMultiple(graph)
+//                .setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SUPPRESS);
+//
+//        return recursiveAdjustment2.adjustmentSets(Collections.singleton(X), Collections.singleton(Y),
+//                graphType, maxNumSets, maxRadius,
+//                nearWhichEndpoint, maxPathLength, true, Set.of(), Set.of());
     }
 
     /**

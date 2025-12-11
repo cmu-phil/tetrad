@@ -98,7 +98,7 @@ public class IdaCheck {
      * determine if specific computations or results related to the optimal IDA should be shown in the context of
      * analyzing total effects or related metrics between nodes.
      */
-    private boolean showOptimalIda = true;
+    private boolean showOptimalIda = false;
 
     /**
      * Constructs a new IDA check for the given PDAG and data set.
@@ -123,8 +123,8 @@ public class IdaCheck {
         }
 
         // Check to make sure the graph is an PDAG.
-        if (!(graph.paths().isLegalPdag() || graph.paths().isLegalPag())) {
-            throw new IllegalArgumentException("Expecting an PDAG or PAG    .");
+        if (!(graph.paths().isLegalPdag())) {
+            throw new IllegalArgumentException("Expecting an PDAG.");
         }
 
         // Convert the PDAG to a PDAG with the same nodes as the data set
