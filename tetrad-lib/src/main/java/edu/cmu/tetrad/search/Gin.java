@@ -168,7 +168,7 @@ public class Gin {
      *         latent variables with directed edges based on relationships derived
      *         from the analysis.
      */
-    public Graph search(DataSet data) {
+    public Graph searchOrig(DataSet data) {
         this.data = data;
         // Use covariance (not correlation) to match the centered Y used to form e
         this.cov = new SimpleMatrix(data.getCovarianceMatrix().getSimpleMatrix());
@@ -203,6 +203,98 @@ public class Gin {
         return g;
     }
 
+    /**
+     * A more "paper-style" GIN search:
+     *
+     * 1) Use TSC to cluster observed variables (placeholder for a future
+     *    pure GIN clustering step).
+     * 2) Learn a causal order over clusters using learnCausalOrder(...).
+     * 3) Build one latent per cluster, connect to its observed children.
+     * 4) Add latent-latent edges only from earlier to later clusters in
+     *    the order, using pairwise GIN tests. Ambiguous pairs get
+     *    undirected latent edges.
+     *
+     * This method is compatible with the current implementation but is
+     * closer in structure to the algorithm in the GIN paper.
+     */
+    public Graph search(DataSet data) {
+        this.data = data;
+        this.cov = new SimpleMatrix(data.getCovarianceMatrix().getSimpleMatrix());
+        this.vars = data.getVariables();
+
+        // 1) Clusters: currently TSC; you can later replace this with
+        //    a pure GIN-based clustering if you prefer.
+        this.clusters = findClustersTSC();
+        if (clusters.isEmpty()) {
+            clusters = new ArrayList<>();
+            for (int i = 0; i < vars.size(); i++) clusters.add(List.of(i));
+            if (verbose) TetradLogger.getInstance().log("[GIN] No clusters; using singletons.");
+        }
+        if (verbose) {
+            TetradLogger.getInstance().log("[GIN] clusters=" + clustersAsNames(clusters));
+        }
+
+        // 2) Learn causal order over clusters
+        List<Integer> clusterOrder = learnCausalOrder(clusters);
+
+        // 3) Build graph: observed nodes + one latent per cluster
+        Graph g = new EdgeListGraph();
+        for (Node v : vars) g.addNode(v);
+
+        int m = clusters.size();
+        List<Node> latents = new ArrayList<>();
+        for (int i = 0; i < m; i++) {
+            Node L = new GraphNode("L" + (i + 1));
+            L.setNodeType(NodeType.LATENT);
+            g.addNode(L);
+            latents.add(L);
+
+            for (int idx : clusters.get(i)) {
+                g.addDirectedEdge(L, vars.get(idx));
+            }
+        }
+
+        // 4) Add latent-latent edges respecting the causal order
+        //    (acyclic by construction).
+        for (int posI = 0; posI < m; posI++) {
+            int i = clusterOrder.get(posI);
+            for (int posJ = posI + 1; posJ < m; posJ++) {
+                int j = clusterOrder.get(posJ);
+
+                List<Integer> Zi = clusters.get(i);
+                List<Integer> Yj = clusters.get(j);
+                List<Integer> Zj = clusters.get(j);
+                List<Integer> Yi = clusters.get(i);
+
+                // i -> j
+                ProjResult proj_ij = computeProjection(Yj, Zi);
+                double p_ij = proj_ij.ok ? pValueEvsZ(proj_ij.e, Zi) : 0.0;
+
+                // j -> i
+                ProjResult proj_ji = computeProjection(Yi, Zj);
+                double p_ji = proj_ji.ok ? pValueEvsZ(proj_ji.e, Zj) : 0.0;
+
+                double max = Math.max(p_ij, p_ji);
+                if (max < alpha) continue;
+
+                Node Li = latents.get(i);
+                Node Lj = latents.get(j);
+
+                if (p_ij > p_ji) {
+                    g.addDirectedEdge(Li, Lj);
+                } else if (p_ji > p_ij) {
+                    // If the pairwise preference conflicts with the order,
+                    // represent it as undirected rather than reversing arrows.
+                    g.addUndirectedEdge(Li, Lj);
+                } else {
+                    g.addUndirectedEdge(Li, Lj);
+                }
+            }
+        }
+
+        return g;
+    }
+
     // ---------------------- Projection e = Yc * Ï --------------------
 
     // ---------------------- TSC clusters -----------------------------
@@ -210,6 +302,7 @@ public class Gin {
         Tsc tsc = new Tsc(data.getVariables(), new CorrelationMatrix(data));
         tsc.setAlpha(alpha);
         tsc.setMinRedundancy(0);
+        tsc.setRmax(4);
 
         List<List<Integer>> out = new ArrayList<>();
         for (Set<Integer> seed : tsc.findClusters().keySet()) {
@@ -222,8 +315,28 @@ public class Gin {
      * For each unordered {i,j}: p_ij = p(e(Y=j | Z=i) â Z=i), p_ji = p(e(Y=i | Z=j) â Z=j). If max(p_ij, p_ji) >=
      * alpha, add the larger direction (ties broken toward i->j).
      */
+    /**
+     * New GIN orientation that enforces an acyclic latent DAG.
+     *
+     * 1) For each unordered pair {i, j}, compute GIN-style p-values:
+     *    p_ij = p(e(Y = cluster j | Z = cluster i) ⟂ Z = cluster i)
+     *    p_ji = p(e(Y = cluster i | Z = cluster j) ⟂ Z = cluster j)
+     * 2) Build a global ranking of latent clusters from pairwise "wins"
+     *    (p_ij > p_ji) and "losses" (p_ji > p_ij), ignoring pairs with
+     *    max(p_ij, p_ji) < alpha.
+     * 3) Add edges only from earlier to later in this ranking:
+     *      - If evidence supports earlier → later (p_ij > p_ji), add Li → Lj.
+     *      - If evidence conflicts with the ranking (p_ji > p_ij), use Li — Lj.
+     *      - If p_ij ≈ p_ji, use Li — Lj.
+     *
+     * This preserves the spirit of GIN but prevents directed cycles among latents.
+     */
     private void orientBasicGIN(Graph g, List<List<Integer>> clusters, List<Node> latents) {
         final int m = clusters.size();
+        if (m <= 1) return;
+
+        // 1) Pairwise GIN p-values p[i][j] = p_ij, p[j][i] = p_ji
+        double[][] p = new double[m][m];
 
         for (int i = 0; i < m; i++) {
             for (int j = i + 1; j < m; j++) {
@@ -234,23 +347,105 @@ public class Gin {
                 List<Integer> Zj = clusters.get(j);
                 List<Integer> Yi = clusters.get(i);
 
-                // i -> j
+                double p_ij = 0.0;
+                double p_ji = 0.0;
+
+                // i -> j: e(Yj | Zi) ⟂ Zi ?
                 ProjResult proj_ij = computeProjection(Yj, Zi);
-                double p_ij = (proj_ij.ok) ? pValueEvsZ(proj_ij.e, Zi) : 0.0;
-
-                // j -> i
-                ProjResult proj_ji = computeProjection(Yi, Zj);
-                double p_ji = (proj_ji.ok) ? pValueEvsZ(proj_ji.e, Zj) : 0.0;
-
-                if (verbose) {
-                    TetradLogger.getInstance().log(String.format(
-                            "[GIN] L%dâL%d  p_ij=%.4g (Ïmin=%.3g) | p_ji=%.4g (Ïmin=%.3g)",
-                            i + 1, j + 1, p_ij, proj_ij.sigmaMin, p_ji, proj_ji.sigmaMin));
+                if (proj_ij.ok) {
+                    p_ij = pValueEvsZ(proj_ij.e, Zi);
                 }
 
-                if (p_ij >= alpha || p_ji >= alpha) {
-                    if (p_ij >= p_ji) g.addDirectedEdge(latents.get(i), latents.get(j));
-                    else g.addDirectedEdge(latents.get(j), latents.get(i));
+                // j -> i: e(Yi | Zj) ⟂ Zj ?
+                ProjResult proj_ji = computeProjection(Yi, Zj);
+                if (proj_ji.ok) {
+                    p_ji = pValueEvsZ(proj_ji.e, Zj);
+                }
+
+                p[i][j] = p_ij;
+                p[j][i] = p_ji;
+            }
+        }
+
+        // 2) Derive a global order from pairwise "wins" and "losses"
+        int[] wins = new int[m];
+        int[] losses = new int[m];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = i + 1; j < m; j++) {
+                double pij = p[i][j];
+                double pji = p[j][i];
+                double max = Math.max(pij, pji);
+
+                // If neither direction passes alpha, treat as no preference.
+                if (max < alpha) continue;
+
+                if (pij > pji) {
+                    wins[i]++;
+                    losses[j]++;
+                } else if (pji > pij) {
+                    wins[j]++;
+                    losses[i]++;
+                }
+                // If pij == pji, neither gets a "win"—tie.
+            }
+        }
+
+        // Sort cluster indices by (wins - losses), descending.
+        List<Integer> order = new ArrayList<>();
+        for (int i = 0; i < m; i++) order.add(i);
+
+        order.sort((a, b) -> {
+            int scoreA = wins[a] - losses[a];
+            int scoreB = wins[b] - losses[b];
+            if (scoreA != scoreB) {
+                // higher score (more "root-like") comes first
+                return Integer.compare(scoreB, scoreA);
+            }
+            // tie-breaker: smaller index first for determinism
+            return Integer.compare(a, b);
+        });
+
+        if (verbose) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("[GIN] latent order (by wins-losses): ");
+            for (int idx : order) {
+                sb.append("L").append(idx + 1)
+                        .append("(w=").append(wins[idx])
+                        .append(",l=").append(losses[idx]).append(") ");
+            }
+            TetradLogger.getInstance().log(sb.toString());
+        }
+
+        // 3) Add edges respecting this order, so directed latent edges form a DAG.
+        // For each pair (i, j) with i earlier than j in the order:
+        //   - If evidence supports i → j (p_ij > p_ji), add Li → Lj.
+        //   - If evidence "wants" j → i, we *do not* add Lj → Li (that would
+        //     violate the order); instead we use an undirected Li — Lj.
+        //   - If p_ij ≈ p_ji, we also use undirected Li — Lj.
+        for (int posI = 0; posI < m; posI++) {
+            int i = order.get(posI);
+            for (int posJ = posI + 1; posJ < m; posJ++) {
+                int j = order.get(posJ);
+
+                double pij = p[i][j];
+                double pji = p[j][i];
+                double max = Math.max(pij, pji);
+                if (max < alpha) continue; // no strong relation
+
+                Node Li = latents.get(i);
+                Node Lj = latents.get(j);
+
+                if (pij > pji) {
+                    // Evidence supports i → j, consistent with order.
+                    g.addDirectedEdge(Li, Lj);
+                } else if (pji > pij) {
+                    // Evidence conflicts with the global order.
+                    // Represent ambiguity as an undirected latent edge.
+                    g.addUndirectedEdge(Li, Lj);
+                } else {
+                    // Symmetric evidence: leave as undirected.
+                    g.addUndirectedEdge(Li, Lj);
                 }
             }
         }
@@ -342,6 +537,105 @@ public class Gin {
     }
 
     // ---------------------- Utilities ---------------------------
+
+    /**
+     * Learn a causal order over clusters by recursively peeling off
+     * the "most root-like" cluster (minimal rootScore).
+     *
+     * Returns a list of cluster indices in (approximate) causal order.
+     */
+    private List<Integer> learnCausalOrder(List<List<Integer>> clusters) {
+        int m = clusters.size();
+        List<Integer> remaining = new ArrayList<>();
+        for (int i = 0; i < m; i++) remaining.add(i);
+
+        List<Integer> order = new ArrayList<>();
+
+        while (!remaining.isEmpty()) {
+            int bestIdx = -1;
+            double bestScore = Double.POSITIVE_INFINITY;
+
+            // Among remaining clusters, find the one with minimal rootScore.
+            for (int idx : remaining) {
+                double score = rootScore(idx, clusters);
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestIdx = idx;
+                }
+            }
+
+            if (bestIdx < 0) {
+                // Should not happen, but to be safe: append the rest arbitrarily.
+                order.addAll(remaining);
+                break;
+            }
+
+            order.add(bestIdx);
+            remaining.remove((Integer) bestIdx);
+        }
+
+        if (verbose) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("[GIN] causal order over clusters: ");
+            for (int idx : order) {
+                sb.append("L").append(idx + 1).append(" ");
+            }
+            TetradLogger.getInstance().log(sb.toString());
+        }
+
+        return order;
+    }
+
+    /**
+     * Score how "root-like" a candidate latent cluster is using GIN:
+     * smaller scores = more likely to be a root (no parents).
+     *
+     * Heuristic idea:
+     *   - For a candidate cluster i, compare it vs all other clusters j.
+     *   - If GIN strongly prefers i → j (p_ij > p_ji and max >= alpha),
+     *     count that as evidence that i is "upstream".
+     *   - If GIN strongly prefers j → i, count that against i.
+     *   - Aggregate to a scalar: lower scores mean fewer "incoming" wins.
+     *
+     * This is not a line-for-line port of causal-learn, but it follows
+     * the same spirit as root-peeling in the GIN paper.
+     */
+    private double rootScore(int i, List<List<Integer>> clusters) {
+        final int m = clusters.size();
+        List<Integer> Zi = clusters.get(i);
+
+        int wins = 0;
+        int losses = 0;
+
+        for (int j = 0; j < m; j++) {
+            if (j == i) continue;
+
+            List<Integer> Zj = clusters.get(j);
+            List<Integer> Yi = clusters.get(i);
+            List<Integer> Yj = clusters.get(j);
+
+            // i -> j
+            ProjResult proj_ij = computeProjection(Yj, Zi);
+            double p_ij = (proj_ij.ok) ? pValueEvsZ(proj_ij.e, Zi) : 0.0;
+
+            // j -> i
+            ProjResult proj_ji = computeProjection(Yi, Zj);
+            double p_ji = (proj_ji.ok) ? pValueEvsZ(proj_ji.e, Zj) : 0.0;
+
+            double max = Math.max(p_ij, p_ji);
+            if (max < alpha) continue; // ignore ambiguous pairs
+
+            if (p_ij > p_ji) {
+                wins++;
+            } else if (p_ji > p_ij) {
+                losses++;
+            }
+        }
+
+        // Fewer losses and more wins ⇒ more root-like (smaller score).
+        return losses - wins;
+    }
+
     private SimpleMatrix subCov(SimpleMatrix S, List<Integer> rows, List<Integer> cols) {
         SimpleMatrix out = new SimpleMatrix(rows.size(), cols.size());
         for (int i = 0; i < rows.size(); i++) {
