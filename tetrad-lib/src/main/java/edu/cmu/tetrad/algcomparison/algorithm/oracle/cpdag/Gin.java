@@ -171,10 +171,6 @@ public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
 
         gin.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-        // Always keep these numerics; theyâre cheap and robust.
-        safeCall(() -> gin.setWhitenBeforeSVD(true));
-        safeCall(() -> gin.setRidge(1e-8));
-
         // === Auto-pick a preset (fast, no extra passes) ===
         applyPresetFor(dataSet, itest, gin);
 
