@@ -84,6 +84,13 @@ public class Gin {
 
     // ----------------------------- API -------------------------------
 
+    /**
+     * Performs a search operation to generate a causal graph based on the provided dataset.
+     * The specific implementation follows the GIN algorithm as described in the related paper.
+     *
+     * @param data the dataset used for searching, containing observed variables and their relationships
+     * @return the resulting causal graph constructed from the input dataset
+     */
     public Graph search(DataSet data) {
         return searchPaperStyle(data);
     }

@@ -11,8 +11,41 @@ import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
 
+/**
+ * The RLCDTest class contains unit tests for evaluating the functionality
+ * and execution of the RLCD algorithm for causal discovery.
+ * The tests focus on stage 1 of the RLCD algorithm including
+ * skeleton discovery, latent phases, rank tests, and configuration
+ * of the algorithm's parameters.
+ */
 public class RLCDTest {
 
+    /**
+     * Constructs a new instance of the RLCDTest class, which contains unit tests
+     * to validate the functionality and behavior of the Rank-based Latent Causal
+     * Discovery (RLCD) algorithm. Tests primarily focus on Phase 1 of the RLCD
+     * algorithm, including skeleton discovery, parameter configuration, rank
+     * testing, and graph construction.
+     */
+    public RLCDTest() {
+
+    }
+
+    /**
+     * <p>Tests the functionality of the RLCD (Rank-based Latent Causal Discovery) algorithm’s
+     * Phase&nbsp;1. This includes validation of skeleton discovery, rank tests, parameter
+     * configurations, and graph construction during the initial phase of the algorithm.</p>
+     *
+     * <p>The method performs the following tasks:</p>
+     *
+     * <ul>
+     *   <li>Configures {@code RLCDParams} to use the FGES method for Stage&nbsp;1.</li>
+     *   <li>Customizes the rank-test factory to estimate ranks using Wilks’ method.</li>
+     *   <li>Generates a random graph and uses its structure to simulate a dataset.</li>
+     *   <li>Executes Phase&nbsp;1 of the RLCD algorithm to compute the skeleton of the causal graph.</li>
+     *   <li>Tests RLCD with different configurations and logs information about partitions and results.</li>
+     * </ul>
+     */
     @Test
     public void testPhase1() {
         RLCDParams params = new RLCDParams();

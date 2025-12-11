@@ -31,6 +31,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
@@ -564,6 +565,8 @@ public class TestPc {
 
     @Test
     public void testPcRegression() {
+
+        RandomUtil.getInstance().setSeed(12345);
 
         String[] algorithms = {"PC", "CPC", "FGES", "FCI", "FGES-FCI", "RFCI", "CFCI", "Regression"};
         String[] statLabels = {"AP", "AR"};
