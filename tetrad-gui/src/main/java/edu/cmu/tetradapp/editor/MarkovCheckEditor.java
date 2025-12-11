@@ -88,7 +88,7 @@ public class MarkovCheckEditor extends JPanel {
     /**
      * The label for the fraction of p-values less than the alpha level.
      */
-    private final JLabel markovTestLabel = new JLabel("(Unspecified Test)");
+    private final JLabel markovTestLabel = new JLabel("Test:");
     /**
      * The combo box for the independence test.
      */
@@ -100,7 +100,7 @@ public class MarkovCheckEditor extends JPanel {
     /**
      * The label for the test.
      */
-    private final JLabel testLabel = new JLabel("(Unspecified Test)");
+    private final JLabel testLabel = new JLabel("Test:");
     /**
      * The label for the conditioning set.
      */
@@ -135,6 +135,13 @@ public class MarkovCheckEditor extends JPanel {
      * The label for the fraction of p-values less than the alpha level.
      */
     boolean updatingTestModels = true;
+    /**
+     * A constant key used for storing or accessing the preference
+     * related to the Markov Checker Independence Test. This key
+     * serves as an identifier for the specific preference within
+     * the application's configuration or storage system.
+     */
+    private static final String PREF_KEY_TEST = "markovCheckerIndependenceTest";
     /**
      * The JTable variable containing the independent table.
      */
@@ -222,6 +229,7 @@ public class MarkovCheckEditor extends JPanel {
      * A checkbox for the dependence tab to flip escapes for some regexes.
      */
     private JCheckBox flipEscapesDep;
+
 
     /**
      * Constructs a new editor for the given model.
@@ -948,7 +956,8 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private void setTest() {
-        IndependenceTestModel selectedItem = (IndependenceTestModel) indTestJComboBox.getSelectedItem();
+        IndependenceTestModel selectedItem =
+                (IndependenceTestModel) indTestJComboBox.getSelectedItem();
 
         Class<IndependenceWrapper> clazz = (selectedItem == null) ? null
                 : (Class<IndependenceWrapper>) selectedItem.getIndependenceTest().clazz();
@@ -956,20 +965,29 @@ public class MarkovCheckEditor extends JPanel {
 
         if (clazz != null) {
             try {
-                independenceWrapper = clazz.getDeclaredConstructor(new Class[0]).newInstance();
-                independenceTest = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
+                independenceWrapper =
+                        clazz.getDeclaredConstructor(new Class[0]).newInstance();
+                independenceTest =
+                        independenceWrapper.getTest(model.getDataModel(),
+                                model.getParameters());
                 model.setIndependenceTest(independenceTest);
-                markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-                testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+                markovTestLabel.setText(
+                        model.getMarkovCheck().getIndependenceTest().toString());
+
+                // NEW: remember the chosen test class
+                Preferences.userRoot().put(
+                        PREF_KEY_TEST,
+                        clazz.getName()
+                );
+
                 invalidate();
                 repaint();
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                     | NoSuchMethodException e1) {
+            } catch (InstantiationException | IllegalAccessException
+                     | InvocationTargetException | NoSuchMethodException e1) {
                 TetradLogger.getInstance().log("Error: " + e1.getMessage());
                 throw new RuntimeException(e1);
             }
         }
-
     }
 
     private JPanel buildGuiIndep() {
@@ -978,10 +996,15 @@ public class MarkovCheckEditor extends JPanel {
         String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
 
         conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + setType + ")");
-        tableBox.add(conditioningLabelIndep, BorderLayout.NORTH);
+
+        Box b =  Box.createHorizontalBox();
+        b.add(Box.createHorizontalGlue());
+        b.add(conditioningLabelIndep);
+        b.add(Box.createHorizontalGlue());
+
+        tableBox.add(b, BorderLayout.NORTH);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-        testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
 
         this.tableModelIndep = new AbstractTableModel() {
             public String getColumnName(int column) {
@@ -1234,7 +1257,8 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setPreferredSize(new Dimension(550, 400));
+        scroll.setPreferredSize(new Dimension(850, 400));
+        scroll.setMaximumSize(new Dimension(850, 400));
 
         Box filterBox = Box.createHorizontalBox();
         filterBox.add(nodeSelectionBox);
@@ -1352,7 +1376,6 @@ public class MarkovCheckEditor extends JPanel {
         tableBox.add(conditioningLabelDep, BorderLayout.NORTH);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-        testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
 
         this.tableModelDep = new AbstractTableModel() {
             public String getColumnName(int column) {
@@ -1748,7 +1771,29 @@ public class MarkovCheckEditor extends JPanel {
         this.updatingTestModels = false;
         this.indTestJComboBox.setEnabled(this.indTestJComboBox.getItemCount() > 0);
 
-        indTestJComboBox.setSelectedItem(IndependenceTestModels.getInstance().getDefaultModel(dataType));
+        // Try to restore the last-used test from preferences
+        String savedClassName =
+                Preferences.userRoot().get(PREF_KEY_TEST, null);
+
+        IndependenceTestModel toSelect = null;
+
+        if (savedClassName != null) {
+            for (IndependenceTestModel m : models) {
+                if (m.getIndependenceTest().clazz().getName()
+                        .equals(savedClassName)) {
+                    toSelect = m;
+                    break;
+                }
+            }
+        }
+
+        // Fallback to the default model for this data type
+        if (toSelect == null) {
+            toSelect = IndependenceTestModels.getInstance()
+                    .getDefaultModel(dataType);
+        }
+
+        indTestJComboBox.setSelectedItem(toSelect);
     }
 
     /**
