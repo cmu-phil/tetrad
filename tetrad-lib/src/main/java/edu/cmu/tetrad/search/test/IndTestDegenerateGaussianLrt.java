@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,12 +16,14 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
@@ -38,58 +40,39 @@ import java.util.*;
 import static java.lang.Double.NaN;
 
 /**
- * Implements degenerate Gaussian test as a likelihood ratio test. The reference is here:
+ * Implements degenerate Gaussian test as a likelihood ratio test.
  * <p>
- * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2019, July). Learning high-dimensional directed acyclic graphs with
- * mixed data-types. In The 2019 ACM SIGKDD Workshop on Causal Discovery (pp. 4-21). PMLR.
+ * Reference: Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2019). Learning high-dimensional DAGs with mixed data-types.
+ * <p>
+ * Row-subsetting support: If RowsSettable.setRows(...) is used, the covariance matrix is recomputed over the embedded
+ * data restricted to those rows, and the effective sample size defaults to the subset size (unless explicitly
+ * overridden).
  *
  * @author Bryan Andrews
- * @author Joseph Ramsey refactoring 2024-12-26
- * @version $Id: $Id
+ * @author Joseph Ramsey refactoring 2024-12-26; RowsSettable update 2025-12-12
  */
-public class IndTestDegenerateGaussianLrt implements IndependenceTest, EffectiveSampleSizeSettable {
-    /**
-     * A hash of nodes to indices.
-     */
-    private final Map<Node, Integer> nodeHash;
-    /**
-     * The data set.
-     */
+public class IndTestDegenerateGaussianLrt implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
+
+    // ---- Source data ----
     private final DataSet dataSet;
-    /**
-     * The mixed variables of the original dataset.
-     */
     private final List<Node> variables;
-    /**
-     * The embedding map.
-     */
+    private final Map<Node, Integer> nodeHash;
+
+    // ---- Embedded ----
     private final Map<Integer, List<Integer>> embedding;
-    /**
-     * Covariance matrix over the embedde data.
-     */
-    private final SimpleMatrix covarianceMatrix;
-    /**
-     * Represents the sample size of the dataset being analyzed. This variable is used in statistical computations, such
-     * as variance and covariance calculations, to determine the scale and reliability of the analysis.
-     */
-    private final int sampleSize;
-    /**
-     * Singularity lambda.
-     */
-    private double lambda = 0.0;
-    /**
-     * The alpha level.
-     */
-    private double alpha = 0.01;
-    /**
-     * The p value.
-     */
-    private double pValue = NaN;
-    /**
-     * True if verbose output should be printed.
-     */
-    private boolean verbose;
+    private final DataSet embeddedDataSetFull;   // full embedded dataset (all rows)
+    // ---- Params / state ----
+    private final int sampleSizeFull;
+    private SimpleMatrix covarianceMatrix;       // covariance of embedded data (full or subset)
+    // ---- Row subset ----
+    private List<Integer> rows = null;           // null => all rows
+    private int sampleSize;                      // current sample size (full or subset)
     private int nEff;
+
+    private double lambda = 0.0;
+    private double alpha = 0.01;
+    private double pValue = NaN;
+    private boolean verbose;
 
     /**
      * Constructs the test using the given (mixed) data set.
@@ -97,115 +80,117 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
      * @param dataSet The data being analyzed.
      */
     public IndTestDegenerateGaussianLrt(DataSet dataSet) {
-        if (dataSet == null) {
-            throw new NullPointerException();
-        }
+        if (dataSet == null) throw new NullPointerException("dataSet == null");
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
+
         Map<Node, Integer> nodesHash = new HashMap<>();
-
-        for (int j = 0; j < this.variables.size(); j++) {
-            nodesHash.put(this.variables.get(j), j);
-        }
-
+        for (int j = 0; j < this.variables.size(); j++) nodesHash.put(this.variables.get(j), j);
         this.nodeHash = nodesHash;
 
-        // Expand the discrete columns to give indicators for each category. For the continuous variables, we
-        // wet the truncation limit to 1, on the contract that the first polynomial for any basis will be just
-        // x itself. These are asssumed to be Gaussian for this test. Basis scale -1 will do no scaling.
-        Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, 1, 1, -1);
+        // Expand discrete columns -> indicators; continuous get truncation=1 (contract: first basis term is x).
+        // basis scale = -1 => no scaling.
+        Embedding.EmbeddedData embeddedData = Objects.requireNonNull(Embedding.getEmbeddedData(dataSet, 1, 1, -1), "Embedding.getEmbeddedData returned null");
+
         this.embedding = embeddedData.embedding();
-        this.sampleSize = dataSet.getNumRows();
+        this.embeddedDataSetFull = embeddedData.embeddedData();
+
+        this.sampleSizeFull = dataSet.getNumRows();
+        this.sampleSize = sampleSizeFull;
         setEffectiveSampleSize(-1);
-        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getSimpleMatrix());
+
+        // Default: covariance on full embedded data.
+        this.covarianceMatrix = DataUtils.cov(this.embeddedDataSetFull.getDoubleData().getSimpleMatrix());
+
+        // Keep lambda behavior as before.
         this.setLambda(lambda);
     }
 
-    /**
-     * Subsets the variables used in the independence test.
-     *
-     * @param vars The sublist of variables.
-     * @return The IndependenceTest object with subset of variables.
-     * @throws UnsupportedOperationException if the method is not implemented.
-     */
-    public IndependenceTest indTestSubset(List<Node> vars) {
-        throw new UnsupportedOperationException("This method is not implemented.");
-    }
+    // -------------------------------------------------------------------------
+    // IndependenceTest
+    // -------------------------------------------------------------------------
 
-    /**
-     * Tests for the conditional independence of two nodes given a set of conditioning nodes.
-     */
+    @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double pValue = getPValue(x, y, z);
         boolean independent = pValue > alpha;
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);
     }
 
-    /**
-     * Computes the p-value for the null hypothesis that two variables, represented as nodes, are conditionally
-     * independent given a set of conditioning variables.
-     * <p>
-     * The method transforms the input nodes and conditioning set into their respective embedded representations and
-     * computes the likelihood ratio statistic based on residual variances. It then calculates the corresponding p-value
-     * using a Chi-squared distribution.
-     *
-     * @param x the first node representing one of the variables to be tested.
-     * @param y the second node representing the other variable to be tested.
-     * @param z the set of nodes representing the conditioning variables.
-     * @return the computed p-value for the hypothesis test of conditional independence.
-     */
     private double getPValue(Node x, Node y, Set<Node> z) {
         List<Node> zList = new ArrayList<>(z);
         Collections.sort(zList);
 
-        int _x = this.nodeHash.get(x);
-        int _y = this.nodeHash.get(y);
+        Integer _xObj = this.nodeHash.get(x);
+        Integer _yObj = this.nodeHash.get(y);
+        if (_xObj == null || _yObj == null) {
+            // Unknown node: be conservative.
+            this.pValue = 1.0;
+            return 1.0;
+        }
+
+        int _x = _xObj;
+        int _y = _yObj;
+
         int[] _z = new int[zList.size()];
         for (int i = 0; i < zList.size(); i++) {
-            _z[i] = this.nodeHash.get(zList.get(i));
+            Integer zi = this.nodeHash.get(zList.get(i));
+            if (zi == null) {
+                this.pValue = 1.0;
+                return 1.0;
+            }
+            _z[i] = zi;
         }
 
-        // Grab the embedded data for _x, _y, and _z.
+        // Embedded indices for X, Y, Z.
         List<Integer> embedded_x = embedding.get(_x);
         List<Integer> embedded_y = embedding.get(_y);
-        List<Integer> embedded_z = new ArrayList<>();
-
-        for (int value : _z) {
-            List<Integer> embeddedValues = embedding.get(value);
-            if (embeddedValues != null) {
-                embedded_z.addAll(embeddedValues);
-            }
+        if (embedded_x == null || embedded_y == null) {
+            this.pValue = 1.0;
+            return 1.0;
         }
 
-        // Convert to index arrays
+        List<Integer> embedded_z = new ArrayList<>();
+        for (int value : _z) {
+            List<Integer> embeddedValues = embedding.get(value);
+            if (embeddedValues != null) embedded_z.addAll(embeddedValues);
+        }
+
         int[] xIndices = embedded_x.stream().mapToInt(Integer::intValue).toArray();
         int[] yIndices = embedded_y.stream().mapToInt(Integer::intValue).toArray();
         int[] zIndices = embedded_z.stream().mapToInt(Integer::intValue).toArray();
 
-        // Compute variance estimates
+        // Guardrails
+        if (xIndices.length == 0 || yIndices.length == 0) {
+            this.pValue = 1.0;
+            return 1.0;
+        }
+
+        // Variance estimates
         double eps = 1e-10;
         double sigma0_sq = Math.max(eps, computeResidualVariance(xIndices, zIndices));
         double sigma1_sq = Math.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices)));
 
-        // Log-likelihood ratio statistic
+        // LR statistic
         double LR_stat = nEff * Math.log(sigma0_sq / sigma1_sq);
 
-        // Degrees of freedom is the number of additional basis columns in Y
         int df = yIndices.length;
-        if (df == 0) return 1.0;
+        if (df == 0) {
+            this.pValue = 1.0;
+            return 1.0;
+        }
 
-        // Compute p-value
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
-        double p_value = 1.0 - chi2.cumulativeProbability(LR_stat);
-        this.pValue = p_value;
+        double p = 1.0 - chi2.cumulativeProbability(LR_stat);
 
-//        if (verbose) {
-//            System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
-//        }
+        // Clamp a bit for numeric weirdness
+        if (!Double.isFinite(p)) p = 1.0;
+        if (p < 0.0) p = 0.0;
+        if (p > 1.0) p = 1.0;
 
-        return p_value;
+        this.pValue = p;
+        return p;
     }
 
     /**
@@ -219,103 +204,109 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
         SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
         SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
         SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
-//        Sigma_PP = StatUtils.chooseMatrix(Sigma_PP, lambda);
 
-        // Compute OLS estimate of X given predictors P
+        // OLS estimate of X given predictors P (with chosen inverse)
         SimpleMatrix beta = (new Matrix(Sigma_PP).chooseInverse(lambda)).getData().mult(Sigma_XP.transpose());
 
-        // Compute residual variance
+        // Residual variance
         return Sigma_XX.minus(Sigma_XP.mult(beta)).trace() / xIndices.length;
     }
 
-    /**
-     * Concatenates two integer arrays.
-     */
     private int[] concatArrays(int[] first, int[] second) {
         int[] result = Arrays.copyOf(first, first.length + second.length);
         System.arraycopy(second, 0, result, first.length, second.length);
         return result;
     }
 
-    /**
-     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for this test.
-     *
-     * @return This p-value.
-     */
+    // -------------------------------------------------------------------------
+    // RowsSettable
+    // -------------------------------------------------------------------------
+
+    @Override
+    public List<Integer> getRows() {
+        return rows;
+    }
+
+    @Override
+    public void setRows(List<Integer> rows) {
+        // rows == null => use all rows
+        if (rows == null) {
+            this.rows = null;
+            this.sampleSize = sampleSizeFull;
+            setEffectiveSampleSize(-1);
+            this.covarianceMatrix = DataUtils.cov(this.embeddedDataSetFull.getDoubleData().getSimpleMatrix());
+            return;
+        }
+
+        // Validate
+        int n0 = dataSet.getNumRows();
+        for (int i = 0; i < rows.size(); i++) {
+            Integer r = rows.get(i);
+            if (r == null) throw new NullPointerException("Row " + i + " is null.");
+            if (r < 0 || r >= n0) throw new IllegalArgumentException("Row " + i + " out of range: " + r);
+        }
+
+        this.rows = new ArrayList<>(rows);
+        this.sampleSize = this.rows.size();
+        setEffectiveSampleSize(-1);
+
+        DataSet subEmbedded = subsetRows(this.embeddedDataSetFull, this.rows);
+        this.covarianceMatrix = DataUtils.cov(subEmbedded.getDoubleData().getSimpleMatrix());
+    }
+
+    private DataSet subsetRows(DataSet ds, List<Integer> rows) {
+        int m = rows.size();
+        int p = ds.getNumColumns();
+        double[][] data = new double[m][p];
+
+        for (int i = 0; i < m; i++) {
+            int r = rows.get(i);
+            for (int j = 0; j < p; j++) {
+                data[i][j] = ds.getDouble(r, j);
+            }
+        }
+
+        DoubleDataBox box = new DoubleDataBox(data);
+        return new BoxDataSet(box, ds.getVariables());
+    }
+
+    // -------------------------------------------------------------------------
+    // Getters/setters + boilerplate
+    // -------------------------------------------------------------------------
+
     public double getPValue() {
         return this.pValue;
     }
 
-    /**
-     * Returns the list of variables over which this independence checker is capable of determinining independence
-     * relations.
-     *
-     * @return This list.
-     */
+    @Override
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
     }
 
-    /**
-     * Returns the significance level of the independence test.
-     *
-     * @return this level, default 0.01.
-     */
-    public double getAlpha() {
-        return this.alpha;
-    }
-
-    /**
-     * Sets the significance level.
-     */
-    public void setAlpha(double alpha) {
-        if (alpha <= 0 || alpha >= 1) {
-            throw new IllegalArgumentException("Alpha must be between 0 and 1.");
-        }
-        this.alpha = alpha;
-    }
-
-    /**
-     * Returns a copy of the dataset being analyzed.
-     *
-     * @return This data.
-     */
+    @Override
     public DataSet getData() {
         return this.dataSet.copy();
     }
 
-    /**
-     * Returns a string representation of this test.
-     *
-     * @return This string.
-     */
-    public String toString() {
-        NumberFormat nf = new DecimalFormat("0.0000");
-        return "Degenerate Gaussian, alpha = " + nf.format(getAlpha());
+    public double getAlpha() {
+        return this.alpha;
     }
 
-    /**
-     * Returns true iff verbose output should be printed.
-     */
+    public void setAlpha(double alpha) {
+        if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("Alpha must be between 0 and 1.");
+        this.alpha = alpha;
+    }
+
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
-    /**
-     * Sets whether verbose output should be printed.
-     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    /**
-     * Sets the lambda value for the test.
-     *
-     * @param lambda The singularity lambda parameter to be used in the independence test.
-     */
     public void setLambda(double lambda) {
         this.lambda = lambda;
     }
@@ -327,7 +318,17 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
 
     @Override
     public void setEffectiveSampleSize(int nEff) {
-        this.nEff = nEff < 0 ? sampleSize : nEff;
+        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+    }
+
+    @Override
+    public String toString() {
+        NumberFormat nf = new DecimalFormat("0.0000");
+        return "Degenerate Gaussian, alpha = " + nf.format(getAlpha());
+    }
+
+    // Not implemented in the original; keep as-is.
+    public IndependenceTest indTestSubset(List<Node> vars) {
+        throw new UnsupportedOperationException("This method is not implemented.");
     }
 }
-
