@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.PostnonlinearSem;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -285,7 +286,7 @@ public class PostnonlinearCausalModel implements Simulation {
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runSimulation(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.PostnonlinearCausalModel generator = new edu.cmu.tetrad.sem.PostnonlinearCausalModel(
+        PostnonlinearSem generator = new PostnonlinearSem(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),

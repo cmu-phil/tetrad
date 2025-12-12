@@ -55,6 +55,10 @@ public final class SimulationTypes {
     /**
      * Constant <code>CAUSAL_PERCEPTRON_NETWORK="Causal Peceptron Network (CPN)"</code>
      */
+    public static final String GENERAL_NOISE_SEM = "General Noise SEM (Deep Net)";
+    /**
+     * Constant <code>CAUSAL_PERCEPTRON_NETWORK="Causal Peceptron Network (CPN)"</code>
+     */
     public static final String ADDITIVE_NOISE_SEM = "Additive Noise SEM (Deep Net)";
     /**
      * Constant <code>LG_MNAR_SIMULATION="LG MNAR Simulation"</code>

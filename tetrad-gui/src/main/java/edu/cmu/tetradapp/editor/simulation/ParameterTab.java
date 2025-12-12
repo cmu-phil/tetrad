@@ -64,8 +64,9 @@ public class ParameterTab extends JPanel {
             SimulationTypes.BAYS_NET,
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
-            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
+//            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.NONLINEAR_ADDITIVE_SEM,
+            SimulationTypes.GENERAL_NOISE_SEM,
             SimulationTypes.ADDITIVE_NOISE_SEM,
             SimulationTypes.POST_NONLINEAR_MODEL,
             SimulationTypes.LEE_AND_HASTIE,
@@ -195,11 +196,14 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
-                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
-                        break;
+//                    case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
+//                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
+//                        break;
                     case SimulationTypes.POST_NONLINEAR_MODEL:
                         this.simulation.setSimulation(new PostnonlinearCausalModel(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.GENERAL_NOISE_SEM:
+                        this.simulation.setSimulation(new GeneralNoiseSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.ADDITIVE_NOISE_SEM:
                         this.simulation.setSimulation(new AdditiveNoiseSimulation(randomGraph), this.simulation.getParams());
@@ -239,14 +243,17 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
-                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
-                        break;
+//                    case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
+//                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
+//                        break;
                     case SimulationTypes.NONLINEAR_ADDITIVE_SEM:
                         this.simulation.setSimulation(new AdditiveAnmSimulator(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.POST_NONLINEAR_MODEL:
                         this.simulation.setSimulation(new PostnonlinearCausalModel(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.GENERAL_NOISE_SEM:
+                        this.simulation.setSimulation(new GeneralNoiseSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.ADDITIVE_NOISE_SEM:
                         this.simulation.setSimulation(new AdditiveNoiseSimulation(randomGraph), this.simulation.getParams());

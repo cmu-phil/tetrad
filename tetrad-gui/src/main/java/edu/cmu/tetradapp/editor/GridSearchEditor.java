@@ -2190,10 +2190,12 @@ public class GridSearchEditor extends JPanel {
                     yield edu.cmu.tetrad.algcomparison.simulation.SemSimulation.class;
                 case 2:
                     yield edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel.class;
+//                case 3:
+//                    yield edu.cmu.tetrad.algcomparison.simulation.GpSemSimulation.class;
                 case 3:
-                    yield edu.cmu.tetrad.algcomparison.simulation.GpSemSimulation.class;
-                case 4:
                     yield AdditiveAnmSimulator.class;
+                case 4:
+                    yield GeneralNoiseSimulation.class;
                 case 5:
                     yield AdditiveNoiseSimulation.class;
                 case 6:

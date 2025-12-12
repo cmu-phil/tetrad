@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunction1D;
 import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionND;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
@@ -62,7 +61,7 @@ import java.util.stream.IntStream;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class PostnonlinearCausalModel {
+public class PostnonlinearSem {
 
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
@@ -174,10 +173,10 @@ public class PostnonlinearCausalModel {
      * @throws IllegalArgumentException If the provided graph is not acyclic, the number of samples is less than one, or
      *                                  rescaleMin is greater than rescaleMax.
      */
-    public PostnonlinearCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                    double rescaleMin, double rescaleMax,
-                                    int hiddenDimension, double inputScale,
-                                    double coefLow, double coefHigh, boolean coefSymmetric) {
+    public PostnonlinearSem(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                            double rescaleMin, double rescaleMax,
+                            int hiddenDimension, double inputScale,
+                            double coefLow, double coefHigh, boolean coefSymmetric) {
 
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
@@ -261,8 +260,14 @@ public class PostnonlinearCausalModel {
                 }
             }
 
+//            if (rescaleMin < rescaleMax) {
+//                DataTransforms.scale(data, rescaleMin, rescaleMax, node);
+//            }
+
             if (rescaleMin < rescaleMax) {
-                DataTransforms.scale(data, rescaleMin, rescaleMax, node);
+                for (Node _node : validOrder) {
+                    DataTransforms.scale(data, rescaleMin, rescaleMax, _node);
+                }
             }
         }
 
@@ -276,7 +281,15 @@ public class PostnonlinearCausalModel {
             double b = functionRng.nextGaussian();
 
             // g is the activationFunction (default tanh), assumed strictly monotone
-            Function<Double, Double> f2 = x -> a * activationFunction.apply(inputScale * x) + b;
+
+            double c = Math.abs(functionRng.nextGaussian()) * 0.3; // e.g. 0..~1
+            Function<Double, Double> g = x -> x + c * x * x * x;   // strictly increasing
+            Function<Double, Double> f2 = x -> a * g.apply(x) + b;
+
+//            double outerScale = 0.5; // new param, default
+//            Function<Double, Double> f2 = x -> a * activationFunction.apply(outerScale * x) + b;
+
+//            Function<Double, Double> f2 = x -> a * Math.tanh(outerScale * x) + b;
 
             for (int sample = 0; sample < numSamples; sample++) {
                 double value = data.getDouble(sample, colIndex);

@@ -13,21 +13,17 @@ import java.util.*;
 import java.util.function.Function;
 
 /**
- * AdditiveNoiseSimulation
- *
- * Generates data from an additive-noise structural causal model (ANM):
- *
- *   X_j = f_j(Pa(X_j)) + N_j,   with independent noise terms N_j.
- *
- * Each f_j is represented by a randomly initialized MLP (parents-only input).
- * Root nodes are generated as pure noise (optionally rescaled).
- *
- * NOTE: The optional rescaling performed here is computed from the realized sample
- * (min/max of the generated column), which couples rows within a dataset. This is
- * convenient for keeping values in a range but is not “SCM-pure” in the sense of
- * applying a fixed transformation independent of the sampled data.
+ * Represents a Causal Perceptron Network designed to generate synthetic data by traversing
+ * an acyclic graph while applying random multi-layer perceptron (MLP) computations to represent
+ * node relationships. This class provides functionality to create a dataset that respects the
+ * causal structure defined by the graph, optionally applying noise, rescaling, and activation
+ * functions to the generated data.
+ * <p>
+ * Each node of the graph can be represented as being driven by other parent nodes,
+ * constructed through a random MLP. The MLP structure, activation function, and other
+ * parameters can be customized in the constructor.
  */
-public class AdditiveNoiseSimulation {
+public class GeneralNoiseSimulation {
 
     private final Graph graph;
     private final int numSamples;
@@ -41,14 +37,30 @@ public class AdditiveNoiseSimulation {
     // Keep simple per-node seeding (still random overall)
     private final Random seeder = new Random();
 
-    public AdditiveNoiseSimulation(Graph graph,
-                                   int numSamples,
-                                   RealDistribution noiseDistribution,
-                                   double rescaleMin,
-                                   double rescaleMax,
-                                   int[] hiddenDimensions,
-                                   double inputScale,
-                                   Function<Double, Double> activationFunction) {
+    /**
+     * Creates a AdditiveNoiseSimulation for generating data with a causal structure based on the provided graph.
+     *
+     * @param graph The acyclic graph representing the causal structure of the network.
+     * @param numSamples The number of samples to generate by the network. Must be greater than 0.
+     * @param noiseDistribution The probability distribution used to sample noise for the network.
+     * @param rescaleMin The minimum value for rescaling output data. Must be less than or equal to rescaleMax.
+     * @param rescaleMax The maximum value for rescaling output data. Must be greater than or equal to rescaleMin.
+     * @param hiddenDimensions An array representing the number of hidden neurons per layer. All entries must be at least 1.
+     * @param inputScale A scaling factor applied to the inputs of the network.
+     * @param activationFunction A function applied as the activation function for the perceptron network.
+     *                           Must be provided and not null.
+     * @throws IllegalArgumentException If the graph is not acyclic, numSamples is less than 1, rescaleMin is greater
+     *                                  than rescaleMax, or if any hidden dimensions are less than 1.
+     * @throws NullPointerException If noiseDistribution, hiddenDimensions, or activationFunction are null.
+     */
+    public GeneralNoiseSimulation(Graph graph,
+                                  int numSamples,
+                                  RealDistribution noiseDistribution,
+                                  double rescaleMin,
+                                  double rescaleMax,
+                                  int[] hiddenDimensions,
+                                  double inputScale,
+                                  Function<Double, Double> activationFunction) {
         if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
         if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
         if (rescaleMin > rescaleMax) throw new IllegalArgumentException("rescaleMin > rescaleMax");
@@ -67,10 +79,23 @@ public class AdditiveNoiseSimulation {
         this.inputScale = inputScale;
         this.activationFunction = activationFunction;
 
-        // Robust-ish “is tanh” detection for fast path.
-        this.useFastTanh = looksLikeTanh(activationFunction);
+        // IMPORTANT: give the method reference a target type to make == legal
+        @SuppressWarnings("unchecked")
+        Function<Double, Double> tanhRef = (Function<Double, Double>) (Double x) -> Math.tanh(x);
+        this.useFastTanh = activationFunction == tanhRef;
     }
 
+    /**
+     * Generates a dataset based on the causal structure defined by the network's graph.
+     * This method uses a causal graph to determine the order of nodes, processes the
+     * parent's data, adds noise, and forwards it through a randomly initialized multilayer
+     * perceptron (MLP) with the specified parameters. The data is optionally rescaled
+     * between specified minimum and maximum values, and the resulting data is returned
+     * as part of a structured dataset.
+     *
+     * @return A dataset containing generated data with causal relationships derived from
+     *         the network's graph structure and the associated processing logic.
+     */
     public DataSet generateData() {
         final List<Node> topo = graph.paths().getValidOrder(graph.getNodes(), true);
         final int P = topo.size(), N = numSamples;
@@ -78,7 +103,7 @@ public class AdditiveNoiseSimulation {
         // raw[row][col]
         final double[][] raw = new double[N][P];
 
-        // map node -> topo index
+        // map node -> topo index (avoid topo.indexOf in hot loops)
         final Map<Node, Integer> indexOf = new HashMap<>(P * 2);
         for (int j = 0; j < P; j++) indexOf.put(topo.get(j), j);
 
@@ -92,7 +117,7 @@ public class AdditiveNoiseSimulation {
         }
 
         // Reusable EJML matrices
-        DMatrixRMaj A = new DMatrixRMaj(N, 1);  // parents-only input to MLP (will reshape)
+        DMatrixRMaj A = new DMatrixRMaj(N, 1);  // input to MLP (will reshape)
         DMatrixRMaj Z = new DMatrixRMaj(N, 1);  // hidden scratch
         DMatrixRMaj Y = new DMatrixRMaj(N, 1);  // output (N x 1)
 
@@ -100,47 +125,35 @@ public class AdditiveNoiseSimulation {
 
         for (int j = 0; j < P; j++) {
             final int[] pj = parentsIdx[j];
-            final int Din = pj.length;          // <-- PARENTS ONLY (additive noise comes AFTER)
-            final boolean isRoot = (Din == 0);
+            final int Din = pj.length + 1;      // parents + noise
+            A.reshape(N, Din, false);
 
-            // Draw noise once for this node (independent across i)
-            for (int i = 0; i < N; i++) noise[i] = noiseDistribution.sample();
-
-            if (isRoot) {
-                // Root: X_j = N_j
-                for (int i = 0; i < N; i++) raw[i][j] = noise[i];
-            } else {
-                A.reshape(N, Din, false);
-
-                // copy parents into A (column-major fill for speed)
-                for (int c = 0; c < pj.length; c++) {
-                    int col = pj[c];
-                    int k = c;
-                    for (int i = 0; i < N; i++, k += Din) A.data[k] = raw[i][col];
-                }
-
-                // Random MLP for this node: f_j(Pa)
-                RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
-
-                // signal = f_j(Pa)
-                Y = mlp.forward(A, Z, Y, activationFunction, useFastTanh);
-
-                // Additive noise: X_j = signal + noise
-                for (int i = 0; i < N; i++) raw[i][j] = Y.data[i] + noise[i];
+            // copy parents
+            for (int c = 0; c < pj.length; c++) {
+                int col = pj[c];
+                int k = c;
+                for (int i = 0; i < N; i++, k += Din) A.data[k] = raw[i][col];
             }
+            // draw noise once and place as last column
+            for (int i = 0; i < N; i++) noise[i] = noiseDistribution.sample();
+            int k = pj.length;
+            for (int i = 0; i < N; i++, k += Din) A.data[k] = noise[i];
 
-            // Optional per-column rescale to [rescaleMin, rescaleMax]
-            if (rescaleMax > rescaleMin) {
-                double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
-                for (int i = 0; i < N; i++) {
-                    double v = raw[i][j];
-                    if (v < min) min = v;
-                    if (v > max) max = v;
-                }
-                if (max > min) {
-                    double inR = (max - min), outR = (rescaleMax - rescaleMin);
-                    for (int i = 0; i < N; i++) raw[i][j] = rescaleMin + outR * (raw[i][j] - min) / inR;
-                }
+            // Random MLP for this node, supports H=[] (no hidden) too
+            RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale, seeder);
+
+            // Forward pass: Y = mlp(A)
+            Y = mlp.forward(A, Z, Y, activationFunction, useFastTanh);
+
+            // write column + rescale
+            double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+            for (int i = 0; i < N; i++) {
+                double v = Y.data[i]; raw[i][j] = v;
+                if (v < min) min = v; if (v > max) max = v;
+            }
+            if (rescaleMax > rescaleMin && max > min) {
+                double inR = (max - min), outR = (rescaleMax - rescaleMin);
+                for (int i = 0; i < N; i++) raw[i][j] = rescaleMin + outR * (raw[i][j] - min) / inR;
             }
         }
 
@@ -156,8 +169,7 @@ public class AdditiveNoiseSimulation {
         final double[][] b;      // biases per layer
 
         RandomMLP(int Din, int[] hidden, int Dout, double inputScale, Random r) {
-            this.Din = Din;
-            this.Dout = Dout;
+            this.Din = Din; this.Dout = Dout;
             this.H = hidden == null ? new int[0] : hidden.clone();
             int L = H.length + 1;
             this.W = new DMatrixRMaj[L];
@@ -176,16 +188,17 @@ public class AdditiveNoiseSimulation {
         }
 
         /** Y = forward(X). Uses multTransB so we never materialize W^T. */
+        /** Y = forward(X). Uses two scratch buffers so output != input for EJML. */
         DMatrixRMaj forward(DMatrixRMaj X,
                             DMatrixRMaj scratch1,
                             DMatrixRMaj out,
                             Function<Double, Double> act,
                             boolean fastTanh) {
 
-            // Ping-pong buffers for hidden activations
+            // Two ping-pong buffers for hidden activations
             DMatrixRMaj cur = X;
             DMatrixRMaj bufA = scratch1;
-            DMatrixRMaj bufB = new DMatrixRMaj(1, 1); // reshaped as needed
+            DMatrixRMaj bufB = new DMatrixRMaj(1, 1); // will be reshaped
 
             // Hidden layers
             for (int l = 0; l < H.length; l++) {
@@ -200,6 +213,7 @@ public class AdditiveNoiseSimulation {
                 addBiasRowsInPlace(dest, b[l]);
                 applyActivationInPlace(dest, act, fastTanh);
 
+                // advance
                 cur = dest;
             }
 
@@ -231,20 +245,5 @@ public class AdditiveNoiseSimulation {
         } else {
             for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
         }
-    }
-
-    private static boolean looksLikeTanh(Function<Double, Double> f) {
-        // Simple, cheap heuristic: tanh is odd and saturating in (-1,1).
-        // We check a few points; if user supplied something else, we just return false.
-        double[] xs = {-2.0, -1.0, -0.5, 0.5, 1.0, 2.0};
-        for (double x : xs) {
-            double fx = f.apply(x);
-            if (!Double.isFinite(fx)) return false;
-            if (Math.abs(fx) > 1.000001) return false;
-        }
-        // oddness check at 0.5 and 1.0
-        double a = f.apply(0.5), b = f.apply(-0.5);
-        double c = f.apply(1.0), d = f.apply(-1.0);
-        return Math.abs(a + b) < 1e-6 && Math.abs(c + d) < 1e-6;
     }
 }

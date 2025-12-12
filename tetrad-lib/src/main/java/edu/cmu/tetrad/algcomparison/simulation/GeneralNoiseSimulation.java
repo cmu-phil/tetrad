@@ -43,7 +43,7 @@ import java.util.function.Function;
  *
  * @author josephramsey
  */
-public class AdditiveNoiseSimulation implements Simulation {
+public class GeneralNoiseSimulation implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -68,7 +68,7 @@ public class AdditiveNoiseSimulation implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public AdditiveNoiseSimulation(RandomGraph graph) {
+    public GeneralNoiseSimulation(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -291,7 +291,7 @@ public class AdditiveNoiseSimulation implements Simulation {
 
         Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
 
-        edu.cmu.tetrad.sem.AdditiveNoiseSimulation generator = new edu.cmu.tetrad.sem.AdditiveNoiseSimulation(
+        edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
