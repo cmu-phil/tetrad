@@ -280,6 +280,34 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
         return new XY(X, Y);
     }
 
+//    /**
+//     * Make the CCA well-posed without padding from unrelated variables.
+//     * Strategy:
+//     *  1) Remove overlaps with Z.
+//     *  2) If one side is bigger, shrink the bigger side to the smaller side (deterministic).
+//     *  3) (Optional) if either side becomes empty, return empty.
+//     */
+//    private XY robustifyXY(int[] xCols0, int[] yCols0, int[] zCols) {
+//        int[] X = uniqSorted(xCols0);
+//        int[] Y = uniqSorted(yCols0);
+//        int[] Z = uniqSorted(zCols);
+//
+//        if (Z.length > 0) {
+//            X = minus(X, Z);
+//            Y = minus(Y, Z);
+//        }
+//        if (X.length == 0 || Y.length == 0) return new XY(new int[0], new int[0]);
+//
+//        // Always shrink the larger side; never pad with unrelated columns.
+//        if (X.length > Y.length) {
+//            X = Arrays.copyOf(X, Y.length);
+//        } else if (Y.length > X.length) {
+//            Y = Arrays.copyOf(Y, X.length);
+//        }
+//
+//        return new XY(X, Y);
+//    }
+
     /**
      * Retrieves the block specification associated with this instance of IndTestBlocks.
      *
