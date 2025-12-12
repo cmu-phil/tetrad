@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -27,79 +27,120 @@ import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
-import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
 /**
- * IndTestBasisFunctionBlocks - Builds a per-variable truncated basis expansion (via Embedding) - Constructs the blocks
- * mapping (original var -> list of embedded column indices) - Delegates CI testing to IndTestBlocks over those blocks
  * <p>
- * CONTRACT: 'blocks' maps each ORIGINAL variable index v (0..V-1) to the list of embedded column indices in the
- * embedded matrix produced here.
+ * Basis–function independence test using block–structured Wilks statistics.
+ * This class:
+ * </p>
+ *
+ * <ul>
+ *   <li>Applies a per-variable truncated basis expansion (via {@code Embedding}) to
+ *       produce an embedded dataset.</li>
+ *   <li>Builds a block mapping from each <em>original</em> variable to the list of
+ *       embedded columns that belong to that variable.</li>
+ *   <li>Delegates conditional-independence testing to
+ *       {@code IndTestBlocksWilkes}, using a {@code BlockSpec} constructed from the
+ *       embedded dataset, the block mapping, and the original variable nodes.</li>
+ * </ul>
+ *
+ * <p>
+ * <strong>Subsampling support:</strong>
+ * This class implements {@code RowsSettable}. Whenever {@code setRows(...)} is
+ * called:
+ * </p>
+ *
+ * <ul>
+ *   <li>If {@code rows == null}, the test reverts to using the full embedded dataset.</li>
+ *   <li>If a non-null list of row indices is provided, a <em>row-subsetted</em>
+ *       embedded dataset is constructed, and the internal
+ *       {@code IndTestBlocksWilkes} delegate is rebuilt on that subsample.</li>
+ * </ul>
+ *
+ * <p>
+ * This guarantees that:
+ * </p>
+ *
+ * <ul>
+ *   <li>The block structure remains identical across subsamples.</li>
+ *   <li>All independence tests are run on the subsampled data when used inside
+ *       tools such as the Markov Checker.</li>
+ *   <li>Node identity is preserved (the same {@code Node} instances are passed
+ *       through to the delegate).</li>
+ * </ul>
+ *
+ * <p>
+ * <strong>Contract:</strong>
+ * {@code blocks.get(v)} returns the list of embedded column indices corresponding
+ * exactly to original variable {@code v}, for {@code v = 0, ..., V-1}.
+ * </p>
  */
 public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginalIndependenceTest,
-        EffectiveSampleSizeSettable {
+        EffectiveSampleSizeSettable, RowsSettable {
 
     // ---- Source data ----
-    private final DataSet raw;
+    private final DataSet dataSet;
     private final List<Node> variables;   // the block-level variables (exactly the caller's originals)
 
     // ---- Derived (embedded) ----
-    private final SimpleMatrix Xphi;                 // n x D embedded design
-    private final SimpleMatrix Sphi;                 // D x D covariance of embedded data
     private final List<List<Integer>> blocks;        // mapping original var -> embedded column indices
-    private final IndTestBlocksWilkes blocksTest;          // delegate
     private final int degree;
-    private final int sampleSize;
-    private int basisType = 1;
+    private final DataSet embeddedDataSetFull;
+    private IndTestBlocksWilkes blocksTest;          // delegate
+    private int sampleSize;
+    private final int basisType;
     // ---- Knobs ----
     private double alpha = 0.01;
     private int nEff;
+
+    // Optional row subset (null = use all rows)
+    private List<Integer> rows;
 
     /**
      * Constructs an instance of IndTestBasisFunctionBlocks. This class is designed to perform independence
      * tests based on basis function transformations of the provided dataset, using specified degree and basis type.
      *
-     * @param raw the input dataset, which provides the raw data to be analyzed. Cannot be null.
+     * @param dataSet the input dataset, which provides the raw data to be analyzed. Cannot be null.
      * @param degree the degree of the basis function transformation. Must be a non-negative integer.
      * @param basisType the type of basis functions to use for transformations (e.g., polynomial, Fourier, etc.).
      *                  This value determines the embedding style and configuration specifics.
      * @throws IllegalArgumentException if the raw dataset is null or if the degree is negative.
      */
-    public IndTestBasisFunctionBlocks(DataSet raw, int degree, int basisType) {
-        if (raw == null) throw new IllegalArgumentException("raw == null");
+    public IndTestBasisFunctionBlocks(DataSet dataSet, int degree, int basisType) {
+        if (dataSet == null) throw new IllegalArgumentException("raw == null");
         if (degree < 0) throw new IllegalArgumentException("degree must be >= 0");
 
-        this.raw = raw;
+        this.dataSet = dataSet;
         this.degree = degree;
         this.basisType = basisType;
         // Keep the exact Node instances from the caller's dataset
-        this.variables = new ArrayList<>(raw.getVariables());
+        this.variables = new ArrayList<>(dataSet.getVariables());
 
-        this.sampleSize = raw.getNumRows();
-        setEffectiveSampleSize(-1);
-
-        // 1) Build embedded matrix + blocks using your existing Embedding utility
-        //    (Adjust the extra args (e.g., intercept/standardization) to your Embedding API as needed.)
         Embedding.EmbeddedData embeddedData = Objects.requireNonNull(
-                Embedding.getEmbeddedData(raw, degree,  basisType, 1),
+                Embedding.getEmbeddedData(dataSet, degree, basisType, 1),
                 "Embedding.getEmbeddedData returned null");
 
+        // Column embedding: which embedded columns correspond to each original variable
+
+        // Keep the full embedded DataSet so we can subset rows later
+        this.embeddedDataSetFull = embeddedData.embeddedData();
+
         // blocks: one per ORIGINAL variable, in the same order
-        this.blocks = new ArrayList<>(raw.getNumColumns());
-        for (int i = 0; i < raw.getNumColumns(); i++) {
+        this.blocks = new ArrayList<>(dataSet.getNumColumns());
+        for (int i = 0; i < dataSet.getNumColumns(); i++) {
             this.blocks.add(embeddedData.embedding().get(i));
         }
 
-        // Embedded dataset and design/cov (handy for debugging)
-        DataSet embeddedDs = embeddedData.embeddedData();
-        this.Xphi = embeddedDs.getDoubleData().getSimpleMatrix();
-        this.Sphi = DataUtils.cov(this.Xphi);
+        // Default: all rows
+        this.rows = null;
+        this.sampleSize = dataSet.getNumRows();
+        setEffectiveSampleSize(-1);
 
-        // 2) Delegate CI testing to IndTestBlocks:
-        //    IMPORTANT: pass *this.variables* (the same Node objects you expose)
-        this.blocksTest = new IndTestBlocksWilkes(new BlockSpec(embeddedDs, this.blocks, this.variables));
+        // Delegate CI testing to IndTestBlocks over the full embedded data
+        this.blocksTest = new IndTestBlocksWilkes(
+                new BlockSpec(this.embeddedDataSetFull, this.blocks, this.variables));
         this.blocksTest.setEffectiveSampleSize(-1);
     }
 
@@ -160,7 +201,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
      */
     @Override
     public DataModel getData() {
-        return raw;
+        return dataSet;
     }
 
     /**
@@ -244,8 +285,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         double p = 1.0 - cdf;
         if (!Double.isFinite(p)) return 1.0;
         if (p < 0.0) return 0.0;
-        if (p > 1.0) return 1.0;
-        return p;
+        return Math.min(p, 1.0);
     }
 
     /**
@@ -270,6 +310,75 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         this.alpha = alpha;
     }
 
+    @Override
+    public List<Integer> getRows() {
+        return rows;
+    }
+
+    @Override
+    public void setRows(List<Integer> rows) {
+        if (dataSet == null) {
+            this.rows = null;
+            return;
+        }
+
+        // rows == null => use all rows
+        if (rows == null) {
+            this.rows = null;
+            this.sampleSize = dataSet.getNumRows();
+            setEffectiveSampleSize(-1);
+
+            // Rebuild delegate on the full embedded data
+            this.blocksTest = new IndTestBlocksWilkes(
+                    new BlockSpec(this.embeddedDataSetFull, this.blocks, this.variables));
+            this.blocksTest.setEffectiveSampleSize(-1);
+            return;
+        }
+
+        // Validate row indices
+        for (int i = 0; i < rows.size(); i++) {
+            Integer r = rows.get(i);
+            if (r == null) {
+                throw new NullPointerException("Row " + i + " is null.");
+            }
+            if (r < 0 || r >= dataSet.getNumRows()) {
+                throw new IllegalArgumentException(
+                        "Row " + i + " is out of range: " + r);
+            }
+        }
+
+        this.rows = new ArrayList<>(rows);
+        this.sampleSize = rows.size();
+        setEffectiveSampleSize(-1);
+
+        // Build an embedded DataSet with only the selected rows
+        DataSet subEmbedded = subsetRows(embeddedDataSetFull, this.rows);
+
+        // Rebuild delegate on the subsampled embedded data
+        this.blocksTest = new IndTestBlocksWilkes(
+                new BlockSpec(subEmbedded, this.blocks, this.variables));
+        this.blocksTest.setEffectiveSampleSize(-1);
+    }
+
+    /**
+     * Create a row-subset of the given DataSet (same variables, only selected rows).
+     */
+    private DataSet subsetRows(DataSet ds, List<Integer> rows) {
+        int m = rows.size();
+        int p = ds.getNumColumns();
+        double[][] data = new double[m][p];
+
+        for (int i = 0; i < m; i++) {
+            int r = rows.get(i);
+            for (int j = 0; j < p; j++) {
+                data[i][j] = ds.getDouble(r, j);
+            }
+        }
+
+        DoubleDataBox box = new DoubleDataBox(data);
+        return new BoxDataSet(box, ds.getVariables());
+    }
+
     /**
      * Retrieves the list of blocks, where each block is represented as a list of integers. These blocks may correspond
      * to partitions or groupings derived from the data or configuration.
@@ -278,16 +387,6 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
      */
     public List<List<Integer>> getBlocks() {
         return blocks;
-    }
-
-    /**
-     * Retrieves the embedded data matrix corresponding to the transformed or processed data based on the configuration
-     * of this instance.
-     *
-     * @return the embedded data matrix as a SimpleMatrix object
-     */
-    public SimpleMatrix getEmbeddedData() {
-        return Xphi;
     }
 
     @Override
