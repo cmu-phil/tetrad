@@ -226,87 +226,87 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
     /**
      * Ensure Y â Z (by construction), pad Y if needed, subset X if still |Y|<|X|.
      */
-    private XY robustifyXY(int[] xCols0, int[] yCols0, int[] zCols) {
-        // Deduplicate and sort for determinism
-        int[] X = uniqSorted(xCols0);
-        int[] Y = uniqSorted(yCols0);
-        int[] Z = uniqSorted(zCols);
-
-        // Remove any accidental overlaps with Z (paranoia; blocks are disjoint, but be safe).
-        if (Z.length > 0) {
-            Y = minus(Y, Z); // Y := Y \ Z
-            X = minus(X, Z); // X := X \ Z
-        }
-
-        // If |Y| < |X|, try to pad Y from the complement R = V \ (X âª Y âª Z)
-        // NEW knobs: robustness for |Y| < |X|
-        // try to grow Y from the complement pool
-        boolean padY = true;
-        if (padY && Y.length < X.length) {
-            BitSet pool = (BitSet) universeBits.clone();
-            for (int v : X) pool.clear(v);
-            for (int v : Y) pool.clear(v);
-            for (int v : Z) pool.clear(v);
-
-            int need = X.length - Y.length;
-            if (need > 0 && pool.cardinality() > 0) {
-                int take = Math.min(need, pool.cardinality());
-                int[] Ypad = new int[Y.length + take];
-                System.arraycopy(Y, 0, Ypad, 0, Y.length);
-                int k = Y.length;
-                for (int i = pool.nextSetBit(0); i >= 0 && take > 0; i = pool.nextSetBit(i + 1)) {
-                    Ypad[k++] = i;
-                    take--;
-                }
-                Arrays.sort(Ypad);
-                Y = Ypad;
-                if (verbose && Y.length >= X.length) {
-                    System.out.printf("IndTestBlocks: padded Y to %d to meet X=%d%n", Y.length, X.length);
-                }
-            }
-        }
-
-        // If still |Y| < |X|, optionally subset X down to |Y|
-        // if still |Y| < |X|, shrink X to |Y|
-        boolean subsetXIfNeeded = true;
-        if (subsetXIfNeeded && Y.length > 0 && Y.length < X.length) {
-            // deterministic prefix (could also choose by leverage, but keep simple/fast)
-            X = Arrays.copyOf(X, Y.length);
-            if (verbose) {
-                System.out.printf("IndTestBlocks: subset X from %d to %d to match Y%n", X.length + (Y.length - X.length), Y.length);
-            }
-        }
-
-        return new XY(X, Y);
-    }
-
-//    /**
-//     * Make the CCA well-posed without padding from unrelated variables.
-//     * Strategy:
-//     *  1) Remove overlaps with Z.
-//     *  2) If one side is bigger, shrink the bigger side to the smaller side (deterministic).
-//     *  3) (Optional) if either side becomes empty, return empty.
-//     */
 //    private XY robustifyXY(int[] xCols0, int[] yCols0, int[] zCols) {
+//        // Deduplicate and sort for determinism
 //        int[] X = uniqSorted(xCols0);
 //        int[] Y = uniqSorted(yCols0);
 //        int[] Z = uniqSorted(zCols);
 //
+//        // Remove any accidental overlaps with Z (paranoia; blocks are disjoint, but be safe).
 //        if (Z.length > 0) {
-//            X = minus(X, Z);
-//            Y = minus(Y, Z);
+//            Y = minus(Y, Z); // Y := Y \ Z
+//            X = minus(X, Z); // X := X \ Z
 //        }
-//        if (X.length == 0 || Y.length == 0) return new XY(new int[0], new int[0]);
 //
-//        // Always shrink the larger side; never pad with unrelated columns.
-//        if (X.length > Y.length) {
+//        // If |Y| < |X|, try to pad Y from the complement R = V \ (X âª Y âª Z)
+//        // NEW knobs: robustness for |Y| < |X|
+//        // try to grow Y from the complement pool
+//        boolean padY = true;
+//        if (padY && Y.length < X.length) {
+//            BitSet pool = (BitSet) universeBits.clone();
+//            for (int v : X) pool.clear(v);
+//            for (int v : Y) pool.clear(v);
+//            for (int v : Z) pool.clear(v);
+//
+//            int need = X.length - Y.length;
+//            if (need > 0 && pool.cardinality() > 0) {
+//                int take = Math.min(need, pool.cardinality());
+//                int[] Ypad = new int[Y.length + take];
+//                System.arraycopy(Y, 0, Ypad, 0, Y.length);
+//                int k = Y.length;
+//                for (int i = pool.nextSetBit(0); i >= 0 && take > 0; i = pool.nextSetBit(i + 1)) {
+//                    Ypad[k++] = i;
+//                    take--;
+//                }
+//                Arrays.sort(Ypad);
+//                Y = Ypad;
+//                if (verbose && Y.length >= X.length) {
+//                    System.out.printf("IndTestBlocks: padded Y to %d to meet X=%d%n", Y.length, X.length);
+//                }
+//            }
+//        }
+//
+//        // If still |Y| < |X|, optionally subset X down to |Y|
+//        // if still |Y| < |X|, shrink X to |Y|
+//        boolean subsetXIfNeeded = true;
+//        if (subsetXIfNeeded && Y.length > 0 && Y.length < X.length) {
+//            // deterministic prefix (could also choose by leverage, but keep simple/fast)
 //            X = Arrays.copyOf(X, Y.length);
-//        } else if (Y.length > X.length) {
-//            Y = Arrays.copyOf(Y, X.length);
+//            if (verbose) {
+//                System.out.printf("IndTestBlocks: subset X from %d to %d to match Y%n", X.length + (Y.length - X.length), Y.length);
+//            }
 //        }
 //
 //        return new XY(X, Y);
 //    }
+
+    /**
+     * Make the CCA well-posed without padding from unrelated variables.
+     * Strategy:
+     *  1) Remove overlaps with Z.
+     *  2) If one side is bigger, shrink the bigger side to the smaller side (deterministic).
+     *  3) (Optional) if either side becomes empty, return empty.
+     */
+    private XY robustifyXY(int[] xCols0, int[] yCols0, int[] zCols) {
+        int[] X = uniqSorted(xCols0);
+        int[] Y = uniqSorted(yCols0);
+        int[] Z = uniqSorted(zCols);
+
+        if (Z.length > 0) {
+            X = minus(X, Z);
+            Y = minus(Y, Z);
+        }
+        if (X.length == 0 || Y.length == 0) return new XY(new int[0], new int[0]);
+
+        // Always shrink the larger side; never pad with unrelated columns.
+        if (X.length > Y.length) {
+            X = Arrays.copyOf(X, Y.length);
+        } else if (Y.length > X.length) {
+            Y = Arrays.copyOf(Y, X.length);
+        }
+
+        return new XY(X, Y);
+    }
 
     /**
      * Retrieves the block specification associated with this instance of IndTestBlocks.

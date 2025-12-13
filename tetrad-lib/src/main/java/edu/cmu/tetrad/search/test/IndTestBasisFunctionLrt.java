@@ -48,6 +48,7 @@ import java.util.*;
  * @author josephramsey
  * @author bryanandrews
  */
+@Deprecated
 public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalIndependenceTest, RowsSettable {
     /**
      * Represents the dataset used within the class for statistical analyses and computations.

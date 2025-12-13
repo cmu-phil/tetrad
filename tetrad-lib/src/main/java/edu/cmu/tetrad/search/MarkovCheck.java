@@ -1048,7 +1048,18 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             Set<IndependenceFact> mconn = new HashSet<>();
 
             if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG) {
-                Graph mag = GraphTransforms.zhangMagFromPag(graph);
+                Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
+
+                if (graph.paths().isLegalDag()) {
+                    mag = graph;
+                } else if (graph.paths().isLegalCpdag()) {
+                    mag = GraphTransforms.dagFromCpdag(graph);
+                } else if  (graph.paths().isLegalMag()) {
+                    mag = graph;
+                } else {
+                    mag = GraphTransforms.zhangMagFromPag(graph);
+                }
+
                 allIndependenceFacts = OrderedLocalMarkovProperty.getModel(mag);
             } else {
                 for (int i = 0; i < nodes.size(); i++) {

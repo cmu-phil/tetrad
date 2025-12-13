@@ -43,13 +43,13 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-@TestOfIndependence(
-        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
-        command = "bf-lr-test",
-        dataType = DataType.Mixed
-)
+//@TestOfIndependence(
+//        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
+//        command = "bf-lr-test",
+//        dataType = DataType.Mixed
+//)
 @Mixed
-//@Deprecated(since = "7.9", forRemoval = false)
+@Deprecated(since = "7.9", forRemoval = false)
 public class BasisFunctionLrt implements IndependenceWrapper {
 
     @Serial
