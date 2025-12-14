@@ -742,6 +742,19 @@ public class RankTests {
         SimpleMatrix Syy_c = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
         SimpleMatrix Sxy_c = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
 
+        // TODO Try:
+
+        // Symmetrize after Schur complement (important)
+        Sxx = Sxx.plus(Sxx.transpose()).divide(2.0);
+        Syy = Syy.plus(Syy.transpose()).divide(2.0);
+
+        // Add ridge AFTER partialing
+        double ridge = 1e-6; // try 1e-6, then 1e-4
+        for (int i = 0; i < Sxx.numRows(); i++) Sxx.set(i, i, Sxx.get(i,i) + ridge);
+        for (int i = 0; i < Syy.numRows(); i++) Syy.set(i, i, Syy.get(i,i) + ridge);
+
+        // End TODO
+
         // Reassemble a (|X|+|Y|)Ã(|X|+|Y|) covariance conditioned on Z:
         int p = X.length, q = Y.length;
         SimpleMatrix Scond = new SimpleMatrix(p + q, p + q);
@@ -899,6 +912,13 @@ public class RankTests {
 //        if (df <= 0) return 1.0;
 //
 //        return 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
+
+        Sxx = Sxx.plus(Sxx.transpose()).divide(2.0);
+        Syy = Syy.plus(Syy.transpose()).divide(2.0);
+
+//        double ridge = 1e-4; // try 1e-6, 1e-4
+//        for (int i = 0; i < Sxx.numRows(); i++) Sxx.set(i,i, Sxx.get(i,i) + ridge);
+//        for (int i = 0; i < Syy.numRows(); i++) Syy.set(i,i, Syy.get(i,i) + ridge);
 
         Whitening Wx = invSqrtPSD_rankAware(Sxx, 1e-10);
         Whitening Wy = invSqrtPSD_rankAware(Syy, 1e-10);

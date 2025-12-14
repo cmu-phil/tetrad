@@ -48,10 +48,10 @@ public final class SimulationTypes {
      * Constant <code>ADDITIVE_NOISE_MODEL="Additive Noise SEM"</code>
      */
     public static final String NONLINEAR_ADDITIVE_SEM = "Nonlinear Additive SEM (CAM)";
-    /**
-     * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear SEM"</code>
-     */
-    public static final String POST_NONLINEAR_MODEL = "Post-nonlinear SEM";
+//    /**
+//     * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear SEM"</code>
+//     */
+//    public static final String POST_NONLINEAR_MODEL = "Post-nonlinear SEM";
     /**
      * Constant <code>CAUSAL_PERCEPTRON_NETWORK="Causal Peceptron Network (CPN)"</code>
      */

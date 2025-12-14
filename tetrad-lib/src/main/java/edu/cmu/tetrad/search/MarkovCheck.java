@@ -1114,10 +1114,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                                 z = GraphUtils.markovBlanket(x, graph);
                                 break;
                             case RECURSIVE_MSEP:
-                                Map<Node, Set<Node>> ancestorMap = graph.paths().getAncestorsMap();
-
                                 try {
-                                    z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<Node>(), Set.of(), maxLength);
+                                    z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
                                 } catch (InterruptedException e) {
                                     throw new RuntimeException(e);
                                 }

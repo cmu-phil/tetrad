@@ -68,7 +68,7 @@ public class ParameterTab extends JPanel {
             SimulationTypes.NONLINEAR_ADDITIVE_SEM,
             SimulationTypes.GENERAL_NOISE_SEM,
             SimulationTypes.ADDITIVE_NOISE_SEM,
-            SimulationTypes.POST_NONLINEAR_MODEL,
+//            SimulationTypes.POST_NONLINEAR_MODEL,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES
@@ -199,9 +199,9 @@ public class ParameterTab extends JPanel {
 //                    case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
 //                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
 //                        break;
-                    case SimulationTypes.POST_NONLINEAR_MODEL:
-                        this.simulation.setSimulation(new PostnonlinearCausalModel(randomGraph), this.simulation.getParams());
-                        break;
+//                    case SimulationTypes.POST_NONLINEAR_MODEL:
+//                        this.simulation.setSimulation(new PostnonlinearSem(randomGraph), this.simulation.getParams());
+//                        break;
                     case SimulationTypes.GENERAL_NOISE_SEM:
                         this.simulation.setSimulation(new GeneralNoiseSimulation(randomGraph), this.simulation.getParams());
                         break;
@@ -249,9 +249,9 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.NONLINEAR_ADDITIVE_SEM:
                         this.simulation.setSimulation(new AdditiveAnmSimulator(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.POST_NONLINEAR_MODEL:
-                        this.simulation.setSimulation(new PostnonlinearCausalModel(randomGraph), this.simulation.getParams());
-                        break;
+//                    case SimulationTypes.POST_NONLINEAR_MODEL:
+//                        this.simulation.setSimulation(new PostnonlinearSem(randomGraph), this.simulation.getParams());
+//                        break;
                     case SimulationTypes.GENERAL_NOISE_SEM:
                         this.simulation.setSimulation(new GeneralNoiseSimulation(randomGraph), this.simulation.getParams());
                         break;

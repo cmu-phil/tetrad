@@ -145,19 +145,75 @@ public class GeneralNoiseSimulation {
             // Forward pass: Y = mlp(A)
             Y = mlp.forward(A, Z, Y, activationFunction, useFastTanh);
 
-            // write column + rescale
+//            // write column + rescale
             double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
             for (int i = 0; i < N; i++) {
                 double v = Y.data[i]; raw[i][j] = v;
                 if (v < min) min = v; if (v > max) max = v;
             }
-            if (rescaleMax > rescaleMin && max > min) {
-                double inR = (max - min), outR = (rescaleMax - rescaleMin);
-                for (int i = 0; i < N; i++) raw[i][j] = rescaleMin + outR * (raw[i][j] - min) / inR;
+//            if (rescaleMax > rescaleMin && max > min) {
+//                double inR = (max - min), outR = (rescaleMax - rescaleMin);
+//                for (int i = 0; i < N; i++) raw[i][j] = rescaleMin + outR * (raw[i][j] - min) / inR;
+//            }
+
+            // write column
+            for (int i = 0; i < N; i++) raw[i][j] = Y.data[i];
+
+            // robust rescale (percentile clip)
+            if (rescaleMax > rescaleMin) {
+                // You can tune these; 0.01/0.99 is a good default.
+                final double qLo = 0.01, qHi = 0.99;
+
+                double lo = quantileOfColumn(raw, j, qLo);
+                double hi = quantileOfColumn(raw, j, qHi);
+
+                // fallback if degenerate
+                if (!(hi > lo)) {
+                    // fall back to min2/max2 (or just skip scaling)
+                    double min2 = Double.POSITIVE_INFINITY, max2 = Double.NEGATIVE_INFINITY;
+                    for (int i = 0; i < N; i++) {
+                        double v = raw[i][j];
+                        if (v < min2) min2 = v;
+                        if (v > max2) max2 = v;
+                    }
+                    lo = min2; hi = max2;
+                }
+
+                if (hi > lo) {
+                    double outR = (rescaleMax - rescaleMin);
+                    double inR  = (hi - lo);
+                    for (int i = 0; i < N; i++) {
+                        double v = raw[i][j];
+                        // clip
+                        if (v < lo) v = lo;
+                        else if (v > hi) v = hi;
+                        // map
+                        raw[i][j] = rescaleMin + outR * (v - lo) / inR;
+                    }
+                }
             }
         }
 
         return new BoxDataSet(new DoubleDataBox(raw), new ArrayList<>(topo));
+    }
+
+    // Computes an approximate quantile of raw[0..N-1][col].
+    // Uses a copy + sort; O(N log N) per node, which is usually fine for simulation.
+    private static double quantileOfColumn(double[][] raw, int col, double q) {
+        int n = raw.length;
+        double[] tmp = new double[n];
+        for (int i = 0; i < n; i++) tmp[i] = raw[i][col];
+        Arrays.sort(tmp);
+
+        if (q <= 0) return tmp[0];
+        if (q >= 1) return tmp[n - 1];
+
+        double pos = q * (n - 1);
+        int lo = (int) Math.floor(pos);
+        int hi = (int) Math.ceil(pos);
+        if (hi == lo) return tmp[lo];
+        double w = pos - lo;
+        return tmp[lo] * (1.0 - w) + tmp[hi] * w;
     }
 
     // ------------------ Tiny EJML MLP ------------------

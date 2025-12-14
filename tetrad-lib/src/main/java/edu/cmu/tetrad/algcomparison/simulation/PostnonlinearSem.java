@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.PostnonlinearSem;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -39,11 +38,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class represents a post-nonlinear causal model.
+ * This class represents a post-nonlinear SEM model.
  *
  * @author josephramsey
  */
-public class PostnonlinearCausalModel implements Simulation {
+public class PostnonlinearSem implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -68,7 +67,7 @@ public class PostnonlinearCausalModel implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public PostnonlinearCausalModel(RandomGraph graph) {
+    public PostnonlinearSem(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -201,7 +200,7 @@ public class PostnonlinearCausalModel implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Nonlinear Additive Causal simulation using " + this.randomGraph.getDescription();
+        return "Post-Nonlinear SEM simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -210,7 +209,7 @@ public class PostnonlinearCausalModel implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "Post-nonlinear Causal Model Simulation";
+        return "Post-nonlinear SEM Simulation";
     }
 
     /**
@@ -226,15 +225,10 @@ public class PostnonlinearCausalModel implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        parameters.add(Params.AM_RESCALE_MIN);
-        parameters.add(Params.AM_RESCALE_MAX);
         parameters.add(Params.AM_BETA_ALPHA);
         parameters.add(Params.AM_BETA_BETA);
-//        parameters.add(Params.HIDDEN_DIMENSION);
-//        parameters.add(Params.INPUT_SCALE);
-        parameters.add(Params.COEF_LOW);
-        parameters.add(Params.COEF_HIGH);
-        parameters.add(Params.COEF_SYMMETRIC);
+        parameters.add(Params.HIDDEN_DIMENSION);
+        parameters.add(Params.INPUT_SCALE);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -286,13 +280,10 @@ public class PostnonlinearCausalModel implements Simulation {
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runSimulation(Graph graph, Parameters parameters) {
-        PostnonlinearSem generator = new PostnonlinearSem(
+        edu.cmu.tetrad.sem.PostnonlinearSem generator = new edu.cmu.tetrad.sem.PostnonlinearSem(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
-                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
-                parameters.getInt(Params.HIDDEN_DIMENSION), parameters.getDouble(Params.INPUT_SCALE),
-                parameters.getInt(Params.COEF_LOW), parameters.getDouble(Params.COEF_HIGH),
-                parameters.getBoolean(Params.COEF_SYMMETRIC));
+                parameters.getInt(Params.HIDDEN_DIMENSION), parameters.getDouble(Params.INPUT_SCALE));
 
         return generator.generateData();
     }

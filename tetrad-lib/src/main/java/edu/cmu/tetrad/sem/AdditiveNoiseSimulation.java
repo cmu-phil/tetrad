@@ -129,22 +129,78 @@ public class AdditiveNoiseSimulation {
                 for (int i = 0; i < N; i++) raw[i][j] = Y.data[i] + noise[i];
             }
 
-            // Optional per-column rescale to [rescaleMin, rescaleMax]
+//            // Optional per-column rescale to [rescaleMin, rescaleMax]
+//            if (rescaleMax > rescaleMin) {
+//                double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+//                for (int i = 0; i < N; i++) {
+//                    double v = raw[i][j];
+//                    if (v < min) min = v;
+//                    if (v > max) max = v;
+//                }
+//                if (max > min) {
+//                    double inR = (max - min), outR = (rescaleMax - rescaleMin);
+//                    for (int i = 0; i < N; i++) raw[i][j] = rescaleMin + outR * (raw[i][j] - min) / inR;
+//                }
+//            }
+
+            // Optional per-column *robust* rescale to [rescaleMin, rescaleMax]
+            // (percentile clip + linear map). Much less sensitive to outliers than min/max.
             if (rescaleMax > rescaleMin) {
-                double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
-                for (int i = 0; i < N; i++) {
-                    double v = raw[i][j];
-                    if (v < min) min = v;
-                    if (v > max) max = v;
+                final double qLo = 0.01;
+                final double qHi = 0.99;
+
+                double lo = quantileOfColumn(raw, j, qLo);
+                double hi = quantileOfColumn(raw, j, qHi);
+
+                // Fallback: if degenerate (or tiny N), fall back to min/max
+                if (!(hi > lo)) {
+                    double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+                    for (int i = 0; i < N; i++) {
+                        double v = raw[i][j];
+                        if (v < min) min = v;
+                        if (v > max) max = v;
+                    }
+                    lo = min;
+                    hi = max;
                 }
-                if (max > min) {
-                    double inR = (max - min), outR = (rescaleMax - rescaleMin);
-                    for (int i = 0; i < N; i++) raw[i][j] = rescaleMin + outR * (raw[i][j] - min) / inR;
+
+                if (hi > lo) {
+                    final double outR = (rescaleMax - rescaleMin);
+                    final double inR  = (hi - lo);
+
+                    for (int i = 0; i < N; i++) {
+                        double v = raw[i][j];
+
+                        // clip
+                        if (v < lo) v = lo;
+                        else if (v > hi) v = hi;
+
+                        // map
+                        raw[i][j] = rescaleMin + outR * (v - lo) / inR;
+                    }
                 }
             }
         }
 
         return new BoxDataSet(new DoubleDataBox(raw), new ArrayList<>(topo));
+    }
+
+    private static double quantileOfColumn(double[][] raw, int col, double q) {
+        int n = raw.length;
+        double[] tmp = new double[n];
+        for (int i = 0; i < n; i++) tmp[i] = raw[i][col];
+        Arrays.sort(tmp);
+
+        if (n == 0) return Double.NaN;
+        if (q <= 0.0) return tmp[0];
+        if (q >= 1.0) return tmp[n - 1];
+
+        double pos = q * (n - 1);
+        int lo = (int) Math.floor(pos);
+        int hi = (int) Math.ceil(pos);
+        if (hi == lo) return tmp[lo];
+        double w = pos - lo;
+        return tmp[lo] * (1.0 - w) + tmp[hi] * w;
     }
 
     // ------------------ Tiny EJML MLP ------------------

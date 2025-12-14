@@ -2199,7 +2199,7 @@ public class GridSearchEditor extends JPanel {
                 case 5:
                     yield AdditiveNoiseSimulation.class;
                 case 6:
-                    yield PostnonlinearCausalModel.class;
+                    yield PostnonlinearSem.class;
                 case 7:
                     yield edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation.class;
                 case 8:

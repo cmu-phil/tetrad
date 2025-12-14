@@ -73,6 +73,18 @@ public class RecursiveBlocking {
                                                   Set<Node> containing,
                                                   Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
+        return blockPathsRecursivelyVisit(
+                graph, x, y, containing, notFollowed,
+                graph.paths().getDescendantsMap(), maxPathLength, null
+        );
+    }
+
+    public static Set<Node> blockPathsRecursively2(Graph graph,
+                                                  Node x,
+                                                  Node y,
+                                                  Set<Node> containing,
+                                                  Set<Node> notFollowed,
+                                                  int maxPathLength) throws InterruptedException {
         RecursiveAdjustment adjustment = new RecursiveAdjustment(graph);
         List<Set<Node>> sets = adjustment.adjustmentSets(x, y, "PAG", 1, 8, 2, maxPathLength,
                 RecursiveAdjustment.ColliderPolicy.OFF, false, notFollowed, containing, Set.of());
@@ -82,11 +94,6 @@ public class RecursiveBlocking {
         } else {
             return null;
         }
-
-//        return blockPathsRecursivelyVisit(
-//                graph, x, y, containing, notFollowed,
-//                graph.paths().getDescendantsMap(), maxPathLength, null
-//        );
     }
 
 
@@ -116,6 +123,24 @@ public class RecursiveBlocking {
                                                   Set<Node> notFollowed,
                                                   int maxPathLength,
                                                   Knowledge knowledge) throws InterruptedException {
+
+//        RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph);
+//        recursiveAdjustment.setColliderPolicy(RecursiveAdjustment.ColliderPolicy.NONCOLLIDER_FIRST);
+//        recursiveAdjustment.setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SEARCH);
+////
+//        return recursiveAdjustment.adjustmentSets(
+//                x, y,
+//                "PAG",
+//                4,
+//                8,
+//                1,
+//                maxPathLength,
+//                RecursiveAdjustment.ColliderPolicy.PREFER_NONCOLLIDERS,
+//                false,
+//                Set.of(), Set.of(), Set.of()
+//        ).getFirst();
+
+
         return blockPathsRecursivelyVisit(
                 graph, x, y, containing, notFollowed,
                 graph.paths().getDescendantsMap(), maxPathLength, knowledge
