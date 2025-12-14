@@ -33,6 +33,7 @@ import edu.cmu.tetrad.annotation.*;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.DeprecationUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -194,6 +195,10 @@ public class AlgorithmCard extends JPanel {
      */
     private final boolean multiDataAlgo;
     private final BlockSpec blockSpec;
+    private final Parameters parameters;
+    // Persisted UI selections (stored in Parameters)
+    private static final String UI_IND_TEST = "ui.search.ind_test";
+    private static final String UI_SCORE    = "ui.search.score";
 
     /**
      * Updating test models.
@@ -216,6 +221,7 @@ public class AlgorithmCard extends JPanel {
         this.dataType = getDataType(algorithmRunner);
         this.desktop = (TetradDesktop) DesktopController.getInstance();
         this.multiDataAlgo = algorithmRunner.getSourceGraph() == null && algorithmRunner.getDataModelList().size() > 1;
+        this.parameters = algorithmRunner.getParameters();
 
         initComponents();
         initListeners();
@@ -290,6 +296,20 @@ public class AlgorithmCard extends JPanel {
                 validateAlgorithmOption();
             }
         });
+//        this.indTestComboBox.addActionListener(e -> {
+//            if (!this.updatingTestModels && this.indTestComboBox.getSelectedIndex() >= 0) {
+//                setIndepTestDescription();
+//
+//                AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
+//                Map<DataType, IndependenceTestModel> map = this.defaultIndTestModels.get(algoModel);
+//                if (map == null) {
+//                    map = new EnumMap<>(DataType.class);
+//                    this.defaultIndTestModels.put(algoModel, map);
+//                }
+//                map.put(this.dataType, this.indTestComboBox.getItemAt(this.indTestComboBox.getSelectedIndex()));
+//            }
+//        });
+
         this.indTestComboBox.addActionListener(e -> {
             if (!this.updatingTestModels && this.indTestComboBox.getSelectedIndex() >= 0) {
                 setIndepTestDescription();
@@ -300,9 +320,31 @@ public class AlgorithmCard extends JPanel {
                     map = new EnumMap<>(DataType.class);
                     this.defaultIndTestModels.put(algoModel, map);
                 }
-                map.put(this.dataType, this.indTestComboBox.getItemAt(this.indTestComboBox.getSelectedIndex()));
+                IndependenceTestModel sel = this.indTestComboBox.getItemAt(this.indTestComboBox.getSelectedIndex());
+                map.put(this.dataType, sel);
+
+                // NEW: persist selection in Parameters (use a stable identifier)
+                if (sel != null && sel.getIndependenceTest() != null && sel.getIndependenceTest().annotation() != null) {
+                    this.parameters.set(UI_IND_TEST, sel.getIndependenceTest().annotation().command());
+                    // or .name() if you prefer (command is usually the most stable/unique)
+                }
             }
         });
+
+//        this.scoreComboBox.addActionListener(e -> {
+//            if (!this.updatingScoreModels && this.scoreComboBox.getSelectedIndex() >= 0) {
+//                setScoreDescription();
+//
+//                AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
+//                Map<DataType, ScoreModel> map = this.defaultScoreModels.get(algoModel);
+//                if (map == null) {
+//                    map = new EnumMap<>(DataType.class);
+//                    this.defaultScoreModels.put(algoModel, map);
+//                }
+//                map.put(this.dataType, this.scoreComboBox.getItemAt(this.scoreComboBox.getSelectedIndex()));
+//            }
+//        });
+
         this.scoreComboBox.addActionListener(e -> {
             if (!this.updatingScoreModels && this.scoreComboBox.getSelectedIndex() >= 0) {
                 setScoreDescription();
@@ -313,7 +355,13 @@ public class AlgorithmCard extends JPanel {
                     map = new EnumMap<>(DataType.class);
                     this.defaultScoreModels.put(algoModel, map);
                 }
-                map.put(this.dataType, this.scoreComboBox.getItemAt(this.scoreComboBox.getSelectedIndex()));
+                ScoreModel sel = this.scoreComboBox.getItemAt(this.scoreComboBox.getSelectedIndex());
+                map.put(this.dataType, sel);
+
+                // NEW: persist selection in Parameters
+                if (sel != null && sel.getScore() != null && sel.getScore().annotation() != null) {
+                    this.parameters.set(UI_SCORE, sel.getScore().annotation().command());
+                }
             }
         });
     }
@@ -386,11 +434,17 @@ public class AlgorithmCard extends JPanel {
      *
      * @return a {@link edu.cmu.tetradapp.ui.model.ScoreModel} object
      */
+//    public ScoreModel getSelectedScore() {
+//        if (this.scoreComboBox.isEnabled()) {
+//            this.scoreComboBox.getItemAt(this.scoreComboBox.getSelectedIndex());
+//        }
+//
+//        return null;
+//    }
     public ScoreModel getSelectedScore() {
-        if (this.scoreComboBox.isEnabled()) {
-            this.scoreComboBox.getItemAt(this.scoreComboBox.getSelectedIndex());
+        if (this.scoreComboBox.isEnabled() && this.scoreComboBox.getSelectedIndex() >= 0) {
+            return this.scoreComboBox.getItemAt(this.scoreComboBox.getSelectedIndex());
         }
-
         return null;
     }
 
@@ -748,36 +802,72 @@ public class AlgorithmCard extends JPanel {
         if (this.indTestComboBox.getItemCount() > 0) {
             this.indTestComboBox.setEnabled(true);
 
-            // Retain your default selection behavior, falling back safely if filtered out.
-            Map<DataType, IndependenceTestModel> map = this.defaultIndTestModels.get(algoModel);
-            if (map == null) {
-                map = new EnumMap<>(DataType.class);
-                this.defaultIndTestModels.put(algoModel, map);
+            // 0) Try restore from Parameters first (if present and not filtered out)
+            IndependenceTestModel testModel = null;
+            String savedCmd = this.parameters.getString(UI_IND_TEST, null);
+            testModel = findTestByCommand(savedCmd);
+
+            // 1) Else fall back to your per-algo-per-datatype defaults
+            if (testModel == null) {
+                Map<DataType, IndependenceTestModel> map = this.defaultIndTestModels.get(algoModel);
+                if (map == null) {
+                    map = new EnumMap<>(DataType.class);
+                    this.defaultIndTestModels.put(algoModel, map);
+                }
+                testModel = map.get(this.dataType);
             }
 
-            IndependenceTestModel testModel = map.get(this.dataType);
+            // 2) Else fall back to global default
             if (testModel == null) {
                 testModel = IndependenceTestModels.getInstance().getDefaultModel(this.dataType);
             }
+
+            // 3) Else first available
             if (testModel == null) {
                 testModel = this.indTestComboBox.getItemAt(0);
-            } else {
-                // If the default isnât present after filtering, fall back to first item.
-                boolean present = false;
-                for (int i = 0; i < this.indTestComboBox.getItemCount(); i++) {
-                    if (this.indTestComboBox.getItemAt(i).equals(testModel)) {
-                        present = true;
-                        break;
-                    }
-                }
-                if (!present) testModel = this.indTestComboBox.getItemAt(0);
             }
 
+            this.updatingTestModels = true;        // <— important: prevent writing back while we programmatically select
             this.indTestComboBox.setSelectedItem(testModel);
-            this.indTestComboBox.getSelectedIndex(); // force selection commit
+            this.updatingTestModels = false;
+
         } else {
             this.indTestComboBox.setEnabled(false);
         }
+
+//        if (this.indTestComboBox.getItemCount() > 0) {
+//            this.indTestComboBox.setEnabled(true);
+//
+//            // Retain your default selection behavior, falling back safely if filtered out.
+//            Map<DataType, IndependenceTestModel> map = this.defaultIndTestModels.get(algoModel);
+//            if (map == null) {
+//                map = new EnumMap<>(DataType.class);
+//                this.defaultIndTestModels.put(algoModel, map);
+//            }
+//
+//            IndependenceTestModel testModel = map.get(this.dataType);
+//            if (testModel == null) {
+//                testModel = IndependenceTestModels.getInstance().getDefaultModel(this.dataType);
+//            }
+//            if (testModel == null) {
+//                testModel = this.indTestComboBox.getItemAt(0);
+//            } else {
+//                // If the default isnât present after filtering, fall back to first item.
+//                boolean present = false;
+//                for (int i = 0; i < this.indTestComboBox.getItemCount(); i++) {
+//                    if (this.indTestComboBox.getItemAt(i).equals(testModel)) {
+//                        present = true;
+//                        break;
+//                    }
+//                }
+//                if (!present) testModel = this.indTestComboBox.getItemAt(0);
+//            }
+//
+//            this.indTestComboBox.setSelectedItem(testModel);
+//            this.indTestComboBox.getSelectedIndex(); // force selection commit
+//        } else {
+//            this.indTestComboBox.setEnabled(false);
+//        }
 
         if (this.indTestComboBox.getSelectedIndex() == -1) {
             this.testDescTextArea.setText("");
@@ -837,39 +927,93 @@ public class AlgorithmCard extends JPanel {
         if (this.scoreComboBox.getItemCount() > 0) {
             this.scoreComboBox.setEnabled(true);
 
-            Map<DataType, ScoreModel> map = this.defaultScoreModels.get(algoModel);
-            if (map == null) {
-                map = new EnumMap<>(DataType.class);
-                this.defaultScoreModels.put(algoModel, map);
+            ScoreModel scoreModel = null;
+            String savedCmd = this.parameters.getString(UI_SCORE, null);
+            scoreModel = findScoreByCommand(savedCmd);
+
+            if (scoreModel == null) {
+                Map<DataType, ScoreModel> map = this.defaultScoreModels.get(algoModel);
+                if (map == null) {
+                    map = new EnumMap<>(DataType.class);
+                    this.defaultScoreModels.put(algoModel, map);
+                }
+                scoreModel = map.get(this.dataType);
             }
 
-            // Prefer the saved default; fall back to current global default; else first available
-            ScoreModel scoreModel = map.get(this.dataType);
             if (scoreModel == null) {
                 scoreModel = ScoreModels.getInstance().getDefaultModel(this.dataType);
             }
+
             if (scoreModel == null) {
                 scoreModel = this.scoreComboBox.getItemAt(0);
-            } else {
-                // If filtered out, fall back to first item
-                boolean present = false;
-                for (int i = 0; i < this.scoreComboBox.getItemCount(); i++) {
-                    if (this.scoreComboBox.getItemAt(i).equals(scoreModel)) {
-                        present = true;
-                        break;
-                    }
-                }
-                if (!present) scoreModel = this.scoreComboBox.getItemAt(0);
             }
 
+            this.updatingScoreModels = true;
             this.scoreComboBox.setSelectedItem(scoreModel);
+            this.updatingScoreModels = false;
+
         } else {
             this.scoreComboBox.setEnabled(false);
         }
 
+//        if (this.scoreComboBox.getItemCount() > 0) {
+//            this.scoreComboBox.setEnabled(true);
+//
+//            Map<DataType, ScoreModel> map = this.defaultScoreModels.get(algoModel);
+//            if (map == null) {
+//                map = new EnumMap<>(DataType.class);
+//                this.defaultScoreModels.put(algoModel, map);
+//            }
+//
+//            // Prefer the saved default; fall back to current global default; else first available
+//            ScoreModel scoreModel = map.get(this.dataType);
+//            if (scoreModel == null) {
+//                scoreModel = ScoreModels.getInstance().getDefaultModel(this.dataType);
+//            }
+//            if (scoreModel == null) {
+//                scoreModel = this.scoreComboBox.getItemAt(0);
+//            } else {
+//                // If filtered out, fall back to first item
+//                boolean present = false;
+//                for (int i = 0; i < this.scoreComboBox.getItemCount(); i++) {
+//                    if (this.scoreComboBox.getItemAt(i).equals(scoreModel)) {
+//                        present = true;
+//                        break;
+//                    }
+//                }
+//                if (!present) scoreModel = this.scoreComboBox.getItemAt(0);
+//            }
+//
+//            this.scoreComboBox.setSelectedItem(scoreModel);
+//        } else {
+//            this.scoreComboBox.setEnabled(false);
+//        }
+
         if (this.scoreComboBox.getSelectedIndex() == -1) {
             this.scoreDescTextArea.setText("");
         }
+    }
+
+    private IndependenceTestModel findTestByCommand(String cmd) {
+        if (cmd == null) return null;
+        for (int i = 0; i < this.indTestComboBox.getItemCount(); i++) {
+            IndependenceTestModel m = this.indTestComboBox.getItemAt(i);
+            if (m != null && m.getIndependenceTest() != null && m.getIndependenceTest().annotation() != null) {
+                if (cmd.equals(m.getIndependenceTest().annotation().command())) return m;
+            }
+        }
+        return null;
+    }
+
+    private ScoreModel findScoreByCommand(String cmd) {
+        if (cmd == null) return null;
+        for (int i = 0; i < this.scoreComboBox.getItemCount(); i++) {
+            ScoreModel m = this.scoreComboBox.getItemAt(i);
+            if (m != null && m.getScore() != null && m.getScore().annotation() != null) {
+                if (cmd.equals(m.getScore().annotation().command())) return m;
+            }
+        }
+        return null;
     }
 
     private void refreshTestAndScoreList() {

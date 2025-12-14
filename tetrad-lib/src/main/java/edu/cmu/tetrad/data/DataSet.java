@@ -425,6 +425,11 @@ public interface DataSet extends DataModel {
      * @param variable the instance of Variable to be set
      */
     void setVariable(int j, Node variable);
+
+    default int getColumn(String name) {
+        Node v = getVariable(name);
+        return v == null ? -1 : getColumn(v);
+    }
 }
 
 

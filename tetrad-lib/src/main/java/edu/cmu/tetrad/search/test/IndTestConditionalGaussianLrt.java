@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.score.ConditionalGaussianLikelihood;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.special.Gamma;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -176,6 +177,28 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
             } else {
                 pValue = 1.0 - chisq.cumulativeProbability(x1);
             }
+
+//            if (dof_diff <= 0) {
+//                throw new IllegalStateException("Non-positive dof in CG-LRT: dof_diff=" + dof_diff
+//                                                + " for " + LogUtilsSearch.independenceFact(x, y, _z));
+//            }
+//
+//            if (x1 <= 0.0) {
+//                // Covers x1 == 0 and tiny negative values from roundoff.
+//                pValue = 1.0;
+//            } else if (Double.isInfinite(x1)) {
+//                pValue = 0.0;
+//            } else {
+//                // Stable upper-tail probability: P(ChiSq_{dof} >= x1)
+//                double a = 0.5 * dof_diff;
+//                double xx = 0.5 * x1;
+//                pValue = Gamma.regularizedGammaQ(a, xx);
+//            }
+//
+//            // Optional: if you want to avoid exact 0/1 in histograms due to numeric extremes:
+//            final double EPS = 1e-16; // or 1e-12 if you want a more visible effect
+//            if (pValue < EPS) pValue = EPS;
+//            else if (pValue > 1.0 - EPS) pValue = 1.0 - EPS;
         }
 
         this.pValue = pValue;
