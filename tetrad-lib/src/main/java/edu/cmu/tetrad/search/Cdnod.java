@@ -16,24 +16,14 @@ import java.util.*;
 
 /**
  * The {@code Cdnod} class implements the causal discovery algorithm for detecting changing dependencies with respect to
- * a change index variable in a dataset.
+ * context variables (Tier-0 in {@link Knowledge}).
  *
- * <p>The algorithm is capable of orienting edges in a graph based on statistical
- * tests, knowledge constraints, and user-defined parameters. It also supports conservative decision-making and
- * constraints on collider orientations.</p>
+ * <p><b>Important behavioral change:</b> This implementation no longer requires a single context variable to be the last
+ * column. Instead, <b>ALL Tier-0 variables</b> in the supplied {@link Knowledge} are treated as context variables
+ * (consistent with CD-NOD-PAG).</p>
  *
- * <p>This class extends the functionality of {@code IGraphSearch} and provides methods
- * for configuring the statistical independence test, working dataset, maximum conditioning depth, and timeout
- * settings.</p>
- * <p>
- * Key Features:
- * <ul>
- *   <li>Searches for a graph representing causal structure based on a change index variable.</li>
- *   <li>Provides support for collider orientation with both conservative logic and
- *       maximum p-margin decisions.</li>
- *   <li>Enables customization of constraints using a {@code Knowledge} object.</li>
- *   <li>Supports timeout settings to limit the duration of computations.</li>
- * </ul>
+ * <p>Optionally, contexts can be excluded from conditioning sets (enabled by default) to match the PAG runner behavior
+ * ({@code withExcludeContextsFromS(true)} in {@code CdnodPag}).</p>
  */
 public final class Cdnod implements IGraphSearch {
 
@@ -44,15 +34,24 @@ public final class Cdnod implements IGraphSearch {
     private final boolean verbose;
     private final double maxPMargin;         // tie-guard for MAX_P (0.0 = classic)
     private final int depth;                 // S-size cap; also applied to FAS for consistency
+
     // --- core config ---
     private IndependenceTest test;
-    private DataSet dataWithC;               // MUST be set before search(); last column is C
+    private DataSet data;                    // dataset containing all variables (contexts may be anywhere)
+
     // --- runtime ---
     private long timeoutMs = -1;
     private long startTimeMs = 0;
 
+    // --- derived per run() ---
+    private Set<Node> contextNodes = Collections.emptySet();
+
+    // --- behavior flags ---
+    // Match CD-NOD-PAG: exclude contexts from conditioning sets by default.
+    private final boolean excludeContextsFromS = true;
+
     private Cdnod(IndependenceTest test,
-                  DataSet dataWithC,
+                  DataSet data,
                   double alpha,
                   boolean stable,
                   ColliderOrientationStyle colliderStyle,
@@ -61,7 +60,7 @@ public final class Cdnod implements IGraphSearch {
                   double maxPMargin,
                   int depth) {
         this.test = test;
-        this.dataWithC = dataWithC; // may be null; user can set later
+        this.data = data; // may be null; user can set later
         this.alpha = alpha;
         this.stable = stable;
         this.colliderStyle = colliderStyle;
@@ -71,6 +70,12 @@ public final class Cdnod implements IGraphSearch {
         this.depth = depth;
     }
 
+    /**
+     * Backwards-compatible helper: append a single continuous change-index column as the last column.
+     * <p>
+     * NOTE: This is no longer required for CD-NOD; contexts are read from Knowledge tier 0. This helper remains to
+     * support older calling code that supplies (X, cIndex).
+     */
     private static DataSet appendChangeIndexAsLastColumn(DataSet dataX, double[] cIndex, String cName) {
         if (cIndex.length != dataX.getNumRows())
             throw new IllegalArgumentException("Length mismatch: cIndex vs rows.");
@@ -91,27 +96,22 @@ public final class Cdnod implements IGraphSearch {
         return new BoxDataSet(box, vars);
     }
 
-    private static void ensureLastIsChangeIndex(DataSet data) {
-        if (data.getNumColumns() < 2) {
-            throw new IllegalArgumentException("Expect at least one X column plus C as last column.");
-        }
-    }
-
     // =============== IGraphSearch ===============
 
     @Override
     public Graph search() throws InterruptedException {
-        if (dataWithC == null) {
-            throw new IllegalStateException("Cdnod: dataWithC is null. Provide a DataSet whose last column is C, " +
-                                            "or use the Builder.dataAndIndex(...) to append C before search().");
+        if (data == null) {
+            throw new IllegalStateException("Cdnod: data is null. Provide a DataSet via Builder.data(...), " +
+                                            "or use Builder.dataAndIndex(...) to append a column before search().");
         }
-        ensureLastIsChangeIndex(dataWithC);
-        // Optional: ensure test variables match dataset variables
+
+        // Ensure test variables match dataset variables
         List<Node> testVars = test.getVariables();
-        if (!testVars.equals(dataWithC.getVariables())) {
-            throw new IllegalStateException("Cdnod: IndependenceTest variables must match dataWithC variables (same order).");
+        if (!testVars.equals(data.getVariables())) {
+            throw new IllegalStateException("Cdnod: IndependenceTest variables must match data variables (same order).");
         }
-        return run(dataWithC);
+
+        return run(data);
     }
 
     @Override
@@ -139,28 +139,24 @@ public final class Cdnod implements IGraphSearch {
     /**
      * Sets the dataset to be used in this instance.
      *
-     * @param dataWithC the dataset to be assigned
+     * @param data the dataset to be assigned
      */
-    public void setDataWithC(DataSet dataWithC) {
-        this.dataWithC = dataWithC;
+    public void setData(DataSet data) {
+        this.data = data;
     }
 
     /**
-     * Updates the internal dataset by appending a change index as the last column.
-     * This method modifies the data to include an additional column (defined by the provided change index and name)
-     * and stores the updated dataset for further processing.
-     *
-     * @param dataX the original dataset to which the change index will be appended
-     * @param cIndex an array representing the change index values to be incorporated into the dataset
-     * @param cName the name of the new column that will represent the change index
+     * Backwards-compatible setter that appends a single change-index column as the last column and stores that as data.
+     * <p>
+     * NOTE: contexts are read from Knowledge tier 0. If you want this appended column treated as a context, put its
+     * name in tier 0 of the Knowledge you pass in (e.g., "C").
      */
     public void setDataAndIndex(DataSet dataX, double[] cIndex, String cName) {
-        this.dataWithC = appendChangeIndexAsLastColumn(dataX, cIndex, cName);
+        this.data = appendChangeIndexAsLastColumn(dataX, cIndex, cName);
     }
 
     /**
-     * Sets the timeout value in milliseconds for this instance. This value determines the maximum time allowed for
-     * certain operations before they are interrupted or terminated.
+     * Sets the timeout value in milliseconds for this instance.
      *
      * @param timeoutMs the timeout in milliseconds
      */
@@ -170,8 +166,11 @@ public final class Cdnod implements IGraphSearch {
 
     // =============== Core ===============
 
-    private Graph run(DataSet dataAug) throws InterruptedException {
+    private Graph run(DataSet dataAll) throws InterruptedException {
         this.startTimeMs = System.currentTimeMillis();
+
+        // Resolve contexts from Knowledge tier 0 (CD-NOD-PAG semantics).
+        this.contextNodes = resolveContextNodesTier0(dataAll);
 
         // 1) Skeleton (FAS)
         Fas fas = new Fas(test);
@@ -186,16 +185,28 @@ public final class Cdnod implements IGraphSearch {
         Graph g = fas.search();
         SepsetMap sepsets = fas.getSepsets();
 
-        // 2) Force C -> X where adjacent (respect knowledge/tiers)
-        Node C = dataAug.getVariable(dataAug.getNumColumns() - 1);
-        if (verbose) TetradLogger.getInstance().log("CD-NOD: Forcing " + C.getName() + " -> X");
-        for (Node nbr : new ArrayList<>(g.getAdjacentNodes(C))) {
-            String from = C.getName(), to = nbr.getName();
-            if (knowledgeForbids(from, to) || knowledgeRequires(to, from)) {
-                continue; // skip if forbidden or opposite required
+        // If no contexts were provided, we just do PC-style orientation and return.
+        if (contextNodes.isEmpty()) {
+            if (verbose) {
+                TetradLogger.getInstance().log("CD-NOD: No Tier-0 contexts in Knowledge; skipping context forcing.");
             }
-            g.removeEdges(C, nbr);
-            g.addDirectedEdge(C, nbr);
+        } else {
+            // 2) Force Context -> X where adjacent (respect knowledge/tiers)
+            if (verbose) {
+                List<String> cn = contextNodes.stream().map(Node::getName).sorted().toList();
+                TetradLogger.getInstance().log("CD-NOD: Forcing Context -> X for contexts=" + cn);
+            }
+            for (Node c : contextNodes) {
+                for (Node nbr : new ArrayList<>(g.getAdjacentNodes(c))) {
+                    if (contextNodes.contains(nbr)) continue; // do not force among contexts
+                    String from = c.getName(), to = nbr.getName();
+                    if (knowledgeForbids(from, to) || knowledgeRequires(to, from)) {
+                        continue; // skip if forbidden or opposite required
+                    }
+                    g.removeEdges(c, nbr);
+                    g.addDirectedEdge(c, nbr);
+                }
+            }
         }
 
         // 3) UC orientation per style
@@ -209,6 +220,25 @@ public final class Cdnod implements IGraphSearch {
         meek.orientImplied(g);
 
         return g;
+    }
+
+    /**
+     * Context semantics: all Tier-0 variables in {@link Knowledge} are treated as contexts.
+     * Any Tier-0 names not present in the DataSet are silently ignored (matches the PAG runner style).
+     */
+    private Set<Node> resolveContextNodesTier0(DataSet dataAll) {
+        if (knowledge == null) return Collections.emptySet();
+        Set<Node> out = new LinkedHashSet<>();
+        try {
+            List<String> tier0 = knowledge.getTier(0);
+            for (String name : tier0) {
+                Node v = dataAll.getVariable(name);
+                if (v != null) out.add(v);
+            }
+        } catch (Throwable ignored) {
+            // If tier APIs aren't available in this Knowledge version, fall back to empty.
+        }
+        return out;
     }
 
     // ------------- collider orientation (SEPSETS / CONSERVATIVE / MAX_P) --------------
@@ -332,6 +362,13 @@ public final class Cdnod implements IGraphSearch {
         List<Node> adjy = new ArrayList<>(g.getAdjacentNodes(y));
         adjx.remove(y);
         adjy.remove(x);
+
+        // Match CD-NOD-PAG: exclude contexts from S (conditioning candidates).
+        if (excludeContextsFromS && contextNodes != null && !contextNodes.isEmpty()) {
+            adjx.removeAll(contextNodes);
+            adjy.removeAll(contextNodes);
+        }
+
         adjx.sort(Comparator.comparing(Node::getName));
         adjy.sort(Comparator.comparing(Node::getName));
 
@@ -434,57 +471,27 @@ public final class Cdnod implements IGraphSearch {
      * Enumeration representing different strategies for orienting colliders in causal discovery.
      */
     public enum ColliderOrientationStyle {
-        /**
-         * Orient based on separating sets derived from the data. Each pair of variables is analyzed to determine
-         * whether a separating set exists to justify collider orientation.
-         */
         SEPSETS,
-        /**
-         * Apply a conservative approach to collider orientation, favoring ambiguity when evidence for orientation is
-         * inconclusive. This approach ensures orientational robustness under stricter constraints.
-         */
         CONSERVATIVE,
-        /**
-         * Decide collider orientation by comparing the maximum p-value margins between two sides (includes given
-         * variable vs excludes given variable). The decision is made based on which side has a strictly larger best
-         * p-value over a specified threshold margin.
-         */
         MAX_P
     }
 
-    /**
-     * Represents the possible outcomes when evaluating the presence of a collider in a causal graph under different
-     * conditions or testing scenarios.
-     * <p>
-     * The enumerations are used in methods related to the identification and orientation of colliders during causal
-     * structure learning, particularly within constraints-based or score-based search algorithms.
-     */
     private enum ColliderOutcome {
-        /**
-         * Indicates that the nodes involved are conditionally independent and form a collider.
-         */
         INDEPENDENT,
-        /**
-         * Indicates that the nodes involved are conditionally dependent under the given test.
-         */
         DEPENDENT,
-        /**
-         * Indicates that the determination of a collider is uncertain due to conflicting evidence.
-         */
         AMBIGUOUS,
-        /**
-         * Indicates that no valid separating set exists for the evaluated nodes within the given constraints.
-         */
         NO_SEPSET
     }
 
     /**
-     * Builder class for creating instances of the Cdnod class with customized parameters. The Builder provides a
-     * flexible and fluent API for setting optional configurations in the resulting Cdnod instance.
+     * Builder class for creating instances of the Cdnod class with customized parameters.
+     *
+     * <p><b>Note:</b> This builder remains backwards-compatible: you may still call {@code dataAndIndex(...)} to append a
+     * "C" column. But CD-NOD now determines contexts from Knowledge tier 0, not from column position.</p>
      */
     public static final class Builder {
         private IndependenceTest test;
-        private DataSet dataWithC;
+        private DataSet data;       // renamed from dataWithC (but keep semantics)
         private DataSet dataX;
         private double[] cIndex;
         private String cName = "C";
@@ -497,43 +504,25 @@ public final class Cdnod implements IGraphSearch {
         private double maxPMargin = 0.0;
         private int depth = -1;
 
-        /**
-         * Constructs a new instance of the Builder class. Instantiates an object used for configuring and creating
-         * instances of {@link Cdnod}.
-         */
         public Builder() {
         }
 
-        /**
-         * Sets the {@link IndependenceTest} instance to be used by the {@code Builder}.
-         *
-         * @param t The {@link IndependenceTest} instance to be set. This parameter must not be null.
-         * @return The current Builder instance for method chaining.
-         * @throws NullPointerException If the provided {@link IndependenceTest} instance is null.
-         */
         public Builder test(IndependenceTest t) {
             this.test = Objects.requireNonNull(t);
             return this;
         }
 
         /**
-         * Provide a DataSet that ALREADY ends with C as the last column.
-         *
-         * @param dataWithC The {@link DataSet} instance to be set. This parameter must not be null.
-         * @return The current Builder instance for method chaining.
+         * Provide a DataSet containing all variables (contexts may be anywhere).
          */
-        public Builder data(DataSet dataWithC) {
-            this.dataWithC = dataWithC;
+        public Builder data(DataSet data) {
+            this.data = data;
             return this;
         }
 
         /**
-         * Provide X and a continuous change index C to append as the last column.
-         *
-         * @param dataX  The {@link DataSet} instance to be set. This parameter must not be null.
-         * @param cIndex The continuous change index C to be appended. This parameter must not be null.
-         * @param cName  The name of the continuous change index C. This parameter must not be null.
-         * @return The current Builder instance for method chaining.
+         * Backwards-compatible: provide X and a continuous change index C to append as the last column.
+         * If you want the appended column to be treated as a context, add its name (default "C") to Knowledge tier 0.
          */
         public Builder dataAndIndex(DataSet dataX, double[] cIndex, String cName) {
             this.dataX = dataX;
@@ -542,104 +531,44 @@ public final class Cdnod implements IGraphSearch {
             return this;
         }
 
-        /**
-         * Sets the alpha value to be used by the {@code Builder}. The alpha value typically represents the significance
-         * level for statistical tests in the constructed object.
-         *
-         * @param a The alpha value to be set. This parameter must be a non-negative double.
-         * @return The current Builder instance for method chaining.
-         */
         public Builder alpha(double a) {
             this.alpha = a;
             return this;
         }
 
-        /**
-         * Configures whether the builder operates in a stable mode. This can affect the behavior of the resulting
-         * object to ensure stability.
-         *
-         * @param s A boolean indicating whether stability should be enabled (true) or disabled (false).
-         * @return The current Builder instance for method chaining.
-         */
         public Builder stable(boolean s) {
             this.stable = s;
             return this;
         }
 
-        /**
-         * Sets the {@link ColliderOrientationStyle} to be used by the {@code Builder}. The
-         * {@link ColliderOrientationStyle} determines the strategy for orienting colliders in causal discovery, such as
-         * separating sets, conservative approaches, or using maximum p-value margins.
-         *
-         * @param c The {@link ColliderOrientationStyle} to be set. This parameter must not be null.
-         * @return The current {@code Builder} instance for method chaining.
-         * @throws NullPointerException If the provided {@link ColliderOrientationStyle} is null.
-         */
         public Builder colliderStyle(ColliderOrientationStyle c) {
             this.colliderStyle = c;
             return this;
         }
 
-        /**
-         * Sets the {@link Knowledge} instance to be used by the {@code Builder}. If the provided {@link Knowledge}
-         * instance is null, a new instance of {@link Knowledge} is created.
-         *
-         * @param k The {@link Knowledge} instance to be set. This parameter can be null.
-         * @return The current {@code Builder} instance for method chaining.
-         */
         public Builder knowledge(Knowledge k) {
             this.knowledge = (k == null ? new Knowledge() : new Knowledge(k));
             return this;
         }
 
-        /**
-         * Configures whether the builder operates in verbose mode. When enabled, verbose mode may produce more detailed
-         * logs, messages, or debug outputs during the building process, depending on the specific implementation of the
-         * builder or the constructed object.
-         *
-         * @param v A boolean indicating whether verbose mode should be enabled (true) or disabled (false).
-         * @return The current Builder instance for method chaining.
-         */
         public Builder verbose(boolean v) {
             this.verbose = v;
             return this;
         }
 
-        /**
-         * Sets the maximum p-value margin to be used by the {@code Builder}. If the provided value is negative, it is
-         * set to 0.0.
-         *
-         * @param m The maximum p-value margin to be set. This parameter must be a non-negative double.
-         * @return The current {@code Builder} instance for method chaining.
-         */
         public Builder maxPMargin(double m) {
             this.maxPMargin = Math.max(0.0, m);
             return this;
         }
 
-        /**
-         * Sets the depth to be used by the {@code Builder}. The depth typically represents a parameter for controlling
-         * the extent or level of operations in the constructed object.
-         *
-         * @param d The depth value to be set. This parameter must be a valid integer.
-         * @return The current {@code Builder} instance for method chaining.
-         */
         public Builder depth(int d) {
             this.depth = d;
             return this;
         }
 
-        /**
-         * Builds and returns an instance of {@link Cdnod} using the parameters specified in the {@code Builder}. The
-         * method constructs the {@link Cdnod} object based on the provided or default configurations, ensuring that all
-         * required parameters have been properly initialized.
-         *
-         * @return A newly constructed {@link Cdnod} instance.
-         * @throws IllegalStateException If the {@link IndependenceTest} is not set before invoking this method.
-         */
         public Cdnod build() {
             if (test == null) throw new IllegalStateException("IndependenceTest must be provided.");
-            DataSet working = dataWithC;
+            DataSet working = data;
             if (working == null && dataX != null && cIndex != null) {
                 working = appendChangeIndexAsLastColumn(dataX, cIndex, cName);
             }
