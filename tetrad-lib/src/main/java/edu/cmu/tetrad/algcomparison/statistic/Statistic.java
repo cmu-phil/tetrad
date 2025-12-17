@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -36,6 +37,7 @@ public interface Statistic extends Serializable {
     /**
      * Constant <code>serialVersionUID=23L</code>
      */
+    @Serial
     long serialVersionUID = 23L;
 
     /**
