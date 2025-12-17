@@ -75,7 +75,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        return getValue(null, estGraph, trueGraph, dataModel, parameters);
+        return getValue(null, trueGraph, estGraph, dataModel, parameters);
     }
 
     /**
