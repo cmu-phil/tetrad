@@ -25,8 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -174,7 +173,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * based on Fisher's Z-transformation. It serves as the primary tool for conditional independence checks in related
      * algorithms or workflows.
      */
-    private IndependenceWrapper markovCheckerIndependenceWrapper = new FisherZ();
+    private IndependenceWrapper markovCheckerIndependenceWrapper = new DegenerateGaussianLrt();
     /**
      * Represents the type of conditioning set used in the Markov checker. The variable defines how the conditioning set
      * is categorized or scoped, influencing the analysis process in probabilistic or causal models. It is initialized
@@ -704,6 +703,26 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return (LinkedList<MyTableColumn>) parameters.get("algcomparison.selectedTableColumns");
     }
 
+//    /**
+//     * Initializes the necessary variables if they are null.
+//     * <p>
+//     * This method checks if the selectedSimulations, selectedAlgorithms, selectedStatistics, and selectedParameters
+//     * variables are null. If any of them is null, it calls the initializeSimulationsEtc() method to initialize them.
+//     * <p>
+//     * It also checks if the selectedParameters variable is null. If it is null, it initializes it as an empty
+//     * LinkedList.
+//     * <p>
+//     * It then checks if the simulationClasses, algorithmClasses, and statisticsClasses variables are null. If any of
+//     * them is null, it calls the initializeClasses() method to initialize them.
+//     * <p>
+//     * Finally, it checks if the algNames, statNames, and simNames variables are null. If any of them is null, it calls
+//     * the initializeNames() method to initialize them.
+//     */
+//    private void initializeIfNull() {
+//        initializeClasses();
+//        initializeNames();
+//    }
+
     /**
      * Initializes the necessary variables if they are null.
      * <p>
@@ -720,8 +739,15 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * the initializeNames() method to initialize them.
      */
     private void initializeIfNull() {
-        initializeClasses();
-        initializeNames();
+        // Only (re)discover classes if not already available.
+        if (simulationClasses == null || algorithmClasses == null || statisticsClasses == null) {
+            initializeClasses();
+        }
+
+        // Only (re)build names if not already available.
+        if (algNames == null || statNames == null || simNames == null) {
+            initializeNames();
+        }
     }
 
     private List<String> getSelectedParameters() {
@@ -732,6 +758,15 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return (LinkedList<String>) parameters.get("algcomparison.selectedParameters");
     }
 
+//    /**
+//     * Initializes the necessary simulation, algorithm, and statistics classes.
+//     */
+//    private void initializeClasses() {
+//        simulationClasses = findSimulationClasses();
+//        algorithmClasses = findAlgorithmClasses();
+//        statisticsClasses = findStatisticsClasses();
+//    }
+
     /**
      * Initializes the necessary simulation, algorithm, and statistics classes.
      */
@@ -741,18 +776,138 @@ public class GridSearchModel implements SessionModel, GraphSource {
         statisticsClasses = findStatisticsClasses();
     }
 
+//    /**
+//     * Initializes the names of algorithms, statistics, and simulations.
+//     */
+//    private void initializeNames() {
+//        algNames = getAlgorithmNamesFromAnnotations(algorithmClasses);
+//        statNames = getStatisticsNamesFromImplementations(statisticsClasses);
+//        simNames = getSimulationNamesFromImplementations(simulationClasses);
+//
+//        this.algNames.sort(String.CASE_INSENSITIVE_ORDER);
+//        this.statNames.sort(String.CASE_INSENSITIVE_ORDER);
+//        this.simNames.sort(String.CASE_INSENSITIVE_ORDER);
+//    }
+
     /**
      * Initializes the names of algorithms, statistics, and simulations.
      */
     private void initializeNames() {
-        algNames = getAlgorithmNamesFromAnnotations(algorithmClasses);
-        statNames = getStatisticsNamesFromImplementations(statisticsClasses);
-        simNames = getSimulationNamesFromImplementations(simulationClasses);
+        // Build NAME<->CLASS pairs and sort the pairs together, so indices always match.
 
-        this.algNames.sort(String.CASE_INSENSITIVE_ORDER);
-        this.statNames.sort(String.CASE_INSENSITIVE_ORDER);
-        this.simNames.sort(String.CASE_INSENSITIVE_ORDER);
+        // ---- Algorithms ----
+        List<NamedClass<Algorithm>> algPairs = getAlgorithmNameClassPairs(algorithmClasses);
+        algPairs.sort(Comparator.comparing(NamedClass::name, String.CASE_INSENSITIVE_ORDER));
+        this.algorithmClasses = new ArrayList<>();
+        this.algNames = new ArrayList<>();
+        for (NamedClass<Algorithm> p : algPairs) {
+            this.algorithmClasses.add(p.clazz());
+            this.algNames.add(p.name());
+        }
+
+        // ---- Statistics ----
+        List<NamedClass<Statistic>> statPairs = getStatisticNameClassPairs(statisticsClasses);
+        statPairs.sort(Comparator.comparing(NamedClass::name, String.CASE_INSENSITIVE_ORDER));
+        this.statisticsClasses = new ArrayList<>();
+        this.statNames = new ArrayList<>();
+        for (NamedClass<Statistic> p : statPairs) {
+            this.statisticsClasses.add(p.clazz());
+            this.statNames.add(p.name());
+        }
+
+        // ---- Simulations ----
+        List<NamedClass<Simulation>> simPairs = getSimulationNameClassPairs(simulationClasses);
+        simPairs.sort(Comparator.comparing(NamedClass::name, String.CASE_INSENSITIVE_ORDER));
+        this.simulationClasses = new ArrayList<>();
+        this.simNames = new ArrayList<>();
+        for (NamedClass<Simulation> p : simPairs) {
+            this.simulationClasses.add(p.clazz());
+            this.simNames.add(p.name());
+        }
+
+        // IMPORTANT: Do NOT independently sort algNames/statNames/simNames here.
+        // Doing so breaks index alignment with the corresponding *Classes lists.
     }
+
+    private List<NamedClass<Algorithm>> getAlgorithmNameClassPairs(List<Class<? extends Algorithm>> classes) {
+        List<NamedClass<Algorithm>> pairs = new ArrayList<>();
+        for (Class<? extends Algorithm> algorithm : classes) {
+            edu.cmu.tetrad.annotation.Algorithm algAnnotation =
+                    algorithm.getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class);
+            if (algAnnotation != null) {
+                String name = algAnnotation.name();
+                if (name != null && !name.isBlank()) {
+                    pairs.add(new NamedClass<>(name, algorithm));
+                }
+            }
+        }
+        return pairs;
+    }
+
+    private List<NamedClass<Statistic>> getStatisticNameClassPairs(List<Class<? extends Statistic>> classes) {
+        List<NamedClass<Statistic>> pairs = new ArrayList<>();
+
+        for (Class<? extends Statistic> statisticClass : classes) {
+            try {
+                // If it has a no-arg constructor, use it to get abbreviation.
+                boolean hasNoArgConstructor = false;
+                for (Constructor<?> c : statisticClass.getDeclaredConstructors()) {
+                    if (c.getParameterCount() == 0) {
+                        hasNoArgConstructor = true;
+                        break;
+                    }
+                }
+
+                if (hasNoArgConstructor) {
+                    Statistic s = statisticClass.getConstructor().newInstance();
+                    String abbr = s.getAbbreviation();
+                    if (abbr != null && !abbr.isBlank()) {
+                        pairs.add(new NamedClass<>(abbr, statisticClass));
+                    }
+                } else if (MarkovCheckerStatistic.class.isAssignableFrom(statisticClass)) {
+                    // Special-case: needs (IndependenceWrapper, ConditioningSetType)
+                    Statistic s = statisticClass
+                            .getConstructor(IndependenceWrapper.class, ConditioningSetType.class)
+                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
+                    String abbr = s.getAbbreviation();
+                    if (abbr != null && !abbr.isBlank()) {
+                        pairs.add(new NamedClass<>(abbr, statisticClass));
+                    }
+                }
+            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                     IllegalAccessException e) {
+                TetradLogger.getInstance().log("Error creating statistic: " + e.getMessage());
+                // Skip.
+            }
+        }
+
+        return pairs;
+    }
+
+    private List<NamedClass<Simulation>> getSimulationNameClassPairs(List<Class<? extends Simulation>> classes) {
+        List<NamedClass<Simulation>> pairs = new ArrayList<>();
+        RandomGraph graph = new RandomForward();
+
+        for (Class<? extends Simulation> simulationClass : classes) {
+            try {
+                Simulation sim = simulationClass.getConstructor(RandomGraph.class).newInstance(graph);
+                String shortName = sim.getShortName();
+                if (shortName != null && !shortName.isBlank()) {
+                    pairs.add(new NamedClass<>(shortName, simulationClass));
+                }
+            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                     IllegalAccessException e) {
+                // Skip.
+            }
+        }
+
+        return pairs;
+    }
+
+    /**
+     * Simple name<->class pair so we can sort and keep indices aligned.
+     */
+    private record NamedClass<T>(String name, Class<? extends T> clazz) {}
 
     /**
      * Finds and returns a list of simulation classes that implement the Simulation interface.
@@ -1448,6 +1603,37 @@ public class GridSearchModel implements SessionModel, GraphSource {
             return score;
         }
 
+//        public Algorithm getAlgorithmImpl() {
+//            try {
+//                IndependenceWrapper independenceWrapper = null;
+//                ScoreWrapper scoreWrapper = null;
+//
+//                if (test != null) {
+//                    independenceWrapper = (IndependenceWrapper) test.clazz().getConstructor().newInstance();
+//                }
+//
+//                if (score != null) {
+//                    scoreWrapper = (ScoreWrapper) score.clazz().getConstructor().newInstance();
+//                }
+//
+//                Class<?> _algorithm = algorithm.getAlgorithm().clazz();
+//                Algorithm algorithmImpl = (Algorithm) _algorithm.getConstructor().newInstance();
+//
+//                if (algorithmImpl instanceof TakesIndependenceWrapper && independenceWrapper != null) {
+//                    ((TakesIndependenceWrapper) algorithmImpl).setIndependenceWrapper(independenceWrapper);
+//                }
+//
+//                if (algorithmImpl instanceof TakesScoreWrapper && scoreWrapper != null) {
+//                    ((TakesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
+//                }
+//
+//                return algorithmImpl;
+//            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+//                     NoSuchMethodException ex) {
+//                throw new RuntimeException(ex);
+//            }
+//        }
+
         public Algorithm getAlgorithmImpl() {
             try {
                 IndependenceWrapper independenceWrapper = null;
@@ -1472,14 +1658,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
                     ((TakesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
                 }
 
-                if (algorithmImpl instanceof TakesIndependenceWrapper && independenceWrapper != null) {
-                    ((TakesIndependenceWrapper) algorithmImpl).setIndependenceWrapper(independenceWrapper);
-                }
-
-                if (algorithmImpl instanceof TakesScoreWrapper && scoreWrapper != null) {
-                    ((TakesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
-                }
-
                 return algorithmImpl;
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException ex) {
@@ -1491,6 +1669,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
             return name;
         }
     }
+
 
     public static class SimulationSpec implements TetradSerializable {
         @Serial
