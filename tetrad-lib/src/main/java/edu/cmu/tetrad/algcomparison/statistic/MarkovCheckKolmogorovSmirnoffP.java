@@ -112,7 +112,7 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic, MarkovCheckerS
 
         IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
         MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
-        markovCheck.setFractionResample(0.8);
+        markovCheck.setFractionResample(0.9);
         markovCheck.generateResults(true, true);
         return markovCheck.getKsPValue(true);
     }

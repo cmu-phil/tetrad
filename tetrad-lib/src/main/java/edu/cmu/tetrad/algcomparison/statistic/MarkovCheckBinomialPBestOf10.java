@@ -120,6 +120,7 @@ public class MarkovCheckBinomialPBestOf10 implements Statistic {
 
         for (int i = 0; i < 10; i++) {
             MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
+            markovCheck.setFractionResample(0.9);
             markovCheck.generateResults(true, true);
             double p = markovCheck.getBinomialPValue(true);
             if (p > max) {

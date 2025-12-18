@@ -113,11 +113,12 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, Markov
 
         IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
 
-        // Find the best of 11 repetitions
+        // Find the best of 10 repetitions
         double max = Double.NEGATIVE_INFINITY;
 
-        for (int i = 0; i < 11; i++) {
+        for (int i = 0; i < 10; i++) {
             MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
+            markovCheck.setFractionResample(0.9);
             markovCheck.generateResults(true, true);
             double ksPValue = markovCheck.getKsPValue(true);
             if (ksPValue > max) {

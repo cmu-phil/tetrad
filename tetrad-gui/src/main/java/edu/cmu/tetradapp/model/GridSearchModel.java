@@ -1603,37 +1603,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
             return score;
         }
 
-//        public Algorithm getAlgorithmImpl() {
-//            try {
-//                IndependenceWrapper independenceWrapper = null;
-//                ScoreWrapper scoreWrapper = null;
-//
-//                if (test != null) {
-//                    independenceWrapper = (IndependenceWrapper) test.clazz().getConstructor().newInstance();
-//                }
-//
-//                if (score != null) {
-//                    scoreWrapper = (ScoreWrapper) score.clazz().getConstructor().newInstance();
-//                }
-//
-//                Class<?> _algorithm = algorithm.getAlgorithm().clazz();
-//                Algorithm algorithmImpl = (Algorithm) _algorithm.getConstructor().newInstance();
-//
-//                if (algorithmImpl instanceof TakesIndependenceWrapper && independenceWrapper != null) {
-//                    ((TakesIndependenceWrapper) algorithmImpl).setIndependenceWrapper(independenceWrapper);
-//                }
-//
-//                if (algorithmImpl instanceof TakesScoreWrapper && scoreWrapper != null) {
-//                    ((TakesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
-//                }
-//
-//                return algorithmImpl;
-//            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-//                     NoSuchMethodException ex) {
-//                throw new RuntimeException(ex);
-//            }
-//        }
-
         public Algorithm getAlgorithmImpl() {
             try {
                 IndependenceWrapper independenceWrapper = null;
