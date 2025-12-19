@@ -39,12 +39,12 @@ import static java.lang.Double.NaN;
  *   <li>seed: RNG seed</li>
  * </ul>
  */
-public final class IndTestRcit implements IndependenceTest {
+public final class IndTestRcit implements IndependenceTest, RowsSettable {
 
     // ---------------- core data ----------------
     private final DataSet data;
     private final List<Node> vars;
-    private final int n;
+    private int n;
     private final Random rng;
 
     // ---------------- hyperparams ----------------
@@ -59,6 +59,7 @@ public final class IndTestRcit implements IndependenceTest {
     // ---------------- IndependenceTest state ----------------
     private double alpha = 0.05;
     private double lastP = NaN;
+    private List<Integer> rows = null;  // null => all rows
     private boolean verbose = false;
 
     /**
@@ -83,7 +84,8 @@ public final class IndTestRcit implements IndependenceTest {
     public IndTestRcit(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
-        this.n = dataSet.getNumRows();
+//        this.n = dataSet.getNumRows();
+        this.n = getActiveRowCount();
 
         long seed = params.getLong("rcit.seed", 1729L);
         this.rng = new Random(seed);
@@ -112,17 +114,36 @@ public final class IndTestRcit implements IndependenceTest {
     /**
      * Extract columns for nodes => n x d SimpleMatrix.
      */
-    private static SimpleMatrix cols(DataSet ds, List<Node> vv) {
-        int n = ds.getNumRows();
+//    private static SimpleMatrix cols(DataSet ds, List<Node> vv) {
+//        int n = ds.getNumRows();
+//        int d = vv.size();
+//        SimpleMatrix M = new SimpleMatrix(n, d);
+//        for (int j = 0; j < d; j++) {
+//            int col = ds.getColumn(vv.get(j));
+//            if (col < 0) {
+//                col = ds.getVariableNames().indexOf(vv.get(j).getName());
+//                if (col < 0) throw new IllegalArgumentException("Variable not found: " + vv.get(j).getName());
+//            }
+//            for (int i = 0; i < n; i++) M.set(i, j, ds.getDouble(i, col));
+//        }
+//        return M;
+//    }
+
+    private SimpleMatrix cols(DataSet ds, List<Node> vv) {
+        int n = getActiveRowCount();
         int d = vv.size();
         SimpleMatrix M = new SimpleMatrix(n, d);
+
         for (int j = 0; j < d; j++) {
             int col = ds.getColumn(vv.get(j));
             if (col < 0) {
                 col = ds.getVariableNames().indexOf(vv.get(j).getName());
                 if (col < 0) throw new IllegalArgumentException("Variable not found: " + vv.get(j).getName());
             }
-            for (int i = 0; i < n; i++) M.set(i, j, ds.getDouble(i, col));
+            for (int i = 0; i < n; i++) {
+                int row = activeRowIndex(i);
+                M.set(i, j, ds.getDouble(row, col));
+            }
         }
         return M;
     }
@@ -488,6 +509,8 @@ public final class IndTestRcit implements IndependenceTest {
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         Objects.requireNonNull(x, "x");
         Objects.requireNonNull(y, "y");
+
+        this.n = getActiveRowCount();
         final List<Node> Z = (z == null) ? Collections.emptyList() : new ArrayList<>(z);
 
         if (x.equals(y)) {
@@ -502,8 +525,12 @@ public final class IndTestRcit implements IndependenceTest {
         }
 
         // Data matrices (n x d)
-        SimpleMatrix X = cols(data, Collections.singletonList(x));
-        SimpleMatrix Y = cols(data, Collections.singletonList(y));
+//        SimpleMatrix X = cols(data, Collections.singletonList(x));
+//        SimpleMatrix Y = cols(data, Collections.singletonList(y));
+//        SimpleMatrix Zm = Z.isEmpty() ? new SimpleMatrix(n, 0) : cols(data, Z);
+
+        SimpleMatrix X  = cols(data, Collections.singletonList(x));
+        SimpleMatrix Y  = cols(data, Collections.singletonList(y));
         SimpleMatrix Zm = Z.isEmpty() ? new SimpleMatrix(n, 0) : cols(data, Z);
 
         // Standardize raw columns
@@ -618,6 +645,39 @@ public final class IndTestRcit implements IndependenceTest {
         lastP = clamp01(p);
         boolean indep = (lastP > alpha);
         return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), indep, lastP, alpha - lastP);
+    }
+
+    @Override
+    public List<Integer> getRows() {
+        return rows;
+    }
+
+    @Override
+    public void setRows(List<Integer> rows) {
+        if (rows == null) {
+            this.rows = null;
+            this.n = data.getNumRows();
+            return;
+        }
+
+        for (int i = 0; i < rows.size(); i++) {
+            Integer r = rows.get(i);
+            if (r == null) throw new NullPointerException("Row " + i + " is null.");
+            if (r < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+            if (r >= data.getNumRows()) throw new IllegalArgumentException("Row " + i + " out of bounds: " + r);
+        }
+
+        this.rows = new ArrayList<>(rows);
+        this.n = this.rows.size();
+    }
+
+    private int getActiveRowCount() {
+        return (rows == null) ? data.getNumRows() : rows.size();
+    }
+
+    private int activeRowIndex(int i) {
+        // maps active-row i -> original dataset row index
+        return (rows == null) ? i : rows.get(i);
     }
 
     /**

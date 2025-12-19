@@ -1446,7 +1446,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
     public ConditioningSetType getMarkovCheckerConditioningSetType() {
         // Source of truth is parameters, so Grid Search execution and UI cannot diverge.
         try {
-            String s = parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, null);
+            String s = ConditioningSetType.RECURSIVE_MSEP.name();// parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, null);
             if (s != null && !s.isBlank()) {
                 return ConditioningSetType.valueOf(s);
             }
