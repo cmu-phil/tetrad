@@ -75,6 +75,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * A private final variable that holds a Parameters object.
      */
     private final Parameters parameters;
+
+    // Canonical parameter key for Markov Checker conditioning-set mode used in Grid Search.
+    private static final String PARAM_MARKOV_CHECKER_COND_SET_TYPE = "markovCheckerConditioningSetType";
+
     /**
      * The knowledge to be used for the GridSearchModel.
      */
@@ -201,6 +205,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.suppliedData = null;
         this.suppliedGraph = null;
         initializeIfNull();
+        syncMarkovCheckerConditioningSetTypeFromParameters();
     }
 
     /**
@@ -224,6 +229,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.suppliedData = null;
         this.suppliedGraph = null;
         initializeIfNull();
+        syncMarkovCheckerConditioningSetTypeFromParameters();
     }
 
     /**
@@ -247,6 +253,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.suppliedGraph = graphSource.getGraph();
         this.suppliedData = null;
         initializeIfNull();
+        syncMarkovCheckerConditioningSetTypeFromParameters();
     }
 
     /**
@@ -274,6 +281,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.knowledge = knowledge.getKnowledge();
         this.suppliedGraph = graphSource.getGraph();
         initializeIfNull();
+        syncMarkovCheckerConditioningSetTypeFromParameters();
     }
 
     /**
@@ -297,6 +305,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.suppliedData = (DataSet) dataWrapper.getSelectedDataModel();
         this.suppliedGraph = null;
         initializeIfNull();
+        syncMarkovCheckerConditioningSetTypeFromParameters();
     }
 
     /**
@@ -327,7 +336,30 @@ public class GridSearchModel implements SessionModel, GraphSource {
         System.out.println("Variables names = " + this.suppliedData.getVariableNames());
 
         initializeIfNull();
+        syncMarkovCheckerConditioningSetTypeFromParameters();
     }
+
+    /**
+     * Ensures the Markov Checker conditioning-set type is synchronized with {@link #parameters}.
+     * <p>
+     * The Grid Search execution path should read this value from {@link #parameters}, not from transient UI state.
+     * This prevents mismatches where the editor shows one selection but the run uses another default/cached value.
+     */
+    private void syncMarkovCheckerConditioningSetTypeFromParameters() {
+        try {
+            String s = parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG.name());
+                if (s != null && !s.isBlank()) {
+                this.markovCheckerConditioningSetType = ConditioningSetType.valueOf(s);
+                return;
+            }
+        } catch (Exception ignored) {
+            // Fall through to persist current value.
+        }
+
+        // Persist current value as the default if none is present or it is invalid.
+        parameters.set(PARAM_MARKOV_CHECKER_COND_SET_TYPE, this.markovCheckerConditioningSetType.name());
+    }
+
 
     /**
      * Finds and returns a list of algorithm classes that implement the Algorithm interface.
@@ -1412,6 +1444,18 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * property is being utilized.
      */
     public ConditioningSetType getMarkovCheckerConditioningSetType() {
+        // Source of truth is parameters, so Grid Search execution and UI cannot diverge.
+        try {
+            String s = parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, null);
+            if (s != null && !s.isBlank()) {
+                return ConditioningSetType.valueOf(s);
+            }
+        } catch (Exception ignored) {
+            // fall through
+        }
+
+        // If missing/invalid, persist current value and return it.
+        parameters.set(PARAM_MARKOV_CHECKER_COND_SET_TYPE, markovCheckerConditioningSetType.name());
         return markovCheckerConditioningSetType;
     }
 
@@ -1425,6 +1469,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
             throw new IllegalArgumentException("markovCheckerConditioningSetType cannot be null");
         }
         this.markovCheckerConditioningSetType = markovCheckerConditioningSetType;
+        parameters.set(PARAM_MARKOV_CHECKER_COND_SET_TYPE, markovCheckerConditioningSetType.name());
     }
 
     public IndependenceTestModel getSelectedIndependenceTestModel() {

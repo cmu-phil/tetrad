@@ -180,7 +180,12 @@ public class GridSearchEditor extends JPanel {
         model.getParameters().set("algcomparisonSetAlgorithmKnowledge", model.getParameters().getBoolean("algcomparisonSetAlgorithmKnowledge", true));
         model.getParameters().set("algcomparisonParallelism", model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()));
         model.getParameters().set("algcomparisonGraphType", model.getParameters().getString("algcomparisonGraphType", "DAG"));
-
+        // Markov checker fact-set selection (for independence implications).
+        // Canonical key used by Grid Search evaluation.
+        model.getParameters().set(
+                "markovCheckerFactMode",
+                model.getParameters().getString("markovCheckerFactMode", "ORDERED_LOCAL_MARKOV")
+        );
         comparisonTextArea.setText(model.getLastComparisonText());
         verboseOutputTextArea.setText(model.getLastVerboseOutputText());
 

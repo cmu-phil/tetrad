@@ -243,8 +243,8 @@ public class MarkovCheckEditor extends JPanel {
 
         setPreferredSize(new Dimension(1100, 600));
 
-//        conditioningSetTypeJComboBox.addItem("Ordered Local Markov MAG");
-        conditioningSetTypeJComboBox.addItem("Ordered Local Markov");
+        conditioningSetTypeJComboBox.addItem("Ordered Local Markov MAG");
+//        conditioningSetTypeJComboBox.addItem("Ordered Local Markov");
         conditioningSetTypeJComboBox.addItem("Parents(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
@@ -253,7 +253,8 @@ public class MarkovCheckEditor extends JPanel {
         conditioningSetTypeJComboBox.addItem("All Subsets (Global Markov)");
 
         conditioningSetTypeJComboBox.addActionListener(e -> {
-            switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
+            Object selectedItem = conditioningSetTypeJComboBox.getSelectedItem();
+            switch ((String) Objects.requireNonNull(selectedItem)) {
                 case "Parents(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.LOCAL_MARKOV);
 
@@ -270,7 +271,7 @@ public class MarkovCheckEditor extends JPanel {
                     }
 
                     break;
-                case "Ordered Local Markov":
+                case "Ordered Local Markov MAG":
 //                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
 //
 //                    if (model.getMarkovCheck() != null) {
@@ -320,7 +321,7 @@ public class MarkovCheckEditor extends JPanel {
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown conditioning set type: "
-                                                       + conditioningSetTypeJComboBox.getSelectedItem());
+                                                       + selectedItem);
             }
 
             class MyWatchedProcess extends WatchedProcess {
@@ -362,7 +363,7 @@ public class MarkovCheckEditor extends JPanel {
 
         setTest();
 
-        conditioningSetTypeJComboBox.setSelectedItem(Preferences.userRoot().get("markovCheckerConditioningSetType", "Parents(X)"));
+        conditioningSetTypeJComboBox.setSelectedItem(Preferences.userRoot().get("markovCheckerConditioningSetType", "Ordered Local Markov MAG"));
 
         Graph _graph = model.getGraph();
         Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes()));
@@ -499,7 +500,7 @@ public class MarkovCheckEditor extends JPanel {
         new WatchedProcess() {
             @Override
             public void watch() {
-                refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, fraction, false);
+                refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, fraction, true);
             }
         };
 
