@@ -596,7 +596,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
     }
 
     /**
-     * Remove the last simulation from the list of selected simulations.
+     * Remove the last simulation from the list of selected simulations.on
      */
     public void removeLastSimulation() {
         initializeIfNull();
@@ -605,24 +605,102 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
     }
 
-    /**
-     * Add an algorithm to the list of selected algorithms.
-     *
-     * @param algorithm The algorithm to add.
-     */
+//    /**
+//     * Add an algorithm to the list of selected algorithms.
+//     *
+//     * @param algorithm The algorithm to add.
+//     */
+//    public void addAlgorithm(AlgorithmSpec algorithm) {
+//        initializeIfNull();
+//        getSelectedAlgorithmSpecs().add(algorithm);
+//    }
+
     public void addAlgorithm(AlgorithmSpec algorithm) {
-        initializeIfNull();
-        getSelectedAlgorithmSpecs().add(algorithm);
+        insertAlgorithmAt(getSelectedAlgorithmSpecs().size(), algorithm);
     }
 
-    /**
-     * Remove the last algorithm from the list of selected algorithms.
-     */
+    public void insertAlgorithmAt(int index, AlgorithmSpec algorithm) {
+        initializeIfNull();
+        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+        if (index < 0) index = 0;
+        if (index > list.size()) index = list.size();
+        list.add(index, algorithm);
+
+        if (selectedAlgorithm >= index) selectedAlgorithm++;
+    }
+
+    public void setAlgorithms(List<AlgorithmSpec> algorithms) {
+        initializeIfNull();
+        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+        list.clear();
+        list.addAll(algorithms);
+
+        if (selectedAlgorithm >= list.size()) selectedAlgorithm = Math.max(0, list.size() - 1);
+        if (selectedAlgorithm < 0) selectedAlgorithm = 0;
+    }
+
+//    /**
+//     * Remove the last algorithm from the list of selected algorithms.
+//     */
+//    public void removeLastAlgorithm() {
+//        initializeIfNull();
+//        LinkedList<AlgorithmSpec> selectedSimulationsSpecs = getSelectedAlgorithmSpecs();
+//        if (!selectedSimulationsSpecs.isEmpty()) {
+//            getSelectedAlgorithmSpecs().removeLast();
+//        }
+//    }
+
     public void removeLastAlgorithm() {
         initializeIfNull();
-        LinkedList<AlgorithmSpec> selectedSimulationsSpecs = getSelectedAlgorithmSpecs();
-        if (!selectedSimulationsSpecs.isEmpty()) {
-            getSelectedAlgorithmSpecs().removeLast();
+        removeAlgorithmAt(getSelectedAlgorithmSpecs().size() - 1);
+    }
+
+    public List<AlgorithmSpec> getAlgorithms() {
+        initializeIfNull();
+        return getSelectedAlgorithmSpecs();
+    }
+
+//    public void removeAlgorithmAt(int index) {
+//        initializeIfNull();
+//        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+//        if (index < 0 || index >= list.size()) return;
+//
+//        list.remove(index);
+//
+//        // Keep selectedAlgorithm valid
+//        if (selectedAlgorithm >= list.size()) {
+//            selectedAlgorithm = Math.max(0, list.size() - 1);
+//        } else if (selectedAlgorithm > index) {
+//            selectedAlgorithm--; // selection shifts left
+//        } else if (selectedAlgorithm == index) {
+//            // selection stays at same index if possible, otherwise previous is handled above
+//            if (selectedAlgorithm >= list.size()) selectedAlgorithm = Math.max(0, list.size() - 1);
+//        }
+//    }
+
+    public void clearAlgorithms() {
+        initializeIfNull();
+        getSelectedAlgorithmSpecs().clear();
+        selectedAlgorithm = 0;
+    }
+
+    public void moveAlgorithm(int fromIndex, int toIndex) {
+        initializeIfNull();
+        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+        if (fromIndex < 0 || fromIndex >= list.size()) return;
+        if (toIndex < 0 || toIndex >= list.size()) return;
+        if (fromIndex == toIndex) return;
+
+        AlgorithmSpec spec = list.remove(fromIndex);
+        list.add(toIndex, spec);
+
+        // Update selectedAlgorithm index coherently
+        if (selectedAlgorithm == fromIndex) {
+            selectedAlgorithm = toIndex;
+        } else if (fromIndex < selectedAlgorithm && selectedAlgorithm <= toIndex) {
+            selectedAlgorithm--; // shifted left
+        } else if (toIndex <= selectedAlgorithm && selectedAlgorithm < fromIndex) {
+            selectedAlgorithm++; // shifted right
         }
     }
 
@@ -722,6 +800,15 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return (LinkedList<AlgorithmSpec>) parameters.get("algcomparison.selectedAlgorithms");
     }
 
+    public int getSelectedAlgorithmSafe() {
+        initializeIfNull();
+        int n = getSelectedAlgorithmSpecs().size();
+        if (n == 0) return -1;
+        if (selectedAlgorithm < 0) selectedAlgorithm = 0;
+        if (selectedAlgorithm >= n) selectedAlgorithm = n - 1;
+        return selectedAlgorithm;
+    }
+
     public List<MyTableColumn> getSelectedTableColumns() {
         GridSearchModel.sortTableColumns(getSelectedTableColumnsPrivate());
         return new ArrayList<>(getSelectedTableColumnsPrivate());
@@ -733,6 +820,19 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
 
         return (LinkedList<MyTableColumn>) parameters.get("algcomparison.selectedTableColumns");
+    }
+
+    public void setSelectedAlgorithms(List<AlgorithmSpec> specs) {
+        initializeIfNull();
+        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+        list.clear();
+        list.addAll(specs);
+    }
+
+    public void removeAlgorithmAt(int index) {
+        initializeIfNull();
+        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+        if (index >= 0 && index < list.size()) list.remove(index);
     }
 
 //    /**
@@ -1446,7 +1546,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
     public ConditioningSetType getMarkovCheckerConditioningSetType() {
         // Source of truth is parameters, so Grid Search execution and UI cannot diverge.
         try {
-            String s = ConditioningSetType.RECURSIVE_MSEP.name();// parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, null);
+            String s = ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG.name();// parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, null);
             if (s != null && !s.isBlank()) {
                 return ConditioningSetType.valueOf(s);
             }

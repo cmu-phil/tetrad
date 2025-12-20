@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
@@ -82,7 +82,8 @@ public class GridSearchEditor extends JPanel {
     /**
      * JLabel representing a message indicating that there are no parameters to edit.
      */
-    private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
+//    private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
+    private static final String NO_PARAM_TEXT = "No parameters to edit";
     /**
      * A JComboBox that holds instances of IndependenceTestModel.
      */
@@ -96,6 +97,10 @@ public class GridSearchEditor extends JPanel {
      * properties related to the comparison of algorithms.
      */
     private final GridSearchModel model;
+    /**
+     * JTextArea used for displaying comparison results.
+     */
+    private transient final JTextArea comparisonTextArea;
     /**
      * JTextArea used for displaying verbose output.
      */
@@ -113,10 +118,6 @@ public class GridSearchEditor extends JPanel {
      */
     private transient JTextArea tableColumnsChoiceTextArea;
     /**
-     * JTextArea used for displaying comparison results.
-     */
-    private transient JTextArea comparisonTextArea;
-    /**
      * JTextArea used for displaying help choice information.
      */
     private transient JTextArea helpChoiceTextArea;
@@ -127,7 +128,12 @@ public class GridSearchEditor extends JPanel {
     /**
      * Button used to add an algorithm.
      */
-    private transient JButton addAlgorithm;
+//    private transient JButton addAlgorithm;
+    // class fields
+    private JButton addAlgorithm;
+    private JButton removeLastAlgorithm;
+    private JButton editAlgorithmParameters;
+
     /**
      * Button used to add table columns.
      */
@@ -160,6 +166,8 @@ public class GridSearchEditor extends JPanel {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setTabPlacement(JTabbedPane.BOTTOM);
         tabbedPane.setPreferredSize(new Dimension(800, 400));
+
+        comparisonTextArea = new JTextArea();
 
         addSimulationTab(tabbedPane);
         addAlgorithmTab(tabbedPane);
@@ -196,6 +204,10 @@ public class GridSearchEditor extends JPanel {
                 System.out.println("Scrolling operation failed.");
             }
         });
+
+        addAddAlgorithmListener();
+        addRemoveLastAlgorithmListener();
+        addEditAlgorithmParametersListener();
     }
 
     /**
@@ -944,25 +956,43 @@ public class GridSearchEditor extends JPanel {
         return s == null ? "" : s.trim();
     }
 
-    /**
-     * Updates the indices in the graph index combo box based on the selected simulation and algorithm.
-     *
-     * @param simulationComboBox The combo box that contains the available simulation options.
-     * @param algorithmComboBox  The combo box that contains the available algorithm options.
-     * @param graphIndexComboBox The combo box to update with the graph indices.
-     * @param resultsDir         The directory where the graph results are stored.
-     */
-    private void updateAlgorithmBoxIndices(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox, JComboBox<Integer> graphIndexComboBox, File resultsDir) {
-        int savedAlgorithm = model.getSelectedAlgorithm();
-        Object selectedSimulation = simulationComboBox.getSelectedItem();
+    private static @NotNull List<Integer> getIntegers(File resultsDir, int selectedAlgorithm, int simulation) {
+        File dir = new File(resultsDir, simulation + "." + selectedAlgorithm);
 
-        if (selectedSimulation == null) {
-            algorithmComboBox.removeAllItems();
-            graphIndexComboBox.removeAllItems();
-            return;
+        List<Integer> indices = new ArrayList<>();
+
+        if (dir.exists()) {
+            File[] graphs = dir.listFiles();
+
+            if (graphs != null) {
+                for (File graph : graphs) {
+                    String name = graph.getName();
+
+                    if (!name.startsWith("graph.")) {
+                        continue;
+                    }
+
+                    String[] parts = name.split("\\.");
+
+                    int graphIndex;
+
+                    try {
+                        graphIndex = Integer.parseInt(parts[1]);
+
+                        if (!indices.contains(graphIndex)) {
+                            indices.add(graphIndex);
+                        }
+                    } catch (NumberFormatException e) {
+                        // These aren't directories/files written out by the tool.
+                    }
+                }
+            }
         }
+        return indices;
+    }
 
-        List<Integer> algorithmIndices = new ArrayList<>();
+    private static @NotNull List<Integer> getIntegers(File resultsDir) {
+        List<Integer> simulationIndices = new ArrayList<>();
 
         if (resultsDir.exists()) {
             File[] dirs = resultsDir.listFiles();
@@ -977,17 +1007,15 @@ public class GridSearchEditor extends JPanel {
                 // directories.
                 for (File dir : dirs) {
                     String name = dir.getName();
-
                     String[] parts = name.split("\\.");
 
-                    try {
-                        int simulation = Integer.parseInt(parts[0]);
-                        int algorithm = Integer.parseInt(parts[1]);
+                    int simulation;
 
-                        if (simulation == (int) selectedSimulation) {
-                            if (!algorithmIndices.contains(algorithm)) {
-                                algorithmIndices.add(algorithm);
-                            }
+                    try {
+                        simulation = Integer.parseInt(parts[0]);
+
+                        if (!simulationIndices.contains(simulation)) {
+                            simulationIndices.add(simulation);
                         }
                     } catch (NumberFormatException e) {
                         // These aren't directories/files written out by the tool.
@@ -995,19 +1023,208 @@ public class GridSearchEditor extends JPanel {
                 }
             }
         }
+        return simulationIndices;
+    }
+
+    private static String safe(String s) {
+        return s == null ? "(no description)" : s;
+    }
+
+    private static String describeTest(GridSearchModel.AlgorithmSpec spec) {
+        return describeAnnotated(spec.getTest(), "(no test)");
+    }
+
+    private static String describeScore(GridSearchModel.AlgorithmSpec spec) {
+        return describeAnnotated(spec.getScore(), "(no score)");
+    }
+
+    private static String describeAnnotated(edu.cmu.tetrad.annotation.AnnotatedClass<?> ac, String noneLabel) {
+        if (ac == null) return noneLabel;
+
+        // Try to use annotation.name() if present (common in Tetrad annotations).
+        Object ann = ac.annotation();
+        if (ann != null) {
+            String name = reflectStringNoThrow(ann, "name");
+            if (name != null && !name.isBlank()) return name;
+
+            // Some annotations might use "value" instead of "name"
+            String value = reflectStringNoThrow(ann, "value");
+            if (value != null && !value.isBlank()) return value;
+        }
+
+        // Fallback: class simple name
+        Class<?> c = ac.clazz();
+        return (c != null) ? c.getSimpleName() : "(unknown)";
+    }
+
+    private static String reflectStringNoThrow(Object target, String methodName) {
+        try {
+            var m = target.getClass().getMethod(methodName);
+            Object r = m.invoke(target);
+            return (r instanceof String) ? (String) r : null;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    /**
+     * Updates the indices in the graph index combo box based on the selected simulation and algorithm.
+     *
+     * @param simulationComboBox The combo box that contains the available simulation options.
+     * @param algorithmComboBox  The combo box that contains the available algorithm options.
+     * @param graphIndexComboBox The combo box to update with the graph indices.
+     * @param resultsDir         The directory where the graph results are stored.
+     */
+    private void updateAlgorithmBoxIndices(JComboBox<Integer> simulationComboBox,
+                                           JComboBox<Integer> algorithmComboBox,
+                                           JComboBox<Integer> graphIndexComboBox,
+                                           File resultsDir) {
+
+        Integer savedAlgorithm = (Integer) algorithmComboBox.getSelectedItem(); // <— use combo
+        Object selectedSimulation = simulationComboBox.getSelectedItem();
+
+        if (selectedSimulation == null) {
+            algorithmComboBox.removeAllItems();
+            graphIndexComboBox.removeAllItems();
+            return;
+        }
+
+        List<Integer> algorithmIndices = new ArrayList<>();
+
+        if (resultsDir.exists()) {
+            File[] dirs = resultsDir.listFiles();
+            if (dirs != null) {
+                for (File dir : dirs) {
+                    String name = dir.getName();
+                    String[] parts = name.split("\\.");
+                    try {
+                        int simulation = Integer.parseInt(parts[0]);
+                        int algorithm = Integer.parseInt(parts[1]);
+
+                        if (simulation == (int) selectedSimulation && !algorithmIndices.contains(algorithm)) {
+                            algorithmIndices.add(algorithm);
+                        }
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        }
 
         algorithmComboBox.removeAllItems();
         Collections.sort(algorithmIndices);
+        for (int i : algorithmIndices) algorithmComboBox.addItem(i);
 
-        for (int i : algorithmIndices) {
-            algorithmComboBox.addItem(i);
-        }
-
-        if (savedAlgorithm > 0) {
+        // restore if still available, else default to first
+        if (savedAlgorithm != null && algorithmIndices.contains(savedAlgorithm)) {
             algorithmComboBox.setSelectedItem(savedAlgorithm);
+        } else if (!algorithmIndices.isEmpty()) {
+            algorithmComboBox.setSelectedIndex(0);
         }
 
         updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+    }
+
+    private JComponent buildAlgorithmSelectionControls() {
+        Box box = Box.createHorizontalBox();
+        box.add(Box.createHorizontalGlue());
+
+        addAlgorithm = new JButton("Add Algorithm");
+        addAddAlgorithmListener();
+
+        removeLastAlgorithm = new JButton("Remove Last Algorithm");
+
+        removeLastAlgorithm.addActionListener(e -> {
+            model.removeLastAlgorithm();
+            onSelectedAlgorithmsChanged();
+        });
+
+        editAlgorithmParameters = new JButton("Edit Parameters");
+        editAlgorithmParameters.addActionListener(e -> openEditAlgorithmParametersDialog());
+
+        box.add(addAlgorithm);
+        box.add(removeLastAlgorithm);
+        box.add(editAlgorithmParameters);
+        box.add(Box.createHorizontalGlue());
+        return box;
+    }
+
+    private void openEditAlgorithmParametersDialog() {
+        List<GridSearchModel.AlgorithmSpec> selected = model.getSelectedAlgorithms();
+
+        if (selected == null || selected.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No algorithms have been selected.\n\nUse 'Add Algorithm' first.",
+                    "Edit Algorithm Parameters",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
+
+        Set<String> algParams = GridSearchModel.getAllAlgorithmParameters(selected);
+        Set<String> testParams = GridSearchModel.getAllTestParameters(selected);
+        Set<String> scoreParams = GridSearchModel.getAllScoreParameters(selected);
+        Set<String> bootParams = GridSearchModel.getAllBootstrapParameters(selected);
+
+        Set<String> all = new LinkedHashSet<>();
+        all.addAll(algParams);
+        all.addAll(testParams);
+        all.addAll(scoreParams);
+        all.addAll(bootParams);
+
+        JComponent center;
+        if (all.isEmpty()) {
+            JLabel lbl = new JLabel(NO_PARAM_TEXT);
+            lbl.setBorder(new EmptyBorder(10, 10, 10, 10));
+            center = new PaddingPanel(lbl);
+        } else {
+            Box parameterBox = getParameterBox(all, true, true);
+            center = new PaddingPanel(parameterBox);
+        }
+
+        JDialog dialog = new JDialog(
+                SwingUtilities.getWindowAncestor(this),
+                "Edit Algorithm Parameters",
+                Dialog.ModalityType.APPLICATION_MODAL
+        );
+        dialog.setLayout(new BorderLayout());
+
+        JLabel label = new JLabel("Set parameter values (comma-separated lists will be grid-searched where applicable).");
+        label.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        dialog.add(label, BorderLayout.NORTH);
+        dialog.add(center, BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton done = new JButton("Done");
+        done.addActionListener(ev -> {
+            dialog.dispose();
+            onSelectedAlgorithmsChanged();
+        });
+        buttonPanel.add(done);
+
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    /**
+     * Adds a tab if params is non-empty.
+     *
+     * @return the tab index added, or -1 if not added.
+     */
+    private int addParamTabIfAny(JTabbedPane tabs, String title, Set<String> params,
+                                 boolean listOptionAllowed, boolean bothOptionAllowed) {
+        if (params == null || params.isEmpty()) return -1;
+        int index = tabs.getTabCount();
+        tabs.addTab(title, new PaddingPanel(getParameterBox(params, listOptionAllowed, bothOptionAllowed)));
+        return index;
+    }
+
+    private void onSelectedAlgorithmsChanged() {
+        setAlgorithmText();
+        setComparisonText();
     }
 
     /**
@@ -1042,41 +1259,6 @@ public class GridSearchEditor extends JPanel {
         if (savedGraphIndex > 0) {
             graphIndexComboBox.setSelectedItem(savedGraphIndex);
         }
-    }
-
-    private static @NotNull List<Integer> getIntegers(File resultsDir, int selectedAlgorithm, int simulation) {
-        File dir = new File(resultsDir, simulation + "." + selectedAlgorithm);
-
-        List<Integer> indices = new ArrayList<>();
-
-        if (dir.exists()) {
-            File[] graphs = dir.listFiles();
-
-            if (graphs != null) {
-                for (File graph : graphs) {
-                    String name = graph.getName();
-
-                    if (!name.startsWith("graph.")) {
-                        continue;
-                    }
-
-                    String[] parts = name.split("\\.");
-
-                    int graphIndex;
-
-                    try {
-                        graphIndex = Integer.parseInt(parts[1]);
-
-                        if (!indices.contains(graphIndex)) {
-                            indices.add(graphIndex);
-                        }
-                    } catch (NumberFormatException e) {
-                        // These aren't directories/files written out by the tool.
-                    }
-                }
-            }
-        }
-        return indices;
     }
 
     private void updateSelectedGraph(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox, JComboBox<Integer> graphIndexComboBox, File resultsDir, GraphWorkbench workbench) {
@@ -1290,7 +1472,7 @@ public class GridSearchEditor extends JPanel {
         algorithmChoiceTextArea.setLineWrap(true);
         algorithmChoiceTextArea.setWrapStyleWord(true);
         algorithmChoiceTextArea.setEditable(false);
-        setAlgorithmText();
+        onSelectedAlgorithmsChanged();
 
         Box algorithSelectionBox = Box.createHorizontalBox();
         algorithSelectionBox.add(Box.createHorizontalGlue());
@@ -1298,62 +1480,15 @@ public class GridSearchEditor extends JPanel {
         addAlgorithm = new JButton("Add Algorithm");
         addAddAlgorithmListener();
 
-        JButton removeLastAlgorithm = new JButton("Remove Last Algorithm");
+        removeLastAlgorithm = new JButton("Remove Last Algorithm");
         removeLastAlgorithm.addActionListener(e -> {
             model.removeLastAlgorithm();
-            setAlgorithmText();
-            setComparisonText();
+            onSelectedAlgorithmsChanged();
         });
 
-        JButton editAlgorithmParameters = new JButton("Edit Parameters");
+        editAlgorithmParameters = new JButton("Edit Parameters");
 
-        editAlgorithmParameters.addActionListener(e -> {
-            List<GridSearchModel.AlgorithmSpec> algorithms = model.getSelectedAlgorithms();
-
-            JTabbedPane tabbedPane1 = new JTabbedPane();
-            tabbedPane1.setTabPlacement(JTabbedPane.TOP);
-
-            Set<String> allAlgorithmParameters = GridSearchModel.getAllAlgorithmParameters(algorithms);
-            Set<String> allTestParameters = GridSearchModel.getAllTestParameters(algorithms);
-            Set<String> allBootstrapParameters = GridSearchModel.getAllBootstrapParameters(algorithms);
-            Set<String> allScoreParameters = GridSearchModel.getAllScoreParameters(algorithms);
-
-            if (allAlgorithmParameters.isEmpty() && allTestParameters.isEmpty() && allBootstrapParameters.isEmpty() && allScoreParameters.isEmpty()) {
-                JLabel noParamLbl = NO_PARAM_LBL;
-                noParamLbl.setBorder(new EmptyBorder(10, 10, 10, 10));
-                tabbedPane1.addTab("No Parameters", new PaddingPanel(noParamLbl));
-            }
-
-            tabbedPane1.addTab("Algorithm", new PaddingPanel(getParameterBox(allAlgorithmParameters, true, true)));
-            tabbedPane1.addTab("Test", new PaddingPanel(getParameterBox(allTestParameters, true, true)));
-            tabbedPane1.addTab("Score", new PaddingPanel(getParameterBox(allScoreParameters, true, true)));
-            tabbedPane1.addTab("Bootstrapping", new PaddingPanel(getParameterBox(allBootstrapParameters, false, false)));
-
-            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Edit Algorithm Parameters", Dialog.ModalityType.APPLICATION_MODAL);
-            dialog.setLayout(new BorderLayout());
-
-            // Add your panel to the center of the dialog
-            dialog.add(tabbedPane1, BorderLayout.CENTER);
-
-            // Create a panel for the buttons
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-            JButton doneButton = new JButton("Done");
-
-            doneButton.addActionListener(e1 -> {
-                setAlgorithmText();
-                setComparisonText();
-                dialog.dispose();
-            });
-
-            buttonPanel.add(doneButton);
-
-            // Add the button panel to the bottom of the dialog
-            dialog.add(buttonPanel, BorderLayout.SOUTH);
-
-            dialog.pack(); // Adjust the dialog size to fit its contents
-            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
-            dialog.setVisible(true);
-        });
+        editAlgorithmParameters.addActionListener(e -> openEditAlgorithmParametersDialog());
 
         algorithSelectionBox.add(addAlgorithm);
         algorithSelectionBox.add(removeLastAlgorithm);
@@ -1365,6 +1500,11 @@ public class GridSearchEditor extends JPanel {
         algorithmChoice.add(new JScrollPane(algorithmChoiceTextArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS), BorderLayout.CENTER);
         algorithmChoice.add(algorithSelectionBox, BorderLayout.SOUTH);
 
+        // inside addAlgorithmTab(...)
+        addAlgorithm = new JButton("Add Algorithm");
+        removeLastAlgorithm = new JButton("Remove Last Algorithm");
+        editAlgorithmParameters = new JButton("Edit Parameters");
+
         tabbedPane.addTab("Algorithms", algorithmChoice);
     }
 
@@ -1374,7 +1514,7 @@ public class GridSearchEditor extends JPanel {
         parameterBox.removeAll();
 
         if (params.isEmpty()) {
-            JLabel noParamLbl = NO_PARAM_LBL;
+            JLabel noParamLbl = new JLabel(NO_PARAM_TEXT);
             noParamLbl.setBorder(new EmptyBorder(10, 10, 10, 10));
             parameterBox.add(noParamLbl, BorderLayout.NORTH);
         } else {
@@ -1490,7 +1630,6 @@ public class GridSearchEditor extends JPanel {
      * @param tabbedPane the JTabbedPane to add the comparison tab to
      */
     private void addComparisonTab(JTabbedPane tabbedPane) {
-        comparisonTextArea = new JTextArea();
         comparisonTextArea.setLineWrap(false);
         comparisonTextArea.setWrapStyleWord(false);
         comparisonTextArea.setEditable(false);
@@ -1760,41 +1899,6 @@ public class GridSearchEditor extends JPanel {
         return graphSelectorBox;
     }
 
-    private static @NotNull List<Integer> getIntegers(File resultsDir) {
-        List<Integer> simulationIndices = new ArrayList<>();
-
-        if (resultsDir.exists()) {
-            File[] dirs = resultsDir.listFiles();
-
-            if (dirs != null) {
-
-                // The dirs array should contain directories for each simulation/algorithm combination. These
-                // are formatted as, e.g., "5.2" for simulation5 and algorithm 2. We need to iterate through
-                // all of these directories and find the highest simulation number and the highest
-                // algorithm number. The number of graphs will be determined once we have the simulation and
-                // algorithm numbers. These are listed as "graph1.txt", "graph2.txt", etc., in each of these
-                // directories.
-                for (File dir : dirs) {
-                    String name = dir.getName();
-                    String[] parts = name.split("\\.");
-
-                    int simulation;
-
-                    try {
-                        simulation = Integer.parseInt(parts[0]);
-
-                        if (!simulationIndices.contains(simulation)) {
-                            simulationIndices.add(simulation);
-                        }
-                    } catch (NumberFormatException e) {
-                        // These aren't directories/files written out by the tool.
-                    }
-                }
-            }
-        }
-        return simulationIndices;
-    }
-
     @NotNull
     private JButton runComparisonButton() {
         JButton runComparison = new JButton("Run Comparison");
@@ -2059,7 +2163,7 @@ public class GridSearchEditor extends JPanel {
     private void addAddAlgorithmListener() {
         addAlgorithm.addActionListener(e -> {
             AlgorithmModels algorithmModels = AlgorithmModels.getInstance();
-            List<AlgorithmModel> algorithmModels1 = algorithmModels.getModels(DataType.Continuous, false);
+            List<AlgorithmModel> algorithmModels1 = algorithmModels.getModels(getDataTypeForGridSearch(), false);
 
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
@@ -2115,6 +2219,32 @@ public class GridSearchEditor extends JPanel {
             dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
             dialog.setVisible(true);
         });
+    }
+
+    private void addRemoveLastAlgorithmListener() {
+        removeLastAlgorithm.addActionListener(e -> {
+            List<GridSearchModel.AlgorithmSpec> algs = model.getSelectedAlgorithms();
+            if (algs == null || algs.isEmpty()) {
+                Toolkit.getDefaultToolkit().beep();
+                return;
+            }
+
+            // Prefer model API if present; fallback to mutating the live list
+            model.removeLastAlgorithm();          // if you have it
+
+            onSelectedAlgorithmsChanged();
+        });
+    }
+
+    private void addEditAlgorithmParametersListener() {
+        editAlgorithmParameters.addActionListener(e -> openEditAlgorithmParametersDialog());
+    }
+
+    private DataType getDataTypeForGridSearch() {
+        // Best: infer from the actual dataset being analyzed.
+        // Placeholder: return model.getDataType() if you already have it.
+        // Fallback: Continuous.
+        return DataType.Continuous;
     }
 
     @NotNull
@@ -2183,14 +2313,16 @@ public class GridSearchEditor extends JPanel {
                     ((TakesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
                 }
 
-                model.addAlgorithm(new GridSearchModel.AlgorithmSpec("name", algorithmModel, test, score));
+//                model.addAlgorithm(new GridSearchModel.AlgorithmSpec("name", algorithmModel, test, score));
+
+                String displayName = algorithmModel.getName(); // or algorithmModel.toString()
+                model.addAlgorithm(new GridSearchModel.AlgorithmSpec(displayName, algorithmModel, test, score));
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException ex) {
                 throw new RuntimeException(ex);
             }
 
-            setAlgorithmText();
-            setComparisonText();
+            onSelectedAlgorithmsChanged();
             dialog.dispose();
         });
 
@@ -2484,124 +2616,124 @@ public class GridSearchEditor extends JPanel {
 
         List<GridSearchModel.AlgorithmSpec> selectedAlgorithms = model.getSelectedAlgorithms();
 
-        if (selectedAlgorithms.isEmpty()) {
-            algorithmChoiceTextArea.append("""
-                     ** No algorithm have been selected. Please select at least one algorithm using the Add Algorithm button below. **
-                    """);
+        if (selectedAlgorithms == null || selectedAlgorithms.isEmpty()) {
+            algorithmChoiceTextArea.append(
+                    "** No algorithms have been selected. Please select at least one algorithm using the Add Algorithm button below. **\n"
+            );
+            algorithmChoiceTextArea.setCaretPosition(0);
             return;
-        } else if (selectedAlgorithms.size() == 1) {
+        }
+
+        if (selectedAlgorithms.size() == 1) {
             algorithmChoiceTextArea.append("""
                     The following algorithm has been selected. This algorithm will be run with the selected simulations.
                     
                     """);
-
-            GridSearchModel.AlgorithmSpec algorithm = selectedAlgorithms.getFirst();
-            algorithmChoiceTextArea.append("Selected algorithm: " + algorithm.getAlgorithmImpl().getDescription() + "\n");
-
-            if (algorithm instanceof TakesIndependenceWrapper) {
-                algorithmChoiceTextArea.append("Selected independence test = " + ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getDescription() + "\n");
-            }
-
-            if (algorithm instanceof TakesScoreWrapper) {
-                algorithmChoiceTextArea.append("Selected score = " + ((TakesScoreWrapper) algorithm).getScoreWrapper().getDescription() + "\n");
-            }
-
         } else {
             algorithmChoiceTextArea.append("""
                     The following algorithms have been selected. These algorithms will be run with the selected simulations.
                     """);
-            for (int i = 0; i < selectedAlgorithms.size(); i++) {
-                GridSearchModel.AlgorithmSpec algorithm = selectedAlgorithms.get(i);
-                algorithmChoiceTextArea.append("\nAlgorithm #" + (i + 1) + ". " + algorithm.getAlgorithmImpl().getDescription() + "\n");
+            algorithmChoiceTextArea.append("\n");
+        }
 
-                if (algorithm instanceof TakesIndependenceWrapper) {
-                    algorithmChoiceTextArea.append("Selected independence test = " + ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getDescription() + "\n");
-                }
+        // Build a stable, non-side-effecting summary of what’s selected.
+        for (int i = 0; i < selectedAlgorithms.size(); i++) {
+            GridSearchModel.AlgorithmSpec spec = selectedAlgorithms.get(i);
 
-                if (algorithm instanceof TakesScoreWrapper) {
-                    algorithmChoiceTextArea.append("Selected score = " + ((TakesScoreWrapper) algorithm).getScoreWrapper().getDescription() + "\n");
-                }
+            // Instantiate exactly once (per spec) for the algorithm description.
+            // (If this is still too expensive, we can add a cachedDescription field to AlgorithmSpec later.)
+            Algorithm algImpl;
+            try {
+                algImpl = spec.getAlgorithmImpl();
+            } catch (Exception ex) {
+                algorithmChoiceTextArea.append("\nAlgorithm #" + (i + 1) + ". " + spec.getName() + "\n");
+                algorithmChoiceTextArea.append("  (Error constructing algorithm instance for description: " + ex.getMessage() + ")\n");
+                continue;
+            }
+
+            if (selectedAlgorithms.size() == 1) {
+                algorithmChoiceTextArea.append("Selected algorithm: " + safe(algImpl.getDescription()) + "\n");
+            } else {
+                algorithmChoiceTextArea.append("\nAlgorithm #" + (i + 1) + ". " + safe(algImpl.getDescription()) + "\n");
+            }
+
+            // Test + Score are chosen in AlgorithmSpec, not on AlgorithmSpec itself.
+            // So report from spec.getTest()/getScore() (and/or the wrappers those map to).
+            if (spec.getTest() != null) {
+                // Prefer IndependenceWrapper.getDescription() if available.
+                String testDesc = describeTest(spec);
+                algorithmChoiceTextArea.append("Selected independence test = " + testDesc + "\n");
+            }
+
+            if (spec.getScore() != null) {
+                String scoreDesc = describeScore(spec);
+                algorithmChoiceTextArea.append("Selected score = " + scoreDesc + "\n");
             }
         }
 
+        // Parameter summary you already have
         algorithmChoiceTextArea.append(getAlgorithmParameterText());
-        List<GridSearchModel.AlgorithmSpec> selectedAlgorithmModels = model.getSelectedAlgorithms();
-        Set<String> algorithmDescriptions = new HashSet<>();
 
-        if (!selectedAlgorithmModels.isEmpty()) {
+        // --------- Descriptions section (dedup by NAME) ---------
+        Set<String> algorithmNamesSeen = new HashSet<>();
+        if (!selectedAlgorithms.isEmpty()) {
             algorithmChoiceTextArea.append("\n\nAlgorithm Descriptions:");
         }
 
-        for (GridSearchModel.AlgorithmSpec algorithmSpec : selectedAlgorithmModels) {
-            if (algorithmDescriptions.contains(algorithmSpec.getName())) {
-                continue;
-            }
-            algorithmChoiceTextArea.append("\n\n" + algorithmSpec.getName());
-            algorithmChoiceTextArea.append("\n\n" + algorithmSpec.getAlgorithm().getDescription().replace("\n", "\n\n"));
-            algorithmDescriptions.add(algorithmSpec.getName());
-        }
+        for (GridSearchModel.AlgorithmSpec spec : selectedAlgorithms) {
+            String name = spec.getName();
+            if (name == null) name = "(Unnamed Algorithm)";
+            if (!algorithmNamesSeen.add(name)) continue;
 
-        Set<IndependenceWrapper> independenceWrappers = new HashSet<>();
+            algorithmChoiceTextArea.append("\n\n" + name);
 
-        for (GridSearchModel.AlgorithmSpec algorithm : selectedAlgorithms) {
-            if (algorithm instanceof TakesIndependenceWrapper) {
-                independenceWrappers.add(((TakesIndependenceWrapper) algorithm).getIndependenceWrapper());
-            }
-        }
-
-        Set<ScoreWrapper> scoreWrappers = new HashSet<>();
-        Set<String> scoreDescriptions = new HashSet<>();
-
-        for (GridSearchModel.AlgorithmSpec algorithm : selectedAlgorithms) {
-            if (algorithm instanceof TakesScoreWrapper) {
-                if (scoreDescriptions.contains(algorithm.getAlgorithmImpl().getDescription())) {
-                    continue;
-                }
-                scoreWrappers.add(((TakesScoreWrapper) algorithm).getScoreWrapper());
-                scoreDescriptions.add(algorithm.getAlgorithmImpl().getDescription());
+            // Use model description rather than constructing algorithm again
+            AlgorithmModel modelAlg = spec.getAlgorithm();
+            if (modelAlg != null && modelAlg.getDescription() != null) {
+                algorithmChoiceTextArea.append("\n\n" + modelAlg.getDescription().replace("\n", "\n\n"));
+            } else {
+                algorithmChoiceTextArea.append("\n\n(No description available.)");
             }
         }
 
-        IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
-        Set<IndependenceTestModel> independenceTestModels1 = new HashSet<>(independenceTestModels.getModels());
-        Set<String> independenceDescriptions = new HashSet<>();
+        // --------- Independence Test Descriptions (dedup) ---------
+        Set<Class<?>> testClasses = new HashSet<>();
+        for (GridSearchModel.AlgorithmSpec spec : selectedAlgorithms) {
+            if (spec.getTest() != null && spec.getTest().clazz() != null) {
+                testClasses.add(spec.getTest().clazz());
+            }
+        }
 
-        if (!independenceWrappers.isEmpty()) {
+        if (!testClasses.isEmpty()) {
             algorithmChoiceTextArea.append("\n\nIndependence Test Descriptions:");
-        }
-
-        for (IndependenceTestModel independenceTestModel : independenceTestModels1) {
-            independenceWrappers.forEach(independenceWrapper -> {
-                if (independenceTestModel.getIndependenceTest().clazz().equals(independenceWrapper.getClass())) {
-                    if (independenceDescriptions.contains(independenceTestModel.getName())) {
-                        return;
-                    }
-                    algorithmChoiceTextArea.append("\n\n" + independenceTestModel.getName());
-                    algorithmChoiceTextArea.append("\n\n" + independenceTestModel.getDescription().replace("\n", "\n\n"));
-                    independenceDescriptions.add(independenceTestModel.getName());
+            IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
+            for (IndependenceTestModel m : independenceTestModels.getModels()) {
+                Class<?> c = (m.getIndependenceTest() == null) ? null : m.getIndependenceTest().clazz();
+                if (c != null && testClasses.contains(c)) {
+                    algorithmChoiceTextArea.append("\n\n" + m.getName());
+                    algorithmChoiceTextArea.append("\n\n" + safe(m.getDescription()).replace("\n", "\n\n"));
                 }
-            });
+            }
         }
 
-        ScoreModels scoreModels = ScoreModels.getInstance();
-        Set<ScoreModel> scoreModels1 = new HashSet<>(scoreModels.getModels());
-        Set<String> scoreDescriptions1 = new HashSet<>();
+        // --------- Score Descriptions (dedup) ---------
+        Set<Class<?>> scoreClasses = new HashSet<>();
+        for (GridSearchModel.AlgorithmSpec spec : selectedAlgorithms) {
+            if (spec.getScore() != null && spec.getScore().clazz() != null) {
+                scoreClasses.add(spec.getScore().clazz());
+            }
+        }
 
-        if (!scoreWrappers.isEmpty()) {
+        if (!scoreClasses.isEmpty()) {
             algorithmChoiceTextArea.append("\n\nScore Descriptions:");
-        }
-
-        for (ScoreModel scoreModel : scoreModels1) {
-            scoreWrappers.forEach(scoreWrapper -> {
-                if (scoreModel.getScore().clazz().equals(scoreWrapper.getClass())) {
-                    if (scoreDescriptions1.contains(scoreModel.getName())) {
-                        return;
-                    }
-                    algorithmChoiceTextArea.append("\n\n" + scoreModel.getName());
-                    algorithmChoiceTextArea.append("\n\n" + scoreModel.getDescription().replace("\n", "\n\n"));
-                    scoreDescriptions1.add(scoreModel.getName());
+            ScoreModels scoreModels = ScoreModels.getInstance();
+            for (ScoreModel m : scoreModels.getModels()) {
+                Class<?> c = (m.getScore() == null) ? null : m.getScore().clazz();
+                if (c != null && scoreClasses.contains(c)) {
+                    algorithmChoiceTextArea.append("\n\n" + m.getName());
+                    algorithmChoiceTextArea.append("\n\n" + safe(m.getDescription()).replace("\n", "\n\n"));
                 }
-            });
+            }
         }
 
         algorithmChoiceTextArea.setCaretPosition(0);
