@@ -124,7 +124,7 @@ public class GridSearchEditor extends JPanel {
     /**
      * Button used to add a simulation.
      */
-    private transient JButton addSimulation;
+    private transient JButton selectSimulation;
     /**
      * Button used to add an algorithm.
      */
@@ -155,8 +155,8 @@ public class GridSearchEditor extends JPanel {
     private transient JTabbedPane comparisonTabbedPane;
 
     /**
-     * Initializes an instance of AlgcomparisonEditor, which is a JPanel containing a JTabbedPane that displays different
-     * tabs for simulation, algorithm, table columns, comparison and help.
+     * Initializes an instance of AlgcomparisonEditor, which is a JPanel containing a JTabbedPane that displays
+     * different tabs for simulation, algorithm, table columns, comparison and help.
      *
      * @param model the GridSearchModel to use for the editor
      */
@@ -1316,63 +1316,6 @@ public class GridSearchEditor extends JPanel {
     }
 
     /**
-     * Adds the dropdowns for selecting an independence test and a score to the given Box.
-     *
-     * @param vert1 the Box to which the dropdowns will be added
-     */
-    private void addTestAndScoreDropdowns(Box vert1) {
-        IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
-        List<IndependenceTestModel> models = independenceTestModels.getModels();
-
-        indTestComboBox = new JComboBox<>();
-
-        for (IndependenceTestModel model : models) {
-            indTestComboBox.addItem(model);
-        }
-
-        String lastIndependenceTest = model.getLastIndependenceTest();
-
-        for (int i = 0; i < indTestComboBox.getItemCount(); i++) {
-            IndependenceTestModel independenceTestModel = indTestComboBox.getItemAt(i);
-            if (independenceTestModel.getName().equals(lastIndependenceTest)) {
-                indTestComboBox.setSelectedIndex(i);
-                break;
-            }
-        }
-
-        Box horiz4 = Box.createHorizontalBox();
-        horiz4.add(new JLabel("Choose an independence test:"));
-        horiz4.add(Box.createHorizontalGlue());
-        horiz4.add(indTestComboBox);
-        vert1.add(horiz4);
-
-        ScoreModels scoreModels = ScoreModels.getInstance();
-        List<ScoreModel> scoreModelsList = scoreModels.getModels();
-
-        scoreModelComboBox = new JComboBox<>();
-
-        for (ScoreModel model : scoreModelsList) {
-            scoreModelComboBox.addItem(model);
-        }
-
-        String lastScore = model.getLastScore();
-
-        for (int i = 0; i < scoreModelComboBox.getItemCount(); i++) {
-            ScoreModel scoreModel = scoreModelComboBox.getItemAt(i);
-            if (scoreModel.getName().equals(lastScore)) {
-                scoreModelComboBox.setSelectedIndex(i);
-                break;
-            }
-        }
-
-        Box horiz5 = Box.createHorizontalBox();
-        horiz5.add(new JLabel("Choose a score:"));
-        horiz5.add(Box.createHorizontalGlue());
-        horiz5.add(scoreModelComboBox);
-        vert1.add(horiz5);
-    }
-
-    /**
      * Adds a simulation tab to the provided JTabbedPane.
      *
      * @param tabbedPane the JTabbedPane to which the simulation tab is added
@@ -1392,25 +1335,20 @@ public class GridSearchEditor extends JPanel {
         Box simulationSelectionBox = Box.createHorizontalBox();
         simulationSelectionBox.add(Box.createHorizontalGlue());
 
-        addSimulation = new JButton("Add Simulation");
-        addAddSimulationListener();
-
-        JButton removeLastSimulation = new JButton("Remove Last Simulation");
-        removeLastSimulation.addActionListener(e -> {
-            model.removeLastSimulation();
-            setSimulationText();
-            setComparisonText();
-        });
+        selectSimulation = new JButton("Select Simulation");
+        addSelectSimulationListener();
 
         JButton editSimulationParameters = getJButton();
 
-        simulationSelectionBox.add(addSimulation);
-        simulationSelectionBox.add(removeLastSimulation);
+        simulationSelectionBox.add(selectSimulation);
         simulationSelectionBox.add(editSimulationParameters);
         simulationSelectionBox.add(Box.createHorizontalGlue());
-        simulationChoice.add(simulationSelectionBox, BorderLayout.SOUTH);
 
-        tabbedPane.addTab("Simulations", simulationChoice);
+        if (model.getSuppliedData() == null) {
+            simulationChoice.add(simulationSelectionBox, BorderLayout.SOUTH);
+        }
+
+        tabbedPane.addTab(model.getSuppliedData() != null ? "Data" : "Simulations", simulationChoice);
     }
 
     private @NotNull JButton getJButton() {
@@ -1849,7 +1787,7 @@ public class GridSearchEditor extends JPanel {
             simulationComboBox.addItem(i);
         }
 
-        if (model.getSelectedSimulation() > 0) {
+        if (model.getSelectedSimulation() != null) {
             simulationComboBox.setSelectedItem(model.getSelectedSimulation());
         }
 
@@ -2023,8 +1961,12 @@ public class GridSearchEditor extends JPanel {
      * graph type and simulation type. If the "Add" button in the dialog is clicked, the selected graph and simulation
      * types are used to create a simulation and add it to the model.
      */
-    private void addAddSimulationListener() {
-        addSimulation.addActionListener(e -> {
+    private void addSelectSimulationListener() {
+        selectSimulation.addActionListener(e -> {
+            if (model.getSuppliedData() != null) {
+                throw new IllegalArgumentException("A data set has been supplied, so we cannot select a simulation.");
+            }
+
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
 
@@ -2070,7 +2012,7 @@ public class GridSearchEditor extends JPanel {
             panel.add(vert1, BorderLayout.NORTH);
 
             // Create the JDialog. Use the parent frame to make it modal.
-            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Simulation", Dialog.ModalityType.APPLICATION_MODAL);
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Select Simulation", Dialog.ModalityType.APPLICATION_MODAL);
             dialog.setLayout(new BorderLayout());
 
             // Add your panel to the center of the dialog
@@ -2140,9 +2082,25 @@ public class GridSearchEditor extends JPanel {
             };
 
             GridSearchModel.SimulationSpec spec = new GridSearchModel.SimulationSpec("name", graphClazz, simulationClass);
-            model.addSimulationSpec(spec);
+
+            // Single-simulation policy: replace the current selection rather than accumulating.
+            // (We keep the existing model API by clearing the current list before adding.)
+            try {
+                Simulations sims = model.getSelectedSimulations();
+                if (sims != null && sims.getSimulations() != null) {
+                    sims.getSimulations().clear();
+                }
+            } catch (Exception ignore) {
+                // If the model changes later, failing to clear here is non-fatal; addSimulationSpec will still set something.
+            }
+
+//            model.removeLastSimulation();
+//            model.addSimulationSpec(spec);
+            model.setSelectedSimulation(spec);
             setComparisonText();
             setSimulationText();
+
+            onSelectedAlgorithmsChanged();
 
             dialog.dispose(); // Close the dialog
         });
@@ -2185,11 +2143,7 @@ public class GridSearchEditor extends JPanel {
             }
 
             algorithmDropdown.addActionListener(e1 -> {
-                AlgorithmModel selectedItem = (AlgorithmModel) algorithmDropdown.getSelectedItem();
-
-                if (selectedItem != null) {
-                    model.setLastAlgorithmChoice(selectedItem.getName());
-                }
+                setupAlgorithmDropdown();
             });
 
             Box vert1 = Box.createVerticalBox();
@@ -2199,7 +2153,21 @@ public class GridSearchEditor extends JPanel {
             horiz2.add(algorithmDropdown);
             vert1.add(horiz2);
 
-            addTestAndScoreDropdowns(vert1);
+            indTestComboBox = new JComboBox<>();
+            scoreModelComboBox = new JComboBox<>();
+            setupAlgorithmDropdown();
+
+            Box horiz4 = Box.createHorizontalBox();
+            horiz4.add(new JLabel("Choose an independence test:"));
+            horiz4.add(Box.createHorizontalGlue());
+            horiz4.add(indTestComboBox);
+            vert1.add(horiz4);
+
+            Box horiz5 = Box.createHorizontalBox();
+            horiz5.add(new JLabel("Choose a score:"));
+            horiz5.add(Box.createHorizontalGlue());
+            horiz5.add(scoreModelComboBox);
+            vert1.add(horiz5);
 
             panel.add(vert1, BorderLayout.NORTH);
 
@@ -2219,6 +2187,49 @@ public class GridSearchEditor extends JPanel {
             dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
             dialog.setVisible(true);
         });
+    }
+
+    private void setupAlgorithmDropdown() {
+        AlgorithmModel selectedItem = (AlgorithmModel) algorithmDropdown.getSelectedItem();
+
+        if (selectedItem != null) {
+            model.setLastAlgorithmChoice(selectedItem.getName());
+        }
+
+        DataType datatype = getDataTypeForGridSearch();
+
+        indTestComboBox.removeAllItems();
+
+        if (selectedItem != null && selectedItem.isRequiredTest()) {
+            List<IndependenceTestModel> indTestModels = switch (datatype) {
+                case DataType.Continuous -> IndependenceTestModels.getInstance().getModels(DataType.Continuous);
+                case DataType.Discrete -> IndependenceTestModels.getInstance().getModels(DataType.Discrete);
+                case DataType.Mixed -> IndependenceTestModels.getInstance().getModels(DataType.Mixed);
+                default -> new ArrayList<>();
+            };
+
+            for (IndependenceTestModel model1 : indTestModels) {
+                indTestComboBox.addItem(model1);
+            }
+        }
+
+        scoreModelComboBox.removeAllItems();
+
+        if (selectedItem != null && selectedItem.isRequiredScore()) {
+            List<ScoreModel> scoreModelsList = switch (datatype) {
+                case DataType.Continuous -> ScoreModels.getInstance().getModels(DataType.Continuous);
+                case DataType.Discrete -> ScoreModels.getInstance().getModels(DataType.Discrete);
+                case DataType.Mixed -> ScoreModels.getInstance().getModels(DataType.Mixed);
+                default -> new ArrayList<>();
+            };
+
+            for (ScoreModel model1 : scoreModelsList) {
+                scoreModelComboBox.addItem(model1);
+            }
+        }
+
+        revalidate();
+        repaint();
     }
 
     private void addRemoveLastAlgorithmListener() {
@@ -2244,7 +2255,18 @@ public class GridSearchEditor extends JPanel {
         // Best: infer from the actual dataset being analyzed.
         // Placeholder: return model.getDataType() if you already have it.
         // Fallback: Continuous.
-        return DataType.Continuous;
+
+        if (model.getSelectedAlgorithms() == null) {
+            return inferSuppliedDataType();
+        } else if (!model.getSelectedAlgorithms().isEmpty()) {
+            if (model.getSuppliedData() != null) {
+                return inferSuppliedDataType();
+            } else {
+                return model.getSelectedSimulation().getSimulationImpl().getDataType();
+            }
+        } else {
+            return DataType.Continuous;
+        }
     }
 
     @NotNull
@@ -2581,7 +2603,7 @@ public class GridSearchEditor extends JPanel {
 
         if (simulations.isEmpty()) {
             simulationChoiceTextArea.append("""
-                     ** No simulations have been selected. Please select at least one simulation using the Add Simulation button below. **
+                     ** No simulations have been selected. Please select at least one simulation using the Select Simulation button below. **
                     """);
             return;
         } else if (simulations.size() == 1) {
@@ -2977,8 +2999,8 @@ public class GridSearchEditor extends JPanel {
     }
 
     /**
-     * Commit the selected Markov-checker test into the model (and Preferences)
-     * and rebuild the corresponding IndependenceWrapper instance.
+     * Commit the selected Markov-checker test into the model (and Preferences) and rebuild the corresponding
+     * IndependenceWrapper instance.
      */
     private void applySelectedMarkovCheckerTest(IndependenceTestModel selected) {
         if (selected == null) return;
@@ -3004,8 +3026,8 @@ public class GridSearchEditor extends JPanel {
     }
 
     /**
-     * Prefer BF blocks for Markov checking when available; otherwise fall back
-     * to a sensible choice based on data type; otherwise Fisher Z; otherwise first.
+     * Prefer BF blocks for Markov checking when available; otherwise fall back to a sensible choice based on data type;
+     * otherwise Fisher Z; otherwise first.
      */
     private IndependenceTestModel choosePreferredDefaultTest(List<IndependenceTestModel> models, DataType dt) {
         // 1) Strong preference: Basis-function blocks (your intended default strategy)

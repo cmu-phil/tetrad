@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -25,7 +25,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.independence.*;
+import edu.cmu.tetrad.algcomparison.independence.DegenerateGaussianLrt;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -71,14 +72,12 @@ import java.util.prefs.Preferences;
 public class GridSearchModel implements SessionModel, GraphSource {
     @Serial
     private static final long serialVersionUID = 23L;
+    // Canonical parameter key for Markov Checker conditioning-set mode used in Grid Search.
+    private static final String PARAM_MARKOV_CHECKER_COND_SET_TYPE = "markovCheckerConditioningSetType";
     /**
      * A private final variable that holds a Parameters object.
      */
     private final Parameters parameters;
-
-    // Canonical parameter key for Markov Checker conditioning-set mode used in Grid Search.
-    private static final String PARAM_MARKOV_CHECKER_COND_SET_TYPE = "markovCheckerConditioningSetType";
-
     /**
      * The knowledge to be used for the GridSearchModel.
      */
@@ -340,28 +339,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
     }
 
     /**
-     * Ensures the Markov Checker conditioning-set type is synchronized with {@link #parameters}.
-     * <p>
-     * The Grid Search execution path should read this value from {@link #parameters}, not from transient UI state.
-     * This prevents mismatches where the editor shows one selection but the run uses another default/cached value.
-     */
-    private void syncMarkovCheckerConditioningSetTypeFromParameters() {
-        try {
-            String s = parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG.name());
-                if (s != null && !s.isBlank()) {
-                this.markovCheckerConditioningSetType = ConditioningSetType.valueOf(s);
-                return;
-            }
-        } catch (Exception ignored) {
-            // Fall through to persist current value.
-        }
-
-        // Persist current value as the default if none is present or it is invalid.
-        parameters.set(PARAM_MARKOV_CHECKER_COND_SET_TYPE, this.markovCheckerConditioningSetType.name());
-    }
-
-
-    /**
      * Finds and returns a list of algorithm classes that implement the Algorithm interface.
      *
      * @return A list of algorithm classes.
@@ -472,6 +449,27 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
 
         return paramNamesSet;
+    }
+
+    /**
+     * Ensures the Markov Checker conditioning-set type is synchronized with {@link #parameters}.
+     * <p>
+     * The Grid Search execution path should read this value from {@link #parameters}, not from transient UI state.
+     * This prevents mismatches where the editor shows one selection but the run uses another default/cached value.
+     */
+    private void syncMarkovCheckerConditioningSetTypeFromParameters() {
+        try {
+            String s = parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG.name());
+            if (s != null && !s.isBlank()) {
+                this.markovCheckerConditioningSetType = ConditioningSetType.valueOf(s);
+                return;
+            }
+        } catch (Exception ignored) {
+            // Fall through to persist current value.
+        }
+
+        // Persist current value as the default if none is present or it is invalid.
+        parameters.set(PARAM_MARKOV_CHECKER_COND_SET_TYPE, this.markovCheckerConditioningSetType.name());
     }
 
     /**
@@ -629,14 +627,9 @@ public class GridSearchModel implements SessionModel, GraphSource {
         if (selectedAlgorithm >= index) selectedAlgorithm++;
     }
 
-    public void setAlgorithms(List<AlgorithmSpec> algorithms) {
+    public void removeLastAlgorithm() {
         initializeIfNull();
-        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
-        list.clear();
-        list.addAll(algorithms);
-
-        if (selectedAlgorithm >= list.size()) selectedAlgorithm = Math.max(0, list.size() - 1);
-        if (selectedAlgorithm < 0) selectedAlgorithm = 0;
+        removeAlgorithmAt(getSelectedAlgorithmSpecs().size() - 1);
     }
 
 //    /**
@@ -650,14 +643,19 @@ public class GridSearchModel implements SessionModel, GraphSource {
 //        }
 //    }
 
-    public void removeLastAlgorithm() {
-        initializeIfNull();
-        removeAlgorithmAt(getSelectedAlgorithmSpecs().size() - 1);
-    }
-
     public List<AlgorithmSpec> getAlgorithms() {
         initializeIfNull();
         return getSelectedAlgorithmSpecs();
+    }
+
+    public void setAlgorithms(List<AlgorithmSpec> algorithms) {
+        initializeIfNull();
+        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+        list.clear();
+        list.addAll(algorithms);
+
+        if (selectedAlgorithm >= list.size()) selectedAlgorithm = Math.max(0, list.size() - 1);
+        if (selectedAlgorithm < 0) selectedAlgorithm = 0;
     }
 
 //    public void removeAlgorithmAt(int index) {
@@ -800,6 +798,13 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return (LinkedList<AlgorithmSpec>) parameters.get("algcomparison.selectedAlgorithms");
     }
 
+    public void setSelectedAlgorithms(List<AlgorithmSpec> specs) {
+        initializeIfNull();
+        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+        list.clear();
+        list.addAll(specs);
+    }
+
     public int getSelectedAlgorithmSafe() {
         initializeIfNull();
         int n = getSelectedAlgorithmSpecs().size();
@@ -820,13 +825,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
 
         return (LinkedList<MyTableColumn>) parameters.get("algcomparison.selectedTableColumns");
-    }
-
-    public void setSelectedAlgorithms(List<AlgorithmSpec> specs) {
-        initializeIfNull();
-        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
-        list.clear();
-        list.addAll(specs);
     }
 
     public void removeAlgorithmAt(int index) {
@@ -1035,11 +1033,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
         return pairs;
     }
-
-    /**
-     * Simple name<->class pair so we can sort and keep indices aligned.
-     */
-    private record NamedClass<T>(String name, Class<? extends T> clazz) {}
 
     /**
      * Finds and returns a list of simulation classes that implement the Simulation interface.
@@ -1327,7 +1320,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return Preferences.userRoot().get("lastAlgcomparisonIndependenceTestUsed", "");
     }
 
-
     public void setLastIndependenceTest(String name) {
         IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
         List<IndependenceTestModel> models = independenceTestModels.getModels();
@@ -1488,12 +1480,57 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.selectedGraph = graph;
     }
 
-    public int getSelectedSimulation() {
-        return selectedSimulation;
+    public SimulationSpec getSelectedSimulation() {
+        initializeIfNull();
+
+        Object obj = parameters.get("algcomparison.selectedSimulation");
+
+//        // Backward compat: if old multi-sim is present, adopt the first one.
+//        if (obj == null) {
+//            Object legacy = parameters.get("algcomparison.selectedSimulations");
+//
+//            if (legacy != null) {
+//                LinkedList<SimulationSpec> sims = (LinkedList<SimulationSpec>) legacy;
+//                if (!sims.isEmpty()) {
+//                    SimulationSpec first = sims.get(0);
+//                    parameters.set("algcomparison.selectedSimulation", first);
+//                    return first;
+//                }
+//            }
+//
+//            return null;
+//        }
+
+        return (obj instanceof SimulationSpec s) ? s : null;
+    }
+
+//    public int getSelectedSimulation() {
+//        return selectedSimulation;
+//    }
+
+    public void setSelectedSimulation(SimulationSpec simulation) {
+        initializeIfNull();
+        parameters.set("algcomparison.selectedSimulation", simulation);
+
+//        // Enforce single-sim going forward
+//        try {
+//            parameters.remove("algcomparison.selectedSimulations");
+//        } catch (Exception ignored) {
+//            // if remove isn't supported
+//        }
     }
 
     public void setSelectedSimulation(int selectedSimulation) {
         this.selectedSimulation = selectedSimulation;
+    }
+
+    public void clearSelectedSimulation() {
+        initializeIfNull();
+//        try {
+        parameters.remove("algcomparison.selectedSimulation");
+//        } catch (Exception ignored) {
+//            parameters.set("algcomparison.selectedSimulation", null);
+//        }
     }
 
     public int getSelectedAlgorithm() {
@@ -1601,6 +1638,12 @@ public class GridSearchModel implements SessionModel, GraphSource {
          * Partially Directed Acyclic Graph (PAG).
          */
         PAG
+    }
+
+    /**
+     * Simple name<->class pair so we can sort and keep indices aligned.
+     */
+    private record NamedClass<T>(String name, Class<? extends T> clazz) {
     }
 
     public static class MyTableColumn implements TetradSerializable {
