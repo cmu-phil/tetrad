@@ -708,10 +708,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * @param tableColumn The table column to add.
      */
     public void addTableColumn(MyTableColumn tableColumn) {
-        if (getSelectedTableColumnsPrivate().contains(tableColumn)) return;
+        if (getSelectedTableColumns().contains(tableColumn)) return;
         initializeIfNull();
-        getSelectedTableColumnsPrivate().add(tableColumn);
-        GridSearchModel.sortTableColumns(getSelectedTableColumnsPrivate());
+        getSelectedTableColumns().add(tableColumn);
+        GridSearchModel.sortTableColumns(getSelectedTableColumns());
     }
 
     /**
@@ -719,9 +719,25 @@ public class GridSearchModel implements SessionModel, GraphSource {
      */
     public void removeLastTableColumn() {
         initializeIfNull();
-        if (!getSelectedTableColumnsPrivate().isEmpty()) {
-            getSelectedTableColumnsPrivate().removeLast();
+        if (!getSelectedTableColumns().isEmpty()) {
+            getSelectedTableColumns().removeLast();
         }
+    }
+
+    public void setSelectedTableColumns(List<MyTableColumn> cols) {
+        initializeIfNull();
+        // store a fresh list so the model owns it
+        parameters.set("algcomparison.selectedTableColumns", new ArrayList<>(cols));
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<MyTableColumn> getSelectedTableColumns() {
+        initializeIfNull();
+        if (!(parameters.get("algcomparison.selectedTableColumns") instanceof List<?>)) {
+            ArrayList<MyTableColumn> value = new ArrayList<>();
+            parameters.set("algcomparison.selectedTableColumns", value);
+        }
+        return (List<MyTableColumn>) parameters.get("algcomparison.selectedTableColumns");
     }
 
     /**
@@ -814,18 +830,19 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return selectedAlgorithm;
     }
 
-    public List<MyTableColumn> getSelectedTableColumns() {
-        GridSearchModel.sortTableColumns(getSelectedTableColumnsPrivate());
-        return new ArrayList<>(getSelectedTableColumnsPrivate());
-    }
+//    public List<MyTableColumn> getSelectedTableColumns() {
+//        GridSearchModel.sortTableColumns(getSelectedTableColumnsPrivate());
+//        return new ArrayList<>(getSelectedTableColumnsPrivate());
+//    }
 
-    private LinkedList<MyTableColumn> getSelectedTableColumnsPrivate() {
-        if (!(parameters.get("algcomparison.selectedTableColumns") instanceof LinkedList<?>)) {
-            parameters.set("algcomparison.selectedTableColumns", new LinkedList<MyTableColumn>());
-        }
-
-        return (LinkedList<MyTableColumn>) parameters.get("algcomparison.selectedTableColumns");
-    }
+//    private LinkedList<MyTableColumn> getSelectedTableColumnsPrivate() {
+//        if (!(parameters.get("algcomparison.selectedTableColumns") instanceof LinkedList<?>)) {
+//            parameters.set("algcomparison.selectedTableColumns", new LinkedList<MyTableColumn>());
+//        }
+//
+//        LinkedList<MyTableColumn> myTableColumns = (LinkedList<MyTableColumn>) parameters.get("algcomparison.selectedTableColumns");
+//        return myTableColumns;
+//    }
 
     public void removeAlgorithmAt(int index) {
         initializeIfNull();
@@ -940,6 +957,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         statPairs.sort(Comparator.comparing(NamedClass::name, String.CASE_INSENSITIVE_ORDER));
         this.statisticsClasses = new ArrayList<>();
         this.statNames = new ArrayList<>();
+
         for (NamedClass<Statistic> p : statPairs) {
             this.statisticsClasses.add(p.clazz());
             this.statNames.add(p.name());
@@ -1146,7 +1164,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
     }
 
     public Statistics getSelectedStatistics() {
-        LinkedList<MyTableColumn> selectedTableColumns = getSelectedTableColumnsPrivate();
+        List<MyTableColumn> selectedTableColumns = getSelectedTableColumns();
 
         Statistics selectedStatistics = new Statistics();
         List<Statistic> lastStatisticsUsed = new ArrayList<>();
