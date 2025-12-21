@@ -1080,8 +1080,10 @@ public class GridSearchEditor extends JPanel {
                                            JComboBox<Integer> graphIndexComboBox,
                                            File resultsDir) {
 
-        Integer savedAlgorithm = (Integer) algorithmComboBox.getSelectedItem(); // <— use combo
-        Object selectedSimulation = simulationComboBox.getSelectedItem();
+        Integer savedAlgorithm = model.getSelectedAlgorithm();//  (Integer) algorithmComboBox.getSelectedItem(); // <— use combo
+        Integer savedGraphIndex = model.getSelectedGraphIndex();
+        Object selectedSimulation =  simulationComboBox.getSelectedItem();
+
 
         if (selectedSimulation == null) {
             algorithmComboBox.removeAllItems();
@@ -1117,8 +1119,10 @@ public class GridSearchEditor extends JPanel {
         // restore if still available, else default to first
         if (savedAlgorithm != null && algorithmIndices.contains(savedAlgorithm)) {
             algorithmComboBox.setSelectedItem(savedAlgorithm);
+            graphIndexComboBox.setSelectedItem(savedGraphIndex);
         } else if (!algorithmIndices.isEmpty()) {
             algorithmComboBox.setSelectedIndex(0);
+            graphIndexComboBox.setSelectedIndex(0);
         }
 
         updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
@@ -1798,8 +1802,8 @@ public class GridSearchEditor extends JPanel {
             graphIndexComboBox.setSelectedItem(model.getSelectedGraphIndex());
         }
 
-        selectors.add(new JLabel("Simulation:"));
-        selectors.add(simulationComboBox);
+//        selectors.add(new JLabel("Simulation:"));
+//        selectors.add(simulationComboBox);
 
         selectors.add(new JLabel("Algorithm:"));
         selectors.add(algorithmComboBox);
