@@ -1484,40 +1484,12 @@ public class GridSearchModel implements SessionModel, GraphSource {
         initializeIfNull();
 
         Object obj = parameters.get("algcomparison.selectedSimulation");
-
-//        // Backward compat: if old multi-sim is present, adopt the first one.
-//        if (obj == null) {
-//            Object legacy = parameters.get("algcomparison.selectedSimulations");
-//
-//            if (legacy != null) {
-//                LinkedList<SimulationSpec> sims = (LinkedList<SimulationSpec>) legacy;
-//                if (!sims.isEmpty()) {
-//                    SimulationSpec first = sims.get(0);
-//                    parameters.set("algcomparison.selectedSimulation", first);
-//                    return first;
-//                }
-//            }
-//
-//            return null;
-//        }
-
         return (obj instanceof SimulationSpec s) ? s : null;
     }
-
-//    public int getSelectedSimulation() {
-//        return selectedSimulation;
-//    }
 
     public void setSelectedSimulation(SimulationSpec simulation) {
         initializeIfNull();
         parameters.set("algcomparison.selectedSimulation", simulation);
-
-//        // Enforce single-sim going forward
-//        try {
-//            parameters.remove("algcomparison.selectedSimulations");
-//        } catch (Exception ignored) {
-//            // if remove isn't supported
-//        }
     }
 
     public void setSelectedSimulation(int selectedSimulation) {
@@ -1526,11 +1498,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
     public void clearSelectedSimulation() {
         initializeIfNull();
-//        try {
         parameters.remove("algcomparison.selectedSimulation");
-//        } catch (Exception ignored) {
-//            parameters.set("algcomparison.selectedSimulation", null);
-//        }
     }
 
     public int getSelectedAlgorithm() {

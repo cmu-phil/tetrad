@@ -1124,29 +1124,29 @@ public class GridSearchEditor extends JPanel {
         updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
     }
 
-    private JComponent buildAlgorithmSelectionControls() {
-        Box box = Box.createHorizontalBox();
-        box.add(Box.createHorizontalGlue());
-
-        addAlgorithm = new JButton("Add Algorithm");
-        addAddAlgorithmListener();
-
-        removeLastAlgorithm = new JButton("Remove Last Algorithm");
-
-        removeLastAlgorithm.addActionListener(e -> {
-            model.removeLastAlgorithm();
-            onSelectedAlgorithmsChanged();
-        });
-
-        editAlgorithmParameters = new JButton("Edit Parameters");
-        editAlgorithmParameters.addActionListener(e -> openEditAlgorithmParametersDialog());
-
-        box.add(addAlgorithm);
-        box.add(removeLastAlgorithm);
-        box.add(editAlgorithmParameters);
-        box.add(Box.createHorizontalGlue());
-        return box;
-    }
+//    private JComponent buildAlgorithmSelectionControls() {
+//        Box box = Box.createHorizontalBox();
+//        box.add(Box.createHorizontalGlue());
+//
+//        addAlgorithm = new JButton("Add Algorithm");
+//        addAddAlgorithmListener();
+//
+//        removeLastAlgorithm = new JButton("Remove Last Algorithm");
+//
+//        removeLastAlgorithm.addActionListener(e -> {
+//            model.removeLastAlgorithm();
+//            onSelectedAlgorithmsChanged();
+//        });
+//
+//        editAlgorithmParameters = new JButton("Edit Parameters");
+//        editAlgorithmParameters.addActionListener(e -> openEditAlgorithmParametersDialog());
+//
+//        box.add(addAlgorithm);
+//        box.add(removeLastAlgorithm);
+//        box.add(editAlgorithmParameters);
+//        box.add(Box.createHorizontalGlue());
+//        return box;
+//    }
 
     private void openEditAlgorithmParametersDialog() {
         List<GridSearchModel.AlgorithmSpec> selected = model.getSelectedAlgorithms();
@@ -1209,18 +1209,18 @@ public class GridSearchEditor extends JPanel {
         dialog.setVisible(true);
     }
 
-    /**
-     * Adds a tab if params is non-empty.
-     *
-     * @return the tab index added, or -1 if not added.
-     */
-    private int addParamTabIfAny(JTabbedPane tabs, String title, Set<String> params,
-                                 boolean listOptionAllowed, boolean bothOptionAllowed) {
-        if (params == null || params.isEmpty()) return -1;
-        int index = tabs.getTabCount();
-        tabs.addTab(title, new PaddingPanel(getParameterBox(params, listOptionAllowed, bothOptionAllowed)));
-        return index;
-    }
+//    /**
+//     * Adds a tab if params is non-empty.
+//     *
+//     * @return the tab index added, or -1 if not added.
+//     */
+//    private int addParamTabIfAny(JTabbedPane tabs, String title, Set<String> params,
+//                                 boolean listOptionAllowed, boolean bothOptionAllowed) {
+//        if (params == null || params.isEmpty()) return -1;
+//        int index = tabs.getTabCount();
+//        tabs.addTab(title, new PaddingPanel(getParameterBox(params, listOptionAllowed, bothOptionAllowed)));
+//        return index;
+//    }
 
     private void onSelectedAlgorithmsChanged() {
         setAlgorithmText();
