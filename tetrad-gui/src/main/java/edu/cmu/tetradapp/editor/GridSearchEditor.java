@@ -2698,13 +2698,13 @@ public class GridSearchEditor extends JPanel {
             Box horiz3 = Box.createHorizontalBox();
             horiz3.add(Box.createHorizontalGlue());
 
-            JButton selectUsedParameters = new JButton("Select Parameters Used");
+            JButton selectUsedParameters = new JButton("Utilized Parameters");
             horiz3.add(selectUsedParameters);
 
-            JButton selectLastStatisticsUsed = new JButton("Select Last Statistics Used");
+            JButton selectLastStatisticsUsed = new JButton("Last Statistics Used");
             horiz3.add(selectLastStatisticsUsed);
 
-            JButton selectDefaultMarkovChecker = new JButton("Default Markov Checker Parameters");
+            JButton selectDefaultMarkovChecker = new JButton("Markov Checker Defaults");
             horiz3.add(selectDefaultMarkovChecker);
 
             horiz3.add(Box.createHorizontalGlue());
