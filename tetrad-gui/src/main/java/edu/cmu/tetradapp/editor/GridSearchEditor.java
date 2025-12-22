@@ -80,7 +80,6 @@ public class GridSearchEditor extends JPanel {
     /**
      * JLabel representing a message indicating that there are no parameters to edit.
      */
-//    private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
     private static final String NO_PARAM_TEXT = "No parameters to edit";
     /**
      * A JComboBox that holds instances of IndependenceTestModel.
@@ -127,9 +126,10 @@ public class GridSearchEditor extends JPanel {
     /**
      * Button used to add an algorithm.
      */
-//    private transient JButton addAlgorithm;
-    // class fields
     private JButton addAlgorithm;
+    /**
+     * Button used to edit algorithm parameters.
+     */
     private JButton editAlgorithmParameters;
     /**
      * Button used to add table columns.
@@ -507,6 +507,16 @@ public class GridSearchEditor extends JPanel {
         return field;
     }
 
+    /**
+     * Creates and configures a ListLongTextField with specified parameters and constraints.
+     *
+     * @param parameter the parameter key to be used when storing values in the parameters.
+     * @param parameters the Parameters object where the validated values will be stored.
+     * @param defaultValues an array of default long values to initialize the field with.
+     * @param lowerBound the lower bound limit for validating the long values.
+     * @param upperBound the upper bound limit for validating the long values.
+     * @return a configured instance of ListLongTextField.
+     */
     public static ListLongTextField getListLongTextField(String parameter, Parameters parameters, Long[] defaultValues, long lowerBound, long upperBound) {
         ListLongTextField field = new ListLongTextField(defaultValues, 8);
 
@@ -714,6 +724,16 @@ public class GridSearchEditor extends JPanel {
         return paramText.toString();
     }
 
+    /**
+     * Scrolls the given JScrollPane to make the specified word in the JTextArea visible.
+     * If the word is found within the text area, the method calculates the position of the word
+     * and adjusts the visible area of the scroll pane to bring the word into view.
+     *
+     * @param textArea the JTextArea containing the text where the word is being searched
+     * @param scrollPane the JScrollPane associated with the JTextArea to be scrolled
+     * @param word the word to search for and scroll to within the JTextArea
+     * @throws BadLocationException if the position of the word is invalid or cannot be resolved
+     */
     public static void scrollToWord(JTextArea textArea, JScrollPane scrollPane, String word) throws BadLocationException {
         String text = textArea.getText();
         int pos = text.indexOf(word);
@@ -3768,6 +3788,15 @@ public class GridSearchEditor extends JPanel {
         }
     }
 
+    /**
+     * A custom OutputStream implementation that writes output to a JTextArea in a Swing-based GUI.
+     * This class allows developers to redirect standard output or logging messages to a GUI component
+     * for real-time display.
+     *
+     * Text written to this stream will be appended to the specified JTextArea. It handles incoming
+     * characters and ensures proper synchronization with the event dispatch thread (EDT) when updating
+     * the JTextArea.
+     */
     public static class TextAreaOutputStream extends OutputStream {
         private final JTextArea textArea;
         private final StringBuilder sb = new StringBuilder();
@@ -3805,21 +3834,44 @@ public class GridSearchEditor extends JPanel {
             return (s == null) ? "" : s;
         }
 
+        /**
+         * Returns the number of rows in the table model.
+         *
+         * @return the number of rows, which corresponds to the size of the columns list.
+         */
         @Override
         public int getRowCount() {
             return cols.size();
         }
 
+        /**
+         * Returns the number of columns in the table model.
+         *
+         * @return the number of columns, which corresponds to the length of the COLS array.
+         */
         @Override
         public int getColumnCount() {
             return COLS.length;
         }
 
+        /**
+         * Returns the name of the column at the specified column index.
+         *
+         * @param column the index of the column whose name is to be retrieved
+         * @return the name of the column at the specified index
+         */
         @Override
         public String getColumnName(int column) {
             return COLS[column];
         }
 
+        /**
+         * Returns the Class of the values contained within the specified column.
+         * The returned class determines the type of data that the column is expected to hold.
+         *
+         * @param columnIndex the index of the column whose class is to be retrieved
+         * @return the Class object representing the type of values in the specified column
+         */
         @Override
         public Class<?> getColumnClass(int columnIndex) {
             return switch (columnIndex) {
@@ -3829,11 +3881,25 @@ public class GridSearchEditor extends JPanel {
             };
         }
 
+        /**
+         * Determines whether a cell at the specified row and column index is editable.
+         *
+         * @param rowIndex the row index of the cell
+         * @param columnIndex the column index of the cell
+         * @return true if the cell is editable, false otherwise
+         */
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return columnIndex == 0;
         }
 
+        /**
+         * Returns the value at the specified row and column index.
+         *
+         * @param rowIndex        the row whose value is to be queried
+         * @param columnIndex     the column whose value is to be queried
+         * @return the value at the specified row and column index
+         */
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             GridSearchModel.MyTableColumn c = cols.get(rowIndex);
@@ -3847,6 +3913,13 @@ public class GridSearchEditor extends JPanel {
             };
         }
 
+        /**
+         * Sets the value at the specified row and column index.
+         *
+         * @param aValue   value to assign to cell
+         * @param rowIndex   row of cell
+         * @param columnIndex  column of cell
+         */
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             if (columnIndex == 0) {
