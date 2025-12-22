@@ -130,8 +130,6 @@ public class GridSearchEditor extends JPanel {
 //    private transient JButton addAlgorithm;
     // class fields
     private JButton addAlgorithm;
-    private JButton removeLastAlgorithm;
-    private JButton manageAlgorithms;
     private JButton editAlgorithmParameters;
     /**
      * Button used to add table columns.
@@ -152,8 +150,6 @@ public class GridSearchEditor extends JPanel {
      * It is a private instance variable of type JTabbedPane.
      */
     private transient JTabbedPane comparisonTabbedPane;
-
-    private JComboBox<IndependenceTestModel> markovTestComboBox;
 
     /**
      * Initializes an instance of AlgcomparisonEditor, which is a JPanel containing a JTabbedPane that displays
@@ -1069,6 +1065,26 @@ public class GridSearchEditor extends JPanel {
         }
     }
 
+    private static GridSearchModel.@NotNull SimulationSpec getSimulationSpec(String simulationString, Class<? extends RandomGraph> graphClazz) {
+        List<String> simulationTypeStrings = Arrays.asList(ParameterTab.MODEL_TYPE_ITEMS);
+
+        Class<? extends Simulation> simulationClass = switch (simulationTypeStrings.indexOf(simulationString)) {
+            case 0 -> BayesNetSimulation.class;
+            case 1 -> SemSimulation.class;
+            case 2 -> LinearFisherModel.class;
+            case 3 -> AdditiveAnmSimulator.class;
+            case 4 -> GeneralNoiseSimulation.class;
+            case 5 -> AdditiveNoiseSimulation.class;
+            case 6 -> PostnonlinearSem.class;
+            case 7 -> LeeHastieSimulation.class;
+            case 8 -> ConditionalGaussianSimulation.class;
+            case 9 -> TimeSeriesSemSimulation.class;
+            default -> throw new IllegalArgumentException("Unexpected value: " + simulationString);
+        };
+
+        return new GridSearchModel.SimulationSpec("name", graphClazz, simulationClass);
+    }
+
     /**
      * Updates the indices in the graph index combo box based on the selected simulation and algorithm.
      *
@@ -1119,7 +1135,7 @@ public class GridSearchEditor extends JPanel {
         for (int i : algorithmIndices) algorithmComboBox.addItem(i);
 
         // restore if still available, else default to first
-        if (savedAlgorithm != null && algorithmIndices.contains(savedAlgorithm)) {
+        if (algorithmIndices.contains(savedAlgorithm)) {
             algorithmComboBox.setSelectedItem(savedAlgorithm);
             graphIndexComboBox.setSelectedItem(savedGraphIndex);
         } else if (!algorithmIndices.isEmpty()) {
@@ -1150,10 +1166,7 @@ public class GridSearchEditor extends JPanel {
         Set<String> bootParams = GridSearchModel.getAllBootstrapParameters(selected);
 
         boolean any =
-                (algParams != null && !algParams.isEmpty()) ||
-                (testParams != null && !testParams.isEmpty()) ||
-                (scoreParams != null && !scoreParams.isEmpty()) ||
-                (bootParams != null && !bootParams.isEmpty());
+                !algParams.isEmpty() || !testParams.isEmpty() || !scoreParams.isEmpty() || !bootParams.isEmpty();
 
         JComponent center;
 
@@ -1168,7 +1181,7 @@ public class GridSearchEditor extends JPanel {
             int firstTab = -1;
 
             int idxAlg = addParamTabIfAny(tabs, "Algorithms", algParams, true, true);
-            if (firstTab < 0 && idxAlg >= 0) firstTab = idxAlg;
+            if (idxAlg >= 0) firstTab = idxAlg;
 
             int idxTest = addParamTabIfAny(tabs, "Independence Tests", testParams, true, true);
             if (firstTab < 0 && idxTest >= 0) firstTab = idxTest;
@@ -1427,13 +1440,7 @@ public class GridSearchEditor extends JPanel {
         addAlgorithm = new JButton("Add Algorithm");
         addAddAlgorithmListener();
 
-//        removeLastAlgorithm = new JButton("Remove Last Algorithm");
-//        removeLastAlgorithm.addActionListener(e -> {
-//            model.removeLastAlgorithm();
-//            onSelectedAlgorithmsChanged();
-//        });
-
-        manageAlgorithms = new JButton("Manage...");
+        JButton manageAlgorithms = new JButton("Manage...");
         manageAlgorithms.addActionListener(e -> openManageAlgorithmsDialog());
 
         editAlgorithmParameters = new JButton("Edit Parameters");
@@ -1451,8 +1458,6 @@ public class GridSearchEditor extends JPanel {
         algorithmChoice.add(algorithSelectionBox, BorderLayout.SOUTH);
         algorithmChoice.setBorder(new TitledBorder("Algorithm Selection"));
 
-//        addAlgorithm = new JButton("Add Algorithm");
-//        removeLastAlgorithm = new JButton("Remove Last Algorithm");
         editAlgorithmParameters = new JButton("Edit Parameters");
 
         tabbedPane.addTab("Algorithms", algorithmChoice);
@@ -1513,19 +1518,11 @@ public class GridSearchEditor extends JPanel {
         addTableColumns = new JButton("Add Table Column(s)");
         addAddTableColumnsListener(tabbedPane);
 
-//        JButton removeLastTableColumn = new JButton("Remove Last Column");
-//        removeLastTableColumn.addActionListener(e -> {
-//            model.removeLastTableColumn();
-//            setTableColumnsText();
-//            setComparisonText();
-//        });
-
         manageColumns.addActionListener(e -> openManageTableColumnsDialog());
         tableColumnsSelectionBox.add(manageColumns);
 
         tableColumnsSelectionBox.add(addTableColumns);
         tableColumnsSelectionBox.add(manageColumns);
-//        tableColumnsSelectionBox.add(createEditutilitiesButton());
         tableColumnsSelectionBox.add(Box.createHorizontalGlue());
 
         JPanel tableColumnsChoice = new JPanel();
@@ -1577,179 +1574,6 @@ public class GridSearchEditor extends JPanel {
         });
         return editUtilities;
     }
-
-//    /**
-//     * Adds a comparison tab to the given JTabbedPane.
-//     *
-//     * @param tabbedPane the JTabbedPane to add the comparison tab to
-//     */
-//    private void addComparisonTab(JTabbedPane tabbedPane) {
-//        comparisonTextArea.setLineWrap(false);
-//        comparisonTextArea.setWrapStyleWord(false);
-//        comparisonTextArea.setEditable(false);
-//        comparisonTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-//
-//        verboseOutputTextArea = new JTextArea();
-//        verboseOutputTextArea.setLineWrap(true);
-//        verboseOutputTextArea.setWrapStyleWord(true);
-//        verboseOutputTextArea.setEditable(false);
-//        verboseOutputTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-//
-//        setComparisonText();
-//
-//        JButton runComparison = runComparisonButton();
-//
-//        JButton setComparisonParameters = new JButton("Edit Parameters");
-//
-//        setComparisonParameters.addActionListener(e -> {
-//            Box parameterBox = Box.createVerticalBox();
-//
-//            Box horiz1 = Box.createHorizontalBox();
-//            horiz1.add(new JLabel("Save Data:"));
-//            horiz1.add(Box.createHorizontalGlue());
-//            horiz1.add(getBooleanSelectionBox("algcomparisonSaveData", model.getParameters(), false));
-//
-//            Box horiz2 = Box.createHorizontalBox();
-//            horiz2.add(new JLabel("Save Graphs:"));
-//            horiz2.add(Box.createHorizontalGlue());
-//            horiz2.add(getBooleanSelectionBox("algcomparisonSaveGraphs", model.getParameters(), false));
-//
-//            Box horiz2b = Box.createHorizontalBox();
-//            horiz2b.add(new JLabel("Save CPDAGs:"));
-//            horiz2b.add(Box.createHorizontalGlue());
-//            horiz2b.add(getBooleanSelectionBox("algcomparisonSaveCPDAGs", model.getParameters(), false));
-//
-//            Box horiz2c = Box.createHorizontalBox();
-//            horiz2c.add(new JLabel("Save PAGs:"));
-//            horiz2c.add(Box.createHorizontalGlue());
-//            horiz2c.add(getBooleanSelectionBox("algcomparisonSavePAGs", model.getParameters(), false));
-//
-//            Box horiz4a = Box.createHorizontalBox();
-//            horiz4a.add(new JLabel("Sort by Utility:"));
-//            horiz4a.add(Box.createHorizontalGlue());
-//            horiz4a.add(getBooleanSelectionBox("algcomparisonSortByUtility", model.getParameters(), false));
-//
-//            Box horiz4b = Box.createHorizontalBox();
-//            horiz4b.add(new JLabel("Show Utilities:"));
-//            horiz4b.add(Box.createHorizontalGlue());
-//            horiz4b.add(getBooleanSelectionBox("algcomparisonShowUtilities", model.getParameters(), false));
-//
-//            Box horiz4c = Box.createHorizontalBox();
-//            horiz4c.add(new JLabel("Set Knowledge on Algorithm If Available:"));
-//            horiz4c.add(Box.createHorizontalGlue());
-//            horiz4c.add(getBooleanSelectionBox("algcomparisonSetAlgorithmKnowledge", model.getParameters(), false));
-//
-//            Box horiz5 = Box.createHorizontalBox();
-//            horiz5.add(new JLabel("Parallelism:"));
-//            horiz5.add(Box.createHorizontalGlue());
-//            horiz5.add(getIntTextField("algcomparisonParallelism", model.getParameters(), model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()), 1, 1000));
-//
-//            Box horiz6 = Box.createHorizontalBox();
-//            horiz6.add(new JLabel("Comparison Graph Type:"));
-//            horiz6.add(Box.createHorizontalGlue());
-//            JComboBox<String> comparisonGraphTypeComboBox = new JComboBox<>();
-//
-//            Box horiz7 = Box.createHorizontalBox();
-//            horiz7.add(new JLabel("Markov Checker:"));
-//            horiz7.add(Box.createHorizontalGlue());
-//            JButton chooseTest = getButton();
-//
-//            horiz7.add(chooseTest);
-//
-//            Box horiz8 = Box.createHorizontalBox();
-//            horiz8.add(new JLabel("Markov Checker:"));
-//            horiz8.add(Box.createHorizontalGlue());
-//            JButton configureMarkovChecker = new JButton("Params");
-//
-//            configureMarkovChecker.addActionListener(e3 -> {
-//                JPanel independenceWrapperParamsPanel = createIndependenceWrapperParamsPanel(model.getParameters());
-//                JOptionPane dialog = new JOptionPane(independenceWrapperParamsPanel, JOptionPane.PLAIN_MESSAGE);
-//                dialog.createDialog("Set Parameters").setVisible(true);
-//            });
-//
-//
-//            horiz7.add(configureMarkovChecker);
-//
-//            for (GridSearchModel.ComparisonGraphType comparisonGraphType : GridSearchModel.ComparisonGraphType.values()) {
-//                comparisonGraphTypeComboBox.addItem(comparisonGraphType.toString());
-//            }
-//
-//            comparisonGraphTypeComboBox.setSelectedItem(model.getParameters().getString("algcomparisonGraphType"));
-//
-//            comparisonGraphTypeComboBox.addActionListener(e1 -> {
-//                String selectedItem = (String) comparisonGraphTypeComboBox.getSelectedItem();
-//                model.getParameters().set("algcomparisonGraphType", selectedItem);
-//            });
-//
-//            horiz6.add(comparisonGraphTypeComboBox);
-//
-//            parameterBox.add(horiz1);
-//            parameterBox.add(horiz2);
-//            parameterBox.add(horiz2b);
-//            parameterBox.add(horiz2c);
-//            parameterBox.add(horiz4a);
-//            parameterBox.add(horiz4b);
-//            parameterBox.add(horiz4c);
-//            parameterBox.add(horiz5);
-//            parameterBox.add(horiz6);
-//            parameterBox.add(horiz7);
-//
-//            parameterBox.setBorder(new EmptyBorder(10, 10, 10, 10));
-//
-//            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Edit Comparison Parameters", Dialog.ModalityType.APPLICATION_MODAL);
-//
-//            dialog.setLayout(new BorderLayout());
-//
-//            // Add your panel to the center of the dialog
-//            dialog.add(parameterBox, BorderLayout.CENTER);
-//
-//            // Create a panel for the buttons
-//            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-//            JButton doneButton = new JButton("Done");
-//
-//            doneButton.addActionListener(e1 -> {
-//                SwingUtilities.invokeLater(dialog::dispose);
-//                setComparisonText();
-//            });
-//
-//            buttonPanel.add(doneButton);
-//
-//            // Add the button panel to the bottom of the dialog
-//            dialog.add(buttonPanel, BorderLayout.SOUTH);
-//
-//            dialog.pack(); // Adjust the dialog size to fit its contents
-//            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
-//            dialog.setVisible(true);
-//        });
-//
-//        Box comparisonSelectionBox = Box.createHorizontalBox();
-//        comparisonSelectionBox.add(Box.createHorizontalGlue());
-//        comparisonSelectionBox.add(runComparison);
-//        comparisonSelectionBox.add(createEditutilitiesButton());
-//        comparisonSelectionBox.add(setComparisonParameters);
-//        comparisonSelectionBox.add(Box.createHorizontalGlue());
-//
-//        comparisonTabbedPane = new JTabbedPane();
-//        comparisonScroll = new JScrollPane(comparisonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-//        comparisonTabbedPane.addTab("Comparison", comparisonScroll);
-//        comparisonTabbedPane.addTab("Verbose Output", new JScrollPane(verboseOutputTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
-//
-//        JPanel comparisonPanel = new JPanel();
-//        comparisonPanel.setLayout(new BorderLayout());
-//
-//        comparisonPanel.add(comparisonTabbedPane, BorderLayout.CENTER);
-//        comparisonPanel.add(comparisonSelectionBox, BorderLayout.SOUTH);
-//
-//        tabbedPane.addTab("Comparison", comparisonPanel);
-//
-//        tabbedPane.addTab("View Graphs", getGraphSelectorBox());
-//
-//        tabbedPane.addChangeListener(e -> {
-//            JTabbedPane sourceTabbedPane = (JTabbedPane) e.getSource();
-//            refreshGraphSelectionContent(sourceTabbedPane);
-//        });
-//    }
-
 
     private void addComparisonTab(JTabbedPane tabbedPane) {
         comparisonTextArea.setLineWrap(false);
@@ -1852,13 +1676,6 @@ public class GridSearchEditor extends JPanel {
         row1.add(new JLabel("Sort by Utility:"));
         row1.add(Box.createHorizontalStrut(8));
         row1.add(getBooleanSelectionBox("algcomparisonSortByUtility", params, false));
-
-//        row1.add(Box.createHorizontalStrut(18));
-
-//        row1.add(new JLabel("Show Utilities:"));
-//        row1.add(Box.createHorizontalStrut(8));
-//        row1.add(getBooleanSelectionBox("algcomparisonShowUtilities", params, false));
-//
         row1.add(Box.createHorizontalGlue());
 
         // ---------- Row 2: Markov checker type + params ----------
@@ -1867,10 +1684,7 @@ public class GridSearchEditor extends JPanel {
         row2.add(new JLabel("Markov Checker Test:"));
         row2.add(Box.createHorizontalStrut(8));
 
-//        JButton chooseTest = getButton(); // your existing chooser; it should persist selection in params
-//        row2.add(chooseTest);
-
-        markovTestComboBox = new JComboBox<>();
+        JComboBox<IndependenceTestModel> markovTestComboBox = new JComboBox<>();
         populateMarkovTestComboBox(markovTestComboBox);   // populate + select persisted + listener
         row2.add(markovTestComboBox);
 
@@ -1899,7 +1713,7 @@ public class GridSearchEditor extends JPanel {
         // 1) Populate with the allowed tests (your existing filtering logic)
         populateTestTypes(comboBox);
 
-        // 2) Select persisted value (whatever you store in params / model)
+        // 2) Select a persisted value (whatever you store in params / model)
         // Adjust this key/name getter to match what you already use.
         String last = model.getLastMarkovCheckerTest(); // or params.getString("algcomparisonMarkovCheckerTest", null)
 
@@ -2002,29 +1816,6 @@ public class GridSearchEditor extends JPanel {
         dialog.setVisible(true);
     }
 
-    private @NotNull JButton getButton() {
-        JButton chooseTest = new JButton("Choose Test");
-
-        chooseTest.addActionListener(e2 -> {
-            JComboBox<IndependenceTestModel> comboBox = new JComboBox<>();
-            populateTestTypes(comboBox); // now: populate + select, but does NOT auto-commit
-
-            int ret = JOptionPane.showConfirmDialog(
-                    this,
-                    comboBox,
-                    "Choose Markov Checker Test",
-                    JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.PLAIN_MESSAGE
-            );
-
-            if (ret == JOptionPane.OK_OPTION) {
-                IndependenceTestModel selected = (IndependenceTestModel) comboBox.getSelectedItem();
-                applySelectedMarkovCheckerTest(selected);
-            }
-        });
-        return chooseTest;
-    }
-
     /**
      * Returns a Box component with selectors for simulation, algorithm, and graph index.
      *
@@ -2065,9 +1856,6 @@ public class GridSearchEditor extends JPanel {
         if (model.getSelectedGraphIndex() > 0) {
             graphIndexComboBox.setSelectedItem(model.getSelectedGraphIndex());
         }
-
-//        selectors.add(new JLabel("Simulation:"));
-//        selectors.add(simulationComboBox);
 
         selectors.add(new JLabel("Algorithm:"));
         selectors.add(algorithmComboBox);
@@ -2190,9 +1978,7 @@ public class GridSearchEditor extends JPanel {
 
                     SwingUtilities.invokeLater(() -> comparisonTabbedPane.setSelectedIndex(0));
 
-                    if (comparisonTextArea != null) {
-                        model.setLastComparisonText(comparisonTextArea.getText());
-                    }
+                    model.setLastComparisonText(comparisonTextArea.getText());
 
                     if (verboseOutputTextArea != null) {
                         model.setLastVerboseOutputText(verboseOutputTextArea.getText());
@@ -2342,23 +2128,7 @@ public class GridSearchEditor extends JPanel {
 
             Class<? extends RandomGraph> graphClazz = getGraphClazz(graphString);
 
-            List<String> simulationTypeStrings = Arrays.asList(ParameterTab.MODEL_TYPE_ITEMS);
-
-            Class<? extends Simulation> simulationClass = switch (simulationTypeStrings.indexOf(simulationString)) {
-                case 0 -> BayesNetSimulation.class;
-                case 1 -> SemSimulation.class;
-                case 2 -> LinearFisherModel.class;
-                case 3 -> AdditiveAnmSimulator.class;
-                case 4 -> GeneralNoiseSimulation.class;
-                case 5 -> AdditiveNoiseSimulation.class;
-                case 6 -> PostnonlinearSem.class;
-                case 7 -> LeeHastieSimulation.class;
-                case 8 -> ConditionalGaussianSimulation.class;
-                case 9 -> TimeSeriesSemSimulation.class;
-                default -> throw new IllegalArgumentException("Unexpected value: " + simulationString);
-            };
-
-            GridSearchModel.SimulationSpec spec = new GridSearchModel.SimulationSpec("name", graphClazz, simulationClass);
+            GridSearchModel.SimulationSpec spec = getSimulationSpec(simulationString, graphClazz);
 
             // Single-simulation policy: replace the current selection rather than accumulating.
             // (We keep the existing model API by clearing the current list before adding.)
@@ -2371,8 +2141,6 @@ public class GridSearchEditor extends JPanel {
                 // If the model changes later, failing to clear here is non-fatal; addSimulationSpec will still set something.
             }
 
-//            model.removeLastSimulation();
-//            model.addSimulationSpec(spec);
             model.setSelectedSimulation(spec);
             setComparisonText();
             setSimulationText();
@@ -2419,9 +2187,7 @@ public class GridSearchEditor extends JPanel {
                 }
             }
 
-            algorithmDropdown.addActionListener(e1 -> {
-                setupAlgorithmDropdown();
-            });
+            algorithmDropdown.addActionListener(e1 -> setupAlgorithmDropdown());
 
             Box vert1 = Box.createVerticalBox();
             Box horiz2 = Box.createHorizontalBox();
@@ -2508,21 +2274,6 @@ public class GridSearchEditor extends JPanel {
         revalidate();
         repaint();
     }
-
-//    private void addRemoveLastAlgorithmListener() {
-//        removeLastAlgorithm.addActionListener(e -> {
-//            List<GridSearchModel.AlgorithmSpec> algs = model.getSelectedAlgorithms();
-//            if (algs == null || algs.isEmpty()) {
-//                Toolkit.getDefaultToolkit().beep();
-//                return;
-//            }
-//
-//            // Prefer model API if present; fallback to mutating the live list
-//            model.removeLastAlgorithm();          // if you have it
-//
-//            onSelectedAlgorithmsChanged();
-//        });
-//    }
 
     private void addEditAlgorithmParametersListener() {
         editAlgorithmParameters.addActionListener(e -> openEditAlgorithmParametersDialog());
@@ -3008,7 +2759,7 @@ public class GridSearchEditor extends JPanel {
                 algorithmChoiceTextArea.append("\nAlgorithm #" + (i + 1) + ". " + safe(algImpl.getDescription()) + "\n");
             }
 
-            // Test + Score are chosen in AlgorithmSpec, not on AlgorithmSpec itself.
+            // Test and Score are chosen in AlgorithmSpec, not on AlgorithmSpec itself.
             // So report from spec.getTest()/getScore() (and/or the wrappers those map to).
             if (spec.getTest() != null) {
                 // Prefer IndependenceWrapper.getDescription() if available.
@@ -3507,7 +3258,7 @@ public class GridSearchEditor extends JPanel {
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getTableHeader().setReorderingAllowed(false);
 
-        // Make checkbox column reasonably narrow.
+        // Make the checkbox column reasonably narrow.
         TableColumn removeCol = table.getColumnModel().getColumn(0);
         removeCol.setMaxWidth(80);
         removeCol.setPreferredWidth(70);
@@ -3515,6 +3266,29 @@ public class GridSearchEditor extends JPanel {
         JScrollPane scroll = new JScrollPane(table);
         scroll.setPreferredSize(new Dimension(900, 300));
 
+        JPanel buttons = getJPanel(table, tableModel);
+
+        JPanel center = new JPanel(new BorderLayout(10, 10));
+        JLabel hint = new JLabel("Check algorithms to remove, or use Up/Down to reorder.");
+        hint.setBorder(new EmptyBorder(10, 10, 0, 10));
+        center.add(hint, BorderLayout.NORTH);
+        center.add(scroll, BorderLayout.CENTER);
+        center.add(buttons, BorderLayout.SOUTH);
+        center.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JDialog dialog = new JDialog(
+                SwingUtilities.getWindowAncestor(this),
+                "Manage Algorithms",
+                Dialog.ModalityType.APPLICATION_MODAL
+        );
+        dialog.setLayout(new BorderLayout());
+        dialog.add(center, BorderLayout.CENTER);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    private @NotNull JPanel getJPanel(JTable table, AlgorithmManageTableModel tableModel) {
         JButton up = new JButton("Up");
         JButton down = new JButton("Down");
         JButton removeSelected = new JButton("Remove Selected");
@@ -3581,25 +3355,7 @@ public class GridSearchEditor extends JPanel {
         buttons.add(removeSelected);
         buttons.add(clearChecks);
         buttons.add(done);
-
-        JPanel center = new JPanel(new BorderLayout(10, 10));
-        JLabel hint = new JLabel("Check algorithms to remove, or use Up/Down to reorder.");
-        hint.setBorder(new EmptyBorder(10, 10, 0, 10));
-        center.add(hint, BorderLayout.NORTH);
-        center.add(scroll, BorderLayout.CENTER);
-        center.add(buttons, BorderLayout.SOUTH);
-        center.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        JDialog dialog = new JDialog(
-                SwingUtilities.getWindowAncestor(this),
-                "Manage Algorithms",
-                Dialog.ModalityType.APPLICATION_MODAL
-        );
-        dialog.setLayout(new BorderLayout());
-        dialog.add(center, BorderLayout.CENTER);
-        dialog.pack();
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
+        return buttons;
     }
 
     private void openManageTableColumnsDialog() {
@@ -3628,6 +3384,29 @@ public class GridSearchEditor extends JPanel {
         JScrollPane scroll = new JScrollPane(table);
         scroll.setPreferredSize(new Dimension(900, 300));
 
+        JPanel buttons = getJPanel(table, tableModel);
+
+        JPanel center = new JPanel(new BorderLayout(10, 10));
+        JLabel hint = new JLabel("Check columns to remove, or use Up/Down to reorder.");
+        hint.setBorder(new EmptyBorder(10, 10, 0, 10));
+        center.add(hint, BorderLayout.NORTH);
+        center.add(scroll, BorderLayout.CENTER);
+        center.add(buttons, BorderLayout.SOUTH);
+        center.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JDialog dialog = new JDialog(
+                SwingUtilities.getWindowAncestor(this),
+                "Manage Table Columns",
+                Dialog.ModalityType.APPLICATION_MODAL
+        );
+        dialog.setLayout(new BorderLayout());
+        dialog.add(center, BorderLayout.CENTER);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    private @NotNull JPanel getJPanel(JTable table, TableColumnManageTableModel tableModel) {
         JButton up = new JButton("Up");
         JButton down = new JButton("Down");
         JButton removeSelected = new JButton("Remove Selected");
@@ -3669,9 +3448,6 @@ public class GridSearchEditor extends JPanel {
                 return;
             }
             tableModel.fireTableDataChanged();
-
-//            setTableColumnsText();
-//            setComparisonText();
         });
 
         clearChecks.addActionListener(e -> {
@@ -3696,25 +3472,7 @@ public class GridSearchEditor extends JPanel {
         buttons.add(removeSelected);
         buttons.add(clearChecks);
         buttons.add(done);
-
-        JPanel center = new JPanel(new BorderLayout(10, 10));
-        JLabel hint = new JLabel("Check columns to remove, or use Up/Down to reorder.");
-        hint.setBorder(new EmptyBorder(10, 10, 0, 10));
-        center.add(hint, BorderLayout.NORTH);
-        center.add(scroll, BorderLayout.CENTER);
-        center.add(buttons, BorderLayout.SOUTH);
-        center.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        JDialog dialog = new JDialog(
-                SwingUtilities.getWindowAncestor(this),
-                "Manage Table Columns",
-                Dialog.ModalityType.APPLICATION_MODAL
-        );
-        dialog.setLayout(new BorderLayout());
-        dialog.add(center, BorderLayout.CENTER);
-        dialog.pack();
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
+        return buttons;
     }
 
     /**
@@ -3862,7 +3620,7 @@ public class GridSearchEditor extends JPanel {
         }
 
         void clearChecks() {
-            for (int i = 0; i < removeFlags.size(); i++) removeFlags.set(i, false);
+            Collections.fill(removeFlags, false);
         }
     }
 
@@ -3873,9 +3631,9 @@ public class GridSearchEditor extends JPanel {
     private static class TableColumnSelectionModel extends AbstractTableModel {
 
         /**
-         * The column names for the table. The first column is the pair of nodes, the second column is the minimum total
-         * effect, the third column is the maximum total effect, the fourth column is the minimum absolute total effect,
-         * the fifth column is the true total effect, and the sixth column is the squared distance from the true total
+         * The column names for the table. The first column is the pair of nodes. The second column is the minimum total
+         * effect. The third column is the maximum total effect. The fourth column is the minimum absolute total effect.
+         * The fifth column is the true total effect. And the sixth column is the squared distance from the true total
          * effect, where if the true total effect falls between the minimum and maximum total effect, zero is reported.
          * If the true model is not given, the last two columns are not included.
          */
@@ -4129,7 +3887,7 @@ public class GridSearchEditor extends JPanel {
         }
 
         void clearChecks() {
-            for (int i = 0; i < removeFlags.size(); i++) removeFlags.set(i, false);
+            Collections.fill(removeFlags, false);
         }
     }
 }
