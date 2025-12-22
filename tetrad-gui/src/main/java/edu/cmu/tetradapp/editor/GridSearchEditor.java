@@ -2085,8 +2085,8 @@ public class GridSearchEditor extends JPanel {
 
         JScrollPane scroll = new JScrollPane(workbench);
         scroll.setBorder(model.getSuppliedData() == null
-                ? new TitledBorder("Graph for this algorithm and run:")
-                : new TitledBorder("Graph for this algorithm:"));
+                ? new TitledBorder("Graph for this algorithm and run (see Comparison tab):")
+                : new TitledBorder("Graph for this algorithm (see Comparison tab):"));
         graphSelectorBox.add(scroll);
 
         // Add listeners to the algorithm and simulation combo boxes to update the graph index combo box
