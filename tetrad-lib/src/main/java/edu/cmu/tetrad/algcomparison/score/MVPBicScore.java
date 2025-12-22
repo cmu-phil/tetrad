@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,7 +20,6 @@
 
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
@@ -41,12 +40,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 
-@Experimental
-@edu.cmu.tetrad.annotation.Score(
-        name = "Mixed Variable Polynomial BIC Score",
-        command = "mvp-bic-score",
-        dataType = DataType.Mixed
-)
+//@Experimental
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "Mixed Variable Polynomial BIC Score",
+//        command = "mvp-bic-score",
+//        dataType = DataType.Mixed
+//)
+@Deprecated
 public class MVPBicScore implements ScoreWrapper {
 
     @Serial

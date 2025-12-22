@@ -1352,6 +1352,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
         throw new IllegalArgumentException("Independence test by that name not found: " + name);
     }
 
+    public String getLastMarkovCheckerTest() {
+        return Preferences.userRoot().get("lastAlgcomparisonIndependenceTestUsed", name);
+    }
+
     public String getLastScore() {
         return Preferences.userRoot().get("lastAlgcomparisonScoreUsed", "");
     }

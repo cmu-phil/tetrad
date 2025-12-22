@@ -40,12 +40,13 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@Experimental
-@TestOfIndependence(
-        name = "Mixed Variable Polynomial Likelihood Ratio Test",
-        command = "mvplr-test",
-        dataType = DataType.Mixed
-)
+//@Experimental
+//@TestOfIndependence(
+//        name = "Mixed Variable Polynomial Likelihood Ratio Test",
+//        command = "mvplr-test",
+//        dataType = DataType.Mixed
+//)
+@Deprecated
 public class Mvplrt implements IndependenceWrapper {
 
     @Serial
