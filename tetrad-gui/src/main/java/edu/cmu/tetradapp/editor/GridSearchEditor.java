@@ -44,6 +44,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.*;
@@ -171,10 +172,9 @@ public class GridSearchEditor extends JPanel {
         model.getParameters().set("algcomparisonParallelism", model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()));
         model.getParameters().set("algcomparisonGraphType", model.getParameters().getString("algcomparisonGraphType", "DAG"));
 
-
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setTabPlacement(JTabbedPane.BOTTOM);
-        tabbedPane.setPreferredSize(new Dimension(800, 400));
+        tabbedPane.setPreferredSize(new Dimension(800, 500));
 
         comparisonTextArea = new JTextArea();
 
@@ -1142,15 +1142,15 @@ public class GridSearchEditor extends JPanel {
         }
 
         // Gather parameter sets by category
-        Set<String> algParams  = GridSearchModel.getAllAlgorithmParameters(selected);
+        Set<String> algParams = GridSearchModel.getAllAlgorithmParameters(selected);
         Set<String> testParams = GridSearchModel.getAllTestParameters(selected);
-        Set<String> scoreParams= GridSearchModel.getAllScoreParameters(selected);
+        Set<String> scoreParams = GridSearchModel.getAllScoreParameters(selected);
         Set<String> bootParams = GridSearchModel.getAllBootstrapParameters(selected);
 
         boolean any =
-                (algParams  != null && !algParams.isEmpty()) ||
+                (algParams != null && !algParams.isEmpty()) ||
                 (testParams != null && !testParams.isEmpty()) ||
-                (scoreParams!= null && !scoreParams.isEmpty()) ||
+                (scoreParams != null && !scoreParams.isEmpty()) ||
                 (bootParams != null && !bootParams.isEmpty());
 
         JComponent center;
@@ -1165,19 +1165,19 @@ public class GridSearchEditor extends JPanel {
             // Only add tabs that have content.
             int firstTab = -1;
 
-            int idxAlg  = addParamTabIfAny(tabs, "Algorithms",        algParams,  true,  true);
-            if (firstTab < 0 && idxAlg  >= 0) firstTab = idxAlg;
+            int idxAlg = addParamTabIfAny(tabs, "Algorithms", algParams, true, true);
+            if (firstTab < 0 && idxAlg >= 0) firstTab = idxAlg;
 
-            int idxTest = addParamTabIfAny(tabs, "Independence Tests", testParams, true,  true);
+            int idxTest = addParamTabIfAny(tabs, "Independence Tests", testParams, true, true);
             if (firstTab < 0 && idxTest >= 0) firstTab = idxTest;
 
-            int idxScore= addParamTabIfAny(tabs, "Scores",            scoreParams,true,  true);
-            if (firstTab < 0 && idxScore>= 0) firstTab = idxScore;
+            int idxScore = addParamTabIfAny(tabs, "Scores", scoreParams, true, true);
+            if (firstTab < 0 && idxScore >= 0) firstTab = idxScore;
 
             // Bootstrapping often behaves like “single value” or “both” depending on your UI conventions.
             // Keep it consistent with how you did it before; true/true matches your earlier approach.
-            int idxBoot = addParamTabIfAny(tabs, "Bootstrapping",      bootParams, true,  true);
-            if (firstTab < 0 && idxBoot>= 0) firstTab = idxBoot;
+            int idxBoot = addParamTabIfAny(tabs, "Bootstrapping", bootParams, true, true);
+            if (firstTab < 0 && idxBoot >= 0) firstTab = idxBoot;
 
             if (firstTab >= 0) tabs.setSelectedIndex(firstTab);
 
@@ -1778,6 +1778,7 @@ public class GridSearchEditor extends JPanel {
         comparisonSelectionBox.add(Box.createHorizontalGlue());
 
         comparisonTabbedPane = new JTabbedPane(JTabbedPane.LEFT);
+        comparisonTabbedPane.setBorder(new TitledBorder("Results Summary:"));
         comparisonScroll = new JScrollPane(comparisonTextArea,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -1827,16 +1828,18 @@ public class GridSearchEditor extends JPanel {
         row1.add(comparisonGraphTypeComboBox);
         row1.add(Box.createHorizontalStrut(18));
 
-        // Runs (change key + default to match your model)
-        row1.add(new JLabel("# Runs:"));
-        row1.add(Box.createHorizontalStrut(8));
-        row1.add(getIntTextField(
-                "numRuns",
-                params,
-                params.getInt("numRuns", 1),
-                1,
-                1_000_000
-        ));
+        if (model.getSuppliedData() == null) {
+            // Runs (change key + default to match your model)
+            row1.add(new JLabel("# Runs:"));
+            row1.add(Box.createHorizontalStrut(8));
+            row1.add(getIntTextField(
+                    "numRuns",
+                    params,
+                    params.getInt("numRuns", 1),
+                    1,
+                    1_000_000
+            ));
+        }
 
         row1.add(Box.createHorizontalStrut(18));
 
@@ -1913,7 +1916,7 @@ public class GridSearchEditor extends JPanel {
         horiz4c.add(Box.createHorizontalGlue());
         horiz4c.add(getBooleanSelectionBox("algcomparisonSetAlgorithmKnowledge", model.getParameters(), false));
 
-         Box horiz5 = Box.createHorizontalBox();
+        Box horiz5 = Box.createHorizontalBox();
         horiz5.add(new JLabel("Parallelism:"));
         horiz5.add(Box.createHorizontalGlue());
         horiz5.add(getIntTextField(
@@ -2027,8 +2030,10 @@ public class GridSearchEditor extends JPanel {
         selectors.add(new JLabel("Algorithm:"));
         selectors.add(algorithmComboBox);
 
-        selectors.add(new JLabel("Graph Index:"));
-        selectors.add(graphIndexComboBox);
+        if (model.getSuppliedData() == null) {
+            selectors.add(new JLabel("Run:"));
+            selectors.add(graphIndexComboBox);
+        }
 
         graphSelectorBox.add(selectors);
         graphSelectorBox.add(Box.createVerticalStrut(4));
@@ -2698,13 +2703,13 @@ public class GridSearchEditor extends JPanel {
             Box horiz3 = Box.createHorizontalBox();
             horiz3.add(Box.createHorizontalGlue());
 
-            JButton selectUsedParameters = new JButton("Utilized Parameters");
+            JButton selectUsedParameters = new JButton("Used Parameters");
             horiz3.add(selectUsedParameters);
 
-            JButton selectLastStatisticsUsed = new JButton("Last Statistics Used");
+            JButton selectLastStatisticsUsed = new JButton("Used Statistics");
             horiz3.add(selectLastStatisticsUsed);
 
-            JButton selectDefaultMarkovChecker = new JButton("Markov Checker Defaults");
+            JButton selectDefaultMarkovChecker = new JButton("Markov Check Columns");
             horiz3.add(selectDefaultMarkovChecker);
 
             horiz3.add(Box.createHorizontalGlue());
@@ -2734,12 +2739,15 @@ public class GridSearchEditor extends JPanel {
             });
 
             selectDefaultMarkovChecker.addActionListener(e1 -> {
-                List<String> defaultMcParams = new  ArrayList<>();
+                List<String> defaultMcParams = new ArrayList<>();
                 defaultMcParams.add("Cutoff for p values (alpha)");
                 defaultMcParams.add("Penalty discount");
                 defaultMcParams.add("#EdgesEst");
                 defaultMcParams.add("MC-KSP");
                 defaultMcParams.add("MC-KSPass");
+
+                ParamDescriptions.getInstance().put("algcomparison." + "MC-KSPass", new ParamDescription("algcomparison." + "MC-KSPass", "Utility for " + "MC-KSPass" + " in [0, 1]", "Utility for " + "MC-KSPass", 1.0, 0.0, 1.0));
+                ParamDescriptions.getInstance().put("algcomparison." + "#EdgesEst", new ParamDescription("algcomparison." + "#EdgesEst", "Utility for " + "#EdgesEst" + " in [0, 1]", "Utility for " + "#EdgesEst", 0.5, 0.0, 1.0));
 
                 for (int i = 0; i < table.getRowCount(); i++) {
                     GridSearchModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
@@ -2851,6 +2859,11 @@ public class GridSearchEditor extends JPanel {
                      ** No simulations have been selected. Please select at least one simulation using the Select Simulation button below. **
                     """);
             return;
+        } else if (model.getSuppliedData() != null) {
+            simulationChoiceTextArea.append("""
+                    This analysis will treat the supplied data as a single observed dataset.
+                    
+                    """);
         } else if (simulations.size() == 1) {
             simulationChoiceTextArea.append("""
                     The following simulation has been selected. This simulations will be run with the selected algorithms.
@@ -2875,6 +2888,11 @@ public class GridSearchEditor extends JPanel {
         }
 
         simulationChoiceTextArea.append(getSimulationParameterText());
+
+        simulationChoiceTextArea.append("""
+                Next step: Choose one or more algorithms in the Algorithms tab.
+                """);
+
         simulationChoiceTextArea.setCaretPosition(0);
     }
 
@@ -2882,6 +2900,15 @@ public class GridSearchEditor extends JPanel {
         algorithmChoiceTextArea.setText("");
 
         List<GridSearchModel.AlgorithmSpec> selectedAlgorithms = model.getSelectedAlgorithms();
+
+        algorithmChoiceTextArea.append(
+                """
+                        Choose one or more causal discovery algorithms to run on the data. \
+                        If you are unsure, start with one algorithm and adjust parameters later. \
+                        Grid Search allows you to compare multiple algorithms systematically.
+                        
+                        """
+        );
 
         if (selectedAlgorithms == null || selectedAlgorithms.isEmpty()) {
             algorithmChoiceTextArea.append(
@@ -2891,16 +2918,24 @@ public class GridSearchEditor extends JPanel {
             return;
         }
 
-        if (selectedAlgorithms.size() == 1) {
+        if (model.getSuppliedData() != null) {
+            if (selectedAlgorithms.size() == 1) {
+                algorithmChoiceTextArea.append("""
+                    The following algorithm has been selected. This algorithm will be run with the selected data.
+                    """);
+            } else {
+                algorithmChoiceTextArea.append("""
+                    The following algorithms have been selected. These algorithms will be run with the selected data.
+                    """);
+            }
+        } else if (selectedAlgorithms.size() == 1) {
             algorithmChoiceTextArea.append("""
                     The following algorithm has been selected. This algorithm will be run with the selected simulations.
-                    
                     """);
         } else {
             algorithmChoiceTextArea.append("""
                     The following algorithms have been selected. These algorithms will be run with the selected simulations.
                     """);
-            algorithmChoiceTextArea.append("\n");
         }
 
         // Build a stable, non-side-effecting summary of what’s selected.
@@ -3057,40 +3092,108 @@ public class GridSearchEditor extends JPanel {
      */
     private void setHelpText() {
         helpChoiceTextArea.setText("""
-                This tool may be used to do a comparison of multiple algorithms (in Tetrad for now) for a range of simulations types, algorithms, table columns, and parameter settings.
-                
-                To run a Grid Search comparison, select one or more simulations, one or more algorithms, and one or more table columns (statistics or parameter columns). Then in the Comparison tab, click the "Run Comparison" button.
-                
-                The comparison will be displayed in the "comparison" tab.
-                
-                Some combinations you may select could take a very long time to run; you may need to experiment. One problem is that you may select too many combinations of parameters, and the tool will try every combination of these parameters that is sensible, and perhaps this may take a very long time to do. Or you may, for instance, opt for graphs that have too many variables or are too dense. Or, some of the algorithms may simply take a very long time to run, even for small graphs. We will run your request in a thread with a stop button so you can gracefully exit and try a smaller problem. In fact, it may not make sense to run larger comparisons in this interface at all; you may wish to use the command line tool or Python to do it.
-                
-                If you think the problem is that you need more memory, you can increase the memory available to the JVM by starting Tetrad from the command line changing the -Xmx option in at startup. That is, you can start Tetrad with a command like this:
-                
-                    java -Xmx4g -jar [tetrad.jar]
-                
-                Here, "[tetrad.jar]" should be replaced by the name of the Tetrad jar you have downloaded. This would set the maximum memory available to the JVM to 4 gigabytes. You can increase this number to increase the memory available to the JVM up to the limit of what you have available on your machine. The default is 1 gigabyte.
-                
-                In the Simulation tab, simulations may be added by clicking the Add Simulation button. The last one in the list may be removed by clicking the Remove Last Simulation button.
-                
-                A simulation selection requires one to select a graph type and a simulation type.
-                
-                This selection implies a list of parameters for all of the simulations. These parameters may be edited by clicking the Edit Parameters button. Note that parameters may be given a list of comma-separated values; each combination of parameters will be explored in the comparison.
-                
-                The Algorithm tab and TableColumns tab work similarly. An algorithm selection requires one to select an algorithm type and then an independence test and/or a score depending on the requirements of the algorithm.
-                
-                For the Algorithm tab, once one has selected all algorithms, one may edit the parameters for these algorithms.
-                
-                For the TableColumns tab, one may select the columns to be included in the comparison table. These columns may be selected by clicking the Add Table Column button. The last column in the list may be removed by clicking the Remove Last Table Column button. For parameter columns, parameters that have been set by the user may be selected by clicking the Select Parameters Used button. For statistic columns, the last statistics used may be selected by clicking the Select Last Statistics Used button. This will select all statistics that were used in the last comparison.
-                
-                In the Comparison tab, there is a button to run the comparison and display the results.
-                
-                Full results are saved to the user's hard drive. The location of these files is displayed in the comparison tab, at the top of the page. This includes all the output from the comparison, including the true dataset and graphs for all simulations, the estimated graph, elapsed times for all algorithm runs, and the results displayed in the Comparison tab for the comparison. These datasets and graphs may be used for analayis by other tools, such as in R or Python.
-                
-                The reference is here:
-                
-                Ramsey, J. D., Malinsky, D., &amp; Bui, K. V. (2020). Algcomparison: Comparing the performance of graphical structure learning algorithms with tetrad. Journal of Machine Learning Research, 21(238), 1-6.
-                """);
+        The Grid Search tool is used to compare the behavior of multiple causal discovery algorithms
+        under a fixed data set or a fixed simulation setup, across different parameter settings and
+        selected output statistics.
+
+        ----------------------------------------------------------------------
+        OVERVIEW
+        ----------------------------------------------------------------------
+
+        A Grid Search comparison consists of:
+          • exactly one data source (either a supplied data set, or a single simulation),
+          • one or more algorithms,
+          • one or more table columns (statistics or parameters),
+          • and a set of parameter choices.
+
+        The tool evaluates all sensible combinations of the selected parameters and reports the
+        results in a comparison table.
+
+        ----------------------------------------------------------------------
+        DATA VS. SIMULATION
+        ----------------------------------------------------------------------
+
+        If a data set is supplied to the Grid Search editor, the analysis is deterministic:
+          • no simulation runs are performed,
+          • each algorithm is run once on the fixed data,
+          • and results are fully reproducible.
+
+        In this case, simulation controls and run-count controls are disabled or hidden, since they
+        are not meaningful for fixed data.
+
+        If no data set is supplied, a single simulation may be selected. The simulation consists of
+        a graph type and a simulation model, along with editable parameters.
+
+        ----------------------------------------------------------------------
+        ALGORITHMS
+        ----------------------------------------------------------------------
+
+        In the Algorithms tab, you may select one or more algorithms. For each algorithm, you may
+        also select an appropriate independence test and/or score, depending on the algorithm.
+
+        Only tests and scores that are compatible with the current data type are shown.
+
+        Algorithms can be reordered or removed using the “Manage…” button. Algorithm parameters,
+        test parameters, score parameters, and bootstrapping parameters may be edited using the
+        “Edit Parameters” button.
+
+        Parameter values may be given as comma-separated lists. All combinations of these values
+        will be explored during the comparison.
+
+        ----------------------------------------------------------------------
+        TABLE COLUMNS
+        ----------------------------------------------------------------------
+
+        In the Table Columns tab, you select which statistics or parameter values will appear in the
+        comparison table.
+
+        Columns may be added using the “Add Table Column(s)” button, and reordered or removed using
+        the “Manage…” button. The Manage dialogs for algorithms and table columns share the same
+        interaction style.
+
+        ----------------------------------------------------------------------
+        COMPARISON
+        ----------------------------------------------------------------------
+
+        In the Comparison tab, you configure how results are evaluated and displayed, and then run
+        the comparison.
+
+        When the “Run Comparison” button is pressed, all selected algorithms are evaluated for all
+        combinations of the selected parameters. Progress and detailed output are shown in the
+        Verbose Output tab.
+
+        Depending on the settings, results may be sorted by utility and annotated with additional
+        diagnostics such as Markov checking results.
+
+        ----------------------------------------------------------------------
+        VIEW GRAPHS
+        ----------------------------------------------------------------------
+
+        After a comparison has been run, the View Graphs tab allows you to inspect individual output
+        graphs. Your selections are remembered when the editor is reopened.
+
+        ----------------------------------------------------------------------
+        PERFORMANCE NOTES
+        ----------------------------------------------------------------------
+
+        Some parameter combinations can be computationally expensive. If a comparison takes too
+        long, consider:
+          • reducing the number of parameter values,
+          • choosing smaller or simpler models,
+          • or running large experiments via the command line or Python interfaces.
+
+        If more memory is required, Tetrad may be started with a larger heap size, for example:
+
+            java -Xmx4g -jar tetrad.jar
+
+        ----------------------------------------------------------------------
+        REFERENCE
+        ----------------------------------------------------------------------
+
+        Ramsey, J. D., Malinsky, D., & Bui, K. V. (2020).
+        Algcomparison: Comparing the performance of graphical structure learning algorithms with Tetrad.
+        Journal of Machine Learning Research, 21(238), 1–6.
+        """);
     }
 
     /**
@@ -3104,14 +3207,18 @@ public class GridSearchEditor extends JPanel {
         Set<String> paramNamesSet = getAllSimulationParameters(simulations);
         StringBuilder paramText;
 
-        if (simulations.size() == 1) {
-            paramText = new StringBuilder("\nParameter choices for this simulation:");
-        } else {
-            paramText = new StringBuilder("\nParameter choices for all simulations:");
-        }
+        if (model.getSuppliedData() == null) {
+            if (simulations.size() == 1) {
+                paramText = new StringBuilder("\nParameter choices for this simulation:");
+            } else {
+                paramText = new StringBuilder("\nParameter choices for all simulations:");
+            }
 
-        paramText.append(getParameterText(paramNamesSet, model.getParameters()));
-        return paramText.toString();
+            paramText.append(getParameterText(paramNamesSet, model.getParameters()));
+            return paramText.toString();
+        } else {
+            return "";
+        }
     }
 
     /**
