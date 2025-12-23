@@ -1800,21 +1800,23 @@ public class GridSearchEditor extends JPanel {
         // ---------- Row 1: Graph type + runs + utility toggles ----------
         Box row1 = Box.createHorizontalBox();
 
-        row1.add(new JLabel("Comparison Graph Type:"));
-        row1.add(Box.createHorizontalStrut(8));
+        if (model.getSuppliedData() == null) {
+            row1.add(new JLabel("Comparison Graph Type:"));
+            row1.add(Box.createHorizontalStrut(8));
 
-        JComboBox<String> comparisonGraphTypeComboBox = new JComboBox<>();
-        for (GridSearchModel.ComparisonGraphType t : GridSearchModel.ComparisonGraphType.values()) {
-            comparisonGraphTypeComboBox.addItem(t.toString());
+            JComboBox<String> comparisonGraphTypeComboBox = new JComboBox<>();
+            for (GridSearchModel.ComparisonGraphType t : GridSearchModel.ComparisonGraphType.values()) {
+                comparisonGraphTypeComboBox.addItem(t.toString());
+            }
+            comparisonGraphTypeComboBox.setSelectedItem(params.getString("algcomparisonGraphType"));
+            comparisonGraphTypeComboBox.addActionListener(e -> {
+                String selectedItem = (String) comparisonGraphTypeComboBox.getSelectedItem();
+                if (selectedItem != null) params.set("algcomparisonGraphType", selectedItem);
+            });
+
+            row1.add(comparisonGraphTypeComboBox);
+            row1.add(Box.createHorizontalStrut(18));
         }
-        comparisonGraphTypeComboBox.setSelectedItem(params.getString("algcomparisonGraphType"));
-        comparisonGraphTypeComboBox.addActionListener(e -> {
-            String selectedItem = (String) comparisonGraphTypeComboBox.getSelectedItem();
-            if (selectedItem != null) params.set("algcomparisonGraphType", selectedItem);
-        });
-
-        row1.add(comparisonGraphTypeComboBox);
-        row1.add(Box.createHorizontalStrut(18));
 
         if (model.getSuppliedData() == null) {
             // Runs (change key + default to match your model)
@@ -1827,9 +1829,9 @@ public class GridSearchEditor extends JPanel {
                     1,
                     1_000_000
             ));
-        }
 
-        row1.add(Box.createHorizontalStrut(18));
+            row1.add(Box.createHorizontalStrut(18));
+        }
 
         row1.add(new JLabel("Sort by Utility:"));
         row1.add(Box.createHorizontalStrut(8));
@@ -2280,32 +2282,57 @@ public class GridSearchEditor extends JPanel {
         JButton cancelButton = new JButton("Cancel");
 
         // Add action listeners for the buttons
+//        addButton.addActionListener(e1 -> {
+//            String graphString = (String) graphsDropdown.getSelectedItem();
+//            String simulationString = (String) simulationsDropdown.getSelectedItem();
+//
+//            Class<? extends RandomGraph> graphClazz = getGraphClazz(graphString);
+//
+//            GridSearchModel.SimulationSpec spec = getSimulationSpec(simulationString, graphClazz);
+//
+//            // Single-simulation policy: replace the current selection rather than accumulating.
+//            // (We keep the existing model API by clearing the current list before adding.)
+//            try {
+//                Simulations sims = model.getSelectedSimulations();
+//                if (sims != null && sims.getSimulations() != null) {
+//                    sims.getSimulations().clear();
+//                }
+//            } catch (Exception ignore) {
+//                // If the model changes later, failing to clear here is non-fatal; addSimulationSpec will still set something.
+//            }
+//
+//            model.setSelectedSimulation(spec);
+//            setComparisonText();
+//            setSimulationText();
+//
+//            onSelectedAlgorithmsChanged();
+//
+//            dialog.dispose(); // Close the dialog
+//        });
+
         addButton.addActionListener(e1 -> {
             String graphString = (String) graphsDropdown.getSelectedItem();
             String simulationString = (String) simulationsDropdown.getSelectedItem();
 
             Class<? extends RandomGraph> graphClazz = getGraphClazz(graphString);
-
             GridSearchModel.SimulationSpec spec = getSimulationSpec(simulationString, graphClazz);
 
-            // Single-simulation policy: replace the current selection rather than accumulating.
-            // (We keep the existing model API by clearing the current list before adding.)
-            try {
-                Simulations sims = model.getSelectedSimulations();
-                if (sims != null && sims.getSimulations() != null) {
-                    sims.getSimulations().clear();
-                }
-            } catch (Exception ignore) {
-                // If the model changes later, failing to clear here is non-fatal; addSimulationSpec will still set something.
-            }
+            model.removeLastSimulation();
+            model.addSimulationSpec(spec);
 
+//            // Ensure the thing the UI reads is updated.
+//            Simulations sims = model.getSelectedSimulations();
+//            sims.getSimulations().clear();
+//            sims.getSimulations().add(spec.getSimulationImpl()); // or however you materialize a Simulation
+
+            // If you *also* track “selected simulation” separately, keep it consistent:
             model.setSelectedSimulation(spec);
+
             setComparisonText();
             setSimulationText();
-
             onSelectedAlgorithmsChanged();
 
-            dialog.dispose(); // Close the dialog
+            dialog.dispose();
         });
 
         cancelButton.addActionListener(e12 -> {
