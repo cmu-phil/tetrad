@@ -3053,6 +3053,9 @@ public class GridSearchEditor extends JPanel {
                 
                     java -Xmx4g -jar tetrad.jar
                 
+                Experienced users may prefer running large grid searches via the command line or Python 
+                interfaces for greater control and scalability.
+                
                 ----------------------------------------------------------------------
                 REFERENCE
                 ----------------------------------------------------------------------

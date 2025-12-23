@@ -603,16 +603,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
     }
 
-//    /**
-//     * Add an algorithm to the list of selected algorithms.
-//     *
-//     * @param algorithm The algorithm to add.
-//     */
-//    public void addAlgorithm(AlgorithmSpec algorithm) {
-//        initializeIfNull();
-//        getSelectedAlgorithmSpecs().add(algorithm);
-//    }
-
     public void addAlgorithm(AlgorithmSpec algorithm) {
         insertAlgorithmAt(getSelectedAlgorithmSpecs().size(), algorithm);
     }
@@ -632,17 +622,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
         removeAlgorithmAt(getSelectedAlgorithmSpecs().size() - 1);
     }
 
-//    /**
-//     * Remove the last algorithm from the list of selected algorithms.
-//     */
-//    public void removeLastAlgorithm() {
-//        initializeIfNull();
-//        LinkedList<AlgorithmSpec> selectedSimulationsSpecs = getSelectedAlgorithmSpecs();
-//        if (!selectedSimulationsSpecs.isEmpty()) {
-//            getSelectedAlgorithmSpecs().removeLast();
-//        }
-//    }
-
     public List<AlgorithmSpec> getAlgorithms() {
         initializeIfNull();
         return getSelectedAlgorithmSpecs();
@@ -657,24 +636,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
         if (selectedAlgorithm >= list.size()) selectedAlgorithm = Math.max(0, list.size() - 1);
         if (selectedAlgorithm < 0) selectedAlgorithm = 0;
     }
-
-//    public void removeAlgorithmAt(int index) {
-//        initializeIfNull();
-//        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
-//        if (index < 0 || index >= list.size()) return;
-//
-//        list.remove(index);
-//
-//        // Keep selectedAlgorithm valid
-//        if (selectedAlgorithm >= list.size()) {
-//            selectedAlgorithm = Math.max(0, list.size() - 1);
-//        } else if (selectedAlgorithm > index) {
-//            selectedAlgorithm--; // selection shifts left
-//        } else if (selectedAlgorithm == index) {
-//            // selection stays at same index if possible, otherwise previous is handled above
-//            if (selectedAlgorithm >= list.size()) selectedAlgorithm = Math.max(0, list.size() - 1);
-//        }
-//    }
 
     public void clearAlgorithms() {
         initializeIfNull();
@@ -830,45 +791,11 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return selectedAlgorithm;
     }
 
-//    public List<MyTableColumn> getSelectedTableColumns() {
-//        GridSearchModel.sortTableColumns(getSelectedTableColumnsPrivate());
-//        return new ArrayList<>(getSelectedTableColumnsPrivate());
-//    }
-
-//    private LinkedList<MyTableColumn> getSelectedTableColumnsPrivate() {
-//        if (!(parameters.get("algcomparison.selectedTableColumns") instanceof LinkedList<?>)) {
-//            parameters.set("algcomparison.selectedTableColumns", new LinkedList<MyTableColumn>());
-//        }
-//
-//        LinkedList<MyTableColumn> myTableColumns = (LinkedList<MyTableColumn>) parameters.get("algcomparison.selectedTableColumns");
-//        return myTableColumns;
-//    }
-
     public void removeAlgorithmAt(int index) {
         initializeIfNull();
         LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
         if (index >= 0 && index < list.size()) list.remove(index);
     }
-
-//    /**
-//     * Initializes the necessary variables if they are null.
-//     * <p>
-//     * This method checks if the selectedSimulations, selectedAlgorithms, selectedStatistics, and selectedParameters
-//     * variables are null. If any of them is null, it calls the initializeSimulationsEtc() method to initialize them.
-//     * <p>
-//     * It also checks if the selectedParameters variable is null. If it is null, it initializes it as an empty
-//     * LinkedList.
-//     * <p>
-//     * It then checks if the simulationClasses, algorithmClasses, and statisticsClasses variables are null. If any of
-//     * them is null, it calls the initializeClasses() method to initialize them.
-//     * <p>
-//     * Finally, it checks if the algNames, statNames, and simNames variables are null. If any of them is null, it calls
-//     * the initializeNames() method to initialize them.
-//     */
-//    private void initializeIfNull() {
-//        initializeClasses();
-//        initializeNames();
-//    }
 
     /**
      * Initializes the necessary variables if they are null.
