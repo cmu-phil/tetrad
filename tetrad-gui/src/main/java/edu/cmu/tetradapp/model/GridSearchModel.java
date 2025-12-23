@@ -1725,6 +1725,14 @@ public class GridSearchModel implements SessionModel, GraphSource {
             return false;
         }
 
+        /**
+         * Determines whether the associated statistic makes use of the knowledge of the true graph.
+         * If the statistic is an instance of {@code MarkovCheckerStatistic}, it is assumed not to use the true graph.
+         * Otherwise, the method attempts to instantiate the statistic and check its {@code usesTruth} behavior. If any
+         * issues occur during this process, the method defaults to returning true.
+         *
+         * @return true if the statistic is expected to use knowledge of the true graph, false otherwise.
+         */
         public boolean usesTruth() {
             if (MarkovCheckerStatistic.class.isAssignableFrom(getStatistic())) {
                 return false;
@@ -1760,6 +1768,14 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
     }
 
+    /**
+     * Represents a specification of an algorithm with its associated model,
+     * independence test, and scoring method.
+     *
+     * The AlgorithmSpec class is designed to encapsulate the necessary components
+     * for an algorithm's execution, including its name, model, independence test,
+     * and score. It enables the creation of algorithm implementations dynamically.
+     */
     public static class AlgorithmSpec implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
@@ -1795,22 +1811,47 @@ public class GridSearchModel implements SessionModel, GraphSource {
             this.score = score;
         }
 
+        /**
+         * Retrieves the name of the algorithm.
+         *
+         * @return the name of the algorithm
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Retrieves the algorithm model.
+         *
+         * @return the algorithm model
+         */
         public AlgorithmModel getAlgorithm() {
             return algorithm;
         }
 
+        /**
+         * Retrieves the test of independence.
+         *
+         * @return the test of independence
+         */
         public AnnotatedClass<TestOfIndependence> getTest() {
             return test;
         }
 
+        /**
+         * Retrieves the score.
+         *
+         * @return the score
+         */
         public AnnotatedClass<Score> getScore() {
             return score;
         }
 
+        /**
+         * Retrieves the algorithm implementation.
+         *
+         * @return the algorithm implementation
+         */
         public Algorithm getAlgorithmImpl() {
             try {
                 IndependenceWrapper independenceWrapper = null;
@@ -1842,12 +1883,26 @@ public class GridSearchModel implements SessionModel, GraphSource {
             }
         }
 
+        /**
+         * Retrieves the name of the algorithm specification.
+         *
+         * @return the name of the algorithm specification
+         */
         public String toString() {
             return name;
         }
     }
 
-
+    /**
+     * A class representing the specification for a simulation. It associates a simulation name with
+     * specific implementations of graph generation and simulation classes.
+     * <p>
+     * This class is used to encapsulate the details needed to create simulations based on a given type
+     * of random graph and a simulation model.
+     * <p>
+     * Implements the {@link TetradSerializable} interface for compliance with Tetrad's serialization
+     * framework, ensuring compatibility across versions while maintaining efficiency.
+     */
     public static class SimulationSpec implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
@@ -1864,16 +1919,38 @@ public class GridSearchModel implements SessionModel, GraphSource {
          */
         private final Class<? extends Simulation> simulationClass;
 
+        /**
+         * Constructs a new SimulationSpec object that associates a name with specific
+         * implementations of graph generation and simulation classes.
+         *
+         * @param name the name of the simulation.
+         * @param graph the class representing the implementation of a random graph.
+         * @param simulation the class representing the implementation of a simulation.
+         */
         public SimulationSpec(String name, Class<? extends RandomGraph> graph, Class<? extends Simulation> simulation) {
             this.name = name;
             this.graphClass = graph;
             this.simulationClass = simulation;
         }
 
+        /**
+         * Retrieves the name of the simulation.
+         *
+         * @return the name of the simulation represented by this specification.
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Creates and returns an instance of a Simulation object by constructing a RandomGraph
+         * instance and passing it as an argument to the constructor of the specified Simulation class.
+         *
+         * @return an instance of the Simulation implementation associated with the specification.
+         * @throws RuntimeException if there is an error creating the Simulation or RandomGraph instance,
+         *                          such as issues with constructor access, instantiation failures, or
+         *                          invocation problems.
+         */
         public Simulation getSimulationImpl() {
             try {
                 RandomGraph randomGraph = graphClass.getConstructor().newInstance();
@@ -1884,6 +1961,12 @@ public class GridSearchModel implements SessionModel, GraphSource {
             }
         }
 
+        /**
+         * Returns a string representation of this object. In this case, it
+         * returns the name of the simulation specification.
+         *
+         * @return the name of the simulation specification as a string.
+         */
         public String toString() {
             return name;
         }
