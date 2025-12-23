@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 
@@ -105,7 +106,6 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic, MarkovCheckerS
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-
         if (dataModel == null) {
             throw new IllegalArgumentException("Data model is null.");
         }

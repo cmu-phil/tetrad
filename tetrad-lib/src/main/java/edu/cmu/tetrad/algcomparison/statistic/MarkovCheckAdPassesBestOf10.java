@@ -105,8 +105,9 @@ public class MarkovCheckAdPassesBestOf10 implements Statistic, MarkovCheckerStat
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double p = new MarkovCheckAndersonDarlingPBestOf10(independenceWrapper, conditioningSetType).getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
-        return p > parameters.getDouble(Params.MC_ALPHA) ? 1.0 : 0.0;
+        double p = new MarkovCheckAndersonDarlingPBestOf10(independenceWrapper, conditioningSetType).getValue(trueDag, trueGraph, estGraph, dataModel, parameters);
+        double alpha = independenceWrapper.getTest(dataModel, parameters).getAlpha();
+        return p > alpha ? 1.0 : 0.0;
     }
 
     /**

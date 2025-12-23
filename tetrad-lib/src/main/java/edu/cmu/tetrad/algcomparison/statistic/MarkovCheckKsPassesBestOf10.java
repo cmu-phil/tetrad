@@ -24,6 +24,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -102,8 +103,9 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double p = new MarkovCheckKolmogorovSmirnoffPBestOf10(independenceWrapper, conditioningSetType).getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
-        return p > parameters.getDouble(Params.MC_ALPHA) ? 1.0 : 0.0;
+        double alpha = independenceWrapper.getTest(dataModel, parameters).getAlpha();
+        double p = new MarkovCheckKolmogorovSmirnoffPBestOf10(independenceWrapper, conditioningSetType).getValue(trueDag, trueGraph, estGraph, dataModel, parameters);
+        return p > alpha ? 1.0 : 0.0;
     }
 
     /**

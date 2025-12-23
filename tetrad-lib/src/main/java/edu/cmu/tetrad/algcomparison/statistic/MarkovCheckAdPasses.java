@@ -104,10 +104,7 @@ public class MarkovCheckAdPasses implements Statistic, MarkovCheckerStatistic {
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         double p = new MarkovCheckAndersonDarlingP(independenceWrapper, conditioningSetType).getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
-        double alpha = parameters.getDouble(Params.MC_ALPHA);
-
-        System.out.println("Markov check alpha = " + alpha);
-
+        double alpha = independenceWrapper.getTest(dataModel, parameters).getAlpha();
         return p > alpha ? 1.0 : 0.0;
     }
 

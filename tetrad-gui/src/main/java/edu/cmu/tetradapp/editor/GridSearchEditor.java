@@ -138,7 +138,7 @@ public class GridSearchEditor extends JPanel {
     /**
      * Represents a drop-down menu for selecting an algorithm.
      */
-    private transient JComboBox<Object> algorithmDropdown;
+    private transient JComboBox<AlgorithmModel> algorithmDropdown;
     /**
      * Private variable representing a JScrollPane used for comparing variables.
      */
@@ -203,8 +203,6 @@ public class GridSearchEditor extends JPanel {
             }
         });
 
-        addAddAlgorithmListener();
-//        addRemoveLastAlgorithmListener();
         addEditAlgorithmParametersListener();
     }
 
@@ -510,11 +508,11 @@ public class GridSearchEditor extends JPanel {
     /**
      * Creates and configures a ListLongTextField with specified parameters and constraints.
      *
-     * @param parameter the parameter key to be used when storing values in the parameters.
-     * @param parameters the Parameters object where the validated values will be stored.
+     * @param parameter     the parameter key to be used when storing values in the parameters.
+     * @param parameters    the Parameters object where the validated values will be stored.
      * @param defaultValues an array of default long values to initialize the field with.
-     * @param lowerBound the lower bound limit for validating the long values.
-     * @param upperBound the upper bound limit for validating the long values.
+     * @param lowerBound    the lower bound limit for validating the long values.
+     * @param upperBound    the upper bound limit for validating the long values.
      * @return a configured instance of ListLongTextField.
      */
     public static ListLongTextField getListLongTextField(String parameter, Parameters parameters, Long[] defaultValues, long lowerBound, long upperBound) {
@@ -725,13 +723,13 @@ public class GridSearchEditor extends JPanel {
     }
 
     /**
-     * Scrolls the given JScrollPane to make the specified word in the JTextArea visible.
-     * If the word is found within the text area, the method calculates the position of the word
-     * and adjusts the visible area of the scroll pane to bring the word into view.
+     * Scrolls the given JScrollPane to make the specified word in the JTextArea visible. If the word is found within
+     * the text area, the method calculates the position of the word and adjusts the visible area of the scroll pane to
+     * bring the word into view.
      *
-     * @param textArea the JTextArea containing the text where the word is being searched
+     * @param textArea   the JTextArea containing the text where the word is being searched
      * @param scrollPane the JScrollPane associated with the JTextArea to be scrolled
-     * @param word the word to search for and scroll to within the JTextArea
+     * @param word       the word to search for and scroll to within the JTextArea
      * @throws BadLocationException if the position of the word is invalid or cannot be resolved
      */
     public static void scrollToWord(JTextArea textArea, JScrollPane scrollPane, String word) throws BadLocationException {
@@ -1160,7 +1158,7 @@ public class GridSearchEditor extends JPanel {
             graphIndexComboBox.setSelectedItem(savedGraphIndex);
         } else if (!algorithmIndices.isEmpty()) {
             algorithmComboBox.setSelectedIndex(0);
-            graphIndexComboBox.setSelectedIndex(0);
+//            graphIndexComboBox.setSelectedIndex(0);
         }
 
         updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
@@ -1276,29 +1274,39 @@ public class GridSearchEditor extends JPanel {
      * @param graphIndexComboBox The combo box to update with the graph indices.
      * @param resultsDir         The directory where the graph results are stored.
      */
-    private void updateGraphBoxIndices(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox, JComboBox<Integer> graphIndexComboBox, File resultsDir) {
-        int savedGraphIndex = model.getSelectedGraphIndex();
+    private void updateGraphBoxIndices(JComboBox<Integer> simulationComboBox,
+                                       JComboBox<Integer> algorithmComboBox,
+                                       JComboBox<Integer> graphIndexComboBox,
+                                       File resultsDir) {
 
-        Object selectedSimulation = simulationComboBox.getSelectedItem();
-        Object selectedAlgorithm = algorithmComboBox.getSelectedItem();
+        Integer savedGraphIndex = model.getSelectedGraphIndex();  // make this Integer in the model if you can
+        Integer sim = (Integer) simulationComboBox.getSelectedItem();
+        Integer alg = (Integer) algorithmComboBox.getSelectedItem();
 
-        if (selectedSimulation == null || selectedAlgorithm == null) {
+        // If either isn't selected, clear and stop
+        if (sim == null || alg == null) {
             graphIndexComboBox.removeAllItems();
             return;
         }
 
-        int simulation = (int) selectedSimulation;
-        List<Integer> indices = getIntegers(resultsDir, (int) selectedAlgorithm, simulation);
-
-        graphIndexComboBox.removeAllItems();
+        List<Integer> indices = getIntegers(resultsDir, alg, sim);
         Collections.sort(indices);
 
-        for (int i : indices) {
-            graphIndexComboBox.addItem(i);
+        graphIndexComboBox.removeAllItems();
+        for (Integer i : indices) graphIndexComboBox.addItem(i);
+
+        if (graphIndexComboBox.getItemCount() == 0) {
+            return; // nothing to select
         }
 
-        if (savedGraphIndex > 0) {
+        // Try restore first
+        if (savedGraphIndex != null && indices.contains(savedGraphIndex)) {
             graphIndexComboBox.setSelectedItem(savedGraphIndex);
+        }
+
+        // If still nothing selected (e.g., saved not present), default to first
+        if (graphIndexComboBox.getSelectedIndex() < 0) {
+            graphIndexComboBox.setSelectedIndex(0);
         }
     }
 
@@ -1458,7 +1466,7 @@ public class GridSearchEditor extends JPanel {
         algorithSelectionBox.add(Box.createHorizontalGlue());
 
         addAlgorithm = new JButton("Add Algorithm");
-        addAddAlgorithmListener();
+        addAlgorithm.addActionListener(e -> openAddAlgorithmDialog());
 
         JButton manageAlgorithms = new JButton("Manage...");
         manageAlgorithms.addActionListener(e -> openManageAlgorithmsDialog());
@@ -1481,6 +1489,109 @@ public class GridSearchEditor extends JPanel {
         editAlgorithmParameters = new JButton("Edit Parameters");
 
         tabbedPane.addTab("Algorithms", algorithmChoice);
+    }
+
+    private void openAddAlgorithmDialog() {
+        addAlgorithm.setEnabled(false);
+
+        AlgorithmModels algorithmModels = AlgorithmModels.getInstance();
+        List<AlgorithmModel> models = algorithmModels.getModels(getDataTypeForGridSearch(), false);
+
+        // Create ALL widgets first
+        algorithmDropdown = new JComboBox<>();
+        indTestComboBox = new JComboBox<>();
+        scoreModelComboBox = new JComboBox<>();
+
+        for (AlgorithmModel m : models) algorithmDropdown.addItem(m);
+
+        // restore last choice
+        String lastAlgorithmChoice = model.getLastAlgorithmChoice();
+        if (lastAlgorithmChoice != null) {
+            for (int i = 0; i < algorithmDropdown.getItemCount(); i++) {
+                AlgorithmModel item = algorithmDropdown.getItemAt(i);
+                if (item != null && lastAlgorithmChoice.equals(item.getName())) {
+                    algorithmDropdown.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+
+        // Now attach listener (widgets exist)
+        algorithmDropdown.addActionListener(e -> populateTestAndScoreCombos());
+
+        // And do one initial populate
+        populateTestAndScoreCombos();
+
+        // Build UI
+        JPanel panel = new JPanel(new BorderLayout());
+        Box vert = Box.createVerticalBox();
+
+        Box rowAlg = Box.createHorizontalBox();
+        rowAlg.add(new JLabel("Choose an algorithm:"));
+        rowAlg.add(Box.createHorizontalGlue());
+        rowAlg.add(algorithmDropdown);
+        vert.add(rowAlg);
+
+        Box rowTest = Box.createHorizontalBox();
+        rowTest.add(new JLabel("Choose an independence test:"));
+        rowTest.add(Box.createHorizontalGlue());
+        rowTest.add(indTestComboBox);
+        vert.add(rowTest);
+
+        Box rowScore = Box.createHorizontalBox();
+        rowScore.add(new JLabel("Choose a score:"));
+        rowScore.add(Box.createHorizontalGlue());
+        rowScore.add(scoreModelComboBox);
+        vert.add(rowScore);
+
+        panel.add(vert, BorderLayout.NORTH);
+
+        JDialog dialog = new JDialog(
+                SwingUtilities.getWindowAncestor(this),
+                "Add Algorithm",
+                Dialog.ModalityType.APPLICATION_MODAL
+        );
+        dialog.setLayout(new BorderLayout());
+        dialog.add(panel, BorderLayout.CENTER);
+        dialog.add(getAddButton(dialog), BorderLayout.SOUTH);
+
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override public void windowClosed(java.awt.event.WindowEvent e) { addAlgorithm.setEnabled(true); }
+            @Override public void windowClosing(java.awt.event.WindowEvent e) { addAlgorithm.setEnabled(true); }
+        });
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    private void populateTestAndScoreCombos() {
+        AlgorithmModel selectedItem = (AlgorithmModel) algorithmDropdown.getSelectedItem();
+        if (selectedItem != null) model.setLastAlgorithmChoice(selectedItem.getName());
+
+        DataType datatype = getDataTypeForGridSearch();
+
+        indTestComboBox.removeAllItems();
+        if (selectedItem != null && selectedItem.isRequiredTest()) {
+            List<IndependenceTestModel> indTestModels = switch (datatype) {
+                case Continuous -> IndependenceTestModels.getInstance().getModels(DataType.Continuous);
+                case Discrete -> IndependenceTestModels.getInstance().getModels(DataType.Discrete);
+                case Mixed -> IndependenceTestModels.getInstance().getModels(DataType.Mixed);
+                default -> new ArrayList<>();
+            };
+            for (IndependenceTestModel m : indTestModels) indTestComboBox.addItem(m);
+        }
+
+        scoreModelComboBox.removeAllItems();
+        if (selectedItem != null && selectedItem.isRequiredScore()) {
+            List<ScoreModel> scoreModelsList = switch (datatype) {
+                case Continuous -> ScoreModels.getInstance().getModels(DataType.Continuous);
+                case Discrete -> ScoreModels.getInstance().getModels(DataType.Discrete);
+                case Mixed -> ScoreModels.getInstance().getModels(DataType.Mixed);
+                default -> new ArrayList<>();
+            };
+            for (ScoreModel m : scoreModelsList) scoreModelComboBox.addItem(m);
+        }
     }
 
     @NotNull
@@ -2180,121 +2291,6 @@ public class GridSearchEditor extends JPanel {
         return buttonPanel;
     }
 
-    /**
-     * Adds an ActionListener to the addAlgorithm button
-     */
-    private void addAddAlgorithmListener() {
-        addAlgorithm.addActionListener(e -> {
-            AlgorithmModels algorithmModels = AlgorithmModels.getInstance();
-            List<AlgorithmModel> algorithmModels1 = algorithmModels.getModels(getDataTypeForGridSearch(), false);
-
-            JPanel panel = new JPanel();
-            panel.setLayout(new BorderLayout());
-
-            algorithmDropdown = new JComboBox<>();
-
-            for (AlgorithmModel model : algorithmModels1) {
-                algorithmDropdown.addItem(model);
-            }
-
-            String lastAlgorithmChoice = model.getLastAlgorithmChoice();
-
-            for (int i = 0; i < algorithmDropdown.getItemCount(); i++) {
-                AlgorithmModel itemAt = (AlgorithmModel) algorithmDropdown.getItemAt(i);
-                if (itemAt.getName().equals(lastAlgorithmChoice)) {
-                    algorithmDropdown.setSelectedIndex(i);
-                    break;
-                }
-            }
-
-            algorithmDropdown.addActionListener(e1 -> setupAlgorithmDropdown());
-
-            Box vert1 = Box.createVerticalBox();
-            Box horiz2 = Box.createHorizontalBox();
-            horiz2.add(new JLabel("Choose an algorithm:"));
-            horiz2.add(Box.createHorizontalGlue());
-            horiz2.add(algorithmDropdown);
-            vert1.add(horiz2);
-
-            indTestComboBox = new JComboBox<>();
-            scoreModelComboBox = new JComboBox<>();
-            setupAlgorithmDropdown();
-
-            Box horiz4 = Box.createHorizontalBox();
-            horiz4.add(new JLabel("Choose an independence test:"));
-            horiz4.add(Box.createHorizontalGlue());
-            horiz4.add(indTestComboBox);
-            vert1.add(horiz4);
-
-            Box horiz5 = Box.createHorizontalBox();
-            horiz5.add(new JLabel("Choose a score:"));
-            horiz5.add(Box.createHorizontalGlue());
-            horiz5.add(scoreModelComboBox);
-            vert1.add(horiz5);
-
-            panel.add(vert1, BorderLayout.NORTH);
-
-            // Create the JDialog. Use the parent frame to make it modal.
-            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Add Simulation", Dialog.ModalityType.APPLICATION_MODAL);
-            dialog.setLayout(new BorderLayout());
-            dialog.add(panel, BorderLayout.CENTER);
-
-            // Create a panel for the buttons
-            JPanel buttonPanel = getAddButton(dialog);
-
-            // Add the button panel to the bottom of the dialog
-            dialog.add(buttonPanel, BorderLayout.SOUTH);
-
-            // Set the dialog size, position, and visibility
-            dialog.pack(); // Adjust the dialog size to fit its contents
-            dialog.setLocationRelativeTo(this); // Center dialog relative to the parent component
-            dialog.setVisible(true);
-        });
-    }
-
-    private void setupAlgorithmDropdown() {
-        AlgorithmModel selectedItem = (AlgorithmModel) algorithmDropdown.getSelectedItem();
-
-        if (selectedItem != null) {
-            model.setLastAlgorithmChoice(selectedItem.getName());
-        }
-
-        DataType datatype = getDataTypeForGridSearch();
-
-        indTestComboBox.removeAllItems();
-
-        if (selectedItem != null && selectedItem.isRequiredTest()) {
-            List<IndependenceTestModel> indTestModels = switch (datatype) {
-                case DataType.Continuous -> IndependenceTestModels.getInstance().getModels(DataType.Continuous);
-                case DataType.Discrete -> IndependenceTestModels.getInstance().getModels(DataType.Discrete);
-                case DataType.Mixed -> IndependenceTestModels.getInstance().getModels(DataType.Mixed);
-                default -> new ArrayList<>();
-            };
-
-            for (IndependenceTestModel model1 : indTestModels) {
-                indTestComboBox.addItem(model1);
-            }
-        }
-
-        scoreModelComboBox.removeAllItems();
-
-        if (selectedItem != null && selectedItem.isRequiredScore()) {
-            List<ScoreModel> scoreModelsList = switch (datatype) {
-                case DataType.Continuous -> ScoreModels.getInstance().getModels(DataType.Continuous);
-                case DataType.Discrete -> ScoreModels.getInstance().getModels(DataType.Discrete);
-                case DataType.Mixed -> ScoreModels.getInstance().getModels(DataType.Mixed);
-                default -> new ArrayList<>();
-            };
-
-            for (ScoreModel model1 : scoreModelsList) {
-                scoreModelComboBox.addItem(model1);
-            }
-        }
-
-        revalidate();
-        repaint();
-    }
-
     private void addEditAlgorithmParametersListener() {
         editAlgorithmParameters.addActionListener(e -> openEditAlgorithmParametersDialog());
     }
@@ -2323,34 +2319,36 @@ public class GridSearchEditor extends JPanel {
         JButton addButton = new JButton("Add");
         JButton cancelButton = new JButton("Cancel");
 
-        // Add action listeners for the buttons
-        addButton.addActionListener(e1 -> {
-            AlgorithmModel algorithmModel = (AlgorithmModel) algorithmDropdown.getSelectedItem();
+        // One-shot guard in case action fires twice
+        final java.util.concurrent.atomic.AtomicBoolean fired = new java.util.concurrent.atomic.AtomicBoolean(false);
 
+        addButton.addActionListener(e1 -> {
+            if (!fired.compareAndSet(false, true)) return; // already handled once
+            addButton.setEnabled(false);
+
+            AlgorithmModel algorithmModel = (AlgorithmModel) algorithmDropdown.getSelectedItem();
             if (algorithmModel == null) {
+                addButton.setEnabled(true);
+                fired.set(false);
                 return;
             }
 
             Class<?> algorithm = algorithmModel.getAlgorithm().clazz();
 
             IndependenceTestModel testModel = (IndependenceTestModel) indTestComboBox.getSelectedItem();
-
             AnnotatedClass<TestOfIndependence> test = null;
-
             if (testModel != null) {
                 test = testModel.getIndependenceTest();
             }
 
             ScoreModel scoreModel = (ScoreModel) scoreModelComboBox.getSelectedItem();
             AnnotatedClass<Score> score = null;
-
             if (scoreModel != null) {
                 score = scoreModel.getScore();
             }
 
             IndependenceWrapper independenceWrapper = null;
             ScoreWrapper scoreWrapper = null;
-
             try {
                 if (test != null) {
                     independenceWrapper = (IndependenceWrapper) test.clazz().getConstructor().newInstance();
@@ -2369,6 +2367,7 @@ public class GridSearchEditor extends JPanel {
                 }
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException ex) {
+                ex.printStackTrace();
                 throw new RuntimeException(ex);
             }
 
@@ -2383,24 +2382,30 @@ public class GridSearchEditor extends JPanel {
                     ((TakesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
                 }
 
-//                model.addAlgorithm(new GridSearchModel.AlgorithmSpec("name", algorithmModel, test, score));
-
                 String displayName = algorithmModel.getName(); // or algorithmModel.toString()
                 model.addAlgorithm(new GridSearchModel.AlgorithmSpec(displayName, algorithmModel, test, score));
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException ex) {
+                ex.printStackTrace();
                 throw new RuntimeException(ex);
             }
 
             onSelectedAlgorithmsChanged();
-            dialog.dispose();
+
+            addAlgorithm.setEnabled(true);
+            // Close after current event finishes
+            SwingUtilities.invokeLater(() -> {
+                dialog.setVisible(false);
+                dialog.dispose();
+            });
         });
 
         cancelButton.addActionListener(e12 -> {
-            dialog.dispose(); // Close the dialog
+            addAlgorithm.setEnabled(true);
+            dialog.setVisible(false);
+            dialog.dispose();
         });
 
-        // Add the buttons to the button panel
         buttonPanel.add(addButton);
         buttonPanel.add(cancelButton);
         return buttonPanel;
@@ -3789,13 +3794,11 @@ public class GridSearchEditor extends JPanel {
     }
 
     /**
-     * A custom OutputStream implementation that writes output to a JTextArea in a Swing-based GUI.
-     * This class allows developers to redirect standard output or logging messages to a GUI component
-     * for real-time display.
-     *
-     * Text written to this stream will be appended to the specified JTextArea. It handles incoming
-     * characters and ensures proper synchronization with the event dispatch thread (EDT) when updating
-     * the JTextArea.
+     * A custom OutputStream implementation that writes output to a JTextArea in a Swing-based GUI. This class allows
+     * developers to redirect standard output or logging messages to a GUI component for real-time display.
+     * <p>
+     * Text written to this stream will be appended to the specified JTextArea. It handles incoming characters and
+     * ensures proper synchronization with the event dispatch thread (EDT) when updating the JTextArea.
      */
     public static class TextAreaOutputStream extends OutputStream {
         private final JTextArea textArea;
@@ -3866,8 +3869,8 @@ public class GridSearchEditor extends JPanel {
         }
 
         /**
-         * Returns the Class of the values contained within the specified column.
-         * The returned class determines the type of data that the column is expected to hold.
+         * Returns the Class of the values contained within the specified column. The returned class determines the type
+         * of data that the column is expected to hold.
          *
          * @param columnIndex the index of the column whose class is to be retrieved
          * @return the Class object representing the type of values in the specified column
@@ -3884,7 +3887,7 @@ public class GridSearchEditor extends JPanel {
         /**
          * Determines whether a cell at the specified row and column index is editable.
          *
-         * @param rowIndex the row index of the cell
+         * @param rowIndex    the row index of the cell
          * @param columnIndex the column index of the cell
          * @return true if the cell is editable, false otherwise
          */
@@ -3896,8 +3899,8 @@ public class GridSearchEditor extends JPanel {
         /**
          * Returns the value at the specified row and column index.
          *
-         * @param rowIndex        the row whose value is to be queried
-         * @param columnIndex     the column whose value is to be queried
+         * @param rowIndex    the row whose value is to be queried
+         * @param columnIndex the column whose value is to be queried
          * @return the value at the specified row and column index
          */
         @Override
@@ -3916,9 +3919,9 @@ public class GridSearchEditor extends JPanel {
         /**
          * Sets the value at the specified row and column index.
          *
-         * @param aValue   value to assign to cell
-         * @param rowIndex   row of cell
-         * @param columnIndex  column of cell
+         * @param aValue      value to assign to cell
+         * @param rowIndex    row of cell
+         * @param columnIndex column of cell
          */
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {

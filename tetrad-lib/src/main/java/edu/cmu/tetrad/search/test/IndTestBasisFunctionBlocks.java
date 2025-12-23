@@ -86,7 +86,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
     // ---- Derived (embedded) ----
     private final List<List<Integer>> blocks;        // mapping original var -> embedded column indices
-    private final int degree;
+    private final int truncationLimit;
     private final DataSet embeddedDataSetFull;
     private IndTestBlocksWilkes blocksTest;          // delegate
     private int sampleSize;
@@ -103,23 +103,23 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
      * tests based on basis function transformations of the provided dataset, using specified degree and basis type.
      *
      * @param dataSet the input dataset, which provides the raw data to be analyzed. Cannot be null.
-     * @param degree the degree of the basis function transformation. Must be a non-negative integer.
+     * @param truncationLimit the degree of the basis function transformation. Must be a non-negative integer.
      * @param basisType the type of basis functions to use for transformations (e.g., polynomial, Fourier, etc.).
      *                  This value determines the embedding style and configuration specifics.
      * @throws IllegalArgumentException if the raw dataset is null or if the degree is negative.
      */
-    public IndTestBasisFunctionBlocks(DataSet dataSet, int degree, int basisType) {
+    public IndTestBasisFunctionBlocks(DataSet dataSet, int truncationLimit, int basisType) {
         if (dataSet == null) throw new IllegalArgumentException("raw == null");
-        if (degree < 0) throw new IllegalArgumentException("degree must be >= 0");
+        if (truncationLimit < 0) throw new IllegalArgumentException("degree must be >= 0");
 
         this.dataSet = dataSet;
-        this.degree = degree;
+        this.truncationLimit = truncationLimit;
         this.basisType = basisType;
         // Keep the exact Node instances from the caller's dataset
         this.variables = new ArrayList<>(dataSet.getVariables());
 
         Embedding.EmbeddedData embeddedData = Objects.requireNonNull(
-                Embedding.getEmbeddedData(dataSet, degree, basisType, 1),
+                Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, 1),
                 "Embedding.getEmbeddedData returned null");
 
         // Column embedding: which embedded columns correspond to each original variable
@@ -236,7 +236,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         DataSet ds = twoColumnDataSet("X", x, "Y", y);
 
         // Build the BFIT test bound to this dataset
-        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(ds, degree, basisType);
+        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(ds, truncationLimit, basisType);
 
         // Resolve nodes and run the marginal test
         Node X = ds.getVariable("X");
