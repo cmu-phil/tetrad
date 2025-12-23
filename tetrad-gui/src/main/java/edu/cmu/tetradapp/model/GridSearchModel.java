@@ -1725,9 +1725,39 @@ public class GridSearchModel implements SessionModel, GraphSource {
             return false;
         }
 
+        public boolean usesTruth() {
+            if (MarkovCheckerStatistic.class.isAssignableFrom(getStatistic())) {
+                return false;
+            } else {
+                try {
+                    Constructor<?>[] constructors = getStatistic().getDeclaredConstructors();
+
+                    boolean hasNoArgConstructor = false;
+                    for (Constructor<?> constructor : constructors) {
+                        if (constructor.getParameterCount() == 0) {
+                            hasNoArgConstructor = true;
+                            break;
+                        }
+                    }
+
+                    if (hasNoArgConstructor) {
+                        Statistic statistic = getStatistic().getConstructor().newInstance();
+                        return statistic.usesTruth();
+                    }
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                         NoSuchMethodException ex) {
+                    System.out.println("Error creating statistic to check usesTruth() method: " + ex.getMessage());
+                }
+            }
+
+            return true;
+        }
+
         public enum ColumnType {
             STATISTIC, PARAMETER
         }
+
+
     }
 
     public static class AlgorithmSpec implements TetradSerializable {

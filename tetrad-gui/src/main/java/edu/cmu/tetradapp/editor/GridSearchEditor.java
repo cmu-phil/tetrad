@@ -2446,10 +2446,25 @@ public class GridSearchEditor extends JPanel {
     private void addAddTableColumnsListener(JTabbedPane tabbedPane) {
         addTableColumns.addActionListener(e -> {
             java.util.Set<GridSearchModel.MyTableColumn> selectedColumns = new HashSet<>();
-            List<GridSearchModel.MyTableColumn> allTableColumns = model.getAllTableColumns();
 
-            // Create a table idaCheckEst for the results of the IDA check
-            TableColumnSelectionModel columnSelectionTableModel = new TableColumnSelectionModel(allTableColumns, selectedColumns);
+//            List<GridSearchModel.MyTableColumn> allTableColumns = model.getAllTableColumns();
+//            TableColumnSelectionModel columnSelectionTableModel = new TableColumnSelectionModel(allTableColumns, selectedColumns);
+
+            boolean suppliedData = model.getSuppliedData() != null;
+            boolean truthAvailable = model.getSuppliedGraph() != null; // or your real condition
+
+            List<GridSearchModel.MyTableColumn> all = model.getAllTableColumns();
+
+            if (suppliedData && !truthAvailable) {
+                all = all.stream()
+                        .filter(c -> c.getType() != GridSearchModel.MyTableColumn.ColumnType.STATISTIC
+                                     || !c.usesTruth())   // <-- you add this (or equivalent)
+                        .toList();
+            }
+
+            TableColumnSelectionModel columnSelectionTableModel = new TableColumnSelectionModel(all, selectedColumns);
+
+
             this.setLayout(new BorderLayout());
 
             // Add the table to the left
