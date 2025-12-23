@@ -134,5 +134,14 @@ public class MarkovCheckAndersonDarlingPBestOf10 implements Statistic, MarkovChe
     public double getNormValue(double value) {
         return value;
     }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
+    }
 }
 

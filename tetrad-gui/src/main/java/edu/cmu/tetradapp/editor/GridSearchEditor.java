@@ -1556,8 +1556,15 @@ public class GridSearchEditor extends JPanel {
         dialog.add(getAddButton(dialog), BorderLayout.SOUTH);
 
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override public void windowClosed(java.awt.event.WindowEvent e) { addAlgorithm.setEnabled(true); }
-            @Override public void windowClosing(java.awt.event.WindowEvent e) { addAlgorithm.setEnabled(true); }
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                addAlgorithm.setEnabled(true);
+            }
+
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                addAlgorithm.setEnabled(true);
+            }
         });
 
         dialog.pack();
@@ -1574,8 +1581,18 @@ public class GridSearchEditor extends JPanel {
         indTestComboBox.removeAllItems();
         if (selectedItem != null && selectedItem.isRequiredTest()) {
             List<IndependenceTestModel> indTestModels = switch (datatype) {
-                case Continuous -> IndependenceTestModels.getInstance().getModels(DataType.Continuous);
-                case Discrete -> IndependenceTestModels.getInstance().getModels(DataType.Discrete);
+                case Continuous -> {
+                    List<IndependenceTestModel> testModels = new ArrayList<>();
+                    testModels.addAll(IndependenceTestModels.getInstance().getModels(DataType.Continuous));
+                    testModels.addAll(IndependenceTestModels.getInstance().getModels(DataType.Mixed));
+                    yield testModels;
+                }
+                case Discrete -> {
+                    List<IndependenceTestModel> testModels = new ArrayList<>();
+                    testModels.addAll(IndependenceTestModels.getInstance().getModels(DataType.Discrete));
+                    testModels.addAll(IndependenceTestModels.getInstance().getModels(DataType.Mixed));
+                    yield testModels;
+                }
                 case Mixed -> IndependenceTestModels.getInstance().getModels(DataType.Mixed);
                 default -> new ArrayList<>();
             };
@@ -1585,8 +1602,18 @@ public class GridSearchEditor extends JPanel {
         scoreModelComboBox.removeAllItems();
         if (selectedItem != null && selectedItem.isRequiredScore()) {
             List<ScoreModel> scoreModelsList = switch (datatype) {
-                case Continuous -> ScoreModels.getInstance().getModels(DataType.Continuous);
-                case Discrete -> ScoreModels.getInstance().getModels(DataType.Discrete);
+                case Continuous -> {
+                    List<ScoreModel> scoreModels = new ArrayList<>();
+                    scoreModels.addAll(ScoreModels.getInstance().getModels(DataType.Continuous));
+                    scoreModels.addAll(ScoreModels.getInstance().getModels(DataType.Mixed));
+                    yield scoreModels;
+                }
+                case Discrete -> {
+                    List<ScoreModel> scoreModels = new ArrayList<>();
+                    scoreModels.addAll(ScoreModels.getInstance().getModels(DataType.Discrete));
+                    scoreModels.addAll(ScoreModels.getInstance().getModels(DataType.Mixed));
+                    yield scoreModels;
+                }
                 case Mixed -> ScoreModels.getInstance().getModels(DataType.Mixed);
                 default -> new ArrayList<>();
             };
@@ -3138,7 +3165,8 @@ public class GridSearchEditor extends JPanel {
         DataType dataType = getDataTypeForGridSearch();
 
         for (IndependenceTestModel m : models) {
-            if (m.getIndependenceTest().annotation().dataType()[0] == dataType) {
+            DataType dataType1 = m.getIndependenceTest().annotation().dataType()[0];
+            if (dataType1 == dataType || dataType1 == DataType.Mixed) {
                 indTestJComboBox.addItem(m);
             }
         }

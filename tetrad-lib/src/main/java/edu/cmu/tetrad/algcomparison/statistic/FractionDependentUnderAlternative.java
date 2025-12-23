@@ -104,5 +104,14 @@ public class FractionDependentUnderAlternative implements Statistic {
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
+    }
 }
 
