@@ -59,6 +59,7 @@ public class MarkovCheckKsPasses implements Statistic, MarkovCheckerStatistic {
      * statistical model under analysis.
      */
     private final ConditioningSetType conditioningSetType;
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
@@ -70,9 +71,11 @@ public class MarkovCheckKsPasses implements Statistic, MarkovCheckerStatistic {
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
      */
-    public MarkovCheckKsPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckKsPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                               Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -110,7 +113,7 @@ public class MarkovCheckKsPasses implements Statistic, MarkovCheckerStatistic {
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
         double alpha = test.getAlpha();
-        double p = new MarkovCheckKolmogorovSmirnoffP(independenceWrapper, conditioningSetType).getValue(trueDag, trueGraph, estGraph, dataModel, parameters);
+        double p = new MarkovCheckKolmogorovSmirnoffP(independenceWrapper, conditioningSetType, mcParameters).getValue(trueDag, trueGraph, estGraph, dataModel, mcParameters);
         return p > alpha ? 1.0 : 0.0;
     }
 

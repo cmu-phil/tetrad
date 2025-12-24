@@ -55,6 +55,7 @@ public class McGetNumTestsH0 implements Statistic, MarkovCheckerStatistic {
      * statistical analysis.
      */
     private final ConditioningSetType conditioningSetType;
+    private final Parameters mcParameters;
 
     /**
      * Calculates the number of tests for the Markov check of whether the p-values for the estimated graph are
@@ -66,9 +67,11 @@ public class McGetNumTestsH0 implements Statistic, MarkovCheckerStatistic {
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
      */
-    public McGetNumTestsH0(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public McGetNumTestsH0(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                           Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -110,7 +113,7 @@ public class McGetNumTestsH0 implements Statistic, MarkovCheckerStatistic {
             throw new IllegalArgumentException("Data model is null.");
         }
 
-        IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
+        IndependenceTest test = independenceWrapper.getTest(dataModel, mcParameters);
         MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
         markovCheck.generateResults(true, true);
         return markovCheck.getNumTests(true);

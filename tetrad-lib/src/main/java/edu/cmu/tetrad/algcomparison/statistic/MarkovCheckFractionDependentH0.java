@@ -53,6 +53,7 @@ public class MarkovCheckFractionDependentH0 implements Statistic, MarkovCheckerS
      * are analyzed, as described by the available options in the ConditioningSetType enumeration.
      */
     private final ConditioningSetType conditioningSetType;
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
@@ -64,9 +65,11 @@ public class MarkovCheckFractionDependentH0 implements Statistic, MarkovCheckerS
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
      */
-    public MarkovCheckFractionDependentH0(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckFractionDependentH0(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                                          Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -108,7 +111,7 @@ public class MarkovCheckFractionDependentH0 implements Statistic, MarkovCheckerS
             throw new IllegalArgumentException("Data model is null.");
         }
 
-        IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
+        IndependenceTest test = independenceWrapper.getTest(dataModel, mcParameters);
         MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
         markovCheck.setFractionResample(0.9);
         markovCheck.generateResults(true, true);

@@ -1852,7 +1852,7 @@ public class GridSearchEditor extends JPanel {
 
         JButton configureMarkovChecker = new JButton("Params…");
         configureMarkovChecker.addActionListener(e -> {
-            JPanel p = createIndependenceWrapperParamsPanel(params);
+            JPanel p = createIndependenceWrapperParamsPanel(model.getMarkovCheckerParameters());
             JOptionPane dialog = new JOptionPane(p, JOptionPane.PLAIN_MESSAGE);
             dialog.createDialog("Set Markov Checker Parameters").setVisible(true);
         });

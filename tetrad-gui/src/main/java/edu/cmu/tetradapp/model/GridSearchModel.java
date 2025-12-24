@@ -188,6 +188,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * user closes the editor and re-opens it.
      */
     private IndependenceTestModel selectedIndependenceTestModel = null;
+    private final Parameters mcParameters = new Parameters();
 
     /**
      * Constructs a new GridSearchModel with the specified parameters.
@@ -942,8 +943,9 @@ public class GridSearchModel implements SessionModel, GraphSource {
                 } else if (MarkovCheckerStatistic.class.isAssignableFrom(statisticClass)) {
                     // Special-case: needs (IndependenceWrapper, ConditioningSetType)
                     Statistic s = statisticClass
-                            .getConstructor(IndependenceWrapper.class, ConditioningSetType.class)
-                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
+                            .getConstructor(IndependenceWrapper.class, ConditioningSetType.class, Parameters.class)
+                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType(),
+                                    getMarkovCheckerParameters());
                     String abbr = s.getAbbreviation();
                     if (abbr != null && !abbr.isBlank()) {
                         pairs.add(new NamedClass<>(abbr, statisticClass));
@@ -957,6 +959,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
 
         return pairs;
+    }
+
+    public Parameters getMarkovCheckerParameters() {
+        return mcParameters;
     }
 
     private List<NamedClass<Simulation>> getSimulationNameClassPairs(List<Class<? extends Simulation>> classes) {
@@ -1050,8 +1056,9 @@ public class GridSearchModel implements SessionModel, GraphSource {
                     String abbreviation = _statistic.getAbbreviation();
                     statisticsNames.add(abbreviation);
                 } else if (MarkovCheckerStatistic.class.isAssignableFrom(statistic)) {
-                    Statistic _statistic = statistic.getConstructor(IndependenceWrapper.class, ConditioningSetType.class)
-                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
+                    Statistic _statistic = statistic.getConstructor(IndependenceWrapper.class, ConditioningSetType.class, Parameters.class)
+                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType(),
+                                    getMarkovCheckerParameters());
                     String abbreviation = _statistic.getAbbreviation();
                     statisticsNames.add(abbreviation);
                 }
@@ -1101,8 +1108,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
                 if (MarkovCheckerStatistic.class.isAssignableFrom(column.getStatistic())) {
                     try {
-                        Constructor<? extends Statistic> constructor = column.getStatistic().getConstructor(IndependenceWrapper.class, ConditioningSetType.class);
-                        Statistic statistic = constructor.newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
+                        Constructor<? extends Statistic> constructor = column.getStatistic().getConstructor(IndependenceWrapper.class, ConditioningSetType.class,
+                                Parameters.class);
+                        Statistic statistic = constructor.newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType(),
+                                getMarkovCheckerParameters());
                         selectedStatistics.add(statistic);
                         lastStatisticsUsed.add(statistic);
                     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
@@ -1223,8 +1232,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
                     MyTableColumn column = new MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
                     allTableColumns.add(column);
                 } else if (MarkovCheckerStatistic.class.isAssignableFrom(statisticClass)) {
-                    Statistic _statistic = statisticClass.getConstructor(IndependenceWrapper.class, ConditioningSetType.class)
-                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
+                    Statistic _statistic = statisticClass.getConstructor(IndependenceWrapper.class, ConditioningSetType.class,
+                                    Parameters.class)
+                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType(),
+                                    getMarkovCheckerParameters());
                     MyTableColumn column = new MyTableColumn(_statistic.getAbbreviation(), _statistic.getDescription(), statisticClass);
                     allTableColumns.add(column);
                 }

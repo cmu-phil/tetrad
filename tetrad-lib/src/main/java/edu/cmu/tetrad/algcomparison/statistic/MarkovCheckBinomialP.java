@@ -53,6 +53,7 @@ public class MarkovCheckBinomialP implements Statistic, MarkovCheckerStatistic {
      * global or local tests.
      */
     private final ConditioningSetType conditioningSetType;
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
@@ -64,9 +65,11 @@ public class MarkovCheckBinomialP implements Statistic, MarkovCheckerStatistic {
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
      */
-    public MarkovCheckBinomialP(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckBinomialP(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                                Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -108,7 +111,7 @@ public class MarkovCheckBinomialP implements Statistic, MarkovCheckerStatistic {
             throw new IllegalArgumentException("Data model is null.");
         }
 
-        IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
+        IndependenceTest test = independenceWrapper.getTest(dataModel, mcParameters);
         MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
         markovCheck.setFractionResample(0.9);
         markovCheck.generateResults(true, true);

@@ -56,6 +56,7 @@ public class MarkovCheckAdPassesBestOf10 implements Statistic, MarkovCheckerStat
      * LOCAL_MARKOV, PARENTS_AND_NEIGHBORS, and others.
      */
     private final ConditioningSetType conditioningSetType;
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
@@ -67,9 +68,11 @@ public class MarkovCheckAdPassesBestOf10 implements Statistic, MarkovCheckerStat
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
      */
-    public MarkovCheckAdPassesBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckAdPassesBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                                       Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -105,7 +108,8 @@ public class MarkovCheckAdPassesBestOf10 implements Statistic, MarkovCheckerStat
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double p = new MarkovCheckAndersonDarlingPBestOf10(independenceWrapper, conditioningSetType).getValue(trueDag, trueGraph, estGraph, dataModel, parameters);
+        double p = new MarkovCheckAndersonDarlingPBestOf10(independenceWrapper, conditioningSetType, mcParameters)
+                .getValue(trueDag, trueGraph, estGraph, dataModel, mcParameters);
         double alpha = independenceWrapper.getTest(dataModel, parameters).getAlpha();
         return p > alpha ? 1.0 : 0.0;
     }

@@ -56,6 +56,7 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, Markov
      * determines how independence facts are tested and is defined by the {@link ConditioningSetType} enum.
      */
     private final ConditioningSetType conditioningSetType;
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
@@ -67,9 +68,11 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, Markov
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
      */
-    public MarkovCheckKolmogorovSmirnoffPBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckKolmogorovSmirnoffPBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                                                  Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**

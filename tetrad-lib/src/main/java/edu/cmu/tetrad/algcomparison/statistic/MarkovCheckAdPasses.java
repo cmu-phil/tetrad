@@ -54,6 +54,7 @@ public class MarkovCheckAdPasses implements Statistic, MarkovCheckerStatistic {
      * selecting the conditioning set.
      */
     private final ConditioningSetType conditioningSetType;
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
@@ -65,9 +66,11 @@ public class MarkovCheckAdPasses implements Statistic, MarkovCheckerStatistic {
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
      */
-    public MarkovCheckAdPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckAdPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                               Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -103,8 +106,9 @@ public class MarkovCheckAdPasses implements Statistic, MarkovCheckerStatistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double p = new MarkovCheckAndersonDarlingP(independenceWrapper, conditioningSetType).getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
-        double alpha = independenceWrapper.getTest(dataModel, parameters).getAlpha();
+        double p = new MarkovCheckAndersonDarlingP(independenceWrapper, conditioningSetType, mcParameters)
+                .getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
+        double alpha = independenceWrapper.getTest(dataModel, mcParameters).getAlpha();
         return p > alpha ? 1.0 : 0.0;
     }
 

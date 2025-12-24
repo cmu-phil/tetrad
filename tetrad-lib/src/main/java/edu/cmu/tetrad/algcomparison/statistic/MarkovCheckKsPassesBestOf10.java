@@ -54,6 +54,7 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
      * among others. This field is immutable and must be set during the initialization of the object.
      */
     private final ConditioningSetType conditioningSetType;
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
@@ -65,9 +66,11 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
      */
-    public MarkovCheckKsPassesBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckKsPassesBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                                       Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -104,7 +107,8 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         double alpha = independenceWrapper.getTest(dataModel, parameters).getAlpha();
-        double p = new MarkovCheckKolmogorovSmirnoffPBestOf10(independenceWrapper, conditioningSetType).getValue(trueDag, trueGraph, estGraph, dataModel, parameters);
+        double p = new MarkovCheckKolmogorovSmirnoffPBestOf10(independenceWrapper, conditioningSetType, mcParameters)
+                .getValue(trueDag, trueGraph, estGraph, dataModel, mcParameters);
         return p > alpha ? 1.0 : 0.0;
     }
 
