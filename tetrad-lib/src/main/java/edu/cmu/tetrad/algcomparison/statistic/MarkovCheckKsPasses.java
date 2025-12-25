@@ -111,8 +111,7 @@ public class MarkovCheckKsPasses implements Statistic, MarkovCheckerStatistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
-        double alpha = test.getAlpha();
+        double alpha = mcParameters.getDouble(Params.ALPHA);
         double p = new MarkovCheckKolmogorovSmirnoffP(independenceWrapper, conditioningSetType, mcParameters).getValue(trueDag, trueGraph, estGraph, dataModel, mcParameters);
         return p > alpha ? 1.0 : 0.0;
     }

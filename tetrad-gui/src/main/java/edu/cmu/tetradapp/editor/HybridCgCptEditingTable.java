@@ -28,6 +28,7 @@ final class HybridCgCptEditingTable extends JTable {
     HybridCgCptEditingTable(Node child, HybridCgIm im) {
         HybridCgPm pm = im.getPm();
         int y = pm.indexOf(child);
+
         if (y < 0) throw new IllegalArgumentException("Child not in PM: " + child);
         if (!pm.isDiscrete(y)) throw new IllegalArgumentException("Child is not discrete: " + child.getName());
 

@@ -31,6 +31,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.decomposition.qr.QRDecompositionHouseholder_DDRM;
+
 /**
  * The {@code Embedding} class provides utilities for transforming datasets into embedded representations through basis
  * expansions and one-hot encoding. This process is commonly used in preprocessing steps for machine learning or
@@ -123,19 +126,53 @@ public class Embedding {
                 embedding.put(i_, new ArrayList<>(keys.values()));
             } else {
                 List<Integer> indexList = new ArrayList<>();
+
+                // We'll build the raw basis block as an n x truncationLimit matrix.
+                // Column (p-1) corresponds to basis function p.
+                DMatrixRMaj block = new DMatrixRMaj(n, truncationLimit);
+
                 for (int p = 1; p <= truncationLimit; p++) {
                     i++;
 
                     Node vFunctional = new ContinuousVariable(v.getName() + ".P(" + p + ")");
                     A.add(vFunctional);
+
                     double[] functional = new double[n];
                     for (int j = 0; j < n; j++) {
-                        functional[j] = StatUtils.basisFunctionValue(basisType, p, dataSet.getDouble(j, i_));
-//                        functional[j] /= StatUtils.factorial(p + 1);
+                        double val = StatUtils.basisFunctionValue(basisType, p, dataSet.getDouble(j, i_));
+                        functional[j] = val;
+
+                        // Store into the block matrix (col p-1).
+                        block.set(j, p - 1, val);
                     }
 
                     B.add(functional);
                     indexList.add(i);
+                }
+
+                // Orthogonalize within this variable's block (only meaningful if >1 column).
+                // Replace the basis columns with the (compact) Q columns from QR: block = Q R,
+                // where Q has orthonormal columns spanning the same column space as the block.
+                if (truncationLimit > 1) {
+                    QRDecompositionHouseholder_DDRM qr = new QRDecompositionHouseholder_DDRM();
+                    if (!qr.decompose(block)) {
+                        throw new IllegalStateException("QR decomposition failed for variable: " + v.getName());
+                    }
+
+                    // compact=true gives Q as n x truncationLimit (not n x n).
+                    DMatrixRMaj Q = qr.getQ(null, true);
+
+                    for (int col = 0; col < truncationLimit; col++) {
+                        int embeddedIndex = indexList.get(col);
+
+                        double[] qCol = new double[n];
+                        for (int row = 0; row < n; row++) {
+                            qCol[row] = Q.get(row, col);
+                        }
+
+                        // Overwrite the corresponding column in B with the orthonormalized one.
+                        B.set(embeddedIndex, qCol);
+                    }
                 }
 
                 embedding.put(i_, indexList);

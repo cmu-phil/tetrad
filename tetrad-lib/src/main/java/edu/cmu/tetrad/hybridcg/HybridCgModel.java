@@ -590,6 +590,7 @@ public final class HybridCgModel {
         public int[] getParents(int y) {
             Node child = nodes[y];
             List<Node> parents = dag.getParents(child);
+
             return parents.stream()
                     .mapToInt(this::indexOf)
                     .toArray();
