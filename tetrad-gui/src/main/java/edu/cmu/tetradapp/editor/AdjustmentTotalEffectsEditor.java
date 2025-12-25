@@ -144,6 +144,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
             model.recompute();
             tableModel.fireTableDataChanged();
         } catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(this,
                     ex.getMessage(),
                     "Invalid selection",
