@@ -156,7 +156,7 @@ public class HybridCgEstimatorWrapper implements SessionModel {
     public HybridCgEstimatorWrapper(DataWrapper dataWrapper,
                                     HybridCgImWrapper imWrapper,
                                     Parameters parameters) {
-        this(dataWrapper, new HybridCgPmWrapper(imWrapper.getPm().getGraph(), parameters), parameters);
+        this(dataWrapper, new HybridCgPmWrapper(imWrapper.getPm().getGraph(), null, parameters), parameters);
     }
 
     // ================================ API ====================================
