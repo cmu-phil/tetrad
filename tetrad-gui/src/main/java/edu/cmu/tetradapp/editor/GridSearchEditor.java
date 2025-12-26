@@ -2597,7 +2597,7 @@ public class GridSearchEditor extends JPanel {
             Box horiz3 = Box.createHorizontalBox();
             horiz3.add(Box.createHorizontalGlue());
 
-            JButton selectUsedParameters = new JButton("Used Parameters");
+            JButton selectUsedParameters = new JButton("Modified Parameters");
             horiz3.add(selectUsedParameters);
 
             JButton selectLastStatisticsUsed = new JButton("Used Statistics");

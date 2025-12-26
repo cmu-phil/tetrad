@@ -121,7 +121,7 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, Markov
 
         for (int i = 0; i < 10; i++) {
             MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
-            markovCheck.setFractionResample(0.9);
+            markovCheck.setFractionResample(1.0);
             markovCheck.generateResults(true, true);
             double ksPValue = markovCheck.getKsPValue(true);
             if (ksPValue > max) {

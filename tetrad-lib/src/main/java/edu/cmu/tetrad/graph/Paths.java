@@ -639,6 +639,8 @@ public class Paths implements TetradSerializable {
 
             boolean visible = forceVisible.contains(b) || graph.paths().defVisiblePag(a, b);
 
+            System.out.println("Checking path: " + path + ", visible: " + visible + ", edge points towards: " + graph.getEdge(a, b).pointsTowards(b));
+
             if (!(visible && graph.getEdge(a, b).pointsTowards(b))) {
                 amenablePaths.remove(path);
             }

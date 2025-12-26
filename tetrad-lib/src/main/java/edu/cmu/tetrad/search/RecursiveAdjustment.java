@@ -411,6 +411,8 @@ public final class RecursiveAdjustment {
         // All potentially directed (potentially-directed) paths from X to Y
         Set<List<Node>> pdPaths = graph.paths().potentiallyDirectedPaths(X, Y, maxPathLength);
 
+        System.out.println("pdPaths: " + pdPaths);
+
         // Subset of those that are "amenable paths" in your sense
         Set<List<Node>> amenablePaths = getAmenablePaths(X, Y, graphType, maxPathLength, forceVisibility);
 

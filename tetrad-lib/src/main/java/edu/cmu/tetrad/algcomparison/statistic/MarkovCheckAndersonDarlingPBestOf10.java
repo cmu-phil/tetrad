@@ -112,7 +112,7 @@ public class MarkovCheckAndersonDarlingPBestOf10 implements Statistic, MarkovChe
 
         IndependenceTest test = independenceWrapper.getTest(dataModel, mcParameters);
         MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
-        markovCheck.setFractionResample(0.9);
+        markovCheck.setFractionResample(1.0);
 
         double max = Double.NEGATIVE_INFINITY;
 

@@ -158,6 +158,8 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         JTextField radiusField = new JTextField(String.valueOf(model.getMaxRadius()));
         JTextField nearField = new JTextField(String.valueOf(model.getNearWhichEndpoint()));
         JTextField pathField = new JTextField(String.valueOf(model.getMaxPathLength()));
+        JCheckBox doDiscreteRegressions = new JCheckBox("Do Discrete Regressions");
+        doDiscreteRegressions.setSelected(model.getDoDiscreteRegressions());
 
         JCheckBox avoidAmenableBox = new JCheckBox(
                 "Avoid amenable backbone (Perković GAC mode)",
@@ -173,6 +175,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         panel.add(nearField);
         panel.add(new JLabel("Max path length (-1 for no limit):"));
         panel.add(pathField);
+        panel.add(doDiscreteRegressions);
         panel.add(avoidAmenableBox);
 
         int res = JOptionPane.showConfirmDialog(this, panel,
@@ -187,6 +190,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
                 model.setNearWhichEndpoint(Integer.parseInt(nearField.getText().trim()));
                 model.setMaxPathLength(Integer.parseInt(pathField.getText().trim()));
                 model.setAvoidAmenable(avoidAmenableBox.isSelected());
+                model.setDoDiscreteRegressions(doDiscreteRegressions.isSelected());
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this,
                         "One or more parameter values are not valid integers.",
@@ -232,10 +236,27 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
             return;
         }
 
-        // Exactly one row.
         int viewIndex = selected[0];
         int modelIndex = resultTable.convertRowIndexToModel(viewIndex);
         ResultRow row = model.getResultRow(modelIndex);
+
+        if (row.discreteRegression) {
+            JOptionPane.showMessageDialog(this,
+                    "No regression is available for this row because discrete variables are involved\n" +
+                    "and \"Do Discrete Regressions\" is unchecked.",
+                    "Discrete variables",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        if (row.notAmenable || row.regressionResult == null) {
+            JOptionPane.showMessageDialog(this,
+                    "No regression is available for this row because the pair is not amenable.",
+                    "Not amenable",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
         showRegressionDialog(row);
     }
 
@@ -482,8 +503,13 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
 
             // Primary beta = effect for the first X in the row (sensible in PAIRWISE mode;
             // in JOINT mode it is still well-defined but represents the "first" X).
+//            double primaryBeta = Double.NaN;
+//            if (r.betas != null && r.betas.length > 0) {
+//                primaryBeta = r.betas[0];
+//            }
+
             double primaryBeta = Double.NaN;
-            if (r.betas != null && r.betas.length > 0) {
+            if (!r.notAmenable && r.betas != null && r.betas.length > 0) {
                 primaryBeta = r.betas[0];
             }
 

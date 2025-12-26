@@ -113,7 +113,7 @@ public class MarkovCheckFractionDependentH0 implements Statistic, MarkovCheckerS
 
         IndependenceTest test = independenceWrapper.getTest(dataModel, mcParameters);
         MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
-        markovCheck.setFractionResample(0.9);
+        markovCheck.setFractionResample(1.0);
         markovCheck.generateResults(true, true);
         return markovCheck.getFractionDependent(true);
     }
