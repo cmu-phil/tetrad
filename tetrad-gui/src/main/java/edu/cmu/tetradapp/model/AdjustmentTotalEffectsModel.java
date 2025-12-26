@@ -430,33 +430,33 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
             }
             return;
         } else {
-            // Joint mode: use X, Y as sets with RAMultiple (or RA for 1×1).
-            List<Set<Node>> adjustmentSets = computeJointAdjustmentSets(X, Y);
+            // JOINT mode: treat X as a set, but compute adjustment sets separately for each outcome y.
+            for (Node y : Y) {
 
-            // If RA returns no adjustment sets at all, show "(Not amenable)" for each outcome y.
-            if (adjustmentSets.isEmpty()) {
-                for (Node y : Y) {
+                // (1) Compute adjustment sets for this specific outcome.
+                List<Set<Node>> zSetsForY = computeJointAdjustmentSets(X, Collections.singleton(y));
+
+                // (2) If none, emit a placeholder row so the user sees "(Not amenable)" for this y.
+                if (zSetsForY.isEmpty()) {
                     results.add(new ResultRow(
                             new LinkedHashSet<>(X),
                             new LinkedHashSet<>(Collections.singleton(y)),
                             Collections.emptySet(),
                             true,   // notAmenable
-                            false,  // discreteRegression (skipDueToDiscrete)
+                            false,  // discreteRegression / skipDueToDiscrete
                             null,
                             null
                     ));
+                    continue;
                 }
-                return;
-            }
 
-            // Otherwise: one row per (Z, y)
-            for (Set<Node> Z : adjustmentSets) {
-                // Defensive: make Z stable and remove any overlap with X.
-                LinkedHashSet<Node> zClean = new LinkedHashSet<>(Z);
-                zClean.removeAll(X);
+                // (3) Otherwise, emit one row per Z for this y.
+                for (Set<Node> Z : zSetsForY) {
+                    LinkedHashSet<Node> zClean = new LinkedHashSet<>(Z);
+                    zClean.removeAll(X); // defensive, avoid duplication
 
-                for (Node y : Y) {
-                    // If discrete regressions are NOT allowed and any variable in X ∪ {y} ∪ Z is discrete, show "(Discrete)".
+                    // If discrete regressions are NOT allowed and any variable in X ∪ {y} ∪ Z is discrete,
+                    // emit a "(Discrete)" row and do NOT run regression.
                     if (!doDiscreteRegressions && involvesDiscrete(X, y, zClean)) {
                         results.add(new ResultRow(
                                 new LinkedHashSet<>(X),
@@ -470,7 +470,7 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
                         continue;
                     }
 
-                    // Otherwise run regression
+                    // Otherwise run regression and add the computed row.
                     results.add(runRegressionFor(X, y, zClean));
                 }
             }
