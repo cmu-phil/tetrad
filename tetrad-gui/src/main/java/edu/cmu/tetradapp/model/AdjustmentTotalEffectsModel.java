@@ -15,6 +15,7 @@ import edu.cmu.tetradapp.session.SessionModel;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Model for the {@code "Adjustment & Total Effects"} regression tool.
@@ -64,6 +65,8 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
     // Mode: pairwise vs joint
     private EffectMode effectMode = EffectMode.PAIRWISE;
     private boolean doDiscreteRegressions = false;
+    private String treatmentsText = "";
+    private String outcomesText = "";
 
     /**
      * Constructs an instance of the AdjustmentTotalEffectsModel.
@@ -706,6 +709,32 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         this.doDiscreteRegressions = selected;
     }
 
+    public Parameters getParameters() {
+        return parameters;
+    }
+
+    public String getTreatmentsText() {
+        return treatmentsText;
+    }
+
+    public void setTreatmentsText(String treatmentsText) {
+        if (treatmentsText == null) {
+            throw new IllegalArgumentException("Treatments text cannot be null");
+        }
+        this.treatmentsText = treatmentsText;
+    }
+
+    public String getOutcomesText() {
+        return outcomesText;
+    }
+
+    public void setOutcomesText(String outcomesText) {
+        if (outcomesText == null) {
+            throw new IllegalArgumentException("Outcomes text cannot be null");
+        }
+        this.outcomesText = outcomesText;
+    }
+
     public enum EffectMode {
         PAIRWISE,  // total effects for all (x, y) ∈ X×Y using RecursiveAdjustment
         JOINT      // joint intervention p(Y | do(X)) using RecursiveAdjustmentMultiple
@@ -769,7 +798,7 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
 
         private static String formatSet(Set<Node> s) {
             if (s == null || s.isEmpty()) return "∅";
-            return s.stream().map(Node::getName).sorted().collect(java.util.stream.Collectors.joining(", "));
+            return s.stream().map(Node::getName).sorted().collect(Collectors.joining(", "));
         }
 
         public String formatXSet() {

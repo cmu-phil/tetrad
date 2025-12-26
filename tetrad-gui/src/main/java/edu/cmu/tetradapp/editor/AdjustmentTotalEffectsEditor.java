@@ -10,6 +10,9 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -76,6 +79,30 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         this.resultTable = new JTable(tableModel);
         this.resultTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.resultTable.setAutoCreateRowSorter(true); // enable column-header sorting
+
+        this.treatmentsField.setText(model.getTreatmentsText());
+        this.outcomesField.setText(model.getOutcomesText());
+
+//        this.treatmentsField.addActionListener(e -> model.setTreatmentsText(treatmentsField.getText()));
+//        this.outcomesField.addActionListener(e -> model.setOutcomesText(outcomesField.getText()));
+
+        this.treatmentsField.addFocusListener(
+                new  FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        model.setTreatmentsText(treatmentsField.getText());
+                    }
+                }
+        );
+
+        this.outcomesField.addFocusListener(
+                new  FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        model.setOutcomesText(outcomesField.getText());
+                    }
+                }
+        );
 
         initUI();
         initListeners();
