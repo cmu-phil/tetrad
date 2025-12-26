@@ -647,33 +647,6 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         );
     }
 
-    private boolean discreteRegression(Collection<Node> X, Set<Node> Y, Set<Node> Z) {
-        boolean discreteRegression = false;
-
-        for (Node x : X) {
-            if (dataSet.getVariable(x.getName()) instanceof DiscreteVariable) {
-                discreteRegression = true;
-                break;
-            }
-        }
-
-        for (Node y : Y) {
-            if (dataSet.getVariable(y.getName()) instanceof DiscreteVariable) {
-                discreteRegression = true;
-                break;
-            }
-        }
-
-        for (Node z : Z) {
-            if (dataSet.getVariable(z.getName()) instanceof DiscreteVariable) {
-                discreteRegression = true;
-                break;
-            }
-        }
-
-        return discreteRegression;
-    }
-
     // ---------------------------------------------------------------------
     // Regression
     // ---------------------------------------------------------------------
