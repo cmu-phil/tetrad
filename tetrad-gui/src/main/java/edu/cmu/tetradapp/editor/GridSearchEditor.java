@@ -2068,6 +2068,10 @@ public class GridSearchEditor extends JPanel {
     private @NotNull Box getGraphSelectorBox() {
         String resultsPath = model.getResultsPath();
 
+        if (resultsPath == null) {
+            return Box.createVerticalBox();
+        }
+
         GraphWorkbench workbench = new GraphWorkbench();
         workbench.setGraph(new EdgeListGraph());
 
