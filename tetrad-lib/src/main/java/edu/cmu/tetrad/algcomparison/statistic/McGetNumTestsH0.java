@@ -55,6 +55,12 @@ public class McGetNumTestsH0 implements Statistic, MarkovCheckerStatistic {
      * statistical analysis.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * Represents the set of parameters used specifically within the context of
+     * the Markov check process in the McGetNumTestsH0 class. These parameters
+     * influence the configuration and execution of independence tests and
+     * associated computations.
+     */
     private final Parameters mcParameters;
 
     /**
@@ -66,6 +72,8 @@ public class McGetNumTestsH0 implements Statistic, MarkovCheckerStatistic {
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
     public McGetNumTestsH0(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
                            Parameters mcParameters) {

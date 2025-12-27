@@ -14,18 +14,17 @@ import java.util.function.Function;
 
 /**
  * AdditiveNoiseSimulation
- *
+ * <p>
  * Generates data from an additive-noise structural causal model (ANM):
- *
- *   X_j = f_j(Pa(X_j)) + N_j,   with independent noise terms N_j.
- *
- * Each f_j is represented by a randomly initialized MLP (parents-only input).
- * Root nodes are generated as pure noise (optionally rescaled).
- *
- * NOTE: The optional rescaling performed here is computed from the realized sample
- * (min/max of the generated column), which couples rows within a dataset. This is
- * convenient for keeping values in a range but is not “SCM-pure” in the sense of
- * applying a fixed transformation independent of the sampled data.
+ * <p>
+ * X_j = f_j(Pa(X_j)) + N_j,   with independent noise terms N_j.
+ * <p>
+ * Each f_j is represented by a randomly initialized MLP (parents-only input). Root nodes are generated as pure noise
+ * (optionally rescaled).
+ * <p>
+ * NOTE: The optional rescaling performed here is computed from the realized sample (min/max of the generated column),
+ * which couples rows within a dataset. This is convenient for keeping values in a range but is not “SCM-pure” in the
+ * sense of applying a fixed transformation independent of the sampled data.
  */
 public class AdditiveNoiseSimulation {
 
@@ -41,6 +40,18 @@ public class AdditiveNoiseSimulation {
     // Keep simple per-node seeding (still random overall)
     private final Random seeder = new Random();
 
+    /**
+     * Constructs a new AdditiveNoiseSimulation instance with the specified parameters.
+     *
+     * @param graph              The causal graph representing the structural relationships.
+     * @param numSamples         The number of data samples to generate.
+     * @param noiseDistribution  The distribution for additive noise.
+     * @param rescaleMin         The minimum value for data rescaling.
+     * @param rescaleMax         The maximum value for data rescaling.
+     * @param hiddenDimensions   The dimensions of hidden layers in the MLP.
+     * @param inputScale         The scaling factor for input data.
+     * @param activationFunction The activation function for the MLP.
+     */
     public AdditiveNoiseSimulation(Graph graph,
                                    int numSamples,
                                    RealDistribution noiseDistribution,
@@ -71,6 +82,67 @@ public class AdditiveNoiseSimulation {
         this.useFastTanh = looksLikeTanh(activationFunction);
     }
 
+    private static double quantileOfColumn(double[][] raw, int col, double q) {
+        int n = raw.length;
+        double[] tmp = new double[n];
+        for (int i = 0; i < n; i++) tmp[i] = raw[i][col];
+        Arrays.sort(tmp);
+
+        if (n == 0) return Double.NaN;
+        if (q <= 0.0) return tmp[0];
+        if (q >= 1.0) return tmp[n - 1];
+
+        double pos = q * (n - 1);
+        int lo = (int) Math.floor(pos);
+        int hi = (int) Math.ceil(pos);
+        if (hi == lo) return tmp[lo];
+        double w = pos - lo;
+        return tmp[lo] * (1.0 - w) + tmp[hi] * w;
+    }
+
+    private static void addBiasRowsInPlace(DMatrixRMaj A, double[] b) {
+        final int n = A.numRows, m = A.numCols;
+        int k = 0;
+        for (int i = 0; i < n; i++) for (int j = 0; j < m; j++, k++) A.data[k] += b[j];
+    }
+
+    // ------------------ Tiny EJML MLP ------------------
+
+    private static void applyActivationInPlace(DMatrixRMaj A,
+                                               Function<Double, Double> f,
+                                               boolean fastTanh) {
+        final int n = A.getNumElements();
+        if (fastTanh) {
+            for (int i = 0; i < n; i++) A.data[i] = Math.tanh(A.data[i]);
+        } else {
+            for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
+        }
+    }
+
+    private static boolean looksLikeTanh(Function<Double, Double> f) {
+        // Simple, cheap heuristic: tanh is odd and saturating in (-1,1).
+        // We check a few points; if user supplied something else, we just return false.
+        double[] xs = {-2.0, -1.0, -0.5, 0.5, 1.0, 2.0};
+        for (double x : xs) {
+            double fx = f.apply(x);
+            if (!Double.isFinite(fx)) return false;
+            if (Math.abs(fx) > 1.000001) return false;
+        }
+        // oddness check at 0.5 and 1.0
+        double a = f.apply(0.5), b = f.apply(-0.5);
+        double c = f.apply(1.0), d = f.apply(-1.0);
+        return Math.abs(a + b) < 1e-6 && Math.abs(c + d) < 1e-6;
+    }
+
+    /**
+     * Generates a synthetic dataset by simulating data propagation through a graph with additive noise. The method
+     * creates data for each node in the graph based on its topological order, parent relationships, and random
+     * multilayer perceptron (MLP) evaluations, along with additive noise and optional data rescaling.
+     * <p>
+     * The dataset generation process includes: - Organizing nodes in topological order.
+     *
+     * @return The generated synthetic dataset.
+     */
     public DataSet generateData() {
         final List<Node> topo = graph.paths().getValidOrder(graph.getNodes(), true);
         final int P = topo.size(), N = numSamples;
@@ -166,7 +238,7 @@ public class AdditiveNoiseSimulation {
 
                 if (hi > lo) {
                     final double outR = (rescaleMax - rescaleMin);
-                    final double inR  = (hi - lo);
+                    final double inR = (hi - lo);
 
                     for (int i = 0; i < N; i++) {
                         double v = raw[i][j];
@@ -184,26 +256,6 @@ public class AdditiveNoiseSimulation {
 
         return new BoxDataSet(new DoubleDataBox(raw), new ArrayList<>(topo));
     }
-
-    private static double quantileOfColumn(double[][] raw, int col, double q) {
-        int n = raw.length;
-        double[] tmp = new double[n];
-        for (int i = 0; i < n; i++) tmp[i] = raw[i][col];
-        Arrays.sort(tmp);
-
-        if (n == 0) return Double.NaN;
-        if (q <= 0.0) return tmp[0];
-        if (q >= 1.0) return tmp[n - 1];
-
-        double pos = q * (n - 1);
-        int lo = (int) Math.floor(pos);
-        int hi = (int) Math.ceil(pos);
-        if (hi == lo) return tmp[lo];
-        double w = pos - lo;
-        return tmp[lo] * (1.0 - w) + tmp[hi] * w;
-    }
-
-    // ------------------ Tiny EJML MLP ------------------
 
     private static final class RandomMLP {
         final int Din, Dout;
@@ -231,7 +283,14 @@ public class AdditiveNoiseSimulation {
             heInit(W[L - 1], r, inputScale * 0.5);
         }
 
-        /** Y = forward(X). Uses multTransB so we never materialize W^T. */
+        private static void heInit(DMatrixRMaj W, Random r, double scale) {
+            double s = scale * Math.sqrt(2.0 / Math.max(1, W.numCols));
+            for (int i = 0, n = W.getNumElements(); i < n; i++) W.data[i] = r.nextGaussian() * s;
+        }
+
+        /**
+         * Y = forward(X). Uses multTransB so we never materialize W^T.
+         */
         DMatrixRMaj forward(DMatrixRMaj X,
                             DMatrixRMaj scratch1,
                             DMatrixRMaj out,
@@ -265,42 +324,5 @@ public class AdditiveNoiseSimulation {
             addBiasRowsInPlace(out, b[b.length - 1]);
             return out;
         }
-
-        private static void heInit(DMatrixRMaj W, Random r, double scale) {
-            double s = scale * Math.sqrt(2.0 / Math.max(1, W.numCols));
-            for (int i = 0, n = W.getNumElements(); i < n; i++) W.data[i] = r.nextGaussian() * s;
-        }
-    }
-
-    private static void addBiasRowsInPlace(DMatrixRMaj A, double[] b) {
-        final int n = A.numRows, m = A.numCols;
-        int k = 0;
-        for (int i = 0; i < n; i++) for (int j = 0; j < m; j++, k++) A.data[k] += b[j];
-    }
-
-    private static void applyActivationInPlace(DMatrixRMaj A,
-                                               Function<Double, Double> f,
-                                               boolean fastTanh) {
-        final int n = A.getNumElements();
-        if (fastTanh) {
-            for (int i = 0; i < n; i++) A.data[i] = Math.tanh(A.data[i]);
-        } else {
-            for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
-        }
-    }
-
-    private static boolean looksLikeTanh(Function<Double, Double> f) {
-        // Simple, cheap heuristic: tanh is odd and saturating in (-1,1).
-        // We check a few points; if user supplied something else, we just return false.
-        double[] xs = {-2.0, -1.0, -0.5, 0.5, 1.0, 2.0};
-        for (double x : xs) {
-            double fx = f.apply(x);
-            if (!Double.isFinite(fx)) return false;
-            if (Math.abs(fx) > 1.000001) return false;
-        }
-        // oddness check at 0.5 and 1.0
-        double a = f.apply(0.5), b = f.apply(-0.5);
-        double c = f.apply(1.0), d = f.apply(-1.0);
-        return Math.abs(a + b) < 1e-6 && Math.abs(c + d) < 1e-6;
     }
 }

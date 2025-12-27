@@ -41,12 +41,32 @@ public class Cdnod extends AbstractBootstrapAlgorithm implements Algorithm, HasK
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The independence test wrapper used by the CD-NOD algorithm.
+     */
     private IndependenceWrapper test;
+    /**
+     * The knowledge object encapsulating domain-specific information for the CD-NOD algorithm.
+     */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * Default constructor for the Cdnod class.
+     * This constructor initializes a new instance of the Cdnod algorithm
+     * without any predefined configurations or dependencies.
+     */
     public Cdnod() {
     }
 
+    /**
+     * Constructs a new instance of the Cdnod class using the provided
+     * IndependenceWrapper instance. The IndependenceWrapper is used to
+     * run independence tests required by the algorithm.
+     *
+     * @param test The IndependenceWrapper instance used to perform
+     *             independence testing. This parameter is essential for
+     *             configuring and executing the Cdnod algorithm.
+     */
     public Cdnod(IndependenceWrapper test) {
         this.test = test;
     }
@@ -90,22 +110,39 @@ public class Cdnod extends AbstractBootstrapAlgorithm implements Algorithm, HasK
         return cd.search();
     }
 
+    /**
+     * Returns a CPDAG that is the comparison graph for the given true directed graph.
+     * @param graph The true directed graph, if there is one.
+     * @return The CPDAG comparison graph.
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph dag = new EdgeListGraph(graph);
         return GraphTransforms.dagToCpdag(dag);
     }
 
+    /**
+     * Returns a description of the algorithm.
+     * @return The description of the algorithm.
+     */
     @Override
     public String getDescription() {
         return "CD-NOD using " + (this.test != null ? this.test.getDescription() : "configured test");
     }
 
+    /**
+     * Returns the data type of the algorithm.
+     * @return The data type of the algorithm.
+     */
     @Override
     public DataType getDataType() {
         return this.test.getDataType();
     }
 
+    /**
+     * Returns the parameters of the algorithm.
+     * @return The parameters of the algorithm.
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -118,21 +155,37 @@ public class Cdnod extends AbstractBootstrapAlgorithm implements Algorithm, HasK
         return parameters;
     }
 
+    /**
+     * Returns the knowledge of the algorithm.
+     * @return The knowledge of the algorithm.
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge of the algorithm.
+     * @param knowledge a knowledge object.
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
+    /**
+     * Returns the independence wrapper of the algorithm.
+     * @return The independence wrapper of the algorithm.
+     */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /**
+     * Sets the independence wrapper of the algorithm.
+     * @param test the independence wrapper.
+     */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;

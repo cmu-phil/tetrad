@@ -222,11 +222,21 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
     // RowsSettable
     // -------------------------------------------------------------------------
 
+    /**
+     * Retrieves the list of rows used for the independence test.
+     *
+     * @return The list of row indices, or null if all rows are used.
+     */
     @Override
     public List<Integer> getRows() {
         return rows;
     }
 
+    /**
+     * Sets the rows to use for the test. Can be null to use all rows.
+     *
+     * @param rows The rows to use for the test. Can be null.
+     */
     @Override
     public void setRows(List<Integer> rows) {
         // rows == null => use all rows
@@ -274,53 +284,109 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
     // Getters/setters + boilerplate
     // -------------------------------------------------------------------------
 
+    /**
+     * Retrieves the p-value of the independence test.
+     *
+     * @return The p-value of the test.
+     */
     public double getPValue() {
         return this.pValue;
     }
 
+    /**
+     * Retrieves the list of variables involved in the independence test.
+     *
+     * @return A list of Node objects representing the variables.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
     }
 
+    /**
+     * Retrieves the data set used for the independence test.
+     *
+     * @return A copy of the data set used for the test.
+     */
     @Override
     public DataSet getData() {
         return this.dataSet.copy();
     }
 
+    /**
+     * Retrieves the significance level (alpha) used for the independence test.
+     *
+     * @return The significance level (alpha) of the test.
+     */
     public double getAlpha() {
         return this.alpha;
     }
 
+    /**
+     * Sets the significance level (alpha) for the independence test.
+     *
+     * @param alpha The significance level (alpha) to set. Must be between 0 and 1.
+     */
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("Alpha must be between 0 and 1.");
         this.alpha = alpha;
     }
 
+    /**
+     * Retrieves the verbosity setting for the independence test.
+     *
+     * @return True if verbose output is enabled, false otherwise.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets the verbosity for the independence test.
+     *
+     * @param verbose True, if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the lambda parameter for the independence test.
+     *
+     * @param lambda The lambda parameter to set. Must be non-negative.
+     */
     public void setLambda(double lambda) {
         this.lambda = lambda;
     }
 
+    /**
+     * Retrieves the effective sample size used for the independence test.
+     *
+     * @return The effective sample size, or the actual sample size if not set.
+     */
     @Override
     public int getEffectiveSampleSize() {
         return this.nEff;
     }
 
+    /**
+     * Sets the effective sample size for the independence test.
+     *
+     * @param nEff the effective sample size. If negative, defaults to the actual sample size.
+     */
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? this.sampleSize : nEff;
     }
 
+    /**
+     * Returns a string representation of the degenerate Gaussian likelihood ratio test.
+     * The string includes the significance level (alpha) formatted to four decimal places.
+     *
+     * @return A string representing the test instance, including the value of alpha.
+     */
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.0000");
@@ -328,6 +394,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
     }
 
     // Not implemented in the original; keep as-is.
+    @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
     }

@@ -79,24 +79,6 @@ public class RecursiveBlocking {
         );
     }
 
-    public static Set<Node> blockPathsRecursively2(Graph graph,
-                                                  Node x,
-                                                  Node y,
-                                                  Set<Node> containing,
-                                                  Set<Node> notFollowed,
-                                                  int maxPathLength) throws InterruptedException {
-        RecursiveAdjustment adjustment = new RecursiveAdjustment(graph);
-        List<Set<Node>> sets = adjustment.adjustmentSets(x, y, "PAG", 1, 8, 2, maxPathLength,
-                RecursiveAdjustment.ColliderPolicy.OFF, false, notFollowed, containing, Set.of());
-
-        if (!sets.isEmpty()) {
-            return sets.getFirst();
-        } else {
-            return null;
-        }
-    }
-
-
     /**
      * Variant of {@link #blockPathsRecursively(Graph, Node, Node, Set, Set, int)} that additionally accepts an optional
      * {@code Knowledge} object.

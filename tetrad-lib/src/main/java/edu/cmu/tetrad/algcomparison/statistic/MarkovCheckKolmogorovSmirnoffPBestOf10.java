@@ -56,6 +56,14 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, Markov
      * determines how independence facts are tested and is defined by the {@link ConditioningSetType} enum.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * Represents a configuration parameter object used to control and provide
+     * settings for performing Markov checks, including calculations and evaluations
+     * of statistical measures such as the Kolmogorov-Smirnoff P value.
+     *
+     * This field is immutable and encapsulates the required parameters for conducting
+     * specific computations within the MarkovCheckKolmogorovSmirnoffPBestOf10 class.
+     */
     private final Parameters mcParameters;
 
     /**
@@ -67,6 +75,8 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, Markov
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
     public MarkovCheckKolmogorovSmirnoffPBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
                                                   Parameters mcParameters) {

@@ -146,10 +146,11 @@ public final class Cdnod implements IGraphSearch {
     }
 
     /**
-     * Backwards-compatible setter that appends a single change-index column as the last column and stores that as data.
-     * <p>
-     * NOTE: contexts are read from Knowledge tier 0. If you want this appended column treated as a context, put its
-     * name in tier 0 of the Knowledge you pass in (e.g., "C").
+     * Sets the dataset with an additional continuous change-index column added as the last column.
+     *
+     * @param dataX   the original dataset to which the change-index column will be appended
+     * @param cIndex  the array of continuous change-index values to be added
+     * @param cName   the name of the new change-index column
      */
     public void setDataAndIndex(DataSet dataX, double[] cIndex, String cName) {
         this.data = appendChangeIndexAsLastColumn(dataX, cIndex, cName);
@@ -471,8 +472,26 @@ public final class Cdnod implements IGraphSearch {
      * Enumeration representing different strategies for orienting colliders in causal discovery.
      */
     public enum ColliderOrientationStyle {
+        /**
+         * Represents a collider orientation strategy in causal discovery where separation sets
+         * (also known as sepsets) are used to identify and orient colliders in a causal graph.
+         * This approach relies on conditional independence tests and the corresponding separation
+         * sets to infer causal directions.
+         */
         SEPSETS,
+        /**
+         * Represents a collider orientation strategy in causal discovery that employs
+         * a conservative approach. This strategy prioritizes reducing false positives
+         * when orienting colliders in a causal graph, potentially at the cost of leaving
+         * some causal relationships unresolved. It is particularly useful in scenarios
+         * where high confidence in collider orientations is desired.
+         */
         CONSERVATIVE,
+        /**
+         * Represents a collider orientation strategy in causal discovery that employs
+         * a strategy aimed at maximizing the probability of correctly orienting colliders
+         * in a causal graph, potentially at the cost of increased computational complexity.
+         */
         MAX_P
     }
 
@@ -504,16 +523,30 @@ public final class Cdnod implements IGraphSearch {
         private double maxPMargin = 0.0;
         private int depth = -1;
 
+        /**
+         * Constructs a new builder instance.
+         */
         public Builder() {
         }
 
+        /**
+         * Sets the independence test for the builder. The provided test cannot be null
+         * and is required for the configuration of the builder.
+         *
+         * @param t The {@code IndependenceTest} to be set. Must not be null.
+         * @return The builder instance for method chaining.
+         */
         public Builder test(IndependenceTest t) {
             this.test = Objects.requireNonNull(t);
             return this;
         }
 
         /**
-         * Provide a DataSet containing all variables (contexts may be anywhere).
+         * Sets the data set for the builder. The provided data set is used
+         * in the configuration of the builder and updates the internal field.
+         *
+         * @param data The {@code DataSet} containing the variables for processing.
+         * @return The builder instance for method chaining.
          */
         public Builder data(DataSet data) {
             this.data = data;
@@ -521,8 +554,16 @@ public final class Cdnod implements IGraphSearch {
         }
 
         /**
-         * Backwards-compatible: provide X and a continuous change index C to append as the last column.
-         * If you want the appended column to be treated as a context, add its name (default "C") to Knowledge tier 0.
+         * Sets the data, index array, and potentially a custom name for the builder.
+         * The provided data set, index array, and name are used in the configuration
+         * of the builder. Updates the internal fields with the specified values.
+         *
+         * @param dataX The {@code DataSet} containing the variables for processing.
+         * @param cIndex A {@code double[]} array representing the indices associated
+         *               with the data set.
+         * @param cName An optional {@code String} representing the custom name. If the
+         *              name is null or blank, it will not update the current name.
+         * @return The builder instance for method chaining.
          */
         public Builder dataAndIndex(DataSet dataX, double[] cIndex, String cName) {
             this.dataX = dataX;
@@ -531,41 +572,90 @@ public final class Cdnod implements IGraphSearch {
             return this;
         }
 
+        /**
+         * Sets the significance level for statistical tests.
+         * @param a The significance level (alpha) for statistical tests.
+         * @return The builder instance for method chaining.
+         */
         public Builder alpha(double a) {
             this.alpha = a;
             return this;
         }
 
+        /**
+         * Sets the stability parameter for the algorithm.
+         * @param s The stability parameter for the algorithm.
+         * @return The builder instance for method chaining.
+         */
         public Builder stable(boolean s) {
             this.stable = s;
             return this;
         }
 
+        /**
+         * Sets the collider orientation strategy for the algorithm.
+         * @param c The collider orientation strategy.
+         * @return The builder instance for method chaining.
+         */
         public Builder colliderStyle(ColliderOrientationStyle c) {
             this.colliderStyle = c;
             return this;
         }
 
+        /**
+         * Sets the knowledge object for the builder. If the provided knowledge is null,
+         * initializes a new Knowledge object. Otherwise, creates a copy of the provided
+         * Knowledge object.
+         *
+         * @param k The Knowledge object to be set, or null to initialize a new Knowledge object.
+         * @return The builder instance for method chaining.
+         */
         public Builder knowledge(Knowledge k) {
             this.knowledge = (k == null ? new Knowledge() : new Knowledge(k));
             return this;
         }
 
+        /**
+         * Sets the verbose flag for the builder.
+         * @param v The verbose flag.
+         * @return The builder instance for method chaining.
+         */
         public Builder verbose(boolean v) {
             this.verbose = v;
             return this;
         }
 
+        /**
+         * Sets the maximum P-margin value for the algorithm. The P-margin determines
+         * the margin threshold for a certain operation. Values less than 0.0 are
+         * automatically clamped to 0.0.
+         *
+         * @param m The maximum P-margin value to be set. Values less than 0.0 will
+         *          be replaced with 0.0.
+         * @return The builder instance for method chaining.
+         */
         public Builder maxPMargin(double m) {
             this.maxPMargin = Math.max(0.0, m);
             return this;
         }
 
+        /**
+         * Sets the depth of the algorithm. The depth determines the maximum depth
+         * of the search tree. Values less than 0 are automatically clamped to 0.
+         *
+         * @param d The depth value to be set. Values less than 0 will be clamped to 0.
+         * @return The builder instance for method chaining.
+         */
         public Builder depth(int d) {
             this.depth = d;
             return this;
         }
 
+        /**
+         * Builds the Cdnod object with the configured parameters.
+         *
+         * @return The Cdnod object.
+         */
         public Cdnod build() {
             if (test == null) throw new IllegalStateException("IndependenceTest must be provided.");
             DataSet working = data;

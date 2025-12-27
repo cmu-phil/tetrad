@@ -59,6 +59,15 @@ public class MarkovCheckKsPasses implements Statistic, MarkovCheckerStatistic {
      * statistical model under analysis.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * Parameters used for configuring the Markov check process in the
+     * {@code MarkovCheckKsPasses} class.
+     *
+     * This variable encapsulates the necessary configuration options and metadata
+     * needed to perform the Kolmogorov-Smirnoff tests to validate whether
+     * the p-values of the estimated graph adhere to a uniform distribution
+     * (U(0, 1)). It is passed during the construction of the {@code MarkovCheckKsPasses} instance.
+     */
     private final Parameters mcParameters;
 
     /**
@@ -70,6 +79,8 @@ public class MarkovCheckKsPasses implements Statistic, MarkovCheckerStatistic {
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
     public MarkovCheckKsPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
                                Parameters mcParameters) {

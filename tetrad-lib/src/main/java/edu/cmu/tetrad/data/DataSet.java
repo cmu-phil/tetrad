@@ -426,6 +426,12 @@ public interface DataSet extends DataModel {
      */
     void setVariable(int j, Node variable);
 
+    /**
+     * Retrieves the column index for a variable by its name.
+     *
+     * @param name The name of the variable.
+     * @return The column index of the variable, or -1 if the variable is not found.
+     */
     default int getColumn(String name) {
         Node v = getVariable(name);
         return v == null ? -1 : getColumn(v);

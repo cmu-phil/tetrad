@@ -51,6 +51,14 @@ public class MarkovCheckFractionDependentH1 implements Statistic, MarkovCheckerS
      * type impacts the interpretation of the independence or dependence facts discovered during the analysis.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * Represents the configuration parameters for the Markov check, which are used to control
+     * various aspects of the Markov independence tests and statistical calculations performed
+     * within the {@code MarkovCheckFractionDependentH1} class.
+     *
+     * This field is immutable and set at the time of object construction, ensuring that the
+     * parameters remain consistent throughout the lifespan of the {@code MarkovCheckFractionDependentH1} instance.
+     */
     private final Parameters mcParameters;
 
     /**
@@ -62,6 +70,8 @@ public class MarkovCheckFractionDependentH1 implements Statistic, MarkovCheckerS
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
     public MarkovCheckFractionDependentH1(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
                                           Parameters mcParameters) {

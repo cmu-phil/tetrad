@@ -53,6 +53,10 @@ public class MarkovCheckBinomialP implements Statistic, MarkovCheckerStatistic {
      * global or local tests.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * The parameters associated with the MarkovCheckBinomialP instance, encapsulating configuration details
+     * and settings relevant to the Markov check process.
+     */
     private final Parameters mcParameters;
 
     /**
@@ -64,6 +68,8 @@ public class MarkovCheckBinomialP implements Statistic, MarkovCheckerStatistic {
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
     public MarkovCheckBinomialP(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
                                 Parameters mcParameters) {

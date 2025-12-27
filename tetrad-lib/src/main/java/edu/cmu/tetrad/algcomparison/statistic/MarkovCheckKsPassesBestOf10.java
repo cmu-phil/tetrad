@@ -54,6 +54,16 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
      * among others. This field is immutable and must be set during the initialization of the object.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * Represents the parameter configuration used for performing the Markov checks
+     * in the {@link MarkovCheckKsPassesBestOf10} class. It encapsulates various
+     * settings and options that control how the statistical tests are executed.
+     *
+     * This field is immutable and must be initialized during the construction
+     * of the {@link MarkovCheckKsPassesBestOf10} instance. It plays a critical
+     * role in determining the behavior of the Kolmogorov-Smirnov tests and other
+     * related operations in the context of the Markov checks.
+     */
     private final Parameters mcParameters;
 
     /**
@@ -65,6 +75,8 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
     public MarkovCheckKsPassesBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
                                        Parameters mcParameters) {

@@ -56,6 +56,15 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic, MarkovCheckerS
      * class.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * Encapsulates the configuration parameters used for the Markov check calculation, particularly in determining
+     * whether the p-values for the estimated graph are distributed as U(0, 1). These parameters influence the
+     * behavior and outcomes during the statistical analysis process.
+     *
+     * This field is immutable and is initialized during the construction of the
+     * {@code MarkovCheckKolmogorovSmirnoffP} object. The settings within {@code mcParameters} are utilized
+     * during the execution of methods related to Markov check processes.
+     */
     private final Parameters mcParameters;
 
     /**
@@ -67,6 +76,8 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic, MarkovCheckerS
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
     public MarkovCheckKolmogorovSmirnoffP(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
                                           Parameters mcParameters) {

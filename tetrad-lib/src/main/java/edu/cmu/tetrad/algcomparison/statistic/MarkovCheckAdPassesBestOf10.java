@@ -56,6 +56,10 @@ public class MarkovCheckAdPassesBestOf10 implements Statistic, MarkovCheckerStat
      * LOCAL_MARKOV, PARENTS_AND_NEIGHBORS, and others.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * The parameters associated with the MarkovCheckAdPassesBestOf10 instance, encapsulating configuration details
+     * and settings relevant to the Markov check process.
+     */
     private final Parameters mcParameters;
 
     /**
@@ -67,6 +71,8 @@ public class MarkovCheckAdPassesBestOf10 implements Statistic, MarkovCheckerStat
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
     public MarkovCheckAdPassesBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
                                        Parameters mcParameters) {
