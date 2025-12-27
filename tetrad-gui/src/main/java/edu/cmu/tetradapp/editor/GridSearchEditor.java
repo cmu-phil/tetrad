@@ -1560,7 +1560,7 @@ public class GridSearchEditor extends JPanel {
             }
         }
 
-        if (!set) {
+        if (!set && indTestComboBox.getItemCount() > 0) {
             indTestComboBox.setSelectedIndex(0);
         }
 
@@ -1584,7 +1584,7 @@ public class GridSearchEditor extends JPanel {
             }
         }
 
-        if (!set2) {
+        if (!set2 && scoreModelComboBox.getItemCount() > 0) {
             scoreModelComboBox.setSelectedIndex(0);
         }
 

@@ -1060,6 +1060,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     mag = GraphTransforms.zhangMagFromPag(graph);
                 }
 
+                if (mag.paths().existsDirectedCycle()) {
+                    return;
+                }
+
                 allIndependenceFacts = OrderedLocalMarkovProperty.getModel(mag);
             } else {
                 for (int i = 0; i < nodes.size(); i++) {
