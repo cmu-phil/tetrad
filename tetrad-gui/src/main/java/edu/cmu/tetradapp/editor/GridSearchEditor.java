@@ -3965,6 +3965,7 @@ public class GridSearchEditor extends JPanel {
 
         public void selectRow(int row) {
             tableRef.getSelectionModel().addSelectionInterval(row, row);
+            selectedTableColumns.add(allTableColumns.get(row));
         }
     }
 
