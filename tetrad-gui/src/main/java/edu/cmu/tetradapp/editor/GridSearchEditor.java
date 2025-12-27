@@ -1097,7 +1097,7 @@ public class GridSearchEditor extends JPanel {
             case 7 -> LeeHastieSimulation.class;
             case 8 -> ConditionalGaussianSimulation.class;
             case 9 -> TimeSeriesSemSimulation.class;
-            default -> throw new IllegalArgumentException("Unexpected value: " + simulationString);
+            default -> SemSimulation.class;
         };
 
         return new GridSearchModel.SimulationSpec("name", graphClazz, simulationClass);
@@ -1360,7 +1360,7 @@ public class GridSearchEditor extends JPanel {
             case 4 -> RandomSingleFactorMim.class;
             case 5 -> RandomTwoFactorMim.class;
             case 6 -> SingleGraph.class;
-            default -> throw new IllegalArgumentException("Unexpected value: " + graphString);
+            default -> RandomForward.class;
         };
     }
 
@@ -1538,11 +1538,47 @@ public class GridSearchEditor extends JPanel {
         rowTest.add(indTestComboBox);
         vert.add(rowTest);
 
+        String defaultTest = getDefaultTest();
+
+        boolean set = false;
+
+        for (int i = 0; i < indTestComboBox.getItemCount(); i++) {
+            IndependenceTestModel m = indTestComboBox.getItemAt(i);
+
+            if (m.getName().equals(defaultTest)) {
+                indTestComboBox.setSelectedIndex(i);
+                set = true;
+                break;
+            }
+        }
+
+        if (!set) {
+            indTestComboBox.setSelectedIndex(0);
+        }
+
         Box rowScore = Box.createHorizontalBox();
         rowScore.add(new JLabel("Choose a score:"));
         rowScore.add(Box.createHorizontalGlue());
         rowScore.add(scoreModelComboBox);
         vert.add(rowScore);
+
+        String defaultScore = getDefaultScore();
+
+        boolean set2 = false;
+
+        for (int i = 0; i < scoreModelComboBox.getItemCount(); i++) {
+            ScoreModel m = scoreModelComboBox.getItemAt(i);
+
+            if (m.getName().equals(defaultScore)) {
+                scoreModelComboBox.setSelectedIndex(i);
+                set2 = true;
+                break;
+            }
+        }
+
+        if (!set2) {
+            scoreModelComboBox.setSelectedIndex(0);
+        }
 
         panel.add(vert, BorderLayout.NORTH);
 
@@ -1886,8 +1922,26 @@ public class GridSearchEditor extends JPanel {
                 }
             }
         } else if (comboBox.getItemCount() > 0) {
-            comboBox.setSelectedIndex(0);
-            // optional: auto-commit default selection
+            String defaultTest = getDefaultTest();
+
+            boolean set = false;
+
+            for (int i = 0; i < comboBox.getItemCount(); i++) {
+                IndependenceTestModel m = comboBox.getItemAt(i);
+
+                System.out.println("test name = " + m.getName());
+
+                if (m.getName().contains(defaultTest)) {
+                    comboBox.setSelectedIndex(i);
+                    set = true;
+                    break;
+                }
+            }
+
+            if (!set) {
+                comboBox.setSelectedIndex(0);
+            }
+
             IndependenceTestModel sel = (IndependenceTestModel) comboBox.getSelectedItem();
             applySelectedMarkovCheckerTest(sel);
         }
@@ -1897,6 +1951,28 @@ public class GridSearchEditor extends JPanel {
             IndependenceTestModel selected = (IndependenceTestModel) comboBox.getSelectedItem();
             applySelectedMarkovCheckerTest(selected);
         });
+    }
+
+    private @NotNull String getDefaultTest() {
+        DataType dataType = model.getSuppliedData() != null ? this.inferSuppliedDataType() : getDataTypeForGridSearch();
+
+        return switch (dataType) {
+            case Continuous -> "Fisher Z";
+            case Discrete -> "Chi Square Test";
+            case Mixed -> "DG-LRT (Degenerate Gaussian Likelihood Ratio Test)";
+            default -> "Fisher Z";
+        };
+    }
+
+    private @NotNull String getDefaultScore() {
+        DataType dataType = model.getSuppliedData() != null ? this.inferSuppliedDataType() : getDataTypeForGridSearch();
+
+        return switch (dataType) {
+            case Continuous -> "Sem BIC Score";
+            case Discrete -> "BDeu";
+            case Mixed -> "DG-BIC (Degenerate Gaussian BIC Score)";
+            default -> "SEM BIC";
+        };
     }
 
     private void openOtherComparisonParametersDialog() {
@@ -2320,11 +2396,6 @@ public class GridSearchEditor extends JPanel {
             model.removeLastSimulation();
             model.addSimulationSpec(spec);
 
-//            // Ensure the thing the UI reads is updated.
-//            Simulations sims = model.getSelectedSimulations();
-//            sims.getSimulations().clear();
-//            sims.getSimulations().add(spec.getSimulationImpl()); // or however you materialize a Simulation
-
             // If you *also* track “selected simulation” separately, keep it consistent:
             model.setSelectedSimulation(spec);
 
@@ -2334,6 +2405,18 @@ public class GridSearchEditor extends JPanel {
 
             dialog.dispose();
         });
+
+        Class<? extends RandomGraph> graphClazz = getGraphClazz(GraphTypes.RANDOM_FOWARD_DAG);
+        GridSearchModel.SimulationSpec spec = getSimulationSpec(SimulationTypes.BAYS_NET, graphClazz);
+
+        model.removeLastSimulation();
+        model.addSimulationSpec(spec);
+
+        model.setSelectedSimulation(spec);
+
+        setComparisonText();
+        setSimulationText();
+        onSelectedAlgorithmsChanged();
 
         cancelButton.addActionListener(e12 -> {
             dialog.dispose(); // Close the dialog
@@ -2349,22 +2432,40 @@ public class GridSearchEditor extends JPanel {
         editAlgorithmParameters.addActionListener(e -> openEditAlgorithmParametersDialog());
     }
 
-    private DataType getDataTypeForGridSearch() {
-        // Best: infer from the actual dataset being analyzed.
-        // Placeholder: return model.getDataType() if you already have it.
-        // Fallback: Continuous.
+//    private DataType getDataTypeForGridSearch() {
+//        // Best: infer from the actual dataset being analyzed.
+//        // Placeholder: return model.getDataType() if you already have it.
+//        // Fallback: Continuous.
+//
+//        if (model.getSelectedAlgorithms() == null) {
+//            return inferSuppliedDataType();
+//        } else if (!model.getSelectedAlgorithms().isEmpty()) {
+//            if (model.getSuppliedData() != null) {
+//                return inferSuppliedDataType();
+//            } else {
+//                return model.getSelectedSimulation().getSimulationImpl().getDataType();
+//            }
+//        } else {
+//            return DataType.Continuous;
+//        }
+//    }
 
-        if (model.getSelectedAlgorithms() == null) {
+    private DataType getDataTypeForGridSearch() {
+        // 1) If we're running from supplied data, that is the most reliable signal.
+        if (model.getSuppliedData() != null) {
             return inferSuppliedDataType();
-        } else if (!model.getSelectedAlgorithms().isEmpty()) {
-            if (model.getSuppliedData() != null) {
-                return inferSuppliedDataType();
-            } else {
-                return model.getSelectedSimulation().getSimulationImpl().getDataType();
-            }
-        } else {
-            return DataType.Continuous;
         }
+
+        // 2) Otherwise, if a simulation is selected, use its declared datatype.
+        GridSearchModel.SimulationSpec selectedSim = model.getSelectedSimulation();
+        if (selectedSim != null) {
+            DataType dt = selectedSim.getSimulationImpl().getDataType();
+            return (dt != null) ? dt : DataType.Continuous;
+        }
+
+        // 3) Otherwise, if algorithms already exist, you *could* infer from them,
+        // but safest default is continuous.
+        return DataType.Continuous;
     }
 
     @NotNull
@@ -3330,9 +3431,10 @@ public class GridSearchEditor extends JPanel {
                 if (v instanceof DiscreteVariable) hasDiscrete = true;
             }
             if (hasContinuous && hasDiscrete) return DataType.Mixed;
-            if (hasDiscrete) return DataType.Discrete;
+            else if (hasDiscrete) return DataType.Discrete;
             return DataType.Continuous;
         } catch (Exception e) {
+            e.printStackTrace();
             return DataType.Continuous;
         }
     }

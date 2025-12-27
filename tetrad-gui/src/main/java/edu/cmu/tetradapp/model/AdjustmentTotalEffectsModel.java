@@ -92,7 +92,7 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
             }
         }
 
-        this.graphType = "PAG";
+        this.graphType = containsCircle ? "PAG" : "PDAG";
 
         this.dataModel = dataModel;
         this.graphSource = graphSource;
