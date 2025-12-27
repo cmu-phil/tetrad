@@ -189,6 +189,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      */
     private IndependenceTestModel selectedIndependenceTestModel = null;
     private final Parameters mcParameters = new Parameters();
+    private boolean showTrueGraph = false;
 
     /**
      * Constructs a new GridSearchModel with the specified parameters.
@@ -1543,6 +1544,14 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
     public void setSelectedIndependenceTestModel(IndependenceTestModel selectedIndependenceTestModel) {
         this.selectedIndependenceTestModel = selectedIndependenceTestModel;
+    }
+
+    public boolean getShowTrueGraph() {
+        return this.showTrueGraph;
+    }
+
+    public void setShowTrueGraph(boolean showTrueGraph) {
+        this.showTrueGraph = showTrueGraph;
     }
 
     /**

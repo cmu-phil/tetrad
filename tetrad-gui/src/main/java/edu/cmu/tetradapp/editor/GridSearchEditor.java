@@ -1310,7 +1310,9 @@ public class GridSearchEditor extends JPanel {
         }
     }
 
-    private void updateSelectedGraph(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox, JComboBox<Integer> graphIndexComboBox, File resultsDir, GraphWorkbench workbench) {
+    private void updateSelectedGraph(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox,
+                                     JComboBox<Integer> graphIndexComboBox, File resultsDir, File trueDir, boolean trueGraph,
+                                     GraphWorkbench workbench) {
         Object selectedSimulation = simulationComboBox.getSelectedItem();
         Object selectedAlgorithm = algorithmComboBox.getSelectedItem();
         Object selectedGraphIndex = graphIndexComboBox.getSelectedItem();
@@ -1319,8 +1321,14 @@ public class GridSearchEditor extends JPanel {
             return;
         }
 
-        File dir = new File(resultsDir, selectedSimulation + "." + selectedAlgorithm);
-        File graphFile = new File(dir, "graph." + selectedGraphIndex + ".txt");
+        File graphFile;
+
+        if (trueGraph) {
+            graphFile = new File(trueDir, "simulation" + selectedSimulation + "/save/graph/graph." + selectedGraphIndex + ".txt");
+        } else {
+            File dir = new File(resultsDir, selectedSimulation + "." + selectedAlgorithm);
+            graphFile = new File(dir, "graph." + selectedGraphIndex + ".txt");
+        }
 
         if (graphFile.exists()) {
             Graph graph = GraphSaveLoadUtils.loadGraphTxt(graphFile);
@@ -2060,7 +2068,11 @@ public class GridSearchEditor extends JPanel {
     private @NotNull Box getGraphSelectorBox() {
         String resultsPath = model.getResultsPath();
 
+        GraphWorkbench workbench = new GraphWorkbench();
+        workbench.setGraph(new EdgeListGraph());
+
         File resultsDir = new File(resultsPath, "results");
+        File trueDir = new File(resultsPath);
 
         List<Integer> simulationIndices = getIntegers(resultsDir);
 
@@ -2077,6 +2089,13 @@ public class GridSearchEditor extends JPanel {
         JComboBox<Integer> simulationComboBox = new JComboBox<>();
         JComboBox<Integer> algorithmComboBox = new JComboBox<>();
         JComboBox<Integer> graphIndexComboBox = new JComboBox<>();
+
+        JCheckBox showTrueGraphCheckBox = new JCheckBox("True Graph");
+        showTrueGraphCheckBox.setSelected(model.getShowTrueGraph());
+        showTrueGraphCheckBox.addActionListener(e -> {
+            model.setShowTrueGraph(showTrueGraphCheckBox.isSelected());
+            updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, trueDir, model.getShowTrueGraph(), workbench);
+        });
 
         for (int i : simulationIndices) {
             simulationComboBox.addItem(i);
@@ -2099,13 +2118,11 @@ public class GridSearchEditor extends JPanel {
         if (model.getSuppliedData() == null) {
             selectors.add(new JLabel("Run:"));
             selectors.add(graphIndexComboBox);
+            selectors.add(showTrueGraphCheckBox);
         }
 
         graphSelectorBox.add(selectors);
         graphSelectorBox.add(Box.createVerticalStrut(4));
-
-        GraphWorkbench workbench = new GraphWorkbench();
-        workbench.setGraph(new EdgeListGraph());
 
         JScrollPane scroll = new JScrollPane(workbench);
         scroll.setBorder(model.getSuppliedData() == null
@@ -2113,24 +2130,23 @@ public class GridSearchEditor extends JPanel {
                 : new TitledBorder("Graph for this algorithm (see Comparison tab):"));
         graphSelectorBox.add(scroll);
 
-        // Add listeners to the algorithm and simulation combo boxes to update the graph index combo box
-        // when the algorithm or simulation is changed.
         simulationComboBox.addActionListener(e -> {
             updateAlgorithmBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
             updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
-            updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, workbench);
+            updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, trueDir, model.getShowTrueGraph(), workbench);
         });
 
         algorithmComboBox.addActionListener(e -> {
             updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
-            updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, workbench);
+            updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, trueDir, model.getShowTrueGraph(),  workbench);
         });
 
-        graphIndexComboBox.addActionListener((ActionEvent e) -> updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, workbench));
+        graphIndexComboBox.addActionListener((ActionEvent e) -> updateSelectedGraph(simulationComboBox, algorithmComboBox,
+                graphIndexComboBox, resultsDir, trueDir, model.getShowTrueGraph(), workbench));
 
         updateAlgorithmBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
         updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
-        updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, workbench);
+        updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, trueDir, model.getShowTrueGraph(), workbench);
 
         return graphSelectorBox;
     }
