@@ -119,13 +119,12 @@ public class HybridCgEstimatorWrapper implements SessionModel {
         this.parameters = (parameters == null) ? new Parameters() : parameters;
 
         DataModelList dml = dataWrapper.getDataModelList();
-        if (dml == null || dml.size() == 0) {
+        if (dml == null || dml.isEmpty()) {
             throw new IllegalArgumentException("Data must be a non-empty list of data sets.");
         }
 
         // Estimate an IM per dataset
-        for (int i = 0; i < dml.size(); i++) {
-            DataModel dm = dml.get(i);
+        for (DataModel dm : dml) {
             if (!(dm instanceof DataSet ds)) {
                 throw new IllegalArgumentException("All entries must be DataSet instances (mixed or discrete/continuous).");
             }
@@ -135,7 +134,7 @@ public class HybridCgEstimatorWrapper implements SessionModel {
             this.hybridIms.add(im);
         }
 
-        this.hybridIm = this.hybridIms.get(0);
+        this.hybridIm = this.hybridIms.getFirst();
         this.numModels = this.hybridIms.size();
         this.modelIndex = 0;
         this.dataSet = (DataSet) dataWrapper.getDataModelList().get(this.modelIndex);
@@ -156,7 +155,7 @@ public class HybridCgEstimatorWrapper implements SessionModel {
     public HybridCgEstimatorWrapper(DataWrapper dataWrapper,
                                     HybridCgImWrapper imWrapper,
                                     Parameters parameters) {
-        this(dataWrapper, new HybridCgPmWrapper(imWrapper.getPm().getGraph(), parameters), parameters);
+        this(dataWrapper, new HybridCgPmWrapper(imWrapper.getPm().getGraph(), null, parameters), parameters);
     }
 
     // ================================ API ====================================
@@ -291,7 +290,7 @@ public class HybridCgEstimatorWrapper implements SessionModel {
      * Sets the number of models associated with this instance.
      * If the provided number of models is less than 1, it defaults to 1.
      *
-     * @param numModels
+     * @param numModels the number of models to set
      */
     public void setNumModels(int numModels) {
         this.numModels = numModels;

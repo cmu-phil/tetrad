@@ -209,7 +209,11 @@ public final class HybridCgImEditor extends JPanel {
             // Build Bayes-style CPT table for this discrete child
             HybridCgCptEditingTable table = new HybridCgCptEditingTable(child, im);
             installDoubleFormatting(table); // numeric columns inside will use Double.class
+//            discScroll = new JScrollPane(table);
+
             discScroll = new JScrollPane(table);
+            replaceCenter(discCard, discScroll);
+
             discCard.remove(1);
             discCard.add(discScroll, BorderLayout.CENTER);
 
@@ -229,11 +233,15 @@ public final class HybridCgImEditor extends JPanel {
             // Full regression table
             HybridCgRegEditingTable table = new HybridCgRegEditingTable(im, pm, currentY);
             installDoubleFormatting(table); // ensure 0.### in-place
+//            contScroll = new JScrollPane(table);
+
             contScroll = new JScrollPane(table);
+            replaceCenter(contCard, contScroll);
+
             contCard.remove(1);
             contCard.add(contScroll, BorderLayout.CENTER);
 
-            wireModelChanged(table, true);
+            wireModelChanged(table, false);
 
             // Update instructions
             int[] dps = pm.getDiscreteParents(currentY);
@@ -247,6 +255,15 @@ public final class HybridCgImEditor extends JPanel {
             cards.show(right, "cont");
         }
         revalidate(); repaint();
+    }
+
+    private static void replaceCenter(JPanel borderLayoutPanel, Component newCenter) {
+        BorderLayout bl = (BorderLayout) borderLayoutPanel.getLayout();
+        Component oldCenter = bl.getLayoutComponent(BorderLayout.CENTER);
+        if (oldCenter != null) borderLayoutPanel.remove(oldCenter);
+        borderLayoutPanel.add(newCenter, BorderLayout.CENTER);
+        borderLayoutPanel.revalidate();
+        borderLayoutPanel.repaint();
     }
 
 //    private void refreshActiveTable() {

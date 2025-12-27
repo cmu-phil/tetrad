@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.simple.SimpleMatrix;
+import edu.cmu.tetrad.search.test.RowsSettable;
 
 import java.util.*;
 
@@ -47,8 +48,8 @@ import java.util.*;
  * @author josephramsey
  * @author bryanandrews
  */
-@Deprecated(since = "7.9", forRemoval = false)
-public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalIndependenceTest {
+@Deprecated
+public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalIndependenceTest, RowsSettable {
     /**
      * Represents the dataset used within the class for statistical analyses and computations.
      * <p>
@@ -71,18 +72,18 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
      * lookups and manipulations in computations and tests related to the functionality of this class.
      */
     private final Map<Node, Integer> nodeHash;
-    /**
-     * Represents the covariance matrix of the dataset, which is computed based on the processed input data and used for
-     * various statistical computations within the class. This matrix encapsulates the covariances between pairs of
-     * variables in the dataset and is essential for determining relationships among variables, such as conditional
-     * independence.
-     */
-    private final SimpleMatrix covarianceMatrix;
-    /**
-     * Represents the sample size of the dataset being analyzed. This variable is used in statistical computations, such
-     * as variance and covariance calculations, to determine the scale and reliability of the analysis.
-     */
-    private final int sampleSize;
+//    /**
+//     * Represents the covariance matrix of the dataset, which is computed based on the processed input data and used for
+//     * various statistical computations within the class. This matrix encapsulates the covariances between pairs of
+//     * variables in the dataset and is essential for determining relationships among variables, such as conditional
+//     * independence.
+//     */
+//    private final SimpleMatrix covarianceMatrix;
+//    /**
+//     * Represents the sample size of the dataset being analyzed. This variable is used in statistical computations, such
+//     * as variance and covariance calculations, to determine the scale and reliability of the analysis.
+//     */
+//    private final int sampleSize;
     /**
      * A mapping structure used to represent the embedding of variables or indices for specific computations in the
      * IndTestBasisFunctionLrt class. The keys are integers representing certain identifiers or indices, while the
@@ -96,6 +97,25 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
      */
     private final double lambda;
     private final int truncationLimit;
+
+    // Original data and bookkeeping
+//    private final DataSet dataSet;
+//    private final List<Node> variables;
+//    private final Map<Node, Integer> nodeHash;
+//    private final Map<Integer, List<Integer>> embedding;
+//    private final double lambda;
+//    private final int truncationLimit;
+
+    // Embedded data matrix (full rows, all embedded columns)
+    private final SimpleMatrix embeddedMatrix;
+
+    // These now depend on the current row subset (or all rows if rows == null)
+    private SimpleMatrix covarianceMatrix;
+    private int sampleSize;
+
+    // Optional row subset (null = use all rows)
+    private List<Integer> rows = null;
+
     /**
      * Represents the significance level for statistical tests within the class. It is used to determine the threshold
      * for rejecting the null hypothesis in various statistical computations and hypothesis testing methods. The default
@@ -136,14 +156,29 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
         this.truncationLimit = truncationLimit;
         this.lambda = lambda;
 
-        // Expand the discrete columns to give indicators for each category. We want to leave a category out if
-        // we're not using the enable-regularization option.
+//        // Expand the discrete columns to give indicators for each category. We want to leave a category out if
+//        // we're not using the enable-regularization option.
+//        Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
+//                dataSet, truncationLimit, 1, 1);
+//        this.embedding = embeddedData.embedding();
+//        this.sampleSize = dataSet.getNumRows();
+//
+//        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getSimpleMatrix());
+
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
                 dataSet, truncationLimit, 1, 1);
-        this.embedding = embeddedData.embedding();
-        this.sampleSize = dataSet.getNumRows();
 
-        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getSimpleMatrix());
+        // Column embedding (same regardless of rows)
+        this.embedding = embeddedData.embedding();
+
+        // Full embedded data matrix (all rows, all basis columns)
+        this.embeddedMatrix =
+                embeddedData.embeddedData().getDoubleData().getSimpleMatrix();
+
+        // Default: use all rows
+        this.rows = null;
+        this.sampleSize = dataSet.getNumRows();
+        this.covarianceMatrix = DataUtils.cov(this.embeddedMatrix);
     }
 
     /**
@@ -341,6 +376,59 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
      */
     public void setDoOneEquationOnly(boolean doOneEquationOnly) {
         this.doOneEquationOnly = doOneEquationOnly;
+    }
+
+    @Override
+    public List<Integer> getRows() {
+        return rows;
+    }
+
+    @Override
+    public void setRows(List<Integer> rows) {
+        // If there's no underlying DataSet, nothing to do
+        if (dataSet == null) {
+            this.rows = null;
+            return;
+        }
+
+        // rows == null means “use all rows”
+        if (rows == null) {
+            this.rows = null;
+            this.sampleSize = dataSet.getNumRows();
+            // Revert to covariance over all rows
+            this.covarianceMatrix = DataUtils.cov(this.embeddedMatrix);
+            return;
+        }
+
+        // Validate the provided indices
+        for (int i = 0; i < rows.size(); i++) {
+            Integer r = rows.get(i);
+            if (r == null) {
+                throw new NullPointerException("Row " + i + " is null.");
+            }
+            if (r < 0 || r >= dataSet.getNumRows()) {
+                throw new IllegalArgumentException(
+                        "Row " + i + " is out of range: " + r);
+            }
+        }
+
+        this.rows = rows;
+        this.sampleSize = rows.size();
+
+        // Build an embedded submatrix for the selected rows
+        int m = rows.size();
+        int d = embeddedMatrix.getNumCols();
+        SimpleMatrix sub = new SimpleMatrix(m, d);
+
+        for (int i = 0; i < m; i++) {
+            int r = rows.get(i);
+            for (int j = 0; j < d; j++) {
+                sub.set(i, j, embeddedMatrix.get(r, j));
+            }
+        }
+
+        // Covariance over the subsample’s embedded data
+        this.covarianceMatrix = DataUtils.cov(sub);
     }
 }
 

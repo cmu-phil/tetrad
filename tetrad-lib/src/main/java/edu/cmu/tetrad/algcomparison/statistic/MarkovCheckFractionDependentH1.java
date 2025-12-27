@@ -51,6 +51,15 @@ public class MarkovCheckFractionDependentH1 implements Statistic, MarkovCheckerS
      * type impacts the interpretation of the independence or dependence facts discovered during the analysis.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * Represents the configuration parameters for the Markov check, which are used to control
+     * various aspects of the Markov independence tests and statistical calculations performed
+     * within the {@code MarkovCheckFractionDependentH1} class.
+     *
+     * This field is immutable and set at the time of object construction, ensuring that the
+     * parameters remain consistent throughout the lifespan of the {@code MarkovCheckFractionDependentH1} instance.
+     */
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
@@ -61,10 +70,14 @@ public class MarkovCheckFractionDependentH1 implements Statistic, MarkovCheckerS
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
-    public MarkovCheckFractionDependentH1(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckFractionDependentH1(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                                          Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -106,9 +119,9 @@ public class MarkovCheckFractionDependentH1 implements Statistic, MarkovCheckerS
             throw new IllegalArgumentException("Data model is null.");
         }
 
-        IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
+        IndependenceTest test = independenceWrapper.getTest(dataModel, mcParameters);
         MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
-
+        markovCheck.setFractionResample(1.0);
         markovCheck.generateResults(false, true);
         return markovCheck.getFractionDependent(false);
     }
@@ -122,6 +135,15 @@ public class MarkovCheckFractionDependentH1 implements Statistic, MarkovCheckerS
     @Override
     public double getNormValue(double value) {
         return value;
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

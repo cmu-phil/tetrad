@@ -198,7 +198,7 @@ public final class SessionEditorNode extends DisplayNode {
     public void adjustToModel() {
         String acronym = getAcronym();
 
-        // Set the color.
+        // Set the color.ff
         getSessionDisplayComp().setHasModel(!"No model".equals(acronym));
 
         // Set the text for the model acronym.

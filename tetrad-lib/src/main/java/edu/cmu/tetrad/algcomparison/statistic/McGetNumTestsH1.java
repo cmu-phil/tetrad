@@ -52,6 +52,16 @@ public class McGetNumTestsH1 implements Statistic, MarkovCheckerStatistic {
      * conditioning set influences the statistical properties of the independence tests performed during Markov checks.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * Represents the parameters required to perform computations within the context
+     * of a Markov check for evaluating whether the p-values for an estimated graph
+     * conform to a uniform distribution U(0, 1).
+     *
+     * This variable encapsulates configurations and settings for the associated
+     * computation, providing necessary input to methods and algorithms that require
+     * parameterized adjustments.
+     */
+    private final Parameters mcParameters;
 
     /**
      * Calculates the number of tests for the Markov check of whether the p-values for the estimated graph are
@@ -62,10 +72,14 @@ public class McGetNumTestsH1 implements Statistic, MarkovCheckerStatistic {
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
-    public McGetNumTestsH1(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public McGetNumTestsH1(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                           Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -107,7 +121,7 @@ public class McGetNumTestsH1 implements Statistic, MarkovCheckerStatistic {
             throw new IllegalArgumentException("Data model is null.");
         }
 
-        IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
+        IndependenceTest test = independenceWrapper.getTest(dataModel, mcParameters);
         MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
         markovCheck.generateResults(false, true);
         return markovCheck.getNumTests(false);
@@ -122,6 +136,15 @@ public class McGetNumTestsH1 implements Statistic, MarkovCheckerStatistic {
     @Override
     public double getNormValue(double value) {
         return value;
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

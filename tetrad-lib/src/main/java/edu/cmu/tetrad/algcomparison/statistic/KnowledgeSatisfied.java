@@ -98,5 +98,14 @@ public class KnowledgeSatisfied implements Statistic, HasKnowledge {
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
+    }
 }
 

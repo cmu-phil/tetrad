@@ -54,6 +54,11 @@ public class MarkovCheckAdPasses implements Statistic, MarkovCheckerStatistic {
      * selecting the conditioning set.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * The parameters associated with the MarkovCheckAdPasses instance, encapsulating configuration details
+     * and settings relevant to the Markov check process.
+     */
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
@@ -64,10 +69,14 @@ public class MarkovCheckAdPasses implements Statistic, MarkovCheckerStatistic {
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
-    public MarkovCheckAdPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckAdPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                               Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -103,11 +112,9 @@ public class MarkovCheckAdPasses implements Statistic, MarkovCheckerStatistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double p = new MarkovCheckAndersonDarlingP(independenceWrapper, conditioningSetType).getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
-        double alpha = parameters.getDouble(Params.MC_ALPHA);
-
-        System.out.println("Markov check alpha = " + alpha);
-
+        double p = new MarkovCheckAndersonDarlingP(independenceWrapper, conditioningSetType, mcParameters)
+                .getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
+        double alpha = mcParameters.getDouble(Params.ALPHA);
         return p > alpha ? 1.0 : 0.0;
     }
 
@@ -120,6 +127,15 @@ public class MarkovCheckAdPasses implements Statistic, MarkovCheckerStatistic {
     @Override
     public double getNormValue(double value) {
         return value;
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

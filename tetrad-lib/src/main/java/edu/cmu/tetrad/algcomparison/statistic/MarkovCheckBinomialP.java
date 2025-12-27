@@ -53,6 +53,11 @@ public class MarkovCheckBinomialP implements Statistic, MarkovCheckerStatistic {
      * global or local tests.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * The parameters associated with the MarkovCheckBinomialP instance, encapsulating configuration details
+     * and settings relevant to the Markov check process.
+     */
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
@@ -63,10 +68,14 @@ public class MarkovCheckBinomialP implements Statistic, MarkovCheckerStatistic {
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
-    public MarkovCheckBinomialP(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckBinomialP(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                                Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -108,10 +117,11 @@ public class MarkovCheckBinomialP implements Statistic, MarkovCheckerStatistic {
             throw new IllegalArgumentException("Data model is null.");
         }
 
-        IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
+        IndependenceTest test = independenceWrapper.getTest(dataModel, mcParameters);
         MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
+        markovCheck.setFractionResample(1.0);
         markovCheck.generateResults(true, true);
-        return markovCheck.getBinomialPValue(true);
+        return markovCheck.getBinomialPValue_(true);
     }
 
     /**
@@ -123,6 +133,15 @@ public class MarkovCheckBinomialP implements Statistic, MarkovCheckerStatistic {
     @Override
     public double getNormValue(double value) {
         return value;
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

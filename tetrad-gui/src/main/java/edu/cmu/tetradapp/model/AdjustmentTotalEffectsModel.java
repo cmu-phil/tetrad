@@ -1,8 +1,8 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
@@ -15,6 +15,7 @@ import edu.cmu.tetradapp.session.SessionModel;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Model for the {@code "Adjustment & Total Effects"} regression tool.
@@ -38,6 +39,7 @@ import java.util.*;
  * </ul>
  */
 public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSource, Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     private final DataSet dataSet;
     private final Graph graph;
@@ -51,7 +53,7 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
     private final List<ResultRow> results = new ArrayList<>();
     private String name = "";
     // RA parameters (defaults are reasonable starting points)
-    private String graphType = "dag";
+    private String graphType = "PDAG";
     private int maxNumSets = 20;
     private int maxRadius = -1;           // <0 means "no radius limit"
     private int nearWhichEndpoint = 1;    // 0 = source, 1 = target, else min
@@ -62,6 +64,9 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
 
     // Mode: pairwise vs joint
     private EffectMode effectMode = EffectMode.PAIRWISE;
+    private boolean doDiscreteRegressions = false;
+    private String treatmentsText = "";
+    private String outcomesText = "";
 
     /**
      * Constructs an instance of the AdjustmentTotalEffectsModel.
@@ -75,8 +80,19 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
                                        Parameters parameters) {
         this.dataSet = (DataSet) Objects.requireNonNull(dataModel)
                 .getDataModelList().getFirst();
-        this.graph = Objects.requireNonNull(graphSource).getGraph();
+        this.graph = GraphUtils.replaceNodes(Objects.requireNonNull(graphSource).getGraph(), dataSet.getVariables());
         this.parameters = Objects.requireNonNull(parameters);
+
+        boolean containsCircle = false;
+
+        for (Edge edge : graph.getEdges()) {
+            if (edge.getEndpoint(edge.getNode1()) == Endpoint.CIRCLE || edge.getEndpoint(edge.getNode2()) == Endpoint.CIRCLE) {
+                containsCircle = true;
+                break;
+            }
+        }
+
+        this.graphType = containsCircle ? "PAG" : "PDAG";
 
         this.dataModel = dataModel;
         this.graphSource = graphSource;
@@ -157,7 +173,7 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
      * @param graphType the graph type
      */
     public void setGraphType(String graphType) {
-        this.graphType = (graphType == null) ? "dag" : graphType;
+        this.graphType = (graphType == null) ? "PDAG" : graphType;
     }
 
     /**
@@ -351,43 +367,168 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
      *   </li>
      * </ul>
      */
+    // inside AdjustmentTotalEffectsModel
     public void recompute() {
         results.clear();
 
-        if (X.isEmpty() || Y.isEmpty()) {
-            return;
-        }
-
-        if (effectMode == EffectMode.JOINT) {
-            // Joint mode: use X, Y as sets with RAMultiple (or RA for 1×1).
-            List<Set<Node>> adjustmentSets = computeJointAdjustmentSets(X, Y);
-
-            for (Set<Node> Z : adjustmentSets) {
+        if (effectMode == EffectMode.PAIRWISE) {
+            for (Node x : X) {
                 for (Node y : Y) {
-                    ResultRow row = runRegressionFor(X, y, Z);
-                    if (row != null) {
-                        results.add(row);
+                    if (x.equals(y)) continue;
+
+                    // If discrete regressions are NOT allowed and x or y is discrete, show "(Discrete)" immediately.
+                    if (!doDiscreteRegressions && involvesDiscrete(Collections.singleton(x), y, Collections.emptySet())) {
+                        results.add(new ResultRow(
+                                Collections.singleton(x),
+                                Collections.singleton(y),
+                                Collections.emptySet(),
+                                false,   // notAmenable
+                                true,    // discreteRegression == "skip due to discrete"
+                                null,
+                                null
+                        ));
+                        continue;
+                    }
+
+                    // Compute adjustment sets. Empty list => not amenable (by your current RA contract).
+                    List<Set<Node>> zSets = computeSinglePairAdjustmentSets(x, y);
+
+                    if (zSets.isEmpty()) {
+                        results.add(new ResultRow(
+                                Collections.singleton(x),
+                                Collections.singleton(y),
+                                Collections.emptySet(),
+                                true,    // notAmenable
+                                false,   // not discrete
+                                null,
+                                null
+                        ));
+                        continue;
+                    }
+
+                    // One row per adjustment set
+                    for (Set<Node> z : zSets) {
+                        LinkedHashSet<Node> zClean = new LinkedHashSet<>(z);
+                        zClean.remove(x); // just in case
+
+                        // If discrete regressions are NOT allowed and Z contains discrete vars, show "(Discrete)" row.
+                        if (!doDiscreteRegressions && involvesDiscrete(Collections.singleton(x), y, zClean)) {
+                            results.add(new ResultRow(
+                                    Collections.singleton(x),
+                                    Collections.singleton(y),
+                                    zClean,
+                                    false,   // notAmenable
+                                    true,    // discrete -> skip
+                                    null,
+                                    null
+                            ));
+                            continue;
+                        }
+
+                        // Otherwise run regression
+                        ResultRow rr = runRegressionFor(Collections.singleton(x), y, zClean);
+                        results.add(rr);
                     }
                 }
             }
+            return;
         } else {
-            // Pairwise mode: all combinations of X×Y via single-pair RA.
-            for (Node x : X) {
-                for (Node y : Y) {
-                    if (x == y) continue;
+            // JOINT mode: treat X as a set, but compute adjustment sets separately for each outcome y.
+            for (Node y : Y) {
 
-                    List<Set<Node>> adjustmentSets = computeSinglePairAdjustmentSets(x, y);
-                    for (Set<Node> Z : adjustmentSets) {
-                        ResultRow row = runRegressionFor(
-                                Collections.singleton(x), y, Z);
-                        if (row != null) {
-                            results.add(row);
-                        }
+                // (1) Compute adjustment sets for this specific outcome.
+                List<Set<Node>> zSetsForY = computeJointAdjustmentSets(X, Collections.singleton(y));
+
+                // (2) If none, emit a placeholder row so the user sees "(Not amenable)" for this y.
+                if (zSetsForY.isEmpty()) {
+                    results.add(new ResultRow(
+                            new LinkedHashSet<>(X),
+                            new LinkedHashSet<>(Collections.singleton(y)),
+                            Collections.emptySet(),
+                            true,   // notAmenable
+                            false,  // discreteRegression / skipDueToDiscrete
+                            null,
+                            null
+                    ));
+                    continue;
+                }
+
+                // (3) Otherwise, emit one row per Z for this y.
+                for (Set<Node> Z : zSetsForY) {
+                    LinkedHashSet<Node> zClean = new LinkedHashSet<>(Z);
+                    zClean.removeAll(X); // defensive, avoid duplication
+
+                    // If discrete regressions are NOT allowed and any variable in X ∪ {y} ∪ Z is discrete,
+                    // emit a "(Discrete)" row and do NOT run regression.
+                    if (!doDiscreteRegressions && involvesDiscrete(X, y, zClean)) {
+                        results.add(new ResultRow(
+                                new LinkedHashSet<>(X),
+                                new LinkedHashSet<>(Collections.singleton(y)),
+                                zClean,
+                                false,  // notAmenable
+                                true,   // discreteRegression == skipDueToDiscrete
+                                null,
+                                null
+                        ));
+                        continue;
                     }
+
+                    // Otherwise run regression and add the computed row.
+                    results.add(runRegressionFor(X, y, zClean));
                 }
             }
         }
     }
+
+    private boolean involvesDiscrete(Collection<Node> Xset, Node y, Set<Node> Z) {
+        for (Node x : Xset) {
+            if (dataSet.getVariable(x.getName()) instanceof DiscreteVariable) return true;
+        }
+        if (dataSet.getVariable(y.getName()) instanceof DiscreteVariable) return true;
+
+        for (Node z : Z) {
+            if (dataSet.getVariable(z.getName()) instanceof DiscreteVariable) return true;
+        }
+        return false;
+    }
+
+    //    public void recompute() {
+//        results.clear();
+//
+//        if (X.isEmpty() || Y.isEmpty()) {
+//            return;
+//        }
+//
+//        if (effectMode == EffectMode.JOINT) {
+//            // Joint mode: use X, Y as sets with RAMultiple (or RA for 1×1).
+//            List<Set<Node>> adjustmentSets = computeJointAdjustmentSets(X, Y);
+//
+//            for (Set<Node> Z : adjustmentSets) {
+//                for (Node y : Y) {
+//                    ResultRow row = runRegressionFor(X, y, Z);
+//                    if (row != null) {
+//                        results.add(row);
+//                    }
+//                }
+//            }
+//        } else {
+//            // Pairwise mode: all combinations of X×Y via single-pair RA.
+//            for (Node x : X) {
+//                for (Node y : Y) {
+//                    if (x == y) continue;
+//
+//                    List<Set<Node>> adjustmentSets = computeSinglePairAdjustmentSets(x, y);
+//                    for (Set<Node> Z : adjustmentSets) {
+//                        ResultRow row = runRegressionFor(
+//                                Collections.singleton(x), y, Z);
+//                        if (row != null) {
+//                            results.add(row);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     // ---------------------------------------------------------------------
     // Core computation
@@ -404,6 +545,13 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         RecursiveAdjustment ra = new RecursiveAdjustment(graph);
         ra.setColliderPolicy(RecursiveAdjustment.ColliderPolicy.NONCOLLIDER_FIRST);
         ra.setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SEARCH);
+
+        boolean graphAmenable =
+                graph.paths().isGraphAmenable(x, y, graphType, maxPathLength, Set.of());
+
+        if (!graphAmenable) {
+            return Collections.emptyList();
+        }
 
         return ra.adjustmentSetsRB(
                 x, y,
@@ -468,42 +616,33 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
     private ResultRow runRegressionFor(Collection<Node> Xset, Node y, Set<Node> Z) {
         LinkedHashSet<Node> Xlinked = new LinkedHashSet<>(Xset);
 
-        // Build regressor list in a fixed order: all X (in Xlinked order), then Z.
-        List<Node> regressors = new ArrayList<>(Xlinked.size() + Z.size());
+        LinkedHashSet<Node> Zclean = new LinkedHashSet<>(Z);
+        Zclean.removeAll(Xlinked);
+
+        List<Node> regressors = new ArrayList<>(Xlinked.size() + Zclean.size());
         regressors.addAll(Xlinked);
-        regressors.addAll(Z);
+        regressors.addAll(Zclean);
 
         Regression regression = new RegressionDataset(dataSet);
         RegressionResult result = regression.regress(y, regressors);
 
         double[] coeffs = result.getCoef();
-        double[] ses = result.getSe();
-
         double[] betas = new double[Xlinked.size()];
-        double[] seX = new double[Xlinked.size()];
 
         int i = 0;
         for (Node x : Xlinked) {
-            int idx = regressors.indexOf(x);
-            int coefIndex = idx + 1; // assuming coef[0] is intercept
-            if (coefIndex < 0 || coefIndex >= coeffs.length) {
-                betas[i] = Double.NaN;
-                seX[i] = Double.NaN;
-            } else {
-                betas[i] = coeffs[coefIndex];
-                seX[i] = (ses == null || coefIndex >= ses.length)
-                        ? Double.NaN
-                        : ses[coefIndex];
-            }
+            int coefIndex = i + 1; // intercept at 0, X's come first
+            betas[i] = (coefIndex >= 0 && coefIndex < coeffs.length) ? coeffs[coefIndex] : Double.NaN;
             i++;
         }
 
         return new ResultRow(
                 Xlinked,
                 new LinkedHashSet<>(Collections.singleton(y)),
-                new LinkedHashSet<>(Z),
+                Zclean,
+                false,   // notAmenable
+                false,   // discreteRegression == skipDueToDiscrete
                 betas,
-                seX,
                 result
         );
     }
@@ -535,6 +674,40 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         this.name = name;
     }
 
+    public boolean getDoDiscreteRegressions() {
+        return this.doDiscreteRegressions;
+    }
+
+    public void setDoDiscreteRegressions(boolean selected) {
+        this.doDiscreteRegressions = selected;
+    }
+
+    public Parameters getParameters() {
+        return parameters;
+    }
+
+    public String getTreatmentsText() {
+        return treatmentsText;
+    }
+
+    public void setTreatmentsText(String treatmentsText) {
+        if (treatmentsText == null) {
+            throw new IllegalArgumentException("Treatments text cannot be null");
+        }
+        this.treatmentsText = treatmentsText;
+    }
+
+    public String getOutcomesText() {
+        return outcomesText;
+    }
+
+    public void setOutcomesText(String outcomesText) {
+        if (outcomesText == null) {
+            throw new IllegalArgumentException("Outcomes text cannot be null");
+        }
+        this.outcomesText = outcomesText;
+    }
+
     public enum EffectMode {
         PAIRWISE,  // total effects for all (x, y) ∈ X×Y using RecursiveAdjustment
         JOINT      // joint intervention p(Y | do(X)) using RecursiveAdjustmentMultiple
@@ -548,128 +721,73 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
      * Represents a result row from the adjustment total effects analysis.
      */
     public static final class ResultRow implements TetradSerializable {
+
         @Serial
         private static final long serialVersionUID = 23L;
 
-        /**
-         * The adjustment set Z.
-         */
-        public final LinkedHashSet<Node> X;
-        /**
-         * The outcome variable y.
-         */
-        public final LinkedHashSet<Node> Y;   // singleton {y}
-        /**
-         * Represents the adjustment set Z used in the adjustment total effects analysis.
-         * <p>
-         * This set contains nodes that are included as covariates in a regression model to control for confounding
-         * effects in the analysis. It is typically used alongside the predictor variables (X) and the outcome variable
-         * (Y).
-         */
-        public final LinkedHashSet<Node> Z;   // adjustment set
+        public final Set<Node> X;
+        public final Set<Node> Y;
 
         /**
-         * Represents the total effects calculated for each predictor variable in the adjustment total effects analysis.
-         * The total effects are stored in the same order as the predictor variables in the set X.
-         * <p>
-         * Each entry in the array corresponds to the total effect of a specific variable in X on the outcome variable
-         * Y, as estimated using the adjustment set Z. These total effects quantify the direct and indirect
-         * relationships between each predictor variable and the outcome variable, after accounting for the adjustment
-         * set.
+         * The chosen adjustment set for this row (may be empty if amenable with empty adjustment).
          */
-        public final double[] betas;          // |X|-vector of total effects
-        /**
-         * Represents an array of standard errors corresponding to the values in the regression analysis or computation.
-         * Each element in this array contains the standard error for a specific parameter or estimate, typically
-         * representing the precision of the associated value.
-         * <p>
-         * This field is optional and may not always be populated, depending on the context or the availability of
-         * standard error calculations.
-         */
-        public final double[] se;             // |X|-vector of standard errors (optional)
+        public final Set<Node> Z;
 
         /**
-         * Represents the result of a regression analysis encapsulated in the current result row. This field holds an
-         * instance of {@code RegressionResult}, which contains the outcomes of a regression performed on the variables
-         * represented in this object. The instance provides access to statistical results such as coefficients,
-         * standard errors, and other metrics derived from the regression computation.
+         * True iff no adjustment sets exist (RA returned empty list).
+         */
+        public final boolean notAmenable;
+
+        /**
+         * True iff the regression involves a discrete variable
+         */
+        public final boolean discreteRegression;
+
+        /**
+         * Per-X betas from the regression (null if not computed).
+         */
+        public final double[] betas;
+
+        /**
+         * Full regression result (null if not computed).
          */
         public final RegressionResult regressionResult;
 
-        public ResultRow(LinkedHashSet<Node> X,
-                         LinkedHashSet<Node> Y,
-                         LinkedHashSet<Node> Z,
+        public ResultRow(Set<Node> X,
+                         Set<Node> Y,
+                         Set<Node> Z,
+                         boolean notAmenable,
+                         boolean discreteRegression,
                          double[] betas,
-                         double[] se,
                          RegressionResult regressionResult) {
-            this.X = X;
-            this.Y = Y;
-            this.Z = Z;
+            this.X = (X == null) ? Collections.emptySet() : new LinkedHashSet<>(X);
+            this.Y = (Y == null) ? Collections.emptySet() : new LinkedHashSet<>(Y);
+            this.Z = (Z == null) ? Collections.emptySet() : new LinkedHashSet<>(Z);
+            this.notAmenable = notAmenable;
+            this.discreteRegression = discreteRegression;
             this.betas = betas;
-            this.se = se;
             this.regressionResult = regressionResult;
         }
 
-        private static String formatNodeSet(Set<Node> s) {
-            if (s.isEmpty()) return "[]";
-            StringBuilder sb = new StringBuilder("[");
-            boolean first = true;
-            for (Node n : s) {
-                if (!first) sb.append(", ");
-                sb.append(n.getName());
-                first = false;
-            }
-            sb.append("]");
-            return sb.toString();
+        private static String formatSet(Set<Node> s) {
+            if (s == null || s.isEmpty()) return "∅";
+            return s.stream().map(Node::getName).sorted().collect(Collectors.joining(", "));
         }
 
-        /**
-         * Formats the set of nodes represented by the field X into a string.
-         * The format follows the structure of a comma-separated list of node names enclosed in square brackets.
-         *
-         * @return A string representation of the set of nodes in X. If the set is empty, returns "[]".
-         */
         public String formatXSet() {
-            return formatNodeSet(X);
+            return formatSet(X);
         }
 
-        /**
-         * Formats the set of nodes represented by the field Y into a string.
-         * The format follows the structure of a comma-separated list of node names enclosed in square brackets.
-         *
-         * @return A string representation of the set of nodes in Y. If the set is empty, returns "[]".
-         */
         public String formatYSet() {
-            return formatNodeSet(Y);
+            return formatSet(Y);
         }
 
-        /**
-         * Formats the set of nodes represented by the field Z into a string.
-         * The format follows the structure of a comma-separated list of node names enclosed in square brackets.
-         *
-         * @return A string representation of the set of nodes in Z. If the set is empty, returns "[]".
-         */
         public String formatZSet() {
-            return formatNodeSet(Z);
-        }
-
-        /**
-         * Formats the set of beta values into a string representation.
-         * Each beta value is formatted with 4 decimal places and includes the corresponding node name.
-         *
-         * @return A string representation of the beta values and their corresponding nodes.
-         */
-        public String formatBetas() {
-            StringBuilder sb = new StringBuilder();
-            int i = 0;
-            for (Node x : X) {
-                if (i > 0) sb.append(", ");
-                sb.append(x.getName())
-                        .append(": ")
-                        .append(String.format("%.4f", betas[i]));
-                i++;
-            }
-            return sb.toString();
+            if (discreteRegression) return "(Discrete)";
+            else if (notAmenable) return "(Not amenable)";
+                // Distinguish “amenable with empty adjustment set”
+            else if (Z.isEmpty()) return "∅";
+            else return formatSet(Z);
         }
     }
 }

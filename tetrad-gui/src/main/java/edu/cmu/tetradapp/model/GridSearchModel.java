@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -25,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.DegenerateGaussianLrt;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
@@ -72,6 +72,8 @@ import java.util.prefs.Preferences;
 public class GridSearchModel implements SessionModel, GraphSource {
     @Serial
     private static final long serialVersionUID = 23L;
+    // Canonical parameter key for Markov Checker conditioning-set mode used in Grid Search.
+    private static final String PARAM_MARKOV_CHECKER_COND_SET_TYPE = "markovCheckerConditioningSetType";
     /**
      * A private final variable that holds a Parameters object.
      */
@@ -174,7 +176,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * based on Fisher's Z-transformation. It serves as the primary tool for conditional independence checks in related
      * algorithms or workflows.
      */
-    private IndependenceWrapper markovCheckerIndependenceWrapper = new FisherZ();
+    private IndependenceWrapper markovCheckerIndependenceWrapper = new DegenerateGaussianLrt();
     /**
      * Represents the type of conditioning set used in the Markov checker. The variable defines how the conditioning set
      * is categorized or scoped, influencing the analysis process in probabilistic or causal models. It is initialized
@@ -186,6 +188,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * user closes the editor and re-opens it.
      */
     private IndependenceTestModel selectedIndependenceTestModel = null;
+    private final Parameters mcParameters = new Parameters();
+    private boolean showTrueGraph = false;
 
     /**
      * Constructs a new GridSearchModel with the specified parameters.
@@ -202,6 +206,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.suppliedData = null;
         this.suppliedGraph = null;
         initializeIfNull();
+        syncMarkovCheckerConditioningSetTypeFromParameters();
     }
 
     /**
@@ -225,6 +230,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.suppliedData = null;
         this.suppliedGraph = null;
         initializeIfNull();
+        syncMarkovCheckerConditioningSetTypeFromParameters();
     }
 
     /**
@@ -248,6 +254,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.suppliedGraph = graphSource.getGraph();
         this.suppliedData = null;
         initializeIfNull();
+        syncMarkovCheckerConditioningSetTypeFromParameters();
     }
 
     /**
@@ -275,6 +282,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.knowledge = knowledge.getKnowledge();
         this.suppliedGraph = graphSource.getGraph();
         initializeIfNull();
+        syncMarkovCheckerConditioningSetTypeFromParameters();
     }
 
     /**
@@ -298,6 +306,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.suppliedData = (DataSet) dataWrapper.getSelectedDataModel();
         this.suppliedGraph = null;
         initializeIfNull();
+        syncMarkovCheckerConditioningSetTypeFromParameters();
     }
 
     /**
@@ -328,6 +337,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         System.out.println("Variables names = " + this.suppliedData.getVariableNames());
 
         initializeIfNull();
+        syncMarkovCheckerConditioningSetTypeFromParameters();
     }
 
     /**
@@ -441,6 +451,27 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
 
         return paramNamesSet;
+    }
+
+    /**
+     * Ensures the Markov Checker conditioning-set type is synchronized with {@link #parameters}.
+     * <p>
+     * The Grid Search execution path should read this value from {@link #parameters}, not from transient UI state.
+     * This prevents mismatches where the editor shows one selection but the run uses another default/cached value.
+     */
+    private void syncMarkovCheckerConditioningSetTypeFromParameters() {
+        try {
+            String s = parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG.name());
+            if (s != null && !s.isBlank()) {
+                this.markovCheckerConditioningSetType = ConditioningSetType.valueOf(s);
+                return;
+            }
+        } catch (Exception ignored) {
+            // Fall through to persist current value.
+        }
+
+        // Persist current value as the default if none is present or it is invalid.
+        parameters.set(PARAM_MARKOV_CHECKER_COND_SET_TYPE, this.markovCheckerConditioningSetType.name());
     }
 
     /**
@@ -565,7 +596,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
     }
 
     /**
-     * Remove the last simulation from the list of selected simulations.
+     * Remove the last simulation from the list of selected simulations.on
      */
     public void removeLastSimulation() {
         initializeIfNull();
@@ -574,24 +605,63 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
     }
 
-    /**
-     * Add an algorithm to the list of selected algorithms.
-     *
-     * @param algorithm The algorithm to add.
-     */
     public void addAlgorithm(AlgorithmSpec algorithm) {
-        initializeIfNull();
-        getSelectedAlgorithmSpecs().add(algorithm);
+        insertAlgorithmAt(getSelectedAlgorithmSpecs().size(), algorithm);
     }
 
-    /**
-     * Remove the last algorithm from the list of selected algorithms.
-     */
+    public void insertAlgorithmAt(int index, AlgorithmSpec algorithm) {
+        initializeIfNull();
+        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+        if (index < 0) index = 0;
+        if (index > list.size()) index = list.size();
+        list.add(index, algorithm);
+
+        if (selectedAlgorithm >= index) selectedAlgorithm++;
+    }
+
     public void removeLastAlgorithm() {
         initializeIfNull();
-        LinkedList<AlgorithmSpec> selectedSimulationsSpecs = getSelectedAlgorithmSpecs();
-        if (!selectedSimulationsSpecs.isEmpty()) {
-            getSelectedAlgorithmSpecs().removeLast();
+        removeAlgorithmAt(getSelectedAlgorithmSpecs().size() - 1);
+    }
+
+    public List<AlgorithmSpec> getAlgorithms() {
+        initializeIfNull();
+        return getSelectedAlgorithmSpecs();
+    }
+
+    public void setAlgorithms(List<AlgorithmSpec> algorithms) {
+        initializeIfNull();
+        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+        list.clear();
+        list.addAll(algorithms);
+
+        if (selectedAlgorithm >= list.size()) selectedAlgorithm = Math.max(0, list.size() - 1);
+        if (selectedAlgorithm < 0) selectedAlgorithm = 0;
+    }
+
+    public void clearAlgorithms() {
+        initializeIfNull();
+        getSelectedAlgorithmSpecs().clear();
+        selectedAlgorithm = 0;
+    }
+
+    public void moveAlgorithm(int fromIndex, int toIndex) {
+        initializeIfNull();
+        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+        if (fromIndex < 0 || fromIndex >= list.size()) return;
+        if (toIndex < 0 || toIndex >= list.size()) return;
+        if (fromIndex == toIndex) return;
+
+        AlgorithmSpec spec = list.remove(fromIndex);
+        list.add(toIndex, spec);
+
+        // Update selectedAlgorithm index coherently
+        if (selectedAlgorithm == fromIndex) {
+            selectedAlgorithm = toIndex;
+        } else if (fromIndex < selectedAlgorithm && selectedAlgorithm <= toIndex) {
+            selectedAlgorithm--; // shifted left
+        } else if (toIndex <= selectedAlgorithm && selectedAlgorithm < fromIndex) {
+            selectedAlgorithm++; // shifted right
         }
     }
 
@@ -601,10 +671,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * @param tableColumn The table column to add.
      */
     public void addTableColumn(MyTableColumn tableColumn) {
-        if (getSelectedTableColumnsPrivate().contains(tableColumn)) return;
+        if (getSelectedTableColumns().contains(tableColumn)) return;
         initializeIfNull();
-        getSelectedTableColumnsPrivate().add(tableColumn);
-        GridSearchModel.sortTableColumns(getSelectedTableColumnsPrivate());
+        getSelectedTableColumns().add(tableColumn);
+        GridSearchModel.sortTableColumns(getSelectedTableColumns());
     }
 
     /**
@@ -612,9 +682,25 @@ public class GridSearchModel implements SessionModel, GraphSource {
      */
     public void removeLastTableColumn() {
         initializeIfNull();
-        if (!getSelectedTableColumnsPrivate().isEmpty()) {
-            getSelectedTableColumnsPrivate().removeLast();
+        if (!getSelectedTableColumns().isEmpty()) {
+            getSelectedTableColumns().removeLast();
         }
+    }
+
+    public void setSelectedTableColumns(List<MyTableColumn> cols) {
+        initializeIfNull();
+        // store a fresh list so the model owns it
+        parameters.set("algcomparison.selectedTableColumns", new ArrayList<>(cols));
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<MyTableColumn> getSelectedTableColumns() {
+        initializeIfNull();
+        if (!(parameters.get("algcomparison.selectedTableColumns") instanceof List<?>)) {
+            ArrayList<MyTableColumn> value = new ArrayList<>();
+            parameters.set("algcomparison.selectedTableColumns", value);
+        }
+        return (List<MyTableColumn>) parameters.get("algcomparison.selectedTableColumns");
     }
 
     /**
@@ -691,17 +777,26 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return (LinkedList<AlgorithmSpec>) parameters.get("algcomparison.selectedAlgorithms");
     }
 
-    public List<MyTableColumn> getSelectedTableColumns() {
-        GridSearchModel.sortTableColumns(getSelectedTableColumnsPrivate());
-        return new ArrayList<>(getSelectedTableColumnsPrivate());
+    public void setSelectedAlgorithms(List<AlgorithmSpec> specs) {
+        initializeIfNull();
+        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+        list.clear();
+        list.addAll(specs);
     }
 
-    private LinkedList<MyTableColumn> getSelectedTableColumnsPrivate() {
-        if (!(parameters.get("algcomparison.selectedTableColumns") instanceof LinkedList<?>)) {
-            parameters.set("algcomparison.selectedTableColumns", new LinkedList<MyTableColumn>());
-        }
+    public int getSelectedAlgorithmSafe() {
+        initializeIfNull();
+        int n = getSelectedAlgorithmSpecs().size();
+        if (n == 0) return -1;
+        if (selectedAlgorithm < 0) selectedAlgorithm = 0;
+        if (selectedAlgorithm >= n) selectedAlgorithm = n - 1;
+        return selectedAlgorithm;
+    }
 
-        return (LinkedList<MyTableColumn>) parameters.get("algcomparison.selectedTableColumns");
+    public void removeAlgorithmAt(int index) {
+        initializeIfNull();
+        LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
+        if (index >= 0 && index < list.size()) list.remove(index);
     }
 
     /**
@@ -720,8 +815,15 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * the initializeNames() method to initialize them.
      */
     private void initializeIfNull() {
-        initializeClasses();
-        initializeNames();
+        // Only (re)discover classes if not already available.
+        if (simulationClasses == null || algorithmClasses == null || statisticsClasses == null) {
+            initializeClasses();
+        }
+
+        // Only (re)build names if not already available.
+        if (algNames == null || statNames == null || simNames == null) {
+            initializeNames();
+        }
     }
 
     private List<String> getSelectedParameters() {
@@ -732,6 +834,15 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return (LinkedList<String>) parameters.get("algcomparison.selectedParameters");
     }
 
+//    /**
+//     * Initializes the necessary simulation, algorithm, and statistics classes.
+//     */
+//    private void initializeClasses() {
+//        simulationClasses = findSimulationClasses();
+//        algorithmClasses = findAlgorithmClasses();
+//        statisticsClasses = findStatisticsClasses();
+//    }
+
     /**
      * Initializes the necessary simulation, algorithm, and statistics classes.
      */
@@ -741,17 +852,138 @@ public class GridSearchModel implements SessionModel, GraphSource {
         statisticsClasses = findStatisticsClasses();
     }
 
+//    /**
+//     * Initializes the names of algorithms, statistics, and simulations.
+//     */
+//    private void initializeNames() {
+//        algNames = getAlgorithmNamesFromAnnotations(algorithmClasses);
+//        statNames = getStatisticsNamesFromImplementations(statisticsClasses);
+//        simNames = getSimulationNamesFromImplementations(simulationClasses);
+//
+//        this.algNames.sort(String.CASE_INSENSITIVE_ORDER);
+//        this.statNames.sort(String.CASE_INSENSITIVE_ORDER);
+//        this.simNames.sort(String.CASE_INSENSITIVE_ORDER);
+//    }
+
     /**
      * Initializes the names of algorithms, statistics, and simulations.
      */
     private void initializeNames() {
-        algNames = getAlgorithmNamesFromAnnotations(algorithmClasses);
-        statNames = getStatisticsNamesFromImplementations(statisticsClasses);
-        simNames = getSimulationNamesFromImplementations(simulationClasses);
+        // Build NAME<->CLASS pairs and sort the pairs together, so indices always match.
 
-        this.algNames.sort(String.CASE_INSENSITIVE_ORDER);
-        this.statNames.sort(String.CASE_INSENSITIVE_ORDER);
-        this.simNames.sort(String.CASE_INSENSITIVE_ORDER);
+        // ---- Algorithms ----
+        List<NamedClass<Algorithm>> algPairs = getAlgorithmNameClassPairs(algorithmClasses);
+        algPairs.sort(Comparator.comparing(NamedClass::name, String.CASE_INSENSITIVE_ORDER));
+        this.algorithmClasses = new ArrayList<>();
+        this.algNames = new ArrayList<>();
+        for (NamedClass<Algorithm> p : algPairs) {
+            this.algorithmClasses.add(p.clazz());
+            this.algNames.add(p.name());
+        }
+
+        // ---- Statistics ----
+        List<NamedClass<Statistic>> statPairs = getStatisticNameClassPairs(statisticsClasses);
+        statPairs.sort(Comparator.comparing(NamedClass::name, String.CASE_INSENSITIVE_ORDER));
+        this.statisticsClasses = new ArrayList<>();
+        this.statNames = new ArrayList<>();
+
+        for (NamedClass<Statistic> p : statPairs) {
+            this.statisticsClasses.add(p.clazz());
+            this.statNames.add(p.name());
+        }
+
+        // ---- Simulations ----
+        List<NamedClass<Simulation>> simPairs = getSimulationNameClassPairs(simulationClasses);
+        simPairs.sort(Comparator.comparing(NamedClass::name, String.CASE_INSENSITIVE_ORDER));
+        this.simulationClasses = new ArrayList<>();
+        this.simNames = new ArrayList<>();
+        for (NamedClass<Simulation> p : simPairs) {
+            this.simulationClasses.add(p.clazz());
+            this.simNames.add(p.name());
+        }
+
+        // IMPORTANT: Do NOT independently sort algNames/statNames/simNames here.
+        // Doing so breaks index alignment with the corresponding *Classes lists.
+    }
+
+    private List<NamedClass<Algorithm>> getAlgorithmNameClassPairs(List<Class<? extends Algorithm>> classes) {
+        List<NamedClass<Algorithm>> pairs = new ArrayList<>();
+        for (Class<? extends Algorithm> algorithm : classes) {
+            edu.cmu.tetrad.annotation.Algorithm algAnnotation =
+                    algorithm.getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class);
+            if (algAnnotation != null) {
+                String name = algAnnotation.name();
+                if (name != null && !name.isBlank()) {
+                    pairs.add(new NamedClass<>(name, algorithm));
+                }
+            }
+        }
+        return pairs;
+    }
+
+    private List<NamedClass<Statistic>> getStatisticNameClassPairs(List<Class<? extends Statistic>> classes) {
+        List<NamedClass<Statistic>> pairs = new ArrayList<>();
+
+        for (Class<? extends Statistic> statisticClass : classes) {
+            try {
+                // If it has a no-arg constructor, use it to get abbreviation.
+                boolean hasNoArgConstructor = false;
+                for (Constructor<?> c : statisticClass.getDeclaredConstructors()) {
+                    if (c.getParameterCount() == 0) {
+                        hasNoArgConstructor = true;
+                        break;
+                    }
+                }
+
+                if (hasNoArgConstructor) {
+                    Statistic s = statisticClass.getConstructor().newInstance();
+                    String abbr = s.getAbbreviation();
+                    if (abbr != null && !abbr.isBlank()) {
+                        pairs.add(new NamedClass<>(abbr, statisticClass));
+                    }
+                } else if (MarkovCheckerStatistic.class.isAssignableFrom(statisticClass)) {
+                    // Special-case: needs (IndependenceWrapper, ConditioningSetType)
+                    Statistic s = statisticClass
+                            .getConstructor(IndependenceWrapper.class, ConditioningSetType.class, Parameters.class)
+                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType(),
+                                    getMarkovCheckerParameters());
+                    String abbr = s.getAbbreviation();
+                    if (abbr != null && !abbr.isBlank()) {
+                        pairs.add(new NamedClass<>(abbr, statisticClass));
+                    }
+                }
+            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                     IllegalAccessException e) {
+                TetradLogger.getInstance().log("Error creating statistic: " + e.getMessage());
+                // Skip.
+            }
+        }
+
+        return pairs;
+    }
+
+    public Parameters getMarkovCheckerParameters() {
+        return mcParameters;
+    }
+
+    private List<NamedClass<Simulation>> getSimulationNameClassPairs(List<Class<? extends Simulation>> classes) {
+        List<NamedClass<Simulation>> pairs = new ArrayList<>();
+        RandomGraph graph = new RandomForward();
+
+        for (Class<? extends Simulation> simulationClass : classes) {
+            try {
+                Simulation sim = simulationClass.getConstructor(RandomGraph.class).newInstance(graph);
+                String shortName = sim.getShortName();
+                if (shortName != null && !shortName.isBlank()) {
+                    pairs.add(new NamedClass<>(shortName, simulationClass));
+                }
+            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                     IllegalAccessException e) {
+                // Skip.
+            }
+        }
+
+        return pairs;
     }
 
     /**
@@ -825,8 +1057,9 @@ public class GridSearchModel implements SessionModel, GraphSource {
                     String abbreviation = _statistic.getAbbreviation();
                     statisticsNames.add(abbreviation);
                 } else if (MarkovCheckerStatistic.class.isAssignableFrom(statistic)) {
-                    Statistic _statistic = statistic.getConstructor(IndependenceWrapper.class, ConditioningSetType.class)
-                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
+                    Statistic _statistic = statistic.getConstructor(IndependenceWrapper.class, ConditioningSetType.class, Parameters.class)
+                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType(),
+                                    getMarkovCheckerParameters());
                     String abbreviation = _statistic.getAbbreviation();
                     statisticsNames.add(abbreviation);
                 }
@@ -866,7 +1099,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
     }
 
     public Statistics getSelectedStatistics() {
-        LinkedList<MyTableColumn> selectedTableColumns = getSelectedTableColumnsPrivate();
+        List<MyTableColumn> selectedTableColumns = getSelectedTableColumns();
 
         Statistics selectedStatistics = new Statistics();
         List<Statistic> lastStatisticsUsed = new ArrayList<>();
@@ -876,8 +1109,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
                 if (MarkovCheckerStatistic.class.isAssignableFrom(column.getStatistic())) {
                     try {
-                        Constructor<? extends Statistic> constructor = column.getStatistic().getConstructor(IndependenceWrapper.class, ConditioningSetType.class);
-                        Statistic statistic = constructor.newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
+                        Constructor<? extends Statistic> constructor = column.getStatistic().getConstructor(IndependenceWrapper.class, ConditioningSetType.class,
+                                Parameters.class);
+                        Statistic statistic = constructor.newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType(),
+                                getMarkovCheckerParameters());
                         selectedStatistics.add(statistic);
                         lastStatisticsUsed.add(statistic);
                     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
@@ -998,8 +1233,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
                     MyTableColumn column = new MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
                     allTableColumns.add(column);
                 } else if (MarkovCheckerStatistic.class.isAssignableFrom(statisticClass)) {
-                    Statistic _statistic = statisticClass.getConstructor(IndependenceWrapper.class, ConditioningSetType.class)
-                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
+                    Statistic _statistic = statisticClass.getConstructor(IndependenceWrapper.class, ConditioningSetType.class,
+                                    Parameters.class)
+                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType(),
+                                    getMarkovCheckerParameters());
                     MyTableColumn column = new MyTableColumn(_statistic.getAbbreviation(), _statistic.getDescription(), statisticClass);
                     allTableColumns.add(column);
                 }
@@ -1040,7 +1277,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return Preferences.userRoot().get("lastAlgcomparisonIndependenceTestUsed", "");
     }
 
-
     public void setLastIndependenceTest(String name) {
         IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
         List<IndependenceTestModel> models = independenceTestModels.getModels();
@@ -1053,6 +1289,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
 
         throw new IllegalArgumentException("Independence test by that name not found: " + name);
+    }
+
+    public String getLastMarkovCheckerTest() {
+        return Preferences.userRoot().get("lastAlgcomparisonIndependenceTestUsed", name);
     }
 
     public String getLastScore() {
@@ -1201,12 +1441,25 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.selectedGraph = graph;
     }
 
-    public int getSelectedSimulation() {
-        return selectedSimulation;
+    public SimulationSpec getSelectedSimulation() {
+        initializeIfNull();
+
+        Object obj = parameters.get("algcomparison.selectedSimulation");
+        return (obj instanceof SimulationSpec s) ? s : null;
+    }
+
+    public void setSelectedSimulation(SimulationSpec simulation) {
+        initializeIfNull();
+        parameters.set("algcomparison.selectedSimulation", simulation);
     }
 
     public void setSelectedSimulation(int selectedSimulation) {
         this.selectedSimulation = selectedSimulation;
+    }
+
+    public void clearSelectedSimulation() {
+        initializeIfNull();
+        parameters.remove("algcomparison.selectedSimulation");
     }
 
     public int getSelectedAlgorithm() {
@@ -1257,6 +1510,18 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * property is being utilized.
      */
     public ConditioningSetType getMarkovCheckerConditioningSetType() {
+        // Source of truth is parameters, so Grid Search execution and UI cannot diverge.
+        try {
+            String s = ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG.name();// parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, null);
+            if (s != null && !s.isBlank()) {
+                return ConditioningSetType.valueOf(s);
+            }
+        } catch (Exception ignored) {
+            // fall through
+        }
+
+        // If missing/invalid, persist current value and return it.
+        parameters.set(PARAM_MARKOV_CHECKER_COND_SET_TYPE, markovCheckerConditioningSetType.name());
         return markovCheckerConditioningSetType;
     }
 
@@ -1270,6 +1535,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
             throw new IllegalArgumentException("markovCheckerConditioningSetType cannot be null");
         }
         this.markovCheckerConditioningSetType = markovCheckerConditioningSetType;
+        parameters.set(PARAM_MARKOV_CHECKER_COND_SET_TYPE, markovCheckerConditioningSetType.name());
     }
 
     public IndependenceTestModel getSelectedIndependenceTestModel() {
@@ -1278,6 +1544,14 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
     public void setSelectedIndependenceTestModel(IndependenceTestModel selectedIndependenceTestModel) {
         this.selectedIndependenceTestModel = selectedIndependenceTestModel;
+    }
+
+    public boolean getShowTrueGraph() {
+        return this.showTrueGraph;
+    }
+
+    public void setShowTrueGraph(boolean showTrueGraph) {
+        this.showTrueGraph = showTrueGraph;
     }
 
     /**
@@ -1301,6 +1575,12 @@ public class GridSearchModel implements SessionModel, GraphSource {
          * Partially Directed Acyclic Graph (PAG).
          */
         PAG
+    }
+
+    /**
+     * Simple name<->class pair so we can sort and keep indices aligned.
+     */
+    private record NamedClass<T>(String name, Class<? extends T> clazz) {
     }
 
     public static class MyTableColumn implements TetradSerializable {
@@ -1392,11 +1672,57 @@ public class GridSearchModel implements SessionModel, GraphSource {
             return false;
         }
 
+        /**
+         * Determines whether the associated statistic makes use of the knowledge of the true graph.
+         * If the statistic is an instance of {@code MarkovCheckerStatistic}, it is assumed not to use the true graph.
+         * Otherwise, the method attempts to instantiate the statistic and check its {@code usesTruth} behavior. If any
+         * issues occur during this process, the method defaults to returning true.
+         *
+         * @return true if the statistic is expected to use knowledge of the true graph, false otherwise.
+         */
+        public boolean usesTruth() {
+            if (MarkovCheckerStatistic.class.isAssignableFrom(getStatistic())) {
+                return false;
+            } else {
+                try {
+                    Constructor<?>[] constructors = getStatistic().getDeclaredConstructors();
+
+                    boolean hasNoArgConstructor = false;
+                    for (Constructor<?> constructor : constructors) {
+                        if (constructor.getParameterCount() == 0) {
+                            hasNoArgConstructor = true;
+                            break;
+                        }
+                    }
+
+                    if (hasNoArgConstructor) {
+                        Statistic statistic = getStatistic().getConstructor().newInstance();
+                        return statistic.usesTruth();
+                    }
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                         NoSuchMethodException ex) {
+                    System.out.println("Error creating statistic to check usesTruth() method: " + ex.getMessage());
+                }
+            }
+
+            return true;
+        }
+
         public enum ColumnType {
             STATISTIC, PARAMETER
         }
+
+
     }
 
+    /**
+     * Represents a specification of an algorithm with its associated model,
+     * independence test, and scoring method.
+     *
+     * The AlgorithmSpec class is designed to encapsulate the necessary components
+     * for an algorithm's execution, including its name, model, independence test,
+     * and score. It enables the creation of algorithm implementations dynamically.
+     */
     public static class AlgorithmSpec implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
@@ -1432,22 +1758,47 @@ public class GridSearchModel implements SessionModel, GraphSource {
             this.score = score;
         }
 
+        /**
+         * Retrieves the name of the algorithm.
+         *
+         * @return the name of the algorithm
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Retrieves the algorithm model.
+         *
+         * @return the algorithm model
+         */
         public AlgorithmModel getAlgorithm() {
             return algorithm;
         }
 
+        /**
+         * Retrieves the test of independence.
+         *
+         * @return the test of independence
+         */
         public AnnotatedClass<TestOfIndependence> getTest() {
             return test;
         }
 
+        /**
+         * Retrieves the score.
+         *
+         * @return the score
+         */
         public AnnotatedClass<Score> getScore() {
             return score;
         }
 
+        /**
+         * Retrieves the algorithm implementation.
+         *
+         * @return the algorithm implementation
+         */
         public Algorithm getAlgorithmImpl() {
             try {
                 IndependenceWrapper independenceWrapper = null;
@@ -1472,14 +1823,6 @@ public class GridSearchModel implements SessionModel, GraphSource {
                     ((TakesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
                 }
 
-                if (algorithmImpl instanceof TakesIndependenceWrapper && independenceWrapper != null) {
-                    ((TakesIndependenceWrapper) algorithmImpl).setIndependenceWrapper(independenceWrapper);
-                }
-
-                if (algorithmImpl instanceof TakesScoreWrapper && scoreWrapper != null) {
-                    ((TakesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
-                }
-
                 return algorithmImpl;
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException ex) {
@@ -1487,11 +1830,26 @@ public class GridSearchModel implements SessionModel, GraphSource {
             }
         }
 
+        /**
+         * Retrieves the name of the algorithm specification.
+         *
+         * @return the name of the algorithm specification
+         */
         public String toString() {
             return name;
         }
     }
 
+    /**
+     * A class representing the specification for a simulation. It associates a simulation name with
+     * specific implementations of graph generation and simulation classes.
+     * <p>
+     * This class is used to encapsulate the details needed to create simulations based on a given type
+     * of random graph and a simulation model.
+     * <p>
+     * Implements the {@link TetradSerializable} interface for compliance with Tetrad's serialization
+     * framework, ensuring compatibility across versions while maintaining efficiency.
+     */
     public static class SimulationSpec implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
@@ -1508,16 +1866,38 @@ public class GridSearchModel implements SessionModel, GraphSource {
          */
         private final Class<? extends Simulation> simulationClass;
 
+        /**
+         * Constructs a new SimulationSpec object that associates a name with specific
+         * implementations of graph generation and simulation classes.
+         *
+         * @param name the name of the simulation.
+         * @param graph the class representing the implementation of a random graph.
+         * @param simulation the class representing the implementation of a simulation.
+         */
         public SimulationSpec(String name, Class<? extends RandomGraph> graph, Class<? extends Simulation> simulation) {
             this.name = name;
             this.graphClass = graph;
             this.simulationClass = simulation;
         }
 
+        /**
+         * Retrieves the name of the simulation.
+         *
+         * @return the name of the simulation represented by this specification.
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Creates and returns an instance of a Simulation object by constructing a RandomGraph
+         * instance and passing it as an argument to the constructor of the specified Simulation class.
+         *
+         * @return an instance of the Simulation implementation associated with the specification.
+         * @throws RuntimeException if there is an error creating the Simulation or RandomGraph instance,
+         *                          such as issues with constructor access, instantiation failures, or
+         *                          invocation problems.
+         */
         public Simulation getSimulationImpl() {
             try {
                 RandomGraph randomGraph = graphClass.getConstructor().newInstance();
@@ -1528,6 +1908,12 @@ public class GridSearchModel implements SessionModel, GraphSource {
             }
         }
 
+        /**
+         * Returns a string representation of this object. In this case, it
+         * returns the name of the simulation specification.
+         *
+         * @return the name of the simulation specification as a string.
+         */
         public String toString() {
             return name;
         }

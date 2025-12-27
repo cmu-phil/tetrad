@@ -99,5 +99,14 @@ public class MagSemScore implements Statistic {
     public double getNormValue(double value) {
         return (1 + tanh(value / 1.0e8)) / 2;
     }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
+    }
 }
 

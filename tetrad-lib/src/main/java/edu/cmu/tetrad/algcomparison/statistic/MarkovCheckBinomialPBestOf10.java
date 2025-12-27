@@ -120,8 +120,9 @@ public class MarkovCheckBinomialPBestOf10 implements Statistic {
 
         for (int i = 0; i < 10; i++) {
             MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
+            markovCheck.setFractionResample(1.0);
             markovCheck.generateResults(true, true);
-            double p = markovCheck.getBinomialPValue(true);
+            double p = markovCheck.getBinomialPValue_(true);
             if (p > max) {
                 max = p;
             }
@@ -139,6 +140,15 @@ public class MarkovCheckBinomialPBestOf10 implements Statistic {
     @Override
     public double getNormValue(double value) {
         return value;
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

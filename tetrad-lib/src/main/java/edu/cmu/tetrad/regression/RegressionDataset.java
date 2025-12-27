@@ -235,11 +235,12 @@ public class RegressionDataset implements Regression {
         int n = getRows().length;
         int k = regressors.size() + 1;
 
-        int _target = this.variables.indexOf(target);
+        int _target = getVariableByName(this.variables, target.getName());
+
         int[] _regressors = new int[regressors.size()];
 
         for (int i = 0; i < regressors.size(); i++) {
-            _regressors[i] = this.variables.indexOf(regressors.get(i));
+            _regressors[i] = getVariableByName(this.variables, regressors.get(i).getName());
         }
 
         Matrix y = this.data.view(getRows(), new int[]{_target}).mat().copy();
@@ -325,6 +326,16 @@ public class RegressionDataset implements Regression {
 
         return new RegressionResult(regressors.isEmpty(), vNames, n,
                 bArray, tArray, pArray, seArray, r2, rss, this.alpha, _res);
+    }
+
+    private int getVariableByName(List<Node> variables, String name) {
+        for (int i = 0; i < variables.size(); i++) {
+            if (variables.get(i).getName().equals(name)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /**

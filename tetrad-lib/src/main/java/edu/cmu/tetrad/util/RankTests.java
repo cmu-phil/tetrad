@@ -646,6 +646,66 @@ public class RankTests {
     }
 
     /**
+     * Rank-aware PSD inverse square root.
+     * Returns W = D^{-1/2} U^T where U contains kept eigenvectors (columns),
+     * so W has shape (r x n). Also returns r.
+     */
+    private static final class Whitening {
+        final SimpleMatrix W;  // r x n
+        final int rank;
+        Whitening(SimpleMatrix W, int rank) { this.W = W; this.rank = rank; }
+    }
+
+    private static Whitening invSqrtPSD_rankAware(SimpleMatrix A, double relTol) {
+        SimpleMatrix Asym = A.plus(A.transpose()).divide(2.0);
+        int n = Asym.getNumRows();
+
+        // ridge
+        SimpleMatrix Areg = Asym.copy();
+        for (int i = 0; i < n; i++) Areg.set(i, i, Areg.get(i, i) + RIDGE);
+
+        var evd = Areg.eig();
+
+        // collect eigenpairs (real parts)
+        double[] d = new double[n];
+        SimpleMatrix[] vec = new SimpleMatrix[n];
+        double dmax = 0.0;
+        for (int i = 0; i < n; i++) {
+            d[i] = evd.getEigenvalue(i).getReal();
+            vec[i] = evd.getEigenVector(i);
+            if (Double.isFinite(d[i])) dmax = Math.max(dmax, d[i]);
+        }
+        double tol = Math.max(MIN_EIG, relTol * dmax);
+
+        // build U_kept and D^{-1/2}_kept
+        int r = 0;
+        for (int i = 0; i < n; i++) if (d[i] > tol) r++;
+
+        if (r == 0) {
+            // fall back: treat as rank-0
+            return new Whitening(new SimpleMatrix(0, n), 0);
+        }
+
+        SimpleMatrix U = new SimpleMatrix(n, r);
+        SimpleMatrix Dinv = new SimpleMatrix(r, r);
+
+        int k = 0;
+        for (int i = 0; i < n; i++) {
+            if (d[i] > tol) {
+                double invs = 1.0 / Math.sqrt(d[i]);
+                Dinv.set(k, k, invs);
+                SimpleMatrix vi = vec[i];
+                for (int row = 0; row < n; row++) U.set(row, k, vi.get(row, 0));
+                k++;
+            }
+        }
+
+        // W = D^{-1/2} U^T  (r x n)
+        SimpleMatrix W = Dinv.mult(U.transpose());
+        return new Whitening(W, r);
+    }
+
+    /**
      * Estimates the Wilks rank for variables X and Y conditioned on variables Z using the given covariance matrix and
      * parameters.
      *
@@ -681,6 +741,19 @@ public class RankTests {
         SimpleMatrix Sxx_c = Sxx.minus(Sxz.mult(SzzInv).mult(Sxz.transpose()));
         SimpleMatrix Syy_c = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
         SimpleMatrix Sxy_c = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
+
+        // TODO Try:
+
+        // Symmetrize after Schur complement (important)
+        Sxx = Sxx.plus(Sxx.transpose()).divide(2.0);
+        Syy = Syy.plus(Syy.transpose()).divide(2.0);
+
+        // Add ridge AFTER partialing
+        double ridge = 1e-6; // try 1e-6, then 1e-4
+        for (int i = 0; i < Sxx.numRows(); i++) Sxx.set(i, i, Sxx.get(i,i) + ridge);
+        for (int i = 0; i < Syy.numRows(); i++) Syy.set(i, i, Syy.get(i,i) + ridge);
+
+        // End TODO
 
         // Reassemble a (|X|+|Y|)Ã(|X|+|Y|) covariance conditioned on Z:
         int p = X.length, q = Y.length;
@@ -819,25 +892,57 @@ public class RankTests {
         }
 
         // Whitening and SVD
-        SimpleMatrix Wxx = invSqrtPSD(Sxx);
-        SimpleMatrix Wyy = invSqrtPSD(Syy);
-        SimpleMatrix M = Wxx.mult(Sxy).mult(Wyy);
+//        SimpleMatrix Wxx = invSqrtPSD(Sxx);
+//        SimpleMatrix Wyy = invSqrtPSD(Syy);
+//        SimpleMatrix M = Wxx.mult(Sxy).mult(Wyy);
+//        var svd = M.svd();
+//        int m = Math.min(M.getNumRows(), M.getNumCols());
+//        double logLambda = 0.0;
+//        for (int i = 0; i < m; i++) {
+//            double rho = Math.max(0.0, Math.min(1.0, svd.getSingleValue(i)));
+//            logLambda += Math.log(Math.max(1e-16, 1.0 - rho * rho));
+//        }
+//
+//        // Bartlett approx (use your standard scaling)
+//        int p = Sxx.getNumRows(), q = Syy.getNumRows();
+//        double kappa = (n - 1) - 0.5 * (p + q + 1);
+//        if (!Double.isFinite(kappa) || kappa < 1.0) kappa = Math.max(1.0, n - 1);
+//        double stat = -kappa * logLambda;
+//        int df = p * q;
+//        if (df <= 0) return 1.0;
+//
+//        return 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
+
+        Sxx = Sxx.plus(Sxx.transpose()).divide(2.0);
+        Syy = Syy.plus(Syy.transpose()).divide(2.0);
+
+//        double ridge = 1e-4; // try 1e-6, 1e-4
+//        for (int i = 0; i < Sxx.numRows(); i++) Sxx.set(i,i, Sxx.get(i,i) + ridge);
+//        for (int i = 0; i < Syy.numRows(); i++) Syy.set(i,i, Syy.get(i,i) + ridge);
+
+        Whitening Wx = invSqrtPSD_rankAware(Sxx, 1e-10);
+        Whitening Wy = invSqrtPSD_rankAware(Syy, 1e-10);
+        if (Wx.rank == 0 || Wy.rank == 0) return 1.0;
+
+        // M is (rX x rY)
+        SimpleMatrix M = Wx.W.mult(Sxy).mult(Wy.W.transpose());
         var svd = M.svd();
         int m = Math.min(M.getNumRows(), M.getNumCols());
+
         double logLambda = 0.0;
         for (int i = 0; i < m; i++) {
             double rho = Math.max(0.0, Math.min(1.0, svd.getSingleValue(i)));
             logLambda += Math.log(Math.max(1e-16, 1.0 - rho * rho));
         }
 
-        // Bartlett approx (use your standard scaling)
-        int p = Sxx.getNumRows(), q = Syy.getNumRows();
-        double kappa = (n - 1) - 0.5 * (p + q + 1);
-        if (!Double.isFinite(kappa) || kappa < 1.0) kappa = Math.max(1.0, n - 1);
-        double stat = -kappa * logLambda;
-        int df = p * q;
+        int pEff = Wx.rank, qEff = Wy.rank;
+        int df = pEff * qEff;
         if (df <= 0) return 1.0;
 
+        double kappa = (n - 1) - 0.5 * (pEff + qEff + 1);
+        if (!Double.isFinite(kappa) || kappa < 1.0) kappa = Math.max(1.0, n - 1);
+
+        double stat = -kappa * logLambda;
         return 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
     }
 

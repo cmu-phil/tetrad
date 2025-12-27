@@ -590,6 +590,7 @@ public final class HybridCgModel {
         public int[] getParents(int y) {
             Node child = nodes[y];
             List<Node> parents = dag.getParents(child);
+
             return parents.stream()
                     .mapToInt(this::indexOf)
                     .toArray();
@@ -1227,12 +1228,19 @@ public final class HybridCgModel {
                     // OLS via EJML
                     SimpleMatrix Xm = new SimpleMatrix(X);
                     SimpleMatrix ym = new SimpleMatrix(n, 1, true, yv);
+//                    SimpleMatrix beta = Xm.pseudoInverse().mult(ym); // (m+1) x 1
+//
+//                    double mean = beta.get(0);
+//                    im.setMean(y, row, mean);
+//                    for (int t = 0; t < m; t++)
+//                        im.setCoefficient(y, row, t, RandomUtil.getInstance().nextUniform(-1, 1));
+
                     SimpleMatrix beta = Xm.pseudoInverse().mult(ym); // (m+1) x 1
 
-                    double mean = beta.get(0);
-                    im.setMean(y, row, mean);
-                    for (int t = 0; t < m; t++)
-                        im.setCoefficient(y, row, t, RandomUtil.getInstance().nextUniform(-1, 1));
+                    im.setMean(y, row, beta.get(0));
+                    for (int t = 0; t < m; t++) {
+                        im.setCoefficient(y, row, t, beta.get(1 + t));  // <-- deterministic
+                    }
 
                     // Residual variance
                     SimpleMatrix resid = ym.minus(Xm.mult(beta));

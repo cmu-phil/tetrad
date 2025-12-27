@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunction1D;
 import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionND;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
@@ -62,7 +61,7 @@ import java.util.stream.IntStream;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class PostnonlinearCausalModel {
+public class PostnonlinearSem {
 
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
@@ -89,18 +88,6 @@ public class PostnonlinearCausalModel {
      * are assumed to be independent and identically distributed (i.i.d.) with the specified noise distribution.
      */
     private final RealDistribution noiseDistribution;
-
-    /**
-     * The lower bound used for rescaling data during the simulation process. This value is used to ensure that the
-     * synthetic data for each variable is scaled within a specific range before the outer nonlinearity is applied.
-     */
-    private final double rescaleMin;
-
-    /**
-     * The upper bound used for rescaling data during the simulation process. This value determines the maximum scale
-     * applied to normalized data, ensuring it fits within the specified range during synthetic data generation.
-     */
-    private final double rescaleMax;
 
     /**
      * Represents the number of hidden neurons in a multilayer perceptron (MLP) function. This variable determines the
@@ -133,21 +120,6 @@ public class PostnonlinearCausalModel {
     private Function<Double, Double> activationFunction = Math::tanh;
 
     /**
-     * Lower bound for randomly selected coefficients, reserved for alternative linear/non-MLP mechanisms.
-     */
-    private double coefLow = -1;
-
-    /**
-     * Upper bound for randomly selected coefficients, reserved for alternative linear/non-MLP mechanisms.
-     */
-    private double coefHigh = 1;
-
-    /**
-     * Whether randomly selected coefficients should be symmetric around zero, reserved for alternative mechanisms.
-     */
-    private boolean coefSymmetric = false;
-
-    /**
      * Random source used to generate independent function parameters (MLPs) per variable and per layer (f1, f2).
      * Using a single Random instance here avoids hardcoding a seed and ensures different mechanisms per node.
      */
@@ -163,21 +135,14 @@ public class PostnonlinearCausalModel {
      * @param numSamples        The number of samples to generate for the synthetic data. Must be positive.
      * @param noiseDistribution The distribution from which noise values are generated. Often a standard distribution,
      *                          such as Gaussian, but can be user-defined.
-     * @param rescaleMin        The minimum value for rescaling the data. Must be less than or equal to rescaleMax.
-     * @param rescaleMax        The maximum value for rescaling the data. Must be greater than or equal to rescaleMin.
      * @param hiddenDimension   The dimensionality of the hidden layer in the MLPs approximating f1 and f2.
      * @param inputScale        A scaling factor applied to the input variables before applying post-nonlinear
      *                          operations.
-     * @param coefLow           Lower bound for randomly selected coefficients (reserved for alternative mechanisms).
-     * @param coefHigh          Upper bound for randomly selected coefficients (reserved for alternative mechanisms).
-     * @param coefSymmetric     Whether randomly selected coefficients should be symmetric around zero (reserved).
      * @throws IllegalArgumentException If the provided graph is not acyclic, the number of samples is less than one, or
      *                                  rescaleMin is greater than rescaleMax.
      */
-    public PostnonlinearCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                    double rescaleMin, double rescaleMax,
-                                    int hiddenDimension, double inputScale,
-                                    double coefLow, double coefHigh, boolean coefSymmetric) {
+    public PostnonlinearSem(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                            int hiddenDimension, double inputScale) {
 
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
@@ -187,24 +152,11 @@ public class PostnonlinearCausalModel {
             throw new IllegalArgumentException("Number of samples must be positive.");
         }
 
-        if (rescaleMin > rescaleMax) {
-            throw new IllegalArgumentException("Rescale min must be less than or equal to rescale max.");
-        }
-
-        if (rescaleMin == rescaleMax) {
-            TetradLogger.getInstance().log("Rescale min and rescale max are equal. No rescaling will be applied.");
-        }
-
         this.graph = graph;
         this.numSamples = numSamples;
         this.noiseDistribution = noiseDistribution;
-        this.rescaleMin = rescaleMin;
-        this.rescaleMax = rescaleMax;
         this.hiddenDimension = hiddenDimension;
         this.inputScale = inputScale;
-        this.coefLow = coefLow;
-        this.coefHigh = coefHigh;
-        this.coefSymmetric = coefSymmetric;
 
         // Use a fresh Random instance so each model instance gets its own independent mechanisms.
         this.functionRng = new Random();
@@ -260,10 +212,6 @@ public class PostnonlinearCausalModel {
                     data.setDouble(sample, colIndex, value);
                 }
             }
-
-            if (rescaleMin < rescaleMax) {
-                DataTransforms.scale(data, rescaleMin, rescaleMax, node);
-            }
         }
 
         // STEP 2: Apply invertible post-nonlinear distortion f2 to each variable.
@@ -275,8 +223,16 @@ public class PostnonlinearCausalModel {
             double a = 0.5 + Math.abs(functionRng.nextGaussian()); // ensure strictly positive
             double b = functionRng.nextGaussian();
 
-            // g is the activationFunction (default tanh), assumed strictly monotone
-            Function<Double, Double> f2 = x -> a * activationFunction.apply(inputScale * x) + b;
+            // g is the activationFunction (default  cubic-perturbation-of-identity), assumed strictly monotone
+
+            double c = Math.abs(functionRng.nextGaussian()) * 0.3; // e.g. 0..~1
+            Function<Double, Double> g = x -> x + c * x * x * x;   // strictly increasing
+            Function<Double, Double> f2 = x -> a * g.apply(x) + b;
+
+//            double outerScale = 0.5; // new param, default
+//            Function<Double, Double> f2 = x -> a * activationFunction.apply(outerScale * x) + b;
+
+//            Function<Double, Double> f2 = x -> a * Math.tanh(outerScale * x) + b;
 
             for (int sample = 0; sample < numSamples; sample++) {
                 double value = data.getDouble(sample, colIndex);

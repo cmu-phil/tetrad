@@ -1486,6 +1486,7 @@ public class Comparison implements TetradSerializable {
                     try {
                         stat = _stat.getValue(null, graphOut, data, simulationWrapper.getSimulationSpecificParameters());
                     } catch (Exception e) {
+                        e.printStackTrace();
                         stat = Double.NaN;
                     }
                 }

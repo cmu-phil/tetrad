@@ -24,6 +24,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -58,6 +59,16 @@ public class MarkovCheckKsPasses implements Statistic, MarkovCheckerStatistic {
      * statistical model under analysis.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * Parameters used for configuring the Markov check process in the
+     * {@code MarkovCheckKsPasses} class.
+     *
+     * This variable encapsulates the necessary configuration options and metadata
+     * needed to perform the Kolmogorov-Smirnoff tests to validate whether
+     * the p-values of the estimated graph adhere to a uniform distribution
+     * (U(0, 1)). It is passed during the construction of the {@code MarkovCheckKsPasses} instance.
+     */
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
@@ -68,10 +79,14 @@ public class MarkovCheckKsPasses implements Statistic, MarkovCheckerStatistic {
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
-    public MarkovCheckKsPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckKsPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                               Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -107,8 +122,9 @@ public class MarkovCheckKsPasses implements Statistic, MarkovCheckerStatistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double p = new MarkovCheckKolmogorovSmirnoffP(independenceWrapper, conditioningSetType).getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
-        return p > parameters.getDouble(Params.MC_ALPHA) ? 1.0 : 0.0;
+        double alpha = mcParameters.getDouble(Params.ALPHA);
+        double p = new MarkovCheckKolmogorovSmirnoffP(independenceWrapper, conditioningSetType, mcParameters).getValue(trueDag, trueGraph, estGraph, dataModel, mcParameters);
+        return p > alpha ? 1.0 : 0.0;
     }
 
     /**
@@ -120,6 +136,15 @@ public class MarkovCheckKsPasses implements Statistic, MarkovCheckerStatistic {
     @Override
     public double getNormValue(double value) {
         return value;
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

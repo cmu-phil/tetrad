@@ -129,6 +129,15 @@ public class BicEst implements Statistic {
     public void setPrecomputeCovariances(boolean precomputeCovariances) {
         this.precomputeCovariances = precomputeCovariances;
     }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
+    }
 }
 
 

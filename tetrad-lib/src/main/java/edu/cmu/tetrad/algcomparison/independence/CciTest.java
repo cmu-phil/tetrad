@@ -42,11 +42,11 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@TestOfIndependence(
-        name = "CCI-Test (Conditional Correlation Independence Test)",
-        command = "cci-test",
-        dataType = DataType.Continuous
-)
+//@TestOfIndependence(
+//        name = "CCI-Test (Conditional Correlation Independence Test)",
+//        command = "cci-test",
+//        dataType = DataType.Continuous
+//)
 @General
 public class CciTest implements IndependenceWrapper {
 

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,12 +16,11 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 
 import java.util.*;
 
@@ -42,6 +41,8 @@ public class OrderedLocalMarkovProperty {
     /**
      * Computes the ordered local Markov property for a maximal ancestral graph (MAG). The method generates a set of
      * independence facts representing the conditional independencies implied by the MAG.
+     * <p>
+     * The graph passed in should be a legal MAG; this is not checked (for speed).
      *
      * @param mag The input maximal ancestral graph (MAG) represented as a graph object. Must be a valid legal MAG;
      *            otherwise, an {@code IllegalArgumentException} is thrown.
@@ -52,12 +53,12 @@ public class OrderedLocalMarkovProperty {
     public static Set<IndependenceFact> getModel(Graph mag) {
         Paths paths = new Paths(mag);
 
-        if (!paths.isLegalMag()) {
-            List<Node> selection = mag.getNodes().stream()
-                    .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-            PagLegalityCheck.LegalMagRet ret = PagLegalityCheck.isLegalMag(mag, new HashSet<>(selection));
+//        if (!paths.isLegalMag()) {
+//            List<Node> selection = mag.getNodes().stream()
+//                    .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+//            PagLegalityCheck.LegalMagRet ret = PagLegalityCheck.isLegalMag(mag, new HashSet<>(selection));
 //            throw new IllegalArgumentException("MAG not valid, reason = " + ret.getReason());
-        }
+//        }
 
         Set<IndependenceFact> model = new HashSet<>();
         Map<Node, Set<Node>> de = paths.getDescendantsMap();
@@ -80,8 +81,7 @@ public class OrderedLocalMarkovProperty {
         return model;
     }
 
-    private static void processSink(Set<IndependenceFact> model, Map<Node, Set<Node>> de,
-                                    Node sink, Set<Node> dis, EdgeListGraph mag) {
+    private static void processSink(Set<IndependenceFact> model, Map<Node, Set<Node>> de, Node sink, Set<Node> dis, EdgeListGraph mag) {
         Set<Node> mb = GraphUtils.markovBlanket(sink, mag);
         for (Node node : mag.getNodes()) {
             if (node == sink) continue;
