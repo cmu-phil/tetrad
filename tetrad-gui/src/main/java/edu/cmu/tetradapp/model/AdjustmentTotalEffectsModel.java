@@ -496,44 +496,6 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         return false;
     }
 
-    //    public void recompute() {
-//        results.clear();
-//
-//        if (X.isEmpty() || Y.isEmpty()) {
-//            return;
-//        }
-//
-//        if (effectMode == EffectMode.JOINT) {
-//            // Joint mode: use X, Y as sets with RAMultiple (or RA for 1×1).
-//            List<Set<Node>> adjustmentSets = computeJointAdjustmentSets(X, Y);
-//
-//            for (Set<Node> Z : adjustmentSets) {
-//                for (Node y : Y) {
-//                    ResultRow row = runRegressionFor(X, y, Z);
-//                    if (row != null) {
-//                        results.add(row);
-//                    }
-//                }
-//            }
-//        } else {
-//            // Pairwise mode: all combinations of X×Y via single-pair RA.
-//            for (Node x : X) {
-//                for (Node y : Y) {
-//                    if (x == y) continue;
-//
-//                    List<Set<Node>> adjustmentSets = computeSinglePairAdjustmentSets(x, y);
-//                    for (Set<Node> Z : adjustmentSets) {
-//                        ResultRow row = runRegressionFor(
-//                                Collections.singleton(x), y, Z);
-//                        if (row != null) {
-//                            results.add(row);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     // ---------------------------------------------------------------------
     // Core computation
     // ---------------------------------------------------------------------
