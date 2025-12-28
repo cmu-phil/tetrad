@@ -377,29 +377,32 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
                     if (x.equals(y)) continue;
 
                     // If discrete regressions are NOT allowed and x or y is discrete, show "(Discrete)" immediately.
-                    if (!doDiscreteRegressions && involvesDiscrete(Collections.singleton(x), y, Collections.emptySet())) {
+                    boolean discrete0 = !doDiscreteRegressions && involvesDiscrete(Collections.singleton(x), y, Collections.emptySet());
+
+                    // Compute adjustment sets. Empty list => not amenable (by your current RA contract).
+                    List<Set<Node>> zSets = computeSinglePairAdjustmentSets(x, y);
+                    boolean amenable = !zSets.isEmpty();
+
+                    if (discrete0) {
                         results.add(new ResultRow(
                                 Collections.singleton(x),
                                 Collections.singleton(y),
                                 Collections.emptySet(),
-                                false,   // notAmenable
-                                true,    // discreteRegression == "skip due to discrete"
+                                amenable,   // notAmenable
+                                discrete0,    // discreteRegression == "skip due to discrete"
                                 null,
                                 null
                         ));
                         continue;
                     }
 
-                    // Compute adjustment sets. Empty list => not amenable (by your current RA contract).
-                    List<Set<Node>> zSets = computeSinglePairAdjustmentSets(x, y);
-
-                    if (zSets.isEmpty()) {
+                    if (!amenable) {
                         results.add(new ResultRow(
                                 Collections.singleton(x),
                                 Collections.singleton(y),
                                 Collections.emptySet(),
-                                true,    // notAmenable
-                                false,   // not discrete
+                                amenable,
+                                discrete0,
                                 null,
                                 null
                         ));
@@ -412,13 +415,14 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
                         zClean.remove(x); // just in case
 
                         // If discrete regressions are NOT allowed and Z contains discrete vars, show "(Discrete)" row.
-                        if (!doDiscreteRegressions && involvesDiscrete(Collections.singleton(x), y, zClean)) {
+                        boolean discrete = !doDiscreteRegressions && involvesDiscrete(Collections.singleton(x), y, zClean);
+                        if (discrete) {
                             results.add(new ResultRow(
                                     Collections.singleton(x),
                                     Collections.singleton(y),
                                     zClean,
-                                    false,   // notAmenable
-                                    true,    // discrete -> skip
+                                    amenable,
+                                    discrete,
                                     null,
                                     null
                             ));
@@ -549,21 +553,29 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         boolean graphAmenable =
                 graph.paths().isGraphAmenable(x, y, graphType, maxPathLength, Set.of());
 
+        System.out.println("Graph amenability check for (" + x.getName() + ", " + y.getName() + "): " + graphAmenable);
+
         if (!graphAmenable) {
             return Collections.emptyList();
         }
 
-        return ra.adjustmentSetsRB(
+        List<Set<Node>> adjustmentSets = ra.adjustmentSets(
                 x, y,
                 graphType,
                 maxNumSets,
                 maxRadius,
                 nearWhichEndpoint,
                 maxPathLength,
+                RecursiveAdjustment.ColliderPolicy.OFF,
                 avoidAmenable,
                 notFollowed,
-                containing
+                containing,
+                Set.of()
         );
+
+        System.out.println("Adjustment sets calculated for (" + x.getName() + ", " + y.getName() + "): " + adjustmentSets.size() + " sets");
+
+        return adjustmentSets;
     }
 
     // ---------------------------------------------------------------------
@@ -640,8 +652,8 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
                 Xlinked,
                 new LinkedHashSet<>(Collections.singleton(y)),
                 Zclean,
-                false,   // notAmenable
-                false,   // discreteRegression == skipDueToDiscrete
+                true,
+                false, // discreteRegression == skipDueToDiscrete
                 betas,
                 result
         );
@@ -734,9 +746,9 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         public final Set<Node> Z;
 
         /**
-         * True iff no adjustment sets exist (RA returned empty list).
+         * True iff an adjustment set exists (RA returned a nonempty list).
          */
-        public final boolean notAmenable;
+        public final boolean amenable;
 
         /**
          * True iff the regression involves a discrete variable
@@ -756,14 +768,14 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         public ResultRow(Set<Node> X,
                          Set<Node> Y,
                          Set<Node> Z,
-                         boolean notAmenable,
+                         boolean amenable,
                          boolean discreteRegression,
                          double[] betas,
                          RegressionResult regressionResult) {
             this.X = (X == null) ? Collections.emptySet() : new LinkedHashSet<>(X);
             this.Y = (Y == null) ? Collections.emptySet() : new LinkedHashSet<>(Y);
             this.Z = (Z == null) ? Collections.emptySet() : new LinkedHashSet<>(Z);
-            this.notAmenable = notAmenable;
+            this.amenable = amenable;
             this.discreteRegression = discreteRegression;
             this.betas = betas;
             this.regressionResult = regressionResult;
@@ -784,7 +796,7 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
 
         public String formatZSet() {
             if (discreteRegression) return "(Discrete)";
-            else if (notAmenable) return "(Not amenable)";
+            else if (!amenable) return "(Not amenable)";
                 // Distinguish “amenable with empty adjustment set”
             else if (Z.isEmpty()) return "∅";
             else return formatSet(Z);

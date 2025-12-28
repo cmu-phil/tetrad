@@ -10,7 +10,6 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.*;
@@ -276,7 +275,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
             return;
         }
 
-        if (row.notAmenable || row.regressionResult == null) {
+        if (!row.amenable || row.regressionResult == null) {
             JOptionPane.showMessageDialog(this,
                     "No regression is available for this row because the pair is not amenable.",
                     "Not amenable",
@@ -536,7 +535,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
 //            }
 
             double primaryBeta = Double.NaN;
-            if (!r.notAmenable && r.betas != null && r.betas.length > 0) {
+            if (r.amenable && r.betas != null && r.betas.length > 0) {
                 primaryBeta = r.betas[0];
             }
 

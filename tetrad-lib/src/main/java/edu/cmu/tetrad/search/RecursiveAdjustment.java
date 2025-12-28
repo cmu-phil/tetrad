@@ -416,7 +416,7 @@ public final class RecursiveAdjustment {
 
         // G is amenable w.r.t. (X, Y) iff every potentially directed path is amenable.
         // If there are no potentially directed paths, amenability holds vacuously.
-        return pdPaths.isEmpty() || pdPaths.equals(amenablePaths);
+        return /*pdPaths.isEmpty() ||*/ pdPaths.equals(amenablePaths);
     }
 
     // Uses your existing graph.paths() helpers:
