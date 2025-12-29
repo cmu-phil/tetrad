@@ -381,7 +381,8 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
 
                     // Compute adjustment sets. Empty list => not amenable (by your current RA contract).
                     List<Set<Node>> zSets = computeSinglePairAdjustmentSets(x, y);
-                    boolean amenable = !zSets.isEmpty();
+                    boolean amenable = graph.paths().isGraphAmenable(x, y, graphType, maxPathLength, Set.of());
+                    Set<List<Node>> pdPaths = graph.paths().potentiallyDirectedPaths(x, y, maxPathLength);
 
                     if (discrete0) {
                         results.add(new ResultRow(
@@ -404,6 +405,19 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
                                 amenable,
                                 discrete0,
                                 null,
+                                null
+                        ));
+                        continue;
+                    }
+
+                    if (pdPaths.isEmpty()) {
+                        results.add(new ResultRow(
+                                Collections.singleton(x),
+                                Collections.singleton(y),
+                                null,
+                                amenable,
+                                discrete0,
+                                new double[]{0.0},
                                 null
                         ));
                         continue;
@@ -515,8 +529,6 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         boolean graphAmenable =
                 graph.paths().isGraphAmenable(x, y, graphType, maxPathLength, Set.of());
 
-        System.out.println("Graph amenability check for (" + x.getName() + ", " + y.getName() + "): " + graphAmenable);
-
         if (!graphAmenable) {
             return Collections.emptyList();
         }
@@ -534,8 +546,6 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
                 containing,
                 Set.of()
         );
-
-        System.out.println("Adjustment sets calculated for (" + x.getName() + ", " + y.getName() + "): " + adjustmentSets.size() + " sets");
 
         return adjustmentSets;
     }
@@ -734,9 +744,9 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
                          boolean discreteRegression,
                          double[] betas,
                          RegressionResult regressionResult) {
-            this.X = (X == null) ? Collections.emptySet() : new LinkedHashSet<>(X);
-            this.Y = (Y == null) ? Collections.emptySet() : new LinkedHashSet<>(Y);
-            this.Z = (Z == null) ? Collections.emptySet() : new LinkedHashSet<>(Z);
+            this.X = (X == null) ? null : new LinkedHashSet<>(X);
+            this.Y = (Y == null) ? null : new LinkedHashSet<>(Y);
+            this.Z = (Z == null) ? null : new LinkedHashSet<>(Z);
             this.amenable = amenable;
             this.discreteRegression = discreteRegression;
             this.betas = betas;
@@ -744,7 +754,8 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         }
 
         private static String formatSet(Set<Node> s) {
-            if (s == null || s.isEmpty()) return "∅";
+            if (s == null) throw new IllegalArgumentException("Set cannot be null");
+            if (s.isEmpty()) return "∅";
             return s.stream().map(Node::getName).sorted().collect(Collectors.joining(", "));
         }
 
@@ -760,6 +771,7 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
             if (discreteRegression) return "(Discrete)";
             else if (!amenable) return "(Not amenable)";
                 // Distinguish “amenable with empty adjustment set”
+            else if (Z == null) return "-";
             else if (Z.isEmpty()) return "∅";
             else return formatSet(Z);
         }

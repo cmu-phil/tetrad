@@ -3,11 +3,13 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel;
 import edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel.ResultRow;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
@@ -78,6 +80,35 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         this.resultTable = new JTable(tableModel);
         this.resultTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.resultTable.setAutoCreateRowSorter(true); // enable column-header sorting
+
+        DefaultTableCellRenderer effectRenderer = new DefaultTableCellRenderer() {
+            {
+                setHorizontalAlignment(SwingConstants.RIGHT);
+            }
+
+            @Override
+            protected void setValue(Object value) {
+                if (value == null) {
+                    setText("*");
+                    return;
+                }
+                if (value instanceof Number n) {
+                    double d = n.doubleValue();
+                    if (Double.isNaN(d)) {
+                        setText("*");
+                        return;
+                    }
+                    // Optional formatting:
+                    // setText(String.format("%.3f", d));
+                    setText(NumberFormatUtil.getInstance().getNumberFormat().format(d));
+                    return;
+                }
+                setText(String.valueOf(value));
+            }
+        };
+
+        resultTable.getColumnModel().getColumn(4).setCellRenderer(effectRenderer);
+        resultTable.getColumnModel().getColumn(5).setCellRenderer(effectRenderer);
 
         this.treatmentsField.setText(model.getTreatmentsText());
         this.outcomesField.setText(model.getOutcomesText());

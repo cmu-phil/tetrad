@@ -560,25 +560,25 @@ class IdaTableModel extends AbstractTableModel {
      */
     IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, SemIm trueSemIm) {
         boolean hasTrue = trueSemIm != null;
-        data = new Object[pairs.size()][hasTrue ? 6 : 3];
+        data = new Object[pairs.size()][hasTrue ? 6 : 4];
 
         for (int i = 0; i < pairs.size(); i++) {
             OrderedPair<Node> pair = pairs.get(i);
             String edge = pair.getFirst().getName() + " ~~> " + pair.getSecond().getName();
             double minTotalEffect = estModel.getMinTotalEffect(pair.getFirst(), pair.getSecond());
             double maxTotalEffect = estModel.getMaxTotalEffect(pair.getFirst(), pair.getSecond());
+            double minAbsTotalEffect = estModel.getIdaMinEffect(pair.getFirst(), pair.getSecond());
 
             data[i][0] = edge;
             data[i][1] = minTotalEffect;
             data[i][2] = maxTotalEffect;
+            data[i][3] = minAbsTotalEffect;
 
             if (hasTrue) {
-                double minAbsTotalEffect = estModel.getIdaMinEffect(pair.getFirst(), pair.getSecond());
                 double trueTotalEffect = estModel.getTrueTotalEffect(pair);
                 double squaredDistance = estModel.getSquaredDistance(pair);
 
-                data[i][3] = minAbsTotalEffect;
-                data[i][4] = trueTotalEffect;
+                 data[i][4] = trueTotalEffect;
                 data[i][5] = squaredDistance;
             }
         }
@@ -591,7 +591,7 @@ class IdaTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return data.length == 0 ? 3 : data[0].length;
+        return data.length == 0 ? 4 : data[0].length;
     }
 
     @Override
