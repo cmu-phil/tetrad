@@ -48,7 +48,7 @@ public class RemoveNullEdgesGraphWrapper extends GraphWrapper implements DoNotAd
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNullEdgesGraphWrapper(GraphSource source, Parameters parameters) {
-        this(source.getGraph());
+        this(source.getGraph(), parameters);
     }
 
     /**
@@ -56,8 +56,8 @@ public class RemoveNullEdgesGraphWrapper extends GraphWrapper implements DoNotAd
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public RemoveNullEdgesGraphWrapper(Graph graph) {
-        super(GraphSampling.createGraphWithoutNullEdges(graph), "Remove Null Edges from Boostrapping");
+    public RemoveNullEdgesGraphWrapper(Graph graph, Parameters parameters) {
+        super(GraphSampling.createGraphWithoutNullEdges(graph), parameters, "Remove Null Edges from Boostrapping");
         String message = getGraph() + "";
         TetradLogger.getInstance().log(message);
     }
@@ -69,7 +69,7 @@ public class RemoveNullEdgesGraphWrapper extends GraphWrapper implements DoNotAd
      * @return a {@link edu.cmu.tetradapp.model.RemoveNullEdgesGraphWrapper} object
      */
     public static RemoveNullEdgesGraphWrapper serializableInstance() {
-        return new RemoveNullEdgesGraphWrapper(EdgeListGraph.serializableInstance());
+        return new RemoveNullEdgesGraphWrapper(EdgeListGraph.serializableInstance(), new Parameters());
     }
 }
 

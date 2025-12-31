@@ -87,7 +87,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
     /**
      * The parameters.
      */
-    private Parameters parameters;
+    private Parameters parameters = new Parameters();
 
     //=============================CONSTRUCTORS==========================//
 
@@ -134,7 +134,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      * @param graph   a {@link edu.cmu.tetrad.graph.Graph} object
      * @param message a {@link java.lang.String} object
      */
-    public GraphWrapper(Graph graph, String message) {
+    public GraphWrapper(Graph graph, Parameters parameters, String message) {
         TetradLogger.getInstance().log(message);
 
         if (graph == null) {
@@ -142,6 +142,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         }
 
         setGraph(graph);
+        this.parameters = parameters;
     }
 
     /**

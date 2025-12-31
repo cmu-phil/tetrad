@@ -44,7 +44,7 @@ public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotA
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GenerateCompleteGraphWrapper(GraphSource source, Parameters parameters) {
-        this(source.getGraph());
+        this(source.getGraph(), parameters);
     }
 
 
@@ -53,8 +53,8 @@ public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotA
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public GenerateCompleteGraphWrapper(Graph graph) {
-        super(GenerateCompleteGraphWrapper.generateCompleteGraph(graph), "Generate Complete Graph");
+    public GenerateCompleteGraphWrapper(Graph graph, Parameters parameters) {
+        super(GenerateCompleteGraphWrapper.generateCompleteGraph(graph), parameters, "Generate Complete Graph");
         String message = getGraph() + "";
         TetradLogger.getInstance().log(message);
     }
@@ -66,7 +66,7 @@ public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotA
      * @return a {@link edu.cmu.tetradapp.model.GenerateCompleteGraphWrapper} object
      */
     public static GenerateCompleteGraphWrapper serializableInstance() {
-        return new GenerateCompleteGraphWrapper(EdgeListGraph.serializableInstance());
+        return new GenerateCompleteGraphWrapper(EdgeListGraph.serializableInstance(), new Parameters());
     }
 
 
