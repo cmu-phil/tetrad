@@ -631,6 +631,8 @@ public class KnowledgeBoxEditor extends JPanel {
             graph.addNode(new KnowledgeModelNode(e));
         });
 
+        LayoutUtil.circleLayout(graph);
+
         if (this.showRequiredByGroups) {
             List<KnowledgeEdge> list = knowledge.getListOfRequiredEdges();
             if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
