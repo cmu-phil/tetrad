@@ -34,6 +34,8 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -175,6 +177,28 @@ public class IdaEditor extends JPanel {
         } else {
             showOptimalIda.setEnabled(false);
         }
+
+        treatmentsField.setText(idaModel.getTreatmentsText());
+        outcomesField.setText(idaModel.getOutcomesText());
+
+        treatmentsField.addFocusListener(new FocusAdapter() {
+            public void focusLost(FocusEvent e) {
+                idaModel.setTreatmentsText(treatmentsField.getText());
+            }
+        });
+
+        outcomesField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                idaModel.setOutcomesText(outcomesField.getText());
+            }
+        });
+
+        showOptimalIda.setSelected(idaModel.isOptimalIdaSelected());
+
+        showOptimalIda.addActionListener(e -> {
+            idaModel.setOptimalIdaSelected(!idaModel.isOptimalIdaSelected());
+        });
 
         // Top control panel: X/Y fields, Run button, and (if available) Optimal IDA checkbox.
         Box controlsBox = Box.createVerticalBox();

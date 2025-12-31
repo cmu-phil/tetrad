@@ -83,6 +83,9 @@ public class IdaModel implements SessionModel {
      * Note: This variable is marked as transient, meaning it will not be serialized.
      */
     private transient IdaCheck idaCheckTrue;
+    private String treatmentsText = "";
+    private String outcomesText = "";
+    private boolean optimalIdaSelected;
 
     /**
      * Constructs a new instance of the IdaModel class.
@@ -243,6 +246,30 @@ public class IdaModel implements SessionModel {
      */
     public SemIm getTrueSemIm() {
         return trueSemIm;
+    }
+
+    public String getTreatmentsText() {
+        return treatmentsText;
+    }
+
+    public void setTreatmentsText(String treatmentsText) {
+        this.treatmentsText = treatmentsText;
+    }
+
+    public String getOutcomesText() {
+        return outcomesText;
+    }
+
+    public void setOutcomesText(String outcomesText) {
+        this.outcomesText = outcomesText;
+    }
+
+    public boolean isOptimalIdaSelected() {
+        return optimalIdaSelected;
+    }
+
+    public void setOptimalIdaSelected(boolean optimalIdaSelected) {
+        this.optimalIdaSelected = optimalIdaSelected;
     }
 }
 
