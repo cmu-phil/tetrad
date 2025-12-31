@@ -167,7 +167,7 @@ public class IdaEditor extends JPanel {
         // Show Optimal IDA checkbox – only relevant if the estimated graph is a legal PDAG.
         if (idaCheckEst.getGraph().paths().isLegalPdag()) {
             showOptimalIda.setSelected(idaCheckEst.isShowOptimalIda());
-//            showOptimalIda.addActionListener(e -> {
+//            showOptimalIda.addfActionListener(e -> {
 //                idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
 //                idaCheckEst.recompute();
 //                recomputeTable();
@@ -227,8 +227,6 @@ public class IdaEditor extends JPanel {
         // Wire up "Run" button
         runButton.addActionListener(e -> {
             try {
-//                idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
-//                recomputeTable();
                 idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
                 idaCheckEst.recompute();
                 recomputeTable();

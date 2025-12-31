@@ -367,7 +367,6 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
      *   </li>
      * </ul>
      */
-    // inside AdjustmentTotalEffectsModel
     public void recompute() {
         results.clear();
 
