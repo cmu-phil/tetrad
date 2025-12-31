@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
@@ -34,6 +34,8 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -167,27 +169,50 @@ public class IdaEditor extends JPanel {
         // Show Optimal IDA checkbox – only relevant if the estimated graph is a legal PDAG.
         if (idaCheckEst.getGraph().paths().isLegalPdag()) {
             showOptimalIda.setSelected(idaCheckEst.isShowOptimalIda());
-            showOptimalIda.addActionListener(e -> {
-                idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
-                idaCheckEst.recompute();
-                recomputeTable();
-            });
         } else {
             showOptimalIda.setEnabled(false);
         }
 
+        treatmentsField.setText(idaModel.getTreatmentsText());
+        outcomesField.setText(idaModel.getOutcomesText());
+
+        treatmentsField.addFocusListener(new FocusAdapter() {
+            public void focusLost(FocusEvent e) {
+                idaModel.setTreatmentsText(treatmentsField.getText());
+            }
+        });
+
+        outcomesField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                idaModel.setOutcomesText(outcomesField.getText());
+            }
+        });
+
+        showOptimalIda.setSelected(idaModel.isOptimalIdaSelected());
+
+        showOptimalIda.addActionListener(e -> {
+            idaModel.setOptimalIdaSelected(!idaModel.isOptimalIdaSelected());
+        });
+
         // Top control panel: X/Y fields, Run button, and (if available) Optimal IDA checkbox.
         Box controlsBox = Box.createVerticalBox();
 
-        Box xyRow = Box.createHorizontalBox();
-        xyRow.add(new JLabel("Treatments (X):"));
-        xyRow.add(Box.createHorizontalStrut(5));
-        xyRow.add(treatmentsField);
-        xyRow.add(Box.createHorizontalStrut(15));
-        xyRow.add(new JLabel("Outcomes (Y):"));
-        xyRow.add(Box.createHorizontalStrut(5));
-        xyRow.add(outcomesField);
-        controlsBox.add(xyRow);
+        Box xys = Box.createVerticalBox();
+
+        Box xyRow1 = Box.createHorizontalBox();
+        xyRow1.add(new JLabel("Treatments (X):"));
+        xyRow1.add(Box.createHorizontalGlue());
+        xyRow1.add(treatmentsField);
+
+        Box xyRow2 = Box.createHorizontalBox();
+        xyRow2.add(new JLabel("Outcomes (Y):"));
+        xyRow2.add(Box.createHorizontalStrut(5));
+        xyRow2.add(outcomesField);
+
+        xys.add(xyRow1);
+        xys.add(xyRow2);
+        controlsBox.add(xys);
 
         // After fields are constructed
         lockTextFieldHeight(treatmentsField);
@@ -227,6 +252,8 @@ public class IdaEditor extends JPanel {
         // Wire up "Run" button
         runButton.addActionListener(e -> {
             try {
+                idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
+                idaCheckEst.recompute();
                 recomputeTable();
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(this,
@@ -327,47 +354,24 @@ public class IdaEditor extends JPanel {
                 The original reference for the IDA algorithm is:
                 
                 Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann (2009).
-                "Estimating high-dimensional intervention effects from observational data."
+                “Estimating high-dimensional intervention effects from observational data.”
                 The Annals of Statistics 37(6A): 3133–3164.
                 
-                This panel implements IDA for a given estimated graph and data set.
-                Each row of the table corresponds to an ordered pair (X, Y), where:
+                This panel implements IDA-style total effect estimation for a given estimated graph and data set. Each row of the table corresponds to an ordered pair (X, Y), where X is a treatment (intervention) variable and Y is an outcome variable.
                 
-                  • X is a treatment (intervention) variable, and
-                  • Y is an outcome variable.
+                For each (X, Y) pair, the table reports the range of estimated total effects of X on Y obtained by linear regression over all valid adjustment sets implied by the graph. Specifically, the minimum and maximum regression coefficient for X across these adjustment sets are shown.
                 
-                The table reports, for each (X, Y):
+                If the graph implies that there is no potentially directed path from X to Y, then the total effect is necessarily zero, and the table reflects this without running any regressions. If the graph is not amenable for estimating the effect of X on Y, the corresponding row is marked as “Not amenable.”
                 
-                  • the minimum and maximum estimated causal effect of X on Y
-                    over all valid adjustment sets implied by the graph, and
-                  • if a true SEM is available, the corresponding true total effect
-                    and a squared-distance diagnostic.
+                Treatments (X) and outcomes (Y) are configured at the top of the Table tab. You may enter a comma- or space-separated list of variable names (for example, X1, X2, X3), or use wildcard patterns with “*” and “?” (for example, X* for all variables whose names start with “X”, or ?bar for any single-character prefix followed by “bar”).
                 
-                Treatments (X) and outcomes (Y) are configured at the top of the
-                Table tab.  You may enter:
+                The IDA table is restricted to ordered pairs (X, Y) with X in the treatment set and Y in the outcome set. If either set is empty, no table is produced.
                 
-                  • a comma/space separated list of variable names, e.g.
-                        X1, X2, X3
-                  • or wildcard patterns using "*" and "?", e.g.
-                        X*      (all variables whose names start with "X")
-                        ?bar    (any one-letter prefix followed by "bar")
+                Press “Run” after changing the X or Y fields to recompute the results. If “Show Optimal IDA” is available and checked, the panel uses the Optimal IDA variant based on the O-set of Witte et al. (2020), “On efficient adjustment in causal graphs,” JMLR 21(246): 1–45; otherwise, it uses the standard IDA procedure.
                 
-                The IDA table is restricted to all ordered pairs (X, Y) with
-                X in the treatment set and Y in the outcome set.  If either set
-                is empty, no table is produced.
-                
-                Press "Run" after changing the X or Y fields to recompute the IDA
-                results.  If "Show Optimal IDA" is available and checked, the
-                algorithm uses the Optimal IDA variant; otherwise, it uses the
-                standard IDA procedure. Optimal IDA is based on the O-set of Witte
-                et al. (2020), “On efficient adjustment in causal graphs,” JMLR
-                21(246):1–45.
-                
-                The three statistics at the bottom summarize performance using
-                only the rows currently visible in the table (i.e., after sorting
-                or filtering).  They are intended primarily for simulation studies
-                where the true effects are known.
+                The summary statistics at the bottom of the panel are computed using only the rows currently visible in the table (for example, after sorting or filtering). These statistics are intended primarily for simulation studies and benchmarking, rather than for substantive data analysis.
                 """);
+        ;
         return textArea;
     }
 
@@ -560,24 +564,24 @@ class IdaTableModel extends AbstractTableModel {
      */
     IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, SemIm trueSemIm) {
         boolean hasTrue = trueSemIm != null;
-        data = new Object[pairs.size()][hasTrue ? 6 : 3];
+        data = new Object[pairs.size()][hasTrue ? 6 : 4];
 
         for (int i = 0; i < pairs.size(); i++) {
             OrderedPair<Node> pair = pairs.get(i);
             String edge = pair.getFirst().getName() + " ~~> " + pair.getSecond().getName();
             double minTotalEffect = estModel.getMinTotalEffect(pair.getFirst(), pair.getSecond());
             double maxTotalEffect = estModel.getMaxTotalEffect(pair.getFirst(), pair.getSecond());
+            double minAbsTotalEffect = estModel.getIdaMinEffect(pair.getFirst(), pair.getSecond());
 
             data[i][0] = edge;
             data[i][1] = minTotalEffect;
             data[i][2] = maxTotalEffect;
+            data[i][3] = minAbsTotalEffect;
 
             if (hasTrue) {
-                double minAbsTotalEffect = estModel.getIdaMinEffect(pair.getFirst(), pair.getSecond());
                 double trueTotalEffect = estModel.getTrueTotalEffect(pair);
                 double squaredDistance = estModel.getSquaredDistance(pair);
 
-                data[i][3] = minAbsTotalEffect;
                 data[i][4] = trueTotalEffect;
                 data[i][5] = squaredDistance;
             }
@@ -591,7 +595,7 @@ class IdaTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return data.length == 0 ? 3 : data[0].length;
+        return data.length == 0 ? 4 : data[0].length;
     }
 
     @Override

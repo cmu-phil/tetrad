@@ -3,14 +3,15 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel;
 import edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel.ResultRow;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.*;
@@ -65,9 +66,9 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
     private final ResultTableModel tableModel;
 
     /**
-     * Constructs an editor for managing and displaying total effects adjustments
-     * within the adjustment model. The editor initializes user interface components
-     * and sets up event listeners to allow interaction with adjustment data.
+     * Constructs an editor for managing and displaying total effects adjustments within the adjustment model. The
+     * editor initializes user interface components and sets up event listeners to allow interaction with adjustment
+     * data.
      *
      * @param model the adjustment total effects model to be edited; must not be null
      */
@@ -80,6 +81,35 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         this.resultTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.resultTable.setAutoCreateRowSorter(true); // enable column-header sorting
 
+        DefaultTableCellRenderer effectRenderer = new DefaultTableCellRenderer() {
+            {
+                setHorizontalAlignment(SwingConstants.RIGHT);
+            }
+
+            @Override
+            protected void setValue(Object value) {
+                if (value == null) {
+                    setText("*");
+                    return;
+                }
+                if (value instanceof Number n) {
+                    double d = n.doubleValue();
+                    if (Double.isNaN(d)) {
+                        setText("*");
+                        return;
+                    }
+                    // Optional formatting:
+                    // setText(String.format("%.3f", d));
+                    setText(NumberFormatUtil.getInstance().getNumberFormat().format(d));
+                    return;
+                }
+                setText(String.valueOf(value));
+            }
+        };
+
+        resultTable.getColumnModel().getColumn(4).setCellRenderer(effectRenderer);
+        resultTable.getColumnModel().getColumn(5).setCellRenderer(effectRenderer);
+
         this.treatmentsField.setText(model.getTreatmentsText());
         this.outcomesField.setText(model.getOutcomesText());
 
@@ -87,7 +117,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
 //        this.outcomesField.addActionListener(e -> model.setOutcomesText(outcomesField.getText()));
 
         this.treatmentsField.addFocusListener(
-                new  FocusAdapter() {
+                new FocusAdapter() {
                     @Override
                     public void focusLost(FocusEvent e) {
                         model.setTreatmentsText(treatmentsField.getText());
@@ -96,7 +126,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         );
 
         this.outcomesField.addFocusListener(
-                new  FocusAdapter() {
+                new FocusAdapter() {
                     @Override
                     public void focusLost(FocusEvent e) {
                         model.setOutcomesText(outcomesField.getText());
@@ -111,6 +141,44 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
     // ---------------------------------------------------------------------
     // UI construction
     // ---------------------------------------------------------------------
+
+    // Convert a shell-style wildcard pattern (*, ?) into a proper regex.
+    private static String wildcardToRegex(String pattern) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("^");
+        for (int i = 0; i < pattern.length(); i++) {
+            char c = pattern.charAt(i);
+            switch (c) {
+                case '*':
+                    sb.append(".*");
+                    break;
+                case '?':
+                    sb.append(".");
+                    break;
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case '.':
+                case '[':
+                case ']':
+                case '{':
+                case '}':
+                case '(':
+                case ')':
+                case '+':
+                case '-':
+                case '^':
+                case '$':
+                case '|':
+                    sb.append("\\").append(c);
+                    break;
+                default:
+                    sb.append(c);
+            }
+        }
+        sb.append("$");
+        return sb.toString();
+    }
 
     private void initUI() {
         setLayout(new BorderLayout(5, 5));
@@ -155,15 +223,15 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    // ---------------------------------------------------------------------
+    // Actions
+    // ---------------------------------------------------------------------
+
     private void initListeners() {
         runButton.addActionListener(this::onRun);
         paramsButton.addActionListener(this::onEditParams);
         viewRegressionButton.addActionListener(this::onViewRegression);
     }
-
-    // ---------------------------------------------------------------------
-    // Actions
-    // ---------------------------------------------------------------------
 
     private void onRun(ActionEvent e) {
         try {
@@ -227,21 +295,9 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         }
     }
 
-//    private void onViewRegression(ActionEvent e) {
-//        int rowIndex = resultTable.getSelectedRow();
-//        if (rowIndex < 0) {
-//            JOptionPane.showMessageDialog(this,
-//                    "Please select a row first.",
-//                    "No selection",
-//                    JOptionPane.INFORMATION_MESSAGE);
-//            return;
-//        }
-//
-//        // Account for sorting: convert view index to model index.
-//        int modelIndex = resultTable.convertRowIndexToModel(rowIndex);
-//        ResultRow row = model.getResultRow(modelIndex);
-//        showRegressionDialog(row);
-//    }
+    // ---------------------------------------------------------------------
+    // Sync UI <-> model
+    // ---------------------------------------------------------------------
 
     private void onViewRegression(ActionEvent e) {
         int[] selected = resultTable.getSelectedRows();
@@ -276,7 +332,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
             return;
         }
 
-        if (row.notAmenable || row.regressionResult == null) {
+        if (!row.amenable || row.regressionResult == null) {
             JOptionPane.showMessageDialog(this,
                     "No regression is available for this row because the pair is not amenable.",
                     "Not amenable",
@@ -286,10 +342,6 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
 
         showRegressionDialog(row);
     }
-
-    // ---------------------------------------------------------------------
-    // Sync UI <-> model
-    // ---------------------------------------------------------------------
 
     private void updateModelFromUI() {
         Set<Node> X = parseNodeList(treatmentsField.getText().trim());
@@ -357,35 +409,6 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
             }
         }
         return nodes;
-    }
-
-    // Convert a shell-style wildcard pattern (*, ?) into a proper regex.
-    private static String wildcardToRegex(String pattern) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("^");
-        for (int i = 0; i < pattern.length(); i++) {
-            char c = pattern.charAt(i);
-            switch (c) {
-                case '*':
-                    sb.append(".*");
-                    break;
-                case '?':
-                    sb.append(".");
-                    break;
-                case '\\':
-                    sb.append("\\\\");
-                    break;
-                case '.': case '[': case ']': case '{': case '}':
-                case '(': case ')': case '+': case '-':
-                case '^': case '$': case '|':
-                    sb.append("\\").append(c);
-                    break;
-                default:
-                    sb.append(c);
-            }
-        }
-        sb.append("$");
-        return sb.toString();
     }
 
     // ---------------------------------------------------------------------
@@ -486,12 +509,11 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
     // ---------------------------------------------------------------------
 
     private static final class ResultTableModel extends AbstractTableModel {
-        private final AdjustmentTotalEffectsModel model;
-
         // NOTE: changed last columns: one for total effect, one for |total effect|
         private static final String[] COLS = {
                 "#", "X", "Y", "Adjustment set Z", "Total effect", "Abs total effect"
         };
+        private final AdjustmentTotalEffectsModel model;
 
         ResultTableModel(AdjustmentTotalEffectsModel model) {
             this.model = model;
@@ -528,15 +550,8 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
             if (rowIndex < 0 || rowIndex >= rows.size()) return null;
             ResultRow r = rows.get(rowIndex);
 
-            // Primary beta = effect for the first X in the row (sensible in PAIRWISE mode;
-            // in JOINT mode it is still well-defined but represents the "first" X).
-//            double primaryBeta = Double.NaN;
-//            if (r.betas != null && r.betas.length > 0) {
-//                primaryBeta = r.betas[0];
-//            }
-
             double primaryBeta = Double.NaN;
-            if (!r.notAmenable && r.betas != null && r.betas.length > 0) {
+            if (r.amenable && r.betas != null && r.betas.length > 0) {
                 primaryBeta = r.betas[0];
             }
 
@@ -546,10 +561,10 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
                 case 2 -> r.formatYSet();
                 case 3 -> r.formatZSet();
                 case 4 ->
-                    // Total effect (numeric, no variable name).
+                        // Total effect (numeric, no variable name).
                         primaryBeta;
                 case 5 ->
-                    // Absolute total effect.
+                        // Absolute total effect.
                         Math.abs(primaryBeta);
                 default -> null;
             };

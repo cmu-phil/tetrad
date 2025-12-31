@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.search.GacTotalEffectElibility;
 import edu.cmu.tetrad.search.RecursiveAdjustment;
 import edu.cmu.tetrad.search.RecursiveAdjustmentMultiple;
 import edu.cmu.tetrad.util.Parameters;
@@ -344,6 +345,21 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         return results.get(rowIndex);
     }
 
+    private int normalizedMaxPathLength() {
+        // In your model: <0 means "unbounded". GacTotalEffectElibility requires >= 1.
+        // If "unbounded" is intended, you need a policy here. Two reasonable options:
+        //   (A) Use graph.getNumNodes() as an effective upper bound.
+        //   (B) Use Integer.MAX_VALUE if graph.paths() handles it efficiently (often it won’t).
+        //
+        // I recommend (A) for safety.
+        if (maxPathLength >= 1) return maxPathLength;
+        return Math.max(1, graph.getNumNodes()); // effective bound
+    }
+
+    private GacTotalEffectElibility gac() {
+        return new GacTotalEffectElibility(graph, graphType, normalizedMaxPathLength());
+    }
+
     /**
      * Recomputes adjustment sets and total effects for the current X, Y, mode, and parameters.
      *
@@ -367,118 +383,188 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
      *   </li>
      * </ul>
      */
-    // inside AdjustmentTotalEffectsModel
     public void recompute() {
         results.clear();
+
+        final GacTotalEffectElibility gac = gac();
 
         if (effectMode == EffectMode.PAIRWISE) {
             for (Node x : X) {
                 for (Node y : Y) {
                     if (x.equals(y)) continue;
 
-                    // If discrete regressions are NOT allowed and x or y is discrete, show "(Discrete)" immediately.
-                    if (!doDiscreteRegressions && involvesDiscrete(Collections.singleton(x), y, Collections.emptySet())) {
+                    // (UI policy) discrete short-circuit for X/Y
+                    boolean discrete0 = !doDiscreteRegressions
+                                        && involvesDiscrete(Collections.singleton(x), y, Collections.emptySet());
+
+                    // (lib policy) eligibility gating for amenability + PD-paths
+                    GacTotalEffectElibility.Eligibility elig = gac.checkPairwise(x, y);
+
+                    if (discrete0) {
                         results.add(new ResultRow(
                                 Collections.singleton(x),
                                 Collections.singleton(y),
                                 Collections.emptySet(),
-                                false,   // notAmenable
-                                true,    // discreteRegression == "skip due to discrete"
+                                elig.amenable(),  // keep old contract: used only for formatting
+                                true,
                                 null,
                                 null
                         ));
                         continue;
                     }
 
-                    // Compute adjustment sets. Empty list => not amenable (by your current RA contract).
+                    if (elig.status() == GacTotalEffectElibility.Status.NOT_AMENABLE
+                        || elig.status() == GacTotalEffectElibility.Status.INVALID_INPUT) {
+                        results.add(new ResultRow(
+                                Collections.singleton(x),
+                                Collections.singleton(y),
+                                Collections.emptySet(),
+                                false,
+                                false,
+                                null,
+                                null
+                        ));
+                        continue;
+                    }
+
+                    if (elig.status() == GacTotalEffectElibility.Status.NO_PD_PATHS) {
+                        // Force 0 effect (do not compute Z sets; do not regress)
+                        results.add(new ResultRow(
+                                Collections.singleton(x),
+                                Collections.singleton(y),
+                                null,             // your UI prints "-" for null Z
+                                true,
+                                false,
+                                new double[]{0.0},
+                                null
+                        ));
+                        continue;
+                    }
+
+                    // Only now compute adjustment sets (expensive)
                     List<Set<Node>> zSets = computeSinglePairAdjustmentSets(x, y);
 
+                    // If your RA contract is "empty => not amenable", keep that display behavior,
+                    // but note: eligibility already said amenable. This empty list is now
+                    // "no sets found under RA constraints", which is different.
                     if (zSets.isEmpty()) {
                         results.add(new ResultRow(
                                 Collections.singleton(x),
                                 Collections.singleton(y),
                                 Collections.emptySet(),
-                                true,    // notAmenable
-                                false,   // not discrete
+                                false,  // will format as "(Not amenable)" under current UI meaning
+                                false,
                                 null,
                                 null
                         ));
                         continue;
                     }
 
-                    // One row per adjustment set
                     for (Set<Node> z : zSets) {
                         LinkedHashSet<Node> zClean = new LinkedHashSet<>(z);
-                        zClean.remove(x); // just in case
+                        zClean.remove(x);
 
-                        // If discrete regressions are NOT allowed and Z contains discrete vars, show "(Discrete)" row.
-                        if (!doDiscreteRegressions && involvesDiscrete(Collections.singleton(x), y, zClean)) {
+                        boolean discrete = !doDiscreteRegressions
+                                           && involvesDiscrete(Collections.singleton(x), y, zClean);
+
+                        if (discrete) {
                             results.add(new ResultRow(
                                     Collections.singleton(x),
                                     Collections.singleton(y),
                                     zClean,
-                                    false,   // notAmenable
-                                    true,    // discrete -> skip
+                                    true,
+                                    true,
                                     null,
                                     null
                             ));
                             continue;
                         }
 
-                        // Otherwise run regression
-                        ResultRow rr = runRegressionFor(Collections.singleton(x), y, zClean);
-                        results.add(rr);
+                        results.add(runRegressionFor(Collections.singleton(x), y, zClean));
                     }
                 }
             }
             return;
-        } else {
-            // JOINT mode: treat X as a set, but compute adjustment sets separately for each outcome y.
-            for (Node y : Y) {
+        }
 
-                // (1) Compute adjustment sets for this specific outcome.
-                List<Set<Node>> zSetsForY = computeJointAdjustmentSets(X, Collections.singleton(y));
+        //
+        // 4) Replace the JOINT block similarly
+        //
+        // Recommended policy:
+        //   - Gate each outcome y by gac.checkJoint(X, y).
+        //   - If NO_PD_PATHS => emit a forced-zero row for that y (one row).
+        //   - If NOT_AMENABLE/INVALID => emit "(Not amenable)" placeholder for that y.
+        //   - Else compute joint adjustment sets for that y and proceed.
+        //
+        for (Node y : Y) {
+            GacTotalEffectElibility.Eligibility elig = gac.checkJoint(X, y);
 
-                // (2) If none, emit a placeholder row so the user sees "(Not amenable)" for this y.
-                if (zSetsForY.isEmpty()) {
+            if (elig.status() == GacTotalEffectElibility.Status.NOT_AMENABLE
+                || elig.status() == GacTotalEffectElibility.Status.INVALID_INPUT) {
+                results.add(new ResultRow(
+                        new LinkedHashSet<>(X),
+                        new LinkedHashSet<>(Collections.singleton(y)),
+                        Collections.emptySet(),
+                        false,
+                        false,
+                        null,
+                        null
+                ));
+                continue;
+            }
+
+            if (elig.status() == GacTotalEffectElibility.Status.NO_PD_PATHS) {
+                results.add(new ResultRow(
+                        new LinkedHashSet<>(X),
+                        new LinkedHashSet<>(Collections.singleton(y)),
+                        null,
+                        true,
+                        false,
+                        new double[X.size()],   // force 0 for each treatment
+                        null
+                ));
+                continue;
+            }
+
+            // Eligibility OK => now compute joint adjustment sets for this y
+            List<Set<Node>> zSetsForY = computeJointAdjustmentSets(X, Collections.singleton(y));
+
+            if (zSetsForY.isEmpty()) {
+                // This is now "no sets found under RA constraints" rather than global non-amenability.
+                results.add(new ResultRow(
+                        new LinkedHashSet<>(X),
+                        new LinkedHashSet<>(Collections.singleton(y)),
+                        Collections.emptySet(),
+                        false,
+                        false,
+                        null,
+                        null
+                ));
+                continue;
+            }
+
+            for (Set<Node> Z : zSetsForY) {
+                LinkedHashSet<Node> zClean = new LinkedHashSet<>(Z);
+                zClean.removeAll(X);
+
+                if (!doDiscreteRegressions && involvesDiscrete(X, y, zClean)) {
                     results.add(new ResultRow(
                             new LinkedHashSet<>(X),
                             new LinkedHashSet<>(Collections.singleton(y)),
-                            Collections.emptySet(),
-                            true,   // notAmenable
-                            false,  // discreteRegression / skipDueToDiscrete
+                            zClean,
+                            true,
+                            true,
                             null,
                             null
                     ));
                     continue;
                 }
 
-                // (3) Otherwise, emit one row per Z for this y.
-                for (Set<Node> Z : zSetsForY) {
-                    LinkedHashSet<Node> zClean = new LinkedHashSet<>(Z);
-                    zClean.removeAll(X); // defensive, avoid duplication
-
-                    // If discrete regressions are NOT allowed and any variable in X ∪ {y} ∪ Z is discrete,
-                    // emit a "(Discrete)" row and do NOT run regression.
-                    if (!doDiscreteRegressions && involvesDiscrete(X, y, zClean)) {
-                        results.add(new ResultRow(
-                                new LinkedHashSet<>(X),
-                                new LinkedHashSet<>(Collections.singleton(y)),
-                                zClean,
-                                false,  // notAmenable
-                                true,   // discreteRegression == skipDueToDiscrete
-                                null,
-                                null
-                        ));
-                        continue;
-                    }
-
-                    // Otherwise run regression and add the computed row.
-                    results.add(runRegressionFor(X, y, zClean));
-                }
+                results.add(runRegressionFor(X, y, zClean));
             }
         }
     }
+
 
     private boolean involvesDiscrete(Collection<Node> Xset, Node y, Set<Node> Z) {
         for (Node x : Xset) {
@@ -491,44 +577,6 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         }
         return false;
     }
-
-    //    public void recompute() {
-//        results.clear();
-//
-//        if (X.isEmpty() || Y.isEmpty()) {
-//            return;
-//        }
-//
-//        if (effectMode == EffectMode.JOINT) {
-//            // Joint mode: use X, Y as sets with RAMultiple (or RA for 1×1).
-//            List<Set<Node>> adjustmentSets = computeJointAdjustmentSets(X, Y);
-//
-//            for (Set<Node> Z : adjustmentSets) {
-//                for (Node y : Y) {
-//                    ResultRow row = runRegressionFor(X, y, Z);
-//                    if (row != null) {
-//                        results.add(row);
-//                    }
-//                }
-//            }
-//        } else {
-//            // Pairwise mode: all combinations of X×Y via single-pair RA.
-//            for (Node x : X) {
-//                for (Node y : Y) {
-//                    if (x == y) continue;
-//
-//                    List<Set<Node>> adjustmentSets = computeSinglePairAdjustmentSets(x, y);
-//                    for (Set<Node> Z : adjustmentSets) {
-//                        ResultRow row = runRegressionFor(
-//                                Collections.singleton(x), y, Z);
-//                        if (row != null) {
-//                            results.add(row);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     // ---------------------------------------------------------------------
     // Core computation
@@ -546,23 +594,21 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         ra.setColliderPolicy(RecursiveAdjustment.ColliderPolicy.NONCOLLIDER_FIRST);
         ra.setNoAmenablePolicy(RecursiveAdjustment.NoAmenablePolicy.SEARCH);
 
-        boolean graphAmenable =
-                graph.paths().isGraphAmenable(x, y, graphType, maxPathLength, Set.of());
+        // Optional defensive check:
+        // if (!gac().checkPairwise(x, y).shouldEstimate()) return Collections.emptyList();
 
-        if (!graphAmenable) {
-            return Collections.emptyList();
-        }
-
-        return ra.adjustmentSetsRB(
+        return ra.adjustmentSets(
                 x, y,
                 graphType,
                 maxNumSets,
                 maxRadius,
                 nearWhichEndpoint,
                 maxPathLength,
+                RecursiveAdjustment.ColliderPolicy.OFF,
                 avoidAmenable,
                 notFollowed,
-                containing
+                containing,
+                Set.of()
         );
     }
 
@@ -640,8 +686,8 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
                 Xlinked,
                 new LinkedHashSet<>(Collections.singleton(y)),
                 Zclean,
-                false,   // notAmenable
-                false,   // discreteRegression == skipDueToDiscrete
+                true,
+                false, // discreteRegression == skipDueToDiscrete
                 betas,
                 result
         );
@@ -734,9 +780,9 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         public final Set<Node> Z;
 
         /**
-         * True iff no adjustment sets exist (RA returned empty list).
+         * True iff an adjustment set exists (RA returned a nonempty list).
          */
-        public final boolean notAmenable;
+        public final boolean amenable;
 
         /**
          * True iff the regression involves a discrete variable
@@ -756,21 +802,22 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
         public ResultRow(Set<Node> X,
                          Set<Node> Y,
                          Set<Node> Z,
-                         boolean notAmenable,
+                         boolean amenable,
                          boolean discreteRegression,
                          double[] betas,
                          RegressionResult regressionResult) {
-            this.X = (X == null) ? Collections.emptySet() : new LinkedHashSet<>(X);
-            this.Y = (Y == null) ? Collections.emptySet() : new LinkedHashSet<>(Y);
-            this.Z = (Z == null) ? Collections.emptySet() : new LinkedHashSet<>(Z);
-            this.notAmenable = notAmenable;
+            this.X = (X == null) ? null : new LinkedHashSet<>(X);
+            this.Y = (Y == null) ? null : new LinkedHashSet<>(Y);
+            this.Z = (Z == null) ? null : new LinkedHashSet<>(Z);
+            this.amenable = amenable;
             this.discreteRegression = discreteRegression;
             this.betas = betas;
             this.regressionResult = regressionResult;
         }
 
         private static String formatSet(Set<Node> s) {
-            if (s == null || s.isEmpty()) return "∅";
+            if (s == null) throw new IllegalArgumentException("Set cannot be null");
+            if (s.isEmpty()) return "∅";
             return s.stream().map(Node::getName).sorted().collect(Collectors.joining(", "));
         }
 
@@ -784,8 +831,9 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
 
         public String formatZSet() {
             if (discreteRegression) return "(Discrete)";
-            else if (notAmenable) return "(Not amenable)";
+            else if (!amenable) return "(Not amenable)";
                 // Distinguish “amenable with empty adjustment set”
+            else if (Z == null) return "-";
             else if (Z.isEmpty()) return "∅";
             else return formatSet(Z);
         }
