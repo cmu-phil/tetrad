@@ -32,11 +32,11 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
     private String name = "Hybrid CG PM";
     private String notes = "";
 
-    public HybridCgPmWrapper(GraphWrapper graph, Parameters parameters) {
+    public HybridCgPmWrapper(GraphSource graph, Parameters parameters) {
         this(graph.getGraph(), null, parameters);
     }
 
-    public HybridCgPmWrapper(GraphWrapper graph, DataWrapper data, Parameters parameters) {
+    public HybridCgPmWrapper(GraphSource graph, DataWrapper data, Parameters parameters) {
         this(graph.getGraph(), (DataSet) data.getSelectedDataModel(), parameters);
     }
 
