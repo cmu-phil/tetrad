@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
@@ -179,15 +179,21 @@ public class IdaEditor extends JPanel {
         // Top control panel: X/Y fields, Run button, and (if available) Optimal IDA checkbox.
         Box controlsBox = Box.createVerticalBox();
 
-        Box xyRow = Box.createHorizontalBox();
-        xyRow.add(new JLabel("Treatments (X):"));
-        xyRow.add(Box.createHorizontalStrut(5));
-        xyRow.add(treatmentsField);
-        xyRow.add(Box.createHorizontalStrut(15));
-        xyRow.add(new JLabel("Outcomes (Y):"));
-        xyRow.add(Box.createHorizontalStrut(5));
-        xyRow.add(outcomesField);
-        controlsBox.add(xyRow);
+        Box xys = Box.createVerticalBox();
+
+        Box xyRow1 = Box.createHorizontalBox();
+        xyRow1.add(new JLabel("Treatments (X):"));
+        xyRow1.add(Box.createHorizontalGlue());
+        xyRow1.add(treatmentsField);
+
+        Box xyRow2 = Box.createHorizontalBox();
+        xyRow2.add(new JLabel("Outcomes (Y):"));
+        xyRow2.add(Box.createHorizontalStrut(5));
+        xyRow2.add(outcomesField);
+
+        xys.add(xyRow1);
+        xys.add(xyRow2);
+        controlsBox.add(xys);
 
         // After fields are constructed
         lockTextFieldHeight(treatmentsField);
@@ -329,47 +335,24 @@ public class IdaEditor extends JPanel {
                 The original reference for the IDA algorithm is:
                 
                 Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann (2009).
-                "Estimating high-dimensional intervention effects from observational data."
+                “Estimating high-dimensional intervention effects from observational data.”
                 The Annals of Statistics 37(6A): 3133–3164.
                 
-                This panel implements IDA for a given estimated graph and data set.
-                Each row of the table corresponds to an ordered pair (X, Y), where:
+                This panel implements IDA-style total effect estimation for a given estimated graph and data set. Each row of the table corresponds to an ordered pair (X, Y), where X is a treatment (intervention) variable and Y is an outcome variable.
                 
-                  • X is a treatment (intervention) variable, and
-                  • Y is an outcome variable.
+                For each (X, Y) pair, the table reports the range of estimated total effects of X on Y obtained by linear regression over all valid adjustment sets implied by the graph. Specifically, the minimum and maximum regression coefficient for X across these adjustment sets are shown.
                 
-                The table reports, for each (X, Y):
+                If the graph implies that there is no potentially directed path from X to Y, then the total effect is necessarily zero, and the table reflects this without running any regressions. If the graph is not amenable for estimating the effect of X on Y, the corresponding row is marked as “Not amenable.”
                 
-                  • the minimum and maximum estimated causal effect of X on Y
-                    over all valid adjustment sets implied by the graph, and
-                  • if a true SEM is available, the corresponding true total effect
-                    and a squared-distance diagnostic.
+                Treatments (X) and outcomes (Y) are configured at the top of the Table tab. You may enter a comma- or space-separated list of variable names (for example, X1, X2, X3), or use wildcard patterns with “*” and “?” (for example, X* for all variables whose names start with “X”, or ?bar for any single-character prefix followed by “bar”).
                 
-                Treatments (X) and outcomes (Y) are configured at the top of the
-                Table tab.  You may enter:
+                The IDA table is restricted to ordered pairs (X, Y) with X in the treatment set and Y in the outcome set. If either set is empty, no table is produced.
                 
-                  • a comma/space separated list of variable names, e.g.
-                        X1, X2, X3
-                  • or wildcard patterns using "*" and "?", e.g.
-                        X*      (all variables whose names start with "X")
-                        ?bar    (any one-letter prefix followed by "bar")
+                Press “Run” after changing the X or Y fields to recompute the results. If “Show Optimal IDA” is available and checked, the panel uses the Optimal IDA variant based on the O-set of Witte et al. (2020), “On efficient adjustment in causal graphs,” JMLR 21(246): 1–45; otherwise, it uses the standard IDA procedure.
                 
-                The IDA table is restricted to all ordered pairs (X, Y) with
-                X in the treatment set and Y in the outcome set.  If either set
-                is empty, no table is produced.
-                
-                Press "Run" after changing the X or Y fields to recompute the IDA
-                results.  If "Show Optimal IDA" is available and checked, the
-                algorithm uses the Optimal IDA variant; otherwise, it uses the
-                standard IDA procedure. Optimal IDA is based on the O-set of Witte
-                et al. (2020), “On efficient adjustment in causal graphs,” JMLR
-                21(246):1–45.
-                
-                The three statistics at the bottom summarize performance using
-                only the rows currently visible in the table (i.e., after sorting
-                or filtering).  They are intended primarily for simulation studies
-                where the true effects are known.
+                The summary statistics at the bottom of the panel are computed using only the rows currently visible in the table (for example, after sorting or filtering). These statistics are intended primarily for simulation studies and benchmarking, rather than for substantive data analysis.
                 """);
+        ;
         return textArea;
     }
 
@@ -580,7 +563,7 @@ class IdaTableModel extends AbstractTableModel {
                 double trueTotalEffect = estModel.getTrueTotalEffect(pair);
                 double squaredDistance = estModel.getSquaredDistance(pair);
 
-                 data[i][4] = trueTotalEffect;
+                data[i][4] = trueTotalEffect;
                 data[i][5] = squaredDistance;
             }
         }
