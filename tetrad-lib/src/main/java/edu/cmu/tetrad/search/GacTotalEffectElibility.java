@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.*;
 
 /**
- * Library-side helper for "Adjustment & Total Effects" style workflows.
+ * Library-side helper for "Adjustment &amp; Total Effects" style workflows.
  *
  * <p>This class encapsulates the correctness/eligibility logic that should not live in the GUI:
  * <ul>
@@ -65,14 +65,32 @@ public final class GacTotalEffectElibility {
             this.potentiallyDirectedPaths = pdPaths == null ? Collections.emptySet() : Collections.unmodifiableSet(pdPaths);
         }
 
+        /**
+         * Retrieves the high-level eligibility status for total-effect computation.
+         *
+         * @return the {@code Status} associated with the eligibility result.
+         */
         public Status status() {
             return status;
         }
 
+        /**
+         * Retrieves the reason associated with the eligibility result.
+         *
+         * @return the explanation or justification for the eligibility status,
+         *         or null if no specific reason is provided.
+         */
         public String reason() {
             return reason;
         }
 
+        /**
+         * Determines whether the current eligibility instance is classified as amenable.
+         * This convenience method provides a high-level boolean indication for UI
+         * or decision-making contexts, based on the internal amenable flag.
+         *
+         * @return true if the instance is considered amenable, false otherwise.
+         */
         public boolean amenable() {
             return amenable;
         }
@@ -80,6 +98,8 @@ public final class GacTotalEffectElibility {
         /**
          * Potentially directed paths from X to Y, as returned by {@code graph.paths().potentiallyDirectedPaths(...)}.
          * For {@link Status#NO_PD_PATHS} this will be empty.
+         *
+         * @return the set of potentially directed paths from X to Y, or an empty set if no such paths exist.
          */
         public Set<List<Node>> potentiallyDirectedPaths() {
             return potentiallyDirectedPaths;
@@ -87,6 +107,8 @@ public final class GacTotalEffectElibility {
 
         /**
          * Convenience: whether the caller should proceed to compute adjustment sets and estimate.
+         *
+         * @return true if the caller should proceed to compute adjustment sets and estimate, false otherwise.
          */
         public boolean shouldEstimate() {
             return status == Status.OK;
@@ -94,6 +116,8 @@ public final class GacTotalEffectElibility {
 
         /**
          * Convenience: whether the caller should force a numeric 0 effect (rather than estimating).
+         *
+         * @return true if the caller should force a numeric 0 effect, false otherwise.
          */
         public boolean shouldForceZeroEffect() {
             return status == Status.NO_PD_PATHS;
@@ -117,8 +141,14 @@ public final class GacTotalEffectElibility {
     @FunctionalInterface
     public interface AdjustmentSetProvider {
         /**
-         * Returns adjustment sets for estimating the total effect of x on y.
-         * The provider may return an empty list to indicate "no sets" (e.g., not amenable under its own contract).
+         * Computes adjustment sets based on the provided graph, pair of nodes, graph type, and maximum path length.
+         *
+         * @param graph the graph on which the computation is to be performed
+         * @param x the source node for computing adjustment sets
+         * @param y the target node for computing adjustment sets
+         * @param graphType the type of graph used, such as "undirected", "directed", etc.
+         * @param maxPathLength the maximum allowable length of paths to consider in the computation
+         * @return a list of sets, where each set represents an adjustment set of nodes
          */
         List<Set<Node>> compute(Graph graph, Node x, Node y, String graphType, int maxPathLength);
     }
@@ -128,6 +158,8 @@ public final class GacTotalEffectElibility {
     private final int maxPathLength;
 
     /**
+     * Constructs a new GacTotalEffectElibility instance with the specified graph, graph type, and maximum path length.
+     *
      * @param graph the causal graph (PAG/CPDAG/DAG/MAG, etc.)
      * @param graphType used for amenability and potentially-directed path logic
      * @param maxPathLength maximum path length to consider (must be >= 1)
@@ -141,14 +173,29 @@ public final class GacTotalEffectElibility {
         this.maxPathLength = maxPathLength;
     }
 
+    /**
+     * Retrieves the causal graph associated with this instance.
+     *
+     * @return the causal graph (e.g., PAG, CPDAG, DAG, MAG) managed by this instance
+     */
     public Graph getGraph() {
         return graph;
     }
 
+    /**
+     * Retrieves the graph type associated with this instance.
+     *
+     * @return the graph type, which is used for amenability checks and potentially-directed path logic
+     */
     public String getGraphType() {
         return graphType;
     }
 
+    /**
+     * Retrieves the maximum allowable length of paths to consider in the computation.
+     *
+     * @return the maximum path length
+     */
     public int getMaxPathLength() {
         return maxPathLength;
     }
@@ -165,6 +212,10 @@ public final class GacTotalEffectElibility {
      *
      * <p>If there are no potentially directed paths from x to y, returns {@link Status#NO_PD_PATHS}
      * and callers should force total effect = 0 (and should not run regression).
+     *
+     * @param x the source node
+     * @param y the target node
+     * @return eligibility status and information
      */
     public Eligibility checkPairwise(Node x, Node y) {
         if (x == null || y == null) {
@@ -204,6 +255,10 @@ public final class GacTotalEffectElibility {
      * returns {@link Status#OK}.
      *
      * <p>If you want a different policy (e.g., require PD paths from every x), adjust the logic here.
+     *
+     * @param X the set of nodes (treatments)
+     * @param y the target node (outcome)
+     * @return eligibility status and information
      */
     public Eligibility checkJoint(Set<Node> X, Node y) {
         if (X == null || X.isEmpty() || y == null) {
@@ -261,6 +316,11 @@ public final class GacTotalEffectElibility {
     /**
      * Optional convenience: compute adjustment sets using a provided provider, but only if eligibility is OK.
      * This helps callers avoid duplicating "don’t compute Z sets when NO_PD_PATHS / NOT_AMENABLE".
+     *
+     * @param x the source node
+     * @param y the target node
+     * @param provider the provider for computing adjustment sets
+     * @return a list of sets of nodes representing adjustment sets, or an empty list if not eligible
      */
     public List<Set<Node>> computeAdjustmentSetsIfEligible(Node x, Node y, AdjustmentSetProvider provider) {
         Objects.requireNonNull(provider, "provider");
@@ -276,6 +336,11 @@ public final class GacTotalEffectElibility {
      *
      * <p>Note: most adjustment-set algorithms for joint effects are not just a loop over x in X.
      * So this method is intentionally not implemented here; it’s provided as a hook point.
+     *
+     * @param X the set of nodes
+     * @param y the target node
+     * @param provider the provider for computing adjustment sets
+     * @return a list of sets of nodes representing adjustment sets, or an empty list if not eligible
      */
     public List<Set<Node>> computeJointAdjustmentSetsIfEligible(Set<Node> X, Node y, JointAdjustmentSetProvider provider) {
         Objects.requireNonNull(provider, "provider");
@@ -291,6 +356,18 @@ public final class GacTotalEffectElibility {
      */
     @FunctionalInterface
     public interface JointAdjustmentSetProvider {
+
+        /**
+         * Computes a list of sets of nodes based on the provided graph, set of nodes, target node,
+         * graph type, and maximum path length.
+         *
+         * @param graph The graph on which the computation is performed.
+         * @param X A set of nodes that serve as input for the computation.
+         * @param y The target node for which the computation is performed.
+         * @param graphType The type of the graph (e.g., directed, undirected) that informs the computation logic.
+         * @param maxPathLength The maximum allowable path length for the computation process.
+         * @return A list of sets of nodes resulting from the computation based on the parameters provided.
+         */
         List<Set<Node>> compute(Graph graph, Set<Node> X, Node y, String graphType, int maxPathLength);
     }
 }
