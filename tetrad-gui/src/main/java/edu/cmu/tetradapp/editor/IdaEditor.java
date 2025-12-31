@@ -167,11 +167,11 @@ public class IdaEditor extends JPanel {
         // Show Optimal IDA checkbox – only relevant if the estimated graph is a legal PDAG.
         if (idaCheckEst.getGraph().paths().isLegalPdag()) {
             showOptimalIda.setSelected(idaCheckEst.isShowOptimalIda());
-            showOptimalIda.addActionListener(e -> {
-                idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
-                idaCheckEst.recompute();
-                recomputeTable();
-            });
+//            showOptimalIda.addActionListener(e -> {
+//                idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
+//                idaCheckEst.recompute();
+//                recomputeTable();
+//            });
         } else {
             showOptimalIda.setEnabled(false);
         }
@@ -227,6 +227,10 @@ public class IdaEditor extends JPanel {
         // Wire up "Run" button
         runButton.addActionListener(e -> {
             try {
+//                idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
+//                recomputeTable();
+                idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
+                idaCheckEst.recompute();
                 recomputeTable();
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(this,
