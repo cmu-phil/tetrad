@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -1054,7 +1054,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     mag = graph;
                 } else if (graph.paths().isLegalCpdag()) {
                     mag = GraphTransforms.dagFromCpdag(graph);
-                } else if  (graph.paths().isLegalMag()) {
+                } else if (graph.paths().isLegalMag()) {
                     mag = graph;
                 } else {
                     mag = GraphTransforms.zhangMagFromPag(graph);
@@ -1120,6 +1120,17 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                             case RECURSIVE_MSEP:
                                 try {
                                     z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
+
+//                                RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph);
+////                                        .setUseHenckelPruning(true).setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
+//                                List<Set<Node>> sets = recursiveAdjustment.adjustmentSetsRB(x, y, "PDAG", 1, -1,
+//                                        2, -1, false, Set.of(), Set.of());
+//
+//                                if (sets.isEmpty()) continue;
+//
+//                                z = sets.getFirst();
+
+
                                 } catch (InterruptedException e) {
                                     throw new RuntimeException(e);
                                 }
