@@ -1,5 +1,6 @@
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.*;
@@ -9,6 +10,7 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.GacTotalEffectElibility;
 import edu.cmu.tetrad.search.RecursiveAdjustment;
 import edu.cmu.tetrad.search.RecursiveAdjustmentMultiple;
+import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.session.SessionModel;
@@ -52,6 +54,10 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
     private final GraphSource graphSource;
     // Computed results
     private final List<ResultRow> results = new ArrayList<>();
+    /**
+     * The true SEM IM. May be null if no true SEM IM is available.
+     */
+    private final SemIm trueSemIm;
     private String name = "";
     // RA parameters (defaults are reasonable starting points)
     private String graphType = "PDAG";
@@ -72,14 +78,14 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
     /**
      * Constructs an instance of the AdjustmentTotalEffectsModel.
      *
-     * @param dataModel   the data wrapper containing the data model list
+     * @param dataWrapper   the data wrapper containing the data model list
      * @param graphSource the source of the graph used in the computations
      * @param parameters  the parameters required for the adjustment and total effects analysis
      */
-    public AdjustmentTotalEffectsModel(DataWrapper dataModel,
+    public AdjustmentTotalEffectsModel(DataWrapper dataWrapper,
                                        GraphSource graphSource,
                                        Parameters parameters) {
-        this.dataSet = (DataSet) Objects.requireNonNull(dataModel)
+        this.dataSet = (DataSet) Objects.requireNonNull(dataWrapper)
                 .getDataModelList().getFirst();
         this.graph = GraphUtils.replaceNodes(Objects.requireNonNull(graphSource).getGraph(), dataSet.getVariables());
         this.parameters = Objects.requireNonNull(parameters);
@@ -95,8 +101,24 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
 
         this.graphType = containsCircle ? "PAG" : "PDAG";
 
-        this.dataModel = dataModel;
+        this.dataModel = dataWrapper;
         this.graphSource = graphSource;
+
+        // If the data model is a simulation, get the true SEM IM.
+        if (dataWrapper instanceof Simulation simulation) {
+            if (simulation.getSimulation() == null) {
+                throw new IllegalArgumentException("The simulation was not initialized.");
+            }
+
+            if (!(simulation.getSimulation() instanceof SemSimulation)) {
+                throw new IllegalArgumentException("The simulation was not a SEM simulation.");
+            }
+
+            List<SemIm> ims = ((SemSimulation) (simulation.getSimulation())).getIms();
+            this.trueSemIm = ims.getFirst();
+        } else {
+            this.trueSemIm = null;
+        }
     }
 
     /**
@@ -752,6 +774,42 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
             throw new IllegalArgumentException("Outcomes text cannot be null");
         }
         this.outcomesText = outcomesText;
+    }
+
+    /**
+     * Checks if the trueSemIm instance is available.
+     *
+     * @return true if the trueSemIm object is not null, false otherwise.
+     */
+    public boolean isTrueSemImAvailable() {
+        return trueSemIm != null;
+    }
+
+    /**
+     * Calculates the true total effect between two nodes in the graph.
+     *
+     * @param x the first node in the pair
+     * @param y the second node in the pair
+     * @return the true total effect between the two nodes.
+     * @throws IllegalStateException if the true SEM IM is not available for this model
+     */
+//    public double getTrueTotalEffect(Node x, Node y) {
+//        if (trueSemIm == null) {
+//            throw new IllegalStateException("True SEM IM is not available for this model");
+//        }
+//
+//        return this.trueSemIm.getTotalEffect(x, y);
+//    }
+
+    public double getTrueTotalEffect(Node x, Node y) {
+        if (trueSemIm == null) throw new IllegalStateException("True SEM IM is not available for this model");
+
+        Graph g = trueSemIm.getSemPm().getGraph(); // or trueSemIm.getGraph() if available
+        Node sx = g.getNode(x.getName());
+        Node sy = g.getNode(y.getName());
+
+        if (sx == null || sy == null) return Double.NaN; // or throw
+        return trueSemIm.getTotalEffect(sx, sy);
     }
 
     public enum EffectMode {

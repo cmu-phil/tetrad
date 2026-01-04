@@ -406,7 +406,8 @@ public class MarkovCheckEditor extends JPanel {
         model.setVars(graph.getNodeNames());
 
         JButton params = new JButton("Params");
-        JButton sample = new JButton("Sample");
+//        JButton sample = new JButton("Sample");
+        JButton sample = new JButton("Run");
         JButton addSample = new JButton("Add Sample");
 
         if (model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable
@@ -900,8 +901,8 @@ public class MarkovCheckEditor extends JPanel {
                                                         .addComponent(params)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(resample)
-                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(addSample)
+//                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+//                                                        .addComponent(addSample)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(fractionSampleLabel)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -917,7 +918,7 @@ public class MarkovCheckEditor extends JPanel {
                                 .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addComponent(params)
                                 .addComponent(resample)
-                                .addComponent(addSample)
+//                                .addComponent(addSample)
                                 .addComponent(fractionSampleLabel)
                                 .addComponent(fraction, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)

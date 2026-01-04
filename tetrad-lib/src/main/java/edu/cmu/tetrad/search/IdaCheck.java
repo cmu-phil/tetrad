@@ -105,7 +105,7 @@ public class IdaCheck {
      *
      * @param graph     the PDAG.
      * @param dataSet   the data set.
-     * @param trueSemIm the true SEM IM.
+     * @param trueSemIm the true SEM IM. May be null; if null, no SEM-based checks will be performed.
      */
     public IdaCheck(Graph graph, DataSet dataSet, SemIm trueSemIm) {
 
