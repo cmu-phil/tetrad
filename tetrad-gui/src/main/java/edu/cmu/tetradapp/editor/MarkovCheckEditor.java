@@ -411,7 +411,7 @@ public class MarkovCheckEditor extends JPanel {
 
         if (model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable
             && model.getMarkovCheck().getIndependenceTest().getData() instanceof DataSet) {
-            this.fraction = new DoubleTextField(Preferences.userRoot().getDouble("FractionSample", 0.5), 4, new DecimalFormat("0.0###"));
+            this.fraction = new DoubleTextField(Preferences.userRoot().getDouble("FractionSample", 1.0), 4, new DecimalFormat("0.0###"));
             this.fraction.setEditable(true);
         } else {
             this.fraction = new DoubleTextField(1.0, 4, new DecimalFormat("0.0###"));
