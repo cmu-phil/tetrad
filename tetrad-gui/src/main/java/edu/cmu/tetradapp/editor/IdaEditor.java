@@ -119,6 +119,9 @@ public class IdaEditor extends JPanel {
      * The label for the squared difference between maximum total effect and true total effect.
      */
     private JLabel squaredDiffMaxTotalLabel;
+    /** Checkbox to optionally hide rows where minTE==0 and maxTE==0. */
+    private final JCheckBox hideZeroEffects =
+            new JCheckBox("Hide zero-effect pairs (min=max=0)");
 
     /**
      * Constructs a new IDA editor for the given IDA model.
@@ -143,6 +146,12 @@ public class IdaEditor extends JPanel {
         table.setDefaultRenderer(Double.class, numberRenderer);
         table.setAutoCreateRowSorter(true);
         table.setFillsViewportHeight(true);
+
+        hideZeroEffects.setSelected(idaModel.getHideZeroEffects());
+
+        hideZeroEffects.addActionListener(e -> {
+            idaModel.setHideZeroEffects(hideZeroEffects.isSelected());
+        });
 
         this.sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
@@ -222,9 +231,21 @@ public class IdaEditor extends JPanel {
         buttonRow.add(runButton);
         buttonRow.add(Box.createHorizontalStrut(15));
         buttonRow.add(showOptimalIda);
+        buttonRow.add(Box.createHorizontalStrut(15));
+        buttonRow.add(hideZeroEffects);
         buttonRow.add(Box.createHorizontalGlue());
         controlsBox.add(Box.createVerticalStrut(5));
         controlsBox.add(buttonRow);
+
+//        hideZeroEffects.addActionListener(e -> {
+//            // Only meaningful after the user has run once (i.e., has X/Y that parse).
+//            // If they haven't, recomputeTable() will throw the same message as Run.
+//            try {
+//                recomputeTable();
+//            } catch (Exception ignored) {
+//                // swallow; user can hit Run when ready
+//            }
+//        });
 
         // Stats box
         Box statsBox = Box.createVerticalBox();
@@ -391,10 +412,31 @@ public class IdaEditor extends JPanel {
 
         // Restrict allPairs to those matching X x Y.
         List<OrderedPair<Node>> newPairs = new ArrayList<>();
+        boolean filterZeros = hideZeroEffects.isSelected();
+
         for (OrderedPair<Node> pair : allPairs) {
             Node x = pair.getFirst();
             Node y = pair.getSecond();
+//            if (X.contains(x) && Y.contains(y)) {
+//
+//                if (idaModel.getIdaCheckEst().getMinTotalEffect(x, y) == 0.0
+//                        && idaModel.getIdaCheckEst().getMaxTotalEffect(x, y) == 0.0) {
+//                    continue;
+//                }
+//
+//                newPairs.add(pair);
+//            }
+
             if (X.contains(x) && Y.contains(y)) {
+
+                if (filterZeros) {
+                    double min = idaModel.getIdaCheckEst().getMinTotalEffect(x, y);
+                    double max = idaModel.getIdaCheckEst().getMaxTotalEffect(x, y);
+                    if (min == 0.0 && max == 0.0) {
+                        continue;
+                    }
+                }
+
                 newPairs.add(pair);
             }
         }
@@ -406,7 +448,11 @@ public class IdaEditor extends JPanel {
         this.currentPairs = newPairs;
 
         this.tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
+//        table.setModel(tableModel);
+
         table.setModel(tableModel);
+        this.sorter = new TableRowSorter<>(tableModel);
+        table.setRowSorter(sorter);
 
         this.sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
@@ -548,9 +594,8 @@ class IdaTableModel extends AbstractTableModel {
      * effect, where if the true total effect falls between the minimum and maximum total effect zero is reported.
      * If the true model is not given, the last two columns are not included.
      */
-    private final String[] columnNames = {"Pair", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};
-
-    /**
+//    private final String[] columnNames = {"Pair", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};
+    private final String[] columnNames = {"#", "Pair", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};  /**
      * The data for the table.
      */
     private final Object[][] data;
@@ -564,7 +609,8 @@ class IdaTableModel extends AbstractTableModel {
      */
     IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, SemIm trueSemIm) {
         boolean hasTrue = trueSemIm != null;
-        data = new Object[pairs.size()][hasTrue ? 6 : 4];
+//        data = new Object[pairs.size()][hasTrue ? 6 : 4];
+        data = new Object[pairs.size()][hasTrue ? 7 : 5];
 
         for (int i = 0; i < pairs.size(); i++) {
             OrderedPair<Node> pair = pairs.get(i);
@@ -573,17 +619,32 @@ class IdaTableModel extends AbstractTableModel {
             double maxTotalEffect = estModel.getMaxTotalEffect(pair.getFirst(), pair.getSecond());
             double minAbsTotalEffect = estModel.getIdaMinEffect(pair.getFirst(), pair.getSecond());
 
-            data[i][0] = edge;
-            data[i][1] = minTotalEffect;
-            data[i][2] = maxTotalEffect;
-            data[i][3] = minAbsTotalEffect;
+//            data[i][0] = edge;
+//            data[i][1] = minTotalEffect;
+//            data[i][2] = maxTotalEffect;
+//            data[i][3] = minAbsTotalEffect;
+//
+//            if (hasTrue) {
+//                double trueTotalEffect = estModel.getTrueTotalEffect(pair);
+//                double squaredDistance = estModel.getSquaredDistance(pair);
+//
+//                data[i][4] = trueTotalEffect;
+//                data[i][5] = squaredDistance;
+//            }
+
+            data[i][0] = i + 1;   // 1-based index
+
+            data[i][1] = edge;
+            data[i][2] = minTotalEffect;
+            data[i][3] = maxTotalEffect;
+            data[i][4] = minAbsTotalEffect;
 
             if (hasTrue) {
                 double trueTotalEffect = estModel.getTrueTotalEffect(pair);
                 double squaredDistance = estModel.getSquaredDistance(pair);
 
-                data[i][4] = trueTotalEffect;
-                data[i][5] = squaredDistance;
+                data[i][5] = trueTotalEffect;
+                data[i][6] = squaredDistance;
             }
         }
     }
@@ -603,9 +664,16 @@ class IdaTableModel extends AbstractTableModel {
         return columnNames[col];
     }
 
+//    @Override
+//    public Class<?> getColumnClass(int col) {
+//        if (col == 0) return String.class;
+//        return Double.class;
+//    }
+
     @Override
     public Class<?> getColumnClass(int col) {
-        if (col == 0) return String.class;
+        if (col == 0) return Integer.class;  // index
+        if (col == 1) return String.class;   // pair label
         return Double.class;
     }
 

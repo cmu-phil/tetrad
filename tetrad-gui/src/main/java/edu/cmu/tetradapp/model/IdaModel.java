@@ -86,6 +86,7 @@ public class IdaModel implements SessionModel {
     private String treatmentsText = "";
     private String outcomesText = "";
     private boolean optimalIdaSelected;
+    private boolean hideZeroEffects = true;
 
     /**
      * Constructs a new instance of the IdaModel class.
@@ -179,7 +180,7 @@ public class IdaModel implements SessionModel {
             return null;
         }
 
-        this.idaCheckTrue = new IdaCheck(estPdag, (DataSet) this.dataModel, trueSemIm);
+        this.idaCheckTrue = new IdaCheck(this.estPdag, (DataSet) this.dataModel, trueSemIm);
         return this.idaCheckTrue;
     }
 
@@ -270,6 +271,14 @@ public class IdaModel implements SessionModel {
 
     public void setOptimalIdaSelected(boolean optimalIdaSelected) {
         this.optimalIdaSelected = optimalIdaSelected;
+    }
+
+    public boolean getHideZeroEffects() {
+        return hideZeroEffects;
+    }
+
+    public void setHideZeroEffects(boolean hideZeroEffects) {
+        this.hideZeroEffects = hideZeroEffects;
     }
 }
 
