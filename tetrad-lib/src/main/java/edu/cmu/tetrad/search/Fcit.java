@@ -253,12 +253,28 @@ public final class Fcit implements IGraphSearch {
 
                 if (!sepsets.get(x, y).contains(node)) {
                     if (!pag.isDefCollider(x, node, y)) {
+                        Graph backup = new EdgeListGraph(pag);
+
                         pag.setEndpoint(x, node, Endpoint.ARROW);
                         pag.setEndpoint(y, node, Endpoint.ARROW);
 
-                        if (superVerbose) {
-                            TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
+                        if (!PagLegalityCheck.isLegalPagQuiet(pag, Set.of())) { // or selection set
+                            // rollback
+                            pag = backup; // if you have a helper like this
+                            // OR manually restore by clearing and re-adding edges from backup
+                            if (superVerbose) {
+                                TetradLogger.getInstance().log("Rejected collider orientation " +
+                                                               x + " *-> " + node + " <-* " + y + " because it breaks PAG legality.");
+                            }
                         }
+
+
+//                        pag.setEndpoint(x, node, Endpoint.ARROW);
+//                        pag.setEndpoint(y, node, Endpoint.ARROW);
+//
+//                        if (superVerbose) {
+//                            TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
+//                        }
                     }
                 }
             }
@@ -673,7 +689,11 @@ public final class Fcit implements IGraphSearch {
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
 
-        if (!this.pag.paths().isMaximal()) {
+        boolean ok =
+                this.pag.paths().isMaximal()
+                && PagLegalityCheck.isLegalPagQuiet(this.pag, Set.of());
+
+        if (!ok) {
 //        if (!PagLegalityCheck.isLegalPagQuiet(this.pag, Set.of())) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type

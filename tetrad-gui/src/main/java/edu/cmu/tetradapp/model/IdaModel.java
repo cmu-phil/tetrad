@@ -85,8 +85,8 @@ public class IdaModel implements SessionModel {
      * Note: This variable is marked as transient, meaning it will not be serialized.
      */
     private transient IdaCheck idaCheckTrue;
-    private String treatmentsText = "";
-    private String outcomesText = "";
+    private String treatmentsText = "*";
+    private String outcomesText = "*";
     private boolean optimalIdaSelected;
     private boolean hideZeroEffects = true;
 
