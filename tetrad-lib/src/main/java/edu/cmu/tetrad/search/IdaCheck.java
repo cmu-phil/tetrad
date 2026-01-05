@@ -99,19 +99,6 @@ public class IdaCheck {
     private HashMap<Node, Node> nodeMap;
 
     /**
-     * Indicates whether the optimal IDA results should be displayed (Witte et al. 2020). Typically used as a flag to
-     * determine if specific computations or results related to the optimal IDA should be shown in the context of
-     * analyzing total effects or related metrics between nodes.
-     */
-    private boolean showOptimalIda = false;
-
-    /**
-     * Tracks whether IDA has been configured for the current {@link #showOptimalIda} flag.
-     * We re-apply the IDA type when needed, and invalidate cached results when the flag changes.
-     */
-    private boolean idaTypeIsSynced = false;
-
-    /**
      * Cached copy of the graph (since some clients call getGraph() repeatedly).
      * This preserves the prior "return a copy" behavior without repeatedly copying.
      */
@@ -169,22 +156,10 @@ public class IdaCheck {
     }
 
     /**
-     * Ensures that the internal {@link PdagPagIda} instance is set to the correct IDA type
-     * for the current {@link #showOptimalIda} flag.
-     */
-    private void syncIdaTypeIfNeeded() {
-        if (!idaTypeIsSynced) {
-            ida.setIdaType(showOptimalIda ? PdagPagIda.IDA_TYPE.OPTIMAL : PdagPagIda.IDA_TYPE.REGULAR);
-            idaTypeIsSynced = true;
-        }
-    }
-
-    /**
      * Computes and caches totalEffects/absTotalEffects for a single ordered pair if missing.
      * This supports lazy, per-pair evaluation in UI settings.
      */
     private void ensurePairComputed(OrderedPair<Node> pair) {
-        syncIdaTypeIfNeeded();
 
         if (!this.totalEffects.containsKey(pair) || !this.absTotalEffects.containsKey(pair)) {
             LinkedList<Double> total = ida.getTotalEffects(pair.getFirst(), pair.getSecond());
@@ -202,8 +177,6 @@ public class IdaCheck {
      * This preserves the old semantics of recompute() as “compute everything”.
      */
     private void computeIdaResults(List<OrderedPair<Node>> currentPairs) {
-        // Make sure Ida is in sync with the flag
-        syncIdaTypeIfNeeded();
 
         // Clear old results
         this.totalEffects.clear();
@@ -542,34 +515,6 @@ public class IdaCheck {
     }
 
     /**
-     * Sets whether the "show optimal IDA" option is enabled or disabled.
-     *
-     * <p>
-     * NOTE: Changing this flag invalidates cached results, since the underlying IDA type changes.
-     *
-     * @param selected a boolean value indicating whether to enable or disable the "show optimal IDA" option.
-     */
-    public void setShowOptimalIda(boolean selected) {
-        if (this.showOptimalIda != selected) {
-            this.showOptimalIda = selected;
-
-            // Invalidate results so they can be recomputed for the new IDA type.
-            this.totalEffects.clear();
-            this.absTotalEffects.clear();
-            this.idaTypeIsSynced = false;
-        }
-    }
-
-    /**
-     * Checks if the "show optimal IDA" option is enabled.
-     *
-     * @return true if the "show optimal IDA" option is enabled, false otherwise.
-     */
-    public boolean isShowOptimalIda() {
-        return this.showOptimalIda;
-    }
-
-    /**
      * Recomputes the total effects and absolute total effects for all ordered pairs
      * of nodes in the graph. The method utilizes the current IDA type, which can
      * be either regular or optimal depending on the "show optimal IDA" flag.
@@ -577,12 +522,7 @@ public class IdaCheck {
      * This method clears any previously computed effects and recalculates them
      * using the current state of the graph and IDA configuration.
      */
-//    public void recompute(List<OrderedPair<Node>> currentPairs) {
-//        computeIdaResults(currentPairs);
-//    }
-
     public void recompute(List<OrderedPair<Node>> currentPairs) {
-        syncIdaTypeIfNeeded();
         for (OrderedPair<Node> pair : currentPairs) {
             ensurePairComputed(pair);
         }

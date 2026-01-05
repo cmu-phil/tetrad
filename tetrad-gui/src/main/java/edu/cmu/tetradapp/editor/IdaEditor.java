@@ -38,8 +38,10 @@ import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -58,24 +60,13 @@ import java.util.regex.Pattern;
  * The IDA table is then restricted to ordered pairs (X, Y) with X in the treatment set and Y in the outcome set.
  * Variable names may include simple wildcards "*" and "?" as in the Adjustment / Total Effects component.
  *
- * <p>
- * PERSISTENCE NOTE (UI):
- * This editor is often re-opened multiple times during a session. To restore the most recent "Run" results
- * without recomputing anything, we keep a weak cache keyed by the IdaModel instance (so the cache does not
- * prevent GC). This restores the displayed row set (currentPairs) and UI selections on re-open.
- *
  * @author josephramsey
  * @see IdaModel
  * @see edu.cmu.tetrad.search.Ida
  */
 public class IdaEditor extends JPanel {
 
-    // ---------------------------------------------------------------------
-    // Session-only persistence: cache last "Run" results per IdaModel.
-    // WeakHashMap ensures no memory leak when IdaModel is discarded.
-    // ---------------------------------------------------------------------
-    private static final Map<IdaModel, CachedState> STATE_CACHE =
-            Collections.synchronizedMap(new WeakHashMap<>());
+
     /**
      * The underlying model.
      */
@@ -147,31 +138,14 @@ public class IdaEditor extends JPanel {
 
         setLayout(new BorderLayout());
 
-        // ---- Restore persisted UI + table state (session-only) if available ----
-        CachedState cached = STATE_CACHE.get(idaModel);
-        if (cached != null && cached.pairs != null && !cached.pairs.isEmpty()) {
-            // Restore text + toggles
-            treatmentsField.setText(cached.treatmentsText != null ? cached.treatmentsText : "");
-            outcomesField.setText(cached.outcomesText != null ? cached.outcomesText : "");
-            showOptimalIda.setSelected(cached.showOptimal);
-            hideZeroEffects.setSelected(cached.hideZeros);
+        // Restore text + toggles
+        treatmentsField.setText(idaModel.getTreatmentsText());
+        outcomesField.setText(idaModel.getOutcomesText());
+        showOptimalIda.setSelected(idaModel.isOptimalIdaSelected());
+        hideZeroEffects.setSelected(idaModel.getHideZeroEffects());
 
-            // Keep IdaModel in sync too (so other UI components that read from the model remain consistent)
-            idaModel.setTreatmentsText(treatmentsField.getText());
-            idaModel.setOutcomesText(outcomesField.getText());
-            idaModel.setOptimalIdaSelected(showOptimalIda.isSelected());
-            idaModel.setHideZeroEffects(hideZeroEffects.isSelected());
-
-            // Restore the actual row set shown last time.
-            this.currentPairs = new ArrayList<>(cached.pairs);
-        } else {
-            // No cached run: use model text, but start with empty table (fast open).
-            treatmentsField.setText(idaModel.getTreatmentsText());
-            outcomesField.setText(idaModel.getOutcomesText());
-            showOptimalIda.setSelected(idaModel.isOptimalIdaSelected());
-            hideZeroEffects.setSelected(idaModel.getHideZeroEffects());
-            this.currentPairs = new ArrayList<>();
-        }
+        // Restore the actual row set shown last time.
+        this.currentPairs = idaModel.getCurrentPairs();
 
         // ---- Table and sorter ----
         this.tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
@@ -196,10 +170,7 @@ public class IdaEditor extends JPanel {
 
         // Show Optimal IDA checkbox – only relevant if the estimated graph is a legal PDAG.
         if (idaCheckEst.getGraph().paths().isLegalPdag()) {
-            // If cached, it’s already set; otherwise use whatever IdaCheck currently has as a default.
-            if (cached == null) {
-                showOptimalIda.setSelected(idaCheckEst.isShowOptimalIda());
-            }
+            showOptimalIda.setSelected(idaModel.isOptimalIdaSelected());
         } else {
             showOptimalIda.setEnabled(false);
         }
@@ -279,30 +250,26 @@ public class IdaEditor extends JPanel {
         // ---- Wire up "Run" button ----
         runButton.addActionListener(e -> {
             try {
-                idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
-//                idaCheckEst.recompute(currentPairs);
-//                recomputeTable();
-
+                idaModel.setOptimalIdaSelected(showOptimalIda.isSelected());
                 recomputeTable(); // sets currentPairs
                 idaCheckEst.recompute(currentPairs); // compute only those pairs
-                // then rebuild model, or (better) rebuild after computing
-                this.tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
-                table.setModel(tableModel);
 
-                // Persist last successful run into session cache (so reopening the editor restores immediately).
-                STATE_CACHE.put(this.idaModel, new CachedState(
-                        treatmentsField.getText(),
-                        outcomesField.getText(),
-                        showOptimalIda.isSelected(),
-                        hideZeroEffects.isSelected(),
-                        new ArrayList<>(this.currentPairs)
-                ));
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        // then rebuild model, or (better) rebuild after computing
+                        tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
+                        table.setModel(tableModel);
+                    }
+                });
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(this,
                         ex.getMessage(),
                         "Invalid selection",
                         JOptionPane.ERROR_MESSAGE);
             }
+
         });
 
         // ---- Tabbed pane with Table + Help ----
@@ -459,13 +426,13 @@ public class IdaEditor extends JPanel {
                     }
                 }
 
-                if (newPairs.isEmpty()) {
-                    throw new IllegalArgumentException("No ordered pairs (X, Y) matched the given treatments/outcomes.");
-                }
-
-                currentPairs = newPairs;
-
                 SwingUtilities.invokeLater(() -> {
+
+                    if (newPairs.isEmpty()) {
+                        throw new IllegalArgumentException("No ordered pairs (X, Y) matched the given treatments/outcomes.");
+                    }
+
+                    currentPairs = newPairs;
 
                     tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
                     table.setModel(tableModel);
@@ -486,6 +453,12 @@ public class IdaEditor extends JPanel {
 
                     table.revalidate();
                     table.repaint();
+
+                    idaModel.setTreatmentsText(treatmentsField.getText());
+                    idaModel.setOutcomesText(outcomesField.getText());
+                    idaModel.setOptimalIdaSelected(showOptimalIda.isSelected());
+                    idaModel.setHideZeroEffects(hideZeroEffects.isSelected());
+                    idaModel.setCurrentPairs(currentPairs);
                 });
             }
         }
@@ -574,25 +547,6 @@ public class IdaEditor extends JPanel {
         }
     }
 
-    private static final class CachedState {
-        final String treatmentsText;
-        final String outcomesText;
-        final boolean showOptimal;
-        final boolean hideZeros;
-        final List<OrderedPair<Node>> pairs; // exactly the rows shown after last Run
-
-        CachedState(String treatmentsText,
-                    String outcomesText,
-                    boolean showOptimal,
-                    boolean hideZeros,
-                    List<OrderedPair<Node>> pairs) {
-            this.treatmentsText = treatmentsText;
-            this.outcomesText = outcomesText;
-            this.showOptimal = showOptimal;
-            this.hideZeros = hideZeros;
-            this.pairs = pairs;
-        }
-    }
 
     /**
      * A renderer for numbers in the table. This renderer formats numbers using a NumberFormat object.

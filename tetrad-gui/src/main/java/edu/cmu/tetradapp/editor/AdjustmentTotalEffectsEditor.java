@@ -2,14 +2,17 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.OrderedPair;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel;
 import edu.cmu.tetradapp.model.AdjustmentTotalEffectsModel.ResultRow;
 
 import javax.swing.*;
+import javax.swing.event.RowSorterEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
