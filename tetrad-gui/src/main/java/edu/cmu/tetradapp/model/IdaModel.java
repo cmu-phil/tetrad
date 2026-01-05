@@ -24,6 +24,8 @@ import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IdaCheck;
 import edu.cmu.tetrad.sem.SemIm;
@@ -119,7 +121,16 @@ public class IdaModel implements SessionModel {
             throw new IllegalArgumentException("Expecting a data set.");
         }
 
-        if (!(graphSource.getGraph().paths().isLegalPdag() || graphSource.getGraph().paths().isLegalPag())) {
+        boolean containsCircle = false;
+
+        for (Edge edge : graphSource.getGraph().getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.CIRCLE || edge.getEndpoint2() == Endpoint.CIRCLE) {
+                containsCircle = true;
+                break;
+            }
+        }
+
+        if (!(graphSource.getGraph().paths().isLegalPdag() || containsCircle)) {// graphSource.getGraph().paths().isLegalPag())) {
             throw new IllegalArgumentException("Expecting an PDAG or PAG. (Could be a CPDAG or a DAG or a PAG.)");
         }
 

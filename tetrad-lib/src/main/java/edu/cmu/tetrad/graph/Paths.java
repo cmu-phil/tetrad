@@ -627,25 +627,233 @@ public class Paths implements TetradSerializable {
      * @param node2        the destination node
      * @param maxLength    the maximum length of the paths
      * @param forceVisible the set of nodes out of X to force visibility for
-     * @return a list of amenable paths from the source node to the destination node, each represented as a list of
+     * @return a set of amenable paths from the source node to the destination node, each represented as a list of
      * nodes
      */
+
+    // Option 1 Conservative, theory-clean, visibility required.
+//    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
+//        Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
+//
+//        for (List<Node> path : new ArrayList<>(amenablePaths)) {
+//            if (path.size() < 2) {
+//                amenablePaths.remove(path);
+//                continue;
+//            }
+//
+//            Node a = path.getFirst();   // should be node1
+//            Node b = path.get(1);
+//
+//            var e = graph.getEdge(a, b);
+//            if (e == null) {
+//                amenablePaths.remove(path);
+//                continue;
+//            }
+//
+//            // Strict PAG amenability: first edge must be a visible directed edge a -> b.
+//            boolean okStart = graph.isParentOf(a, b) && graph.paths().defVisiblePag(a, b);
+//
+//            if (!okStart) {
+//                amenablePaths.remove(path);
+//            }
+//        }
+//
+//        return amenablePaths;
+//    }
+
+    //Option 2 PAG-OIDA (new algorithm) Orientation-based enumeration, explicitly heuristic, very interesting results (what you’re seeing).
+//    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
+//        Set<List<Node>> paths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
+//
+//        for (List<Node> path : new ArrayList<>(paths)) {
+//            if (path.size() < 2) {
+//                paths.remove(path);
+//                continue;
+//            }
+//
+//            Node a = path.getFirst();   // should be node1
+//            Node b = path.get(1);
+//
+//            var e = graph.getEdge(a, b);
+//            if (e == null) {
+//                paths.remove(path);
+//                continue;
+//            }
+//
+//            boolean forced = forceVisible != null && forceVisible.contains(b);
+//
+//            // Strict PAG amenability start: a -> b and definitely visible.
+//            boolean strictAmenableStart = graph.isParentOf(a, b) && graph.paths().defVisiblePag(a, b);
+//
+//            // Heuristic “PAG-OIDA” start for chosen refinements:
+//            // Can this edge be *refined* so that it becomes a -> b ?
+//            //
+//            // - endpoint at a cannot already be ARROW (otherwise edge is forced into a)
+//            // - endpoint at b cannot already be TAIL (TAIL is fixed; can't refine to ARROW at b)
+//            Endpoint endAtA = graph.getEndpoint(b, a); // endpoint at a on edge a—b
+//            Endpoint endAtB = graph.getEndpoint(a, b); // endpoint at b on edge a—b
+//
+//            boolean canRefineToAToB =
+//                    endAtA != Endpoint.ARROW   // excludes a <-o b and a <-> b, etc.
+//                    && endAtB != Endpoint.TAIL; // excludes a o- b and a -- b (can't make arrowhead at b)
+//
+//            boolean okStart = strictAmenableStart || (forced && canRefineToAToB);
+//
+//            if (!okStart) {
+//                paths.remove(path);
+//            }
+//        }
+//
+//        return paths;
+//    }
+
+    // Option 3 Enumerate refinements, then discard those where the forced edge fails definite visibility.
+    // Refinement-based PAG IDA (rPAG-IDA) or O-IDA-style PAG IDA
     public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
         Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
 
+        boolean hasForcing = (forceVisible != null && !forceVisible.isEmpty());
+
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
-            Node a = path.getFirst();
+            if (path.size() < 2) {
+                amenablePaths.remove(path);
+                continue;
+            }
+
+            Node a = path.getFirst(); // should be node1
             Node b = path.get(1);
 
-            boolean visible = forceVisible.contains(b) || graph.paths().defVisiblePag(a, b);
+            var e = graph.getEdge(a, b);
+            if (e == null) {
+                amenablePaths.remove(path);
+                continue;
+            }
 
-            if (!(visible && graph.getEdge(a, b).pointsTowards(b))) {
+            // Can the mark at 'a' be a tail in some refinement? (i.e., not already arrow-into-a)
+            // Allows: a o-> b, a o-o b, a -> b; disallows: a <-o b, a <-> b.
+            boolean canBeOutOfA = !e.pointsTowards(a);
+
+            // Already-amenable “no matter what” (strict visible directed edge).
+            boolean alreadyStrictAmenable = graph.isParentOf(a, b) && graph.paths().defVisiblePag(a, b);
+
+            boolean okStart;
+            if (!canBeOutOfA) {
+                okStart = false;
+            } else if (!hasForcing) {
+                // No refinement choice supplied: allow any first step that *could* be oriented out of X.
+                okStart = true;
+            } else {
+                // Refinement choice supplied: only allow the chosen outgoing neighbors,
+                // plus anything already strictly amenable.
+                okStart = forceVisible.contains(b) || alreadyStrictAmenable;
+            }
+
+            if (!okStart) {
                 amenablePaths.remove(path);
             }
         }
 
         return amenablePaths;
     }
+
+//    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
+//        Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
+//
+//        for (List<Node> path : new ArrayList<>(amenablePaths)) {
+//            Node a = path.getFirst();
+//            Node b = path.get(1);
+//
+//            var e = graph.getEdge(a, b);
+//            if (e == null) {
+//                amenablePaths.remove(path);
+//                continue;
+//            }
+//
+//            boolean forced = forceVisible != null && forceVisible.contains(b);
+//
+//            // “Can we orient the mark at a to be a tail?” (i.e., not an arrowhead into a)
+//            // This allows a o-> b, a o-o b, a -> b; excludes a <-o b and a <-> b.
+//            boolean canBeOutOfA = !e.pointsTowards(a);
+//
+//            boolean okStart;
+//            if (forced) {
+//                // You’re assuming this neighbor is the chosen “outgoing” option from X for this refinement.
+//                // Don’t require definite visibility here—just require it’s not already arrow-into-X.
+//                okStart = canBeOutOfA;
+//            } else {
+//                // The strict PAG amenability notion: must *already* be a visible directed edge a -> b
+//                okStart = graph.isParentOf(a, b) && graph.paths().defVisiblePag(a, b);
+//            }
+//
+//            if (!okStart) {
+//                amenablePaths.remove(path);
+//            }
+//        }
+//
+//        return amenablePaths;
+//    }
+//    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
+//        Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
+//
+//        for (List<Node> path : new ArrayList<>(amenablePaths)) {
+//            Node a = path.getFirst();
+//            Node b = path.get(1);
+//
+//            // Must actually be a directed edge out of a (tail at a, arrow at b)
+//            if (!graph.isParentOf(a, b)) {
+//                amenablePaths.remove(path);
+//                continue;
+//            }
+//
+//            boolean visible = graph.paths().defVisiblePag(a, b);
+//
+//            // "Force" visibility only for truly directed a->b edges (still requiring isParentOf above)
+//            if (!visible && forceVisible != null && forceVisible.contains(b)) {
+//                visible = true;
+//            }
+//
+//            if (!visible) {
+//                amenablePaths.remove(path);
+//            }
+//        }
+//
+//        return amenablePaths;
+//    }
+
+//    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
+//        Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
+//
+//        for (List<Node> path : new ArrayList<>(amenablePaths)) {
+////            Node a = path.getFirst();
+////            Node b = path.get(1);
+////
+////            boolean visible = forceVisible.contains(b) || graph.paths().defVisiblePag(a, b);
+////
+////            if (!(visible && graph.getEdge(a, b).pointsTowards(b))) {
+////                amenablePaths.remove(path);
+////            }
+//
+//            Node a = path.getFirst();
+//            Node b = path.get(1);
+//
+//            var e = graph.getEdge(a, b);
+//            if (e == null) { amenablePaths.remove(path); continue; }
+//
+//            boolean pointsToB = e.pointsTowards(b);
+//            boolean forced = forceVisible != null && forceVisible.contains(b);
+//
+//            // Only allow forcing if it’s actually an out-edge toward b in the PAG
+//            boolean visible = graph.paths().defVisiblePag(a, b) || (forced && pointsToB);
+//
+//            if (!(visible && pointsToB)) {
+//                amenablePaths.remove(path);
+//            }
+//        }
+//
+//        return amenablePaths;
+//    }
+
+
 
     private void potentiallyDirectedPathsVisit(Node node1, Node node2,
                                                LinkedList<Node> path,
