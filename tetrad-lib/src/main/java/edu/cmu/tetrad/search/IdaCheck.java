@@ -48,9 +48,8 @@ import java.util.*;
  * We also report the averages of each statistic across all pairs of distinct nodes in the dataset.
  *
  * <p>
- * IMPORTANT PERFORMANCE NOTE (2026-01):
- * This class used to be frequently instantiated by UI editors that start with an empty table.
- * In that context, precomputing effects for all O(p^2) pairs in the constructor made the UI slow to open.
+ * IMPORTANT PERFORMANCE NOTE (2026-01): This class used to be frequently instantiated by UI editors that start with an
+ * empty table. In that context, precomputing effects for all O(p^2) pairs in the constructor made the UI slow to open.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -99,8 +98,8 @@ public class IdaCheck {
     private HashMap<Node, Node> nodeMap;
 
     /**
-     * Cached copy of the graph (since some clients call getGraph() repeatedly).
-     * This preserves the prior "return a copy" behavior without repeatedly copying.
+     * Cached copy of the graph (since some clients call getGraph() repeatedly). This preserves the prior "return a
+     * copy" behavior without repeatedly copying.
      */
     private Graph cachedGraphCopy;
 
@@ -156,12 +155,11 @@ public class IdaCheck {
     }
 
     /**
-     * Computes and caches totalEffects/absTotalEffects for a single ordered pair if missing.
-     * This supports lazy, per-pair evaluation in UI settings.
+     * Computes and caches totalEffects/absTotalEffects for a single ordered pair if missing. This supports lazy,
+     * per-pair evaluation in UI settings.
      */
     private void ensurePairComputed(OrderedPair<Node> pair) {
-
-        if (!this.totalEffects.containsKey(pair) || !this.absTotalEffects.containsKey(pair)) {
+        if (!this.totalEffects.containsKey(pair)) {
             LinkedList<Double> total = ida.getTotalEffects(pair.getFirst(), pair.getSecond());
             LinkedList<Double> abs = ida.getAbsTotalEffects(pair.getFirst(), pair.getSecond());
             this.totalEffects.put(pair, total);
@@ -170,8 +168,8 @@ public class IdaCheck {
     }
 
     /**
-     * (Re)computes totalEffects and absTotalEffects for all ordered pairs
-     * using the current IDA type (REGULAR vs OPTIMAL).
+     * (Re)computes totalEffects and absTotalEffects for all ordered pairs using the current IDA type (REGULAR vs
+     * OPTIMAL).
      *
      * <p>
      * This preserves the old semantics of recompute() as “compute everything”.
@@ -184,11 +182,9 @@ public class IdaCheck {
 
         // Recompute for all pairs
         for (OrderedPair<Node> pair : currentPairs) {
-            LinkedList<Double> total = ida.getTotalEffects(pair.getFirst(), pair.getSecond());
-            LinkedList<Double> abs = ida.getAbsTotalEffects(pair.getFirst(), pair.getSecond());
-
-            this.totalEffects.put(pair, total);
-            this.absTotalEffects.put(pair, abs);
+            if (!this.totalEffects.containsKey(pair)) {
+                ensurePairComputed(pair);
+            }
         }
     }
 
@@ -373,7 +369,7 @@ public class IdaCheck {
         // but we still keep the cached maps in sync via ensurePairComputed.
         ensurePairComputed(pair);
 
-        List<Double> totalEffects = ida.getTotalEffects(x, y);
+        List<Double> totalEffects = this.totalEffects.get(pair);
         double trueTotalEffect = getTrueTotalEffect(pair);
 
         double min = Double.MAX_VALUE;
@@ -442,7 +438,7 @@ public class IdaCheck {
 
         ensurePairComputed(pair);
 
-        List<Double> totalEffects = ida.getTotalEffects(x, y);
+        List<Double> totalEffects = this.totalEffects.get(pair);
         double trueTotalEffect = getTrueTotalEffect(pair);
 
         double max = 0;
@@ -515,13 +511,15 @@ public class IdaCheck {
     }
 
     /**
-     * Recomputes the total effects and absolute total effects for all ordered pairs
-     * of nodes in the graph. The method utilizes the current IDA type, which can
-     * be either regular or optimal depending on the "show optimal IDA" flag.
-     *
-     * This method clears any previously computed effects and recalculates them
-     * using the current state of the graph and IDA configuration.
+     * Recomputes the total effects and absolute total effects for all ordered pairs of nodes in the graph. The method
+     * utilizes the current IDA type, which can be either regular or optimal depending on the "show optimal IDA" flag.
+     * <p>
+     * This method clears any previously computed effects and recalculates them using the current state of the graph and
+     * IDA configuration.
      */
+//    public void recompute(List<OrderedPair<Node>> currentPairs) {
+//        computeIdaResults(currentPairs);
+//    }
     public void recompute(List<OrderedPair<Node>> currentPairs) {
         for (OrderedPair<Node> pair : currentPairs) {
             ensurePairComputed(pair);
@@ -532,8 +530,8 @@ public class IdaCheck {
      * Returns a copy of the graph associated with this instance.
      *
      * <p>
-     * This preserves the original behavior (returning a copy), but caches the copy
-     * so repeated calls do not repeatedly copy the graph.
+     * This preserves the original behavior (returning a copy), but caches the copy so repeated calls do not repeatedly
+     * copy the graph.
      *
      * @return a copy of the graph.
      */
@@ -543,12 +541,4 @@ public class IdaCheck {
         }
         return cachedGraphCopy.copy(); // defensive: return a fresh copy each time
     }
-
-    /**
-     * If a caller needs a cheap view of the internal graph for read-only purposes,
-     * they should prefer keeping a reference to the graph they already have rather than
-     * calling getGraph() in tight loops.
-     *
-     * (This method is intentionally omitted to keep the public API unchanged.)
-     */
 }
