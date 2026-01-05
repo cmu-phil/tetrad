@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.IdaCheck;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.IdaModel;
+import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import javax.swing.event.RowSorterEvent;
@@ -75,69 +76,43 @@ public class IdaEditor extends JPanel {
     // ---------------------------------------------------------------------
     private static final Map<IdaModel, CachedState> STATE_CACHE =
             Collections.synchronizedMap(new WeakHashMap<>());
-
-    private static final class CachedState {
-        final String treatmentsText;
-        final String outcomesText;
-        final boolean showOptimal;
-        final boolean hideZeros;
-        final List<OrderedPair<Node>> pairs; // exactly the rows shown after last Run
-
-        CachedState(String treatmentsText,
-                    String outcomesText,
-                    boolean showOptimal,
-                    boolean hideZeros,
-                    List<OrderedPair<Node>> pairs) {
-            this.treatmentsText = treatmentsText;
-            this.outcomesText = outcomesText;
-            this.showOptimal = showOptimal;
-            this.hideZeros = hideZeros;
-            this.pairs = pairs;
-        }
-    }
-
     /**
      * The underlying model.
      */
     private final IdaModel idaModel;
-
     /**
      * The underlying IDA checker over the estimated graph.
      */
     private final IdaCheck idaCheckEst;
-
     /**
      * All legal ordered pairs for the current IDA checker (all distinct pairs of nodes).
      */
     private final List<OrderedPair<Node>> allPairs;
-
     /**
      * Swing components that need to be accessed from listeners.
      */
     private final JTable table;
-
     private final NumberFormat numberFormat;
-
     /**
-     * Text fields for specifying treatments (X) and outcomes (Y).
-     * These support simple wildcards "*", "?".
+     * Text fields for specifying treatments (X) and outcomes (Y). These support simple wildcards "*", "?".
      */
     private final JTextField treatmentsField = new JTextField();
     private final JTextField outcomesField = new JTextField();
-
     /**
      * "Run" button to recompute the table for the current X/Y selection.
      */
     private final JButton runButton = new JButton("Run");
-
     /**
      * Checkbox to toggle use of Optimal IDA (if available).
      */
     private final JCheckBox showOptimalIda = new JCheckBox("Show Optimal IDA");
-
     /**
-     * The subset of ordered pairs currently displayed in the table
-     * (respecting the X/Y selections).
+     * Checkbox to optionally hide rows where minTE==0 and maxTE==0.
+     */
+    private final JCheckBox hideZeroEffects =
+            new JCheckBox("Hide zero-effect pairs (min=max=0)");
+    /**
+     * The subset of ordered pairs currently displayed in the table (respecting the X/Y selections).
      */
     private List<OrderedPair<Node>> currentPairs = new ArrayList<>();
 
@@ -158,12 +133,6 @@ public class IdaEditor extends JPanel {
      * The label for the squared difference between maximum total effect and true total effect.
      */
     private JLabel squaredDiffMaxTotalLabel;
-
-    /**
-     * Checkbox to optionally hide rows where minTE==0 and maxTE==0.
-     */
-    private final JCheckBox hideZeroEffects =
-            new JCheckBox("Hide zero-effect pairs (min=max=0)");
 
     /**
      * Constructs a new IDA editor for the given IDA model.
@@ -454,64 +423,74 @@ public class IdaEditor extends JPanel {
     }
 
     /**
-     * Recomputes {@link #currentPairs}, rebuilds the table model, and refreshes the summary
-     * statistics based on the current X/Y selections.
+     * Recomputes {@link #currentPairs}, rebuilds the table model, and refreshes the summary statistics based on the
+     * current X/Y selections.
      */
     private void recomputeTable() {
-        Graph graph = idaCheckEst.getGraph();
+        class MyWatchedProcess extends WatchedProcess {
+            @Override
+            public void watch() {
+                Graph graph = idaCheckEst.getGraph();
 
-        Set<Node> X = parseNodeList(graph, treatmentsField.getText().trim());
-        Set<Node> Y = parseNodeList(graph, outcomesField.getText().trim());
+                Set<Node> X = parseNodeList(graph, treatmentsField.getText().trim());
+                Set<Node> Y = parseNodeList(graph, outcomesField.getText().trim());
 
-        if (X.isEmpty() || Y.isEmpty()) {
-            throw new IllegalArgumentException("Treatments (X) and outcomes (Y) sets must not be empty.");
-        }
+                if (X.isEmpty() || Y.isEmpty()) {
+                    throw new IllegalArgumentException("Treatments (X) and outcomes (Y) sets must not be empty.");
+                }
 
-        // Restrict allPairs to those matching X x Y.
-        List<OrderedPair<Node>> newPairs = new ArrayList<>();
-        boolean filterZeros = hideZeroEffects.isSelected();
+                // Restrict allPairs to those matching X x Y.
+                List<OrderedPair<Node>> newPairs = new ArrayList<>();
+                boolean filterZeros = hideZeroEffects.isSelected();
 
-        for (OrderedPair<Node> pair : allPairs) {
-            Node x = pair.getFirst();
-            Node y = pair.getSecond();
+                for (OrderedPair<Node> pair : allPairs) {
+                    Node x = pair.getFirst();
+                    Node y = pair.getSecond();
 
-            if (X.contains(x) && Y.contains(y)) {
-                if (filterZeros) {
-                    double min = idaModel.getIdaCheckEst().getMinTotalEffect(x, y);
-                    double max = idaModel.getIdaCheckEst().getMaxTotalEffect(x, y);
-                    if (min == 0.0 && max == 0.0) {
-                        continue;
+                    if (X.contains(x) && Y.contains(y)) {
+                        if (filterZeros) {
+                            double min = idaModel.getIdaCheckEst().getMinTotalEffect(x, y);
+                            double max = idaModel.getIdaCheckEst().getMaxTotalEffect(x, y);
+                            if (min == 0.0 && max == 0.0) {
+                                continue;
+                            }
+                        }
+                        newPairs.add(pair);
                     }
                 }
-                newPairs.add(pair);
+
+                if (newPairs.isEmpty()) {
+                    throw new IllegalArgumentException("No ordered pairs (X, Y) matched the given treatments/outcomes.");
+                }
+
+                currentPairs = newPairs;
+
+                SwingUtilities.invokeLater(() -> {
+
+                    tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
+                    table.setModel(tableModel);
+
+                    // Replace sorter (and its listeners) to match the new model.
+                    sorter = new TableRowSorter<>(tableModel);
+                    table.setRowSorter(sorter);
+
+                    sorter.addRowSorterListener(e -> {
+                        if (e.getType() == RowSorterEvent.Type.SORTED) {
+                            updateStatsForVisibleRows();
+                        }
+                    });
+
+                    if (idaModel.getTrueSemIm() != null) {
+                        setSummaryText(numberFormat, idaCheckEst, currentPairs);
+                    }
+
+                    table.revalidate();
+                    table.repaint();
+                });
             }
         }
 
-        if (newPairs.isEmpty()) {
-            throw new IllegalArgumentException("No ordered pairs (X, Y) matched the given treatments/outcomes.");
-        }
-
-        this.currentPairs = newPairs;
-
-        this.tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
-        table.setModel(tableModel);
-
-        // Replace sorter (and its listeners) to match the new model.
-        this.sorter = new TableRowSorter<>(tableModel);
-        table.setRowSorter(sorter);
-
-        sorter.addRowSorterListener(e -> {
-            if (e.getType() == RowSorterEvent.Type.SORTED) {
-                updateStatsForVisibleRows();
-            }
-        });
-
-        if (idaModel.getTrueSemIm() != null) {
-            setSummaryText(numberFormat, idaCheckEst, currentPairs);
-        }
-
-        table.revalidate();
-        table.repaint();
+        new MyWatchedProcess();
     }
 
     /**
@@ -537,8 +516,8 @@ public class IdaEditor extends JPanel {
     }
 
     /**
-     * Parse a comma/whitespace separated list of node names, allowing "*" and "?" wildcards,
-     * relative to the given graph.
+     * Parse a comma/whitespace separated list of node names, allowing "*" and "?" wildcards, relative to the given
+     * graph.
      */
     private Set<Node> parseNodeList(Graph graph, String text) {
         LinkedHashSet<Node> nodes = new LinkedHashSet<>();
@@ -595,6 +574,26 @@ public class IdaEditor extends JPanel {
         }
     }
 
+    private static final class CachedState {
+        final String treatmentsText;
+        final String outcomesText;
+        final boolean showOptimal;
+        final boolean hideZeros;
+        final List<OrderedPair<Node>> pairs; // exactly the rows shown after last Run
+
+        CachedState(String treatmentsText,
+                    String outcomesText,
+                    boolean showOptimal,
+                    boolean hideZeros,
+                    List<OrderedPair<Node>> pairs) {
+            this.treatmentsText = treatmentsText;
+            this.outcomesText = outcomesText;
+            this.showOptimal = showOptimal;
+            this.hideZeros = hideZeros;
+            this.pairs = pairs;
+        }
+    }
+
     /**
      * A renderer for numbers in the table. This renderer formats numbers using a NumberFormat object.
      */
@@ -631,19 +630,18 @@ public class IdaEditor extends JPanel {
 
 /**
  * Table model for the IDA results.
- *
- * This is unchanged in spirit from the previous implementation: rows correspond
- * to ordered pairs in the given list, and columns contain the various IDA
- * effect summaries supplied by {@link IdaCheck}.
+ * <p>
+ * This is unchanged in spirit from the previous implementation: rows correspond to ordered pairs in the given list, and
+ * columns contain the various IDA effect summaries supplied by {@link IdaCheck}.
  */
 class IdaTableModel extends AbstractTableModel {
 
     /**
      * The column names for the table. The first column is the pair of nodes, the second column is the minimum total
-     * effect, the third column is the maximum total effect, the fourth column is the minimum absolute total effect,
-     * the fifth column is the true total effect, and the sixth column is the squared distance from the true total
-     * effect, where if the true total effect falls between the minimum and maximum total effect zero is reported.
-     * If the true model is not given, the last two columns are not included.
+     * effect, the third column is the maximum total effect, the fourth column is the minimum absolute total effect, the
+     * fifth column is the true total effect, and the sixth column is the squared distance from the true total effect,
+     * where if the true total effect falls between the minimum and maximum total effect zero is reported. If the true
+     * model is not given, the last two columns are not included.
      */
     private final String[] columnNames = {"#", "Pair", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};
 
@@ -655,9 +653,9 @@ class IdaTableModel extends AbstractTableModel {
     /**
      * Constructs a new table model for the results of the IDA check.
      *
-     * @param pairs      the ordered pairs of nodes in the graph.
-     * @param estModel   the IDA check on the estimated graph.
-     * @param trueSemIm  the true SEM instantiated model, or null if not available.
+     * @param pairs     the ordered pairs of nodes in the graph.
+     * @param estModel  the IDA check on the estimated graph.
+     * @param trueSemIm the true SEM instantiated model, or null if not available.
      */
     IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, SemIm trueSemIm) {
         boolean hasTrue = trueSemIm != null;
