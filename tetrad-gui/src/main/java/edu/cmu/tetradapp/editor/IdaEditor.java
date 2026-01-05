@@ -37,10 +37,8 @@ import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -59,11 +57,44 @@ import java.util.regex.Pattern;
  * The IDA table is then restricted to ordered pairs (X, Y) with X in the treatment set and Y in the outcome set.
  * Variable names may include simple wildcards "*" and "?" as in the Adjustment / Total Effects component.
  *
+ * <p>
+ * PERSISTENCE NOTE (UI):
+ * This editor is often re-opened multiple times during a session. To restore the most recent "Run" results
+ * without recomputing anything, we keep a weak cache keyed by the IdaModel instance (so the cache does not
+ * prevent GC). This restores the displayed row set (currentPairs) and UI selections on re-open.
+ *
  * @author josephramsey
  * @see IdaModel
  * @see edu.cmu.tetrad.search.Ida
  */
 public class IdaEditor extends JPanel {
+
+    // ---------------------------------------------------------------------
+    // Session-only persistence: cache last "Run" results per IdaModel.
+    // WeakHashMap ensures no memory leak when IdaModel is discarded.
+    // ---------------------------------------------------------------------
+    private static final Map<IdaModel, CachedState> STATE_CACHE =
+            Collections.synchronizedMap(new WeakHashMap<>());
+
+    private static final class CachedState {
+        final String treatmentsText;
+        final String outcomesText;
+        final boolean showOptimal;
+        final boolean hideZeros;
+        final List<OrderedPair<Node>> pairs; // exactly the rows shown after last Run
+
+        CachedState(String treatmentsText,
+                    String outcomesText,
+                    boolean showOptimal,
+                    boolean hideZeros,
+                    List<OrderedPair<Node>> pairs) {
+            this.treatmentsText = treatmentsText;
+            this.outcomesText = outcomesText;
+            this.showOptimal = showOptimal;
+            this.hideZeros = hideZeros;
+            this.pairs = pairs;
+        }
+    }
 
     /**
      * The underlying model.
@@ -79,32 +110,40 @@ public class IdaEditor extends JPanel {
      * All legal ordered pairs for the current IDA checker (all distinct pairs of nodes).
      */
     private final List<OrderedPair<Node>> allPairs;
+
     /**
      * Swing components that need to be accessed from listeners.
      */
     private final JTable table;
+
     private final NumberFormat numberFormat;
+
     /**
      * Text fields for specifying treatments (X) and outcomes (Y).
      * These support simple wildcards "*", "?".
      */
     private final JTextField treatmentsField = new JTextField();
     private final JTextField outcomesField = new JTextField();
+
     /**
      * "Run" button to recompute the table for the current X/Y selection.
      */
     private final JButton runButton = new JButton("Run");
+
     /**
      * Checkbox to toggle use of Optimal IDA (if available).
      */
     private final JCheckBox showOptimalIda = new JCheckBox("Show Optimal IDA");
+
     /**
      * The subset of ordered pairs currently displayed in the table
      * (respecting the X/Y selections).
      */
     private List<OrderedPair<Node>> currentPairs = new ArrayList<>();
+
     private IdaTableModel tableModel;
     private TableRowSorter<IdaTableModel> sorter;
+
     /**
      * The label for the average squared distance.
      */
@@ -119,7 +158,10 @@ public class IdaEditor extends JPanel {
      * The label for the squared difference between maximum total effect and true total effect.
      */
     private JLabel squaredDiffMaxTotalLabel;
-    /** Checkbox to optionally hide rows where minTE==0 and maxTE==0. */
+
+    /**
+     * Checkbox to optionally hide rows where minTE==0 and maxTE==0.
+     */
     private final JCheckBox hideZeroEffects =
             new JCheckBox("Hide zero-effect pairs (min=max=0)");
 
@@ -136,22 +178,39 @@ public class IdaEditor extends JPanel {
 
         setLayout(new BorderLayout());
 
-        // Initial empty selection, user must choose X and Y then click Run.
-        this.currentPairs = new ArrayList<>();
+        // ---- Restore persisted UI + table state (session-only) if available ----
+        CachedState cached = STATE_CACHE.get(idaModel);
+        if (cached != null && cached.pairs != null && !cached.pairs.isEmpty()) {
+            // Restore text + toggles
+            treatmentsField.setText(cached.treatmentsText != null ? cached.treatmentsText : "");
+            outcomesField.setText(cached.outcomesText != null ? cached.outcomesText : "");
+            showOptimalIda.setSelected(cached.showOptimal);
+            hideZeroEffects.setSelected(cached.hideZeros);
 
-        // Table and sorter
+            // Keep IdaModel in sync too (so other UI components that read from the model remain consistent)
+            idaModel.setTreatmentsText(treatmentsField.getText());
+            idaModel.setOutcomesText(outcomesField.getText());
+            idaModel.setOptimalIdaSelected(showOptimalIda.isSelected());
+            idaModel.setHideZeroEffects(hideZeroEffects.isSelected());
+
+            // Restore the actual row set shown last time.
+            this.currentPairs = new ArrayList<>(cached.pairs);
+        } else {
+            // No cached run: use model text, but start with empty table (fast open).
+            treatmentsField.setText(idaModel.getTreatmentsText());
+            outcomesField.setText(idaModel.getOutcomesText());
+            showOptimalIda.setSelected(idaModel.isOptimalIdaSelected());
+            hideZeroEffects.setSelected(idaModel.getHideZeroEffects());
+            this.currentPairs = new ArrayList<>();
+        }
+
+        // ---- Table and sorter ----
         this.tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
         this.table = new JTable(tableModel);
+
         NumberFormatRenderer numberRenderer = new NumberFormatRenderer(numberFormat);
         table.setDefaultRenderer(Double.class, numberRenderer);
-        table.setAutoCreateRowSorter(true);
         table.setFillsViewportHeight(true);
-
-        hideZeroEffects.setSelected(idaModel.getHideZeroEffects());
-
-        hideZeroEffects.addActionListener(e -> {
-            idaModel.setHideZeroEffects(hideZeroEffects.isSelected());
-        });
 
         this.sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
@@ -159,32 +218,24 @@ public class IdaEditor extends JPanel {
         // When the user sorts, recompute the summary statistics using only visible rows.
         sorter.addRowSorterListener(e -> {
             if (e.getType() == RowSorterEvent.Type.SORTED) {
-                List<OrderedPair<Node>> visiblePairs = new ArrayList<>();
-                int rowCount = table.getRowCount();
-
-                for (int i = 0; i < rowCount; i++) {
-                    int modelIndex = table.convertRowIndexToModel(i);
-                    if (modelIndex >= 0 && modelIndex < currentPairs.size()) {
-                        visiblePairs.add(currentPairs.get(modelIndex));
-                    }
-                }
-
-                if (idaModel.getTrueSemIm() != null && !visiblePairs.isEmpty()) {
-                    setSummaryText(numberFormat, idaCheckEst, visiblePairs);
-                }
+                updateStatsForVisibleRows();
             }
         });
 
+        // Persist hideZeroEffects toggle to the model; actual filtering happens on Run (via recomputeTable()).
+        hideZeroEffects.addActionListener(e -> idaModel.setHideZeroEffects(hideZeroEffects.isSelected()));
+
         // Show Optimal IDA checkbox – only relevant if the estimated graph is a legal PDAG.
         if (idaCheckEst.getGraph().paths().isLegalPdag()) {
-            showOptimalIda.setSelected(idaCheckEst.isShowOptimalIda());
+            // If cached, it’s already set; otherwise use whatever IdaCheck currently has as a default.
+            if (cached == null) {
+                showOptimalIda.setSelected(idaCheckEst.isShowOptimalIda());
+            }
         } else {
             showOptimalIda.setEnabled(false);
         }
 
-        treatmentsField.setText(idaModel.getTreatmentsText());
-        outcomesField.setText(idaModel.getOutcomesText());
-
+        // Persist treatments/outcomes text to the model (on focus lost).
         treatmentsField.addFocusListener(new FocusAdapter() {
             public void focusLost(FocusEvent e) {
                 idaModel.setTreatmentsText(treatmentsField.getText());
@@ -198,13 +249,9 @@ public class IdaEditor extends JPanel {
             }
         });
 
-        showOptimalIda.setSelected(idaModel.isOptimalIdaSelected());
+        showOptimalIda.addActionListener(e -> idaModel.setOptimalIdaSelected(showOptimalIda.isSelected()));
 
-        showOptimalIda.addActionListener(e -> {
-            idaModel.setOptimalIdaSelected(!idaModel.isOptimalIdaSelected());
-        });
-
-        // Top control panel: X/Y fields, Run button, and (if available) Optimal IDA checkbox.
+        // ---- Top control panel: X/Y fields, Run button, and (if available) Optimal IDA checkbox. ----
         Box controlsBox = Box.createVerticalBox();
 
         Box xys = Box.createVerticalBox();
@@ -237,17 +284,7 @@ public class IdaEditor extends JPanel {
         controlsBox.add(Box.createVerticalStrut(5));
         controlsBox.add(buttonRow);
 
-//        hideZeroEffects.addActionListener(e -> {
-//            // Only meaningful after the user has run once (i.e., has X/Y that parse).
-//            // If they haven't, recomputeTable() will throw the same message as Run.
-//            try {
-//                recomputeTable();
-//            } catch (Exception ignored) {
-//                // swallow; user can hit Run when ready
-//            }
-//        });
-
-        // Stats box
+        // ---- Stats box ----
         Box statsBox = Box.createVerticalBox();
         if (idaModel.getTrueSemIm() != null) {
             avgSquaredDistLabel = new JLabel();
@@ -260,7 +297,7 @@ public class IdaEditor extends JPanel {
             addStatToBox(squaredDiffMaxTotalLabel, statsBox);
         }
 
-        // Main "Table" tab layout
+        // ---- Main "Table" tab layout ----
         Box mainBox = Box.createVerticalBox();
         mainBox.add(controlsBox);
         mainBox.add(Box.createVerticalStrut(5));
@@ -270,12 +307,21 @@ public class IdaEditor extends JPanel {
             mainBox.add(statsBox);
         }
 
-        // Wire up "Run" button
+        // ---- Wire up "Run" button ----
         runButton.addActionListener(e -> {
             try {
                 idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
-                idaCheckEst.recompute();
+                idaCheckEst.recompute(); // compute all pairs for current IDA type (preserves old "Run" semantics)
                 recomputeTable();
+
+                // Persist last successful run into session cache (so reopening the editor restores immediately).
+                STATE_CACHE.put(this.idaModel, new CachedState(
+                        treatmentsField.getText(),
+                        outcomesField.getText(),
+                        showOptimalIda.isSelected(),
+                        hideZeroEffects.isSelected(),
+                        new ArrayList<>(this.currentPairs)
+                ));
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(this,
                         ex.getMessage(),
@@ -284,7 +330,7 @@ public class IdaEditor extends JPanel {
             }
         });
 
-        // Tabbed pane with Table + Help
+        // ---- Tabbed pane with Table + Help ----
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         tabbedPane.addTab("Table", mainBox);
         tabbedPane.addTab("Help", new JScrollPane(getHelp()));
@@ -295,6 +341,11 @@ public class IdaEditor extends JPanel {
             setPreferredSize(new Dimension(400, 600));
         } else {
             setPreferredSize(new Dimension(600, 600));
+        }
+
+        // If we restored a non-empty table, update the summary stats immediately.
+        if (idaModel.getTrueSemIm() != null && currentPairs != null && !currentPairs.isEmpty()) {
+            setSummaryText(numberFormat, idaCheckEst, currentPairs);
         }
 
         revalidate();
@@ -417,18 +468,8 @@ public class IdaEditor extends JPanel {
         for (OrderedPair<Node> pair : allPairs) {
             Node x = pair.getFirst();
             Node y = pair.getSecond();
-//            if (X.contains(x) && Y.contains(y)) {
-//
-//                if (idaModel.getIdaCheckEst().getMinTotalEffect(x, y) == 0.0
-//                        && idaModel.getIdaCheckEst().getMaxTotalEffect(x, y) == 0.0) {
-//                    continue;
-//                }
-//
-//                newPairs.add(pair);
-//            }
 
             if (X.contains(x) && Y.contains(y)) {
-
                 if (filterZeros) {
                     double min = idaModel.getIdaCheckEst().getMinTotalEffect(x, y);
                     double max = idaModel.getIdaCheckEst().getMaxTotalEffect(x, y);
@@ -436,7 +477,6 @@ public class IdaEditor extends JPanel {
                         continue;
                     }
                 }
-
                 newPairs.add(pair);
             }
         }
@@ -448,31 +488,15 @@ public class IdaEditor extends JPanel {
         this.currentPairs = newPairs;
 
         this.tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
-//        table.setModel(tableModel);
-
         table.setModel(tableModel);
+
+        // Replace sorter (and its listeners) to match the new model.
         this.sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
 
-        this.sorter = new TableRowSorter<>(tableModel);
-        table.setRowSorter(sorter);
-
-        // Reattach the sorter listener for statistics on visible rows.
         sorter.addRowSorterListener(e -> {
             if (e.getType() == RowSorterEvent.Type.SORTED) {
-                List<OrderedPair<Node>> visiblePairs = new ArrayList<>();
-                int rowCount = table.getRowCount();
-
-                for (int i = 0; i < rowCount; i++) {
-                    int modelIndex = table.convertRowIndexToModel(i);
-                    if (modelIndex >= 0 && modelIndex < currentPairs.size()) {
-                        visiblePairs.add(currentPairs.get(modelIndex));
-                    }
-                }
-
-                if (idaModel.getTrueSemIm() != null && !visiblePairs.isEmpty()) {
-                    setSummaryText(numberFormat, idaCheckEst, visiblePairs);
-                }
+                updateStatsForVisibleRows();
             }
         });
 
@@ -482,6 +506,28 @@ public class IdaEditor extends JPanel {
 
         table.revalidate();
         table.repaint();
+    }
+
+    /**
+     * Updates summary stats using only currently visible rows (after sorting/filtering).
+     */
+    private void updateStatsForVisibleRows() {
+        if (idaModel.getTrueSemIm() == null) return;
+        if (currentPairs == null || currentPairs.isEmpty()) return;
+
+        List<OrderedPair<Node>> visiblePairs = new ArrayList<>();
+        int rowCount = table.getRowCount();
+
+        for (int i = 0; i < rowCount; i++) {
+            int modelIndex = table.convertRowIndexToModel(i);
+            if (modelIndex >= 0 && modelIndex < currentPairs.size()) {
+                visiblePairs.add(currentPairs.get(modelIndex));
+            }
+        }
+
+        if (!visiblePairs.isEmpty()) {
+            setSummaryText(numberFormat, idaCheckEst, visiblePairs);
+        }
     }
 
     /**
@@ -575,7 +621,6 @@ public class IdaEditor extends JPanel {
             super.setValue(value);
         }
     }
-
 }
 
 /**
@@ -594,8 +639,9 @@ class IdaTableModel extends AbstractTableModel {
      * effect, where if the true total effect falls between the minimum and maximum total effect zero is reported.
      * If the true model is not given, the last two columns are not included.
      */
-//    private final String[] columnNames = {"Pair", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};
-    private final String[] columnNames = {"#", "Pair", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};  /**
+    private final String[] columnNames = {"#", "Pair", "Min TE", "Max TE", "IDA Min Effect", "True TE", "Sq Dist"};
+
+    /**
      * The data for the table.
      */
     private final Object[][] data;
@@ -609,7 +655,6 @@ class IdaTableModel extends AbstractTableModel {
      */
     IdaTableModel(List<OrderedPair<Node>> pairs, IdaCheck estModel, SemIm trueSemIm) {
         boolean hasTrue = trueSemIm != null;
-//        data = new Object[pairs.size()][hasTrue ? 6 : 4];
         data = new Object[pairs.size()][hasTrue ? 7 : 5];
 
         for (int i = 0; i < pairs.size(); i++) {
@@ -619,21 +664,7 @@ class IdaTableModel extends AbstractTableModel {
             double maxTotalEffect = estModel.getMaxTotalEffect(pair.getFirst(), pair.getSecond());
             double minAbsTotalEffect = estModel.getIdaMinEffect(pair.getFirst(), pair.getSecond());
 
-//            data[i][0] = edge;
-//            data[i][1] = minTotalEffect;
-//            data[i][2] = maxTotalEffect;
-//            data[i][3] = minAbsTotalEffect;
-//
-//            if (hasTrue) {
-//                double trueTotalEffect = estModel.getTrueTotalEffect(pair);
-//                double squaredDistance = estModel.getSquaredDistance(pair);
-//
-//                data[i][4] = trueTotalEffect;
-//                data[i][5] = squaredDistance;
-//            }
-
             data[i][0] = i + 1;   // 1-based index
-
             data[i][1] = edge;
             data[i][2] = minTotalEffect;
             data[i][3] = maxTotalEffect;
@@ -664,12 +695,6 @@ class IdaTableModel extends AbstractTableModel {
         return columnNames[col];
     }
 
-//    @Override
-//    public Class<?> getColumnClass(int col) {
-//        if (col == 0) return String.class;
-//        return Double.class;
-//    }
-
     @Override
     public Class<?> getColumnClass(int col) {
         if (col == 0) return Integer.class;  // index
@@ -682,4 +707,3 @@ class IdaTableModel extends AbstractTableModel {
         return data[row][col];
     }
 }
-
