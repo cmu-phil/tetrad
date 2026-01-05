@@ -52,13 +52,6 @@ import java.util.*;
  * This class used to be frequently instantiated by UI editors that start with an empty table.
  * In that context, precomputing effects for all O(p^2) pairs in the constructor made the UI slow to open.
  *
- * This implementation keeps the public API the same, but:
- * <ul>
- *     <li>Does NOT compute any IDA results in the constructor.</li>
- *     <li>Computes results on demand per (X,Y) pair when getters are called, unless {@link #recompute()} is invoked.</li>
- *     <li>{@link #recompute()} still computes all pairs eagerly (preserves old “precompute everything” semantics).</li>
- * </ul>
- *
  * @author josephramsey
  * @version $Id: $Id
  * @see Ida
@@ -208,7 +201,7 @@ public class IdaCheck {
      * <p>
      * This preserves the old semantics of recompute() as “compute everything”.
      */
-    private void computeIdaResults() {
+    private void computeIdaResults(List<OrderedPair<Node>> currentPairs) {
         // Make sure Ida is in sync with the flag
         syncIdaTypeIfNeeded();
 
@@ -217,7 +210,7 @@ public class IdaCheck {
         this.absTotalEffects.clear();
 
         // Recompute for all pairs
-        for (OrderedPair<Node> pair : this.pairs) {
+        for (OrderedPair<Node> pair : currentPairs) {
             LinkedList<Double> total = ida.getTotalEffects(pair.getFirst(), pair.getSecond());
             LinkedList<Double> abs = ida.getAbsTotalEffects(pair.getFirst(), pair.getSecond());
 
@@ -322,11 +315,12 @@ public class IdaCheck {
         double ret = Double.NaN;
 
         for (double te : total) {
-            if (Math.abs(te) == targetAbs) {
+            if (Math.abs(Math.abs(te) - targetAbs) < 1e-12) {
                 ret = te;
                 break;
             }
         }
+
         return ret;
     }
 
@@ -583,8 +577,15 @@ public class IdaCheck {
      * This method clears any previously computed effects and recalculates them
      * using the current state of the graph and IDA configuration.
      */
-    public void recompute() {
-        computeIdaResults();
+//    public void recompute(List<OrderedPair<Node>> currentPairs) {
+//        computeIdaResults(currentPairs);
+//    }
+
+    public void recompute(List<OrderedPair<Node>> currentPairs) {
+        syncIdaTypeIfNeeded();
+        for (OrderedPair<Node> pair : currentPairs) {
+            ensurePairComputed(pair);
+        }
     }
 
     /**

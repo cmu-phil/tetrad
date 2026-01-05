@@ -311,8 +311,14 @@ public class IdaEditor extends JPanel {
         runButton.addActionListener(e -> {
             try {
                 idaCheckEst.setShowOptimalIda(showOptimalIda.isSelected());
-                idaCheckEst.recompute(); // compute all pairs for current IDA type (preserves old "Run" semantics)
-                recomputeTable();
+//                idaCheckEst.recompute(currentPairs);
+//                recomputeTable();
+
+                recomputeTable(); // sets currentPairs
+                idaCheckEst.recompute(currentPairs); // compute only those pairs
+                // then rebuild model, or (better) rebuild after computing
+                this.tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
+                table.setModel(tableModel);
 
                 // Persist last successful run into session cache (so reopening the editor restores immediately).
                 STATE_CACHE.put(this.idaModel, new CachedState(
