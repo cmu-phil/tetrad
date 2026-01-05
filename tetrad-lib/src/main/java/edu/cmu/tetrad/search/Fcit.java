@@ -61,6 +61,7 @@ public final class Fcit implements IGraphSearch {
      * sets - specifically to check conditional independencies between pairs of variables given a separating set.
      */
     private final SepsetMap sepsets = new SepsetMap();
+    private final List<Node> selection;
     /**
      * The background knowledge.
      */
@@ -161,6 +162,9 @@ public final class Fcit implements IGraphSearch {
 
         this.test = test;
         this.score = score;
+
+        this.selection = this.test.getVariables().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         test.setVerbose(superVerbose);
 
@@ -669,7 +673,7 @@ public final class Fcit implements IGraphSearch {
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
 
-        if (!PagLegalityCheck.isLegalPagQuiet(this.pag, Set.of())) {
+        if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
                                                + " reasons, but it didn't lead to a PAG");
