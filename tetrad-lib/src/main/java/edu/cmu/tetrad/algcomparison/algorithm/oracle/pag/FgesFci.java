@@ -132,7 +132,7 @@ public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, Ha
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphTransforms.dagToPag(graph);
+        return GraphTransforms.dagToPag(graph, false);
     }
 
     /**

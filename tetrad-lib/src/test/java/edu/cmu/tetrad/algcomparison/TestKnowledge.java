@@ -79,7 +79,6 @@ public class TestKnowledge {
         Parameters parameters = new Parameters();
 
         testKnowledge(dataSet, knowledge, parameters, new Boss(score));
-        testKnowledge(dataSet, knowledge, parameters, new Cpc(test));
         testKnowledge(dataSet, knowledge, parameters, new Fges(score));
         testKnowledge(dataSet, knowledge, parameters, new Grasp(test, score));
         testKnowledge(dataSet, knowledge, parameters, new Pc(test));
@@ -87,8 +86,6 @@ public class TestKnowledge {
 
         testKnowledge(dataSet, knowledge, parameters, new BossFci(test, score));
         testKnowledge(dataSet, knowledge, parameters, new Fci(test));
-        testKnowledge(dataSet, knowledge, parameters, new FciMax(test));
-        testKnowledge(dataSet, knowledge, parameters, new FgesFci(test, score));
         testKnowledge(dataSet, knowledge, parameters, new GraspFci(test, score));
         testKnowledge(dataSet, knowledge, parameters, new Rfci(test));
         testKnowledge(dataSet, knowledge, parameters, new SpFci(test, score));

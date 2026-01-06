@@ -67,7 +67,7 @@ public class NodesInCyclesPrecision implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         trueGraph = GraphUtils.replaceNodes(trueGraph, estGraph.getNodes());
 
         Set<Node> inTrue = getNodesInCycles(trueGraph);

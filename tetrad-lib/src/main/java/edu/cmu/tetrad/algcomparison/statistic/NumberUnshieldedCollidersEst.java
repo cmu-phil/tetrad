@@ -63,7 +63,7 @@ public class NumberUnshieldedCollidersEst implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         List<Node> nodes = estGraph.getNodes();
         int count = 0;
 
@@ -92,6 +92,15 @@ public class NumberUnshieldedCollidersEst implements Statistic {
     @Override
     public double getNormValue(double value) {
         return 1.0 - FastMath.tanh(value / 1000.);
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

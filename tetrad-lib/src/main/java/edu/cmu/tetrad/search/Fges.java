@@ -82,15 +82,15 @@ import static org.apache.commons.math3.util.FastMath.min;
  */
 public class Fges implements IGraphSearch, DagScorer {
     /**
-     * Used to find semidirected paths for cycle checking.
+     * Used to find potentially directed paths for cycle checking.
      */
     private final Set<Node> emptySet = new HashSet<>();
     /**
-     * Used to find semidirected paths for cycle checking.
+     * Used to find potentially directed paths for cycle checking.
      */
     private final int[] count = new int[1];
     /**
-     * Used to find semidirected paths for cycle checking.
+     * Used to find potentially directed paths for cycle checking.
      */
     private final int depth = 10000;
     /**
@@ -209,9 +209,9 @@ public class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Used to find semidirected paths for cycle checking.
+     * Used to find potentially directed paths for cycle checking.
      */
-    private static Node traverseSemiDirected(Node node, Edge edge) {
+    private static Node traversePotentiallyDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
                 return edge.getNode2();
@@ -936,7 +936,7 @@ public class Fges implements IGraphSearch, DagScorer {
         Set<Node> union = new HashSet<>(T);
         union.addAll(naYX);
 
-        return isClique(union) && semidirectedPathCondition(y, x, union) && !violatesKnowledge;
+        return isClique(union) && potentiallyDirectedPathCondition(y, x, union) && !violatesKnowledge;
     }
 
     /**
@@ -1096,17 +1096,17 @@ public class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Determines whether there exists a semi-directed path from a given source node to a target node that satisfies a
+     * Determines whether there exists a potentially directed path from a given source node to a target node that satisfies a
      * set of conditions.
      *
      * @param from the source node
      * @param to   the target node
      * @param cond the set of conditions
-     * @return {@code true} if a semi-directed path from the source node to the target node exists that satisfies the
+     * @return {@code true} if a potentially directed path from the source node to the target node exists that satisfies the
      * conditions; {@code false} otherwise
      * @throws IllegalArgumentException if the source node and the target node are the same
      */
-    private boolean semidirectedPathCondition(Node from, Node to, Set<Node> cond) {
+    private boolean potentiallyDirectedPathCondition(Node from, Node to, Set<Node> cond) {
         if (from == to) throw new IllegalArgumentException();
 
         Queue<Node> Q = new LinkedList<>();
@@ -1128,7 +1128,7 @@ public class Fges implements IGraphSearch, DagScorer {
 
             for (Node u : graph.getAdjacentNodes(t)) {
                 Edge edge = graph.getEdge(t, u);
-                Node c = traverseSemiDirected(t, edge);
+                Node c = traversePotentiallyDirected(t, edge);
 
                 if (c == null) {
                     continue;

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,13 +16,14 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ProbUtils;
@@ -54,10 +55,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serial;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -790,7 +788,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
             saveSemAsXml.addActionListener(e -> {
                 try {
-                    File outfile = EditorUtils.getSaveFile("semIm", "xml", getComp(),
+                    File outfile = EditorUtils.getSaveFile("sem-im", "xml", getComp(),
                             false, "Save SEM IM as XML...");
 
                     SemIm semIm = (SemIm) SemImEditor.this.oneEditorPanel.getSemIm();
@@ -806,6 +804,16 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
+            });
+
+            JMenuItem saveSemAsLavaan = new JMenuItem("Save SEM as Lavaan");
+            file.add(saveSemAsLavaan);
+
+            saveSemAsLavaan.addActionListener(e -> {
+                File outfile = EditorUtils.getSaveFile("sem-im", "lav", getComp(),
+                        false, "Save SEM IM as XML...");
+                SemIm semIm = (SemIm) SemImEditor.this.oneEditorPanel.getSemIm();
+                exportSemImToLavaan(JOptionUtils.getCenteringFrame(), semIm, outfile);
             });
 
             JCheckBoxMenuItem covariances
@@ -988,6 +996,32 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         //========================PRIVATE METHODS===========================//
+
+        public void exportSemImToLavaan(Window parent, SemIm semIm, File file) {
+            SemLavaanOptionsDialog dialog = new SemLavaanOptionsDialog(parent);
+            dialog.showDialog();
+
+            if (!dialog.isApproved()) {
+                return; // user cancelled
+            }
+
+            String lav = SemLavaanRenderer.semImToLavaan(
+                    semIm,
+                    dialog.isIncludeIntercepts(),
+                    dialog.isIncludeVariances(),
+                    dialog.isIncludeCovariances(),
+                    dialog.isFixParameters()
+            );
+
+            try {
+                FileWriter writer = new FileWriter(file);
+                writer.write(lav);
+                writer.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         private JMenuItem getCopyMatrixMenuItem() {
             JMenuItem item = new JMenuItem("Copy Implied Covariance Matrix");
             item.addActionListener((e) -> {

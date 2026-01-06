@@ -59,14 +59,14 @@ public class NoSemidirectedPrecision implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Proportion of (X, Y) where if no semidirected path in est then also not in true";
+        return "Proportion of (X, Y) where if no potentially directed path in est then also not in true";
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0, fp = 0;
 
         Graph cpdag = GraphTransforms.dagToCpdag(trueGraph);
@@ -77,8 +77,8 @@ public class NoSemidirectedPrecision implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!estGraph.paths().existsSemiDirectedPath(x, y)) {
-                    if (!cpdag.paths().existsSemiDirectedPath(x, y)) {
+                if (!estGraph.paths().existsPotentiallyDirectedPath(x, y)) {
+                    if (!cpdag.paths().existsPotentiallyDirectedPath(x, y)) {
                         tp++;
                     } else {
                         fp++;

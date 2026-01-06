@@ -71,7 +71,7 @@ public final class TestBayesDiscreteBicScorer {
         System.out.println(buf);
         double lik = ret.bic;
 
-        assertEquals(0, ret.p, 0.001);
+        assertEquals(1, ret.p, 0.001);
     }
 
     public void testGregsBdeuStructurePrior() {

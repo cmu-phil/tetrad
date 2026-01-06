@@ -759,10 +759,24 @@ public class Pc implements IGraphSearch {
         return "{" + String.join(",", names) + "}";
     }
 
+//    private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
+//        if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
+//        if (!isArrowheadAllowed(x, z, knowledge) || !isArrowheadAllowed(y, z, knowledge)) return false;
+//        if (allowBidirected != AllowBidirected.ALLOW && (g.isParentOf(z, x) || g.isParentOf(z, y))) return false;
+//        return true;
+//    }
+
     private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
         if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
         if (!isArrowheadAllowed(x, z, knowledge) || !isArrowheadAllowed(y, z, knowledge)) return false;
         if (allowBidirected != AllowBidirected.ALLOW && (g.isParentOf(z, x) || g.isParentOf(z, y))) return false;
+
+        // NEW: forbid orientations that create directed cycles
+        // If there is already a directed path z → ... → x, then adding x → z would create a cycle.
+        // Likewise for y.
+        if (g.paths().existsDirectedPath(z, x)) return false;
+        if (g.paths().existsDirectedPath(z, y)) return false;
+
         return true;
     }
 

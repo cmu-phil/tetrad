@@ -65,11 +65,20 @@ public final class IndependenceFact implements TetradSerializable, Comparable<In
         if (x == null || y == null || z == null) {
             throw new NullPointerException();
         }
-
         this.x = x;
         this.y = y;
-        this._z = z;
+        // Defensive copy; also, optional: wrap as unmodifiable to catch accidental mutation.
+        this._z = Collections.unmodifiableSet(new HashSet<>(z));
     }
+//    public IndependenceFact(Node x, Node y, Set<Node> z) {
+//        if (x == null || y == null || z == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        this.x = x;
+//        this.y = y;
+//        this._z = z;
+//    }
 
     /**
      * <p>Constructor for IndependenceFact.</p>
@@ -78,21 +87,33 @@ public final class IndependenceFact implements TetradSerializable, Comparable<In
      * @param y a {@link edu.cmu.tetrad.graph.Node} object
      * @param z a {@link edu.cmu.tetrad.graph.Node} object
      */
+
     public IndependenceFact(Node x, Node y, Node... z) {
         if (x == null || y == null || z == null) {
             throw new NullPointerException();
         }
-
         this.x = x;
         this.y = y;
 
         Set<Node> cond = new HashSet<>();
-
         Collections.addAll(cond, z);
-
-
-        this._z = cond;
+        this._z = Collections.unmodifiableSet(cond);
     }
+//    public IndependenceFact(Node x, Node y, Node... z) {
+//        if (x == null || y == null || z == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        this.x = x;
+//        this.y = y;
+//
+//        Set<Node> cond = new HashSet<>();
+//
+//        Collections.addAll(cond, z);
+//
+//
+//        this._z = cond;
+//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -225,54 +246,6 @@ public final class IndependenceFact implements TetradSerializable, Comparable<In
         return 0;
     }
 
-//    /**
-//     * <p>hashCode.</p>
-//     *
-//     * @return a int
-//     */
-//    public int hashCode() {
-//        return 1;
-//    }
-//
-//    /**
-//     * {@inheritDoc}
-//     */
-//    public boolean equals(Object obj) {
-//        if (!(obj instanceof IndependenceFact fact)) {
-//            return false;
-//        }
-//
-//        Set<String> zString1 = new HashSet<>();
-//
-//        for (Node n : this._z) {
-//            zString1.add(n.getName());
-//        }
-//
-//        Set<String> zString2 = new HashSet<>();
-//
-//        for (Node n : fact._z) {
-//            zString2.add(n.getName());
-//        }
-//
-//        String xN1 = this.x.getName();
-//        String xN2 = fact.x.getName();
-//
-//        String yN1 = this.y.getName();
-//        String yN2 = fact.y.getName();
-//
-//        Set<String> a1 = new HashSet<>();
-//        a1.add(xN1);
-//        a1.add(yN1);
-//
-//        Set<String> a2 = new HashSet<>();
-//        a2.add(xN2);
-//        a2.add(yN2);
-//
-//        return a1.equals(a2) && zString1.equals(zString2);
-//
-////        return _z.equals(fact._z) && ((x.equals(fact.x) && (y.equals(fact.y))) || (x.equals(fact.y) && (y.equals(fact.x))));
-//    }
-
     /**
      * <p>toString.</p>
      *
@@ -300,39 +273,6 @@ public final class IndependenceFact implements TetradSerializable, Comparable<In
 
         return builder.toString();
     }
-
-//    /**
-//     * Note that this compareTo method gives a lexical ordering for independence facts and doesn't reflect independence
-//     * fact equality. So sorted sets should not be used to check for independence fact existence, for instance.
-//     * -jdramsey.
-//     *
-//     * @param fact a {@link edu.cmu.tetrad.graph.IndependenceFact} object
-//     * @return a int
-//     */
-//    public int compareTo(IndependenceFact fact) {
-//        List<Node> thisNodes = new ArrayList<>();
-//        thisNodes.add(this.x);
-//        thisNodes.add(this.y);
-//        thisNodes.addAll(this._z);
-//
-//        List<Node> factNodes = new ArrayList<>();
-//        factNodes.add(fact.x);
-//        factNodes.add(fact.y);
-//        factNodes.addAll(fact._z);
-//
-//        for (int i = 0; i < thisNodes.size(); i++) {
-//            if (factNodes.size() <= i) {
-//                return +1;
-//            }
-//
-//            int c = thisNodes.get(i).getName().compareTo(factNodes.get(i).getName());
-//            if (c != 0) {
-//                return c;
-//            }
-//        }
-//
-//        return 0;
-//    }
 
     /**
      * Writes the object to the specified ObjectOutputStream.

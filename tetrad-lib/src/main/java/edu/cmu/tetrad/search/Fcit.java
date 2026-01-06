@@ -61,6 +61,7 @@ public final class Fcit implements IGraphSearch {
      * sets - specifically to check conditional independencies between pairs of variables given a separating set.
      */
     private final SepsetMap sepsets = new SepsetMap();
+    private final List<Node> selection;
     /**
      * The background knowledge.
      */
@@ -137,6 +138,7 @@ public final class Fcit implements IGraphSearch {
      */
     private @NotNull Graph pag = new EdgeListGraph();
     private boolean replicatingGraph = false;
+    private boolean excludeSelectionBias = false;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -160,6 +162,9 @@ public final class Fcit implements IGraphSearch {
 
         this.test = test;
         this.score = score;
+
+        this.selection = this.test.getVariables().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         test.setVerbose(superVerbose);
 
@@ -202,14 +207,14 @@ public final class Fcit implements IGraphSearch {
 
     private static void redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                             Set<Triple> initialColliders, boolean completeRuleSetUsed,
-                                            SepsetMap sepsets, boolean superVerbose) {
+                                            SepsetMap sepsets, boolean excludeSelectionBias, boolean superVerbose) {
         // GFCI reorientation...
         GraphUtils.reorientWithCircles(pag, superVerbose);
-        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
         adjustForExtraSepsets(sepsets, pag, superVerbose);
-        fciOrient.finalOrientation(pag);
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
     }
 
     /**
@@ -254,10 +259,6 @@ public final class Fcit implements IGraphSearch {
                     if (!pag.isDefCollider(x, node, y)) {
                         pag.setEndpoint(x, node, Endpoint.ARROW);
                         pag.setEndpoint(y, node, Endpoint.ARROW);
-
-                        if (superVerbose) {
-                            TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
-                        }
                     }
                 }
             }
@@ -289,7 +290,7 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
-        fciOrient.setParallel(false);
+        fciOrient.setParallel(true);
 //        fciOrient.setCompleteRuleSetUsed(true);
 //        fciOrient.setKnowledge(knowledge);
 
@@ -425,7 +426,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         // The main procedure.
-        this.pag = GraphTransforms.dagToPag(dag);
+        this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias);
 
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
@@ -437,7 +438,7 @@ public final class Fcit implements IGraphSearch {
 
         do {
             System.out.println("Round: " + (++round));
-        } while (removeEdgesRecursively(checks));
+        } while (removeEdgesRecursively(checks, excludeSelectionBias));
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -519,7 +520,7 @@ public final class Fcit implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(Set<IndependenceCheck> checks) {
+    private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias) {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -528,7 +529,8 @@ public final class Fcit implements IGraphSearch {
 
         // The final orientation rules were applied just before this step, so this should list only
         // discriminating paths that could not be oriented by them...
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag, -1, false);
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag,
+                -1, false);
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
         for (DiscriminatingPath path : discriminatingPaths) {
             Node x = path.getX();
@@ -551,7 +553,7 @@ public final class Fcit implements IGraphSearch {
         for (Result result : results) {
             Edge edge = result.edge();
             Set<Node> b = result.cond();
-            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive");
+            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias);
             changed |= didChange;
         }
 
@@ -606,7 +608,8 @@ public final class Fcit implements IGraphSearch {
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
 
             // Use recursive blocking to propose a blocking set B; null => no sepset under this NF
-            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1, this.knowledge);
+            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1);
+//            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1, this.knowledge);
             if (B == null) {
                 continue; // No separating set possible for this NF; try another NF
             }
@@ -614,6 +617,11 @@ public final class Fcit implements IGraphSearch {
             // Trim B by removing a subset C of common neighbors of x and y (only those present in B)
             List<Node> common = this.pag.getAdjacentNodes(x);
             common.retainAll(this.pag.getAdjacentNodes(y));
+
+            if (common.isEmpty()) {
+                continue;
+            }
+
             common.retainAll(B); // only nodes that actually are in B can be trimmed out
 
             SublistGenerator cGen = new SublistGenerator(common.size(), common.size());
@@ -625,15 +633,15 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> S = new HashSet<>(B);
                 Set<Node> C = GraphUtils.asSet(cChoice, common);
 
-                // Skip if any c ∈ C is a definite collider x -> c <- y
-                boolean killsDefCollider = false;
+                // We don't want to condition on a known collider.
+                boolean skip = false;
                 for (Node c : C) {
                     if (this.pag.isDefCollider(x, c, y)) {
-                        killsDefCollider = true;
+                        skip = true;
                         break;
                     }
                 }
-                if (killsDefCollider) continue;
+                if (skip) continue;
 
                 S.removeAll(C);
 
@@ -656,16 +664,16 @@ public final class Fcit implements IGraphSearch {
         return null;
     }
 
-    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type) {
+    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias) {
         Edge _edge = pag.getEdge(x, y);
         Graph _pag = new EdgeListGraph(pag);
 
         this.pag.removeEdge(_edge);
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
-        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, superVerbose);
+        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, completeRuleSetUsed, sepsets, excludeSelectionBias, superVerbose);
 
-        if (!GraphLegalityCheck.isLegalPagQuiet(this.pag, Set.of())) {
+        if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
                 TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
                                                + " reasons, but it didn't lead to a PAG");
@@ -719,7 +727,6 @@ public final class Fcit implements IGraphSearch {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-        setSuperVerbose(verbose);
     }
 
     /**
@@ -779,6 +786,15 @@ public final class Fcit implements IGraphSearch {
      */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
+    }
+
+    /**
+     * Sets whether selection bias should be excluded during the search process.
+     *
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
+     */
+    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
+        this.excludeSelectionBias = excludeSelectionBias;
     }
 
     /**

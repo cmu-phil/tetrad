@@ -62,9 +62,9 @@ public class NumberArrowsNotInUnshieldedCollidersEst implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double n1 = new NumberEdgesInUnshieldedCollidersEst().getValue(trueGraph, estGraph, dataModel, new Parameters());
-        double n2 = new NumberArrowsEst().getValue(trueGraph, estGraph, dataModel, new Parameters());
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        double n1 = new NumberEdgesInUnshieldedCollidersEst().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
+        double n2 = new NumberArrowsEst().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
         return n2 - n1;
     }
 
@@ -74,6 +74,15 @@ public class NumberArrowsNotInUnshieldedCollidersEst implements Statistic {
     @Override
     public double getNormValue(double value) {
         return 1.0 - FastMath.tanh(value / 10.);
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

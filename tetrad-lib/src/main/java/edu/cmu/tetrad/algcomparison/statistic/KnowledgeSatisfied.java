@@ -77,7 +77,7 @@ public class KnowledgeSatisfied implements Statistic, HasKnowledge {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         return knowledge.isViolatedBy(estGraph) ? 0 : 1;
     }
 
@@ -97,6 +97,15 @@ public class KnowledgeSatisfied implements Statistic, HasKnowledge {
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

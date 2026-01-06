@@ -671,27 +671,60 @@ public final class BoxDataSet implements DataSet {
      * <p>
      * Removes the column for the variable at the given index, reducing the number of columns by one.
      */
+//    public void removeColumn(int index) {
+//        if (index < 0 || index >= this.variables.size()) {
+//            throw new IllegalArgumentException("Not a column in this data set: " + index);
+//        }
+//
+//        this.variables.remove(index);
+//
+//        int[] rows = new int[this.dataBox.numRows()];
+//
+//        for (int i = 0; i < this.dataBox.numRows(); i++) {
+//            rows[i] = i;
+//        }
+//
+//        int[] cols = new int[this.dataBox.numCols() - 1];
+//
+//        int m = -1;
+//
+//        for (int i = 0; i < this.dataBox.numCols(); i++) {
+//            if (i != index) {
+//                cols[++m] = i;
+//            }
+//        }
+//
+//        this.dataBox = viewSelection(rows, cols);
+//    }
+
     public void removeColumn(int index) {
-        if (index < 0 || index >= this.variables.size()) {
-            throw new IllegalArgumentException("Not a column in this data set: " + index);
+        int numCols = this.dataBox.numCols();
+
+        // Be strict: index must be valid for both variables and dataBox.
+        if (index < 0 || index >= this.variables.size() || index >= numCols) {
+            throw new IllegalArgumentException(
+                    "Not a column in this data set: " + index +
+                    " (vars=" + this.variables.size() +
+                    ", dataCols=" + numCols + ")"
+            );
         }
 
+        // Remove variable at index
         this.variables.remove(index);
 
-        int[] rows = new int[this.dataBox.numRows()];
-
-        for (int i = 0; i < this.dataBox.numRows(); i++) {
+        // Rows: keep all
+        int numRows = this.dataBox.numRows();
+        int[] rows = new int[numRows];
+        for (int i = 0; i < numRows; i++) {
             rows[i] = i;
         }
 
-        int[] cols = new int[this.dataBox.numCols() - 1];
-
-        int m = -1;
-
-        for (int i = 0; i < this.dataBox.numCols(); i++) {
-            if (i != index) {
-                cols[++m] = i;
-            }
+        // Columns: all except 'index'
+        int[] cols = new int[numCols - 1];
+        int m = 0;
+        for (int i = 0; i < numCols; i++) {
+            if (i == index) continue;
+            cols[m++] = i;
         }
 
         this.dataBox = viewSelection(rows, cols);

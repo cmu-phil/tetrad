@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.test.IndTestMvpLrt;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -39,12 +40,13 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@Experimental
-@TestOfIndependence(
-        name = "Mixed Variable Polynomial Likelihood Ratio Test",
-        command = "mvplr-test",
-        dataType = DataType.Mixed
-)
+//@Experimental
+//@TestOfIndependence(
+//        name = "Mixed Variable Polynomial Likelihood Ratio Test",
+//        command = "mvplr-test",
+//        dataType = DataType.Mixed
+//)
+@Deprecated
 public class Mvplrt implements IndependenceWrapper {
 
     @Serial
@@ -86,9 +88,9 @@ public class Mvplrt implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("alpha");
+        parameters.add(Params.ALPHA);
         parameters.add("fDegree");
-        parameters.add("discretize");
+        parameters.add(Params.DISCRETIZE);
         return parameters;
     }
 

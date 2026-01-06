@@ -24,7 +24,7 @@ import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IdaCheck;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
@@ -32,8 +32,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.Serial;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * A model for the IDA check. This model is used to store the data model, graph, and parameters for the IDA check.
@@ -51,7 +50,7 @@ public class IdaModel implements SessionModel {
     /**
      * Represents the estimated graph associated with the current instance of IdaModel.
      */
-    private final Graph estMpdag;
+    private final Graph estPdag;
     /**
      * Represents the true SemIm object associated with the class IdaModel. It can be null if the object is not
      * available.
@@ -70,19 +69,17 @@ public class IdaModel implements SessionModel {
      */
     private List<String> vars = new LinkedList<>();
     /**
-     * Represents the IdaCheck object associated with the estimated MPDAG. This variable is used to perform checks on
-     * the estimated MPDAG. It is set to null if the estimated MPDAG is not available.
+     * Represents the IdaCheck object associated with the estimated PDAG. This variable is used to perform checks on
+     * the estimated PDAG. It is set to null if the estimated PDAG is not available.
      * <p>
      * Note: This variable is marked as transient, meaning it will not be serialized.
      */
     private transient IdaCheck idaCheckEst;
-    /**
-     * Represents the IdaCheck object associated with the true MPDAG. This variable is used in the context of the
-     * IdaModel class.
-     * <p>
-     * Note: This variable is marked as transient, meaning it will not be serialized.
-     */
-    private transient IdaCheck idaCheckTrue;
+    private String treatmentsText = "*";
+    private String outcomesText = "*";
+    private boolean optimalIdaSelected;
+    private boolean hideZeroEffects = true;
+    private List<OrderedPair<Node>> currentPairs = new ArrayList<>();
 
     /**
      * Constructs a new instance of the IdaModel class.
@@ -115,11 +112,20 @@ public class IdaModel implements SessionModel {
             throw new IllegalArgumentException("Expecting a data set.");
         }
 
-        if (!graphSource.getGraph().paths().isLegalMpdag()) {
-            throw new IllegalArgumentException("Expecting an MPDAG. (Could be a CPDAG or a DAG.)");
+        boolean containsCircle = false;
+
+        for (Edge edge : graphSource.getGraph().getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.CIRCLE || edge.getEndpoint2() == Endpoint.CIRCLE) {
+                containsCircle = true;
+                break;
+            }
         }
 
-        this.estMpdag = graphSource.getGraph();
+        if (!(graphSource.getGraph().paths().isLegalPdag() || containsCircle)) {// graphSource.getGraph().paths().isLegalPag())) {
+            throw new IllegalArgumentException("Expecting an PDAG or PAG. (Could be a CPDAG or a DAG or a PAG.)");
+        }
+
+        this.estPdag = graphSource.getGraph();
 
         // If the data model is a simulation, get the true SEM IM.
         if (dataWrapper instanceof Simulation simulation) {
@@ -149,35 +155,17 @@ public class IdaModel implements SessionModel {
     }
 
     /**
-     * Retrieves the IdaCheck object associated with the estimated MPDAG.
+     * Retrieves the IdaCheck object associated with the estimated PDAG.
      *
-     * @return the IdaCheck object associated with the estimated MPDAG, or null if it is not available.
+     * @return the IdaCheck object associated with the estimated PDAG, or null if it is not available.
      */
     public IdaCheck getIdaCheckEst() {
         if (this.idaCheckEst != null) {
             return this.idaCheckEst;
         }
 
-        this.idaCheckEst = new IdaCheck(this.estMpdag, (DataSet) this.dataModel, trueSemIm);
+        this.idaCheckEst = new IdaCheck(this.estPdag, (DataSet) this.dataModel, trueSemIm);
         return this.idaCheckEst;
-    }
-
-    /**
-     * Retrieves the IdaCheck object with the true DAG.
-     *
-     * @return the IdaCheck object with the true DAG, or null if the true DAG is not available.
-     */
-    public IdaCheck getIdaCheckTrue() {
-        if (this.idaCheckTrue != null) {
-            return this.idaCheckTrue;
-        }
-
-        if (this.trueSemIm == null) {
-            return null;
-        }
-
-        this.idaCheckTrue = new IdaCheck(estMpdag, (DataSet) this.dataModel, trueSemIm);
-        return this.idaCheckTrue;
     }
 
     /**
@@ -243,6 +231,46 @@ public class IdaModel implements SessionModel {
      */
     public SemIm getTrueSemIm() {
         return trueSemIm;
+    }
+
+    public String getTreatmentsText() {
+        return treatmentsText;
+    }
+
+    public void setTreatmentsText(String treatmentsText) {
+        this.treatmentsText = treatmentsText;
+    }
+
+    public String getOutcomesText() {
+        return outcomesText;
+    }
+
+    public void setOutcomesText(String outcomesText) {
+        this.outcomesText = outcomesText;
+    }
+
+    public boolean isOptimalIdaSelected() {
+        return optimalIdaSelected;
+    }
+
+    public void setOptimalIdaSelected(boolean optimalIdaSelected) {
+        this.optimalIdaSelected = optimalIdaSelected;
+    }
+
+    public boolean getHideZeroEffects() {
+        return hideZeroEffects;
+    }
+
+    public void setHideZeroEffects(boolean hideZeroEffects) {
+        this.hideZeroEffects = hideZeroEffects;
+    }
+
+    public List<OrderedPair<Node>> getCurrentPairs() {
+        return new ArrayList<>(this.currentPairs);
+    }
+
+    public void setCurrentPairs(List<OrderedPair<Node>> currentPairs) {
+        this.currentPairs = new ArrayList<>(currentPairs);
     }
 }
 

@@ -695,13 +695,13 @@ public interface Graph extends TetradSerializable {
     }
 
     /**
-     * Determines whether there is a semidirected path from node1 to node2.
+     * Determines whether there is a potentially directed path from node1 to node2.
      * @param node1 The first node.
      * @param node2 The second node.
-     * @return True if there is a semidirected path from node1 to node2, false if not.
+     * @return True if there is a potentially directed path from node1 to node2, false if not.
      */
-    default boolean existsSemidirectedPath(Node node1, Node node2) {
-        return paths().existsSemiDirectedPath(node1, node2);
+    default boolean existsPotentiallyDirectedPath(Node node1, Node node2) {
+        return paths().existsPotentiallyDirectedPath(node1, node2);
     }
 
     /**
@@ -711,6 +711,28 @@ public interface Graph extends TetradSerializable {
      */
     default Graph copy() {
         return new EdgeListGraph(this);
+    }
+
+    /**
+     * Determines if there is a directed edge from node x to node y in the graph.
+     *
+     * @param x the source node
+     * @param y the destination node
+     * @return true if there is a directed edge from x to y, false otherwise
+     */
+    default boolean isDirectedFromTo(Node x, Node y) {
+        return getDirectedEdge(x, y) != null;
+    }
+
+    /**
+     * Determines if the specified node x is a descendant of the node n in the current graph structure.
+     *
+     * @param n the potential ancestor node
+     * @param x the potential descendant node
+     * @return true if there exists a directed path from node n to node x, false otherwise
+     */
+    default boolean isDescendentOf(Node n, Node x) {
+        return paths().existsDirectedPath(x, n);
     }
 }
 

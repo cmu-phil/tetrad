@@ -65,16 +65,19 @@ public class TrueDagTruePositiveArrow implements Statistic {
     }
 
     /**
-     * Calculates the number of true positives for arrows compared to the true DAG.
+     * Computes the count of bidirected true positives for arrows in the estimated graph compared
+     * to the true graph. An edge is considered a bidirected true positive if it contains an arrow
+     * endpoint that does not imply ancestry contrary to the structure of the true graph.
      *
-     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph   The estimated graph (same type).
-     * @param dataModel  The data model.
-     * @param parameters The parameters.
-     * @return The number of true positives.
+     * @param trueDag     The true directed acyclic graph (DAG) representing the ground truth.
+     * @param trueGraph   The true graph representing the ground-truth relationships.
+     * @param estGraph    The estimated graph being evaluated.
+     * @param dataModel   The data model used in the evaluation.
+     * @param parameters  Additional parameters required for the computation.
+     * @return The count of bidirected true positives for the arrow endpoints.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {

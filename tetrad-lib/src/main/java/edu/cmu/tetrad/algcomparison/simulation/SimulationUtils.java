@@ -45,9 +45,10 @@ public final class SimulationUtils {
             case SimulationTypes.BAYS_NET -> new BayesNetSimulation(randomGraph);
             case SimulationTypes.STRUCTURAL_EQUATION_MODEL -> new SemSimulation(randomGraph);
             case SimulationTypes.LINEAR_FISHER_MODEL -> new LinearFisherModel(randomGraph);
-            case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL -> new GpSemSimulation(randomGraph);
+//            case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL -> new GpSemSimulation(randomGraph);
             case SimulationTypes.NONLINEAR_ADDITIVE_SEM -> new AdditiveAnmSimulator(randomGraph);
-            case SimulationTypes.POST_NONLINEAR_MODEL -> new PostnonlinearCausalModel(randomGraph);
+//            case SimulationTypes.POST_NONLINEAR_MODEL -> new PostnonlinearSem(randomGraph);
+            case SimulationTypes.GENERAL_NOISE_SEM -> new GeneralNoiseSimulation(randomGraph);
             case SimulationTypes.ADDITIVE_NOISE_SEM -> new AdditiveNoiseSimulation(randomGraph);
             case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL -> new GeneralSemSimulationSpecial1(randomGraph);
             case SimulationTypes.LEE_AND_HASTIE -> new LeeHastieSimulation(randomGraph);

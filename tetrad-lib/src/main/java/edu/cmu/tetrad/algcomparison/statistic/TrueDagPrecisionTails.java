@@ -66,31 +66,32 @@ public class TrueDagPrecisionTails implements Statistic {
     }
 
     /**
-     * Calculates the proportion of X-->Y edges in the estimated graph for which there is a path X~~>Y in the true
-     * graph.
+     * Calculates the precision of directed edges in the estimated graph (estGraph) relative to a true directed acyclic graph (trueDag).
+     * The precision is measured as the proportion of edges X-->Y in the estimated graph for which there is a path X~~>Y in the true DAG.
      *
-     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph   The estimated graph (same type).
-     * @param dataModel  The data model.
-     * @param parameters The parameters.
-     * @return The proportion of X-->Y edges in the estimated graph for which there is a path X~~>Y in the true graph.
+     * @param trueDag     The true directed acyclic graph (DAG) used as a reference for evaluation.
+     * @param trueGraph   The overall true graph which may contain additional information (not directly used in this method).
+     * @param estGraph    The estimated graph containing the edges to be evaluated.
+     * @param dataModel   The data model used (not directly used in the current calculation).
+     * @param parameters  Additional parameters for computation (not directly used in the current calculation).
+     * @return The precision value as a double, representing the proportion of correctly identified directed edges.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
         int fp = 0;
 
-        Graph dag;
-
-        if (trueGraph.paths().isLegalDag()) {
-            dag = trueGraph;
-        } else {
-            dag = PagCache.getInstance().getDag(trueGraph);
-        }
-
-        if (dag == null) {
-            throw new IllegalArgumentException("Dag is null");
-        }
+//        if (trueGraph.paths().isLegalDag()) {
+//            System.out.println("--> precision: trueGraph is a legal dag");
+//        }
+//
+//        if (trueGraph.paths().isLegalCpdag()) {
+//            System.out.println("--> precision: trueGraph is a legal cpdag");
+//        }
+//
+//        if (trueGraph.paths().isLegalPag()) {
+//            System.out.println("--> precision: trueGraph is a legal pag");
+//        }
 
         List<Node> nodes = estGraph.getNodes();
 
@@ -103,7 +104,7 @@ public class TrueDagPrecisionTails implements Statistic {
                 if (edge == null) continue;
 
                 if (Edges.directedEdge(x, y).equals(edge)) {
-                    if (dag.paths().isAncestorOf(x, y)) {
+                    if (trueDag.paths().isAncestorOf(x, y)) {
                         tp++;
                     } else {
                         fp++;

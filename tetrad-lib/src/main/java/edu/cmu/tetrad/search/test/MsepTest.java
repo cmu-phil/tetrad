@@ -435,7 +435,7 @@ public class MsepTest implements IndependenceTest {
     /**
      * True iff the graph is a PAG
      *
-     * @param pag True if the graph is a PAG, false if a DAG, MPDAG, or CPDAG.
+     * @param pag True if the graph is a PAG, false if a DAG, PDAG, or CPDAG.
      */
     public void setPag(boolean pag) {
         isPag = pag;

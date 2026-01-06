@@ -63,7 +63,7 @@ public class SemidirectedPathF1 implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "F1 statistic for semidirected paths comparing the estimated graph to the true graph";
+        return "F1 statistic for potentially directed paths comparing the estimated graph to the true graph";
     }
 
     /**
@@ -74,9 +74,9 @@ public class SemidirectedPathF1 implements Statistic {
      * We use what's on this page called the "traditional" F1 statistic.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double precision = new SemidirectedPrecision().getValue(trueGraph, estGraph, dataModel, new Parameters());
-        double recall = new SemidirectedRecall().getValue(trueGraph, estGraph, dataModel, new Parameters());
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        double precision = new SemidirectedPrecision().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
+        double recall = new SemidirectedRecall().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
         return 2 * (precision * recall) / (precision + recall);
     }
 

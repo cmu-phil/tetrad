@@ -47,7 +47,7 @@ import java.util.*;
  * @see #getAmbiguousTriples()
  * @see Knowledge
  */
-@Deprecated(since = "7.9", forRemoval = false)
+@Deprecated(since = "7.9", forRemoval = true)
 public final class Cfci implements IGraphSearch {
 
     /**
@@ -102,6 +102,7 @@ public final class Cfci implements IGraphSearch {
      * The maximum length of any discriminating path.
      */
     private int maxDiscriminatingPathLength = -1;
+    private boolean excludeSelectionBias = false;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -205,7 +206,7 @@ public final class Cfci implements IGraphSearch {
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
 
-        fciOrient.finalOrientation(pag);
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished implied orientation.");
@@ -577,6 +578,15 @@ public final class Cfci implements IGraphSearch {
         }
 
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
+    }
+
+    /**
+     * Sets whether selection bias should be excluded during the search process.
+     *
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
+     */
+    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
+        this.excludeSelectionBias = excludeSelectionBias;
     }
 
     /**

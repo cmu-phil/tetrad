@@ -225,7 +225,7 @@ public class PerformanceTestsDan {
             out10.println(data);
 
             out11.println("True PAG_of_the_true_DAG");
-            Graph truePag = GraphTransforms.dagToPag(dag);
+            Graph truePag = GraphTransforms.dagToPag(dag, false);
             out11.println(truePag);
             printDanMatrix(_vars, truePag, out12);
 

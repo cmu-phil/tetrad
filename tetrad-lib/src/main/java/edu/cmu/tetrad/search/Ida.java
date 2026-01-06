@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,17 +16,19 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -56,6 +58,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see NodeEffects
  */
 public class Ida {
+
     /**
      * The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm)
      */
@@ -72,6 +75,20 @@ public class Ida {
      * The covariance matrix for the dataset.
      */
     private final ICovarianceMatrix allCovariances;
+    /**
+     * True if the input graph is a DAG (as opposed to a CPDAG / PDAG).
+     */
+    private final boolean dag;
+    /**
+     * Represents the type of IDA (Intervention Calculus when the DAG is Absent). This variable can have one of the
+     * values defined in the {@code IDA_TYPE} enum. It is used to differentiate between the regular IDA type and the
+     * optimal IDA type.
+     */
+    private IDA_TYPE idaType = IDA_TYPE.OPTIMAL;
+    /**
+     * Optional maximum path length for O-set search in CPDAG mode. Use -1 (or any negative) for "no limit".
+     */
+    private int maxLengthAdjustment = -1;
 
     /**
      * Constructor.
@@ -95,9 +112,11 @@ public class Ida {
         }
 
         // Check tha the graph is either a DAG or a CPDAG.
-        if (!(graph.paths().isLegalMpdag())) {
-            throw new IllegalArgumentException("Expecting an MPDAG.");
+        if (!(graph.paths().isLegalPdag())) {
+            throw new IllegalArgumentException("Expecting an PDAG.");
         }
+
+        this.dag = graph.paths().isLegalDag();  // or isDAG(), adjust to your API
 
         // Check that the dataset is continuous.
         if (!dataSet.isContinuous()) {
@@ -171,6 +190,7 @@ public class Ida {
             try {
                 List<Node> siblingsChoice = GraphUtils.asList(choice, siblings);
 
+                // Your consistency checks: avoid illegal parent-sets.
                 if (siblingsChoice.size() > 1) {
                     ChoiceGenerator gen2 = new ChoiceGenerator(siblingsChoice.size(), 2);
                     int[] choice2;
@@ -189,20 +209,99 @@ public class Ida {
                     }
                 }
 
-                Set<Node> _regressors = new HashSet<>();
-                _regressors.add(x);
-                _regressors.addAll(parents);
-                _regressors.addAll(siblingsChoice);
-                List<Node> regressors = new ArrayList<>(_regressors);
-
-                System.out.println(x + " to " + y + " regressors: " + regressors);
-
                 double beta;
 
-                if (regressors.contains(y)) {
-                    beta = 0.0;
+                if (idaType == IDA_TYPE.REGULAR) {
+                    // === Original (parent-based) IDA ===
+                    Set<Node> _regressors = new HashSet<>();
+                    _regressors.add(x);
+                    _regressors.addAll(parents);
+                    _regressors.addAll(siblingsChoice);
+                    List<Node> regressors = new ArrayList<>(_regressors);
+
+                    System.out.println(x + " to " + y + " regressors (REGULAR IDA): " + regressors);
+
+                    if (regressors.contains(y)) {
+                        beta = 0.0;
+                    } else {
+                        beta = getBeta(regressors, x, y);
+                    }
                 } else {
+                    // === Optimal IDA (Witte et al. 2020) ===
+
+                    // 1) Build a local orientation of the graph around X
+                    Graph gPrime = new EdgeListGraph(this.cpdag);
+
+                    for (Node s : siblings) {
+                        if (!gPrime.isAdjacentTo(x, s)) continue;
+                        // Remove the undirected edge X - s
+                        gPrime.removeEdge(x, s);
+
+                        if (siblingsChoice.contains(s)) {
+                            // Treat s as a parent: s -> X
+                            gPrime.addDirectedEdge(s, x);
+                        } else {
+                            // Treat s as a child: X -> s
+                            gPrime.addDirectedEdge(x, s);
+                        }
+                    }
+
+                    // 2) Apply Meek rules to propagate orientations
+                    MeekRules rules = new MeekRules();
+                    rules.setRevertToUnshieldedColliders(false);
+                    rules.orientImplied(gPrime);
+
+                    // 3) Compute the O-set for (X, Y) in gPrime
+                    Set<Node> oSet;
+
+                    try {
+                        if (dag) {
+                            oSet = OSet.oSetDag(gPrime, x, y);
+                        } else {
+                            oSet = OSet.oSetCpdag(gPrime, x, y, maxLengthAdjustment);
+                        }
+                    } catch (Exception e) {
+                        // If O-set computation fails, treat this orientation as yielding no effect
+                        System.out.println("O-set computation failed for " + x + " ~~> " + y + ": " + e);
+                        beta = 0.0;
+                        totalEffects.add(beta);
+                        continue;
+                    }
+
+                    // If the O-set is null, this DAG is not O-set-eligible for (x,y), which must mean this
+                    // is not a legal CPDAG. That is, we took a CPDAG, oriented the undirected edges about
+                    // X, and applied the Meek rules, so all possibly oriented edges from X to Y are out of
+                    // X, which means the O-Set is defined. Then it's just a matter of whether there are any
+                    // such paths at all; if not, the total effect is zero for this orientation.
+                    if (oSet == null) {
+                        if (!gPrime.paths().isGraphAmenable(x, y, "PDAG", -1, Set.of())) {
+                            throw new IllegalArgumentException("PDAG is weirdly not amenable for " + x + " ~~> " + y
+                                + "; that must not have been a legal CPDAG.");
+                        } else {
+
+                            // In this case it's amenable, but there are no amenable paths from X to Y, so the
+                            // total effect is zero.
+                            beta = 0.0;
+                            totalEffects.add(beta);
+                            continue;
+                        }
+                    }
+
+                    // O-set is defined, even if empty; estimate effect by regressing on X ∪ oSet
+                    Set<Node> regressorsSet = new LinkedHashSet<>();
+                    regressorsSet.add(x);
+                    regressorsSet.addAll(oSet);
+
+                    // Super-paranoid safety check: make sure Y is not in the regressor set
+                    regressorsSet.remove(y);
+
+                    List<Node> regressors = new ArrayList<>(regressorsSet);
+
+                    System.out.println(x + " to " + y + " regressors (OPTIMAL IDA): " + regressors
+                                       + "   O-set=" + oSet);
+
                     beta = getBeta(regressors, x, y);
+//                    }
                 }
 
                 totalEffects.add(beta);
@@ -280,15 +379,74 @@ public class Ida {
             try {
                 bStar = rX.inverse().times(rY);
             } catch (SingularMatrixException e) {
-                System.out.println("Singularity encountered when regressing " +
-                                   LogUtilsSearch.getScoreFact(child, regressors));
+                System.out.println("Singularity encountered when regressing " + LogUtilsSearch.getScoreFact(child, regressors));
             }
 
             return bStar != null ? bStar.get(xIndex, 0) : 0.0;
         } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity encountered when regressing " +
-                                       LogUtilsSearch.getScoreFact(child, regressors));
+            throw new RuntimeException("Singularity encountered when regressing " + LogUtilsSearch.getScoreFact(child, regressors));
         }
+    }
+
+    /**
+     * Retrieves the IDA_TYPE associated with this instance.
+     *
+     * @return The IDA_TYPE value, which can be REGULAR or OPTIMAL, representing the type of Intervention-based Directed Acyclic analysis.
+     */
+    public IDA_TYPE getIdaType() {
+        return idaType;
+    }
+
+    /**
+     * Sets the IDA type for this instance. The IDA type determines the classification of
+     * Intervention-based Directed Acyclic analysis (e.g., REGULAR or OPTIMAL).
+     *
+     * @param idaType The IDA_TYPE value to be set. Must not be null.
+     * @throws NullPointerException If the idaType is null.
+     */
+    public void setIdaType(IDA_TYPE idaType) {
+        if (idaType == null) {
+            throw new NullPointerException("IDA type must not be null.");
+        }
+        this.idaType = idaType;
+    }
+
+    /**
+     * Returns the maximum length adjustment value.
+     *
+     * @return the maximum length adjustment as an integer
+     */
+    public int getMaxLengthAdjustment() {
+        return maxLengthAdjustment;
+    }
+
+    /**
+     * Sets the maximum length adjustment value.
+     * This value determines the adjustment that can be applied to the maximum length property of the object.
+     *
+     * @param maxLengthAdjustment the integer value to set as the maximum length adjustment
+     */
+    public void setMaxLengthAdjustment(int maxLengthAdjustment) {
+        this.maxLengthAdjustment = maxLengthAdjustment;
+    }
+
+    /**
+     * Enumeration representing the types of IDA (Intervention-based Directed Acyclic analysis). IDA_TYPE provides two
+     * classification options: REGULAR and OPTIMAL.
+     */
+    public enum IDA_TYPE {
+
+        /**
+         * Represents the REGULAR classification of IDA_TYPE. This classification is used to denote a standard or
+         * conventional type of Intervention-based Directed Acyclic analysis.
+         */
+        REGULAR,
+
+        /**
+         * Represents the OPTIMAL classification of IDA_TYPE (Witte et al. 2020). This classification is used to signify
+         * a refined, efficient, or optimized type of Intervention-based Directed Acyclic analysis.
+         */
+        OPTIMAL
     }
 
     /**

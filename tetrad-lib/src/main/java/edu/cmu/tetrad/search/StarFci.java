@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -36,7 +36,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
-import static edu.cmu.tetrad.graph.GraphUtils.fciOrientbk;
 import static java.util.Collections.shuffle;
 
 /**
@@ -99,6 +98,7 @@ public abstract class StarFci implements IGraphSearch {
      */
     private boolean useMaxP = false;
     private boolean replicatingGraph = false;
+    private boolean excludeSelectionBias = false;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -327,8 +327,16 @@ public abstract class StarFci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting *-FCI-R0.");
         }
 
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
+        strategy.setDepth(-1);
+        strategy.setMaxLength(-1);
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setVerbose(verbose);
+
         pag.reorientAllWith(Endpoint.CIRCLE);
-        fciOrientbk(knowledge, pag, pag.getNodes());
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
 
         for (Node y : nodes) {
             List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
@@ -375,22 +383,14 @@ public abstract class StarFci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
-        strategy.setDepth(-1);
-        strategy.setMaxLength(-1);
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setVerbose(verbose);
-
-        fciOrient.finalOrientation(pag);
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished implied orientation.");
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>());
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>(), excludeSelectionBias);
 
 //            pag = new DagToPag(pag).convert();
         }
@@ -517,6 +517,15 @@ public abstract class StarFci implements IGraphSearch {
      */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
+    }
+
+    /**
+     * Sets whether selection bias should be excluded during the search process.
+     *
+     * @param excludeSelectionBias A boolean indicating whether to exclude selection bias (true) or not (false).
+     */
+    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
+        this.excludeSelectionBias = excludeSelectionBias;
     }
 }
 

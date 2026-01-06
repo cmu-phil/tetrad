@@ -1174,6 +1174,10 @@ public final class Params {
      * Constant <code>IS_ALPHA="isAlpha"</code>
      */
     public static final String INSTANCE_SPECIFIC_ALPHA = "instanceSpecificAlpha";
+    /**
+     * Constant <code>EXCLUDE_SELECTION_BIAS="excludeSelectionBias"</code>
+     */
+    public static final String EXCLUDE_SELECTION_BIAS = "excludeSelectionBias";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
@@ -1239,10 +1243,6 @@ public final class Params {
      * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
      */
     public static String CELL_TABLE_TYPE = "cellTableType";
-    /**
-     * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
-     */
-    public static String MC_ALPHA = "mcAlpha";
 
     /**
      * Constant <code>RCIT_MODE="rcit.rcitMode"</code> Whether to use RCIT (true) or RCoT (false).

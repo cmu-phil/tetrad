@@ -740,7 +740,7 @@ public class Comparison implements TetradSerializable {
 
 
                     if (isSavePags()) {
-                        Graph pag = GraphTransforms.dagToPag(graph);
+                        Graph pag = GraphTransforms.dagToPag(graph, true);
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
                         GraphSaveLoadUtils.saveGraph(pag, file4, false);
                     }
@@ -843,7 +843,7 @@ public class Comparison implements TetradSerializable {
 
                 if (isSavePags()) {
                     File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                    GraphSaveLoadUtils.saveGraph(GraphTransforms.dagToPag(graph), file4, false);
+                    GraphSaveLoadUtils.saveGraph(GraphTransforms.dagToPag(graph, true), file4, false);
                 }
             }
         } catch (IOException e) {
@@ -1400,7 +1400,7 @@ public class Comparison implements TetradSerializable {
             } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
                 comparisonGraph = GraphTransforms.dagToCpdag(trueGraph);
             } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
-                comparisonGraph = GraphTransforms.dagToPag(trueGraph);
+                comparisonGraph = GraphTransforms.dagToPag(trueGraph, false);
             } else {
                 throw new IllegalArgumentException("Unrecognized graph type.");
             }
@@ -1451,7 +1451,7 @@ public class Comparison implements TetradSerializable {
                     if (_stat instanceof ElapsedCpuTime) {
                         stat = taskCpuTime / 1000.0;
                     } else {
-                        stat = _stat.getValue(truth[u], est[u], data, new Parameters());
+                        stat = _stat.getValue(trueGraph, truth[u], est[u], data, new Parameters());
                     }
 
                     synchronized (this) {
@@ -1486,6 +1486,7 @@ public class Comparison implements TetradSerializable {
                     try {
                         stat = _stat.getValue(null, graphOut, data, simulationWrapper.getSimulationSpecificParameters());
                     } catch (Exception e) {
+                        e.printStackTrace();
                         stat = Double.NaN;
                     }
                 }

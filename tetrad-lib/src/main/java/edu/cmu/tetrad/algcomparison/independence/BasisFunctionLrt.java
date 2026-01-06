@@ -43,13 +43,13 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-@TestOfIndependence(
-        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
-        command = "bf-lr-test",
-        dataType = DataType.Mixed
-)
+//@TestOfIndependence(
+//        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
+//        command = "bf-lr-test",
+//        dataType = DataType.Mixed
+//)
 @Mixed
-//@Deprecated(since = "7.9", forRemoval = false)
+@Deprecated(since = "7.9", forRemoval = false)
 public class BasisFunctionLrt implements IndependenceWrapper {
 
     @Serial
@@ -69,7 +69,7 @@ public class BasisFunctionLrt implements IndependenceWrapper {
         IndTestBasisFunctionLrt test = new IndTestBasisFunctionLrt(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getDouble(Params.SINGULARITY_LAMBDA));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
-        test.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
+//        test.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
         return test;
     }
 
@@ -98,7 +98,6 @@ public class BasisFunctionLrt implements IndependenceWrapper {
         parameters.add(Params.ALPHA);
         parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.SINGULARITY_LAMBDA);
-        parameters.add(Params.DO_ONE_EQUATION_ONLY);
         return parameters;
     }
 }

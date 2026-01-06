@@ -69,7 +69,7 @@ public class PickDagInCpdagAction extends AbstractAction {
             return;
         }
 
-//        if (!graph.paths().isLegalMpdag()) {
+//        if (!graph.paths().isLegalPdag()) {
 //            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "I can only convert CPDAGs, or CPDAG with additional oriented edges, with Meek rules applied.");
 //            return;
 //        }

@@ -70,6 +70,7 @@ public class ProportionSemidirectedPathsNotReversedTrue implements Statistic {
      * Calculates the proportion of semi(X, Y) paths in the true graph for which there is no semi(Y, Z) path in the
      * estimated graph.
      *
+     * @param trueDag The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -77,7 +78,7 @@ public class ProportionSemidirectedPathsNotReversedTrue implements Statistic {
      * @return The proportion of semi(X, Y) paths that do not have a semi(Y, Z) path in the estimated graph.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         List<Node> nodes = estGraph.getNodes();
         nodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
@@ -88,8 +89,8 @@ public class ProportionSemidirectedPathsNotReversedTrue implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.paths().existsSemiDirectedPath(x, y)) {
-                    if (!estGraph.paths().existsSemiDirectedPath(y, x)) {
+                if (trueGraph.paths().existsPotentiallyDirectedPath(x, y)) {
+                    if (!estGraph.paths().existsPotentiallyDirectedPath(y, x)) {
                         tp++;
                     } else {
                         fn++;

@@ -62,8 +62,8 @@ public class DensityEst implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        return new AverageDegreeEst().getValue(trueGraph, estGraph, dataModel, new Parameters())
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        return new AverageDegreeEst().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters())
                / (double) (estGraph.getNumNodes() - 1);
     }
 
@@ -73,6 +73,15 @@ public class DensityEst implements Statistic {
     @Override
     public double getNormValue(double value) {
         return value;
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

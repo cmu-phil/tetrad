@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.data;
 
@@ -53,8 +53,7 @@ public final class DataWriter {
      * @param separator The character separating fields, usually '\t' or ','.
      * @throws java.io.IOException If there is some problem dealing with the writer.
      */
-    public static void writeRectangularData(DataSet dataSet,
-                                            Writer out, char separator) throws IOException {
+    public static void writeRectangularData(DataSet dataSet, Writer out, char separator) throws IOException {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         StringBuilder buf = new StringBuilder();
 
@@ -110,17 +109,13 @@ public final class DataWriter {
 
 
     /**
-     * Writes the lower triangle of a covariance matrix to file.  Note that
-     * <code>out</code> is not closed by this method, so the close method on
-     * <code>out</code> will need to be called externally.
+     * Writes the lower triangle of a covariance matrix to file.
      *
      * @param out       The writer to write the output to.
      * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      * @param nf        a {@link java.text.NumberFormat} object
      */
-    public static void writeCovMatrix(ICovarianceMatrix covMatrix,
-                                      PrintWriter out, NumberFormat nf) {
-//        out.println("/Covariance");
+    public static void writeCovMatrixLowerTriangle(ICovarianceMatrix covMatrix, PrintWriter out, NumberFormat nf) {
         out.println(covMatrix.getSampleSize());
 
         List<String> variables = covMatrix.getVariableNames();
@@ -149,6 +144,50 @@ public final class DataWriter {
                 out.print((i < j) ? "\t" : "\n");
             }
         }
+
+        out.flush();
+        out.close();
+    }
+
+    /**
+     * Writes the covariance matrix to file as a square matrix.
+     *
+     * @param out       The writer to write the output to.
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param nf        a {@link java.text.NumberFormat} object
+     */
+    public static void writeCovMatrixSquare(ICovarianceMatrix covMatrix, PrintWriter out, NumberFormat nf) {
+        out.println(covMatrix.getSampleSize());
+
+        List<String> variables = covMatrix.getVariableNames();
+        int numVars = variables.size();
+
+        int varCount = 0;
+        for (String variable : variables) {
+            varCount++;
+            if (varCount < numVars) {
+                out.print(variable);
+                out.print("\t");
+            } else {
+                out.println(variable);
+            }
+        }
+
+        // Now write a full numVars x numVars matrix, one row per line
+        for (int i = 0; i < numVars; i++) {
+            for (int j = 0; j < numVars; j++) {
+                double value = covMatrix.getValue(i, j);
+                if (Double.isNaN(value)) {
+                    out.print("*");
+                } else {
+                    out.print(nf.format(value));
+                }
+
+                // Tab between entries, newline at end of row
+                out.print((j < numVars - 1) ? "\t" : "\n");
+            }
+        }
+
         out.flush();
         out.close();
     }
@@ -195,8 +234,7 @@ public final class DataWriter {
 
         buf.append("\n\nrequiredirect");
 
-        for (Iterator<KnowledgeEdge> i
-             = knowledge.requiredEdgesIterator(); i.hasNext(); ) {
+        for (Iterator<KnowledgeEdge> i = knowledge.requiredEdgesIterator(); i.hasNext(); ) {
             KnowledgeEdge pair = i.next();
             String from = pair.getFrom();
             String to = pair.getTo();

@@ -34,7 +34,7 @@ public class TestOrderedLocalMarkovProperty {
     @Test
     public void test1() {
         Graph g = RandomGraph.randomGraph(10, 2, 10, 100, 100, 100, false);
-        Graph pag = GraphTransforms.dagToPag(g);
+        Graph pag = GraphTransforms.dagToPag(g, false);
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
         Set<IndependenceFact> im = OrderedLocalMarkovProperty.getModel(mag);
@@ -117,7 +117,7 @@ public class TestOrderedLocalMarkovProperty {
 
                 System.out.println("\nEstimated PAG = " + pag);
 
-                Graph truePag = GraphTransforms.dagToPag(mag);
+                Graph truePag = GraphTransforms.dagToPag(mag, false);
 
                 System.out.println("True PAG = " + truePag);
 

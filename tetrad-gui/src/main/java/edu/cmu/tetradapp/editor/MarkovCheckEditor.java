@@ -88,7 +88,7 @@ public class MarkovCheckEditor extends JPanel {
     /**
      * The label for the fraction of p-values less than the alpha level.
      */
-    private final JLabel markovTestLabel = new JLabel("(Unspecified Test)");
+    private final JLabel markovTestLabel = new JLabel("Test:");
     /**
      * The combo box for the independence test.
      */
@@ -100,7 +100,7 @@ public class MarkovCheckEditor extends JPanel {
     /**
      * The label for the test.
      */
-    private final JLabel testLabel = new JLabel("(Unspecified Test)");
+    private final JLabel testLabel = new JLabel("Independence Test:");
     /**
      * The label for the conditioning set.
      */
@@ -135,6 +135,13 @@ public class MarkovCheckEditor extends JPanel {
      * The label for the fraction of p-values less than the alpha level.
      */
     boolean updatingTestModels = true;
+    /**
+     * A constant key used for storing or accessing the preference
+     * related to the Markov Checker Independence Test. This key
+     * serves as an identifier for the specific preference within
+     * the application's configuration or storage system.
+     */
+    private static final String PREF_KEY_TEST = "markovCheckerIndependenceTest";
     /**
      * The JTable variable containing the independent table.
      */
@@ -223,6 +230,7 @@ public class MarkovCheckEditor extends JPanel {
      */
     private JCheckBox flipEscapesDep;
 
+
     /**
      * Constructs a new editor for the given model.
      *
@@ -235,8 +243,8 @@ public class MarkovCheckEditor extends JPanel {
 
         setPreferredSize(new Dimension(1100, 600));
 
-        conditioningSetTypeJComboBox.addItem("Ordered Local Markov");
         conditioningSetTypeJComboBox.addItem("Ordered Local Markov MAG");
+//        conditioningSetTypeJComboBox.addItem("Ordered Local Markov");
         conditioningSetTypeJComboBox.addItem("Parents(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
@@ -245,7 +253,8 @@ public class MarkovCheckEditor extends JPanel {
         conditioningSetTypeJComboBox.addItem("All Subsets (Global Markov)");
 
         conditioningSetTypeJComboBox.addActionListener(e -> {
-            switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
+            Object selectedItem = conditioningSetTypeJComboBox.getSelectedItem();
+            switch ((String) Objects.requireNonNull(selectedItem)) {
                 case "Parents(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.LOCAL_MARKOV);
 
@@ -262,15 +271,15 @@ public class MarkovCheckEditor extends JPanel {
                     }
 
                     break;
-                case "Ordered Local Markov":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
-
-                    if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov");
-                    }
-
-                    break;
                 case "Ordered Local Markov MAG":
+//                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
+//
+//                    if (model.getMarkovCheck() != null) {
+//                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov");
+//                    }
+//
+//                    break;
+//                case "Ordered Local Markov MAG":
                     model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
 
                     if (model.getMarkovCheck() != null) {
@@ -312,7 +321,7 @@ public class MarkovCheckEditor extends JPanel {
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown conditioning set type: "
-                                                       + conditioningSetTypeJComboBox.getSelectedItem());
+                                                       + selectedItem);
             }
 
             class MyWatchedProcess extends WatchedProcess {
@@ -339,6 +348,8 @@ public class MarkovCheckEditor extends JPanel {
         this.model = model;
         refreshTestList();
 
+        indTestJComboBox.setToolTipText("Choose the independence test used in the Markov check.");
+
         indTestJComboBox.addActionListener(e -> {
             class MyWatchedProcess extends WatchedProcess {
 
@@ -352,7 +363,7 @@ public class MarkovCheckEditor extends JPanel {
 
         setTest();
 
-        conditioningSetTypeJComboBox.setSelectedItem(Preferences.userRoot().get("markovCheckerConditioningSetType", "Parents(X)"));
+        conditioningSetTypeJComboBox.setSelectedItem(Preferences.userRoot().get("markovCheckerConditioningSetType", "Ordered Local Markov MAG"));
 
         Graph _graph = model.getGraph();
         Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes()));
@@ -395,12 +406,13 @@ public class MarkovCheckEditor extends JPanel {
         model.setVars(graph.getNodeNames());
 
         JButton params = new JButton("Params");
-        JButton sample = new JButton("Sample");
+//        JButton sample = new JButton("Sample");
+        JButton sample = new JButton("Run");
         JButton addSample = new JButton("Add Sample");
 
         if (model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable
             && model.getMarkovCheck().getIndependenceTest().getData() instanceof DataSet) {
-            this.fraction = new DoubleTextField(Preferences.userRoot().getDouble("FractionSample", 0.5), 4, new DecimalFormat("0.0###"));
+            this.fraction = new DoubleTextField(Preferences.userRoot().getDouble("FractionSample", 1.0), 4, new DecimalFormat("0.0###"));
             this.fraction.setEditable(true);
         } else {
             this.fraction = new DoubleTextField(1.0, 4, new DecimalFormat("0.0###"));
@@ -471,14 +483,25 @@ public class MarkovCheckEditor extends JPanel {
         scroll.setPreferredSize(new Dimension(600, 400));
 
         JTabbedPane pane = new JTabbedPane();
+
+        // In a change listener:
+        pane.addChangeListener(e -> {
+            String v = (pane.getSelectedIndex() == 1) ? "dep" : "indep";
+            Preferences.userRoot().put("markovCheckerTab", v);
+        });
+
         pane.addTab("Check Markov", indep);
         pane.addTab("Check Dependent Distribution", dep);
         pane.addTab("Help", new PaddingPanel(scroll));
 
+        // After creating the tabbedPane
+        String savedTab = Preferences.userRoot().get("markovCheckerTab", "indep");
+        pane.setSelectedIndex("dep".equals(savedTab) ? 1 : 0);
+
         new WatchedProcess() {
             @Override
             public void watch() {
-                refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, fraction, false);
+                refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, fraction, true);
             }
         };
 
@@ -878,8 +901,8 @@ public class MarkovCheckEditor extends JPanel {
                                                         .addComponent(params)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(resample)
-                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(addSample)
+//                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+//                                                        .addComponent(addSample)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(fractionSampleLabel)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -895,7 +918,7 @@ public class MarkovCheckEditor extends JPanel {
                                 .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addComponent(params)
                                 .addComponent(resample)
-                                .addComponent(addSample)
+//                                .addComponent(addSample)
                                 .addComponent(fractionSampleLabel)
                                 .addComponent(fraction, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -948,7 +971,8 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private void setTest() {
-        IndependenceTestModel selectedItem = (IndependenceTestModel) indTestJComboBox.getSelectedItem();
+        IndependenceTestModel selectedItem =
+                (IndependenceTestModel) indTestJComboBox.getSelectedItem();
 
         Class<IndependenceWrapper> clazz = (selectedItem == null) ? null
                 : (Class<IndependenceWrapper>) selectedItem.getIndependenceTest().clazz();
@@ -956,20 +980,29 @@ public class MarkovCheckEditor extends JPanel {
 
         if (clazz != null) {
             try {
-                independenceWrapper = clazz.getDeclaredConstructor(new Class[0]).newInstance();
-                independenceTest = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
+                independenceWrapper =
+                        clazz.getDeclaredConstructor(new Class[0]).newInstance();
+                independenceTest =
+                        independenceWrapper.getTest(model.getDataModel(),
+                                model.getParameters());
                 model.setIndependenceTest(independenceTest);
-                markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-                testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+                markovTestLabel.setText(
+                        model.getMarkovCheck().getIndependenceTest().toString());
+
+                // NEW: remember the chosen test class
+                Preferences.userRoot().put(
+                        PREF_KEY_TEST,
+                        clazz.getName()
+                );
+
                 invalidate();
                 repaint();
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                     | NoSuchMethodException e1) {
+            } catch (InstantiationException | IllegalAccessException
+                     | InvocationTargetException | NoSuchMethodException e1) {
                 TetradLogger.getInstance().log("Error: " + e1.getMessage());
                 throw new RuntimeException(e1);
             }
         }
-
     }
 
     private JPanel buildGuiIndep() {
@@ -978,10 +1011,15 @@ public class MarkovCheckEditor extends JPanel {
         String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
 
         conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + setType + ")");
-        tableBox.add(conditioningLabelIndep, BorderLayout.NORTH);
+
+        Box b =  Box.createHorizontalBox();
+        b.add(Box.createHorizontalGlue());
+        b.add(conditioningLabelIndep);
+        b.add(Box.createHorizontalGlue());
+
+        tableBox.add(b, BorderLayout.NORTH);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-        testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
 
         this.tableModelIndep = new AbstractTableModel() {
             public String getColumnName(int column) {
@@ -1077,6 +1115,8 @@ public class MarkovCheckEditor extends JPanel {
         tableIndep.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
         tableIndep.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
 
+        tableIndep.getColumnModel().getColumn(2).setPreferredWidth(120); // "P-value or Bump"
+
         JTableHeader header = tableIndep.getTableHeader();
 
         header.addMouseListener(new MouseAdapter() {
@@ -1119,10 +1159,27 @@ public class MarkovCheckEditor extends JPanel {
         setLabelTexts();
 
         Box a4 = Box.createVerticalBox();
+
+        Box a4a = Box.createHorizontalBox();
+        JLabel summaryTitle = new JLabel("Uniformity of p-values under H0");
+//        summaryTitle.setFont(summaryTitle.getFont().deriveFont(Font.BOLD));
+        a4a.add(Box.createHorizontalGlue());
+        a4a.add(summaryTitle);
+        a4a.add(Box.createHorizontalGlue());
+        a4.add(a4a);
+
+
         histogramPanelIndep = new JPanel();
         histogramPanelIndep.setLayout(new BorderLayout());
         histogramPanelIndep.setBorder(new EmptyBorder(10, 10, 10, 10));
         histogramPanelIndep.add(createHistogramPanel(model.getResults(true)), BorderLayout.CENTER);
+
+        histogramPanelIndep.setToolTipText(
+                "Histogram of p-values for implied independencies; " +
+                "if the graph is Markov and the test is calibrated, " +
+                "these should be roughly uniform."
+        );
+
         a4.add(histogramPanelIndep);
 
         Box a5 = Box.createHorizontalBox();
@@ -1234,7 +1291,8 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setPreferredSize(new Dimension(550, 400));
+        scroll.setPreferredSize(new Dimension(850, 400));
+        scroll.setMaximumSize(new Dimension(850, 400));
 
         Box filterBox = Box.createHorizontalBox();
         filterBox.add(nodeSelectionBox);
@@ -1352,7 +1410,6 @@ public class MarkovCheckEditor extends JPanel {
         tableBox.add(conditioningLabelDep, BorderLayout.NORTH);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-        testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
 
         this.tableModelDep = new AbstractTableModel() {
             public String getColumnName(int column) {
@@ -1447,6 +1504,7 @@ public class MarkovCheckEditor extends JPanel {
         tableDep.getColumnModel().getColumn(3).setPreferredWidth(100);
         tableDep.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
         tableDep.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
+        tableDep.getColumnModel().getColumn(2).setPreferredWidth(120); // "P-value or Bump"
 
         JTableHeader header = tableDep.getTableHeader();
 
@@ -1628,13 +1686,13 @@ public class MarkovCheckEditor extends JPanel {
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
         binomialPLabelIndep.setText("P-value of Binomial Test = "
-                                    + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(true))
+                                    + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue_(true))
                 ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue(true)))));
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue_(true)))));
         binomialPLabelDep.setText("P-value of Binomial Test = "
-                                  + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(false))
+                                  + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue_(false))
                 ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue(false)))));
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue_(false)))));
         fractionDepLabelIndep.setText("Fraction dependent = "
                                       + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
                 ? "-"
@@ -1748,7 +1806,29 @@ public class MarkovCheckEditor extends JPanel {
         this.updatingTestModels = false;
         this.indTestJComboBox.setEnabled(this.indTestJComboBox.getItemCount() > 0);
 
-        indTestJComboBox.setSelectedItem(IndependenceTestModels.getInstance().getDefaultModel(dataType));
+        // Try to restore the last-used test from preferences
+        String savedClassName =
+                Preferences.userRoot().get(PREF_KEY_TEST, null);
+
+        IndependenceTestModel toSelect = null;
+
+        if (savedClassName != null) {
+            for (IndependenceTestModel m : models) {
+                if (m.getIndependenceTest().clazz().getName()
+                        .equals(savedClassName)) {
+                    toSelect = m;
+                    break;
+                }
+            }
+        }
+
+        // Fallback to the default model for this data type
+        if (toSelect == null) {
+            toSelect = IndependenceTestModels.getInstance()
+                    .getDefaultModel(dataType);
+        }
+
+        indTestJComboBox.setSelectedItem(toSelect);
     }
 
     /**

@@ -65,16 +65,18 @@ public class TrueDagTruePositiveDirectedPathNonancestor implements Statistic {
     }
 
     /**
-     * Calculates the true positives for arrows compared to the true DAG.
+     * Computes the number of true positives for directed paths in the estimated graph that are consistent
+     * with the true graph, excluding cases where the estimated graph incorrectly identifies the reverse relationship.
      *
-     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph   The estimated graph (same type).
-     * @param dataModel  The data model.
-     * @param parameters The parameters.
-     * @return The number of true positives for arrows.
+     * @param trueDag The true directed acyclic graph (DAG) structure.
+     * @param trueGraph The correct graph structure representing the true relationships between nodes.
+     * @param estGraph The estimated graph structure to be evaluated.
+     * @param dataModel A data model associated with the graphs (not directly used in this method).
+     * @param parameters Parameters associated with the evaluation (not directly used in this method).
+     * @return The count of true positive directed paths in the estimated graph that match the true graph.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
 
         List<Node> nodes = trueGraph.getNodes();

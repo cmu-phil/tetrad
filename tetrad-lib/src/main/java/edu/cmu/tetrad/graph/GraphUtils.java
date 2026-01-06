@@ -339,24 +339,22 @@ public final class GraphUtils {
      * Returns a string representation of the given path in the graph, with additional information about conditioning
      * variables.
      *
-     * @param graph              the graph containing the path
-     * @param path               the list of nodes representing the path
-     * @param conditioningVars   the list of nodes representing the conditioning variables
-     * @param showBlocked        whether to show information about blocked paths
-     * @param allowSelectionBias whether to allow selection bias. For CPDAGs, this should be false, since undirected
-     *                           edges mean directed in one direction or the other. For PAGs, it should be true, since
-     *                           undirected edges indicate selection bias.
+     * @param graph                the graph containing the path
+     * @param path                 the list of nodes representing the path
+     * @param conditioningVars     the list of nodes representing the conditioning variables
+     * @param showBlocked          whether to show information about blocked paths
+     * @param excludeSelectionBias whether to exclude selection bias
      * @return a string representation of the path with conditioning information
      */
     public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars, boolean showBlocked,
-                                    boolean allowSelectionBias) {
+                                    boolean excludeSelectionBias) {
         StringBuilder buf = new StringBuilder();
 
         if (path.size() < 2) {
             return "NO PATH";
         }
 
-        boolean mConnecting = graph.paths().isMConnectingPath(path, conditioningVars, allowSelectionBias);
+        boolean mConnecting = graph.paths().isMConnectingPath(path, conditioningVars, excludeSelectionBias);
 
         if (showBlocked) {
             if (!mConnecting) {
@@ -372,7 +370,7 @@ public final class GraphUtils {
             buf.append(path.getFirst().toString());
         }
 
-        String conditioningSymbol = "â";
+        String conditioningSymbol = "\u2714";
 
         if (conditioningVars.contains(path.getFirst())) {
             buf.append(conditioningSymbol);
@@ -1195,15 +1193,15 @@ public final class GraphUtils {
             Edge xyEdge = graph.getEdge(x, y);
             graph.removeEdge(xyEdge);
 
-            boolean existsSemidirectedPath;
+            boolean existsPotentiallyDirected;
 
             if (graph instanceof EdgeListGraph) {
-                existsSemidirectedPath = graph.existsSemidirectedPath(x, y);
+                existsPotentiallyDirected = graph.existsPotentiallyDirectedPath(x, y);
             } else {
-                existsSemidirectedPath = new Paths(graph).existsSemiDirectedPath(x, y);
+                existsPotentiallyDirected = new Paths(graph).existsPotentiallyDirectedPath(x, y);
             }
 
-            if (existsSemidirectedPath) {
+            if (existsPotentiallyDirected) {
                 edge.addProperty(Property.dd); // green.
             } else {
                 edge.addProperty(Property.pd); // blue
@@ -1759,13 +1757,13 @@ public final class GraphUtils {
     }
 
     /**
-     * Traverses a semi-directed edge to identify the next node in the traversal.
+     * Traverses a potentially directed edge to identify the next node in the traversal.
      *
      * @param node The starting node of the edge.
-     * @param edge The semi-directed edge to be traversed.
+     * @param edge The potentially directed edge to be traversed.
      * @return The next node in the traversal, or null if no such node exists.
      */
-    public static Node traverseSemiDirected(Node node, Edge edge) {
+    public static Node traversePotentiallyDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL || edge.getEndpoint1() == Endpoint.CIRCLE) {
                 return edge.getNode2();
@@ -1778,7 +1776,7 @@ public final class GraphUtils {
         return null;
     }
 
-    // Used to find semidirected paths for cycle checking.
+    // Used to find possibly paths for cycle checking.
 
     /**
      * Returns a comparison graph based on the specified parameters.
@@ -1801,7 +1799,7 @@ public final class GraphUtils {
             }
             case "PAG" -> {
                 params.set("graphComparisonType", "PAG");
-                return GraphTransforms.dagToPag(graph);
+                return GraphTransforms.dagToPag(graph, params.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
             }
             case null, default -> {
                 params.set("graphComparisonType", "DAG");
@@ -1991,7 +1989,7 @@ public final class GraphUtils {
      * @param numSmallestSizes the number of smallest adjustment sets to return
      * @param graphType        the type of the graph
      * @return the adjustment sets as a set of sets of nodes
-     * @throws IllegalArgumentException if the input graph is not a legal MPDAG
+     * @throws IllegalArgumentException if the input graph is not a legal PDAG
      */
     public static Set<Set<Node>> visibleEdgeAdjustments1(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
         Graph G2 = getGraphWithoutXToY(G, x, y, graphType);
@@ -2000,7 +1998,7 @@ public final class GraphUtils {
             return new HashSet<>();
         }
 
-        if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
+        if (G2.paths().isLegalPdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
             System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
             return new HashSet<>();
         } else {
@@ -2050,7 +2048,7 @@ public final class GraphUtils {
             return new HashSet<>();
         }
 
-        if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
+        if (G2.paths().isLegalPdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
             System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
             return new HashSet<>();
         } else {
@@ -2084,26 +2082,26 @@ public final class GraphUtils {
      */
     public static Graph getGraphWithoutXToY(Graph G, Node x, Node y, GraphType graphType) {
         if (graphType == GraphType.CPDAG) {
-            return getGraphWithoutXToYMpdag(G, x, y);
+            return getGraphWithoutXToYPdag(G, x, y);
         } else if (graphType == GraphType.PAG) {
             return getGraphWithoutXToYPag(G, x, y);
         } else {
-            throw new IllegalArgumentException("Graph must be a legal MPDAG, PAG, or MAG.");
+            throw new IllegalArgumentException("Graph must be a legal PDAG, PAG, or MAG.");
         }
     }
 
     /**
      * This method returns a graph G2 without the edge between Node x and Node y, creating a Maximum Partially Directed
-     * Acyclic Graph (MPDAG) representation.
+     * Acyclic Graph (PDAG) representation.
      *
      * @param G the original graph
      * @param x the starting node of the edge
      * @param y the ending node of the edge
-     * @return a graph G2 without the edge between Node x and Node y, in MPDAG representation
+     * @return a graph G2 without the edge between Node x and Node y, in PDAG representation
      * @throws IllegalArgumentException if the edge from x to y does not exist, is not directed, or does not point
      *                                  towards y
      */
-    private static Graph getGraphWithoutXToYMpdag(Graph G, Node x, Node y) {
+    private static Graph getGraphWithoutXToYPdag(Graph G, Node x, Node y) {
         Graph G2 = new EdgeListGraph(G);
 
         if (!G2.isAdjacentTo(x, y)) {
@@ -2323,52 +2321,52 @@ public final class GraphUtils {
         return graph;
     }
 
-    /**
-     * Attempts to orient the edges in the graph based on the given knowledge.
-     *
-     * @param knowledge The knowledge containing the forbidden and required edges to orient.
-     * @param graph     The graph to orient the edges in.
-     * @param variables The list of nodes representing variables in the graph.
-     */
-    public static void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
-            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*->from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-        }
-
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
-            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-        }
-    }
+//    /**
+//     * Attempts to orient the edges in the graph based on the given knowledge.
+//     *
+//     * @param knowledge The knowledge containing the forbidden and required edges to orient.
+//     * @param graph     The graph to orient the edges in.
+//     * @param variables The list of nodes representing variables in the graph.
+//     */
+//    public static void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
+//        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+//            KnowledgeEdge edge = it.next();
+//
+//            //match strings to variables in the graph.
+//            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+//            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
+//
+//            if (from == null || to == null) {
+//                continue;
+//            }
+//
+//            if (graph.getEdge(from, to) == null) {
+//                continue;
+//            }
+//
+//            // Orient to*->from
+//            graph.setEndpoint(to, from, Endpoint.ARROW);
+//        }
+//
+//        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+//            KnowledgeEdge edge = it.next();
+//
+//            //match strings to variables in this graph
+//            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+//            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
+//
+//            if (from == null || to == null) {
+//                continue;
+//            }
+//
+//            if (graph.getEdge(from, to) == null) {
+//                continue;
+//            }
+//
+//            graph.setEndpoint(to, from, Endpoint.TAIL);
+//            graph.setEndpoint(from, to, Endpoint.ARROW);
+//        }
+//    }
 
     /**
      * Trims the given graph based on the specified trimming style.
@@ -2377,7 +2375,7 @@ public final class GraphUtils {
      * @param graph         the graph to be trimmed
      * @param trimmingStyle the style indicating how the graph should be trimmed - 1: No trimming - 2: Trim nodes
      *                      adjacent to target nodes - 3: Trim nodes in the Markov blanket of target nodes - 4: Trim
-     *                      semidirected arcs adjacent to target nodes
+     *                      potentially directed arcs adjacent to target nodes
      * @return the trimmed graph
      * @throws IllegalArgumentException if an unknown trimming style is given
      */
@@ -2392,7 +2390,7 @@ public final class GraphUtils {
                 graph = trimMarkovBlanketGraph(targets, graph);
                 break;
             case 4:
-                graph = trimSemidirected(targets, graph);
+                graph = trimPotentiallyDirected(targets, graph);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown trimming style: " + trimmingStyle);
@@ -2463,20 +2461,20 @@ public final class GraphUtils {
     }
 
     /**
-     * Trims a semidirected graph by removing nodes that are not reachable from the target nodes.
+     * Trims a potentially directed graph by removing nodes that are not reachable from the target nodes.
      *
      * @param targets the list of target nodes
      * @param graph   the original graph to be trimmed
      * @return a trimmed graph with only the nodes reachable from the target nodes
      */
-    private static Graph trimSemidirected(List<Node> targets, Graph graph) {
+    private static Graph trimPotentiallyDirected(List<Node> targets, Graph graph) {
         Graph _graph = new EdgeListGraph(graph);
 
         M:
         for (Node m : graph.getNodes()) {
             if (!targets.contains(m)) {
                 for (Node n : targets) {
-                    if (graph.paths().existsSemiDirectedPath(m, n)) {
+                    if (graph.paths().existsPotentiallyDirectedPath(m, n)) {
                         continue M;
                     }
                 }
@@ -2568,7 +2566,7 @@ public final class GraphUtils {
         Node x = edge.getNode1();
         Node y = edge.getNode2();
 
-        List<List<Node>> treks = trueGraph.paths().treks(x, y, 3);
+        Set<List<Node>> treks = trueGraph.paths().treks(x, y, 3);
         boolean existsLatentConfounder = false;
 
         for (List<Node> trek : treks) {
@@ -2585,17 +2583,18 @@ public final class GraphUtils {
      * violations of maximality, and incorrectly oriented edges. It uses FCI orientation rules and knowledge constraints
      * to perform the repair process.
      *
-     * @param pag            the initial PAG to be repaired
-     * @param fciOrient      the FCI (Fast Causal Inference) orientation utility for edge orientation
-     * @param knowledge      the background knowledge to enforce during the repair process
-     * @param knownColliders a set of triples representing unshielded colliders to be enforced
-     * @param verbose        whether to provide detailed logging of the repair process
-     * @param selection      a set of nodes to be considered during the maximality repair
+     * @param pag                  the initial PAG to be repaired
+     * @param fciOrient            the FCI (Fast Causal Inference) orientation utility for edge orientation
+     * @param knowledge            the background knowledge to enforce during the repair process
+     * @param knownColliders       a set of triples representing unshielded colliders to be enforced
+     * @param verbose              whether to provide detailed logging of the repair process
+     * @param selection            a set of nodes to be considered during the maximality repair
+     * @param excludeSelectionBias whether to exclude the selection bias during the repair process
      * @return the repaired PAG that satisfies required constraints and is free of faults
      */
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                      Set<Triple> knownColliders,
-                                     boolean verbose, Set<Node> selection) {
+                                     boolean verbose, Set<Node> selection, boolean excludeSelectionBias) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -2615,12 +2614,12 @@ public final class GraphUtils {
             changed |= removeAlmostCycles(pag, knownColliders, verbose);
             changed |= repairMaximality(pag, verbose, selection, fciOrient, knowledge, knownColliders);
             changed |= removeCycles(pag, verbose);
-            reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
+            reorientWithFci(pag, fciOrient, knowledge, knownColliders, excludeSelectionBias, verbose);
         } while (changed);
 
         MagToPag dagToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
         dagToPag.setKnowledge(knowledge);
-        Graph pag2 = dagToPag.convert(true);
+        Graph pag2 = dagToPag.convert(true, excludeSelectionBias);
 
         if (pag2.equals(orig)) {
             if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
@@ -2727,7 +2726,7 @@ public final class GraphUtils {
 
         for (Node x : mag.getNodes()) {
             if (reachableFrom.get(x).contains(x)) {
-                List<List<Node>> paths = mag.paths().directedPaths(x, x, -1);
+                Set<List<Node>> paths = mag.paths().directedPaths(x, x, -1);
                 for (List<Node> path : paths) {
                     for (int i = 1; i < path.size() - 1; i++) {
                         Node y = path.get(i);
@@ -2752,11 +2751,11 @@ public final class GraphUtils {
     }
 
     private static void reorientWithFci(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                        Set<Triple> unshieldedColliders, boolean verbose) {
+                                        Set<Triple> unshieldedColliders, boolean excludeSelectionBias, boolean verbose) {
         reorientWithCircles(pag, verbose);
-        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
         recallInitialColliders(pag, unshieldedColliders, knowledge);
-        fciOrient.finalOrientation(pag);
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
     }
 
     private static Map<Node, Set<Node>> buildDescendantsMap(Graph graph) {
@@ -3362,8 +3361,8 @@ public final class GraphUtils {
     }
 
     /**
-     * Orients the edges of the given graph by setting both specified nodes
-     * as arrow endpoints directed towards the specified target node.
+     * Orients the edges of the given graph by setting both specified nodes as arrow endpoints directed towards the
+     * specified target node.
      *
      * @param g The graph in which the edges will be oriented.
      * @param x The first node to be set as an arrow endpoint directed towards the target node z.
@@ -3377,8 +3376,8 @@ public final class GraphUtils {
 
 
     /**
-     * Compute strongly connected components (SCCs) of a directed graph.
-     * Uses Tarjan's algorithm. Each SCC is returned as a Set.
+     * Compute strongly connected components (SCCs) of a directed graph. Uses Tarjan's algorithm. Each SCC is returned
+     * as a Set.
      *
      * @param g The graph.
      * @return List of SCCs, each represented as a Set of Nodes.

@@ -46,7 +46,7 @@ import java.util.*;
  * &amp; Bibby 1979, section 12.6; Anderson 2003, section 12.3.2) This is already in 2 log-likelihood units, so the BIC
  * penalty can be applied directly as 2â - c k log n.
  */
-@Deprecated
+//@Deprecated
 public class BlocksBicScore implements Score, BlockScore, EffectiveSampleSizeSettable {
     // --- Caches ---
     private static final int SCORE_CACHE_MAX = 100_000;

@@ -73,9 +73,9 @@ public class AncestorF1 implements Statistic {
      * Calculates the F1 statistic for adjacencies.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double precision = new AncestorPrecision().getValue(trueGraph, estGraph, dataModel, new Parameters());
-        double recall = new AncestorRecall().getValue(trueGraph, estGraph, dataModel, new Parameters());
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        double precision = new AncestorPrecision().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
+        double recall = new AncestorRecall().getValue(trueDag, trueGraph, estGraph, dataModel, new Parameters());
         return 2 * (precision * recall) / (precision + recall);
     }
 

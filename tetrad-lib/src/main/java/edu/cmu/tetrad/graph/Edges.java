@@ -270,7 +270,7 @@ public final class Edges {
      * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
      * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
-    public static Node traverseSemiDirected(Node node, Edge edge) {
+    public static Node traversePotentiallyDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if ((edge.getEndpoint1() == Endpoint.TAIL || edge.getEndpoint1() == Endpoint.CIRCLE)) {
                 return edge.getNode2();

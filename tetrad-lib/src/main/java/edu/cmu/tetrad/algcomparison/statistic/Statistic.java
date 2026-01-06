@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.statistic;
 
@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -36,6 +37,7 @@ public interface Statistic extends Serializable {
     /**
      * Constant <code>serialVersionUID=23L</code>
      */
+    @Serial
     long serialVersionUID = 23L;
 
     /**
@@ -53,6 +55,19 @@ public interface Statistic extends Serializable {
     String getDescription();
 
     /**
+     * Calculates and returns the value of the statistic based on the provided graphs, data model,
+     * and parameters.
+     *
+     * @param trueDag    The true directed acyclic graph (DAG).
+     * @param trueGraph  The true graph, which could be a DAG, a CPDAG, or a PAG derived from the true DAG.
+     * @param estGraph   The estimated graph, which corresponds to the same type as the trueGraph.
+     * @param dataModel  The data model, which may be null.
+     * @param parameters The parameters for the calculation, which may be null.
+     * @return The computed value of the statistic as a double.
+     */
+    double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters);
+
+    /**
      * Returns the value of this statistic, given the true graph and the estimated graph.
      *
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
@@ -61,7 +76,9 @@ public interface Statistic extends Serializable {
      * @param parameters The parameters (can be null).
      * @return The value of the statistic.
      */
-    double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters);
+    default double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        return getValue(null, trueGraph, estGraph, dataModel, parameters);
+    }
 
     /**
      * Returns the value of this statistic, given the true graph and the estimated graph.
@@ -72,7 +89,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        return getValue(trueGraph, estGraph, dataModel, null);
+        return getValue(null, trueGraph, estGraph, dataModel, null);
     }
 
     /**
@@ -84,7 +101,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph, Parameters parameters) {
-        return getValue(trueGraph, estGraph, null, parameters);
+        return getValue(null, trueGraph, estGraph, null, parameters);
     }
 
     /**
@@ -95,7 +112,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph) {
-        return getValue(trueGraph, estGraph, null, null);
+        return getValue(null, trueGraph, estGraph, null, null);
     }
 
     /**
@@ -107,5 +124,17 @@ public interface Statistic extends Serializable {
      * @return The weight of the statistic, 0 to 1, higher is better.
      */
     double getNormValue(double value);
+
+    /**
+     * Returns true if this statistics makes use of knowledge of the true graph. When analyzing
+     * empirical data where the truth is not known, such statistic cannot be used, so we should
+     * hide it from the user so they don't accidentally select it (and get a bunch of NaN's in
+     * their results).
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    default boolean usesTruth() {
+        return true;
+    }
 }
 

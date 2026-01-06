@@ -43,7 +43,7 @@ public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public MagInPagWrapper(GraphSource source, Parameters parameters) {
-        this(source.getGraph());
+        this(source.getGraph(), parameters);
     }
 
 
@@ -52,8 +52,8 @@ public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public MagInPagWrapper(Graph graph) {
-        super(MagInPagWrapper.getGraph(graph), "Choose Zhang MAG in PAG.");
+    public MagInPagWrapper(Graph graph, Parameters parameters) {
+        super(MagInPagWrapper.getGraph(graph), parameters, "Choose Zhang MAG in PAG.");
         String message = getGraph() + "";
         TetradLogger.getInstance().log(message);
     }
@@ -69,7 +69,7 @@ public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
      * @return a {@link edu.cmu.tetradapp.model.MagInPagWrapper} object
      */
     public static MagInPagWrapper serializableInstance() {
-        return new MagInPagWrapper(EdgeListGraph.serializableInstance());
+        return new MagInPagWrapper(EdgeListGraph.serializableInstance(), new Parameters());
     }
 
     /**

@@ -61,7 +61,7 @@ public final class TestGraphUtils {
         Set<Triple> unshieldedTriples = new HashSet<>();
 
         FciOrient fciOrientation = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(graph, knowledge));
-        fciOrientation.orient(_graph, unshieldedTriples);
+        fciOrientation.orient(_graph, unshieldedTriples, false);
 
         _graph.removeEdge(x, y);
         return _graph;
@@ -98,7 +98,7 @@ public final class TestGraphUtils {
                 Node node1 = graph.getNodes().get(i);
                 Node node2 = graph.getNodes().get(j);
 
-                List<List<Node>> directedPaths = graph.paths().directedPaths(node1, node2, -1);
+                Set<List<Node>> directedPaths = graph.paths().directedPaths(node1, node2, -1);
 
                 for (List<Node> path : directedPaths) {
                     assertTrue(graph.paths().isAncestorOf(path.getFirst(), path.getLast()));
@@ -123,7 +123,7 @@ public final class TestGraphUtils {
                 Node node1 = graph.getNodes().get(i);
                 Node node2 = graph.getNodes().get(j);
 
-                List<List<Node>> treks = graph.paths().treks(node1, node2, -1);
+                Set<List<Node>> treks = graph.paths().treks(node1, node2, -1);
 
                 TREKS:
                 for (List<Node> trek : treks) {
@@ -346,7 +346,7 @@ public final class TestGraphUtils {
 
         Graph graph = RandomGraph.randomGraphRandomForwardEdges(10, 2, 10,
                 10, 10, 10, false, -1);
-        graph = GraphTransforms.dagToPag(graph);
+        graph = GraphTransforms.dagToPag(graph, false);
 
         int numSmnallestSizes = 2;
 
@@ -391,7 +391,7 @@ public final class TestGraphUtils {
             // Construct its CPDAG
             Graph cpdag = GraphTransforms.dagToCpdag(graph);
             assertTrue(cpdag.paths().isLegalCpdag());
-            assertTrue(cpdag.paths().isLegalMpdag());
+            assertTrue(cpdag.paths().isLegalPdag());
 
 //                if (!cpdag.paths().isLegalCpdag()) {
 //
@@ -436,7 +436,7 @@ public final class TestGraphUtils {
         for (int i = 0; i < 10; i++) {
             Graph graph = RandomGraph.randomGraph(10, 3, 10,
                     10, 10, 10, false);
-            Graph pag = GraphTransforms.dagToPag(graph);
+            Graph pag = GraphTransforms.dagToPag(graph, false);
             assertTrue(pag.paths().isLegalPag());
 //                Graph pag2 = GraphTransforms.dagToPag(pag);
 //                assertTrue(pag2.paths().isLegalPag());

@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.utils.GraphLegalityCheck;
+import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -68,7 +68,7 @@ public class ImpliesLegalMag implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         List<Node> latent = trueGraph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
 
@@ -79,7 +79,7 @@ public class ImpliesLegalMag implements Statistic {
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         Graph mag = GraphTransforms.zhangMagFromPag(estGraph);
-        GraphLegalityCheck.LegalMagRet legalPag = GraphLegalityCheck.isLegalMag(estGraph, new HashSet<>(selection));
+        PagLegalityCheck.LegalMagRet legalPag = PagLegalityCheck.isLegalMag(estGraph, new HashSet<>(selection));
 
         if (legalPag.isLegalMag()) {
             return 1.0;
@@ -94,6 +94,15 @@ public class ImpliesLegalMag implements Statistic {
     @Override
     public double getNormValue(double value) {
         return value;
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

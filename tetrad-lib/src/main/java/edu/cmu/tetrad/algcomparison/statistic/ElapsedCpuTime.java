@@ -64,7 +64,7 @@ public class ElapsedCpuTime implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         return Double.NaN; // This has to be handled separately.
     }
 
@@ -74,6 +74,15 @@ public class ElapsedCpuTime implements Statistic {
     @Override
     public double getNormValue(double value) {
         return 1 - FastMath.tanh(0.001 * value);
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

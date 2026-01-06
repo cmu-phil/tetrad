@@ -1,0 +1,10 @@
+Graph Nodes:
+A;B;C
+
+Graph Edges:
+
+Graph Attributes:
+Score: -13.339695
+
+Graph Node Attributes:
+Score: [A: -4.446565155811452;B: -4.446565155811452;C: -4.446565155811452]

@@ -75,7 +75,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * True, just in case the given graph is a CPDAG (completed partially directed acyclic graph).
      */
-    private final boolean isMpdag;
+    private final boolean isPdag;
     /**
      * List of observers to be notified when changes are made to the model.
      */
@@ -199,7 +199,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public MarkovCheck(Graph graph, IndependenceTest independenceTest, ConditioningSetType setType) {
         this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
-        this.isMpdag = graph.paths().isLegalMpdag();
+        this.isPdag = graph.paths().isLegalPdag();
         this.independenceTest = independenceTest;
         this.setType = setType;
         this.independenceNodes = new ArrayList<>(independenceTest.getVariables());
@@ -1048,7 +1048,22 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             Set<IndependenceFact> mconn = new HashSet<>();
 
             if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG) {
-                Graph mag = GraphTransforms.zhangMagFromPag(graph);
+                Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
+
+                if (graph.paths().isLegalDag()) {
+                    mag = graph;
+                } else if (graph.paths().isLegalCpdag()) {
+                    mag = GraphTransforms.dagFromCpdag(graph);
+                } else if  (graph.paths().isLegalMag()) {
+                    mag = graph;
+                } else {
+                    mag = GraphTransforms.zhangMagFromPag(graph);
+                }
+
+                if (mag.paths().existsDirectedCycle()) {
+                    return;
+                }
+
                 allIndependenceFacts = OrderedLocalMarkovProperty.getModel(mag);
             } else {
                 for (int i = 0; i < nodes.size(); i++) {
@@ -1103,10 +1118,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                                 z = GraphUtils.markovBlanket(x, graph);
                                 break;
                             case RECURSIVE_MSEP:
-                                Map<Node, Set<Node>> ancestorMap = graph.paths().getAncestorsMap();
-
                                 try {
-                                    z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<Node>(), Set.of(), maxLength);
+                                    z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
                                 } catch (InterruptedException e) {
                                     throw new RuntimeException(e);
                                 }
@@ -1118,8 +1131,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                         if (x == y || z.contains(x) || z.contains(y)) continue;
 
                         if (findSmallestSubset && graph.paths().isMSeparatedFrom(x, y, z, false)) {
-//                        z = removeExtraneousVariables(z, x, y, !isMpdag);
-                            z = SepsetFinder.getSmallestSubset(x, y, z, new HashSet<>(), graph, !isMpdag);
+//                        z = removeExtraneousVariables(z, x, y, !isPdag);
+                            z = SepsetFinder.getSmallestSubset(x, y, z, new HashSet<>(), graph, !isPdag);
                         }
 
                         if (!checkNodeIndependenceAndConditioning(x, y, z)) {
@@ -1149,13 +1162,13 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         calcStats(indep);
     }
 
-//    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y, boolean isMpdag) {
+//    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y, boolean isPdag) {
 //        Set<Node> _z = new HashSet<>(z);
 //
 //        do {
 //            for (Node w : new HashSet<>(_z)) {
 //                _z.remove(w);
-//                if (!graph.paths().isMSeparatedFrom(x, y, _z, !isMpdag)) {
+//                if (!graph.paths().isMSeparatedFrom(x, y, _z, !isPdag)) {
 //                    _z.add(w);
 //                }
 //            }
@@ -1332,7 +1345,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @param indep True if for implied independencies, false if for implied dependencies.
      * @return The Binomial p-value for the given list of results.
      */
-    public double getBinomialPValue(boolean indep) {
+    public double getBinomialPValue_(boolean indep) {
         if (indep) {
             return binomialPIndep;
         } else {
@@ -1477,8 +1490,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double ksDep = getKsPValue(false);
         double fishInd = getFisherCombinedP(true);
         double fishDep = getFisherCombinedP(false);
-        double binIndep = getBinomialPValue(true);
-        double binDep = getBinomialPValue(false);
+        double binIndep = getBinomialPValue_(true);
+        double binDep = getBinomialPValue_(false);
         double fracDepInd = getFractionDependent(true);
         double fracDepDep = getFractionDependent(false);
         int numTestsInd = getNumTests(true);
@@ -1679,13 +1692,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 boolean indep = result.isIndependent();
                 double pValue = result.getPValue();
 
-//                double min = 0.0;
-//
-//                // Optionally, remove the p-values less than alpha. Hard-coding this for now.
-//                if (false) {
-//                    min = independenceTest.getAlpha();
-//                }
-
                 if (pValue >= 0.0) {
                     if (msep) {
                         resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
@@ -1786,7 +1792,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double adP = 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquaredStar);
         double ksP = UniformityTest.getKsPValue(pValues, 0, 1);
         double fishP = getFisherCombinedPValue(results);
-        double binP = getBinomialPValue(pValues, independenceTest.getAlpha());
+        double binP = getBinomialPValue_(pValues);
         double fracDep = dependent / (double) results.size();
         int numTests = results.size();
 
@@ -1866,21 +1872,20 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * hypothesis. Values less than alpha imply non-uniform distributions.
      *
      * @param pValues The p-values.
-     * @param alpha   The alpha level. Rejections with p-values less than this are considered dependent.
      * @return The Binomial p-value for non-uniformity.
      */
-    private double getBinomialPValue(List<Double> pValues, double alpha) {
+    private double getBinomialPValue_(List<Double> pValues) {
         int independentJudgements = 0;
 
         for (double pValue : pValues) {
-            if (pValue > alpha) independentJudgements++;
+            if (pValue > independenceTest.getAlpha()) independentJudgements++;
         }
 
         int p = pValues.size();
 
         // The left tail of this binomial distribution is a p-value for getting too few dependent judgments for
         // the distribution to count as uniform.
-        BinomialDistribution bd = new BinomialDistribution(p, alpha);
+        BinomialDistribution bd = new BinomialDistribution(p, independenceTest.getAlpha());
 
         // We want the area to the right of this, so we subtract from 1.
         return (1.0 - bd.cumulativeProbability(independentJudgements)) + (bd.probability(p - independentJudgements));
@@ -1920,8 +1925,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      *
      * @return true if the graph is a CPDAG, false otherwise
      */
-    public boolean isMpdag() {
-        return isMpdag;
+    public boolean isPdag() {
+        return isPdag;
     }
 
     /**
@@ -1946,7 +1951,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     public double getBinomialPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
         if (pValues.isEmpty()) return Double.NaN;
-        return getBinomialPValue(pValues, independenceTest.getAlpha());
+        return getBinomialPValue_(pValues);
     }
 
     /**

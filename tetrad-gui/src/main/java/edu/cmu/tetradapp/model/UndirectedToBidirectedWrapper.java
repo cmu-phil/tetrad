@@ -44,7 +44,7 @@ public class UndirectedToBidirectedWrapper extends GraphWrapper implements DoNot
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public UndirectedToBidirectedWrapper(GraphSource source, Parameters parameters) {
-        this(source.getGraph());
+        this(source.getGraph(), parameters);
     }
 
 
@@ -53,8 +53,8 @@ public class UndirectedToBidirectedWrapper extends GraphWrapper implements DoNot
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public UndirectedToBidirectedWrapper(Graph graph) {
-        super(GraphUtils.undirectedToBidirected(graph), "Make Bidirected Edges Undirected");
+    public UndirectedToBidirectedWrapper(Graph graph, Parameters parameters) {
+        super(GraphUtils.undirectedToBidirected(graph), parameters, "Make Bidirected Edges Undirected");
         String message = getGraph() + "";
         TetradLogger.getInstance().log(message);
     }
@@ -66,7 +66,7 @@ public class UndirectedToBidirectedWrapper extends GraphWrapper implements DoNot
      * @return a {@link edu.cmu.tetradapp.model.UndirectedToBidirectedWrapper} object
      */
     public static UndirectedToBidirectedWrapper serializableInstance() {
-        return new UndirectedToBidirectedWrapper(EdgeListGraph.serializableInstance());
+        return new UndirectedToBidirectedWrapper(EdgeListGraph.serializableInstance(), new Parameters());
     }
 
 

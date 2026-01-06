@@ -70,10 +70,10 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
      * The G Square tester.
      */
     private ChiSquareTest gSquareTest;
-    /**
-     * The p value associated with the most recent call of isIndependent.
-     */
-    private double pValue;
+//    /**
+//     * The p value associated with the most recent call of isIndependent.
+//     */
+//    private double pValue;
     /**
      * The lower bound of percentages of observation of some category in the data, given some particular combination of
      * values of conditioning variables, that coefs as 'determining.'
@@ -160,14 +160,14 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
         return new IndTestGSquare(newDataSet, this.alpha);
     }
 
-    /**
-     * Returns the p value associated with the most recent call of isIndependent.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.pValue;
-    }
+//    /**
+//     * Returns the p value associated with the most recent call of isIndependent.
+//     *
+//     * @return This p-value.
+//     */
+//    public double getPValue() {
+//        return this.pValue;
+//    }
 
     /**
      * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
@@ -178,9 +178,13 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
-        if (this.facts.containsKey(new IndependenceFact(x, y, _z))) {
-            return facts.get(new IndependenceFact(x, y, _z));
-        }
+//        if (this.facts.containsKey(new IndependenceFact(x, y, _z))) {
+//            return facts.get(new IndependenceFact(x, y, _z));
+//        }
+
+        IndependenceFact fact = new IndependenceFact(x, y, _z);
+        IndependenceResult cached = facts.get(fact);
+        if (cached != null) return cached;
 
         for (Node node : _z) {
             if (node == null) {
@@ -211,16 +215,17 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
         }
 
         ChiSquareTest.Result result = this.gSquareTest.calcChiSquare(testIndices, sampleSize);
-        this.pValue = result.getPValue();
+        double pValue = result.getPValue();
 
         if (this.verbose) {
             if (result.isIndep()) {
-                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, _z, getPValue()));
+                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
         IndependenceResult result1 = new IndependenceResult(new IndependenceFact(x, y, _z), result.isIndep(), result.getPValue(), alpha - result.getPValue());
-        facts.put(new IndependenceFact(x, y, _z), result1);
+//        facts.put(new IndependenceFact(x, y, _z), result1);
+        facts.put(fact, result1);
         return result1;
     }
 

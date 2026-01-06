@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
@@ -44,7 +45,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PagFromDagGraphWrapper(GraphSource source, Parameters parameters) {
-        this(source.getGraph());
+        this(source.getGraph(), parameters);
     }
 
 
@@ -53,14 +54,14 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public PagFromDagGraphWrapper(Graph graph) {
+    public PagFromDagGraphWrapper(Graph graph, Parameters parameters) {
         super(graph);
 
         if (graph.paths().existsDirectedCycle()) {
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        Graph pag = GraphTransforms.dagToPag(graph);
+        Graph pag = GraphTransforms.dagToPag(graph, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         setGraph(pag);
 
         TetradLogger.getInstance().log("\nGenerating allow_latent_common_causes from DAG.");
@@ -73,7 +74,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
      * @return a {@link edu.cmu.tetradapp.model.PagFromDagGraphWrapper} object
      */
     public static PagFromDagGraphWrapper serializableInstance() {
-        return new PagFromDagGraphWrapper(EdgeListGraph.serializableInstance());
+        return new PagFromDagGraphWrapper(EdgeListGraph.serializableInstance(), new Parameters());
     }
 
     //======================== Private Method ======================//

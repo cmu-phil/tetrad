@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel;
 import edu.cmu.tetrad.util.Parameters;
@@ -31,8 +32,12 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
     private String name = "Hybrid CG PM";
     private String notes = "";
 
-    public HybridCgPmWrapper(GraphWrapper graph, Parameters parameters) {
-        this(graph.getGraph(), parameters);
+    public HybridCgPmWrapper(GraphSource graph, Parameters parameters) {
+        this(graph.getGraph(), null, parameters);
+    }
+
+    public HybridCgPmWrapper(GraphSource graph, DataWrapper data, Parameters parameters) {
+        this(graph.getGraph(), (DataSet) data.getSelectedDataModel(), parameters);
     }
 
     /**
@@ -50,11 +55,16 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
      * already provided.
      *
      * @param graph  The graph representing the structure of the model. It must not be null.
+     * @param dataSet The dataset to use for variable replacement in the graph. Can be null.
      * @param params The parameters used to configure the model. It must not be null.
      */
-    public HybridCgPmWrapper(Graph graph, Parameters params) {
+    public HybridCgPmWrapper(Graph graph, DataSet dataSet, Parameters params) {
         Objects.requireNonNull(graph, "graph");
         Objects.requireNonNull(params, "params");
+
+        if (dataSet != null) {
+            graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
+        }
 
         final List<Node> nodeOrder = new ArrayList<>(graph.getNodes());
 
@@ -94,7 +104,7 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
      *               applied.
      */
     public HybridCgPmWrapper(Graph graph, Parameters params, DataSet data) {
-        this(graph, params); // builds PM first
+        this(graph, null, params); // builds PM first
         int bins = Math.max(2, params.getInt("hybridcg.cutBins", 3));
 
         String m = params.getString("hybridcg.cutMethod", "freq").trim().toLowerCase(Locale.ROOT);

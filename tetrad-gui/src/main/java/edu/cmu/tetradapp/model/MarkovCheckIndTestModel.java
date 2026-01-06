@@ -109,8 +109,6 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
         this.graph = graphSource.getGraph();
         this.parameters = parameters;
 
-        this.parameters.set(Params.MC_ALPHA, 0.05);
-
         if (knowlegeBox != null) {
             this.knowledge = knowlegeBox.getKnowledge();
         }

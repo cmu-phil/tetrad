@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -37,18 +37,18 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * Implements the CStaR algorithm (Stekhoven et al., 2012), which finds a CPDAG of that data and then tries all
- * orientations of the undirected edges about a variable in the CPDAG to estimate a minimum bound on the effect for a
- * given edge. Some references include the following:
+ * Implements the CStaR algorithm (Stekhoven et al., 2012), which finds a CPDAG from the data and then tries all
+ * orientations of the undirected edges around each variable in the CPDAG to estimate a minimum bound on the causal
+ * effect for a given edge. Some references include the following:
  * <p>
- * Stekhoven, D. J., Moraes, I., SveinbjÃ¶rnsson, G., Hennig, L., Maathuis, M. H., and BÃ¼hlmann, P. (2012). Causal
- * stability ranking. Bioinformatics, 28(21), 2819-2823.
+ * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., and Bühlmann, P. (2012). "Causal
+ * stability ranking." Bioinformatics, 28(21), 2819–2823.
  * <p>
- * Meinshausen, N., and BÃ¼hlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society: Series B
- * (Statistical Methodology), 72(4), 417-473.
+ * Meinshausen, N., and Bühlmann, P. (2010). "Stability selection." Journal of the Royal Statistical Society: Series B,
+ * 72(4), 417–473.
  * <p>
- * Colombo, D., and Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. The Journal of
- * Machine Learning Research, 15(1), 3741-3782.
+ * Colombo, D., and Maathuis, M. H. (2014). "Order-independent constraint-based causal structure learning." Journal of
+ * Machine Learning Research, 15(1), 3741–3782.
  * <p>
  * This class is not configured to respect knowledge of forbidden and required edges.
  *
@@ -281,8 +281,7 @@ public class Cstar {
 
         if (new File(origDir, "data.txt").exists()) {
             try {
-                dataSet = SimpleDataLoader.loadContinuousData(new File(origDir, "data.txt"), "//",
-                        '\"', "*", true, Delimiter.TAB, false);
+                dataSet = SimpleDataLoader.loadContinuousData(new File(origDir, "data.txt"), "//", '\"', "*", true, Delimiter.TAB, false);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Could not load data from " + new File(origDir, "data.txt").getAbsolutePath());
             }
@@ -449,8 +448,7 @@ public class Cstar {
                     if (pi <= 0) continue;
                     Node cause = possibleCauses.get(c);
                     Node effect = possibleEffects.get(e);
-                    tuples.add(new Tuple(cause, effect, pi, avgMinEffect(possibleCauses, possibleEffects,
-                            allEffects, cause, effect)));
+                    tuples.add(new Tuple(cause, effect, pi, avgMinEffect(possibleCauses, possibleEffects, allEffects, cause, effect)));
                 }
             }
 
@@ -670,10 +668,7 @@ public class Cstar {
             throw new IllegalArgumentException("There were no CSTaR records generated. Perhaps the parameters are wrong.");
         }
 
-        String header = "# Potential Causes = " + records.getFirst().getNumCauses() + "\n"
-                        + "# Potential Effects = " + records.getFirst().getNumEffects() + "\n" +
-                        "Top Bracket (âqâ) = " + this.topBracket +
-                        "\n\n";
+        String header = "# Potential Causes = " + records.getFirst().getNumCauses() + "\n" + "# Potential Effects = " + records.getFirst().getNumEffects() + "\n" + "Top Bracket (âqâ) = " + this.topBracket + "\n\n";
 
         int numColumns = 6;
 
@@ -805,8 +800,7 @@ public class Cstar {
      */
     private double[][] loadMatrix(File file) {
         try {
-            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//",
-                    '\"', "*", true, Delimiter.TAB, false);
+            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"', "*", true, Delimiter.TAB, false);
             return dataSet.getDoubleData().toArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -854,8 +848,7 @@ public class Cstar {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
     }
@@ -873,8 +866,7 @@ public class Cstar {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
     }

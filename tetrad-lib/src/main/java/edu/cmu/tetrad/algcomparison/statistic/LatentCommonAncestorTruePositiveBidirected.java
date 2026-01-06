@@ -85,7 +85,7 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {

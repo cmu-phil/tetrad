@@ -61,6 +61,7 @@ public class LocalGraphPrecision implements Statistic {
      * This method calculates the Local Graph Precision. It calculates the precision between the true graph and the
      * estimated graph locally.
      *
+     * @param trueDag The true graph.
      * @param trueGraph  The true graph.
      * @param estGraph   The estimated graph.
      * @param dataModel  The data model.
@@ -68,7 +69,7 @@ public class LocalGraphPrecision implements Statistic {
      * @return The local graph precision.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         LocalGraphConfusion lgConfusion = new LocalGraphConfusion(trueGraph, estGraph);
         int lgTp = lgConfusion.getTp();
         int lgFp = lgConfusion.getFp();

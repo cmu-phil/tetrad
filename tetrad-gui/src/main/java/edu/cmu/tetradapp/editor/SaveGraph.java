@@ -230,7 +230,7 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                String text = GraphSaveLoadUtils.graphToAmatCpag(graph);
+                String text = GraphSaveLoadUtils.graphToAmatCpdag(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
@@ -264,7 +264,7 @@ public class SaveGraph extends AbstractAction {
                 JOptionPane.showMessageDialog(getGraphWorkbench(), e1.getMessage());
             }
         } else if (this.type == Type.lavaan) {
-            File file = EditorUtils.getSaveFile("graph", "lavaan.txt", parent, false, this.title);
+            File file = EditorUtils.getSaveFile("graph", "lav", parent, false, this.title);
 
             if (file == null) {
                 System.out.println("File was null.");

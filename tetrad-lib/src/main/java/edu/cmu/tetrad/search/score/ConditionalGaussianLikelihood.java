@@ -66,7 +66,7 @@ public class ConditionalGaussianLikelihood {
     /**
      * The data set with all continuous mixedVariables discretized.
      */
-    private final DataSet dataSet;
+    private DataSet dataSet;
     /**
      * The mixedVariables of the mixed data set.
      */
@@ -146,15 +146,20 @@ public class ConditionalGaussianLikelihood {
      */
     public void setRows(List<Integer> rows) {
         if (rows == null) {
-            this.rows = null;
-        } else {
-            for (int i = 0; i < rows.size(); i++) {
-                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
-                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
-            }
-
-            this.rows = rows;
+            // null means "all rows"
+            this.rows = new ArrayList<>();
+            for (int i = 0; i < mixedDataSet.getNumRows(); i++) this.rows.add(i);
+            return;
         }
+
+        for (int i = 0; i < rows.size(); i++) {
+            if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
+            if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+            if (rows.get(i) >= mixedDataSet.getNumRows()) throw new IllegalArgumentException("Row " + i + " is out of bounds.");
+        }
+
+        // defensive copy is a good idea
+        this.rows = new ArrayList<>(rows);
     }
 
     /**
@@ -214,6 +219,7 @@ public class ConditionalGaussianLikelihood {
      */
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
+        this.dataSet = useErsatzVariables(); // rebuild ersatz + nodesHash
     }
 
     private DataSet useErsatzVariables() {
@@ -286,52 +292,82 @@ public class ConditionalGaussianLikelihood {
 
         int k = X.size();
 
+//        int[] continuousCols = new int[k];
+//        for (int j = 0; j < k; j++) continuousCols[j] = this.nodesHash.get(X.get(j));
+
         int[] continuousCols = new int[k];
-        for (int j = 0; j < k; j++) continuousCols[j] = this.nodesHash.get(X.get(j));
+        for (int j = 0; j < k; j++) {
+            // Use original dataset columns for continuous data
+            int col = mixedDataSet.getColumn(X.get(j));
+            if (col < 0) col = mixedDataSet.getColumn(X.get(j).getName()); // you added this default method
+            if (col < 0) throw new IllegalArgumentException("Cannot find continuous variable in dataset: " + X.get(j));
+            continuousCols[j] = col;
+        }
 
         double c1 = 0, c2 = 0;
 
         List<List<Integer>> cells = partition(A, rows);
 
+        // choose eligible cells once
+        List<List<Integer>> eligible = new ArrayList<>();
+        int totalEligibleRows = 0;
+
         for (List<Integer> cell : cells) {
             int a = cell.size();
-
             if (a < minSampleSizePerCell) continue;
+            if (!X.isEmpty() && a < k) continue; // need at least k rows to estimate k-dim covariance
+            eligible.add(cell);
+            totalEligibleRows += a;
+        }
 
-            if (!A.isEmpty()) {
-                c1 += a * multinomialLikelihood(a, rows.size());
+        if (eligible.isEmpty()) {
+            return new Ret(Double.NaN, dof(A, X));
+        }
+
+        // Discrete term over same support
+        if (!A.isEmpty()) {
+            for (List<Integer> cell : eligible) {
+                int a = cell.size();
+                c1 += a * multinomialLikelihood(a, totalEligibleRows);
             }
+        }
 
-            if (!X.isEmpty()) {
-                // Determinant will be zero if data are linearly dependent.
+        // Continuous term over same support
+        if (!X.isEmpty()) {
+            for (List<Integer> cell : eligible) {
                 Matrix subsample = getSubsample(continuousCols, cell);
 
                 int nRows = subsample.getNumRows();
                 int nCols = subsample.getNumColumns();
 
-                if (nRows < minSampleSizePerCell || nCols < 1) {
-                    continue;
-                }
-
-                if (nRows < nCols) {
-                    continue;
-                }
+                if (nRows < minSampleSizePerCell || nCols < 1) continue;
+                if (nRows < nCols) continue;
 
                 double gl = gaussianLikelihood(k, cov(subsample));
+                if (Double.isNaN(gl)) return new Ret(Double.NaN, dof(A, X));
 
-                if (Double.isNaN(gl)) {
-                    continue;
-                }
-
-                c2 += a * gl;
+                c2 += nRows * gl; // (nRows == cell.size())
             }
         }
 
         double lnL = c1 + c2;
 
-        int dof = f(A) * h(X) + f(A);
+//        int dof = f(A) * h(X) + f(A);
+        int dof = dof(A, X);
 
         return new Ret(lnL, dof);
+    }
+
+    private int dof(List<DiscreteVariable> A, List<ContinuousVariable> X) {
+        int fA = f(A);
+        return fA * h(X) + (fA - 1);
+    }
+
+    // Degrees of freedom for a multivariate Gaussian distribution is p * (p + 1) / 2, where p is the number
+    // of mixedVariables. This is the number of unique entries in the covariance matrix over X.
+    private int h(List<ContinuousVariable> X) {
+        int p = X.size();
+        return p + (p * (p + 1)) / 2; // mean (p) + covariance unique entries
     }
 
     private double multinomialLikelihood(int a, int N) {
@@ -342,9 +378,11 @@ public class ConditionalGaussianLikelihood {
     private double gaussianLikelihood(int k, Matrix sigma) {
         double det = sigma.det();
 
-        if (det == 0) {
-            return Double.NaN;
-        }
+//        if (det == 0) {
+//            return Double.NaN;
+//        }
+
+        if (abs(det) < 1e-12) return Double.NaN;
 
         return -0.5 * log(abs(det)) - 0.5 * k * (1 + ConditionalGaussianLikelihood.LOG2PI);
     }
@@ -380,10 +418,10 @@ public class ConditionalGaussianLikelihood {
 
     // Degrees of freedom for a multivariate Gaussian distribution is p * (p + 1) / 2, where p is the number
     // of mixedVariables. This is the number of unique entries in the covariance matrix over X.
-    private int h(List<ContinuousVariable> X) {
-        int p = X.size();
-        return p * (p + 1) / 2;
-    }
+//    private int h(List<ContinuousVariable> X) {
+//        int p = X.size();
+//        return p * (p + 1) / 2;
+//    }
 
     private List<List<Integer>> partition(List<DiscreteVariable> discrete_parents, List<Integer> rows) {
         List<List<Integer>> cells = new ArrayList<>();

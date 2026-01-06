@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.utils;
 
@@ -55,7 +55,12 @@ public final class MagToPag {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    private int depth = -1;
+    /**
+     * Represents the maximum length of discriminating paths to be considered during MAG to PAG conversion. A value of
+     * -1 indicates that all possible discriminating paths should be considered without any specific length constraint.
+     * This value can be adjusted to limit the depth of analysis based on the specific use case.
+     */
+    private int maxDiscriminatingPathLength = -1;
 
 
     /**
@@ -87,17 +92,6 @@ public final class MagToPag {
                 // says should be oriented.
                 Graph mag1 = ((MsepTest) getTest()).getGraph();
                 return !mag1.isAdjacentTo(i, k) && mag1.isDefCollider(i, j, k);
-
-//                Set<Node> dsepi = mag1.paths().dsep(i, k);
-//                Set<Node> dsepk = mag1.paths().dsep(k, i);
-//
-//                if (getTest().checkIndependence(i, k, dsepi).isIndependent()) {
-//                    return !dsepi.contains(j);
-//                } else if (getTest().checkIndependence(k, i, dsepk).isIndependent()) {
-//                    return !dsepk.contains(j);
-//                }
-//
-//                return false;
             }
 
             /**
@@ -171,10 +165,11 @@ public final class MagToPag {
     /**
      * This method does the conversion of MAG to PAG.
      *
-     * @param checkMag Whether to check if the MAG is legal before conversion.
+     * @param checkMag           Whether to check if the MAG is legal before conversion.
+     * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      * @return Returns the converted PAG.
      */
-    public Graph convert(boolean checkMag) {
+    public Graph convert(boolean checkMag, boolean excludeSelectionBias) {
         if (checkMag && !this.mag.paths().isLegalMag()) {
             throw new IllegalArgumentException("Not legal mag");
         }
@@ -188,6 +183,8 @@ public final class MagToPag {
         fciOrient.setKnowledge(knowledge);
         fciOrient.setMaxDiscriminatingPathLength(-1);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
 
         for (Node y : pag.getNodes()) {
             List<Node> adjy = pag.getAdjacentNodes(y);
@@ -206,7 +203,7 @@ public final class MagToPag {
         }
 
 //        fciOrient.ruleR0(pag, new HashSet<>());
-        fciOrient.finalOrientation(pag);
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
 
         return pag;
     }
@@ -260,6 +257,15 @@ public final class MagToPag {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * Sets the maximum length of discriminating paths to be considered during processing.
+     *
+     * @param maxDiscriminatingPathLength the maximum length of discriminating paths
+     */
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 }
 

@@ -69,58 +69,130 @@ public final class MlBayesEstimator {
         // Get the nodes from the BayesPm. This fixes the order of the nodes
         // in the BayesIm, independently of any change to the BayesPm.
         // (This order must be maintained.)
+//        Graph graph = bayesPm.getDag();
+
+        // Build a mapping from BayesIm node index -> DataSet column index
+        int numNodes = im.getNumNodes();
+        int[] dsColForImIdx = new int[numNodes];
+        for (int k = 0; k < numNodes; k++) {
+            String name = im.getNode(k).getName();
+            // Find the dataset column with the same name
+            int dsCol = -1;
+            for (int c = 0; c < dataSet.getNumColumns(); c++) {
+                if (dataSet.getVariable(c).getName().equals(name)) {
+                    dsCol = c; break;
+                }
+            }
+            if (dsCol < 0) {
+                throw new IllegalStateException("DataSet is missing variable: " + name);
+            }
+            dsColForImIdx[k] = dsCol;
+        }
+
         Graph graph = bayesPm.getDag();
 
         for (int nodeIndex = 0; nodeIndex < im.getNumNodes(); nodeIndex++) {
             Node node = im.getNode(nodeIndex);
 
-            // Set up parents array.  Should store the parents of
-            // each node as ints in a particular order.
+            // Use the same parent order for dims, parentValues, and im.getRowIndex
             List<Node> parentList = new ArrayList<>(graph.getParents(node));
-            Collections.sort(parentList);
-            int[] parentArray = new int[parentList.size()];
+            Collections.sort(parentList); // keep if BayesIm uses sorted parent order; otherwise remove
 
+            int[] parentArray = new int[parentList.size()];
             for (int i = 0; i < parentList.size(); i++) {
-                parentArray[i] = im.getNodeIndex(parentList.get(i));
+                parentArray[i] = im.getNodeIndex(parentList.get(i)); // indices in IM space
             }
 
-            // Sort the parent array.
-//            Arrays.sort(parentArray);
-
-            // Setup dimensions array for parents.
+            // Parent dims
             int[] dims = new int[parentArray.length];
-
             for (int i = 0; i < dims.length; i++) {
                 Node parNode = im.getNode(parentArray[i]);
                 dims[i] = bayesPm.getNumCategories(parNode);
             }
 
-            // Calculate dimensions of table.
+            // Table shape
             int numRows = 1;
-
-            for (int dim : dims) {
-                numRows *= dim;
-            }
-
+            for (int dim : dims) numRows *= dim;
             int numCols = bayesPm.getNumCategories(node);
 
             CptMapCounts counts = new CptMapCounts(numRows, numCols);
             counts.setPriorCount(prior);
 
+            // Fill counts using the **DataSet column index** mapped from IM index
+            int childDsCol = dsColForImIdx[nodeIndex];
+
             for (int row = 0; row < dataSet.getNumRows(); row++) {
                 int[] parentValues = new int[parentArray.length];
-
-                for (int i = 0; i < parentValues.length; i++) {
-                    parentValues[i] = dataSet.getInt(row, parentArray[i]);
+                for (int i = 0; i < parentArray.length; i++) {
+                    int parImIdx = parentArray[i];
+                    int parDsCol = dsColForImIdx[parImIdx];
+                    int v = dataSet.getInt(row, parDsCol);
+                    // optional: sanity-check range
+                    // if (v < 0 || v >= dims[i]) throw new IllegalArgumentException("Parent value out of range");
+                    parentValues[i] = v;
                 }
 
-                int value = dataSet.getInt(row, nodeIndex);
+                int value = dataSet.getInt(row, childDsCol);
+                // optional: sanity-check range
+                // if (value < 0 || value >= numCols) throw new IllegalArgumentException("Child value out of range");
 
-                counts.addCounts(im.getRowIndex(nodeIndex, parentValues), value, 1);
+                int cptRow = im.getRowIndex(nodeIndex, parentValues);
+                counts.addCounts(cptRow, value, 1);
             }
 
             im.setCountMap(nodeIndex, counts);
         }
+
+//        for (int nodeIndex = 0; nodeIndex < im.getNumNodes(); nodeIndex++) {
+//            Node node = im.getNode(nodeIndex);
+//
+//            // Set up parents array.  Should store the parents of
+//            // each node as ints in a particular order.
+//            List<Node> parentList = new ArrayList<>(graph.getParents(node));
+//            Collections.sort(parentList);
+//            int[] parentArray = new int[parentList.size()];
+//
+//            for (int i = 0; i < parentList.size(); i++) {
+//                parentArray[i] = im.getNodeIndex(parentList.get(i));
+//            }
+//
+//            // Sort the parent array.
+////            Arrays.sort(parentArray);
+//
+//            // Setup dimensions array for parents.
+//            int[] dims = new int[parentArray.length];
+//
+//            for (int i = 0; i < dims.length; i++) {
+//                Node parNode = im.getNode(parentArray[i]);
+//                dims[i] = bayesPm.getNumCategories(parNode);
+//            }
+//
+//            // Calculate dimensions of table.
+//            int numRows = 1;
+//
+//            for (int dim : dims) {
+//                numRows *= dim;
+//            }
+//
+//            int numCols = bayesPm.getNumCategories(node);
+//
+//            CptMapCounts counts = new CptMapCounts(numRows, numCols);
+//            counts.setPriorCount(prior);
+//
+//            for (int row = 0; row < dataSet.getNumRows(); row++) {
+//                int[] parentValues = new int[parentArray.length];
+//
+//                for (int i = 0; i < parentValues.length; i++) {
+//                    parentValues[i] = dataSet.getInt(row, parentArray[i]);
+//                }
+//
+//                int value = dataSet.getInt(row, nodeIndex);
+//
+//                counts.addCounts(im.getRowIndex(nodeIndex, parentValues), value, 1);
+//            }
+//
+//            im.setCountMap(nodeIndex, counts);
+//        }
 
         return im;
     }

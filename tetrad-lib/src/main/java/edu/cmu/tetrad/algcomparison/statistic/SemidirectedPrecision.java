@@ -63,20 +63,21 @@ public class SemidirectedPrecision implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Proportion of (X, Y) where if semidirected path in est then also in true";
+        return "Proportion of (X, Y) where if potentially directed path in est then also in true";
     }
 
     /**
-     * Calculates the semi-directed precision value.
+     * Calculates the potentially directed precision value.
      *
+     * @param trueDag  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
      * @param parameters The parameters
-     * @return The semi-directed precision value.
+     * @return The potentially directed precision value.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0, fp = 0;
 
         List<Node> nodes = estGraph.getNodes();
@@ -87,8 +88,8 @@ public class SemidirectedPrecision implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (estGraph.paths().existsSemiDirectedPath(x, Collections.singleton(y))) {
-                    if (trueGraph.paths().existsSemiDirectedPath(x, Collections.singleton(y))) {
+                if (estGraph.paths().existsPotentiallyDirectedPath(x, Collections.singleton(y))) {
+                    if (trueGraph.paths().existsPotentiallyDirectedPath(x, Collections.singleton(y))) {
                         tp++;
                     } else {
                         fp++;

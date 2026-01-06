@@ -64,6 +64,7 @@ public class CircleRecall implements Statistic {
     /**
      * Calculates the circle recall value for a given true graph, estimated graph, and data model.
      *
+     * @param trueDag The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -71,7 +72,7 @@ public class CircleRecall implements Statistic {
      * @return The circle recall value.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         CircleConfusion confusion = new CircleConfusion(trueGraph, estGraph);
         double tp = confusion.getTp();
         double fn = confusion.getFn();

@@ -168,7 +168,7 @@ public class DataForCalibrationRfci {
 //
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = GraphTransforms.dagToPag(dag);
+        Graph truePag = GraphTransforms.dagToPag(dag, false);
 
         System.out.println("true PAG construction Done!");
 

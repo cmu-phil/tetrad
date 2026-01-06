@@ -24,6 +24,7 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -53,6 +54,17 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
      * among others. This field is immutable and must be set during the initialization of the object.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * Represents the parameter configuration used for performing the Markov checks
+     * in the {@link MarkovCheckKsPassesBestOf10} class. It encapsulates various
+     * settings and options that control how the statistical tests are executed.
+     *
+     * This field is immutable and must be initialized during the construction
+     * of the {@link MarkovCheckKsPassesBestOf10} instance. It plays a critical
+     * role in determining the behavior of the Kolmogorov-Smirnov tests and other
+     * related operations in the context of the Markov checks.
+     */
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
@@ -63,10 +75,14 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
-    public MarkovCheckKsPassesBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckKsPassesBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                                       Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -92,6 +108,7 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
     /**
      * Calculates whether Kolmogorov-Smirnoff P > 0.05.
      *
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -100,9 +117,11 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
      * @throws IllegalArgumentException if the data model is null.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double p = new MarkovCheckKolmogorovSmirnoffPBestOf10(independenceWrapper, conditioningSetType).getValue(trueGraph, estGraph, dataModel, new Parameters());
-        return p > parameters.getDouble(Params.MC_ALPHA) ? 1.0 : 0.0;
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        double alpha = independenceWrapper.getTest(dataModel, parameters).getAlpha();
+        double p = new MarkovCheckKolmogorovSmirnoffPBestOf10(independenceWrapper, conditioningSetType, mcParameters)
+                .getValue(trueDag, trueGraph, estGraph, dataModel, mcParameters);
+        return p > alpha ? 1.0 : 0.0;
     }
 
     /**
@@ -114,6 +133,15 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStat
     @Override
     public double getNormValue(double value) {
         return value;
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

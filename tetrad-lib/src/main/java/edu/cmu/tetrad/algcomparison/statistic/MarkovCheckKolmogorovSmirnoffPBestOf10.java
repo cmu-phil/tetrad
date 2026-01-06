@@ -56,6 +56,15 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, Markov
      * determines how independence facts are tested and is defined by the {@link ConditioningSetType} enum.
      */
     private final ConditioningSetType conditioningSetType;
+    /**
+     * Represents a configuration parameter object used to control and provide
+     * settings for performing Markov checks, including calculations and evaluations
+     * of statistical measures such as the Kolmogorov-Smirnoff P value.
+     *
+     * This field is immutable and encapsulates the required parameters for conducting
+     * specific computations within the MarkovCheckKolmogorovSmirnoffPBestOf10 class.
+     */
+    private final Parameters mcParameters;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
@@ -66,10 +75,14 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, Markov
      * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
      *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
      *                            independence tests.
+     * @param mcParameters        The set of parameters used for configuring the Markov check process, including
+     *                            settings for independence tests and other relevant computations.
      */
-    public MarkovCheckKolmogorovSmirnoffPBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+    public MarkovCheckKolmogorovSmirnoffPBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType,
+                                                  Parameters mcParameters) {
         this.independenceWrapper = independenceWrapper;
         this.conditioningSetType = conditioningSetType;
+        this.mcParameters = mcParameters;
     }
 
     /**
@@ -96,6 +109,7 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, Markov
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
      * are distributed as U(0, 1).
      *
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -104,7 +118,7 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, Markov
      * @throws IllegalArgumentException if the data model is null.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
 
         if (dataModel == null) {
             throw new IllegalArgumentException("Data model is null.");
@@ -112,11 +126,12 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, Markov
 
         IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
 
-        // Find the best of 11 repetitions
+        // Find the best of 10 repetitions
         double max = Double.NEGATIVE_INFINITY;
 
-        for (int i = 0; i < 11; i++) {
+        for (int i = 0; i < 10; i++) {
             MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
+            markovCheck.setFractionResample(1.0);
             markovCheck.generateResults(true, true);
             double ksPValue = markovCheck.getKsPValue(true);
             if (ksPValue > max) {
@@ -136,6 +151,15 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, Markov
     @Override
     public double getNormValue(double value) {
         return value;
+    }
+
+    /**
+     * This method does not use the truth so is suitable for analyzing empirical data.
+     *
+     * @return True if this statistic uses the true graph, false otherwise.
+     */
+    public boolean usesTruth() {
+        return false;
     }
 }
 

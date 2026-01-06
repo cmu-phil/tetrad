@@ -50,7 +50,7 @@ public class LocalGraphRecall implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         LocalGraphConfusion lgConfusion = new LocalGraphConfusion(trueGraph, estGraph);
         int lgTp = lgConfusion.getTp();
         int lgFn = lgConfusion.getFn();

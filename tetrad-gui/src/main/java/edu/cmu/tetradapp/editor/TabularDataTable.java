@@ -54,6 +54,12 @@ class TabularDataTable extends AbstractTableModel {
      * True iff category names for discrete variables should be shown.
      */
     private boolean categoryNamesShown = true;
+    /**
+     * Defines the minimum number of columns required in the table model.
+     * Ensures that the number of columns in the underlying table model
+     * will be at least this value.
+     */
+    private int minColumnCount = 31;
 
     /**
      * Constructs a new DisplayTableModel to wrap the given dataSet.
@@ -89,7 +95,9 @@ class TabularDataTable extends AbstractTableModel {
      * @return the number of columns in the wrapper table model. Guarantees that this number will be at least 30.
      */
     public int getColumnCount() {
-        return (this.dataSet.getNumColumns() < 30) ? 30
+        int min = Math.min(this.minColumnCount + getNumLeadingCols(), 30 + getNumLeadingCols());
+
+        return (this.dataSet.getNumColumns() + getNumLeadingCols() < min) ? min
                 : this.dataSet.getNumColumns() + getNumLeadingCols() + 1;
     }
 
@@ -363,6 +371,10 @@ class TabularDataTable extends AbstractTableModel {
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.pcs.addPropertyChangeListener(listener);
+    }
+
+    public void setMinColumnCount(int minColumnCount) {
+        this.minColumnCount = minColumnCount;
     }
 }
 

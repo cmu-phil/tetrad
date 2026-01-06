@@ -68,6 +68,7 @@ public class NumCorrectBidirected implements Statistic {
     /**
      * Returns the number of bidirected edges for which a latent confounder exists.
      *
+     * @param trueDag The true DAG.
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
@@ -75,7 +76,7 @@ public class NumCorrectBidirected implements Statistic {
      * @return The number of bidirected edges with a latent confounder.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
 
         estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());

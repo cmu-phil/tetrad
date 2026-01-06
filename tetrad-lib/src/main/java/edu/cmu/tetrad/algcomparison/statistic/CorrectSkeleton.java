@@ -64,7 +64,7 @@ public class CorrectSkeleton implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+    public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         return GraphUtils.undirectedGraph(trueGraph).equals(GraphUtils.undirectedGraph(estGraph)) ?
                 1 : 0;
     }
