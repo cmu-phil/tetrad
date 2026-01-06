@@ -297,7 +297,8 @@ public class TestCheckNodewiseMarkov {
                         estimatedPAG = fci.search();
                         break;
                     case "FCIMax":
-                        FciMax fciMax = new FciMax(fisherZTest); // seems fciMax does not need score input?
+                        Fci fciMax = new Fci(fisherZTest); // seems fciMax does not need score input?
+                        fciMax.setR0ColliderRule(Fci.ColliderRule.MAX_P);
                         fciMax.setGuaranteePag(true);
                         estimatedPAG = fciMax.search();
                         break;
