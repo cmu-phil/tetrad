@@ -47,7 +47,7 @@ public class AllEdgesNondirectedWrapper extends GraphWrapper implements DoNotAdd
      * @param parameters a {@link Parameters} object
      */
     public AllEdgesNondirectedWrapper(GraphSource source, Parameters parameters) {
-        this(source.getGraph());
+        this(source.getGraph(), parameters);
     }
 
     /**
@@ -55,8 +55,8 @@ public class AllEdgesNondirectedWrapper extends GraphWrapper implements DoNotAdd
      *
      * @param graph a {@link Graph} object
      */
-    public AllEdgesNondirectedWrapper(Graph graph) {
-        super(GraphUtils.nondirectedGraph(graph), "Make All Edges Nondirected");
+    public AllEdgesNondirectedWrapper(Graph graph, Parameters parameters) {
+        super(GraphUtils.nondirectedGraph(graph), parameters, "Make All Edges Nondirected");
         String message = getGraph() + "";
         TetradLogger.getInstance().log(message);
     }
@@ -67,7 +67,7 @@ public class AllEdgesNondirectedWrapper extends GraphWrapper implements DoNotAdd
      * @return a {@link AllEdgesNondirectedWrapper} object
      */
     public static AllEdgesNondirectedWrapper serializableInstance() {
-        return new AllEdgesNondirectedWrapper(EdgeListGraph.serializableInstance());
+        return new AllEdgesNondirectedWrapper(EdgeListGraph.serializableInstance(), new Parameters());
     }
 
 

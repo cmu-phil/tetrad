@@ -64,6 +64,32 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
     // Table
     private final JTable resultTable;
     private final ResultTableModel tableModel;
+    DefaultTableCellRenderer effectRenderer = new DefaultTableCellRenderer() {
+        {
+            setHorizontalAlignment(SwingConstants.RIGHT);
+        }
+
+        @Override
+        protected void setValue(Object value) {
+            if (value == null) {
+                setText("*");
+                return;
+            }
+            if (value instanceof Number n) {
+                double d = n.doubleValue();
+                if (Double.isNaN(d)) {
+                    setText("*");
+                    return;
+                }
+                // Optional formatting:
+                // setText(String.format("%.3f", d));
+                setText(NumberFormatUtil.getInstance().getNumberFormat().format(d));
+                return;
+            }
+            setText(String.valueOf(value));
+        }
+    };
+
 
     /**
      * Constructs an editor for managing and displaying total effects adjustments within the adjustment model. The
@@ -78,43 +104,15 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
 
         this.tableModel = new ResultTableModel(model);
         this.resultTable = new JTable(tableModel);
+        this.resultTable.setTransferHandler(new DefaultTableTransferHandler(0));
+
+        installEffectRenderers();
+
         this.resultTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.resultTable.setAutoCreateRowSorter(true); // enable column-header sorting
 
-        DefaultTableCellRenderer effectRenderer = new DefaultTableCellRenderer() {
-            {
-                setHorizontalAlignment(SwingConstants.RIGHT);
-            }
-
-            @Override
-            protected void setValue(Object value) {
-                if (value == null) {
-                    setText("*");
-                    return;
-                }
-                if (value instanceof Number n) {
-                    double d = n.doubleValue();
-                    if (Double.isNaN(d)) {
-                        setText("*");
-                        return;
-                    }
-                    // Optional formatting:
-                    // setText(String.format("%.3f", d));
-                    setText(NumberFormatUtil.getInstance().getNumberFormat().format(d));
-                    return;
-                }
-                setText(String.valueOf(value));
-            }
-        };
-
-        resultTable.getColumnModel().getColumn(4).setCellRenderer(effectRenderer);
-        resultTable.getColumnModel().getColumn(5).setCellRenderer(effectRenderer);
-
         this.treatmentsField.setText(model.getTreatmentsText());
         this.outcomesField.setText(model.getOutcomesText());
-
-//        this.treatmentsField.addActionListener(e -> model.setTreatmentsText(treatmentsField.getText()));
-//        this.outcomesField.addActionListener(e -> model.setOutcomesText(outcomesField.getText()));
 
         this.treatmentsField.addFocusListener(
                 new FocusAdapter() {
@@ -190,7 +188,9 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         ButtonGroup modeGroup = new ButtonGroup();
         modeGroup.add(pairwiseRadio);
         modeGroup.add(jointRadio);
-        pairwiseRadio.setSelected(true);
+
+        if (model.getEffectMode() == AdjustmentTotalEffectsModel.EffectMode.JOINT) jointRadio.setSelected(true);
+        else pairwiseRadio.setSelected(true);
 
         JPanel modePanel = new JPanel(new GridLayout(0, 1));
         modePanel.add(new JLabel("Mode:"));
@@ -237,7 +237,9 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
         try {
             updateModelFromUI();
             model.recompute();
-            tableModel.fireTableDataChanged();
+
+            tableModel.fireTableStructureChanged();  // <-- important
+            installEffectRenderers();                // <-- reapply renderers
         } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this,
@@ -486,6 +488,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
             }
         });
         table.setAutoCreateRowSorter(true);
+        table.setTransferHandler(new DefaultTableTransferHandler(0));
 
         JScrollPane scroll = new JScrollPane(table);
 
@@ -507,16 +510,74 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
     // ---------------------------------------------------------------------
     // Table model for summary view
     // ---------------------------------------------------------------------
+//    private void installEffectRenderers() {
+//        var cm = resultTable.getColumnModel();
+//
+//        for (int i = 0; i < cm.getColumnCount(); i++) {
+//            String name = cm.getColumn(i).getHeaderValue().toString();
+//
+//            if (name.equals("Total effect")
+//                || name.equals("Abs total effect")
+//                || name.equals("True Total Effect")
+//                || name.equals("Abs True Total Effect")) {
+//                cm.getColumn(i).setCellRenderer(effectRenderer);
+//            }
+//        }
+//    }
+
+    private void installEffectRenderers() {
+        var cm = resultTable.getColumnModel();
+
+        for (int i = 0; i < cm.getColumnCount(); i++) {
+            String name = cm.getColumn(i).getHeaderValue().toString();
+
+            if (name.equals("Total effect")
+                || name.equals("True Total Effect")) {
+                cm.getColumn(i).setCellRenderer(effectRenderer);
+            }
+        }
+    }
 
     private static final class ResultTableModel extends AbstractTableModel {
-        // NOTE: changed last columns: one for total effect, one for |total effect|
-        private static final String[] COLS = {
-                "#", "X", "Y", "Adjustment set Z", "Total effect", "Abs total effect"
-        };
+
+        private static final String COL_NUM = "#";
+        private static final String COL_X = "X";
+        private static final String COL_Y = "Y";
+        private static final String COL_Z = "Adjustment set Z";
+        private static final String COL_TE = "Total effect";
+//        private static final String COL_ABS_TE = "Abs total effect";
+        private static final String COL_TRUE_TE = "True Total Effect";
+//        private static final String COL_ABS_TRUE_TE = "Abs True Total Effect";
+
         private final AdjustmentTotalEffectsModel model;
 
         ResultTableModel(AdjustmentTotalEffectsModel model) {
             this.model = model;
+        }
+
+        private boolean showTrueColumns() {
+            return model.getEffectMode() == AdjustmentTotalEffectsModel.EffectMode.PAIRWISE
+                   && model.isTrueSemImAvailable();
+        }
+
+//        private String[] columns() {
+//            if (showTrueColumns()) {
+//                return new String[] {
+//                        COL_NUM, COL_X, COL_Y, COL_Z, COL_TE, COL_ABS_TE, COL_TRUE_TE, COL_ABS_TRUE_TE
+//                };
+//            } else {
+//                return new String[] {
+//                        COL_NUM, COL_X, COL_Y, COL_Z, COL_TE, COL_ABS_TE
+//                };
+//            }
+//        }
+
+        private String[] columns() {
+            if (showTrueColumns()) {
+                return new String[] { COL_NUM, COL_X, COL_Y, COL_Z, COL_TE, COL_TRUE_TE };
+            } else {
+                return new String[] { COL_NUM, COL_X, COL_Y, COL_Z, COL_TE };
+            }
         }
 
         @Override
@@ -526,48 +587,128 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
 
         @Override
         public int getColumnCount() {
-            return COLS.length;
+            return columns().length;
         }
 
         @Override
         public String getColumnName(int column) {
-            return COLS[column];
+            return columns()[column];
         }
+
+//        @Override
+//        public Class<?> getColumnClass(int columnIndex) {
+//            String col = columns()[columnIndex];
+//            if (COL_NUM.equals(col)) return Integer.class;
+//
+//            if (COL_TE.equals(col) || COL_ABS_TE.equals(col)
+//                || COL_TRUE_TE.equals(col) || COL_ABS_TRUE_TE.equals(col)) {
+//                return Double.class;
+//            }
+//
+//            return String.class;
+//        }
 
         @Override
         public Class<?> getColumnClass(int columnIndex) {
-            // Let the sorter know that the effect columns are numeric.
-            return switch (columnIndex) {
-                case 0 -> Integer.class;
-                case 4, 5 -> Double.class;
-                default -> String.class;
-            };
+            String col = columns()[columnIndex];
+            if (COL_NUM.equals(col)) return Integer.class;
+            if (COL_TE.equals(col) || COL_TRUE_TE.equals(col)) return Double.class;
+            return String.class;
         }
+
+//        @Override
+//        public Object getValueAt(int rowIndex, int columnIndex) {
+//            List<ResultRow> rows = model.getResults();
+//            if (rowIndex < 0 || rowIndex >= rows.size()) return null;
+//
+//            ResultRow r = rows.get(rowIndex);
+//            String col = columns()[columnIndex];
+//
+//            // Estimated effect (first beta only; consistent with your current UI)
+//            double est = Double.NaN;
+//            if (r.amenable && r.betas != null && r.betas.length > 0) {
+//                est = r.betas[0];
+//            }
+//
+//            if (COL_NUM.equals(col)) return rowIndex + 1;
+//            if (COL_X.equals(col)) return r.formatXSet();
+//            if (COL_Y.equals(col)) return r.formatYSet();
+//            if (COL_Z.equals(col)) return r.formatZSet();
+//            if (COL_TE.equals(col)) return est;
+//            if (COL_ABS_TE.equals(col)) return Math.abs(est);
+//
+//            // True effect columns (PAIRWISE + true SEM only)
+//            if (COL_TRUE_TE.equals(col) || COL_ABS_TRUE_TE.equals(col)) {
+//                // If regression not computed / not amenable / discrete, return NaN (renderer prints "*")
+//                if (!r.amenable || r.discreteRegression) return Double.NaN;
+//
+//                // PAIRWISE rows should have singletons
+//                if (r.X == null || r.Y == null || r.X.size() != 1 || r.Y.size() != 1) return Double.NaN;
+//
+//                Node x = r.X.iterator().next();
+//                Node y = r.Y.iterator().next();
+//
+//                double truth;
+//                try {
+//                    truth = model.getTrueTotalEffect(x, y);
+//                } catch (Exception ex) {
+//                    truth = Double.NaN;
+//                }
+//
+//                return COL_ABS_TRUE_TE.equals(col) ? Math.abs(truth) : truth;
+//            }
+//
+//            return null;
+//        }
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             List<ResultRow> rows = model.getResults();
             if (rowIndex < 0 || rowIndex >= rows.size()) return null;
-            ResultRow r = rows.get(rowIndex);
 
-            double primaryBeta = Double.NaN;
+            ResultRow r = rows.get(rowIndex);
+            String col = columns()[columnIndex];
+
+            double est = Double.NaN;
             if (r.amenable && r.betas != null && r.betas.length > 0) {
-                primaryBeta = r.betas[0];
+                est = r.betas[0];
             }
 
-            return switch (columnIndex) {
-                case 0 -> rowIndex + 1;
-                case 1 -> r.formatXSet();
-                case 2 -> r.formatYSet();
-                case 3 -> r.formatZSet();
-                case 4 ->
-                        // Total effect (numeric, no variable name).
-                        primaryBeta;
-                case 5 ->
-                        // Absolute total effect.
-                        Math.abs(primaryBeta);
-                default -> null;
-            };
+            if (COL_NUM.equals(col)) return rowIndex + 1;
+            if (COL_X.equals(col)) return r.formatXSet();
+            if (COL_Y.equals(col)) return r.formatYSet();
+            if (COL_Z.equals(col)) return r.formatZSet();
+            if (COL_TE.equals(col)) return est;
+
+//            if (COL_TRUE_TE.equals(col)) {
+//                if (!r.amenable || r.discreteRegression) return Double.NaN;
+//                if (r.X == null || r.Y == null || r.X.size() != 1 || r.Y.size() != 1) return Double.NaN;
+//
+//                Node x = r.X.iterator().next();
+//                Node y = r.Y.iterator().next();
+//
+//                try {
+//                    return model.getTrueTotalEffect(x, y);
+//                } catch (Exception ex) {
+//                    return Double.NaN;
+//                }
+//            }
+
+            if (COL_TRUE_TE.equals(col)) {
+                // PAIRWISE rows should have singletons
+                if (r.X == null || r.Y == null || r.X.size() != 1 || r.Y.size() != 1) return Double.NaN;
+
+                Node x = r.X.iterator().next();
+                Node y = r.Y.iterator().next();
+
+                try {
+                    return model.getTrueTotalEffect(x, y);
+                } catch (Exception ex) {
+                    return Double.NaN;
+                }
+            }
+
+            return null;
         }
 
         @Override

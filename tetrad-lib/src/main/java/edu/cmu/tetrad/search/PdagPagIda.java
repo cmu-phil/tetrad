@@ -114,7 +114,17 @@ public class PdagPagIda {
         boolean isDag = graph.paths().isLegalDag();
         boolean isPdag = graph.paths().isLegalPdag();
         boolean isPag = graph.paths().isLegalPag();
-        if (!(isDag || isPdag || isPag)) {
+
+        boolean containsCircle = false;
+
+        for (Edge edge : graph.getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.CIRCLE || edge.getEndpoint2() == Endpoint.CIRCLE) {
+                containsCircle = true;
+                break;
+            }
+        }
+
+        if (!(isDag || isPdag || containsCircle)) {// isPag)) {
             throw new IllegalArgumentException("Expecting a DAG/CPDAG/PDAG or PAG.");
         }
         if (!dataSet.isContinuous()) {

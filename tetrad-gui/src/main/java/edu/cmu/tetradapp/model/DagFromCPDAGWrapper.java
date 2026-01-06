@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -46,7 +46,7 @@ public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldMode
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public DagFromCPDAGWrapper(GraphSource source, Parameters parameters) {
-        this(source.getGraph());
+        this(source.getGraph(), parameters);
     }
 
 
@@ -55,8 +55,8 @@ public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldMode
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public DagFromCPDAGWrapper(Graph graph) {
-        super(DagFromCPDAGWrapper.getGraph(graph), "Choose Random DAG in CPDAG.");
+    public DagFromCPDAGWrapper(Graph graph, Parameters parameters) {
+        super(DagFromCPDAGWrapper.getGraph(graph), parameters, "Choose Random DAG in CPDAG.");
         String message = getGraph() + "";
         TetradLogger.getInstance().log(message);
     }
@@ -72,7 +72,7 @@ public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldMode
      * @return a {@link DagFromCPDAGWrapper} object
      */
     public static DagFromCPDAGWrapper serializableInstance() {
-        return new DagFromCPDAGWrapper(EdgeListGraph.serializableInstance());
+        return new DagFromCPDAGWrapper(EdgeListGraph.serializableInstance(), new Parameters());
     }
 
     /**

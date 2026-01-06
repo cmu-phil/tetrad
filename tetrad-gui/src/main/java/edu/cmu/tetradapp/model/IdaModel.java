@@ -24,7 +24,7 @@ import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IdaCheck;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
@@ -32,8 +32,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.Serial;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * A model for the IDA check. This model is used to store the data model, graph, and parameters for the IDA check.
@@ -76,16 +75,11 @@ public class IdaModel implements SessionModel {
      * Note: This variable is marked as transient, meaning it will not be serialized.
      */
     private transient IdaCheck idaCheckEst;
-    /**
-     * Represents the IdaCheck object associated with the true PDAG. This variable is used in the context of the
-     * IdaModel class.
-     * <p>
-     * Note: This variable is marked as transient, meaning it will not be serialized.
-     */
-    private transient IdaCheck idaCheckTrue;
-    private String treatmentsText = "";
-    private String outcomesText = "";
+    private String treatmentsText = "*";
+    private String outcomesText = "*";
     private boolean optimalIdaSelected;
+    private boolean hideZeroEffects = true;
+    private List<OrderedPair<Node>> currentPairs = new ArrayList<>();
 
     /**
      * Constructs a new instance of the IdaModel class.
@@ -118,7 +112,16 @@ public class IdaModel implements SessionModel {
             throw new IllegalArgumentException("Expecting a data set.");
         }
 
-        if (!(graphSource.getGraph().paths().isLegalPdag() || graphSource.getGraph().paths().isLegalPag())) {
+        boolean containsCircle = false;
+
+        for (Edge edge : graphSource.getGraph().getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.CIRCLE || edge.getEndpoint2() == Endpoint.CIRCLE) {
+                containsCircle = true;
+                break;
+            }
+        }
+
+        if (!(graphSource.getGraph().paths().isLegalPdag() || containsCircle)) {// graphSource.getGraph().paths().isLegalPag())) {
             throw new IllegalArgumentException("Expecting an PDAG or PAG. (Could be a CPDAG or a DAG or a PAG.)");
         }
 
@@ -163,24 +166,6 @@ public class IdaModel implements SessionModel {
 
         this.idaCheckEst = new IdaCheck(this.estPdag, (DataSet) this.dataModel, trueSemIm);
         return this.idaCheckEst;
-    }
-
-    /**
-     * Retrieves the IdaCheck object with the true DAG.
-     *
-     * @return the IdaCheck object with the true DAG, or null if the true DAG is not available.
-     */
-    public IdaCheck getIdaCheckTrue() {
-        if (this.idaCheckTrue != null) {
-            return this.idaCheckTrue;
-        }
-
-        if (this.trueSemIm == null) {
-            return null;
-        }
-
-        this.idaCheckTrue = new IdaCheck(estPdag, (DataSet) this.dataModel, trueSemIm);
-        return this.idaCheckTrue;
     }
 
     /**
@@ -270,6 +255,22 @@ public class IdaModel implements SessionModel {
 
     public void setOptimalIdaSelected(boolean optimalIdaSelected) {
         this.optimalIdaSelected = optimalIdaSelected;
+    }
+
+    public boolean getHideZeroEffects() {
+        return hideZeroEffects;
+    }
+
+    public void setHideZeroEffects(boolean hideZeroEffects) {
+        this.hideZeroEffects = hideZeroEffects;
+    }
+
+    public List<OrderedPair<Node>> getCurrentPairs() {
+        return new ArrayList<>(this.currentPairs);
+    }
+
+    public void setCurrentPairs(List<OrderedPair<Node>> currentPairs) {
+        this.currentPairs = new ArrayList<>(currentPairs);
     }
 }
 

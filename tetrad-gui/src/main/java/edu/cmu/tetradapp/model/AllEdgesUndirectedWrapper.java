@@ -47,7 +47,7 @@ public class AllEdgesUndirectedWrapper extends GraphWrapper implements DoNotAddO
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public AllEdgesUndirectedWrapper(GraphSource source, Parameters parameters) {
-        this(source.getGraph());
+        this(source.getGraph(), parameters);
     }
 
 
@@ -56,8 +56,8 @@ public class AllEdgesUndirectedWrapper extends GraphWrapper implements DoNotAddO
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public AllEdgesUndirectedWrapper(Graph graph) {
-        super(GraphUtils.undirectedGraph(graph), "Make all Edges Undirected");
+    public AllEdgesUndirectedWrapper(Graph graph, Parameters parameters) {
+        super(GraphUtils.undirectedGraph(graph), parameters, "Make all Edges Undirected");
         String message = getGraph() + "";
         TetradLogger.getInstance().log(message);
     }
@@ -69,7 +69,7 @@ public class AllEdgesUndirectedWrapper extends GraphWrapper implements DoNotAddO
      * @return a {@link edu.cmu.tetradapp.model.AllEdgesUndirectedWrapper} object
      */
     public static AllEdgesUndirectedWrapper serializableInstance() {
-        return new AllEdgesUndirectedWrapper(EdgeListGraph.serializableInstance());
+        return new AllEdgesUndirectedWrapper(EdgeListGraph.serializableInstance(), new Parameters());
     }
 
 

@@ -409,8 +409,8 @@ public class TestFci {
         }
 
         {
-            Fcit2 fci = new Fcit2(independence, score);
-            fci.setStartWith(Fcit2.START_WITH.GRASP);
+            Fcit fci = new Fcit(independence, score);
+            fci.setStartWith(Fcit.START_WITH.GRASP);
 //            fci.setDepth(-1);
             fci.setKnowledge(knowledge);
 //            fci.setPreserveMarkov(false);

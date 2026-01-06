@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
@@ -497,11 +497,11 @@ class TabularDataTransferHandler extends TransferHandler {
         return 1;
     }
 
-    private int getNumLeadingRows() {
-        /*
-      The number of initial "special" rows not used to display the data
-      set.
+    /**
+     * The number of initial "special" rows not used to display the data set.
      */
+    private int getNumLeadingRows() {
+
         return 2;
     }
 }

@@ -93,7 +93,7 @@ public class IdaAverageSquaredDistance implements Statistic {
             return Double.NaN;
         }
 
-        IdaCheck idaCheck = new IdaCheck(trueGraph, (DataSet) dataModel, semIm);
+        IdaCheck idaCheck = new IdaCheck(estGraph, (DataSet) dataModel, semIm);
         return idaCheck.getAverageSquaredDistance(idaCheck.getOrderedPairs());
     }
 
