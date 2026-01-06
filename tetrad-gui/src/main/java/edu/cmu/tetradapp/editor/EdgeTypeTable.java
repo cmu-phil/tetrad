@@ -125,7 +125,7 @@ public class EdgeTypeTable extends JPanel {
         if (hasEdgeProbabilities(graph)) {
             this.title.setText("Edges and Edge Type Frequencies");
             this.table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            this.table.setTransferHandler(new EdgeTypeTableTransferHandler());
+            this.table.setTransferHandler(new DefaultTableTransferHandler(1));
             tableModel.setColumnIdentifiers(EdgeTypeTable.EDGES_AND_EDGE_TYPES);
 
 //            JTableHeader header = this.table.getTableHeader();

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
@@ -41,7 +41,19 @@ import java.util.regex.Pattern;
 /**
  * Implements basic cut and paste operations for DataDisplay.
  */
-class EdgeTypeTableTransferHandler extends TransferHandler {
+class DefaultTableTransferHandler extends TransferHandler {
+
+    private int startColumn = 1;
+
+    /**
+     * Constructor for the DefaultTableTransferHandler class.
+     * Initializes the handler with the specified starting column index.
+     *
+     * @param startColumn the index of the starting column used for data transfer operations
+     */
+    public DefaultTableTransferHandler(int startColumn) {
+        this.startColumn = startColumn;
+    }
 
     /**
      * {@inheritDoc}
@@ -62,7 +74,7 @@ class EdgeTypeTableTransferHandler extends TransferHandler {
 
             StringBuilder builder = new StringBuilder();
 
-            for (int col = 1; col < tabularData.getColumnCount(); col++) {
+            for (int col = startColumn; col < tabularData.getColumnCount(); col++) {
                 String columnName = tabularData.getColumnName(col);
                 builder.append(columnName == null ? "" : columnName);
 
@@ -76,7 +88,7 @@ class EdgeTypeTableTransferHandler extends TransferHandler {
                     builder.append("\n");
                 }
 
-                for (int col = 1; col < tabularData.getColumnCount(); col++) {
+                for (int col = startColumn; col < tabularData.getColumnCount(); col++) {
                     if (!tabularData.isRowSelected(row)) {
                         continue;
                     }
@@ -123,12 +135,10 @@ class EdgeTypeTableTransferHandler extends TransferHandler {
                 boolean shouldAsk = false;
                 boolean shiftDown = true;
 
-                BufferedReader preReader = new BufferedReader(
-                        new CharArrayReader(s.toCharArray()));
+                BufferedReader preReader = new BufferedReader(new CharArrayReader(s.toCharArray()));
 
                 String preLine = preReader.readLine();
-                StringTokenizer preTokenizer =
-                        new StringTokenizer(preLine, "\t");
+                StringTokenizer preTokenizer = new StringTokenizer(preLine, "\t");
                 int numTokens = preTokenizer.countTokens();
 
                 for (int col = startCol; col < startCol + numTokens; col++) {
@@ -137,23 +147,16 @@ class EdgeTypeTableTransferHandler extends TransferHandler {
                         shouldAsk = true;
                     }
 
-                    if (startRow - getNumLeadingRows() >= tabularData.getDataSet().getNumRows() ||
-                        startCol - getNumLeadingCols() >= tabularData.getDataSet().getNumColumns()) {
+                    if (startRow - getNumLeadingRows() >= tabularData.getDataSet().getNumRows() || startCol - getNumLeadingCols() >= tabularData.getDataSet().getNumColumns()) {
                         shouldAsk = false;
                         shiftDown = false;
                     }
                 }
 
                 if (shouldAsk) {
-                    String[] choices = {
-                            "Shift corresponding cells down to make room",
-                            "Replace corresponding cells"};
+                    String[] choices = {"Shift corresponding cells down to make room", "Replace corresponding cells"};
 
-                    Object choice = JOptionPane.showInputDialog(
-                            JOptionUtils.centeringComp(),
-                            "How should the clipboard contents be pasted?",
-                            "Paste Contents", JOptionPane.INFORMATION_MESSAGE,
-                            null, choices, choices[0]);
+                    Object choice = JOptionPane.showInputDialog(JOptionUtils.centeringComp(), "How should the clipboard contents be pasted?", "Paste Contents", JOptionPane.INFORMATION_MESSAGE, null, choices, choices[0]);
 
                     // Null means the user cancelled the input.
                     if (choice == null) {
@@ -174,8 +177,7 @@ class EdgeTypeTableTransferHandler extends TransferHandler {
         return false;
     }
 
-    private boolean checkRanges(String s, int startCol,
-                                TabularDataJTable tabularData) {
+    private boolean checkRanges(String s, int startCol, TabularDataJTable tabularData) {
         RegexTokenizer lines = new RegexTokenizer(s, Pattern.compile("\n"), '"');
         lines.nextToken();
 
@@ -190,12 +192,7 @@ class EdgeTypeTableTransferHandler extends TransferHandler {
                 if (!tabularData.checkValueAt(token, col)) {
                     int dataCol = col - getNumLeadingCols();
 
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            "<html>" +
-                            "This paste cannot be completed, since the variable in " +
-                            "<br>column " + dataCol +
-                            " cannot accept the value '" + token +
-                            "'." + "</html>");
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "<html>" + "This paste cannot be completed, since the variable in " + "<br>column " + dataCol + " cannot accept the value '" + token + "'." + "</html>");
                     return false;
                 }
 
@@ -206,8 +203,7 @@ class EdgeTypeTableTransferHandler extends TransferHandler {
         return true;
     }
 
-    private void doPaste(String s, int startRow, int startCol,
-                         boolean shiftDown, TabularDataJTable tabularData) {
+    private void doPaste(String s, int startRow, int startCol, boolean shiftDown, TabularDataJTable tabularData) {
 
         startRow -= getNumLeadingRows();
         startCol -= getNumLeadingCols();
@@ -259,8 +255,7 @@ class EdgeTypeTableTransferHandler extends TransferHandler {
         }
 
         if (varNames.size() != pasteCols) {
-            throw new IllegalArgumentException("Number of variable names must " +
-                                               "match the number of columns.");
+            throw new IllegalArgumentException("Number of variable names must " + "match the number of columns.");
         }
 
         // Resize the dataset if necessary to accomodate the new data.
@@ -315,12 +310,8 @@ class EdgeTypeTableTransferHandler extends TransferHandler {
 
                     int numRows = dataSet.getNumRows();
                     if (newRow < numRows) {
-                        Object value = tabularData.getValueAt(
-                                oldRow + getNumLeadingRows(),
-                                col + getNumLeadingCols());
-                        tabularData.setValueAt(value,
-                                newRow + getNumLeadingRows(),
-                                col + getNumLeadingCols());
+                        Object value = tabularData.getValueAt(oldRow + getNumLeadingRows(), col + getNumLeadingCols());
+                        tabularData.setValueAt(value, newRow + getNumLeadingRows(), col + getNumLeadingCols());
                     }
                 }
             }
@@ -341,8 +332,7 @@ class EdgeTypeTableTransferHandler extends TransferHandler {
                 int col = startCol + j;
                 String token = tokens.nextToken();
 
-                tabularData.setValueAt(token, row + getNumLeadingRows(),
-                        col + getNumLeadingCols());
+                tabularData.setValueAt(token, row + getNumLeadingRows(), col + getNumLeadingCols());
             }
         }
 
@@ -359,19 +349,20 @@ class EdgeTypeTableTransferHandler extends TransferHandler {
         }
     }
 
-    private int getNumLeadingCols() {
-        /*
-      The number of initial "special" columns not used to display the data
-      set.
+    /**
+     * The number of initial "special" columns not used to display the data
+     * set.
      */
+    private int getNumLeadingCols() {
+
         return 1;
     }
 
-    private int getNumLeadingRows() {
-        /*
-      The number of initial "special" rows not used to display the data
-      set.
+    /**
+     * The number of initial "special" rows not used to display the data set.
      */
+    private int getNumLeadingRows() {
+
         return 2;
     }
 }
