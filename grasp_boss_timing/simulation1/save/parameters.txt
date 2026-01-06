@@ -1,2 +1,0 @@
-Linear SEM simulation using Graph constructed by adding random forward edges
-numRuns = 1
