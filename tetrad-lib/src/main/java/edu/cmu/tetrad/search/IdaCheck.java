@@ -516,6 +516,8 @@ public class IdaCheck {
      * <p>
      * This method clears any previously computed effects and recalculates them using the current state of the graph and
      * IDA configuration.
+     *
+     * @param currentPairs The list of ordered pairs for which effects should be recomputed.
      */
     public void recompute(List<OrderedPair<Node>> currentPairs) {
         for (OrderedPair<Node> pair : currentPairs) {
