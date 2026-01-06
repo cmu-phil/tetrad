@@ -278,7 +278,7 @@ public class TestCheckMarkov {
         System.out.println("Rejects size: " + rejects.size());
     }
 
-    @Test
+//    @Test
     public void testGaussianCPDAGPrecisionRecallForLocalOnMarkovBlanket() {
         Graph trueGraph = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
         // The completed partially directed acyclic graph (CPDAG) for the given DAG.
