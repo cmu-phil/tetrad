@@ -587,7 +587,7 @@ public class Paths implements TetradSerializable {
      * @param node1     the starting node
      * @param node2     the ending node
      * @param maxLength the maximum path length
-     * @return a list of all potentially directed paths between the two nodes
+     * @return a set of all potentially directed paths between the two nodes
      */
     public Set<List<Node>> potentiallyDirectedPaths(Node node1, Node node2, int maxLength) {
         Set<List<Node>> paths = new HashSet<>();
@@ -601,7 +601,7 @@ public class Paths implements TetradSerializable {
      * @param node1     the source node
      * @param node2     the destination node
      * @param maxLength the maximum length of the paths
-     * @return a list of amenable paths from the source node to the destination node, each represented as a list of
+     * @return a set of amenable paths from the source node to the destination node, each represented as a list of
      * nodes
      */
     public Set<List<Node>> getAmenablePathsPdagMag(Node node1, Node node2, int maxLength) {
@@ -621,7 +621,8 @@ public class Paths implements TetradSerializable {
 
     /**
      * Finds amenable paths from the given source node to the given destination node with a maximum length, for a PAG.
-     * These are potentially directed paths that start with a visible edge out of node1.
+     * These are potentially directed paths that start with a visible edge out of node1. This is the option
+     * used by Refinement-based PAG IDA (rPAG-IDA).
      *
      * @param node1        the source node
      * @param node2        the destination node
@@ -630,85 +631,6 @@ public class Paths implements TetradSerializable {
      * @return a set of amenable paths from the source node to the destination node, each represented as a list of
      * nodes
      */
-
-    // Option 1 Conservative, theory-clean, visibility required.
-//    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
-//        Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
-//
-//        for (List<Node> path : new ArrayList<>(amenablePaths)) {
-//            if (path.size() < 2) {
-//                amenablePaths.remove(path);
-//                continue;
-//            }
-//
-//            Node a = path.getFirst();   // should be node1
-//            Node b = path.get(1);
-//
-//            var e = graph.getEdge(a, b);
-//            if (e == null) {
-//                amenablePaths.remove(path);
-//                continue;
-//            }
-//
-//            // Strict PAG amenability: first edge must be a visible directed edge a -> b.
-//            boolean okStart = graph.isParentOf(a, b) && graph.paths().defVisiblePag(a, b);
-//
-//            if (!okStart) {
-//                amenablePaths.remove(path);
-//            }
-//        }
-//
-//        return amenablePaths;
-//    }
-
-    //Option 2 PAG-OIDA (new algorithm) Orientation-based enumeration, explicitly heuristic, very interesting results (what you’re seeing).
-//    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
-//        Set<List<Node>> paths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
-//
-//        for (List<Node> path : new ArrayList<>(paths)) {
-//            if (path.size() < 2) {
-//                paths.remove(path);
-//                continue;
-//            }
-//
-//            Node a = path.getFirst();   // should be node1
-//            Node b = path.get(1);
-//
-//            var e = graph.getEdge(a, b);
-//            if (e == null) {
-//                paths.remove(path);
-//                continue;
-//            }
-//
-//            boolean forced = forceVisible != null && forceVisible.contains(b);
-//
-//            // Strict PAG amenability start: a -> b and definitely visible.
-//            boolean strictAmenableStart = graph.isParentOf(a, b) && graph.paths().defVisiblePag(a, b);
-//
-//            // Heuristic “PAG-OIDA” start for chosen refinements:
-//            // Can this edge be *refined* so that it becomes a -> b ?
-//            //
-//            // - endpoint at a cannot already be ARROW (otherwise edge is forced into a)
-//            // - endpoint at b cannot already be TAIL (TAIL is fixed; can't refine to ARROW at b)
-//            Endpoint endAtA = graph.getEndpoint(b, a); // endpoint at a on edge a—b
-//            Endpoint endAtB = graph.getEndpoint(a, b); // endpoint at b on edge a—b
-//
-//            boolean canRefineToAToB =
-//                    endAtA != Endpoint.ARROW   // excludes a <-o b and a <-> b, etc.
-//                    && endAtB != Endpoint.TAIL; // excludes a o- b and a -- b (can't make arrowhead at b)
-//
-//            boolean okStart = strictAmenableStart || (forced && canRefineToAToB);
-//
-//            if (!okStart) {
-//                paths.remove(path);
-//            }
-//        }
-//
-//        return paths;
-//    }
-
-    // Option 3 Enumerate refinements, then discard those where the forced edge fails definite visibility.
-    // Refinement-based PAG IDA (rPAG-IDA) or O-IDA-style PAG IDA
     public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
         Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
 
@@ -755,105 +677,6 @@ public class Paths implements TetradSerializable {
 
         return amenablePaths;
     }
-
-//    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
-//        Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
-//
-//        for (List<Node> path : new ArrayList<>(amenablePaths)) {
-//            Node a = path.getFirst();
-//            Node b = path.get(1);
-//
-//            var e = graph.getEdge(a, b);
-//            if (e == null) {
-//                amenablePaths.remove(path);
-//                continue;
-//            }
-//
-//            boolean forced = forceVisible != null && forceVisible.contains(b);
-//
-//            // “Can we orient the mark at a to be a tail?” (i.e., not an arrowhead into a)
-//            // This allows a o-> b, a o-o b, a -> b; excludes a <-o b and a <-> b.
-//            boolean canBeOutOfA = !e.pointsTowards(a);
-//
-//            boolean okStart;
-//            if (forced) {
-//                // You’re assuming this neighbor is the chosen “outgoing” option from X for this refinement.
-//                // Don’t require definite visibility here—just require it’s not already arrow-into-X.
-//                okStart = canBeOutOfA;
-//            } else {
-//                // The strict PAG amenability notion: must *already* be a visible directed edge a -> b
-//                okStart = graph.isParentOf(a, b) && graph.paths().defVisiblePag(a, b);
-//            }
-//
-//            if (!okStart) {
-//                amenablePaths.remove(path);
-//            }
-//        }
-//
-//        return amenablePaths;
-//    }
-//    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
-//        Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
-//
-//        for (List<Node> path : new ArrayList<>(amenablePaths)) {
-//            Node a = path.getFirst();
-//            Node b = path.get(1);
-//
-//            // Must actually be a directed edge out of a (tail at a, arrow at b)
-//            if (!graph.isParentOf(a, b)) {
-//                amenablePaths.remove(path);
-//                continue;
-//            }
-//
-//            boolean visible = graph.paths().defVisiblePag(a, b);
-//
-//            // "Force" visibility only for truly directed a->b edges (still requiring isParentOf above)
-//            if (!visible && forceVisible != null && forceVisible.contains(b)) {
-//                visible = true;
-//            }
-//
-//            if (!visible) {
-//                amenablePaths.remove(path);
-//            }
-//        }
-//
-//        return amenablePaths;
-//    }
-
-//    public Set<List<Node>> getAmenablePathsPag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
-//        Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
-//
-//        for (List<Node> path : new ArrayList<>(amenablePaths)) {
-////            Node a = path.getFirst();
-////            Node b = path.get(1);
-////
-////            boolean visible = forceVisible.contains(b) || graph.paths().defVisiblePag(a, b);
-////
-////            if (!(visible && graph.getEdge(a, b).pointsTowards(b))) {
-////                amenablePaths.remove(path);
-////            }
-//
-//            Node a = path.getFirst();
-//            Node b = path.get(1);
-//
-//            var e = graph.getEdge(a, b);
-//            if (e == null) { amenablePaths.remove(path); continue; }
-//
-//            boolean pointsToB = e.pointsTowards(b);
-//            boolean forced = forceVisible != null && forceVisible.contains(b);
-//
-//            // Only allow forcing if it’s actually an out-edge toward b in the PAG
-//            boolean visible = graph.paths().defVisiblePag(a, b) || (forced && pointsToB);
-//
-//            if (!(visible && pointsToB)) {
-//                amenablePaths.remove(path);
-//            }
-//        }
-//
-//        return amenablePaths;
-//    }
-
-
 
     private void potentiallyDirectedPathsVisit(Node node1, Node node2,
                                                LinkedList<Node> path,
@@ -1644,14 +1467,6 @@ public class Paths implements TetradSerializable {
             if (b.equals(zi)) return true;
         }
 
-        // Optional fast path — only use if your descendants map is known-good and directed-only + reflexive:
-        // Map<Node, Set<Node>> desc = graph.paths().getDescendantsMap();
-        // Set<Node> bDesc = desc.get(b);
-        // if (bDesc != null) {
-        //     for (Node zi : z) if (bDesc.contains(zi)) return true;
-        // }
-
-        // Fallback: explicit upward BFS from all z through directed parents
         ArrayDeque<Node> q = new ArrayDeque<>();
         HashSet<Node> seen = new HashSet<>();
 
@@ -1751,103 +1566,6 @@ public class Paths implements TetradSerializable {
         path.removeLast();
         return false;
     }
-
-//    /**
-//     * Calculates the possible d-separation nodes between two given Nodes within a graph, using a maximum path length
-//     * constraint.
-//     *
-//     * @param x                         the starting Node for the path
-//     * @param y                         the ending Node for the path
-//     * @param maxPossibleDsepPathLength the maximum length of the path, -1 for unlimited
-//     * @return a List of Nodes representing the possible d-separation nodes
-//     */
-//    public List<Node> possibleDsep(Node x, Node y, int maxPossibleDsepPathLength) {
-//        Set<Node> msep = new HashSet<>();
-//
-//        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
-//        Set<OrderedPair<Node>> V = new HashSet<>();
-//
-//        Map<Node, Set<Node>> previous = new HashMap<>();
-//        previous.put(x, new HashSet<>());
-//
-//        OrderedPair<Node> e = null;
-//        int distance = 0;
-//
-//        Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
-//
-//        for (Node b : adjacentNodes) {
-//            if (y != null && b == y) {
-//                continue;
-//            }
-//            OrderedPair<Node> edge = new OrderedPair<>(x, b);
-//            if (e == null) {
-//                e = edge;
-//            }
-//            Q.offer(edge);
-//            V.add(edge);
-//            addToSet(previous, b, x);
-//            msep.add(b);
-//        }
-//
-//        while (!Q.isEmpty()) {
-//            OrderedPair<Node> t = Q.poll();
-//
-//            if (e == t) {
-//                e = null;
-//                distance++;
-//                if (distance > 0 && distance > (maxPossibleDsepPathLength == -1 ? 1000 : maxPossibleDsepPathLength)) {
-//                    break;
-//                }
-//            }
-//
-//            Node a = t.getFirst();
-//            Node b = t.getSecond();
-//
-//            if (existOnePathWithPossibleParents(previous, b, x, b)) {
-//                msep.add(b);
-//            }
-//
-//            for (Node c : graph.getAdjacentNodes(b)) {
-//                if (c == a) {
-//                    continue;
-//                }
-//                if (c == x) {
-//                    continue;
-//                }
-//                if (y !=null && c == y) {
-//                    continue;
-//                }
-//
-//                addToSet(previous, b, c);
-//
-//                if (graph.isDefCollider(a, b, c) || graph.isAdjacentTo(a, c)) {
-//                    OrderedPair<Node> u = new OrderedPair<>(b, c);
-//                    if (V.contains(u)) {
-//                        continue;
-//                    }
-//
-//                    V.add(u);
-//                    Q.offer(u);
-//
-//                    System.out.println("Updated " + u + " = " + "Q = " + Q + " V = " + V +  " msep: " + msep);
-//
-//                    if (e == null) {
-//                        e = u;
-//                    }
-//                }
-//            }
-//        }
-//
-//        msep.remove(x);
-//        msep.remove(y);
-//
-//        List<Node> _msep = new ArrayList<>(msep);
-//
-//        Collections.sort(_msep);
-//        Collections.reverse(_msep);
-//
-//        return _msep;
-//    }
 
     /**
      * Breadth-first version of the âinducing-path exists?â test.
@@ -2446,207 +2164,6 @@ public class Paths implements TetradSerializable {
 
         return true;
     }
-
-//    /**
-//     * Returns true just in case the given edge is definitely visible. The reference for this is Zhang, J. (2008).
-//     * Causal Reasoning with Ancestral Graphs. Journal of Machine Learning Research, 9(7).
-//     * <p>
-//     * This definition will work for MAGs and PAGs. "Definite" here means for PAGs that the edge is visible in all MAGs
-//     * in the equivalence class.
-//     *
-//     * @param edge the edge to check.
-//     * @return true if the given edge is definitely visible.
-//     * @throws java.lang.IllegalArgumentException if the given edge is not a directed edge in the graph
-//     */
-//    public boolean defVisible(Edge edge) {
-//
-//        // Zhang, J. (2008). Causal Reasoning with Ancestral Graphs. Journal of Machine Learning
-//        // Research, 9(7)
-//        //
-//        // Definition 8 (Visibility) Given a MAG M, a directed edge A â B in M is visible
-//        // if there is a vertex C not adjacent to B, such that either there is an edge between
-//        // C and A that is into A, or there is a collider path between C and A that is into A
-//        // and every vertex on the path is a parent of B. Otherwise A â B is said to be invisible.
-//        // ...
-//        // The definition of visibility still makes sense in PAGs, except that we will call a
-//        // directed edge in a PAG definitely visible if it satisfies the condition for visibility
-//        // in Definition 8, in order to emphasize that this edge is visible in all MAGs in the
-//        // equivalence class. (p. 1452)
-//
-//        if (!edge.isDirected()) return false;
-//
-//        if (graph.containsEdge(edge)) {
-//            Node A = Edges.getDirectedEdgeTail(edge);
-//            Node B = Edges.getDirectedEdgeHead(edge);
-//
-//            for (Node C : graph.getAdjacentNodes(A)) {
-//                if (C != B && !graph.isAdjacentTo(C, B)) {
-//                    Edge e = graph.getEdge(C, A);
-//
-//                    if (e.getProximalEndpoint(A) == Endpoint.ARROW) {
-//                        return true;
-//                    } else if (existsColliderPathInto(C, A, B)) {
-//                        return true;
-//                    }
-//                }
-//            }
-//
-//            return false;
-//        } else {
-//            throw new IllegalArgumentException("Given edge is not in the graph.");
-//        }
-//    }
-
-//    /**
-//     * A helper method for the defVisible method. This implementation uses depth-first search and can be slow for large
-//     * graphs.
-//     *
-//     * @param from the starting node of the path
-//     * @param to   the target node of the path
-//     * @param into the nodes that colliders along the path must all be parents of
-//     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
-//     */
-//    private boolean existsColliderPathIntoDfs(Node from, Node to, Node into) {
-//        Set<Node> visited = new HashSet<>();
-//        List<Node> currentPath = new ArrayList<>();
-//
-//        if (existsColliderPathIntoDfs(null, from, to, into, visited, currentPath)) {
-//            return graph.getEndpoint(currentPath.get(currentPath.size() - 2), to) == Endpoint.ARROW;
-//        }
-//
-//        return false;
-//    }
-
-//    /**
-//     * A helper method for the existsColliderPathInto method.
-//     *
-//     * @param previous    the previous node in the path
-//     * @param current     the current node in the path
-//     * @param end         the target node of the path
-//     * @param into        the nodes that colliders along the path must all be parents of
-//     * @param visited     the set of visited nodes
-//     * @param currentPath the current path
-//     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
-//     */
-//    private boolean existsColliderPathIntoDfs(Node previous, Node current, Node end, Node into, Set<Node> visited, List<Node> currentPath) {
-//        visited.add(current);
-//        currentPath.add(current);
-//
-//        if (current == end) {
-//            return true;
-//        } else {
-//            for (Node next : graph.getAdjacentNodes(current)) {
-//                if (!visited.contains(next) && (previous == null || (graph.isDefCollider(previous, current, next)
-//                                                                     && graph.isParentOf(current, into)))) {
-//                    if (existsColliderPathIntoDfs(current, next, end, into, visited, currentPath)) {
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
-//
-//        currentPath.remove(currentPath.size() - 1);
-//        visited.remove(current);
-//
-//        return false;
-//    }
-
-    /**
-     * A helper method for the defVisible method, using BFS.
-     *
-     * @param C the starting node of the path
-     * @param A   the target node of the path
-     * @param B the nodes that colliders along the path must all be parents of
-     * @return true if a collider path exists C 'C' A 'A' that is B 'B'
-     */
-
-//    /**
-//     * True iff there exists a path C = v0 â¦ vk = A such that
-//     *   (i)  for every iâ{1,â¦,kâ1}, vi is a definite collider on (viâ1,vi,vi+1);
-//     *   (ii) for every iâ{0,â¦,k},   vi â B   (i.e., vi is a parent of B);
-//     *   (iii) vkâ1 *-> A (arrowhead at A).
-//     *
-//     * @param C The C node from Zhang's (2008) definition of visible edge.
-//     * @param A The A node from Zhang's (2008) definition of visible edge.
-//     * @param B The B node from Zhang's (2008) definition of visible edge.
-//     */
-//    private boolean existsColliderPathInto(Node C, Node A, Node B) {
-//        // C itself must already be a parent of B, otherwise no path can qualify.
-//        if (!graph.isParentOf(C, B)) return false;
-//
-//        return dfsColliderPath(/*prev*/ null, /*cur*/ C, A, B, new HashSet<>());
-//    }
-//    private boolean dfsColliderPath(Node prev,
-//                                    Node cur,
-//                                    Node targetA,
-//                                    Node B,
-//                                    Set<Node> path) {
-//
-//        // every node on the path must be a parent of B
-//        if (!graph.isParentOf(cur, B)) return false;
-//
-//        // reached A: last edge must have an arrowhead at A
-//        if (cur.equals(targetA)) {
-//            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
-//        }
-//
-//        path.add(cur);               // mark cur for this branch
-//
-//        for (Node nxt : graph.getAdjacentNodes(cur)) {
-//            if (path.contains(nxt)) continue;          // avoid cycles
-//
-//            // first step out of C has no collider constraint (prev == null)
-//            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
-//                if (dfsColliderPath(cur, nxt, targetA, B, path)) return true;
-//            }
-//        }
-//
-//        path.remove(cur);            // back-track for other branches
-//        return false;
-//    }
-
-
-//    private boolean existsColliderPathInto(Node C, Node A, Node B) {
-//        Set<Node> visited = new HashSet<>();
-//        Queue<List<Node>> queue = new LinkedList<>(); // Queue A store paths as lists
-//
-//        // Initialize the queue with the starting node
-//        List<Node> initialPath = new ArrayList<>();
-//        initialPath.add(C);
-//        queue.add(initialPath);
-//
-//        while (!queue.isEmpty()) {
-//            List<Node> currentPath = queue.poll();
-//            Node current = currentPath.get(currentPath.size() - 1);
-//
-//            if (current.equals(A)) {
-//                // Check if the path ends in an arrow pointing A 'A'
-//                if (currentPath.size() > 1 &&
-//                    graph.getEndpoint(currentPath.get(currentPath.size() - 2), A) == Endpoint.ARROW) {
-//                    return true;
-//                }
-//            }
-//
-//            if (!visited.contains(current)) {
-//                visited.add(current);
-//
-//                for (Node next : graph.getAdjacentNodes(current)) {
-//                    Node previous = currentPath.size() > 1 ? currentPath.get(currentPath.size() - 2) : null;
-//
-//                    if (!visited.contains(next) &&
-//                        (previous == null || (graph.isDefCollider(previous, current, next)
-//                                              && graph.isParentOf(current, B)))) {
-//                        // Create a new path extending the current path
-//                        List<Node> newPath = new ArrayList<>(currentPath);
-//                        newPath.add(next);
-//                        queue.add(newPath);
-//                    }
-//                }
-//            }
-//        }
-//
-//        return false;
-//    }
 
     /**
      * Checks if the given path is an m-connecting path and doens't contain duplicate nodes.
