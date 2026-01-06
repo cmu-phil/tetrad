@@ -203,63 +203,6 @@ public class AdditiveNoiseDjl {
      * @return A DataSet object containing the generated synthetic data, with samples and variables defined by the
      * structure of the provided graph and simulation parameters.
      */
-//    public DataSet generateData() {
-//        DataSet data = new BoxDataSet(new DoubleDataBox(numSamples, graph.getNodes().size()), graph.getNodes());
-//
-//        List<Node> nodes = graph.getNodes();
-//        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size()).boxed().collect(Collectors.toMap(nodes::get, i -> i));
-//
-//        List<Node> validOrder = graph.paths().getValidOrder(graph.getNodes(), true);
-//
-//        for (Node node : validOrder) {
-//            List<Node> parents = graph.getParents(node);
-//
-//            MultiLayerPerceptronDjl randomFunction = new MultiLayerPerceptronDjl(
-//                    parents.size() + 1, // Input dimension (R^3 -> R)
-//                    hiddenDimensions, // Number of hidden neurons
-////                    this.activationFunction, // Activation function
-//                    "continuous", // variable type.
-//                    this.inputScale // Input scale for bumpiness
-////                    -1 // Random seed
-//            );
-//
-//            for (int sample = 0; sample < numSamples; sample++) {
-//                int _sample = sample;
-//
-//                List<Float> parentsList = new java.util.ArrayList<>(parents.stream().map(parent
-//                        -> (float) data.getDouble(_sample, nodeToIndex.get(parent))).toList());
-//                parentsList.add((float) noiseDistribution.sample());
-//
-////                float[] array = parents.stream().mapToDouble(parent -> data.getDouble(_sample, nodeToIndex.get(parent))).toArray();
-////                float[] array2 = new double[array.length + 1];
-////                System.arraycopy(array, 0, array2, 0, array.length);
-////                array2[array.length] = noiseDistribution.sample();
-//
-//                // Convert parentsList to float[] array.
-//                float[] array = new float[parentsList.size()];
-//                for (int i = 0; i < parentsList.size(); i++) {
-//                    array[i] = parentsList.get(i);
-//                }
-//
-//                NDArray input = randomFunction.getManager().create(array);
-//
-//                try {
-//                    data.setDouble(sample, nodeToIndex.get(node),
-//                            randomFunction.forward(randomFunction.getManager(),
-//                                    input).toFloatArray()[0]);
-//                } catch (TranslateException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//
-//            if (rescaleMin < rescaleMax) {
-//                DataTransforms.scale(data, rescaleMin, rescaleMax, node);
-//            }
-//        }
-//
-//        return data;
-//    }
-
     public DataSet generateData() {
         DataSet data = new BoxDataSet(new DoubleDataBox(numSamples, graph.getNodes().size()), graph.getNodes());
 
