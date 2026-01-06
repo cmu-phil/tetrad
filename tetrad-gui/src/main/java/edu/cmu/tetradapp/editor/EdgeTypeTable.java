@@ -355,6 +355,7 @@ public class EdgeTypeTable extends JPanel {
 
     private static class StripedRowTableCellRenderer extends DefaultTableCellRenderer {
 
+        @Serial
         private static final long serialVersionUID = 4603884548966502824L;
 
         private final Color STRIPE = new Color(0.929f, 0.953f, 0.996f);
@@ -387,8 +388,9 @@ public class EdgeTypeTable extends JPanel {
 
     }
 
-    class EdgeInfoTable extends JTable {
+    static class EdgeInfoTable extends JTable {
 
+        @Serial
         private static final long serialVersionUID = -4052775309418269033L;
 
         public EdgeInfoTable(TableModel dm) {

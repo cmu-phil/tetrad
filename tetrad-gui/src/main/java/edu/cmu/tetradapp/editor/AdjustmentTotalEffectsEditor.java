@@ -107,6 +107,7 @@ public final class AdjustmentTotalEffectsEditor extends JPanel {
 
         this.tableModel = new ResultTableModel(model);
         this.resultTable = new JTable(tableModel);
+        this.resultTable.setTransferHandler(new EdgeTypeTableTransferHandler());
 
         installEffectRenderers();
 

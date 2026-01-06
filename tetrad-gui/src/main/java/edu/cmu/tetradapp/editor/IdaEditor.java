@@ -150,6 +150,7 @@ public class IdaEditor extends JPanel {
         // ---- Table and sorter ----
         this.tableModel = new IdaTableModel(currentPairs, idaCheckEst, idaModel.getTrueSemIm());
         this.table = new JTable(tableModel);
+        this.table.setTransferHandler(new EdgeTypeTableTransferHandler());
 
         NumberFormatRenderer numberRenderer = new NumberFormatRenderer(numberFormat);
         table.setDefaultRenderer(Double.class, numberRenderer);

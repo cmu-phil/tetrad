@@ -511,83 +511,84 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
                             }
                         }
                     }
-                }
+                } else if (effectMode == EffectMode.JOINT) {
 
 
-                //
-                // 4) Replace the JOINT block similarly
-                //
-                // Recommended policy:
-                //   - Gate each outcome y by gac.checkJoint(X, y).
-                //   - If NO_PD_PATHS => emit a forced-zero row for that y (one row).
-                //   - If NOT_AMENABLE/INVALID => emit "(Not amenable)" placeholder for that y.
-                //   - Else compute joint adjustment sets for that y and proceed.
-                //
-                for (Node y : Y) {
-                    GacTotalEffectElibility.Eligibility elig = gac.checkJoint(X, y);
+                    //
+                    // 4) Replace the JOINT block similarly
+                    //
+                    // Recommended policy:
+                    //   - Gate each outcome y by gac.checkJoint(X, y).
+                    //   - If NO_PD_PATHS => emit a forced-zero row for that y (one row).
+                    //   - If NOT_AMENABLE/INVALID => emit "(Not amenable)" placeholder for that y.
+                    //   - Else compute joint adjustment sets for that y and proceed.
+                    //
+                    for (Node y : Y) {
+                        GacTotalEffectElibility.Eligibility elig = gac.checkJoint(X, y);
 
-                    if (elig.status() == GacTotalEffectElibility.Status.NOT_AMENABLE
-                        || elig.status() == GacTotalEffectElibility.Status.INVALID_INPUT) {
-                        results.add(new ResultRow(
-                                new LinkedHashSet<>(X),
-                                new LinkedHashSet<>(Collections.singleton(y)),
-                                Collections.emptySet(),
-                                false,
-                                false,
-                                null,
-                                null
-                        ));
-                        continue;
-                    }
-
-                    if (elig.status() == GacTotalEffectElibility.Status.NO_PD_PATHS) {
-                        results.add(new ResultRow(
-                                new LinkedHashSet<>(X),
-                                new LinkedHashSet<>(Collections.singleton(y)),
-                                null,
-                                true,
-                                false,
-                                new double[X.size()],   // force 0 for each treatment
-                                null
-                        ));
-                        continue;
-                    }
-
-                    // Eligibility OK => now compute joint adjustment sets for this y
-                    List<Set<Node>> zSetsForY = computeJointAdjustmentSets(X, Collections.singleton(y));
-
-                    if (zSetsForY.isEmpty()) {
-                        // This is now "no sets found under RA constraints" rather than global non-amenability.
-                        results.add(new ResultRow(
-                                new LinkedHashSet<>(X),
-                                new LinkedHashSet<>(Collections.singleton(y)),
-                                Collections.emptySet(),
-                                false,
-                                false,
-                                null,
-                                null
-                        ));
-                        continue;
-                    }
-
-                    for (Set<Node> Z : zSetsForY) {
-                        LinkedHashSet<Node> zClean = new LinkedHashSet<>(Z);
-                        zClean.removeAll(X);
-
-                        if (!doDiscreteRegressions && involvesDiscrete(X, y, zClean)) {
+                        if (elig.status() == GacTotalEffectElibility.Status.NOT_AMENABLE
+                            || elig.status() == GacTotalEffectElibility.Status.INVALID_INPUT) {
                             results.add(new ResultRow(
                                     new LinkedHashSet<>(X),
                                     new LinkedHashSet<>(Collections.singleton(y)),
-                                    zClean,
-                                    true,
-                                    true,
+                                    Collections.emptySet(),
+                                    false,
+                                    false,
                                     null,
                                     null
                             ));
                             continue;
                         }
 
-                        results.add(runRegressionFor(X, y, zClean));
+                        if (elig.status() == GacTotalEffectElibility.Status.NO_PD_PATHS) {
+                            results.add(new ResultRow(
+                                    new LinkedHashSet<>(X),
+                                    new LinkedHashSet<>(Collections.singleton(y)),
+                                    null,
+                                    true,
+                                    false,
+                                    new double[X.size()],   // force 0 for each treatment
+                                    null
+                            ));
+                            continue;
+                        }
+
+                        // Eligibility OK => now compute joint adjustment sets for this y
+                        List<Set<Node>> zSetsForY = computeJointAdjustmentSets(X, Collections.singleton(y));
+
+                        if (zSetsForY.isEmpty()) {
+                            // This is now "no sets found under RA constraints" rather than global non-amenability.
+                            results.add(new ResultRow(
+                                    new LinkedHashSet<>(X),
+                                    new LinkedHashSet<>(Collections.singleton(y)),
+                                    Collections.emptySet(),
+                                    false,
+                                    false,
+                                    null,
+                                    null
+                            ));
+                            continue;
+                        }
+
+                        for (Set<Node> Z : zSetsForY) {
+                            LinkedHashSet<Node> zClean = new LinkedHashSet<>(Z);
+                            zClean.removeAll(X);
+
+                            if (!doDiscreteRegressions && involvesDiscrete(X, y, zClean)) {
+                                results.add(new ResultRow(
+                                        new LinkedHashSet<>(X),
+                                        new LinkedHashSet<>(Collections.singleton(y)),
+                                        zClean,
+                                        true,
+                                        true,
+                                        null,
+                                        null
+                                ));
+                                continue;
+                            }
+
+                            results.add(runRegressionFor(X, y, zClean));
+                        }
                     }
                 }
             }
