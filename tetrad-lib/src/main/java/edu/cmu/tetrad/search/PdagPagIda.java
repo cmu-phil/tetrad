@@ -124,9 +124,14 @@ public class PdagPagIda {
             }
         }
 
-        if (!(isDag || isPdag || containsCircle)) {// isPag)) {
-            throw new IllegalArgumentException("Expecting a DAG/CPDAG/PDAG or PAG.");
+        // Disabling rPAG-IDA for publication, as it needs work still. jdramsey 2026-1-6.
+        if (!(isDag || isPdag)) {// isPag)) {
+            throw new IllegalArgumentException("Expecting a DAG/CPDAG/PDAG.");
         }
+
+//        if (!(isDag || isPdag || containsCircle)) {// isPag)) {
+//            throw new IllegalArgumentException("Expecting a DAG/CPDAG/PDAG or PAG.");
+//        }
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
