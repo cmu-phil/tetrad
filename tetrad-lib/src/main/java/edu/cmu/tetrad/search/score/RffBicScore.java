@@ -61,6 +61,12 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
     /** Small jitter added to A+lambdaI if Cholesky fails. */
     private double jitter = 1e-10;
 
+    /** # independent RFF draws to average (variance reduction). */
+    private int rffEnsemble = 3;
+
+    /** If true, use cos+sin paired features (lower variance than cos-only). */
+    private boolean useCosSinPairs = true;
+
     // -------------------- data --------------------
 
     private final DataSet dataSet;
@@ -130,86 +136,95 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         int[] rows = calculateRowSubsets ? validRows(all) : null;
 
         int n = (rows == null) ? nEff : rows.length;
-        if (n < 10) return Double.NaN;
+        if (n < 10) {
+            localScoreCache.put(key, Double.NaN);
+            return Double.NaN;
+        }
 
-        // Extract y (target column)
+        // y (target)
         double[] y = extract1D(target, rows, n);
 
-        // Extract Z matrix (n x d) if parents nonempty
         int d = parents.length;
-        double[][] Z = null;
-        if (d > 0) {
-            Z = extractND(parents, rows, n, d);
-        }
 
-        // Standardize y and Z (RCIT style), for stability.
-        if (centerFeatures) {
-            zscoreInPlace(y);
-            if (Z != null) zscoreInPlace(Z);
-        }
-
-        // If no parents, score is just marginal Gaussian likelihood with 0 regressors
+        // No parents: marginal Gaussian (no penalty)
         if (d == 0) {
+            if (centerFeatures) zscoreInPlace(y);
             double ll = gaussianLogLikFromRss(y, n, rssZeroModel(y));
-            double score = 2.0 * ll; // no penalty
+            double score = 2.0 * ll;
             localScoreCache.put(key, score);
             return score;
         }
 
-        // Choose sigma for RFF
+        // Z (n x d)
+        double[][] Z = extractND(parents, rows, n, d);
+
+        // Standardize y and Z for stability
+        if (centerFeatures) {
+            zscoreInPlace(y);
+            zscoreInPlace(Z);
+        }
+
+        // Bandwidth
         double sigma = chooseSigma(parents, Z, n);
         if (!(sigma > 0) || !Double.isFinite(sigma)) sigma = 1.0;
 
-        // Build Phi(Z): n x m
-        int m = numFeatZ;
-        DMatrixRMaj Phi = rffFeatures(Z, n, d, m, sigma, localRng(target, parents));
+        // Optional: make sigma match the common RBF median heuristic convention:
+        //   exp(-||x-y||^2 / (2 sigma^2)) with sigma = medianDist / sqrt(2)
+        // This tends to be a bit less “tight” than sigma=medianDist.
+        sigma = sigma / Math.sqrt(2.0);
 
-        if (centerFeatures) {
-            zscoreColumnsInPlace(Phi);
+        // Ensemble-average the score over a few deterministic RFF draws
+        final int E = Math.max(1, this.rffEnsemble);
+
+        double scoreSum = 0.0;
+        int good = 0;
+
+        for (int e = 0; e < E; e++) {
+            // Build Phi(Z): n x m
+            int m = numFeatZ;
+            DMatrixRMaj Phi = rffFeaturesStable(Z, n, d, m, sigma, localRng(target, parents, e), useCosSinPairs);
+
+            if (centerFeatures) {
+                zscoreColumnsInPlace(Phi);
+            }
+
+            // A = Phi^T Phi, b = Phi^T y
+            DMatrixRMaj A = new DMatrixRMaj(Phi.numCols, Phi.numCols);
+            CommonOps_DDRM.multTransA(Phi, Phi, A);
+
+            DMatrixRMaj b = new DMatrixRMaj(Phi.numCols, 1);
+            multTransA_vec(Phi, y, b);
+
+            // Solve (A + lambda I) beta = b
+            DMatrixRMaj Ab = A.copy();
+            addDiagonalInPlace(Ab, lambda);
+
+            DMatrixRMaj beta = new DMatrixRMaj(Phi.numCols, 1);
+            if (!solveSymPosDefWithJitter(Ab, b, beta)) {
+                continue;
+            }
+
+            double rss = rssFromPhiBeta(Phi, beta, y);
+            if (!(rss > 0) || !Double.isFinite(rss)) {
+                continue;
+            }
+
+            double ll = gaussianLogLikFromRss(y, n, rss);
+
+            // df = tr( A (A + lambda I)^(-1) )
+            double df = effectiveDf(A, lambda);
+            if (!(df >= 0) || !Double.isFinite(df)) df = Phi.numCols;
+
+            double score = 2.0 * ll - penaltyDiscount * df * Math.log(n);
+            if (Double.isFinite(score)) {
+                scoreSum += score;
+                good++;
+            }
         }
 
-        // Ridge regression: beta = (Phi^T Phi + lambda I)^(-1) Phi^T y
-        // Compute A = Phi^T Phi, b = Phi^T y
-        DMatrixRMaj A = new DMatrixRMaj(m, m);
-        CommonOps_DDRM.multTransA(Phi, Phi, A);
-
-        // b is m x 1
-        DMatrixRMaj b = new DMatrixRMaj(m, 1);
-        multTransA_vec(Phi, y, b);
-
-        // Solve (A + lambda I) beta = b
-        DMatrixRMaj Ab = A.copy();
-        addDiagonalInPlace(Ab, lambda);
-
-        DMatrixRMaj beta = new DMatrixRMaj(m, 1);
-
-        if (!solveSymPosDefWithJitter(Ab, b, beta)) {
-            localScoreCache.put(key, Double.NaN);
-            return Double.NaN;
-        }
-
-        // Compute residuals and RSS
-        double rss = rssFromPhiBeta(Phi, beta, y);
-        if (!(rss > 0) || !Double.isFinite(rss)) {
-            localScoreCache.put(key, Double.NaN);
-            return Double.NaN;
-        }
-
-        // Log-likelihood under Gaussian noise with sigma^2 = RSS/n
-        double ll = gaussianLogLikFromRss(y, n, rss);
-
-        // Effective degrees of freedom under ridge:
-        // df = tr( A (A + lambda I)^(-1) ) where A = Phi^T Phi
-        double df = effectiveDf(A, lambda);
-        if (!(df >= 0) || !Double.isFinite(df)) df = m;
-
-        // BIC-like score (Tetrad convention: higher is better)
-        double score = 2.0 * ll - penaltyDiscount * df * Math.log(n);
-
-        if (Double.isNaN(score) || Double.isInfinite(score)) score = Double.NaN;
-
-        localScoreCache.put(key, score);
-        return score;
+        double out = (good > 0) ? (scoreSum / good) : Double.NaN;
+        localScoreCache.put(key, out);
+        return out;
     }
 
     @Override
@@ -320,6 +335,18 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         clearCache();
     }
 
+    public int getRffEnsemble() { return rffEnsemble; }
+    public void setRffEnsemble(int rffEnsemble) {
+        this.rffEnsemble = Math.max(1, rffEnsemble);
+        clearCache();
+    }
+
+    public boolean isUseCosSinPairs() { return useCosSinPairs; }
+    public void setUseCosSinPairs(boolean useCosSinPairs) {
+        this.useCosSinPairs = useCosSinPairs;
+        clearCache();
+    }
+
     // -------------------- enum --------------------
 
     public enum BandwidthMode {
@@ -340,6 +367,15 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         h = (h ^ seed) * 1099511628211L;
         h = (h ^ target) * 1099511628211L;
         for (int p : parents) h = (h ^ p) * 1099511628211L;
+        return new Random(h);
+    }
+
+    private Random localRng(int target, int[] parents, int rep) {
+        long h = 1469598103934665603L;
+        h = (h ^ seed) * 1099511628211L;
+        h = (h ^ target) * 1099511628211L;
+        for (int p : parents) h = (h ^ p) * 1099511628211L;
+        h = (h ^ rep) * 1099511628211L;
         return new Random(h);
     }
 
@@ -451,33 +487,102 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         }
     }
 
+//    /**
+//     * RFF features for RBF kernel:
+//     *   Phi = sqrt(2/m) * cos( W z + b )
+//     * with W ~ N(0, 1/sigma), b ~ Uniform(0, 2π).
+//     */
+//    private static DMatrixRMaj rffFeatures(double[][] Z, int n, int d, int m, double sigma, Random rng) {
+//        double sd = 1.0 / sigma;
+//
+//        // W is m x d, b is m
+//        double[][] W = new double[m][d];
+//        double[] b = new double[m];
+//
+//        for (int i = 0; i < m; i++) {
+//            for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * sd;
+//            b[i] = rng.nextDouble() * 2.0 * Math.PI;
+//        }
+//
+//        DMatrixRMaj Phi = new DMatrixRMaj(n, m);
+//        double scale = Math.sqrt(2.0 / m);
+//
+//        for (int i = 0; i < n; i++) {
+//            double[] zi = Z[i];
+//            for (int f = 0; f < m; f++) {
+//                double dot = 0.0;
+//                double[] wf = W[f];
+//                for (int j = 0; j < d; j++) dot += wf[j] * zi[j];
+//                Phi.set(i, f, scale * Math.cos(dot + b[f]));
+//            }
+//        }
+//
+//        return Phi;
+//    }
+
     /**
-     * RFF features for RBF kernel:
-     *   Phi = sqrt(2/m) * cos( W z + b )
-     * with W ~ N(0, 1/sigma), b ~ Uniform(0, 2π).
+     * Lower-variance RFF features for RBF kernel.
+     *
+     * If useCosSinPairs==true:
+     *   Use m' = floor(m/2) frequencies and output [cos(w^T z + b), sin(w^T z + b)] pairs.
+     *   This typically reduces variance a lot vs cos-only.
+     *
+     * Scaling keeps E[Phi Phi^T] close to the RBF kernel.
      */
-    private static DMatrixRMaj rffFeatures(double[][] Z, int n, int d, int m, double sigma, Random rng) {
-        double sd = 1.0 / sigma;
+    private static DMatrixRMaj rffFeaturesStable(double[][] Z, int n, int d, int m, double sigma,
+                                                 Random rng, boolean useCosSinPairs) {
+        if (sigma <= 0 || !Double.isFinite(sigma)) sigma = 1.0;
 
-        // W is m x d, b is m
-        double[][] W = new double[m][d];
-        double[] b = new double[m];
+        // For RBF kernel exp(-||x-y||^2/(2 sigma^2)), we sample w ~ N(0, I/sigma^2)
+        final double wStd = 1.0 / sigma;
 
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * sd;
+        if (!useCosSinPairs) {
+            // your original cos-only construction
+            double[][] W = new double[m][d];
+            double[] b = new double[m];
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
+                b[i] = rng.nextDouble() * 2.0 * Math.PI;
+            }
+
+            DMatrixRMaj Phi = new DMatrixRMaj(n, m);
+            double scale = Math.sqrt(2.0 / m);
+            for (int i = 0; i < n; i++) {
+                double[] zi = Z[i];
+                for (int f = 0; f < m; f++) {
+                    double dot = 0.0;
+                    double[] wf = W[f];
+                    for (int j = 0; j < d; j++) dot += wf[j] * zi[j];
+                    Phi.set(i, f, scale * Math.cos(dot + b[f]));
+                }
+            }
+            return Phi;
+        }
+
+        // cos+sin paired features
+        int mf = Math.max(1, m / 2);     // number of frequencies
+        int outM = 2 * mf;               // output features (even)
+        double[][] W = new double[mf][d];
+        double[] b = new double[mf];
+
+        for (int i = 0; i < mf; i++) {
+            for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
             b[i] = rng.nextDouble() * 2.0 * Math.PI;
         }
 
-        DMatrixRMaj Phi = new DMatrixRMaj(n, m);
-        double scale = Math.sqrt(2.0 / m);
+        DMatrixRMaj Phi = new DMatrixRMaj(n, outM);
+        double scale = Math.sqrt(2.0 / outM);
 
         for (int i = 0; i < n; i++) {
             double[] zi = Z[i];
-            for (int f = 0; f < m; f++) {
+            int col = 0;
+            for (int f = 0; f < mf; f++) {
                 double dot = 0.0;
                 double[] wf = W[f];
                 for (int j = 0; j < d; j++) dot += wf[j] * zi[j];
-                Phi.set(i, f, scale * Math.cos(dot + b[f]));
+                double t = dot + b[f];
+                Phi.set(i, col++, scale * Math.cos(t));
+                Phi.set(i, col++, scale * Math.sin(t));
             }
         }
 
