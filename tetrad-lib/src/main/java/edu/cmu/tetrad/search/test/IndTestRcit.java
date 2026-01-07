@@ -111,24 +111,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
 
     // ---------------- setters for wrapper wiring ----------------
 
-    /**
-     * Extract columns for nodes => n x d SimpleMatrix.
-     */
-//    private static SimpleMatrix cols(DataSet ds, List<Node> vv) {
-//        int n = ds.getNumRows();
-//        int d = vv.size();
-//        SimpleMatrix M = new SimpleMatrix(n, d);
-//        for (int j = 0; j < d; j++) {
-//            int col = ds.getColumn(vv.get(j));
-//            if (col < 0) {
-//                col = ds.getVariableNames().indexOf(vv.get(j).getName());
-//                if (col < 0) throw new IllegalArgumentException("Variable not found: " + vv.get(j).getName());
-//            }
-//            for (int i = 0; i < n; i++) M.set(i, j, ds.getDouble(i, col));
-//        }
-//        return M;
-//    }
-
     private SimpleMatrix cols(DataSet ds, List<Node> vv) {
         int n = getActiveRowCount();
         int d = vv.size();
