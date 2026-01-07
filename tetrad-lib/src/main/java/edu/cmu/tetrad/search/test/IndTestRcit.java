@@ -272,7 +272,8 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                 idx++;
             }
         }
-        return Z.transpose().mult(Z).scale(1.0 / n);
+//        return Z.transpose().mult(Z).scale(1.0 / n);
+        return Z.transpose().mult(Z).scale(1.0 / (n - 1));
     }
 
     /**
@@ -489,6 +490,8 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
      */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
+        Random localRng = new Random(seedFor(x, y, new ArrayList<>(z)) ^ /*global*/ 1729L);
+
         Objects.requireNonNull(x, "x");
         Objects.requireNonNull(y, "y");
 
@@ -530,9 +533,9 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         double sigZ = (Zm.getNumCols() == 0) ? 1.0 : medianPairwiseDistance(Zm.rows(0, r1));
 
         // Random Fourier Features
-        SimpleMatrix fX = rff(X, numFeatXY, sigX, rng);
-        SimpleMatrix fY = rff(Yaug, numFeatXY, sigY, rng);
-        SimpleMatrix fZ = (Zm.getNumCols() == 0) ? null : rff(Zm, numFeatZ, sigZ, rng);
+        SimpleMatrix fX = rff(X, numFeatXY, sigX, localRng);
+        SimpleMatrix fY = rff(Yaug, numFeatXY, sigY, localRng);
+        SimpleMatrix fZ = (Zm.getNumCols() == 0) ? null : rff(Zm, numFeatZ, sigZ, localRng);
 
         if (centerFeatures) {
             zscoreInPlace(fX);
@@ -604,10 +607,19 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                 SimpleMatrix z_iCzz = fZ.mult(iCzz);                // n x Fz
                 SimpleMatrix e_x_z = z_iCzz.mult(Cxz.transpose()); // n x Fx
                 SimpleMatrix e_y_z = z_iCzz.mult(Czy);             // n x Fy
+//                SimpleMatrix resX = fX.minus(e_x_z);
+//                SimpleMatrix resY = fY.minus(e_y_z);
+//
+//                SimpleMatrix Cov = kronResCov(resX, resY);
+
                 SimpleMatrix resX = fX.minus(e_x_z);
                 SimpleMatrix resY = fY.minus(e_y_z);
 
+                resX = resX.minus(colMeanRow(resX));
+                resY = resY.minus(colMeanRow(resY));
+
                 SimpleMatrix Cov = kronResCov(resX, resY);
+
                 double[] eig = positiveEigs(Cov);
 
                 switch (approx) {
@@ -627,6 +639,16 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         lastP = clamp01(p);
         boolean indep = (lastP > alpha);
         return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), indep, lastP, alpha - lastP);
+    }
+
+    private long seedFor(Node x, Node y, List<Node> Z) {
+        long h = 1469598103934665603L; // FNV-ish
+        h = 1099511628211L * (h ^ x.getName().hashCode());
+        h = 1099511628211L * (h ^ y.getName().hashCode());
+        for (Node z : Z) h = 1099511628211L * (h ^ z.getName().hashCode());
+        // if you use rows subsets, include rows.size() (or a hash of rows)
+        h = 1099511628211L * (h ^ getActiveRowCount());
+        return h;
     }
 
     @Override

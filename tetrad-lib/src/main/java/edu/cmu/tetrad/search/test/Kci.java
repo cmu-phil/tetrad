@@ -214,6 +214,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         this.varToRow = varToRow;
         this.hHint = hHint;
         this.rows = rows;
+        this.variables = new ArrayList<>(varToRow.keySet());
     }
 
     /**
@@ -570,13 +571,13 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      */
     @Override
     public List<Node> getVariables() {
-        return new ArrayList<>(variables);
+        return new ArrayList<>(varToRow.keySet());
     }
 
     /**
      * Retrieves the data model associated with the current instance.
      *
-     * @return the DataModel object representing the dataset being analyzed.
+     * @return the DataModel object representing the dataset being analyzed (possibly null).
      */
     @Override
     public DataModel getData() {
@@ -631,40 +632,78 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         }
 
         // 1) Centered KZ
-        SimpleMatrix KZ = centerKernel(kernelMatrix(/*x*/ null, /*z*/ z));
+//        SimpleMatrix KZ = centerKernel(kernelMatrix(/*x*/ null, /*z*/ z));
+//
+//// 2) Effective eps (scale-aware)
+//        final double epsEff = effectiveEpsilon(KZ, n);
 
-        // 2) RZ = eps * (KZ + eps I)^-1  (cache by Z+rows+eps)
-        final String zKey = keyForZ(z, rows, varToRow, getEpsilon());
+        SimpleMatrix KZraw = kernelMatrix(null, z);
+        SimpleMatrix KZ = centerKernel(KZraw);
+        final double epsEff = effectiveEpsilonFromUncentered(KZraw, n);
+
+// 3) RZ cache key should use epsEff, not raw epsilon
+        final String zKey = keyForZ(z, rows, varToRow, epsEff);
+
         DMatrixRMaj RZ_d = rzCache.get(zKey);
         if (RZ_d == null) {
-            // KZ + eps I
-            DMatrixRMaj KzEps = KZ.copy().plus(SimpleMatrix.identity(n).scale(getEpsilon())).getDDRM();
-            // Invert via Cholesky
+            // KZ + epsEff I
+            DMatrixRMaj KzEps = KZ.copy().plus(SimpleMatrix.identity(n).scale(epsEff)).getDDRM();
             LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.chol(n);
             if (!solver.setA(KzEps)) {
-                // Fallback to generic inverse if Cholesky fails (should be rare because of +eps I)
                 CommonOps_DDRM.invert(KzEps);
             } else {
                 DMatrixRMaj Inv = CommonOps_DDRM.identity(n);
                 solver.invert(Inv);
                 KzEps = Inv;
             }
-            CommonOps_DDRM.scale(getEpsilon(), KzEps);
+            CommonOps_DDRM.scale(epsEff, KzEps);
             RZ_d = KzEps;
             rzCache.put(zKey, RZ_d);
         }
         final SimpleMatrix RZ = SimpleMatrix.wrap(RZ_d);
 
-        // 3) Centered kernels for [X,Z] and Y
-        SimpleMatrix KXZ = centerKernel(kernelMatrix(x, z));
-        SimpleMatrix KY = getCenteredKy(y); // cached per Y
+//        // 1) Centered KZ
+//        SimpleMatrix KZ = centerKernel(kernelMatrix(/*x*/ null, /*z*/ z));
+//
+//        // 2) RZ = eps * (KZ + eps I)^-1  (cache by Z+rows+eps)
+//        final String zKey = keyForZ(z, rows, varToRow, getEpsilon());
+//        DMatrixRMaj RZ_d = rzCache.get(zKey);
+//        if (RZ_d == null) {
+//            // KZ + eps I
+//            DMatrixRMaj KzEps = KZ.copy().plus(SimpleMatrix.identity(n).scale(getEpsilon())).getDDRM();
+//            // Invert via Cholesky
+//            LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.chol(n);
+//            if (!solver.setA(KzEps)) {
+//                // Fallback to generic inverse if Cholesky fails (should be rare because of +eps I)
+//                CommonOps_DDRM.invert(KzEps);
+//            } else {
+//                DMatrixRMaj Inv = CommonOps_DDRM.identity(n);
+//                solver.invert(Inv);
+//                KzEps = Inv;
+//            }
+//            CommonOps_DDRM.scale(getEpsilon(), KzEps);
+//            RZ_d = KzEps;
+//            rzCache.put(zKey, RZ_d);
+//        }
+//        final SimpleMatrix RZ = SimpleMatrix.wrap(RZ_d);
 
-        // 4) Residualized kernels
-        SimpleMatrix RX = RZ.mult(KXZ).mult(RZ);
-        RX = symmetrize(RX);
+//        // 3) Centered kernels for [X,Z] and Y
+//        SimpleMatrix KXZ = centerKernel(kernelMatrix(x, z));
+//        SimpleMatrix KY = getCenteredKy(y); // cached per Y
+//
+//        // 4) Residualized kernels
+//        SimpleMatrix RX = RZ.mult(KXZ).mult(RZ);
+//        RX = symmetrize(RX);
+//
+//        SimpleMatrix RY = RZ.mult(KY).mult(RZ);
+//        RY = symmetrize(RY);
 
-        SimpleMatrix RY = RZ.mult(KY).mult(RZ);
-        RY = symmetrize(RY);
+        SimpleMatrix KX = centerKernel(kernelMatrix(x, Collections.emptyList())); // K(X)
+        SimpleMatrix KY = getCenteredKy(y);                                       // K(Y)
+
+        // residualize with RZ
+        SimpleMatrix RX = symmetrize(RZ.mult(KX).mult(RZ));
+        SimpleMatrix RY = symmetrize(RZ.mult(KY).mult(RZ));
 
         // 5) Test statistic
         final double stat = RX.elementMult(RY).elementSum() / n;
@@ -681,6 +720,23 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         }
 
         return p;
+    }
+
+    private double effectiveEpsilonFromUncentered(SimpleMatrix KZraw, int n) {
+        double eps = getEpsilon();
+        if (!Double.isFinite(eps) || eps <= 0.0) eps = 1e-3;
+
+        // mean diagonal is a decent scale proxy for PSD-ish kernels
+        DMatrixRMaj A = KZraw.getDDRM();
+        double diagMean = 0.0;
+        int m = Math.min(A.getNumRows(), A.getNumCols());
+        for (int i = 0; i < m; i++) diagMean += A.get(i, i);
+        diagMean /= Math.max(m, 1);
+
+        double scale = diagMean;  // already "per-sample"
+        if (!Double.isFinite(scale) || scale <= 1e-12) scale = 1.0;
+
+        return eps * scale;
     }
 
     /**
@@ -717,7 +773,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 return linearKernelMatrix(cols);
             }
             case POLYNOMIAL -> {
-                return polynomialKernelMatrix(cols, getPolyGamma(), getPolyCoef0(), getPolyDegree());
+                return polynomialKernelMatrix(cols, getPolyCoef0(), getPolyDegree());
             }
             default -> throw new IllegalStateException("Unknown kernel: " + getKernelType());
         }
@@ -739,7 +795,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 return linearKernelMatrix(Collections.singletonList(rowIdx));
             }
             case POLYNOMIAL -> {
-                return polynomialKernelMatrix(Collections.singletonList(rowIdx), getPolyGamma(), getPolyCoef0(), getPolyDegree());
+                return polynomialKernelMatrix(Collections.singletonList(rowIdx), getPolyCoef0(), getPolyDegree());
             }
             default -> throw new IllegalStateException("Unknown kernel: " + getKernelType());
         }
@@ -815,66 +871,110 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
             return SimpleMatrix.wrap(new DMatrixRMaj(n, n)); // all zeros
         }
 
-        // Build X (n Ã d)
-        DMatrixRMaj X = new DMatrixRMaj(n, d);
-        for (int c = 0; c < d; c++) {
-            int vr = varRows.get(c);
-            for (int r = 0; r < n; r++) {
-                X.set(r, c, dataVxN.get(vr, rows.get(r)));
-            }
-        }
-
-        // K = X Xáµ  (n Ã n)
+        DMatrixRMaj X = buildX(varRows, true); // <--- z-score
         DMatrixRMaj K = new DMatrixRMaj(n, n);
-        CommonOps_DDRM.multTransB(X, X, K);  // <-- correct call for X * X^T
-
+        CommonOps_DDRM.multTransB(X, X, K);
         return SimpleMatrix.wrap(K);
+
+//        // Build X (n Ã d)
+//        DMatrixRMaj X = new DMatrixRMaj(n, d);
+//        for (int c = 0; c < d; c++) {
+//            int vr = varRows.get(c);
+//            for (int r = 0; r < n; r++) {
+//                X.set(r, c, dataVxN.get(vr, rows.get(r)));
+//            }
+//        }
+//
+//        // K = X Xáµ  (n Ã n)
+//        DMatrixRMaj K = new DMatrixRMaj(n, n);
+//        CommonOps_DDRM.multTransB(X, X, K);  // <-- correct call for X * X^T
+//
+//        return SimpleMatrix.wrap(K);
     }
 
 // === 1-D kernel builders (fast and allocation-light) ===
 
     /**
-     * Computes the polynomial kernel matrix for a given set of variable rows, using the specified
-     * kernel parameters gamma, coef0, and degree. The kernel matrix is calculated as
-     * (gamma * G + coef0) ^ degree, where G = X * Xᵀ, and X is constructed from the input variable rows.
+     * Computes the polynomial kernel matrix for a given set of variable rows, using the specified kernel parameters
+     * gamma, coef0, and degree. The kernel matrix is calculated as (gamma * G + coef0) ^ degree, where G = X * Xᵀ, and
+     * X is constructed from the input variable rows.
      *
      * @param varRows A list of indices representing the variable rows used to construct the matrix X.
-     * @param gamma The scalar factor by which the dot product matrix G is scaled within the kernel computation.
-     * @param coef0 An additive constant applied before raising the result to the specified degree.
-     * @param degree The degree of the polynomial kernel.
+     * @param coef0   An additive constant applied before raising the result to the specified degree.
+     * @param degree  The degree of the polynomial kernel.
      * @return A SimpleMatrix representing the computed polynomial kernel matrix.
      */
-    private SimpleMatrix polynomialKernelMatrix(List<Integer> varRows, double gamma, double coef0, int degree) {
+//    private SimpleMatrix polynomialKernelMatrix(List<Integer> varRows, double gamma, double coef0, int degree) {
+//        final int n = rows.size();
+//        final int d = varRows.size();
+//
+//        // Edge case: no variables â constant kernel (coef0^degree) * 1
+//        if (d == 0) {
+//            DMatrixRMaj K = new DMatrixRMaj(n, n);
+//            Arrays.fill(K.data, Math.pow(coef0, degree));
+//            return SimpleMatrix.wrap(K);
+//        }
+//
+//        // Build X (n Ã d)
+////        DMatrixRMaj X = new DMatrixRMaj(n, d);
+//        DMatrixRMaj X = buildX(varRows, true);   // z-score, like linear
+//        for (int c = 0; c < d; c++) {
+//            int vr = varRows.get(c);
+//            for (int r = 0; r < n; r++) {
+//                X.set(r, c, dataVxN.get(vr, rows.get(r)));
+//            }
+//        }
+//
+//        // G = X Xáµ (n Ã n)
+//        DMatrixRMaj G = new DMatrixRMaj(n, n);
+//        CommonOps_DDRM.multTransB(X, X, G);
+//
+//        // K = (gamma * G + coef0)^degree  (elementwise power)
+//        DMatrixRMaj K = new DMatrixRMaj(n, n);
+//        double[] gd = G.data, kd = K.data;
+////        final double a = gamma;
+//        final double a = effectivePolyGamma(d);
+//        final double b = coef0;
+//        if (degree == 1) {
+//            // Fast path: linear + bias
+//            for (int i = 0; i < kd.length; i++) kd[i] = a * gd[i] + b;
+//        } else if (degree == 2) {
+//            for (int i = 0; i < kd.length; i++) {
+//                double v = a * gd[i] + b;
+//                kd[i] = v * v;
+//            }
+//        } else {
+//            for (int i = 0; i < kd.length; i++) {
+//                kd[i] = Math.pow(a * gd[i] + b, degree);
+//            }
+//        }
+//        return SimpleMatrix.wrap(K);
+//    }
+
+    private SimpleMatrix polynomialKernelMatrix(List<Integer> varRows, double coef0, int degree) {
         final int n = rows.size();
         final int d = varRows.size();
 
-        // Edge case: no variables â constant kernel (coef0^degree) * 1
         if (d == 0) {
             DMatrixRMaj K = new DMatrixRMaj(n, n);
             Arrays.fill(K.data, Math.pow(coef0, degree));
             return SimpleMatrix.wrap(K);
         }
 
-        // Build X (n Ã d)
-        DMatrixRMaj X = new DMatrixRMaj(n, d);
-        for (int c = 0; c < d; c++) {
-            int vr = varRows.get(c);
-            for (int r = 0; r < n; r++) {
-                X.set(r, c, dataVxN.get(vr, rows.get(r)));
-            }
-        }
+        // ✅ standardized X
+        DMatrixRMaj X = buildX(varRows, true);
 
-        // G = X Xáµ (n Ã n)
         DMatrixRMaj G = new DMatrixRMaj(n, n);
         CommonOps_DDRM.multTransB(X, X, G);
 
-        // K = (gamma * G + coef0)^degree  (elementwise power)
         DMatrixRMaj K = new DMatrixRMaj(n, n);
         double[] gd = G.data, kd = K.data;
-        final double a = gamma;
+
+        // ✅ gamma heuristic (1/d if left at default 1.0)
+        final double a = effectivePolyGamma(d);
         final double b = coef0;
+
         if (degree == 1) {
-            // Fast path: linear + bias
             for (int i = 0; i < kd.length; i++) kd[i] = a * gd[i] + b;
         } else if (degree == 2) {
             for (int i = 0; i < kd.length; i++) {
@@ -882,9 +982,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 kd[i] = v * v;
             }
         } else {
-            for (int i = 0; i < kd.length; i++) {
-                kd[i] = Math.pow(a * gd[i] + b, degree);
-            }
+            for (int i = 0; i < kd.length; i++) kd[i] = Math.pow(a * gd[i] + b, degree);
         }
         return SimpleMatrix.wrap(K);
     }
@@ -913,7 +1011,14 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         }
 
         // Subsample if n is large
+//        int m = Math.min(n, 256);
+//        int[] idx = uniformSample(n, m, rng);
+
         int m = Math.min(n, 256);
+        // use first m rows (or evenly spaced)
+//        int[] idx = new int[m];
+//        for (int i = 0; i < m; i++) idx[i] = i;
+
         int[] idx = uniformSample(n, m, rng);
 
         // Collect pairwise squared distances for the subsample
@@ -1010,6 +1115,81 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         } else {
             return permutationPValueConditional(centeredKx, centeredKy, stat, n, getNumPermutations(), rng);
         }
+    }
+
+    /**
+     * Build X (n x d) from varRows and active rows. Optionally z-score each column
+     * (ddof=1) for numerical stability (strongly recommended for linear/polynomial kernels).
+     */
+    private DMatrixRMaj buildX(List<Integer> varRows, boolean zscore) {
+        final int n = rows.size();
+        final int d = varRows.size();
+        DMatrixRMaj X = new DMatrixRMaj(n, d);
+
+        // Fill
+        for (int c = 0; c < d; c++) {
+            int vr = varRows.get(c);
+            for (int r = 0; r < n; r++) {
+                X.set(r, c, dataVxN.get(vr, rows.get(r)));
+            }
+        }
+
+        if (!zscore || d == 0 || n < 2) return X;
+
+        // Z-score columns (ddof=1). Guard against sd=0.
+        for (int c = 0; c < d; c++) {
+            double sum = 0.0, sumsq = 0.0;
+            for (int r = 0; r < n; r++) {
+                double v = X.get(r, c);
+                sum += v;
+                sumsq += v * v;
+            }
+            double mean = sum / n;
+            double var = (sumsq - n * mean * mean) / (n - 1);
+            double sd = (var > 0.0) ? Math.sqrt(var) : 1.0;
+            if (!Double.isFinite(sd) || sd <= 0.0) sd = 1.0;
+
+            for (int r = 0; r < n; r++) {
+                X.set(r, c, (X.get(r, c) - mean) / sd);
+            }
+        }
+        return X;
+    }
+
+    /**
+     * Choose polynomial gamma. If user left gamma at default 1.0, use 1/d.
+     * (Works well with standardized columns.)
+     */
+    private double effectivePolyGamma(int d) {
+        double g = getPolyGamma();
+        if (!Double.isFinite(g) || g <= 0.0) g = 1.0;
+        // Heuristic: treat "1.0" as "unset default".
+        if (Math.abs(g - 1.0) < 1e-12) {
+            return 1.0 / Math.max(d, 1);
+        }
+        return g;
+    }
+
+    private static double trace(SimpleMatrix M) {
+        DMatrixRMaj A = M.getDDRM();
+        int n = Math.min(A.getNumRows(), A.getNumCols());
+        double t = 0.0;
+        for (int i = 0; i < n; i++) t += A.get(i, i);
+        return t;
+    }
+
+    /**
+     * Scale-aware epsilon: epsEff = eps * (trace(KZ)/n), with guards.
+     */
+    private double effectiveEpsilon(SimpleMatrix KZcentered, int n) {
+        double eps = getEpsilon();
+        if (!Double.isFinite(eps) || eps <= 0.0) eps = 1e-3;
+
+        double tr = trace(KZcentered);
+        double scale = tr / Math.max(n, 1);
+        if (!Double.isFinite(scale) || scale <= 1e-12) scale = 1.0;
+
+        return eps * scale;
     }
 
     /**
