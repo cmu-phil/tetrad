@@ -14,33 +14,51 @@ import java.util.*;
 import static java.lang.Double.NaN;
 
 /**
- * RCoT (Randomized Conditional Correlation Test) using Random Fourier Features + residualization + CCA.
+ * RCoT (Randomized Conditional Correlation Test) using Random Fourier Features + residualization + CCA
+ * <p>
+ * Mirrors the <code>IndTestRcit</code> interface shape but uses a “true” RCoT-style statistic:
  *
- * Mirrors the IndTestRcit interface shape but uses a "true" RCoT-style statistic:
- *  - Build RFF features fX, fY, fZ.
- *  - Residualize fX and fY on fZ with ridge regression (projection).
- *  - Compute canonical correlations between residuals via CCA.
- *  - Wilks' Lambda with Bartlett chi-square approximation yields p-value.
+ * <ul>
+ * <li>Build RFF features <code>fX</code>, <code>fY</code>, <code>fZ</code>.</li>
+ * <li>Residualize <code>fX</code> and <code>fY</code> on <code>fZ</code> with ridge regression (projection).</li>
+ * <li>Compute canonical correlations between residuals via CCA.</li>
+ * <li>
+ * Wilks’ Lambda with Bartlett chi-square approximation yields p-value.
+ * </li>
+ * </ul>
  *
- * References (conceptual lineage):
- *  - RCoT family: random feature maps + conditional correlation / CCA on residuals.
- *  - Uses the same RFF & bandwidth median heuristic style as IndTestRcit.
+ * <p><strong>References (conceptual lineage):</strong></p>
  *
- * Notes:
- *  - If Z is empty, reduces to unconditional CCA test on (fX, fY).
- *  - Continuous only (DataSet.getDouble).
+ * <ul>
+ * <li>
+ * RCoT family: random feature maps + conditional correlation / CCA on residuals.
+ * </li>
+ * <li>
+ * Uses the same RFF &amp; bandwidth median heuristic style as <code>IndTestRcit</code>.
+ * </li>
+ * </ul>
+ *
+ * <p><strong>Notes:</strong></p>
+ *
+ * <ul>
+ * <li>
+ * If <code>Z</code> is empty, reduces to unconditional CCA test on (<code>fX</code>, <code>fY</code>).
+ * </li>
+ * <li>
+ * Continuous only (<code>DataSet.getDouble</code>).
+ * </li>
+ * </ul>
  */
 public final class IndTestRcot implements IndependenceTest, RowsSettable {
 
     // ---------------- core data ----------------
     private final DataSet data;
     private final List<Node> vars;
-    private int n;
     private final Random rng;
-
+    private int n;
     // ---------------- hyperparams ----------------
     private int numFeatXY = 5;       // features for X and Y (keep default aligned with IndTestRcit)
-    private int numFeatZ  = 100;     // features for Z
+    private int numFeatZ = 100;     // features for Z
     private double lambda = 1e-10;   // ridge for Z projection + covariance stabilization
     private boolean centerFeatures = true;
 
@@ -61,13 +79,9 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
 
     /**
      * Constructs an instance of IndTestRcot with Parameters (legacy keys match IndTestRcit style).
-     *
-     * Supported keys (same prefix style as rcit to make wrapper wiring easy):
-     *  - rcit.seed
-     *  - rcit.numF2  (XY features)
-     *  - rcit.numF   (Z features)
-     *  - rcit.lambda
-     *  - rcit.centerFeatures
+     * <p>
+     * Supported keys (same prefix style as rcit to make wrapper wiring easy): - rcit.seed - rcit.numF2  (XY features) -
+     * rcit.numF   (Z features) - rcit.lambda - rcit.centerFeatures
      *
      * @param dataSet the dataset; must not be null
      * @param params  parameters; must not be null
@@ -81,54 +95,13 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
         this.rng = new Random(seed);
 
         // mirror legacy names used by IndTestRcit
-        this.numFeatZ  = Math.max(1, params.getInt("rcit.numF", 100));
+        this.numFeatZ = Math.max(1, params.getInt("rcit.numF", 100));
         this.numFeatXY = Math.max(1, params.getInt("rcit.numF2", 5));
         this.lambda = Math.max(1e-12, params.getDouble("rcit.lambda", this.lambda));
         this.centerFeatures = params.getBoolean("rcit.centerFeatures", true);
     }
 
     // ---------------- setters for wrapper wiring ----------------
-
-    public void setLambda(double lambda) {
-        this.lambda = Math.max(1e-12, lambda);
-    }
-
-    public void setCenterFeatures(boolean centerFeatures) {
-        this.centerFeatures = centerFeatures;
-    }
-
-    public void setNumFeaturesXY(int d) {
-        this.numFeatXY = Math.max(1, d);
-    }
-
-    public void setNumFeaturesZ(int d) {
-        this.numFeatZ = Math.max(1, d);
-    }
-
-    public void setSeed(long seed) {
-        this.rng.setSeed(seed);
-    }
-
-    // ---------------- core matrix helpers (mirrors IndTestRcit style) ----------------
-
-    private SimpleMatrix cols(DataSet ds, List<Node> vv) {
-        int n = getActiveRowCount();
-        int d = vv.size();
-        SimpleMatrix M = new SimpleMatrix(n, d);
-
-        for (int j = 0; j < d; j++) {
-            int col = ds.getColumn(vv.get(j));
-            if (col < 0) {
-                col = ds.getVariableNames().indexOf(vv.get(j).getName());
-                if (col < 0) throw new IllegalArgumentException("Variable not found: " + vv.get(j).getName());
-            }
-            for (int i = 0; i < n; i++) {
-                int row = activeRowIndex(i);
-                M.set(i, j, ds.getDouble(row, col));
-            }
-        }
-        return M;
-    }
 
     /**
      * z-score columns, ddof=1.
@@ -222,6 +195,8 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
         return (m % 2 == 1) ? dists.get(m / 2) : 0.5 * (dists.get(m / 2 - 1) + dists.get(m / 2));
     }
 
+    // ---------------- core matrix helpers (mirrors IndTestRcit style) ----------------
+
     /**
      * Residualize A on Z (ridge): R = A - Z * ( (Z'Z + λI)^-1 Z' A ).
      */
@@ -246,12 +221,9 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
 
     /**
      * Computes Wilks' Lambda p-value via Bartlett's chi-square approximation for CCA between RX and RY.
-     *
-     * Steps:
-     *  - Sxx, Syy, Sxy (ridge-stabilized)
-     *  - M = inv(Sxx) Sxy inv(Syy) Syx ; eigenvalues are r_i^2
-     *  - Lambda = Π (1 - r_i^2)
-     *  - T = -c ln(Lambda),  c = (n - 1) - (p+q+1)/2,  df = p*q
+     * <p>
+     * Steps: - Sxx, Syy, Sxy (ridge-stabilized) - M = inv(Sxx) Sxy inv(Syy) Syx ; eigenvalues are r_i^2 - Lambda = Π (1
+     * - r_i^2) - T = -c ln(Lambda),  c = (n - 1) - (p+q+1)/2,  df = p*q
      */
     private static double pValueWilksBartlett(SimpleMatrix RX, SimpleMatrix RY, double ridge) {
         int n = RX.getNumRows();
@@ -312,8 +284,88 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
         return v < 0 ? 0 : (v > 1 ? 1 : v);
     }
 
+    /**
+     * Sets the value of the lambda parameter, ensuring it is constrained to a minimum value of 1e-12. This parameter is
+     * often used as a regularization term to prevent instability or overfitting in calculations.
+     *
+     * @param lambda the desired value for the lambda parameter; if the value is less than 1e-12, it will be clamped to
+     *               1e-12.
+     */
+    public void setLambda(double lambda) {
+        this.lambda = Math.max(1e-12, lambda);
+    }
+
+    /**
+     * Sets whether the features should be centered for certain calculations.
+     *
+     * @param centerFeatures a boolean indicating whether to center features. If true, features will be adjusted to have
+     *                       zero mean. If false, no adjustment will be made.
+     */
+    public void setCenterFeatures(boolean centerFeatures) {
+        this.centerFeatures = centerFeatures;
+    }
+
+    /**
+     * Sets the number of features to be used for the XY component in the calculation. This value is constrained to be
+     * at least 1.
+     *
+     * @param d the desired number of features for the XY component; if the input is less than 1, it will default to 1.
+     */
+    public void setNumFeaturesXY(int d) {
+        this.numFeatXY = Math.max(1, d);
+    }
+
+    /**
+     * Sets the number of features to be used for the Z component in the calculation. This value is constrained to be at
+     * least 1.
+     *
+     * @param d the desired number of features for the Z component; if the input is less than 1, it will default to 1.
+     */
+    public void setNumFeaturesZ(int d) {
+        this.numFeatZ = Math.max(1, d);
+    }
+
+    /**
+     * Sets the seed for the random number generator used within the instance. This allows for reproducibility of the
+     * computations that involve randomization.
+     *
+     * @param seed the seed value to initialize the random number generator.
+     */
+    public void setSeed(long seed) {
+        this.rng.setSeed(seed);
+    }
+
+    private SimpleMatrix cols(DataSet ds, List<Node> vv) {
+        int n = getActiveRowCount();
+        int d = vv.size();
+        SimpleMatrix M = new SimpleMatrix(n, d);
+
+        for (int j = 0; j < d; j++) {
+            int col = ds.getColumn(vv.get(j));
+            if (col < 0) {
+                col = ds.getVariableNames().indexOf(vv.get(j).getName());
+                if (col < 0) throw new IllegalArgumentException("Variable not found: " + vv.get(j).getName());
+            }
+            for (int i = 0; i < n; i++) {
+                int row = activeRowIndex(i);
+                M.set(i, j, ds.getDouble(row, col));
+            }
+        }
+        return M;
+    }
+
     // ---------------- IndependenceTest ----------------
 
+    /**
+     * Checks the statistical independence between two variables x and y given a set of conditioning variables z.
+     *
+     * @param x the first variable (node) to test for independence, must not be null
+     * @param y the second variable (node) to test for independence, must not be null
+     * @param z the set of conditioning variables, can be empty but not null
+     * @return an IndependenceResult containing the details of the independence test, including the independence status,
+     * computed p-value, and other statistical information
+     * @throws InterruptedException if the operation is interrupted during execution
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         Objects.requireNonNull(x, "x");
@@ -334,8 +386,8 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
         }
 
         // Data matrices (n x d)
-        SimpleMatrix X  = cols(data, Collections.singletonList(x)); // n x 1
-        SimpleMatrix Y  = cols(data, Collections.singletonList(y)); // n x 1
+        SimpleMatrix X = cols(data, Collections.singletonList(x)); // n x 1
+        SimpleMatrix Y = cols(data, Collections.singletonList(y)); // n x 1
         SimpleMatrix Zm = Z.isEmpty() ? new SimpleMatrix(n, 0) : cols(data, Z); // n x |Z|
 
         // Standardize raw columns (matches IndTestRcit behavior)
@@ -350,8 +402,8 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
         double sigZ = (Zm.getNumCols() == 0) ? 1.0 : medianPairwiseDistance(Zm.rows(0, r1));
 
         // Random Fourier Features
-        SimpleMatrix fX = rff(X,  numFeatXY, sigX, rng);                  // n x Fx
-        SimpleMatrix fY = rff(Y,  numFeatXY, sigY, rng);                  // n x Fy
+        SimpleMatrix fX = rff(X, numFeatXY, sigX, rng);                  // n x Fx
+        SimpleMatrix fY = rff(Y, numFeatXY, sigY, rng);                  // n x Fy
         SimpleMatrix fZ = (Zm.getNumCols() == 0) ? null : rff(Zm, numFeatZ, sigZ, rng); // n x Fz
 
         if (centerFeatures) {
@@ -412,41 +464,92 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
 
     // ---------------- IndependenceTest misc ----------------
 
+    /**
+     * Retrieves the most recently computed p-value from the independence test. The p-value represents the probability
+     * of observing the given data assuming the null hypothesis of independence is true. This value is updated each time
+     * an independence test is performed.
+     *
+     * @return the last computed p-value as a double.
+     */
     public double getPValue() {
         return lastP;
     }
 
+    /**
+     * Retrieves the list of variables that are being used in the current context.
+     *
+     * @return a list of {@code Node} objects representing the variables.
+     */
     @Override
     public List<Node> getVariables() {
         return vars;
     }
 
+    /**
+     * Retrieves the significance level (alpha) used in the independence test. The alpha value specifies the threshold
+     * for rejecting the null hypothesis. A lower alpha value indicates a stricter test, while a higher value allows for
+     * more leniency in rejecting the null hypothesis.
+     *
+     * @return the significance level (alpha) as a double.
+     */
     @Override
     public double getAlpha() {
         return alpha;
     }
 
+    /**
+     * Sets the significance level (alpha) for the independence test. The alpha value specifies the threshold for
+     * rejecting the null hypothesis. A lower alpha value indicates a stricter test, while a higher value allows for
+     * more leniency in rejecting the null hypothesis.
+     *
+     * @param alpha This level.
+     */
     @Override
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("alpha in (0,1)");
         this.alpha = alpha;
     }
 
+    /**
+     * Retrieves the dataset associated with this instance. The dataset contains the data used for performing
+     * statistical tests and computations within the context of this object.
+     *
+     * @return the dataset represented as a {@code DataSet} object.
+     */
     @Override
     public DataSet getData() {
         return data;
     }
 
+    /**
+     * Checks if verbose output is enabled for the instance. Verbose mode provides additional logging or diagnostic
+     * details to aid in understanding the internal operations or progress.
+     *
+     * @return {@code true} if verbose output is enabled, {@code false} otherwise.
+     */
     @Override
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Sets whether verbose mode is enabled or disabled for the instance. When verbose mode is enabled, additional
+     * logging or diagnostic details may be provided to aid in debugging or understanding the internal operations.
+     *
+     * @param verbose a boolean indicating whether to enable or disable verbose mode. If {@code true}, verbose output
+     *                will be enabled. If {@code false}, verbose output will be disabled.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Generates a string representation of the object.
+     *
+     * @return a descriptive string containing a summary of the technique represented by the instance, including the
+     * method steps and components: "RCoT (RFF + residualization + CCA/Wilks)".
+     */
     @Override
     public String toString() {
         return "RCoT (RFF + residualization + CCA/Wilks)";
