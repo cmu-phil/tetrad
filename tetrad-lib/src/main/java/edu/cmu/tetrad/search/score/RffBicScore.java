@@ -33,7 +33,7 @@ import java.util.*;
  *   <li>
  *     Use a Gaussian log-likelihood with
  *     <code>&sigma;2 = RSS / n</code>.
- *   </li>aa
+ *   </li>
  *   <li>
  *     Penalize with a BIC-like term using the effective degrees of freedom
  *     under ridge regression:
@@ -484,9 +484,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         double sigma = chooseSigma(parents, Z, n);
         if (!(sigma > 0) || !Double.isFinite(sigma)) sigma = 1.0;
 
-        // Optional: make sigma match the common RBF median heuristic convention:
-        //   exp(-||x-y||^2 / (2 sigma^2)) with sigma = medianDist / sqrt(2)
-        // This tends to be a bit less “tight” than sigma=medianDist.
+        // Optional RCIT-ish tweak: sigma = medianDist / sqrt(2)
         sigma = sigma / Math.sqrt(2.0);
 
         // Ensemble-average the score over a few deterministic RFF draws
@@ -498,38 +496,66 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         for (int e = 0; e < E; e++) {
             // Build Phi(Z): n x m
             int m = numFeatZ;
-            DMatrixRMaj Phi = rffFeaturesStable(Z, n, d, m, sigma, localRng(target, parents, e), useCosSinPairs);
+            DMatrixRMaj Phi = rffFeaturesStable(
+                    Z, n, d, m, sigma,
+                    localRng(target, parents, e),
+                    useCosSinPairs
+            );
 
             if (centerFeatures) {
                 zscoreColumnsInPlace(Phi);
             }
 
+            final int mPhi = Phi.numCols;
+
             // A = Phi^T Phi, b = Phi^T y
-            DMatrixRMaj A = new DMatrixRMaj(Phi.numCols, Phi.numCols);
+            DMatrixRMaj A = new DMatrixRMaj(mPhi, mPhi);
             CommonOps_DDRM.multTransA(Phi, Phi, A);
 
-            DMatrixRMaj b = new DMatrixRMaj(Phi.numCols, 1);
+            DMatrixRMaj b = new DMatrixRMaj(mPhi, 1);
             multTransA_vec(Phi, y, b);
 
-            // Solve (A + lambda I) beta = b
+            // Ab = A + lambda I
             DMatrixRMaj Ab = A.copy();
             addDiagonalInPlace(Ab, lambda);
 
-            DMatrixRMaj beta = new DMatrixRMaj(Phi.numCols, 1);
-            if (!solveSymPosDefWithJitter(Ab, b, beta)) {
-                continue;
+            // Factorize Ab once; reuse for beta solve and df trace
+            LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.symmPosDef(mPhi);
+
+            if (!solver.setA(Ab)) {
+                // escalate jitter (keep Ab intact; solve with Abj)
+                double eps = jitter;
+                boolean ok = false;
+                for (int k = 0; k < 6; k++) {
+                    DMatrixRMaj Abj = Ab.copy();
+                    addDiagonalInPlace(Abj, eps);
+                    if (solver.setA(Abj)) {
+                        ok = true;
+                        break;
+                    }
+                    eps *= 10.0;
+                }
+                if (!ok) continue;
             }
 
-            double rss = rssFromPhiBeta(Phi, beta, y);
-            if (!(rss > 0) || !Double.isFinite(rss)) {
-                continue;
-            }
+            // beta = inv(Ab) * b
+            DMatrixRMaj beta = new DMatrixRMaj(mPhi, 1);
+            solver.solve(b, beta);
+
+            // RSS via quadratic form: y^T y - 2 beta^T b + beta^T A beta
+            double yTy = dot(y);
+            double betaTb = dot(beta, b);
+            double betaTAb = quadForm(A, beta);
+            double rss = yTy - 2.0 * betaTb + betaTAb;
+
+            if (!Double.isFinite(rss)) continue;
+            if (rss <= 0) rss = 1e-12; // clamp to avoid log(0) / negative variance
 
             double ll = gaussianLogLikFromRss(y, n, rss);
 
-            // df = tr( A (A + lambda I)^(-1) )
-            double df = effectiveDf(A, lambda);
-            if (!(df >= 0) || !Double.isFinite(df)) df = Phi.numCols;
+            // df = tr( A (A + lambda I)^(-1) ) computed from Ab factorization:
+            double df = effectiveDfFromChol(solver, mPhi, lambda);
+            if (!Double.isFinite(df) || df < 0) df = mPhi;
 
             double score = 2.0 * ll - penaltyDiscount * df * Math.log(n);
             if (Double.isFinite(score)) {
@@ -542,6 +568,117 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         localScoreCache.put(key, out);
         return out;
     }
+
+//    @Override
+//    public double localScore(int target, int... parents) {
+//        Arrays.sort(parents);
+//
+//        long key = cacheKey(target, parents);
+//        Double cached = localScoreCache.get(key);
+//        if (cached != null) return cached;
+//
+//        int[] all = concat(target, parents);
+//        int[] rows = calculateRowSubsets ? validRows(all) : null;
+//
+//        int n = (rows == null) ? nEff : rows.length;
+//        if (n < 10) {
+//            localScoreCache.put(key, Double.NaN);
+//            return Double.NaN;
+//        }
+//
+//        // y (target)
+//        double[] y = extract1D(target, rows, n);
+//
+//        int d = parents.length;
+//
+//        // No parents: marginal Gaussian (no penalty)
+//        if (d == 0) {
+//            if (centerFeatures) zscoreInPlace(y);
+//            double ll = gaussianLogLikFromRss(y, n, rssZeroModel(y));
+//            double score = 2.0 * ll;
+//            localScoreCache.put(key, score);
+//            return score;
+//        }
+//
+//        // Z (n x d)
+//        double[][] Z = extractND(parents, rows, n, d);
+//
+//        // Standardize y and Z for stability
+//        if (centerFeatures) {
+//            zscoreInPlace(y);
+//            zscoreInPlace(Z);
+//        }
+//
+//        // Bandwidth
+//        double sigma = chooseSigma(parents, Z, n);
+//        if (!(sigma > 0) || !Double.isFinite(sigma)) sigma = 1.0;
+//
+//        // Optional: make sigma match the common RBF median heuristic convention:
+//        //   exp(-||x-y||^2 / (2 sigma^2)) with sigma = medianDist / sqrt(2)
+//        // This tends to be a bit less “tight” than sigma=medianDist.
+//        sigma = sigma / Math.sqrt(2.0);
+//
+//        // Ensemble-average the score over a few deterministic RFF draws
+//        final int E = Math.max(1, this.rffEnsemble);
+//
+//        double scoreSum = 0.0;
+//        int good = 0;
+//
+//        for (int e = 0; e < E; e++) {
+//            // Build Phi(Z): n x m
+//            int m = numFeatZ;
+//            DMatrixRMaj Phi = rffFeaturesStable(Z, n, d, m, sigma, localRng(target, parents, e), useCosSinPairs);
+//
+//            if (centerFeatures) {
+//                zscoreColumnsInPlace(Phi);
+//            }
+//
+//            // A = Phi^T Phi, b = Phi^T y
+//            DMatrixRMaj A = new DMatrixRMaj(Phi.numCols, Phi.numCols);
+//            CommonOps_DDRM.multTransA(Phi, Phi, A);
+//
+//            DMatrixRMaj b = new DMatrixRMaj(Phi.numCols, 1);
+//            multTransA_vec(Phi, y, b);
+//
+//            // Solve (A + lambda I) beta = b
+//            DMatrixRMaj Ab = A.copy();
+//            addDiagonalInPlace(Ab, lambda);
+//
+//            DMatrixRMaj beta = new DMatrixRMaj(Phi.numCols, 1);
+//            if (!solveSymPosDefWithJitter(Ab, b, beta)) {
+//                continue;
+//            }
+//
+////            double rss = rssFromPhiBeta(Phi, beta, y);
+////            if (!(rss > 0) || !Double.isFinite(rss)) {
+////                continue;
+////            }
+//
+//            double yTy = dot(y);
+//            double betaTb = dot(beta, b);
+//            double betaTAb = quadForm(A, beta);
+//            double rss = yTy - 2.0 * betaTb + betaTAb;
+//
+//            if (!Double.isFinite(rss)) continue;
+//            if (rss <= 0) rss = 1e-12;   // or: continue; (I prefer clamp)
+//
+//            double ll = gaussianLogLikFromRss(y, n, rss);
+//
+//            // df = tr( A (A + lambda I)^(-1) )
+//            double df = effectiveDf(A, lambda);
+//            if (!(df >= 0) || !Double.isFinite(df)) df = Phi.numCols;
+//
+//            double score = 2.0 * ll - penaltyDiscount * df * Math.log(n);
+//            if (Double.isFinite(score)) {
+//                scoreSum += score;
+//                good++;
+//            }
+//        }
+//
+//        double out = (good > 0) ? (scoreSum / good) : Double.NaN;
+//        localScoreCache.put(key, out);
+//        return out;
+//    }
 
     /**
      * Retrieves the list of variable nodes.
@@ -923,6 +1060,22 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         return tr;
     }
 
+    private double effectiveDfFromChol(LinearSolverDense<DMatrixRMaj> solver, int m, double lambda) {
+        // df = m - lambda * tr(inv(Ab))
+        // tr(inv(Ab)) = sum_i (inv(Ab))_{ii}; get it by solving Ab x = e_i and summing x_i
+        DMatrixRMaj e = new DMatrixRMaj(m, 1);
+        DMatrixRMaj x = new DMatrixRMaj(m, 1);
+
+        double trInv = 0.0;
+        for (int i = 0; i < m; i++) {
+            Arrays.fill(e.data, 0.0);
+            e.data[i] = 1.0;
+            solver.solve(e, x);
+            trInv += x.data[i];
+        }
+        return m - lambda * trInv;
+    }
+
     // -------------------- missingness row filtering --------------------
 
     private boolean solveSymPosDefWithJitter(DMatrixRMaj A, DMatrixRMaj B, DMatrixRMaj X) {
@@ -1008,6 +1161,33 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     // -------------------- small utilities --------------------
+
+    private static double dot(double[] y) {
+        double s = 0.0;
+        for (double v : y) s += v * v;
+        return s;
+    }
+
+    private static double quadForm(DMatrixRMaj A, DMatrixRMaj x) {
+        // returns x^T A x
+        int m = A.numCols;
+        double sum = 0.0;
+        for (int i = 0; i < m; i++) {
+            double xi = x.data[i];
+            double rowSum = 0.0;
+            int base = i * m;
+            for (int j = 0; j < m; j++) rowSum += A.data[base + j] * x.data[j];
+            sum += xi * rowSum;
+        }
+        return sum;
+    }
+
+    private static double dot(DMatrixRMaj a, DMatrixRMaj b) {
+        // both m x 1
+        double s = 0.0;
+        for (int i = 0; i < a.numRows; i++) s += a.data[i] * b.data[i];
+        return s;
+    }
 
     private double[] extract1D(int varIndex, int[] rows, int n) {
         double[] x = new double[n];
