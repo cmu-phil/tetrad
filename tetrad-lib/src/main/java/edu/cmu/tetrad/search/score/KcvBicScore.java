@@ -134,6 +134,12 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
      */
     private int nEff;
 
+    // ---- add near your other fields ----
+
+    // Cache only helps when rows == null (i.e., no missingness / full rows used)
+    private final Map<Integer, DMatrixRMaj> kxCenteredCache = new HashMap<>();
+    private final Map<Long, DMatrixRMaj> kzCenteredCache = new HashMap<>();
+
     // -------------------- construction --------------------
 
     /**
@@ -553,7 +559,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     public double localScore(int i, int... parents) {
         Arrays.sort(parents);
 
-        // Cache
+        // Cache localScore itself
         long key = cacheKey(i, parents);
         Double cached = localScoreCache.get(key);
         if (cached != null) return cached;
@@ -563,97 +569,199 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         int[] rows = calculateRowSubsets ? validRows(all) : null;
 
         final int n = (rows == null) ? nEff : rows.length;
-        if (n < 5) return Double.NaN;
-
-        // --- KX (centered) ---
-        DMatrixRMaj Kx = rbfGram1D(i, rows);
-        centerInPlace(Kx);
-
-        // --- KZ (centered) ---
-        DMatrixRMaj Kz;
-        if (parents.length == 0) {
-            // No parents => M = I (no residualization), edf = 0
-            Kz = null;
-        } else {
-            Kz = rbfGramND(parents, rows);
-            centerInPlace(Kz);
+        if (n < 5) {
+            localScoreCache.put(key, Double.NaN);
+            return Double.NaN;
         }
 
-        // --- Kernel ridge regression residual-maker ---
-        // H = Kz (Kz + lambda I)^-1, M = I - H
-        // RX = M Kx M
-        // ll ≈ -0.5 * n * log( tr(RX)/n )
-        // penalty ≈ -0.5 * log(n) * edf, where edf = tr(H)
         final double varianceFloor = 1e-12;
 
-        double ll;
-        double pen;
+        // --- Kx (centered), cached when rows==null ---
+        DMatrixRMaj Kx = getKxCentered(i, rows);
 
+        // No parents: RX = Kx, penalty 0
         if (parents.length == 0) {
-            // RX = Kx
             double v = Math.max(trace(Kx) / n, varianceFloor);
-            ll = -0.5 * n * Math.log(v);
-            pen = 0.0;
-        } else {
-            // A = Kz + lambda I
-            DMatrixRMaj A = Kz.copy();
-            for (int d = 0; d < n; d++) A.add(d, d, lambda);
-
-            // Invert A stably (SPD expected due to +lambda I)
-            DMatrixRMaj Inv = CommonOps_DDRM.identity(n);
-            LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.symmPosDef(n);
-
-            boolean ok = solver.setA(A);
-            if (ok) {
-                solver.invert(Inv);
-            } else {
-                // Fallback: add diagonal jitter and try again, then generic inverse as last resort.
-                DMatrixRMaj Aj = A.copy();
-                for (int d = 0; d < n; d++) Aj.add(d, d, 1e-8);
-
-                ok = solver.setA(Aj);
-                if (ok) {
-                    solver.invert(Inv);
-                } else {
-                    // Last resort
-                    Inv = Aj;
-                    CommonOps_DDRM.invert(Inv);
-                }
-            }
-
-            // H = Kz * Inv
-            DMatrixRMaj H = new DMatrixRMaj(n, n);
-            CommonOps_DDRM.mult(Kz, Inv, H);
-            symmetrizeInPlace(H);
-
-            // M = I - H
-            DMatrixRMaj M = CommonOps_DDRM.identity(n);
-            CommonOps_DDRM.subtractEquals(M, H);
-            symmetrizeInPlace(M);
-
-            // RX = M * Kx * M
-            DMatrixRMaj tmp = new DMatrixRMaj(n, n);
-            DMatrixRMaj RX = new DMatrixRMaj(n, n);
-            CommonOps_DDRM.mult(M, Kx, tmp);
-            CommonOps_DDRM.mult(tmp, M, RX);
-            symmetrizeInPlace(RX);
-
-            // Fit proxy
-            double v = Math.max(trace(RX) / n, varianceFloor);
-            ll = -0.5 * n * Math.log(v);
-
-            // Complexity proxy: edf = tr(H)
-            double edf = Math.max(1e-12, trace(H));
-            pen = -0.5 * edf * Math.log(Math.max(3.0, n));
-            // If you already have a "penaltyDiscount" field, multiply here:
-            // pen *= penaltyDiscount;
+            double ll = -0.5 * n * Math.log(v);
+            double score = ll; // pen=0
+            localScoreCache.put(key, score);
+            return score;
         }
+
+        // --- Kz (centered), cached when rows==null ---
+        DMatrixRMaj Kz = getKzCentered(parents, rows);
+
+        // A = Kz + lambda I  (SPD)
+        DMatrixRMaj A = Kz.copy();
+        addDiagonalInPlace(A, lambda);
+
+        // Factorize once
+        LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.symmPosDef(n);
+        if (!solver.setA(A)) {
+            // jitter escalation
+            boolean ok = false;
+            double eps = Math.max(jitter, 1e-12);
+            for (int t = 0; t < 6 && !ok; t++) {
+                DMatrixRMaj Aj = A.copy();
+                addDiagonalInPlace(Aj, eps);
+                ok = solver.setA(Aj);
+                eps *= 10.0;
+            }
+            if (!ok) {
+                localScoreCache.put(key, Double.NaN);
+                return Double.NaN;
+            }
+        }
+
+        // P = A^{-1} Kz  via solve(A, P) = Kz
+        DMatrixRMaj P = new DMatrixRMaj(n, n);
+        solver.solve(Kz, P);
+        // (Optional numeric symmetry)
+        symmetrizeInPlace(P);
+
+        // edf = tr(H) where H = Kz * A^{-1} = I - lambda * A^{-1}
+        // => edf = n - lambda * tr(A^{-1})
+        double trInvA = traceInvFromSpdSolver(solver, n);
+        double edf = n - lambda * trInvA;
+        if (!Double.isFinite(edf) || edf < 0) edf = 0.0;
+
+        // trace(RX) where RX = (I - Kz A^{-1}) Kx (I - A^{-1} Kz)
+        // Let P = A^{-1} Kz, and Kz A^{-1} = P^T (≈ P since symmetric)
+        // Then:
+        //   tr(RX) = tr(Kx) - 2 tr(Kx P) + tr(P^T Kx P)
+        // Compute:
+        //   t1 = tr(Kx)
+        //   t2 = sum_{ij} Kx_ij * P_ij  (since symmetric)
+        //   Q = Kx * P
+        //   t3 = sum_{ij} P_ij * Q_ij  (= tr(P^T Kx P))
+        double t1 = trace(Kx);
+        double t2 = dotElementwise(Kx, P);
+
+        DMatrixRMaj Q = new DMatrixRMaj(n, n);
+        CommonOps_DDRM.mult(Kx, P, Q);
+
+        double t3 = dotElementwise(P, Q);
+
+        double trRX = t1 - 2.0 * t2 + t3;
+        if (!Double.isFinite(trRX) || trRX <= 0) trRX = varianceFloor;
+
+        double v = Math.max(trRX / n, varianceFloor);
+        double ll = -0.5 * n * Math.log(v);
+
+        // penalty (your prior form)
+        double pen = -0.5 * penaltyDiscount * edf * Math.log(Math.max(3.0, n));
 
         double score = ll + pen;
 
         localScoreCache.put(key, score);
         return score;
     }
+
+//    @Override
+//    public double localScore(int i, int... parents) {
+//        Arrays.sort(parents);
+//
+//        // Cache
+//        long key = cacheKey(i, parents);
+//        Double cached = localScoreCache.get(key);
+//        if (cached != null) return cached;
+//
+//        // Valid rows for {i} ∪ parents, only if missing values exist.
+//        int[] all = concat(i, parents);
+//        int[] rows = calculateRowSubsets ? validRows(all) : null;
+//
+//        final int n = (rows == null) ? nEff : rows.length;
+//        if (n < 5) return Double.NaN;
+//
+//        // --- KX (centered) ---
+//        DMatrixRMaj Kx = rbfGram1D(i, rows);
+//        centerInPlace(Kx);
+//
+//        // --- KZ (centered) ---
+//        DMatrixRMaj Kz;
+//        if (parents.length == 0) {
+//            // No parents => M = I (no residualization), edf = 0
+//            Kz = null;
+//        } else {
+//            Kz = rbfGramND(parents, rows);
+//            centerInPlace(Kz);
+//        }
+//
+//        // --- Kernel ridge regression residual-maker ---
+//        // H = Kz (Kz + lambda I)^-1, M = I - H
+//        // RX = M Kx M
+//        // ll ≈ -0.5 * n * log( tr(RX)/n )
+//        // penalty ≈ -0.5 * log(n) * edf, where edf = tr(H)
+//        final double varianceFloor = 1e-12;
+//
+//        double ll;
+//        double pen;
+//
+//        if (parents.length == 0) {
+//            // RX = Kx
+//            double v = Math.max(trace(Kx) / n, varianceFloor);
+//            ll = -0.5 * n * Math.log(v);
+//            pen = 0.0;
+//        } else {
+//            // A = Kz + lambda I
+//            DMatrixRMaj A = Kz.copy();
+//            for (int d = 0; d < n; d++) A.add(d, d, lambda);
+//
+//            // Invert A stably (SPD expected due to +lambda I)
+//            DMatrixRMaj Inv = CommonOps_DDRM.identity(n);
+//            LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.symmPosDef(n);
+//
+//            boolean ok = solver.setA(A);
+//            if (ok) {
+//                solver.invert(Inv);
+//            } else {
+//                // Fallback: add diagonal jitter and try again, then generic inverse as last resort.
+//                DMatrixRMaj Aj = A.copy();
+//                for (int d = 0; d < n; d++) Aj.add(d, d, 1e-8);
+//
+//                ok = solver.setA(Aj);
+//                if (ok) {
+//                    solver.invert(Inv);
+//                } else {
+//                    // Last resort
+//                    Inv = Aj;
+//                    CommonOps_DDRM.invert(Inv);
+//                }
+//            }
+//
+//            // H = Kz * Inv
+//            DMatrixRMaj H = new DMatrixRMaj(n, n);
+//            CommonOps_DDRM.mult(Kz, Inv, H);
+//            symmetrizeInPlace(H);
+//
+//            // M = I - H
+//            DMatrixRMaj M = CommonOps_DDRM.identity(n);
+//            CommonOps_DDRM.subtractEquals(M, H);
+//            symmetrizeInPlace(M);
+//
+//            // RX = M * Kx * M
+//            DMatrixRMaj tmp = new DMatrixRMaj(n, n);
+//            DMatrixRMaj RX = new DMatrixRMaj(n, n);
+//            CommonOps_DDRM.mult(M, Kx, tmp);
+//            CommonOps_DDRM.mult(tmp, M, RX);
+//            symmetrizeInPlace(RX);
+//
+//            // Fit proxy
+//            double v = Math.max(trace(RX) / n, varianceFloor);
+//            ll = -0.5 * n * Math.log(v);
+//
+//            // Complexity proxy: edf = tr(H)
+//            double edf = Math.max(1e-12, trace(H));
+//            pen = -0.5 * edf * Math.log(Math.max(3.0, n));
+//            // If you already have a "penaltyDiscount" field, multiply here:
+//            // pen *= penaltyDiscount;
+//        }
+//
+//        double score = ll + pen;
+//
+//        localScoreCache.put(key, score);
+//        return score;
+//    }
 
     /**
      * RBF Gram matrix for a multivariate parent set (ND):
@@ -1041,6 +1149,8 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
 
     private void clearCache() {
         localScoreCache.clear();
+        kxCenteredCache.clear();
+        kzCenteredCache.clear();
     }
 
     private Random localRng(int target, int[] parents) {
@@ -1202,6 +1312,74 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
             }
         }
         return Z;
+    }
+
+    // Cache key for a parent set (parents are already sorted upstream)
+    private static long parentKey(int[] parents) {
+        long h = 1469598103934665603L;
+        for (int p : parents) h = (h ^ p) * 1099511628211L;
+        return h;
+    }
+
+    private DMatrixRMaj getKxCentered(int varIndex, int[] rows) {
+        if (rows == null) {
+            DMatrixRMaj cached = kxCenteredCache.get(varIndex);
+            if (cached != null) return cached;
+            DMatrixRMaj Kx = rbfGram1D(varIndex, null);
+            centerInPlace(Kx);
+            kxCenteredCache.put(varIndex, Kx);
+            return Kx;
+        } else {
+            DMatrixRMaj Kx = rbfGram1D(varIndex, rows);
+            centerInPlace(Kx);
+            return Kx;
+        }
+    }
+
+    private DMatrixRMaj getKzCentered(int[] parents, int[] rows) {
+        if (parents.length == 0) return null;
+
+        if (rows == null) {
+            long pk = parentKey(parents);
+            DMatrixRMaj cached = kzCenteredCache.get(pk);
+            if (cached != null) return cached;
+            DMatrixRMaj Kz = rbfGramND(parents, null);
+            centerInPlace(Kz);
+            kzCenteredCache.put(pk, Kz);
+            return Kz;
+        } else {
+            DMatrixRMaj Kz = rbfGramND(parents, rows);
+            centerInPlace(Kz);
+            return Kz;
+        }
+    }
+
+    private static double dotElementwise(DMatrixRMaj A, DMatrixRMaj B) {
+        if (A.numRows != B.numRows || A.numCols != B.numCols) {
+            throw new IllegalArgumentException("dim mismatch");
+        }
+        double s = 0.0;
+        final int N = A.getNumElements();
+        for (int i = 0; i < N; i++) s += A.data[i] * B.data[i];
+        return s;
+    }
+
+    /**
+     * tr(inv(A)) from an SPD solver already factorized on A.
+     * Cost: O(n^2) solves of n RHS vectors (one per diagonal entry), but with a *single* factorization.
+     */
+    private static double traceInvFromSpdSolver(LinearSolverDense<DMatrixRMaj> solver, int n) {
+        DMatrixRMaj e = new DMatrixRMaj(n, 1);
+        DMatrixRMaj x = new DMatrixRMaj(n, 1);
+
+        double tr = 0.0;
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(e.data, 0.0);
+            e.data[i] = 1.0;
+            solver.solve(e, x);
+            tr += x.data[i];
+        }
+        return tr;
     }
 
     /**
