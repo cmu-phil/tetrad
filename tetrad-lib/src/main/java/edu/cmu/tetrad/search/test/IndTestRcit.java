@@ -12,6 +12,7 @@ import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Double.NaN;
 
@@ -44,9 +45,12 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     // ---------------- core data ----------------
     private final DataSet data;
     private final List<Node> vars;
-    private int n;
     private final Random rng;
-
+    // --------- caches (optional but recommended) ----------
+    private final Map<String, SimpleMatrix> rffCache = new ConcurrentHashMap<>();
+    private final Map<String, SimpleMatrix> cholCache = new ConcurrentHashMap<>(); // stores lower-triangular L of Czz+λI
+    private final Map<String, Double> sigmaCache = new ConcurrentHashMap<>();
+    private int n;
     // ---------------- hyperparams ----------------
     private int numFeatXY = 5;      // features for X and Y (default aligns with causal-learn)
     private int numFeatZ = 100;    // features for Z
@@ -55,7 +59,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     private boolean doRcit = true;  // true => RCIT (augment Y with Z); false => RCoT
     private double lambda = 1e-10;  // ridge for Czz
     private boolean centerFeatures = true;
-
     // ---------------- IndependenceTest state ----------------
     private double alpha = 0.05;
     private double lastP = NaN;
@@ -84,7 +87,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     public IndTestRcit(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
-//        this.n = dataSet.getNumRows();
         this.n = getActiveRowCount();
 
         long seed = params.getLong("rcit.seed", 1729L);
@@ -110,25 +112,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     }
 
     // ---------------- setters for wrapper wiring ----------------
-
-    private SimpleMatrix cols(DataSet ds, List<Node> vv) {
-        int n = getActiveRowCount();
-        int d = vv.size();
-        SimpleMatrix M = new SimpleMatrix(n, d);
-
-        for (int j = 0; j < d; j++) {
-            int col = ds.getColumn(vv.get(j));
-            if (col < 0) {
-                col = ds.getVariableNames().indexOf(vv.get(j).getName());
-                if (col < 0) throw new IllegalArgumentException("Variable not found: " + vv.get(j).getName());
-            }
-            for (int i = 0; i < n; i++) {
-                int row = activeRowIndex(i);
-                M.set(i, j, ds.getDouble(row, col));
-            }
-        }
-        return M;
-    }
 
     /**
      * z-score columns, ddof=1.
@@ -233,8 +216,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         return feat;
     }
 
-    // ---------------- IndependenceTest ----------------
-
     /**
      * Median pairwise Euclidean distance (ignoring zeros).
      */
@@ -259,6 +240,8 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         return (m % 2 == 1) ? dists.get(m / 2) : 0.5 * (dists.get(m / 2 - 1) + dists.get(m / 2));
     }
 
+    // ---------------- IndependenceTest ----------------
+
     /**
      * Build Cov for residual elementwise products; returns symmetric PSD matrix whose eigs define the null.
      */
@@ -272,7 +255,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                 idx++;
             }
         }
-//        return Z.transpose().mult(Z).scale(1.0 / n);
+
         return Z.transpose().mult(Z).scale(1.0 / (n - 1));
     }
 
@@ -382,8 +365,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         return p;
     }
 
-    // ---------------- helpers ----------------
-
     private static SimpleMatrix permuteRows(SimpleMatrix M, int[] perm) {
         SimpleMatrix out = new SimpleMatrix(M.getNumRows(), M.getNumCols());
         for (int i = 0; i < perm.length; i++)
@@ -392,8 +373,92 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         return out;
     }
 
+    // ---------------- helpers ----------------
+
     private static double clamp01(double v) {
         return v < 0 ? 0 : (v > 1 ? 1 : v);
+    }
+
+    private static void subtractColumnMeansInPlace(SimpleMatrix M) {
+        int n = M.getNumRows(), d = M.getNumCols();
+        if (n == 0 || d == 0) return;
+
+        for (int j = 0; j < d; j++) {
+            double s = 0.0;
+            for (int i = 0; i < n; i++) s += M.get(i, j);
+            double mean = s / n;
+            for (int i = 0; i < n; i++) M.set(i, j, M.get(i, j) - mean);
+        }
+    }
+
+    private static SimpleMatrix choleskyLower(SimpleMatrix A) {
+        // Simple, robust-ish Cholesky (lower) for small matrices.
+        // Assumes A symmetric; with ridge this should be SPD.
+        int n = A.getNumRows();
+        SimpleMatrix L = new SimpleMatrix(n, n);
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j <= i; j++) {
+                double sum = A.get(i, j);
+                for (int k = 0; k < j; k++) {
+                    sum -= L.get(i, k) * L.get(j, k);
+                }
+                if (i == j) {
+                    if (sum <= 1e-18) sum = 1e-18; // guard; ridge should prevent this anyway
+                    L.set(i, j, Math.sqrt(sum));
+                } else {
+                    L.set(i, j, sum / L.get(j, j));
+                }
+            }
+        }
+        return L;
+    }
+
+    // Solve (L L^T) X = B given lower-triangular L.
+    // Returns X with same shape as B.
+    private static SimpleMatrix cholSolve(SimpleMatrix L, SimpleMatrix B) {
+        int n = L.getNumRows();
+        int m = B.getNumCols();
+
+        // Forward solve L Y = B
+        SimpleMatrix Y = new SimpleMatrix(n, m);
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                double sum = B.get(i, j);
+                for (int k = 0; k < i; k++) sum -= L.get(i, k) * Y.get(k, j);
+                Y.set(i, j, sum / L.get(i, i));
+            }
+        }
+
+        // Backward solve L^T X = Y
+        SimpleMatrix X = new SimpleMatrix(n, m);
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = 0; j < m; j++) {
+                double sum = Y.get(i, j);
+                for (int k = i + 1; k < n; k++) sum -= L.get(k, i) * X.get(k, j);
+                X.set(i, j, sum / L.get(i, i));
+            }
+        }
+        return X;
+    }
+
+    private SimpleMatrix cols(DataSet ds, List<Node> vv) {
+        int n = getActiveRowCount();
+        int d = vv.size();
+        SimpleMatrix M = new SimpleMatrix(n, d);
+
+        for (int j = 0; j < d; j++) {
+            int col = ds.getColumn(vv.get(j));
+            if (col < 0) {
+                col = ds.getVariableNames().indexOf(vv.get(j).getName());
+                if (col < 0) throw new IllegalArgumentException("Variable not found: " + vv.get(j).getName());
+            }
+            for (int i = 0; i < n; i++) {
+                int row = activeRowIndex(i);
+                M.set(i, j, ds.getDouble(row, col));
+            }
+        }
+        return M;
     }
 
     /**
@@ -490,13 +555,13 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
      */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
-        Random localRng = new Random(seedFor(x, y, new ArrayList<>(z)) ^ /*global*/ 1729L);
-
         Objects.requireNonNull(x, "x");
         Objects.requireNonNull(y, "y");
 
         this.n = getActiveRowCount();
-        final List<Node> Z = (z == null) ? Collections.emptyList() : new ArrayList<>(z);
+
+        final List<Node> Z = (z == null) ? new ArrayList<>() : new ArrayList<>(z);
+        Z.sort(Comparator.comparing(Node::getName));
 
         if (x.equals(y)) {
             if (verbose) TetradLogger.getInstance().log(new IndependenceFact(x, y, new HashSet<>(Z)) + " x == y");
@@ -509,13 +574,8 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
             return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), true, lastP, alpha - lastP, false);
         }
 
-        // Data matrices (n x d)
-//        SimpleMatrix X = cols(data, Collections.singletonList(x));
-//        SimpleMatrix Y = cols(data, Collections.singletonList(y));
-//        SimpleMatrix Zm = Z.isEmpty() ? new SimpleMatrix(n, 0) : cols(data, Z);
-
-        SimpleMatrix X  = cols(data, Collections.singletonList(x));
-        SimpleMatrix Y  = cols(data, Collections.singletonList(y));
+        SimpleMatrix X = cols(data, Collections.singletonList(x));
+        SimpleMatrix Y = cols(data, Collections.singletonList(y));
         SimpleMatrix Zm = Z.isEmpty() ? new SimpleMatrix(n, 0) : cols(data, Z);
 
         // Standardize raw columns
@@ -526,22 +586,24 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         // RCIT: augment Y with Z before features, else RCoT uses Y alone
         SimpleMatrix Yaug = (doRcit && Zm.getNumCols() > 0) ? hstack(Y, Zm) : Y;
 
-        // Bandwidths via median pairwise distance on first r1 rows
-        int r1 = Math.min(n, 500);
-        double sigX = medianPairwiseDistance(X.rows(0, r1));
-        double sigY = medianPairwiseDistance(Yaug.rows(0, r1));
-        double sigZ = (Zm.getNumCols() == 0) ? 1.0 : medianPairwiseDistance(Zm.rows(0, r1));
+        // Cache-friendly seeds
+        long seedX = seedForX(x) ^ 1729L;
+        long seedY = seedForY(y, Z, doRcit) ^ 1729L;
+        long seedZ = seedForZ(Z) ^ 1729L;
 
-        // Random Fourier Features
-        SimpleMatrix fX = rff(X, numFeatXY, sigX, localRng);
-        SimpleMatrix fY = rff(Yaug, numFeatXY, sigY, localRng);
-        SimpleMatrix fZ = (Zm.getNumCols() == 0) ? null : rff(Zm, numFeatZ, sigZ, localRng);
+        // Bandwidths (cache-friendly)
+        double sigX = sigmaFor("X", X, Collections.singletonList(x));
+        double sigY = sigmaFor(doRcit ? "Yaug" : "Y", Yaug, doRcit ? hstackVarList(y, Z) : Collections.singletonList(y));
+        double sigZ = (Zm.getNumCols() == 0) ? 1.0 : sigmaFor("Z", Zm, Z);
 
-        if (centerFeatures) {
-            zscoreInPlace(fX);
-            zscoreInPlace(fY);
-            if (fZ != null) zscoreInPlace(fZ);
-        }
+        // RFF features (cached)
+        SimpleMatrix fX = rffCached("fX", X, Collections.singletonList(x), numFeatXY, sigX, centerFeatures, seedX);
+
+        List<Node> yKeyVars = (doRcit && !Z.isEmpty()) ? hstackVarList(y, Z) : Collections.singletonList(y);
+        SimpleMatrix fY = rffCached("fY", Yaug, yKeyVars, numFeatXY, sigY, centerFeatures, seedY);
+
+        SimpleMatrix fZ = (Zm.getNumCols() == 0) ? null
+                : rffCached("fZ", Zm, Z, numFeatZ, sigZ, centerFeatures, seedZ);
 
         // Covariances
         SimpleMatrix Cxy = cov(fX, fY);
@@ -552,9 +614,12 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
             // ---------------- RIT (no conditioning) ----------------
             stat = n * frob2(Cxy);
 
-            SimpleMatrix resX = fX.minus(colMeanRow(fX));
-            SimpleMatrix resY = fY.minus(colMeanRow(fY));
+            SimpleMatrix resX = fX.copy();
+            SimpleMatrix resY = fY.copy();
+            subtractColumnMeansInPlace(resX);
+            subtractColumnMeansInPlace(resY);
             SimpleMatrix Cov = kronResCov(resX, resY);
+
             double[] eig = positiveEigs(Cov);
 
             switch (approx) {
@@ -580,46 +645,74 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
             }
         } else {
             // ---------------- RCIT (with Z) ----------------
+
+            // Build covariance blocks
             SimpleMatrix Czz = cov(fZ, fZ);
+            SimpleMatrix Cxz = cov(fX, fZ);   // Fx x Fz
+            SimpleMatrix Czy = cov(fZ, fY);   // Fz x Fy
+
+            // A = Czz + λI  (SPD with λ>0)
             SimpleMatrix A = Czz.plus(SimpleMatrix.identity(Czz.getNumRows()).scale(lambda));
-            SimpleMatrix iCzz = A.pseudoInverse();
 
-            SimpleMatrix Cxz = cov(fX, fZ);
-            SimpleMatrix Czy = cov(fZ, fY);
+            // Cache Cholesky for this Z-set + params (huge win)
+            // Key must depend on Z, n, numFeatZ, sigmaZ, lambda, seedZ, doRcit? (doesn't affect fZ)
 
-            SimpleMatrix Cxy_z = Cxy.minus(Cxz.mult(iCzz).mult(Czy));
+            String cholKey = "cholZ|" + keySigma("Z", Z)  // includes n and sorted var names
+                             + "|Fz=" + numFeatZ
+                             + "|lam=" + Double.doubleToLongBits(lambda)
+                             + "|sigZ=" + Double.doubleToLongBits(sigZ)
+                             + "|seedZ=" + seedZ;
+
+            SimpleMatrix L = cholCache.computeIfAbsent(cholKey, k -> choleskyLower(A));
+
+            // Compute Cxz * inv(A) without forming inv(A):
+            // Solve A^T U^T = Cxz^T  => U = Cxz * inv(A)   (Fx x Fz)
+            SimpleMatrix U_T = cholSolve(L, Cxz.transpose()); // (Fz x Fx)  solves A * U_T = Cxz^T
+            SimpleMatrix U = U_T.transpose();                 // (Fx x Fz)
+
+            // Cxy|z = Cxy - (Cxz inv(A)) Czy = Cxy - U Czy
+            SimpleMatrix Cxy_z = Cxy.minus(U.mult(Czy));
             stat = n * frob2(Cxy_z);
 
             if (approx == Approx.PERMUTATION && permutations > 0) {
                 int greater = 0;
                 for (int b = 0; b < permutations; b++) {
                     int[] perm = randomPermutation(n, rng);
+
+                    // Avoid allocating fYp if you want later; keep simple for now:
                     SimpleMatrix fYp = permuteRows(fY, perm);
+
                     SimpleMatrix Cyp = cov(fX, fYp);
                     SimpleMatrix Czyp = cov(fZ, fYp);
-                    SimpleMatrix Cxy_z_p = Cyp.minus(Cxz.mult(iCzz).mult(Czyp));
+
+                    // Cxy|z perm = Cyp - U * Czyp   (since U = Cxz inv(A) is unchanged)
+                    SimpleMatrix Cxy_z_p = Cyp.minus(U.mult(Czyp));
+
                     double s = n * frob2(Cxy_z_p);
                     if (s >= stat) greater++;
                 }
                 p = (greater + 1.0) / (permutations + 1.0);
             } else {
-                // Residuals to form Cov of elementwise products
-                SimpleMatrix z_iCzz = fZ.mult(iCzz);                // n x Fz
-                SimpleMatrix e_x_z = z_iCzz.mult(Cxz.transpose()); // n x Fx
-                SimpleMatrix e_y_z = z_iCzz.mult(Czy);             // n x Fy
-//                SimpleMatrix resX = fX.minus(e_x_z);
-//                SimpleMatrix resY = fY.minus(e_y_z);
-//
-//                SimpleMatrix Cov = kronResCov(resX, resY);
+                // Residuals to form Cov of elementwise products:
+                // e_x|z = fZ inv(A) Cxz^T ; e_y|z = fZ inv(A) Czy
+
+                // First compute V = inv(A) * Cxz^T   (Fz x Fx) by solving A V = Cxz^T
+                SimpleMatrix V = U_T; // already solved above: V = inv(A) * Cxz^T
+
+                // Also compute W = inv(A) * Czy   (Fz x Fy) by solving A W = Czy
+                SimpleMatrix W = cholSolve(L, Czy);
+
+                SimpleMatrix e_x_z = fZ.mult(V); // n x Fx
+                SimpleMatrix e_y_z = fZ.mult(W); // n x Fy
 
                 SimpleMatrix resX = fX.minus(e_x_z);
                 SimpleMatrix resY = fY.minus(e_y_z);
 
-                resX = resX.minus(colMeanRow(resX));
-                resY = resY.minus(colMeanRow(resY));
+                // mean-center residuals without allocating n×d mean matrices
+                subtractColumnMeansInPlace(resX);
+                subtractColumnMeansInPlace(resY);
 
                 SimpleMatrix Cov = kronResCov(resX, resY);
-
                 double[] eig = positiveEigs(Cov);
 
                 switch (approx) {
@@ -641,6 +734,13 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), indep, lastP, alpha - lastP);
     }
 
+    private static List<Node> hstackVarList(Node y, List<Node> Z) {
+        ArrayList<Node> out = new ArrayList<>(1 + Z.size());
+        out.add(y);
+        out.addAll(Z);
+        return out;
+    }
+
     private long seedFor(Node x, Node y, List<Node> Z) {
         long h = 1469598103934665603L; // FNV-ish
         h = 1099511628211L * (h ^ x.getName().hashCode());
@@ -648,6 +748,96 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         for (Node z : Z) h = 1099511628211L * (h ^ z.getName().hashCode());
         // if you use rows subsets, include rows.size() (or a hash of rows)
         h = 1099511628211L * (h ^ getActiveRowCount());
+        return h;
+    }
+
+    private long seedForX(Node x) {
+        long h = 1469598103934665603L;
+        h = 1099511628211L * (h ^ x.getName().hashCode());
+        h = 1099511628211L * (h ^ getActiveRowCount());
+        return h;
+    }
+
+    private long seedForY(Node y, List<Node> Z, boolean doRcit) {
+        long h = 1469598103934665603L;
+        h = 1099511628211L * (h ^ y.getName().hashCode());
+        if (doRcit) {
+            // Yaug depends on Z too, so include Z in the seed ONLY if we actually augment Y with Z
+            ArrayList<String> names = new ArrayList<>(Z.size());
+            for (Node z : Z) names.add(z.getName());
+            names.sort(String::compareTo);
+            for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
+        }
+        h = 1099511628211L * (h ^ getActiveRowCount());
+        return h;
+    }
+
+    private long seedForZ(List<Node> Z) {
+        long h = 1469598103934665603L;
+        ArrayList<String> names = new ArrayList<>(Z.size());
+        for (Node z : Z) names.add(z.getName());
+        names.sort(String::compareTo);
+        for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
+        h = 1099511628211L * (h ^ getActiveRowCount());
+        return h;
+    }
+
+    private String keyRff(String tag, List<Node> vs, int numF, double sigma, boolean center, long seed) {
+        ArrayList<String> names = new ArrayList<>(vs.size());
+        for (Node v : vs) names.add(v.getName());
+        names.sort(String::compareTo);
+
+        StringBuilder sb = new StringBuilder(128);
+        sb.append(tag)
+                .append("|n=").append(getActiveRowCount())
+                .append("|rows=").append(activeRowsHash())
+                .append("|F=").append(numF)
+                .append("|sig=").append(Double.doubleToLongBits(sigma))
+                .append("|ctr=").append(center ? 1 : 0)
+                .append("|seed=").append(seed)
+                .append("|vars=");
+        for (String s : names) sb.append(s).append(",");
+        return sb.toString();
+    }
+
+    private String keySigma(String tag, List<Node> vs) {
+        ArrayList<String> names = new ArrayList<>(vs.size());
+        for (Node v : vs) names.add(v.getName());
+        names.sort(String::compareTo);
+
+        StringBuilder sb = new StringBuilder(96);
+        sb.append(tag).append("|n=").append(getActiveRowCount()).append("|rows=").append(activeRowsHash()).append("|vars=");
+        for (String s : names) sb.append(s).append(",");
+        return sb.toString();
+    }
+
+    private double sigmaFor(String tag, SimpleMatrix raw, List<Node> varsForKey) {
+        String key = keySigma(tag, varsForKey);
+
+        return sigmaCache.computeIfAbsent(key, k -> {
+            int n = raw.getNumRows();
+            int r1 = Math.min(n, 500);
+            return medianPairwiseDistance(raw.rows(0, r1));
+        });
+    }
+
+    private SimpleMatrix rffCached(String tag, SimpleMatrix raw, List<Node> varsForKey, int numF, double sigma,
+                                   boolean center, long seed) {
+        String key = keyRff(tag, varsForKey, numF, sigma, center, seed);
+
+        return rffCache.computeIfAbsent(key, k -> {
+            Random rr = new Random(seed);
+            SimpleMatrix feat = rff(raw, numF, sigma, rr);
+            if (center) zscoreInPlace(feat);
+            return feat;
+        });
+    }
+
+    private int activeRowsHash() {
+        if (rows == null) return 0;
+        // Cheap, stable hash for the specific subset. (Order-sensitive; good.)
+        int h = 1;
+        for (int r : rows) h = 31 * h + r;
         return h;
     }
 

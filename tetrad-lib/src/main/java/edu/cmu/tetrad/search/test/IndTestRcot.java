@@ -139,6 +139,26 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
         return A.transpose().mult(B).scale(1.0 / (n - 1));
     }
 
+    private static SimpleMatrix rff1D(SimpleMatrix x, int numF, double sigma, Random rng) {
+        int n = x.getNumRows();
+        if (sigma <= 0 || !Double.isFinite(sigma)) sigma = 1.0;
+
+        double sd = 1.0 / sigma;
+        double twoPi = 2.0 * Math.PI;
+        double scale = Math.sqrt(2.0);
+
+        SimpleMatrix feat = new SimpleMatrix(n, numF);
+        for (int f = 0; f < numF; f++) {
+            double w = rng.nextGaussian() * sd;
+            double b = rng.nextDouble() * twoPi;
+            for (int i = 0; i < n; i++) {
+                double v = x.get(i, 0);
+                feat.set(i, f, scale * Math.cos(w * v + b));
+            }
+        }
+        return feat;
+    }
+
     /**
      * Random Fourier Features for RBF: sqrt(2)*cos(W X^T + b), with W ~ N(0, 1/σ).
      */
@@ -175,6 +195,10 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
      * Median pairwise Euclidean distance (ignoring zeros).
      */
     private static double medianPairwiseDistance(SimpleMatrix A) {
+        if (true) {
+            return approxMedianPairwiseDistance(A, A.getNumRows(), 1000, new Random());
+        }
+
         int n = A.getNumRows();
         if (n <= 1 || A.getNumCols() == 0) return 1.0;
         List<Double> dists = new ArrayList<>(n * (n - 1) / 2);
@@ -195,28 +219,75 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
         return (m % 2 == 1) ? dists.get(m / 2) : 0.5 * (dists.get(m / 2 - 1) + dists.get(m / 2));
     }
 
+    /** Approx median pairwise Euclidean distance using random pairs (ignores zeros). */
+    private static double approxMedianPairwiseDistance(SimpleMatrix A, int maxRows, int numPairs, Random rng) {
+        int n = Math.min(A.getNumRows(), maxRows);
+        int d = A.getNumCols();
+        if (n <= 1 || d == 0) return 1.0;
+
+        double[] dists = new double[numPairs];
+        int filled = 0;
+
+        for (int t = 0; t < numPairs; t++) {
+            int i = rng.nextInt(n);
+            int j = rng.nextInt(n - 1);
+            if (j >= i) j++;
+
+            double ss = 0.0;
+            for (int k = 0; k < d; k++) {
+                double diff = A.get(i, k) - A.get(j, k);
+                ss += diff * diff;
+            }
+            double dist = Math.sqrt(ss);
+            if (dist > 0.0 && Double.isFinite(dist)) dists[filled++] = dist;
+        }
+
+        if (filled == 0) return 1.0;
+        Arrays.sort(dists, 0, filled);
+        return dists[filled / 2];
+    }
+
     // ---------------- core matrix helpers (mirrors IndTestRcit style) ----------------
 
     /**
      * Residualize A on Z (ridge): R = A - Z * ( (Z'Z + λI)^-1 Z' A ).
      */
+//    private static SimpleMatrix residualizeOnZ(SimpleMatrix A, SimpleMatrix Z, double lambda) {
+//        int n = Z.getNumRows();
+//        int dz = Z.getNumCols();
+//        if (dz == 0) return A;
+//
+//        // G = Z'Z/(n-1) + λI
+//        SimpleMatrix G = cov(Z).plus(SimpleMatrix.identity(dz).scale(lambda));
+//        SimpleMatrix iG = G.pseudoInverse();
+//
+//        // Beta = iG * cov(Z,A)   (dz x da)
+//        SimpleMatrix ZA = cov(Z, A);        // dz x da
+//        SimpleMatrix Beta = iG.mult(ZA);    // dz x da
+//
+//        // Fit = Z * Beta  (n x da)
+//        SimpleMatrix Fit = Z.mult(Beta);
+//
+//        return A.minus(Fit);
+//    }
+
+    /** Residualize A on Z via ridge: A - Z * ( (Z'Z + λI)^{-1} Z' A ). */
     private static SimpleMatrix residualizeOnZ(SimpleMatrix A, SimpleMatrix Z, double lambda) {
         int n = Z.getNumRows();
         int dz = Z.getNumCols();
         if (dz == 0) return A;
 
-        // G = Z'Z/(n-1) + λI
-        SimpleMatrix G = cov(Z).plus(SimpleMatrix.identity(dz).scale(lambda));
-        SimpleMatrix iG = G.pseudoInverse();
+        // G = Z'Z + λI
+        SimpleMatrix G = Z.transpose().mult(Z).plus(SimpleMatrix.identity(dz).scale(lambda));
 
-        // Beta = iG * cov(Z,A)   (dz x da)
-        SimpleMatrix ZA = cov(Z, A);        // dz x da
-        SimpleMatrix Beta = iG.mult(ZA);    // dz x da
+        // RHS = Z' A
+        SimpleMatrix RHS = Z.transpose().mult(A);
 
-        // Fit = Z * Beta  (n x da)
-        SimpleMatrix Fit = Z.mult(Beta);
+        // Beta = G^{-1} RHS (solve; no pseudoInverse)
+        SimpleMatrix Beta = G.solve(RHS);
 
-        return A.minus(Fit);
+        // Fit = Z Beta
+        return A.minus(Z.mult(Beta));
     }
 
     /**
@@ -238,9 +309,13 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
         SimpleMatrix Syx = Sxy.transpose();
 
         // A = inv(Sxx) Sxy ; B = inv(Syy) Syx ; M = A B
-        SimpleMatrix A = Sxx.pseudoInverse().mult(Sxy); // p x q
-        SimpleMatrix B = Syy.pseudoInverse().mult(Syx); // q x p
-        SimpleMatrix M = A.mult(B);                      // p x p
+//        SimpleMatrix A = Sxx.pseudoInverse().mult(Sxy); // p x q
+//        SimpleMatrix B = Syy.pseudoInverse().mult(Syx); // q x p
+//        SimpleMatrix M = A.mult(B);                      // p x p
+
+        SimpleMatrix A = Sxx.solve(Sxy); // instead of pinv(Sxx)*Sxy
+        SimpleMatrix B = Syy.solve(Syx);
+        SimpleMatrix M = A.mult(B);
 
         // eigenvalues of M are r^2 (clamp)
         SimpleEVD<SimpleMatrix> evd = M.eig();
@@ -402,9 +477,13 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
         double sigZ = (Zm.getNumCols() == 0) ? 1.0 : medianPairwiseDistance(Zm.rows(0, r1));
 
         // Random Fourier Features
-        SimpleMatrix fX = rff(X, numFeatXY, sigX, rng);                  // n x Fx
-        SimpleMatrix fY = rff(Y, numFeatXY, sigY, rng);                  // n x Fy
-        SimpleMatrix fZ = (Zm.getNumCols() == 0) ? null : rff(Zm, numFeatZ, sigZ, rng); // n x Fz
+//        SimpleMatrix fX = rff(X, numFeatXY, sigX, rng);                  // n x Fx
+//        SimpleMatrix fY = rff(Y, numFeatXY, sigY, rng);                  // n x Fy
+//        SimpleMatrix fZ = (Zm.getNumCols() == 0) ? null : rff(Zm, numFeatZ, sigZ, rng); // n x Fz
+
+        SimpleMatrix fX = rff1D(X, numFeatXY, sigX, rng);
+        SimpleMatrix fY = rff1D(Y, numFeatXY, sigY, rng);
+        SimpleMatrix fZ = (Zm.getNumCols() == 0) ? null : rff(Zm, numFeatZ, sigZ, rng);
 
         if (centerFeatures) {
             zscoreInPlace(fX);
