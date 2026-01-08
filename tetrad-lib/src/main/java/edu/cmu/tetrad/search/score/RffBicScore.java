@@ -569,117 +569,6 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         return out;
     }
 
-//    @Override
-//    public double localScore(int target, int... parents) {
-//        Arrays.sort(parents);
-//
-//        long key = cacheKey(target, parents);
-//        Double cached = localScoreCache.get(key);
-//        if (cached != null) return cached;
-//
-//        int[] all = concat(target, parents);
-//        int[] rows = calculateRowSubsets ? validRows(all) : null;
-//
-//        int n = (rows == null) ? nEff : rows.length;
-//        if (n < 10) {
-//            localScoreCache.put(key, Double.NaN);
-//            return Double.NaN;
-//        }
-//
-//        // y (target)
-//        double[] y = extract1D(target, rows, n);
-//
-//        int d = parents.length;
-//
-//        // No parents: marginal Gaussian (no penalty)
-//        if (d == 0) {
-//            if (centerFeatures) zscoreInPlace(y);
-//            double ll = gaussianLogLikFromRss(y, n, rssZeroModel(y));
-//            double score = 2.0 * ll;
-//            localScoreCache.put(key, score);
-//            return score;
-//        }
-//
-//        // Z (n x d)
-//        double[][] Z = extractND(parents, rows, n, d);
-//
-//        // Standardize y and Z for stability
-//        if (centerFeatures) {
-//            zscoreInPlace(y);
-//            zscoreInPlace(Z);
-//        }
-//
-//        // Bandwidth
-//        double sigma = chooseSigma(parents, Z, n);
-//        if (!(sigma > 0) || !Double.isFinite(sigma)) sigma = 1.0;
-//
-//        // Optional: make sigma match the common RBF median heuristic convention:
-//        //   exp(-||x-y||^2 / (2 sigma^2)) with sigma = medianDist / sqrt(2)
-//        // This tends to be a bit less “tight” than sigma=medianDist.
-//        sigma = sigma / Math.sqrt(2.0);
-//
-//        // Ensemble-average the score over a few deterministic RFF draws
-//        final int E = Math.max(1, this.rffEnsemble);
-//
-//        double scoreSum = 0.0;
-//        int good = 0;
-//
-//        for (int e = 0; e < E; e++) {
-//            // Build Phi(Z): n x m
-//            int m = numFeatZ;
-//            DMatrixRMaj Phi = rffFeaturesStable(Z, n, d, m, sigma, localRng(target, parents, e), useCosSinPairs);
-//
-//            if (centerFeatures) {
-//                zscoreColumnsInPlace(Phi);
-//            }
-//
-//            // A = Phi^T Phi, b = Phi^T y
-//            DMatrixRMaj A = new DMatrixRMaj(Phi.numCols, Phi.numCols);
-//            CommonOps_DDRM.multTransA(Phi, Phi, A);
-//
-//            DMatrixRMaj b = new DMatrixRMaj(Phi.numCols, 1);
-//            multTransA_vec(Phi, y, b);
-//
-//            // Solve (A + lambda I) beta = b
-//            DMatrixRMaj Ab = A.copy();
-//            addDiagonalInPlace(Ab, lambda);
-//
-//            DMatrixRMaj beta = new DMatrixRMaj(Phi.numCols, 1);
-//            if (!solveSymPosDefWithJitter(Ab, b, beta)) {
-//                continue;
-//            }
-//
-////            double rss = rssFromPhiBeta(Phi, beta, y);
-////            if (!(rss > 0) || !Double.isFinite(rss)) {
-////                continue;
-////            }
-//
-//            double yTy = dot(y);
-//            double betaTb = dot(beta, b);
-//            double betaTAb = quadForm(A, beta);
-//            double rss = yTy - 2.0 * betaTb + betaTAb;
-//
-//            if (!Double.isFinite(rss)) continue;
-//            if (rss <= 0) rss = 1e-12;   // or: continue; (I prefer clamp)
-//
-//            double ll = gaussianLogLikFromRss(y, n, rss);
-//
-//            // df = tr( A (A + lambda I)^(-1) )
-//            double df = effectiveDf(A, lambda);
-//            if (!(df >= 0) || !Double.isFinite(df)) df = Phi.numCols;
-//
-//            double score = 2.0 * ll - penaltyDiscount * df * Math.log(n);
-//            if (Double.isFinite(score)) {
-//                scoreSum += score;
-//                good++;
-//            }
-//        }
-//
-//        double out = (good > 0) ? (scoreSum / good) : Double.NaN;
-//        localScoreCache.put(key, out);
-//        return out;
-//    }
-
     /**
      * Retrieves the list of variable nodes.
      *
@@ -1002,13 +891,13 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         localScoreCache.clear();
     }
 
-    private Random localRng(int target, int[] parents) {
-        long h = 1469598103934665603L;
-        h = (h ^ seed) * 1099511628211L;
-        h = (h ^ target) * 1099511628211L;
-        for (int p : parents) h = (h ^ p) * 1099511628211L;
-        return new Random(h);
-    }
+//    private Random localRng(int target, int[] parents) {
+//        long h = 1469598103934665603L;
+//        h = (h ^ seed) * 1099511628211L;
+//        h = (h ^ target) * 1099511628211L;
+//        for (int p : parents) h = (h ^ p) * 1099511628211L;
+//        return new Random(h);
+//    }
 
     private Random localRng(int target, int[] parents, int rep) {
         long h = 1469598103934665603L;

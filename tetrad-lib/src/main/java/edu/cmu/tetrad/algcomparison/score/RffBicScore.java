@@ -76,9 +76,10 @@ public class RffBicScore implements ScoreWrapper {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
-        score.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        score.setLambda(parameters.getDouble(Params.RCIT_LAMBDA));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
 
         return score;
     }
@@ -111,9 +112,10 @@ public class RffBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.SINGULARITY_LAMBDA);
-        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.RCIT_LAMBDA);
         parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.RCIT_CENTER_FEATURES);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 
