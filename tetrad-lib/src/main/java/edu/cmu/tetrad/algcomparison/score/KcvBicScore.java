@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -44,6 +45,7 @@ import java.util.List;
         command = "kcv-bic-score",
         dataType = {DataType.Continuous}
 )
+@Experimental
 @LinearGaussian
 public class KcvBicScore implements ScoreWrapper {
 
@@ -76,9 +78,10 @@ public class KcvBicScore implements ScoreWrapper {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
-//        score.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        score.setLambda(parameters.getDouble(Params.RCIT_LAMBDA));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
 
         return score;
     }
@@ -111,9 +114,10 @@ public class KcvBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.SINGULARITY_LAMBDA);
+        parameters.add(Params.RCIT_LAMBDA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.RCIT_CENTER_FEATURES);
         return parameters;
     }
 
