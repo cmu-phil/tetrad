@@ -33,7 +33,7 @@ import java.util.*;
  *   <li>
  *     Use a Gaussian log-likelihood with
  *     <code>&sigma;2 = RSS / n</code>.
- *   </li>
+ *   </li>aa
  *   <li>
  *     Penalize with a BIC-like term using the effective degrees of freedom
  *     under ridge regression:
