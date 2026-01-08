@@ -145,7 +145,7 @@ public class KciSmokeTest {
         // independent: Y = e (independent of X given Z)
         Kci kInd = makeKci(makeDataVxN(600, Double.POSITIVE_INFINITY), true);
         double pInd = kInd.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
-                List.of(new GraphNode("Z")), alpha);
+                List.of(new GraphNode("Z")));
         assertTrue(0.0 <= pInd && pInd <= 1.0, "p in [0,1]");
         assertTrue(pInd > alpha, "independent should fail to reject (p > alpha)");
 
@@ -153,7 +153,7 @@ public class KciSmokeTest {
         // dependent: Y = X + 0.05*e (strong)
         Kci kDep = makeKci(makeDataVxN(600, 0.05), true);
         double pDep = kDep.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
-                List.of(new GraphNode("Z")), alpha);
+                List.of(new GraphNode("Z")));
 //        assertTrue(pDep < .01, "dependent should produce tiny p");
 
         assertTrue(pDep < alpha, "dependent should be significant (gamma approx).");
@@ -200,7 +200,7 @@ public class KciSmokeTest {
         kInd.setNumPermutations(4000);    // min p â 1/4001 â 2.5e-4
         kInd.rng = new Random(123);     // determinism
         double pInd = kInd.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
-                List.of(new GraphNode("Z")), alpha);
+                List.of(new GraphNode("Z")));
         assertTrue(0.0 <= pInd && pInd <= 1.0, "p in [0,1]");
         assertTrue(pInd > alpha, "independent should fail to reject (p > alpha)");
 
@@ -209,7 +209,7 @@ public class KciSmokeTest {
         kDep.setNumPermutations(4000);
         kDep.rng = new Random(123);
         double pDep = kDep.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
-                List.of(new GraphNode("Z")), alpha);
+                List.of(new GraphNode("Z")));
         // Can't be smaller than 1/(B+1); use a realistic bound or just alpha
         assertTrue(pDep < 1e-3, "dependent should yield small p (with 4k perms)");
         // or simply:
@@ -258,13 +258,13 @@ public class KciSmokeTest {
         Kci kInd = makeKci(makeDataVxN(400, Double.POSITIVE_INFINITY), false);
         kInd.rng = new Random(123); // determinism
         double pInd = kInd.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
-                List.of(new GraphNode("Z")), alpha);
+                List.of(new GraphNode("Z")));
         assertTrue(pInd > alpha, "perm: independent should fail to reject");
 
         Kci kDep = makeKci(makeDataVxN(400, 0.05), false);
         kDep.rng = new Random(123);
         double pDep = kDep.isIndependenceConditional(new GraphNode("X"), new GraphNode("Y"),
-                List.of(new GraphNode("Z")), alpha);
+                List.of(new GraphNode("Z")));
         assertTrue(pDep < 1e-3, "perm: dependent should be significant");
     }
 }

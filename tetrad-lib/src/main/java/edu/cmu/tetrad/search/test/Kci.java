@@ -165,6 +165,12 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      */
     private double alpha = 0.01;
     /**
+     * If true, use the joint kernel K(X,Z) as in the original KCI formulation.
+     * If false (default), use K(X) and residualize via RZ, which is more stable
+     * in causal search loops with moderate/large conditioning sets.
+     */
+    private boolean useJointXZKernel = false;
+    /**
      * Map variable Node -> column index in dataVxN (row in matrix terms).
      */
     private Map<Node, Integer> varToRow;
@@ -517,6 +523,14 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         return sigma;
     }
 
+    public boolean isUseJointXZKernel() {
+        return useJointXZKernel;
+    }
+
+    public void setUseJointXZKernel(boolean useJointXZKernel) {
+        this.useJointXZKernel = useJointXZKernel;
+    }
+
     /**
      * Retrieves the value of the alpha threshold, which is generally used for
      * statistical tests to determine the significance or rejection criteria.
@@ -555,7 +569,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
 
         try {
-            double p = isIndependenceConditional(x, y, new ArrayList<>(z), this.getAlpha());
+            double p = isIndependenceConditional(x, y, new ArrayList<>(z));
             return new IndependenceResult(new IndependenceFact(x, y, z), p > alpha, p, getAlpha() - p);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -607,19 +621,18 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     // ---------------------- bandwidth heuristic ----------------------
 
     /**
-     * Tests for conditional independence between two variables given a set of conditioning variables.
-     * This method computes a test statistic and its corresponding p-value using either an approximate
-     * method or a permutation-based method depending on the configuration.
+     * Tests for conditional independence between two variables given a set of conditioning variables. This method
+     * computes a test statistic and its corresponding p-value using either an approximate method or a permutation-based
+     * method depending on the configuration.
      *
      * @param x The first variable to test for independence.
      * @param y The second variable to test for independence.
      * @param z The list of conditioning variables.
-     * @param alpha The significance level used for the independence test.
-     * @return The p-value of the conditional independence test. A small p-value (less than alpha)
-     * indicates that x and y are not conditionally independent given z.
+     * @return The p-value of the conditional independence test. A small p-value (less than alpha) indicates that x and
+     * y are not conditionally independent given z.
      * @throws NullPointerException If x or y is null.
      */
-    public double isIndependenceConditional(Node x, Node y, List<Node> z, double alpha) {
+    public double isIndependenceConditional(Node x, Node y, List<Node> z) {
         Objects.requireNonNull(x, "x");
         Objects.requireNonNull(y, "y");
         if (z == null) z = Collections.emptyList();
@@ -631,24 +644,26 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
             return 1.0;
         }
 
-        // 1) Centered KZ
-//        SimpleMatrix KZ = centerKernel(kernelMatrix(/*x*/ null, /*z*/ z));
-//
-//// 2) Effective eps (scale-aware)
-//        final double epsEff = effectiveEpsilon(KZ, n);
-
+        // ------------------------------------------------------------------
+        // 1) Build and center KZ, compute scale-aware epsilon
+        // ------------------------------------------------------------------
         SimpleMatrix KZraw = kernelMatrix(null, z);
         SimpleMatrix KZ = centerKernel(KZraw);
         final double epsEff = effectiveEpsilonFromUncentered(KZraw, n);
 
-// 3) RZ cache key should use epsEff, not raw epsilon
+        // ------------------------------------------------------------------
+        // 2) Build / cache RZ = epsEff * (KZ + epsEff I)^(-1)
+        // ------------------------------------------------------------------
         final String zKey = keyForZ(z, rows, varToRow, epsEff);
 
         DMatrixRMaj RZ_d = rzCache.get(zKey);
         if (RZ_d == null) {
-            // KZ + epsEff I
-            DMatrixRMaj KzEps = KZ.copy().plus(SimpleMatrix.identity(n).scale(epsEff)).getDDRM();
-            LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.chol(n);
+            DMatrixRMaj KzEps =
+                    KZ.copy().plus(SimpleMatrix.identity(n).scale(epsEff)).getDDRM();
+
+            LinearSolverDense<DMatrixRMaj> solver =
+                    LinearSolverFactory_DDRM.chol(n);
+
             if (!solver.setA(KzEps)) {
                 CommonOps_DDRM.invert(KzEps);
             } else {
@@ -656,71 +671,169 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
                 solver.invert(Inv);
                 KzEps = Inv;
             }
+
             CommonOps_DDRM.scale(epsEff, KzEps);
             RZ_d = KzEps;
             rzCache.put(zKey, RZ_d);
         }
         final SimpleMatrix RZ = SimpleMatrix.wrap(RZ_d);
 
-//        // 1) Centered KZ
-//        SimpleMatrix KZ = centerKernel(kernelMatrix(/*x*/ null, /*z*/ z));
-//
-//        // 2) RZ = eps * (KZ + eps I)^-1  (cache by Z+rows+eps)
-//        final String zKey = keyForZ(z, rows, varToRow, getEpsilon());
-//        DMatrixRMaj RZ_d = rzCache.get(zKey);
-//        if (RZ_d == null) {
-//            // KZ + eps I
-//            DMatrixRMaj KzEps = KZ.copy().plus(SimpleMatrix.identity(n).scale(getEpsilon())).getDDRM();
-//            // Invert via Cholesky
-//            LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.chol(n);
-//            if (!solver.setA(KzEps)) {
-//                // Fallback to generic inverse if Cholesky fails (should be rare because of +eps I)
-//                CommonOps_DDRM.invert(KzEps);
-//            } else {
-//                DMatrixRMaj Inv = CommonOps_DDRM.identity(n);
-//                solver.invert(Inv);
-//                KzEps = Inv;
-//            }
-//            CommonOps_DDRM.scale(getEpsilon(), KzEps);
-//            RZ_d = KzEps;
-//            rzCache.put(zKey, RZ_d);
-//        }
-//        final SimpleMatrix RZ = SimpleMatrix.wrap(RZ_d);
+        // ------------------------------------------------------------------
+        // 3) Choose X-kernel construction strategy
+        // ------------------------------------------------------------------
+        final SimpleMatrix RX;
+        final SimpleMatrix RY;
 
-//        // 3) Centered kernels for [X,Z] and Y
-//        SimpleMatrix KXZ = centerKernel(kernelMatrix(x, z));
-//        SimpleMatrix KY = getCenteredKy(y); // cached per Y
-//
-//        // 4) Residualized kernels
-//        SimpleMatrix RX = RZ.mult(KXZ).mult(RZ);
-//        RX = symmetrize(RX);
-//
-//        SimpleMatrix RY = RZ.mult(KY).mult(RZ);
-//        RY = symmetrize(RY);
+        /*
+         * Note:
+         * The original KCI formulation uses a joint kernel K(X,Z).
+         * In practice, especially inside PC/FCI-style causal search with
+         * growing conditioning sets, this can be numerically unstable and
+         * severely underpowered.
+         *
+         * The default behavior (K(X) + residualization by Z) is the kernel
+         * analogue of partial correlation and has much better finite-sample
+         * behavior. The joint K(X,Z) option is provided for experimentation
+         * and reference to the original theory.
+         */
+        if (useJointXZKernel && !z.isEmpty()) {
+            // --- Paper-faithful KCI: use joint kernel K(X,Z)
+            SimpleMatrix KXZ = centerKernel(kernelMatrix(x, z));
+            SimpleMatrix KY  = getCenteredKy(y);
 
-        SimpleMatrix KX = centerKernel(kernelMatrix(x, Collections.emptyList())); // K(X)
-        SimpleMatrix KY = getCenteredKy(y);                                       // K(Y)
+            RX = symmetrize(RZ.mult(KXZ).mult(RZ));
+            RY = symmetrize(RZ.mult(KY).mult(RZ));
+        } else {
+            // --- Stable variant: kernel on X only, residualize via Z
+            SimpleMatrix KX = centerKernel(kernelMatrix(x, Collections.emptyList()));
+            SimpleMatrix KY = getCenteredKy(y);
 
-        // residualize with RZ
-        SimpleMatrix RX = symmetrize(RZ.mult(KX).mult(RZ));
-        SimpleMatrix RY = symmetrize(RZ.mult(KY).mult(RZ));
+            RX = symmetrize(RZ.mult(KX).mult(RZ));
+            RY = symmetrize(RZ.mult(KY).mult(RZ));
+        }
 
-        // 5) Test statistic
+        // ------------------------------------------------------------------
+        // 4) Test statistic
+        // ------------------------------------------------------------------
         final double stat = RX.elementMult(RY).elementSum() / n;
 
         double p;
         if (isApproximate()) {
             p = pValueGammaConditional(RX, RY, stat, n);
         } else {
-            p = permutationPValueConditional(RX, RY, stat, n, getNumPermutations(), rng);
+            p = permutationPValueConditional(
+                    RX, RY, stat, n, getNumPermutations(), rng);
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log(new IndependenceFact(x, y, new HashSet<>(z)) + " p = " + p);
+            TetradLogger.getInstance().log(
+                    new IndependenceFact(x, y, new HashSet<>(z)) + " p = " + p);
         }
 
         return p;
     }
+//    public double isIndependenceConditional(Node x, Node y, List<Node> z) {
+//        Objects.requireNonNull(x, "x");
+//        Objects.requireNonNull(y, "y");
+//        if (z == null) z = Collections.emptyList();
+//        if (rows == null || rows.isEmpty()) {
+//            return 1.0;
+//        }
+//        final int n = rows.size();
+//        if (n < 2) {
+//            return 1.0;
+//        }
+//
+//        // 1) Centered KZ
+////        SimpleMatrix KZ = centerKernel(kernelMatrix(/*x*/ null, /*z*/ z));
+////
+////// 2) Effective eps (scale-aware)
+////        final double epsEff = effectiveEpsilon(KZ, n);
+//
+//        SimpleMatrix KZraw = kernelMatrix(null, z);
+//        SimpleMatrix KZ = centerKernel(KZraw);
+//        final double epsEff = effectiveEpsilonFromUncentered(KZraw, n);
+//
+//// 3) RZ cache key should use epsEff, not raw epsilon
+//        final String zKey = keyForZ(z, rows, varToRow, epsEff);
+//
+//        DMatrixRMaj RZ_d = rzCache.get(zKey);
+//        if (RZ_d == null) {
+//            // KZ + epsEff I
+//            DMatrixRMaj KzEps = KZ.copy().plus(SimpleMatrix.identity(n).scale(epsEff)).getDDRM();
+//            LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.chol(n);
+//            if (!solver.setA(KzEps)) {
+//                CommonOps_DDRM.invert(KzEps);
+//            } else {
+//                DMatrixRMaj Inv = CommonOps_DDRM.identity(n);
+//                solver.invert(Inv);
+//                KzEps = Inv;
+//            }
+//            CommonOps_DDRM.scale(epsEff, KzEps);
+//            RZ_d = KzEps;
+//            rzCache.put(zKey, RZ_d);
+//        }
+//        final SimpleMatrix RZ = SimpleMatrix.wrap(RZ_d);
+//
+////        // 1) Centered KZ
+////        SimpleMatrix KZ = centerKernel(kernelMatrix(/*x*/ null, /*z*/ z));
+////
+////        // 2) RZ = eps * (KZ + eps I)^-1  (cache by Z+rows+eps)
+////        final String zKey = keyForZ(z, rows, varToRow, getEpsilon());
+////        DMatrixRMaj RZ_d = rzCache.get(zKey);
+////        if (RZ_d == null) {
+////            // KZ + eps I
+////            DMatrixRMaj KzEps = KZ.copy().plus(SimpleMatrix.identity(n).scale(getEpsilon())).getDDRM();
+////            // Invert via Cholesky
+////            LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.chol(n);
+////            if (!solver.setA(KzEps)) {
+////                // Fallback to generic inverse if Cholesky fails (should be rare because of +eps I)
+////                CommonOps_DDRM.invert(KzEps);
+////            } else {
+////                DMatrixRMaj Inv = CommonOps_DDRM.identity(n);
+////                solver.invert(Inv);
+////                KzEps = Inv;
+////            }
+////            CommonOps_DDRM.scale(getEpsilon(), KzEps);
+////            RZ_d = KzEps;
+////            rzCache.put(zKey, RZ_d);
+////        }
+////        final SimpleMatrix RZ = SimpleMatrix.wrap(RZ_d);
+//
+////        // 3) Centered kernels for [X,Z] and Y
+////        SimpleMatrix KXZ = centerKernel(kernelMatrix(x, z));
+////        SimpleMatrix KY = getCenteredKy(y); // cached per Y
+////
+////        // 4) Residualized kernels
+////        SimpleMatrix RX = RZ.mult(KXZ).mult(RZ);
+////        RX = symmetrize(RX);
+////
+////        SimpleMatrix RY = RZ.mult(KY).mult(RZ);
+////        RY = symmetrize(RY);
+//
+//        SimpleMatrix KX = centerKernel(kernelMatrix(x, Collections.emptyList())); // K(X)
+//        SimpleMatrix KY = getCenteredKy(y);                                       // K(Y)
+//
+//        // residualize with RZ
+//        SimpleMatrix RX = symmetrize(RZ.mult(KX).mult(RZ));
+//        SimpleMatrix RY = symmetrize(RZ.mult(KY).mult(RZ));
+//
+//        // 5) Test statistic
+//        final double stat = RX.elementMult(RY).elementSum() / n;
+//
+//        double p;
+//        if (isApproximate()) {
+//            p = pValueGammaConditional(RX, RY, stat, n);
+//        } else {
+//            p = permutationPValueConditional(RX, RY, stat, n, getNumPermutations(), rng);
+//        }
+//
+//        if (verbose) {
+//            TetradLogger.getInstance().log(new IndependenceFact(x, y, new HashSet<>(z)) + " p = " + p);
+//        }
+//
+//        return p;
+//    }
 
     private double effectiveEpsilonFromUncentered(SimpleMatrix KZraw, int n) {
         double eps = getEpsilon();
