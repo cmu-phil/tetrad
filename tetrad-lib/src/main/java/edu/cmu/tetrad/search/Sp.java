@@ -120,17 +120,29 @@ public class Sp implements SuborderSearch {
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
         this.gsts = gsts;
         makeValidKnowledgeOrder(suborder);
-        List<Node> bestSuborder = new ArrayList<>(suborder);
-        double bestScore = update(prefix, suborder);
 
+        // Precompute required constraints inside this tier (as your code already does).
         Map<Node, Set<Node>> required = new HashMap<>();
         for (Node y : suborder) {
             for (Node z : suborder) {
                 if (this.knowledge.isRequired(y.getName(), z.getName())) {
-                    if (!required.containsKey(y)) required.put(y, new HashSet<>());
-                    required.get(y).add(z);
+                    required.computeIfAbsent(y, k -> new HashSet<>()).add(z);
                 }
             }
+        }
+
+        final double eps = 1e-12;
+
+        // Track ALL best suborders (ties).
+        List<List<Node>> bestSuborders = new ArrayList<>();
+        // Optional: avoid duplicates if knowledge sorting or symmetries cause repeats.
+        Set<String> seen = new HashSet<>();
+
+        // Evaluate the initial suborder.
+        double bestScore = update(prefix, suborder);
+        if (!violatesKnowledge(suborder, required)) {
+            bestSuborders.add(new ArrayList<>(suborder));
+            seen.add(canonicalOrderKey(suborder));
         }
 
         int[] swap;
@@ -138,21 +150,103 @@ public class Sp implements SuborderSearch {
         SwapIterator itr = new SwapIterator(suborder.size());
         while (itr.hasNext()) {
             swap = itr.next();
+
             Node x = suborder.get(swap[0]);
             suborder.set(swap[0], suborder.get(swap[1]));
             suborder.set(swap[1], x);
+
+            if (violatesKnowledge(suborder, required)) {
+                continue;
+            }
+
             s = update(prefix, suborder);
-            if (s > bestScore && !violatesKnowledge(suborder, required)) {
-                bestSuborder = new ArrayList<>(suborder);
+
+            if (s > bestScore + eps) {
                 bestScore = s;
+                bestSuborders.clear();
+                seen.clear();
+
+                bestSuborders.add(new ArrayList<>(suborder));
+                seen.add(canonicalOrderKey(suborder));
+            } else if (Math.abs(s - bestScore) <= eps) {
+                String key = canonicalOrderKey(suborder);
+                if (seen.add(key)) {
+                    bestSuborders.add(new ArrayList<>(suborder));
+                }
             }
         }
 
+        // Pick one representative winner to drive the rest of the pipeline (as before).
+        // If you want deterministic behavior, you could sort bestSuborders by name-string and pick first.
+        List<Node> bestSuborder = bestSuborders.isEmpty()
+                ? new ArrayList<>(suborder)
+                : bestSuborders.get(0);
+
+        // Restore chosen best into suborder and update parents accordingly.
         for (int i = 0; i < suborder.size(); i++) {
             suborder.set(i, bestSuborder.get(i));
         }
         update(prefix, suborder);
+
+        // Print all tied best permutations (highest-scoring).
+        if (bestSuborders.size() > 1) {
+            System.out.println("SP: found " + bestSuborders.size() + " highest-scoring permutations (score=" + bestScore + "):");
+        } else {
+            System.out.println("SP: found 1 highest-scoring permutation (score=" + bestScore + "):");
+        }
+        for (List<Node> ord : bestSuborders) {
+            System.out.println("  " + canonicalOrderKey(ord));
+        }
     }
+
+    // A simple canonical string key for de-dup + printing.
+    private static String canonicalOrderKey(List<Node> order) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < order.size(); i++) {
+            if (i > 0) sb.append(" , ");
+            sb.append(order.get(i).getName());
+        }
+        return sb.toString();
+    }
+
+
+//    @Override
+//    public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
+//        this.gsts = gsts;
+//        makeValidKnowledgeOrder(suborder);
+//        List<Node> bestSuborder = new ArrayList<>(suborder);
+//        double bestScore = update(prefix, suborder);
+//
+//        Map<Node, Set<Node>> required = new HashMap<>();
+//        for (Node y : suborder) {
+//            for (Node z : suborder) {
+//                if (this.knowledge.isRequired(y.getName(), z.getName())) {
+//                    if (!required.containsKey(y)) required.put(y, new HashSet<>());
+//                    required.get(y).add(z);
+//                }
+//            }
+//        }
+//
+//        int[] swap;
+//        double s;
+//        SwapIterator itr = new SwapIterator(suborder.size());
+//        while (itr.hasNext()) {
+//            swap = itr.next();
+//            Node x = suborder.get(swap[0]);
+//            suborder.set(swap[0], suborder.get(swap[1]));
+//            suborder.set(swap[1], x);
+//            s = update(prefix, suborder);
+//            if (s > bestScore && !violatesKnowledge(suborder, required)) {
+//                bestSuborder = new ArrayList<>(suborder);
+//                bestScore = s;
+//            }
+//        }
+//
+//        for (int i = 0; i < suborder.size(); i++) {
+//            suborder.set(i, bestSuborder.get(i));
+//        }
+//        update(prefix, suborder);
+//    }
 
     /**
      * Returns the list of variables associated with this object.
