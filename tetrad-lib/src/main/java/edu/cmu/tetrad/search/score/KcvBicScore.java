@@ -331,7 +331,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     /**
      * A <- (A + A^T)/2 for numeric symmetry.
      */
-    private static void symmetrizeInPlace(DMatrixRMaj A) {
+    public static void symmetrizeInPlace(DMatrixRMaj A) {
         int n = A.numRows;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < i; j++) {
