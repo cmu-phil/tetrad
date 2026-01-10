@@ -55,22 +55,7 @@ import java.util.*;
  * @version $Id: $Id
  * @see PermutationSearch
  * @see Knowledge
- * @see Knowledge
- * @see Knowledge
- * @see Knowledge
- * @see Knowledge
- * @see Knowledge
- * @see Knowledge
- * @see Knowledge
  * @see SpFci
- * @see Knowledge
- * @see Knowledge
- * @see Knowledge
- * @see Knowledge
- * @see Knowledge
- * @see Knowledge
- * @see Knowledge
- * @see Knowledge
  */
 public class Sp implements SuborderSearch {
     /**
