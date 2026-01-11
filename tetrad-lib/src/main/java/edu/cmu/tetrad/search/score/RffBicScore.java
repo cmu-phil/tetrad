@@ -949,6 +949,55 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         return tr;
     }
 
+    /**
+     * <p>
+     * The BIC-style penalty in this score uses an <em>effective degrees of freedom</em> (edf)
+     * appropriate for ridge regression in the random Fourier feature space, rather than the
+     * raw number of coefficients.
+     * </p>
+     *
+     * <p>
+     * Let {@code Phi} be the {@code n × m} random Fourier feature design matrix for the current
+     * parent set, and let
+     * <pre>
+     *   beta_hat = (Phi^T Phi + lambda I)^{-1} Phi^T y
+     * </pre>
+     * be the ridge estimator. The fitted values can be written as
+     * <pre>
+     *   y_hat = H_lambda y,
+     * </pre>
+     * where
+     * <pre>
+     *   H_lambda = Phi (Phi^T Phi + lambda I)^{-1} Phi^T
+     * </pre>
+     * is the corresponding <em>hat matrix</em> (linear smoother matrix).
+     * </p>
+     *
+     * <p>
+     * For any linear smoother {@code y_hat = H y}, the effective degrees of freedom are defined as
+     * {@code edf = tr(H)}. For ridge regression this yields
+     * <pre>
+     *   edf(lambda) = tr( Phi (Phi^T Phi + lambda I)^{-1} Phi^T )
+     *              = tr( A (A + lambda I)^{-1} ),   A = Phi^T Phi.
+     * </pre>
+     * Using the identity {@code A(A + lambda I)^{-1} = I − lambda (A + lambda I)^{-1}},
+     * this can be computed as
+     * <pre>
+     *   edf(lambda) = m − lambda · tr( (A + lambda I)^{-1} ).
+     * </pre>
+     * </p>
+     *
+     * <p>
+     * The implementation computes {@code tr((A + lambda I)^{-1})} via linear solves against
+     * standard basis vectors, avoiding explicit matrix inversion for numerical stability.
+     * </p>
+     *
+     * <p>
+     * This definition of effective degrees of freedom for ridge regression is standard in the
+     * theory of linear smoothers; see Hastie, Tibshirani, and Friedman (2009),
+     * <em>The Elements of Statistical Learning</em>, Section 3.4.
+     * </p>
+     */
     private double effectiveDfFromChol(LinearSolverDense<DMatrixRMaj> solver, int m, double lambda) {
         // df = m - lambda * tr(inv(Ab))
         // tr(inv(Ab)) = sum_i (inv(Ab))_{ii}; get it by solving Ab x = e_i and summing x_i
