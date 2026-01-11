@@ -1,4 +1,4 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -34,20 +34,20 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * Wrapper for linear, Gaussian SEM BIC score.
-// *
-// * @author josephramsey
-// * @version $Id: $Id
-// */
-//@edu.cmu.tetrad.annotation.Score(
-//        name = "Huang Marginal Score",
-//        command = "huang-marginal-score",
-//        dataType = {DataType.Continuous}
-//)
-//@LinearGaussian
-//@Experimental
-public class HuangMarginalScore implements ScoreWrapper {
+/**
+ * Wrapper for linear, Gaussian SEM BIC score.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
+@edu.cmu.tetrad.annotation.Score(
+        name = "NG SEM BIC Score",
+        command = "ng-sem-bic-score",
+        dataType = {DataType.Continuous}
+)
+@Experimental
+@LinearGaussian
+public class NgSemBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -60,7 +60,7 @@ public class HuangMarginalScore implements ScoreWrapper {
     /**
      * Constructs a new instance of the SemBicScore.
      */
-    public HuangMarginalScore() {
+    public NgSemBicScore() {
     }
 
     /**
@@ -70,16 +70,24 @@ public class HuangMarginalScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.HuangMarginalScore score;
+        edu.cmu.tetrad.search.score.NgSemBicScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.HuangMarginalScore((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.NgSemBicScore((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
-        score.setLambda(parameters.getDouble(Params.RCIT_LAMBDA));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+//        score.setRidge(1e-8);
+//        score.setCenterData(true);
+//        score.setNoiseModel(edu.cmu.tetrad.search.score.NgSemBicScore.NoiseModel.LAPLACE);
+
+        score.setNoiseModel(edu.cmu.tetrad.search.score.NgSemBicScore.NoiseModel.LOG_COSH);
+        score.setStudentTNu(4.0);      // very robust, heavy tails
+        score.setCenterData(true);
+        score.setRidge(1e-8);
 
         return score;
     }
@@ -91,7 +99,7 @@ public class HuangMarginalScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Huang Marginal Score";
+        return "NG SEM BIC Score";
     }
 
     /**
@@ -112,7 +120,7 @@ public class HuangMarginalScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.RCIT_LAMBDA);
+        parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
