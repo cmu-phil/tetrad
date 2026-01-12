@@ -21,9 +21,9 @@ import java.util.*;
  * regularization. It supports efficient calculation of scores through caching and includes options for penalizing model
  * complexity.
  * <p>
- * This is not a score-equivalent score, meaning that DAGs in the same equivalence class may receive different scores.
- * As a result, it is more suited to a DAG-based search strategy like BOSS and less suited to, say, FGES, which relies
- * on score-equivalence.
+ * This is not a score-equivalent score, meaning that DAGs in the same Markov equivalence class may receive different
+ * scores. As a result, it is more suited to a DAG-based search strategy like BOSS and less suited to, say, FGES, which
+ * relies on score-equivalence.
  */
 public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSettable {
 

@@ -19,9 +19,9 @@ import java.util.*;
  * matrix, which allows for efficient computation of the score. The score convention matches Tetrad: <strong>higher
  * scores indicate better models</strong>.
  * <p>
- * This is not a score-equivalent score, meaning that DAGs in the same equivalence class may receive different scores.
- * As a result, it is more suited to a DAG-based search strategy like BOSS and less suited to, say, FGES, which relies
- * on score-equivalence.
+ * This is not a score-equivalent score, meaning that DAGs in the same Markov equivalence class may receive different
+ * scores. As a result, it is more suited to a DAG-based search strategy like BOSS and less suited to, say, FGES, which
+ * relies on score-equivalence.
  */
 public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
 
