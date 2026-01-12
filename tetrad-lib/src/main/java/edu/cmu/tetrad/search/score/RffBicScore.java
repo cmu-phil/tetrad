@@ -15,68 +15,13 @@ import org.ejml.interfaces.linsol.LinearSolverDense;
 import java.util.*;
 
 /**
- * RCIT-inspired local score for continuous variables.
- *
+ * RCIT-inspired local score for continuous variables. Uses a random Fourier feature (RFF) approximation to the kernel
+ * matrix, which allows for efficient computation of the score. The score convention matches Tetrad: <strong>higher
+ * scores indicate better models</strong>.
  * <p>
- * <strong>Idea:</strong>
- * </p>
- *
- * <ul>
- *   <li>
- *     Map parent set <code>Z</code> to random Fourier features
- *     <code>&Phi;(Z)</code> for an RBF kernel (as in RCIT/RCoT).
- *   </li>
- *   <li>
- *     Fit ridge regression of target <code>X</code> on
- *     <code>&Phi;(Z)</code>.
- *   </li>
- *   <li>
- *     Use a Gaussian log-likelihood with
- *     <code>&sigma;2 = RSS / n</code>.
- *   </li>
- *   <li>
- *     Penalize with a BIC-like term using the effective degrees of freedom
- *     under ridge regression:
- *     <pre>
- * df_eff = tr( A (A + &lambda; I)^-1 ),
- * where A = &Phi;T &Phi;
- *     </pre>
- *   </li>
- * </ul>
- *
- * <p>
- * The score convention matches Tetrad: <strong>higher scores indicate better models</strong>.
- * </p>
- *
- * <p>
- * <strong>Notes:</strong>
- * </p>
- *
- * <ul>
- *   <li>
- *     Missingness is handled by filtering rows where all variables in
- *     <code>{target} &cup; parents</code> are observed.
- *   </li>
- *   <li>
- *     The bandwidth <code>&sigma;</code> can be chosen using one of the following strategies:
- *     <ul>
- *       <li>
- *         <code>PER_VARIABLE_MEDIAN</code>:
- *         precompute <code>&sigma;<sub>j</sub></code> per variable and set the
- *         parent-set bandwidth to the median of these values.
- *       </li>
- *       <li>
- *         <code>PARENT_SET_MEDIAN</code>:
- *         compute the median pairwise distance in the parent space
- *         (as in RCIT).
- *       </li>
- *     </ul>
- *   </li>
- *   <li>
- *     Uses EJML with Cholesky factorizations and linear solves, avoiding
- *     explicit matrix inverses for numerical stability.
- *   </li>
- * </ul>
+ * This is not a score-equivalent score, meaning that DAGs in the same equivalence class may receive different scores.
+ * As a result, it is more suited to a DAG-based search strategy like BOSS and less suited to, say, FGES, which relies
+ * on score-equivalence.
  */
 public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
 
@@ -415,6 +360,33 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         return h;
     }
 
+    private static double dot(double[] y) {
+        double s = 0.0;
+        for (double v : y) s += v * v;
+        return s;
+    }
+
+    private static double quadForm(DMatrixRMaj A, DMatrixRMaj x) {
+        // returns x^T A x
+        int m = A.numCols;
+        double sum = 0.0;
+        for (int i = 0; i < m; i++) {
+            double xi = x.data[i];
+            double rowSum = 0.0;
+            int base = i * m;
+            for (int j = 0; j < m; j++) rowSum += A.data[base + j] * x.data[j];
+            sum += xi * rowSum;
+        }
+        return sum;
+    }
+
+    private static double dot(DMatrixRMaj a, DMatrixRMaj b) {
+        // both m x 1
+        double s = 0.0;
+        for (int i = 0; i < a.numRows; i++) s += a.data[i] * b.data[i];
+        return s;
+    }
+
     /**
      * Computes the difference in local scores when the variable `x` is added to the conditioning set `z` for variable
      * `y`.
@@ -721,6 +693,8 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         return penaltyDiscount;
     }
 
+    // -------------------- enum --------------------
+
     /**
      * Sets the penalty discount factor.
      *
@@ -731,6 +705,8 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         this.penaltyDiscount = penaltyDiscount;
         clearCache();
     }
+
+    // -------------------- internals --------------------
 
     /**
      * Determines whether the features are centered.
@@ -751,8 +727,6 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         clearCache();
     }
 
-    // -------------------- enum --------------------
-
     /**
      * Retrieves the current value of the seed.
      *
@@ -761,8 +735,6 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
     public long getSeed() {
         return seed;
     }
-
-    // -------------------- internals --------------------
 
     /**
      * Sets the seed value for random number generation.
@@ -864,6 +836,14 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         clearCache();
     }
 
+//    private Random localRng(int target, int[] parents) {
+//        long h = 1469598103934665603L;
+//        h = (h ^ seed) * 1099511628211L;
+//        h = (h ^ target) * 1099511628211L;
+//        for (int p : parents) h = (h ^ p) * 1099511628211L;
+//        return new Random(h);
+//    }
+
     /**
      * Returns whether cosine and sine pairs are used for RFF ensembles.
      *
@@ -872,6 +852,8 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
     public boolean isUseCosSinPairs() {
         return useCosSinPairs;
     }
+
+    // -------------------- bandwidth helpers --------------------
 
     /**
      * Enables or disables the use of cosine and sine pairs in random Fourier feature (RFF) computations. Utilizing
@@ -891,14 +873,6 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         localScoreCache.clear();
     }
 
-//    private Random localRng(int target, int[] parents) {
-//        long h = 1469598103934665603L;
-//        h = (h ^ seed) * 1099511628211L;
-//        h = (h ^ target) * 1099511628211L;
-//        for (int p : parents) h = (h ^ p) * 1099511628211L;
-//        return new Random(h);
-//    }
-
     private Random localRng(int target, int[] parents, int rep) {
         long h = 1469598103934665603L;
         h = (h ^ seed) * 1099511628211L;
@@ -908,7 +882,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         return new Random(h);
     }
 
-    // -------------------- bandwidth helpers --------------------
+    // -------------------- missingness row filtering --------------------
 
     private double chooseSigma(int[] parents, double[][] Z, int n) {
         if (bandwidthMode == BandwidthMode.PER_VARIABLE_MEDIAN) {
@@ -922,6 +896,8 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
             return medianPairwiseDistanceND(Z, r);
         }
     }
+
+    // -------------------- extraction helpers --------------------
 
     /**
      * df = tr( A (A + lambda I)^(-1) ) = tr( X ), where (A + lambda I) X = A.
@@ -951,14 +927,12 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
 
     /**
      * <p>
-     * The BIC-style penalty in this score uses an <em>effective degrees of freedom</em> (edf)
-     * appropriate for ridge regression in the random Fourier feature space, rather than the
-     * raw number of coefficients.
+     * The BIC-style penalty in this score uses an <em>effective degrees of freedom</em> (edf) appropriate for ridge
+     * regression in the random Fourier feature space, rather than the raw number of coefficients.
      * </p>
      *
      * <p>
-     * Let {@code Phi} be the {@code n × m} random Fourier feature design matrix for the current
-     * parent set, and let
+     * Let {@code Phi} be the {@code n × m} random Fourier feature design matrix for the current parent set, and let
      * <pre>
      *   beta_hat = (Phi^T Phi + lambda I)^{-1} Phi^T y
      * </pre>
@@ -974,27 +948,26 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
      * </p>
      *
      * <p>
-     * For any linear smoother {@code y_hat = H y}, the effective degrees of freedom are defined as
-     * {@code edf = tr(H)}. For ridge regression this yields
+     * For any linear smoother {@code y_hat = H y}, the effective degrees of freedom are defined as {@code edf = tr(H)}.
+     * For ridge regression this yields
      * <pre>
      *   edf(lambda) = tr( Phi (Phi^T Phi + lambda I)^{-1} Phi^T )
      *              = tr( A (A + lambda I)^{-1} ),   A = Phi^T Phi.
      * </pre>
-     * Using the identity {@code A(A + lambda I)^{-1} = I − lambda (A + lambda I)^{-1}},
-     * this can be computed as
+     * Using the identity {@code A(A + lambda I)^{-1} = I − lambda (A + lambda I)^{-1}}, this can be computed as
      * <pre>
      *   edf(lambda) = m − lambda · tr( (A + lambda I)^{-1} ).
      * </pre>
      * </p>
      *
      * <p>
-     * The implementation computes {@code tr((A + lambda I)^{-1})} via linear solves against
-     * standard basis vectors, avoiding explicit matrix inversion for numerical stability.
+     * The implementation computes {@code tr((A + lambda I)^{-1})} via linear solves against standard basis vectors,
+     * avoiding explicit matrix inversion for numerical stability.
      * </p>
      *
      * <p>
-     * This definition of effective degrees of freedom for ridge regression is standard in the
-     * theory of linear smoothers; see Hastie, Tibshirani, and Friedman (2009),
+     * This definition of effective degrees of freedom for ridge regression is standard in the theory of linear
+     * smoothers; see Hastie, Tibshirani, and Friedman (2009),
      * <em>The Elements of Statistical Learning</em>, Section 3.4.
      * </p>
      */
@@ -1014,7 +987,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         return m - lambda * trInv;
     }
 
-    // -------------------- missingness row filtering --------------------
+    // -------------------- small utilities --------------------
 
     private boolean solveSymPosDefWithJitter(DMatrixRMaj A, DMatrixRMaj B, DMatrixRMaj X) {
         int n = A.numRows;
@@ -1042,8 +1015,6 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         }
         return false;
     }
-
-    // -------------------- extraction helpers --------------------
 
     private double medianPairwiseDistance1D(int varIndex, int[] rows, int limit) {
         // collect up to "limit" non-NaN values
@@ -1096,35 +1067,6 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         }
 
         return Arrays.copyOf(tmp, m);
-    }
-
-    // -------------------- small utilities --------------------
-
-    private static double dot(double[] y) {
-        double s = 0.0;
-        for (double v : y) s += v * v;
-        return s;
-    }
-
-    private static double quadForm(DMatrixRMaj A, DMatrixRMaj x) {
-        // returns x^T A x
-        int m = A.numCols;
-        double sum = 0.0;
-        for (int i = 0; i < m; i++) {
-            double xi = x.data[i];
-            double rowSum = 0.0;
-            int base = i * m;
-            for (int j = 0; j < m; j++) rowSum += A.data[base + j] * x.data[j];
-            sum += xi * rowSum;
-        }
-        return sum;
-    }
-
-    private static double dot(DMatrixRMaj a, DMatrixRMaj b) {
-        // both m x 1
-        double s = 0.0;
-        for (int i = 0; i < a.numRows; i++) s += a.data[i] * b.data[i];
-        return s;
     }
 
     private double[] extract1D(int varIndex, int[] rows, int n) {

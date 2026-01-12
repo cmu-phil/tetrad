@@ -15,64 +15,13 @@ import org.ejml.interfaces.linsol.LinearSolverDense;
 import java.util.*;
 
 /**
- * RCIT-inspired local score for continuous variables.
- *
- * <strong>Idea:</strong>
- * <ul>
- *   <li>
- *     Map parent set <code>Z</code> to random Fourier features
- *     <code>&Phi;(Z)</code> for an RBF kernel (as in RCIT/RCoT).
- *   </li>
- *   <li>
- *     Fit ridge regression of target <code>X</code> on <code>&Phi;(Z)</code>.
- *   </li>
- *   <li>
- *     Use Gaussian log-likelihood with
- *     <code>&sigma;2 = RSS / n</code>.
- *   </li>
- *   <li>
- *     Penalize with a BIC-like term using the effective degrees of freedom
- *     under ridge regression:
- *     <pre>
- * df_eff = tr( A (A + &lambda; I)-1 ),
- * where A = &Phi;T &Phi;
- *     </pre>
- *   </li>
- * </ul>
- *
+ * KCI-inspired local score for continuous variables. Uses the kernel matrix directly. The score convention matches
+ * Tetrad: <strong>higher scores indicate better models</strong>. A Gaussian kernel is used, and effective degrees of
+ * freedom are calculated for a BIC score based on this assumption.
  * <p>
- * The score convention matches Tetrad: <strong>higher is better</strong>.
- * </p>
- *
- * <p>
- * <strong>Notes:</strong>
- * </p>
- *
- * <ul>
- *   <li>
- *     Missingness is handled by filtering rows where all variables in
- *     <code>{target} &cup; parents</code> are observed.
- *   </li>
- *   <li>
- *     Bandwidth <code>&sigma;</code> can be chosen using one of the following strategies:
- *     <ul>
- *       <li>
- *         <code>PER_VARIABLE_MEDIAN</code>:
- *         precompute <code>&sigma;<sub>j</sub></code> per variable, then take the median
- *         over parent variables.
- *       </li>
- *       <li>
- *         <code>PARENT_SET_MEDIAN</code>:
- *         compute the median pairwise distance in the parent space
- *         (as in RCIT).
- *       </li>
- *     </ul>
- *   </li>
- *   <li>
- *     Uses EJML with Cholesky factorizations and linear solves, avoiding
- *     explicit matrix inverses.
- *   </li>
- * </ul>
+ * This is not a score-equivalent score, meaning that DAGs in the same equivalence class may receive different scores.
+ * As a result, it is more suited to a DAG-based search strategy like BOSS and less suited to, say, FGES, which relies
+ * on score-equivalence.
  */
 public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
 
@@ -97,6 +46,9 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     private final Map<Long, Double> localScoreCache = new HashMap<>();
 
     // -------------------- data --------------------
+    // Cache only helps when rows == null (i.e., no missingness / full rows used)
+    private final Map<Integer, DMatrixRMaj> kxCenteredCache = new HashMap<>();
+    private final Map<Long, DMatrixRMaj> kzCenteredCache = new HashMap<>();
     /**
      * #RFF features for parent set Z (dimension of Phi(Z)).
      */
@@ -125,6 +77,8 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
      * Bandwidth selection mode.
      */
     private BandwidthMode bandwidthMode = BandwidthMode.PER_VARIABLE_MEDIAN;
+
+    // ---- add near your other fields ----
     /**
      * Small jitter added to A+lambdaI if Cholesky fails.
      */
@@ -134,22 +88,15 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
      */
     private int nEff;
 
-    // ---- add near your other fields ----
-
-    // Cache only helps when rows == null (i.e., no missingness / full rows used)
-    private final Map<Integer, DMatrixRMaj> kxCenteredCache = new HashMap<>();
-    private final Map<Long, DMatrixRMaj> kzCenteredCache = new HashMap<>();
-
     // -------------------- construction --------------------
 
     /**
-     * Constructor for the KcvBicScore class. Initializes the object using the provided dataset
-     * and precomputes necessary parameters for the score calculations.
+     * Constructor for the KcvBicScore class. Initializes the object using the provided dataset and precomputes
+     * necessary parameters for the score calculations.
      *
-     * @param dataSet The dataset to be used for the score computation. It must not be null.
-     *                The dataset includes the variables, their values, and other metadata needed
-     *                for scoring. The rows of the dataset correspond to samples, and the columns
-     *                correspond to variables.
+     * @param dataSet The dataset to be used for the score computation. It must not be null. The dataset includes the
+     *                variables, their values, and other metadata needed for scoring. The rows of the dataset correspond
+     *                to samples, and the columns correspond to variables.
      */
     public KcvBicScore(DataSet dataSet) {
         this.dataSet = Objects.requireNonNull(dataSet, "dataSet");
@@ -387,16 +334,16 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
-     * Computes random Fourier features for a given dataset using the random projection method.
-     * Random Fourier features are used to approximate shift-invariant kernel functions, such as the RBF kernel.
+     * Computes random Fourier features for a given dataset using the random projection method. Random Fourier features
+     * are used to approximate shift-invariant kernel functions, such as the RBF kernel.
      *
-     * @param Z The input dataset, represented as a 2D array of shape (n x d), where n is the number of data points,
-     *          and d is the dimensionality of each data point.
-     * @param n The number of data points in the input dataset.
-     * @param d The dimensionality of each data point in the input dataset.
-     * @param m The number of random features to generate; controls the dimensionality of the output features.
+     * @param Z     The input dataset, represented as a 2D array of shape (n x d), where n is the number of data points,
+     *              and d is the dimensionality of each data point.
+     * @param n     The number of data points in the input dataset.
+     * @param d     The dimensionality of each data point in the input dataset.
+     * @param m     The number of random features to generate; controls the dimensionality of the output features.
      * @param sigma The bandwidth parameter for the RBF kernel; influences the scaling of the random projections.
-     * @param rng A Random object used to generate random values for the random projection and phase terms.
+     * @param rng   A Random object used to generate random values for the random projection and phase terms.
      * @return A DMatrixRMaj object of shape (n x m), containing the computed random Fourier feature matrix.
      */
     private static DMatrixRMaj rffFeatures(double[][] Z, int n, int d, int m, double sigma, Random rng) {
@@ -541,132 +488,23 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         return h;
     }
 
-    /**
-     * Computes the local score difference for a specific variable and its parent set.
-     * This method evaluates the change in score when a new variable is added to the parent set.
-     *
-     * @param x The variable being evaluated for inclusion in the parent set.
-     * @param y The target variable for which the local score is computed.
-     * @param z The current set of parent variables for the target variable.
-     * @return The difference in local score after including the variable {@code x} in the parent set.
-     */
-    @Override
-    public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
+    // Cache key for a parent set (parents are already sorted upstream)
+    private static long parentKey(int[] parents) {
+        long h = 1469598103934665603L;
+        for (int p : parents) h = (h ^ p) * 1099511628211L;
+        return h;
     }
 
     // -------------------- parameters (getters/setters) --------------------
 
-    /**
-     * Computes the local score for a given variable and its parent variables based on a kernel-based
-     * regression model. The score is calculated as the combination of a log-likelihood term and a
-     * penalty term to balance model fit and complexity.
-     *
-     * @param i         The index of the target variable for which the score is being evaluated.
-     * @param parents   The indices of the parent variables of the target variable. Can be empty if
-     *                  there are no parents.
-     * @return          The computed local score for the given target variable and its parents.
-     */
-    @Override
-    public double localScore(int i, int... parents) {
-        Arrays.sort(parents);
-
-        // Cache localScore itself
-        long key = cacheKey(i, parents);
-        Double cached = localScoreCache.get(key);
-        if (cached != null) return cached;
-
-        // Valid rows for {i} ∪ parents, only if missing values exist.
-        int[] all = concat(i, parents);
-        int[] rows = calculateRowSubsets ? validRows(all) : null;
-
-        final int n = (rows == null) ? nEff : rows.length;
-        if (n < 5) {
-            localScoreCache.put(key, Double.NaN);
-            return Double.NaN;
+    private static double dotElementwise(DMatrixRMaj A, DMatrixRMaj B) {
+        if (A.numRows != B.numRows || A.numCols != B.numCols) {
+            throw new IllegalArgumentException("dim mismatch");
         }
-
-        final double varianceFloor = 1e-12;
-
-        // --- Kx (centered), cached when rows==null ---
-        DMatrixRMaj Kx = getKxCentered(i, rows);
-
-        // No parents: RX = Kx, penalty 0
-        if (parents.length == 0) {
-            double v = Math.max(trace(Kx) / n, varianceFloor);
-            double ll = -0.5 * n * Math.log(v);
-            double score = ll; // pen=0
-            localScoreCache.put(key, score);
-            return score;
-        }
-
-        // --- Kz (centered), cached when rows==null ---
-        DMatrixRMaj Kz = getKzCentered(parents, rows);
-
-        // A = Kz + lambda I  (SPD)
-        DMatrixRMaj A = Kz.copy();
-        addDiagonalInPlace(A, lambda);
-
-        // Factorize once
-        LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.symmPosDef(n);
-        if (!solver.setA(A)) {
-            // jitter escalation
-            boolean ok = false;
-            double eps = Math.max(jitter, 1e-12);
-            for (int t = 0; t < 6 && !ok; t++) {
-                DMatrixRMaj Aj = A.copy();
-                addDiagonalInPlace(Aj, eps);
-                ok = solver.setA(Aj);
-                eps *= 10.0;
-            }
-            if (!ok) {
-                localScoreCache.put(key, Double.NaN);
-                return Double.NaN;
-            }
-        }
-
-        // P = A^{-1} Kz  via solve(A, P) = Kz
-        DMatrixRMaj P = new DMatrixRMaj(n, n);
-        solver.solve(Kz, P);
-        // (Optional numeric symmetry)
-        symmetrizeInPlace(P);
-
-        // edf = tr(H) where H = Kz * A^{-1} = I - lambda * A^{-1}
-        // => edf = n - lambda * tr(A^{-1})
-        double trInvA = traceInvFromSpdSolver(solver, n);
-        double edf = n - lambda * trInvA;
-        if (!Double.isFinite(edf) || edf < 0) edf = 0.0;
-
-        // trace(RX) where RX = (I - Kz A^{-1}) Kx (I - A^{-1} Kz)
-        // Let P = A^{-1} Kz, and Kz A^{-1} = P^T (≈ P since symmetric)
-        // Then:
-        //   tr(RX) = tr(Kx) - 2 tr(Kx P) + tr(P^T Kx P)
-        // Compute:
-        //   t1 = tr(Kx)
-        //   t2 = sum_{ij} Kx_ij * P_ij  (since symmetric)
-        //   Q = Kx * P
-        //   t3 = sum_{ij} P_ij * Q_ij  (= tr(P^T Kx P))
-        double t1 = trace(Kx);
-        double t2 = dotElementwise(Kx, P);
-
-        DMatrixRMaj Q = new DMatrixRMaj(n, n);
-        CommonOps_DDRM.mult(Kx, P, Q);
-
-        double t3 = dotElementwise(P, Q);
-
-        double trRX = t1 - 2.0 * t2 + t3;
-        if (!Double.isFinite(trRX) || trRX <= 0) trRX = varianceFloor;
-
-        double v = Math.max(trRX / n, varianceFloor);
-        double ll = -0.5 * n * Math.log(v);
-
-        // penalty (your prior form)
-        double pen = -0.5 * penaltyDiscount * edf * Math.log(Math.max(3.0, n));
-
-        double score = ll + pen;
-
-        localScoreCache.put(key, score);
-        return score;
+        double s = 0.0;
+        final int N = A.getNumElements();
+        for (int i = 0; i < N; i++) s += A.data[i] * B.data[i];
+        return s;
     }
 
 //    @Override
@@ -774,6 +612,149 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
 //        localScoreCache.put(key, score);
 //        return score;
 //    }
+
+    /**
+     * tr(inv(A)) from an SPD solver already factorized on A. Cost: O(n^2) solves of n RHS vectors (one per diagonal
+     * entry), but with a *single* factorization.
+     */
+    private static double traceInvFromSpdSolver(LinearSolverDense<DMatrixRMaj> solver, int n) {
+        DMatrixRMaj e = new DMatrixRMaj(n, 1);
+        DMatrixRMaj x = new DMatrixRMaj(n, 1);
+
+        double tr = 0.0;
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(e.data, 0.0);
+            e.data[i] = 1.0;
+            solver.solve(e, x);
+            tr += x.data[i];
+        }
+        return tr;
+    }
+
+    /**
+     * Computes the local score difference for a specific variable and its parent set. This method evaluates the change
+     * in score when a new variable is added to the parent set.
+     *
+     * @param x The variable being evaluated for inclusion in the parent set.
+     * @param y The target variable for which the local score is computed.
+     * @param z The current set of parent variables for the target variable.
+     * @return The difference in local score after including the variable {@code x} in the parent set.
+     */
+    @Override
+    public double localScoreDiff(int x, int y, int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
+    }
+
+    /**
+     * Computes the local score for a given variable and its parent variables based on a kernel-based regression model.
+     * The score is calculated as the combination of a log-likelihood term and a penalty term to balance model fit and
+     * complexity.
+     *
+     * @param i       The index of the target variable for which the score is being evaluated.
+     * @param parents The indices of the parent variables of the target variable. Can be empty if there are no parents.
+     * @return The computed local score for the given target variable and its parents.
+     */
+    @Override
+    public double localScore(int i, int... parents) {
+        Arrays.sort(parents);
+
+        // Cache localScore itself
+        long key = cacheKey(i, parents);
+        Double cached = localScoreCache.get(key);
+        if (cached != null) return cached;
+
+        // Valid rows for {i} ∪ parents, only if missing values exist.
+        int[] all = concat(i, parents);
+        int[] rows = calculateRowSubsets ? validRows(all) : null;
+
+        final int n = (rows == null) ? nEff : rows.length;
+        if (n < 5) {
+            localScoreCache.put(key, Double.NaN);
+            return Double.NaN;
+        }
+
+        final double varianceFloor = 1e-12;
+
+        // --- Kx (centered), cached when rows==null ---
+        DMatrixRMaj Kx = getKxCentered(i, rows);
+
+        // No parents: RX = Kx, penalty 0
+        if (parents.length == 0) {
+            double v = Math.max(trace(Kx) / n, varianceFloor);
+            double ll = -0.5 * n * Math.log(v);
+            double score = ll; // pen=0
+            localScoreCache.put(key, score);
+            return score;
+        }
+
+        // --- Kz (centered), cached when rows==null ---
+        DMatrixRMaj Kz = getKzCentered(parents, rows);
+
+        // A = Kz + lambda I  (SPD)
+        DMatrixRMaj A = Kz.copy();
+        addDiagonalInPlace(A, lambda);
+
+        // Factorize once
+        LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.symmPosDef(n);
+        if (!solver.setA(A)) {
+            // jitter escalation
+            boolean ok = false;
+            double eps = Math.max(jitter, 1e-12);
+            for (int t = 0; t < 6 && !ok; t++) {
+                DMatrixRMaj Aj = A.copy();
+                addDiagonalInPlace(Aj, eps);
+                ok = solver.setA(Aj);
+                eps *= 10.0;
+            }
+            if (!ok) {
+                localScoreCache.put(key, Double.NaN);
+                return Double.NaN;
+            }
+        }
+
+        // P = A^{-1} Kz  via solve(A, P) = Kz
+        DMatrixRMaj P = new DMatrixRMaj(n, n);
+        solver.solve(Kz, P);
+        // (Optional numeric symmetry)
+        symmetrizeInPlace(P);
+
+        // edf = tr(H) where H = Kz * A^{-1} = I - lambda * A^{-1}
+        // => edf = n - lambda * tr(A^{-1})
+        double trInvA = traceInvFromSpdSolver(solver, n);
+        double edf = n - lambda * trInvA;
+        if (!Double.isFinite(edf) || edf < 0) edf = 0.0;
+
+        // trace(RX) where RX = (I - Kz A^{-1}) Kx (I - A^{-1} Kz)
+        // Let P = A^{-1} Kz, and Kz A^{-1} = P^T (≈ P since symmetric)
+        // Then:
+        //   tr(RX) = tr(Kx) - 2 tr(Kx P) + tr(P^T Kx P)
+        // Compute:
+        //   t1 = tr(Kx)
+        //   t2 = sum_{ij} Kx_ij * P_ij  (since symmetric)
+        //   Q = Kx * P
+        //   t3 = sum_{ij} P_ij * Q_ij  (= tr(P^T Kx P))
+        double t1 = trace(Kx);
+        double t2 = dotElementwise(Kx, P);
+
+        DMatrixRMaj Q = new DMatrixRMaj(n, n);
+        CommonOps_DDRM.mult(Kx, P, Q);
+
+        double t3 = dotElementwise(P, Q);
+
+        double trRX = t1 - 2.0 * t2 + t3;
+        if (!Double.isFinite(trRX) || trRX <= 0) trRX = varianceFloor;
+
+        double v = Math.max(trRX / n, varianceFloor);
+        double ll = -0.5 * n * Math.log(v);
+
+        // penalty (your prior form)
+        double pen = -0.5 * penaltyDiscount * edf * Math.log(Math.max(3.0, n));
+
+        double score = ll + pen;
+
+        localScoreCache.put(key, score);
+        return score;
+    }
 
     /**
      * RBF Gram matrix for a multivariate parent set (ND):
@@ -917,10 +898,9 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
-     * Determines whether the given node yNode is influenced by the list of nodes z
-     * based on a calculated local score.
+     * Determines whether the given node yNode is influenced by the list of nodes z based on a calculated local score.
      *
-     * @param z the list of nodes representing potential influencing factors
+     * @param z     the list of nodes representing potential influencing factors
      * @param yNode the target node to evaluate for influence
      * @return true if the local score is NaN, infinite, or an exception occurs; false otherwise
      */
@@ -960,9 +940,8 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
-     * Calculates and returns the effective sample size, which is a measure
-     * of the number of independent observations in a dataset, potentially
-     * accounting for dependencies or weights.
+     * Calculates and returns the effective sample size, which is a measure of the number of independent observations in
+     * a dataset, potentially accounting for dependencies or weights.
      *
      * @return the effective sample size as an integer value
      */
@@ -972,11 +951,10 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
-     * Sets the effective sample size for the model. If the provided value is negative,
-     * the effective sample size is set to the default sample size.
+     * Sets the effective sample size for the model. If the provided value is negative, the effective sample size is set
+     * to the default sample size.
      *
-     * @param nEff the effective sample size to be used. If negative, defaults
-     *             to the full sample size of the dataset.
+     * @param nEff the effective sample size to be used. If negative, defaults to the full sample size of the dataset.
      */
     @Override
     public void setEffectiveSampleSize(int nEff) {
@@ -1003,17 +981,21 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         return numFeatZ;
     }
 
+    // -------------------- enum --------------------
+
     /**
-     * Sets the number of features for the Z dimension.
-     * Ensures the value is at least 1, and updates the internal state by clearing the cache.
+     * Sets the number of features for the Z dimension. Ensures the value is at least 1, and updates the internal state
+     * by clearing the cache.
      *
-     * @param numFeatZ the number of features for the Z dimension;
-     *                 must be a positive integer, with a minimum value of 1.
+     * @param numFeatZ the number of features for the Z dimension; must be a positive integer, with a minimum value of
+     *                 1.
      */
     public void setNumFeatZ(int numFeatZ) {
         this.numFeatZ = Math.max(1, numFeatZ);
         clearCache();
     }
+
+    // -------------------- internals --------------------
 
     /**
      * Retrieves the value of the lambda property.
@@ -1025,8 +1007,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
-     * Sets the regularization parameter lambda.
-     * Must be positive, otherwise throws an IllegalArgumentException.
+     * Sets the regularization parameter lambda. Must be positive, otherwise throws an IllegalArgumentException.
      *
      * @param lambda the regularization parameter to set
      */
@@ -1036,8 +1017,6 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         clearCache();
     }
 
-    // -------------------- enum --------------------
-
     /**
      * Retrieves the penalty discount factor used in the score calculation.
      *
@@ -1046,8 +1025,6 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     public double getPenaltyDiscount() {
         return penaltyDiscount;
     }
-
-    // -------------------- internals --------------------
 
     /**
      * Sets the penalty discount factor used in the score calculation.
@@ -1108,8 +1085,8 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
-     * Sets the maximum number of rows to consider for bandwidth estimation.
-     * Ensures the value is at least 10, and updates the internal state by clearing the cache.
+     * Sets the maximum number of rows to consider for bandwidth estimation. Ensures the value is at least 10, and
+     * updates the internal state by clearing the cache.
      *
      * @param maxBandwidthRows the maximum number of rows for bandwidth estimation
      */
@@ -1128,8 +1105,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
-     * Sets the bandwidth estimation mode.
-     * Requires a non-null bandwidthMode, otherwise throws NullPointerException.
+     * Sets the bandwidth estimation mode. Requires a non-null bandwidthMode, otherwise throws NullPointerException.
      *
      * @param bandwidthMode the bandwidth estimation mode to set
      */
@@ -1147,9 +1123,10 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         return jitter;
     }
 
+    // -------------------- bandwidth helpers --------------------
+
     /**
-     * Sets the jitter value used in bandwidth estimation.
-     * Must be positive, otherwise throws IllegalArgumentException.
+     * Sets the jitter value used in bandwidth estimation. Must be positive, otherwise throws IllegalArgumentException.
      *
      * @param jitter the jitter value to set
      */
@@ -1165,6 +1142,8 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         kzCenteredCache.clear();
     }
 
+    // -------------------- missingness row filtering --------------------
+
     private Random localRng(int target, int[] parents) {
         long h = 1469598103934665603L;
         h = (h ^ seed) * 1099511628211L;
@@ -1173,7 +1152,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         return new Random(h);
     }
 
-    // -------------------- bandwidth helpers --------------------
+    // -------------------- extraction helpers --------------------
 
     private double chooseSigma(int[] parents, double[][] Z, int n) {
         if (bandwidthMode == BandwidthMode.PER_VARIABLE_MEDIAN) {
@@ -1214,7 +1193,7 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         return tr;
     }
 
-    // -------------------- missingness row filtering --------------------
+    // -------------------- small utilities --------------------
 
     private boolean solveSymPosDefWithJitter(DMatrixRMaj A, DMatrixRMaj B, DMatrixRMaj X) {
         int n = A.numRows;
@@ -1242,8 +1221,6 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         }
         return false;
     }
-
-    // -------------------- extraction helpers --------------------
 
     private double medianPairwiseDistance1D(int varIndex, int[] rows, int limit) {
         // collect up to "limit" non-NaN values
@@ -1298,8 +1275,6 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         return Arrays.copyOf(tmp, m);
     }
 
-    // -------------------- small utilities --------------------
-
     private double[] extract1D(int varIndex, int[] rows, int n) {
         double[] x = new double[n];
         if (rows == null) {
@@ -1324,13 +1299,6 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
             }
         }
         return Z;
-    }
-
-    // Cache key for a parent set (parents are already sorted upstream)
-    private static long parentKey(int[] parents) {
-        long h = 1469598103934665603L;
-        for (int p : parents) h = (h ^ p) * 1099511628211L;
-        return h;
     }
 
     private DMatrixRMaj getKxCentered(int varIndex, int[] rows) {
@@ -1366,39 +1334,11 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
         }
     }
 
-    private static double dotElementwise(DMatrixRMaj A, DMatrixRMaj B) {
-        if (A.numRows != B.numRows || A.numCols != B.numCols) {
-            throw new IllegalArgumentException("dim mismatch");
-        }
-        double s = 0.0;
-        final int N = A.getNumElements();
-        for (int i = 0; i < N; i++) s += A.data[i] * B.data[i];
-        return s;
-    }
-
-    /**
-     * tr(inv(A)) from an SPD solver already factorized on A.
-     * Cost: O(n^2) solves of n RHS vectors (one per diagonal entry), but with a *single* factorization.
-     */
-    private static double traceInvFromSpdSolver(LinearSolverDense<DMatrixRMaj> solver, int n) {
-        DMatrixRMaj e = new DMatrixRMaj(n, 1);
-        DMatrixRMaj x = new DMatrixRMaj(n, 1);
-
-        double tr = 0.0;
-        for (int i = 0; i < n; i++) {
-            Arrays.fill(e.data, 0.0);
-            e.data[i] = 1.0;
-            solver.solve(e, x);
-            tr += x.data[i];
-        }
-        return tr;
-    }
-
     /**
      * Appends an integer to the end of an array of integers.
      *
      * @param z The list of ints.
-     * @param x   The extra int.
+     * @param x The extra int.
      * @return the resulting array with the integer appended
      */
     public int[] append(int[] z, int x) {

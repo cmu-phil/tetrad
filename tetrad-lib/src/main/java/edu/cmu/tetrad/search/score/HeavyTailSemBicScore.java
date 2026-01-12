@@ -20,6 +20,10 @@ import java.util.*;
  * The scoring methodology incorporates adjustments for heavy-tailed distributions using metrics like kurtosis and ridge
  * regularization. It supports efficient calculation of scores through caching and includes options for penalizing model
  * complexity.
+ * <p>
+ * This is not a score-equivalent score, meaning that DAGs in the same equivalence class may receive different scores.
+ * As a result, it is more suited to a DAG-based search strategy like BOSS and less suited to, say, FGES, which relies
+ * on score-equivalence.
  */
 public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSettable {
 
@@ -94,8 +98,8 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     // -------------------- Score interface --------------------
 
     /**
-     * Constructs an instance of the HeavyTailSemBicScore class with the specified data set.
-     * This score is used for statistical analysis with adjustments for heavy-tail distributions.
+     * Constructs an instance of the HeavyTailSemBicScore class with the specified data set. This score is used for
+     * statistical analysis with adjustments for heavy-tail distributions.
      *
      * @param dataSet the input data set used to calculate the bic score, must not be null
      */
@@ -216,14 +220,15 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Computes the difference in local scores between two configurations of a target variable and its parent set.
-     * The method calculates the difference between the local score of {@code y} with the parent set {@code z}
-     * extended by {@code x}, and the local score of {@code y} with parent set {@code z}.
+     * Computes the difference in local scores between two configurations of a target variable and its parent set. The
+     * method calculates the difference between the local score of {@code y} with the parent set {@code z} extended by
+     * {@code x}, and the local score of {@code y} with parent set {@code z}.
      *
      * @param x the variable to be added to the current parent set {@code z}
      * @param y the target variable for which the local score is computed
      * @param z the current parent set of the target variable {@code y}
-     * @return the difference in local scores when {@code x} is added to the parent set {@code z} for the target {@code y}
+     * @return the difference in local scores when {@code x} is added to the parent set {@code z} for the target
+     * {@code y}
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -231,14 +236,14 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Computes the local score for a given target variable and its set of parent variables.
-     * The method evaluates the goodness of fit of a statistical model for the target
-     * given the specified parent variables, penalized by the model complexity.
+     * Computes the local score for a given target variable and its set of parent variables. The method evaluates the
+     * goodness of fit of a statistical model for the target given the specified parent variables, penalized by the
+     * model complexity.
      *
-     * @param target the target variable for which the local score is computed
+     * @param target  the target variable for which the local score is computed
      * @param parents the array of parent variables influencing the target variable
-     * @return the computed local score as a double value, or {@code Double.NaN} if the computation
-     *         is not feasible (e.g., insufficient effective sample size or solver issues)
+     * @return the computed local score as a double value, or {@code Double.NaN} if the computation is not feasible
+     * (e.g., insufficient effective sample size or solver issues)
      */
     @Override
     public double localScore(int target, int... parents) {
@@ -386,9 +391,8 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Calculates the maximum degree of the model based on the effective sample size (nEff).
-     * The degree is determined as the ceiling of the logarithm (base 2)
-     * of the maximum value between 3 and the effective sample size.
+     * Calculates the maximum degree of the model based on the effective sample size (nEff). The degree is determined as
+     * the ceiling of the logarithm (base 2) of the maximum value between 3 and the effective sample size.
      *
      * @return the maximum degree of the model as an integer.
      */
@@ -398,15 +402,14 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Determines whether a specific node is conditionally independent
-     * of a target node given a set of parent nodes, based on the local score.
-     * The method evaluates the local score of the target node with the given parent set
-     * to establish the relationship.
+     * Determines whether a specific node is conditionally independent of a target node given a set of parent nodes,
+     * based on the local score. The method evaluates the local score of the target node with the given parent set to
+     * establish the relationship.
      *
-     * @param z the list of parent nodes to condition on
+     * @param z     the list of parent nodes to condition on
      * @param yNode the target node to evaluate conditional independence
-     * @return {@code true} if the computed local score is {@code Double.NaN} or {@code Double.isInfinite};
-     *         otherwise, {@code false}
+     * @return {@code true} if the computed local score is {@code Double.NaN} or {@code Double.isInfinite}; otherwise,
+     * {@code false}
      */
     @Override
     public boolean determines(List<Node> z, Node yNode) {
@@ -427,8 +430,7 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
      * Determines whether the given bump value indicates the presence of an "effect edge".
      *
      * @param bump a double value representing the magnitude of a certain effect or change
-     * @return {@code true} if the bump value is greater than 0, indicating an effect edge;
-     *         {@code false} otherwise
+     * @return {@code true} if the bump value is greater than 0, indicating an effect edge; {@code false} otherwise
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -445,10 +447,9 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Retrieves the effective sample size used in the statistical model.
-     * The effective sample size represents the adjusted number of samples
-     * that account for certain model-based penalties or adjustments,
-     * such as heavy-tail distributions or regularization.
+     * Retrieves the effective sample size used in the statistical model. The effective sample size represents the
+     * adjusted number of samples that account for certain model-based penalties or adjustments, such as heavy-tail
+     * distributions or regularization.
      *
      * @return the effective sample size as an integer.
      */
@@ -458,13 +459,11 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Sets the effective sample size used in the statistical model.
-     * If the provided value is less than 0, the method assigns the sample size of the dataset
-     * to the effective sample size. This adjustment allows for flexible configuration of
-     * the effective sample size based on user input or defaults.
+     * Sets the effective sample size used in the statistical model. If the provided value is less than 0, the method
+     * assigns the sample size of the dataset to the effective sample size. This adjustment allows for flexible
+     * configuration of the effective sample size based on user input or defaults.
      *
-     * @param nEff the effective sample size to be set; if less than 0, the sample size
-     *             of the dataset is used instead
+     * @param nEff the effective sample size to be set; if less than 0, the sample size of the dataset is used instead
      */
     @Override
     public void setEffectiveSampleSize(int nEff) {
@@ -473,12 +472,11 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Returns a string representation of the {@code HeavyTailSemBicScore} instance.
-     * The representation includes the noise model and, if applicable,
-     * details about the non-Gaussian bonus.
+     * Returns a string representation of the {@code HeavyTailSemBicScore} instance. The representation includes the
+     * noise model and, if applicable, details about the non-Gaussian bonus.
      *
-     * @return a string summarizing the state of the object, including the noise model
-     *         and, if set, the non-Gaussian bonus.
+     * @return a string summarizing the state of the object, including the noise model and, if set, the non-Gaussian
+     * bonus.
      */
     @Override
     public String toString() {
@@ -486,9 +484,8 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Retrieves the penalty discount used in the penalization of model complexity.
-     * The penalty discount is a factor that adjusts the weight of penalties
-     * applied to models based on their complexity or robustness requirements.
+     * Retrieves the penalty discount used in the penalization of model complexity. The penalty discount is a factor
+     * that adjusts the weight of penalties applied to models based on their complexity or robustness requirements.
      *
      * @return the penalty discount as a double value.
      */
@@ -497,9 +494,9 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Sets the penalty discount used for regularization and penalization in the statistical model.
-     * The penalty discount adjusts the weight of model penalties, influencing model complexity.
-     * This value must be greater than 0; otherwise, an {@code IllegalArgumentException} is thrown.
+     * Sets the penalty discount used for regularization and penalization in the statistical model. The penalty discount
+     * adjusts the weight of model penalties, influencing model complexity. This value must be greater than 0;
+     * otherwise, an {@code IllegalArgumentException} is thrown.
      *
      * @param penaltyDiscount the penalty discount to set; must be a positive double value
      * @throws IllegalArgumentException if {@code penaltyDiscount} is less than or equal to 0
@@ -541,9 +538,11 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     // -------------------- NG knob --------------------
 
     /**
-     * Sets the includeInterceptWhenNotCentered flag to determine if the intercept should be included when the data is not centered, and clears the cache.
+     * Sets the includeInterceptWhenNotCentered flag to determine if the intercept should be included when the data is
+     * not centered, and clears the cache.
      *
-     * @param includeInterceptWhenNotCentered a boolean value indicating whether the intercept should be included when not centered
+     * @param includeInterceptWhenNotCentered a boolean value indicating whether the intercept should be included when
+     *                                        not centered
      */
     public void setIncludeInterceptWhenNotCentered(boolean includeInterceptWhenNotCentered) {
         this.includeInterceptWhenNotCentered = includeInterceptWhenNotCentered;
@@ -599,9 +598,8 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Sets the minimum scale value for the component.
-     * Ensures that the provided scale is greater than zero.
-     * An {@link IllegalArgumentException} is thrown if the provided value is invalid.
+     * Sets the minimum scale value for the component. Ensures that the provided scale is greater than zero. An
+     * {@link IllegalArgumentException} is thrown if the provided value is invalid.
      *
      * @param minScale the minimum scale value to be set; must be greater than 0
      */
@@ -638,9 +636,9 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
 
     /**
      * Retrieves the kurtosis (fourth standardized moment) of the gamma distribution.
-     *
-     * The kurtosis is a measure of the "tailedness" of the probability distribution,
-     * giving insight into the extremities of the dataset relative to a normal distribution.
+     * <p>
+     * The kurtosis is a measure of the "tailedness" of the probability distribution, giving insight into the
+     * extremities of the dataset relative to a normal distribution.
      *
      * @return the kurtosis of the gamma distribution as a double value
      */
@@ -649,9 +647,8 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Sets the kurtosis gamma value for the object. The kurtosis gamma value must be
-     * a non-negative number. If a negative value is provided, an IllegalArgumentException
-     * will be thrown.
+     * Sets the kurtosis gamma value for the object. The kurtosis gamma value must be a non-negative number. If a
+     * negative value is provided, an IllegalArgumentException will be thrown.
      *
      * @param g the kurtosis gamma value to set; must be greater than or equal to 0
      */
@@ -662,9 +659,8 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Retrieves the kurtosis cap value.
-     * The kurtosis cap is a threshold that limits the kurtosis calculation
-     * for statistical or data analysis purposes.
+     * Retrieves the kurtosis cap value. The kurtosis cap is a threshold that limits the kurtosis calculation for
+     * statistical or data analysis purposes.
      *
      * @return the kurtosis cap value as a double.
      */
@@ -691,10 +687,8 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Sets the non-Gaussian bonus for this instance.
-     * This method assigns the provided {@code NonGaussianBonus} object
-     * to the internal state and ensures it is not null.
-     * Additionally, it clears any related cached data.
+     * Sets the non-Gaussian bonus for this instance. This method assigns the provided {@code NonGaussianBonus} object
+     * to the internal state and ensures it is not null. Additionally, it clears any related cached data.
      *
      * @param bonus the non-Gaussian bonus to be set; must not be null
      * @throws NullPointerException if {@code bonus} is null
@@ -868,10 +862,9 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
     }
 
     /**
-     * Represents different types of statistical noise models used in data processing,
-     * signal processing, or optimization problems. These models define the
-     * characteristics of noise within a given dataset and are commonly used
-     * for tasks such as regression, anomaly detection, or robust estimation.
+     * Represents different types of statistical noise models used in data processing, signal processing, or
+     * optimization problems. These models define the characteristics of noise within a given dataset and are commonly
+     * used for tasks such as regression, anomaly detection, or robust estimation.
      */
     public enum NoiseModel {
         /**
@@ -879,43 +872,36 @@ public final class HeavyTailSemBicScore implements Score, EffectiveSampleSizeSet
          */
         GAUSSIAN,
         /**
-         * A noise model based on the Laplace distribution, also known as
-         * the double exponential distribution.
+         * A noise model based on the Laplace distribution, also known as the double exponential distribution.
          */
         LAPLACE,
         /**
-         * A noise model based on the Student's t-distribution. This distribution is often used
-         * to model data with heavier tails than the normal distribution, making it robust
-         * to outliers in a dataset. It is particularly useful in statistical applications where
-         * the assumption of normally distributed errors may not hold.
+         * A noise model based on the Student's t-distribution. This distribution is often used to model data with
+         * heavier tails than the normal distribution, making it robust to outliers in a dataset. It is particularly
+         * useful in statistical applications where the assumption of normally distributed errors may not hold.
          */
         STUDENT_T,
         /**
-         * A noise model derived from the logarithm of the hyperbolic cosine
-         * function, commonly used in robust regression techniques.
+         * A noise model derived from the logarithm of the hyperbolic cosine function, commonly used in robust
+         * regression techniques.
          */
         LOG_COSH
     }
 
     /**
-     * An enumeration representing the types of non-Gaussian bonuses.
-     * These bonuses are typically used in statistical or machine learning
-     * contexts to account for deviations from Gaussian distributions.
+     * An enumeration representing the types of non-Gaussian bonuses. These bonuses are typically used in statistical or
+     * machine learning contexts to account for deviations from Gaussian distributions.
      */
     public enum NonGaussianBonus {
         /**
-         * Represents the absence of a non-Gaussian bonus.
-         * This value is used to indicate that no adjustments
-         * or bonuses related to deviations from Gaussian
-         * distributions should be applied.
+         * Represents the absence of a non-Gaussian bonus. This value is used to indicate that no adjustments or bonuses
+         * related to deviations from Gaussian distributions should be applied.
          */
         NONE,
         /**
-         * Represents a non-Gaussian bonus based on kurtosis.
-         * Kurtosis measures the "tailedness" of a statistical distribution, with
-         * higher kurtosis values indicating heavier tails and more outliers.
-         * This value is used in contexts where deviations from Gaussian
-         * distributions, particularly in terms of kurtosis, influence the
+         * Represents a non-Gaussian bonus based on kurtosis. Kurtosis measures the "tailedness" of a statistical
+         * distribution, with higher kurtosis values indicating heavier tails and more outliers. This value is used in
+         * contexts where deviations from Gaussian distributions, particularly in terms of kurtosis, influence the
          * computation or adjustment of scores.
          */
         KURTOSIS
