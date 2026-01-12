@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.HeavyTailSemBicScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -42,13 +41,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "NG SEM BIC Score",
+        name = "HT SEM BIC Score",
         command = "ng-sem-bic-score",
         dataType = {DataType.Continuous}
 )
 @Experimental
 @LinearGaussian
-public class NgSemBicScore implements ScoreWrapper {
+public class HeavyTailSemBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -61,7 +60,7 @@ public class NgSemBicScore implements ScoreWrapper {
     /**
      * Constructs a new instance of the SemBicScore.
      */
-    public NgSemBicScore() {
+    public HeavyTailSemBicScore() {
     }
 
     /**
@@ -71,10 +70,10 @@ public class NgSemBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        HeavyTailSemBicScore score;
+        edu.cmu.tetrad.search.score.HeavyTailSemBicScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new HeavyTailSemBicScore((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.HeavyTailSemBicScore((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
@@ -85,7 +84,7 @@ public class NgSemBicScore implements ScoreWrapper {
 //        score.setCenterData(true);
 //        score.setNoiseModel(edu.cmu.tetrad.search.score.HeavyTailSemBicScore.NoiseModel.LAPLACE);
 
-        score.setNoiseModel(HeavyTailSemBicScore.NoiseModel.LOG_COSH);
+        score.setNoiseModel(edu.cmu.tetrad.search.score.HeavyTailSemBicScore.NoiseModel.LOG_COSH);
         score.setStudentTNu(4.0);      // very robust, heavy tails
         score.setCenterData(true);
         score.setRidge(1e-8);
@@ -100,7 +99,7 @@ public class NgSemBicScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "NG SEM BIC Score";
+        return "HT SEM BIC Score";
     }
 
     /**

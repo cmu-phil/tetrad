@@ -73,7 +73,7 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
     /**
      * Bandwidth selection mode.
      */
-    private BandwidthMode bandwidthMode = BandwidthMode.PER_VARIABLE_MEDIAN;
+    private BandwidthMode bandwidthMode = BandwidthMode.PARENT_SET_MEDIAN;
     /**
      * Small jitter added to A+lambdaI if Cholesky fails.
      */
@@ -884,17 +884,158 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- missingness row filtering --------------------
 
+//    private double chooseSigma(int[] parents, double[][] Z, int n) {
+//        if (bandwidthMode == BandwidthMode.PER_VARIABLE_MEDIAN) {
+//            double[] s = new double[parents.length];
+//            for (int i = 0; i < parents.length; i++) s[i] = sigmaPerVar[parents[i]];
+//            Arrays.sort(s);
+//            return s[s.length / 2];
+//        } else {
+//            // Parent-set median in d-dim on up to maxBandwidthRows rows
+//            int r = Math.min(n, maxBandwidthRows);
+//            return medianPairwiseDistanceND(Z, r);
+//        }
+//    }
+
+    // Add near other fields if you want easy toggles (optional):
+// private boolean logBandwidth = false;
+// private double minSigma = 1e-12;
+// private double maxSigma = 1e12;
+
     private double chooseSigma(int[] parents, double[][] Z, int n) {
+        if (parents == null || parents.length == 0) return 1.0;
+
+        // Stable baseline (cheap)
+        double fallback = perVariableMedianSigma(parents);
+        fallback = sanitizeSigma(fallback, /*default*/ 1.0);
+
         if (bandwidthMode == BandwidthMode.PER_VARIABLE_MEDIAN) {
-            double[] s = new double[parents.length];
-            for (int i = 0; i < parents.length; i++) s[i] = sigmaPerVar[parents[i]];
-            Arrays.sort(s);
-            return s[s.length / 2];
-        } else {
-            // Parent-set median in d-dim on up to maxBandwidthRows rows
-            int r = Math.min(n, maxBandwidthRows);
-            return medianPairwiseDistanceND(Z, r);
+            return fallback;
         }
+
+        int r = Math.min(Math.min(n, maxBandwidthRows), Z.length);
+
+        double[] clamp = new double[2];
+        double sigma = medianPairwiseDistanceND(Z, r, clamp);
+
+        // Prefer fallback as the "default" if sigma is non-finite / <=0
+        sigma = sanitizeSigma(sigma, fallback);
+
+        // Data-driven clamp (should rarely bind)
+        sigma = clampSigma(sigma, clamp[0], clamp[1]);
+
+        // Optional fuse: if parent-space sigma is *absurdly* tiny vs fallback, revert.
+        final double tinyFactor = 1e-6; // conservative; consider 1e-4 if you ever see it trigger
+        if (sigma < fallback * tinyFactor) {
+            sigma = fallback;
+        }
+
+        return sigma;
+    }
+
+    private double perVariableMedianSigma(int[] parents) {
+        double[] s = new double[parents.length];
+        for (int i = 0; i < parents.length; i++) {
+            double v = sigmaPerVar[parents[i]];
+            s[i] = (Double.isFinite(v) && v > 0.0) ? v : 1.0;
+        }
+        Arrays.sort(s);
+        return s[s.length / 2];
+    }
+
+    private static double medianPairwiseDistanceND_deterministic(double[][] Z, int r) {
+        if (Z == null) return Double.NaN;
+
+        int n = Math.min(Math.min(Z.length, r), Z.length);
+        if (n < 3) return Double.NaN;
+
+        int d = (Z[0] == null) ? 0 : Z[0].length;
+        if (d == 0) return Double.NaN;
+
+        // Upper bound; we'll only keep finite positive distances.
+        double[] dists = new double[n * (n - 1) / 2];
+        int idx = 0;
+
+        for (int i = 0; i < n; i++) {
+            double[] zi = Z[i];
+            if (zi == null) continue;
+
+            for (int j = i + 1; j < n; j++) {
+                double[] zj = Z[j];
+                if (zj == null) continue;
+
+                double ss = 0.0;
+                boolean any = false;
+
+                for (int k = 0; k < d; k++) {
+                    double a = zi[k];
+                    double b = zj[k];
+                    if (Double.isNaN(a) || Double.isNaN(b)) continue; // skip missing entries
+                    double diff = a - b;
+                    ss += diff * diff;
+                    any = true;
+                }
+
+                if (!any) continue;
+
+                double dist = Math.sqrt(ss);
+                if (dist > 0.0 && Double.isFinite(dist)) {
+                    dists[idx++] = dist;
+                }
+            }
+        }
+
+        if (idx == 0) return Double.NaN;
+
+        Arrays.sort(dists, 0, idx);
+        return dists[idx / 2];
+    }
+
+    private static double sanitizeSigma(double sigma, double fallback) {
+        // Use fallback if sigma is NaN/Inf or non-positive.
+        if (!Double.isFinite(sigma) || sigma <= 0.0) return fallback;
+
+        // Guard against extremely tiny values that can blow up wStd = 1/sigma.
+        // (This is conservative; adjust if you prefer.)
+        final double MIN = 1e-12;
+        if (sigma < MIN) return Math.max(fallback, MIN);
+
+        return sigma;
+    }
+
+    private static double clampSigma(double sigma, double lo, double hi) {
+        // Ensure bounds are sane.
+        if (!Double.isFinite(lo) || lo <= 0.0) lo = 1e-12;
+        if (!Double.isFinite(hi) || hi <= lo) hi = lo * 1e12;
+
+        // If sigma is bad, clamp to lo.
+        if (!Double.isFinite(sigma)) return lo;
+
+        if (sigma < lo) return lo;
+        if (sigma > hi) return hi;
+        return sigma;
+    }
+
+    // Use after chooseSigma(...). Gives you robust, data-driven lo/hi from the same distance sample.
+    private static double[] sigmaClampFromDistances(double[] dists, int len) {
+        // dists[0..len) contains positive finite distances (unsorted ok)
+        if (len < 10) return new double[]{1e-12, 1e12};
+
+        Arrays.sort(dists, 0, len);
+
+        double q10 = dists[(int) Math.floor(0.10 * (len - 1))];
+        double q50 = dists[(int) Math.floor(0.50 * (len - 1))];
+        double q90 = dists[(int) Math.floor(0.90 * (len - 1))];
+
+        // Guards
+        if (!Double.isFinite(q50) || q50 <= 0) q50 = 1.0;
+        if (!Double.isFinite(q10) || q10 <= 0) q10 = q50 * 1e-3;
+        if (!Double.isFinite(q90) || q90 <= q10) q90 = q50 * 1e3;
+
+        // Lo/Hi: keep sigma within a couple orders around typical distances
+        double lo = Math.max(1e-12, q10);
+        double hi = Math.max(lo * 10.0, q90);
+        return new double[]{lo, hi};
     }
 
     // -------------------- extraction helpers --------------------
@@ -1050,6 +1191,50 @@ public final class RffBicScore implements Score, EffectiveSampleSizeSettable {
         if (idx == 0) return 1.0;
 
         Arrays.sort(dists, 0, idx);
+        return dists[idx / 2];
+    }
+
+    // Returns median; if clampOut != null, writes {lo, hi} into it.
+// clampOut length must be >= 2.
+    private static double medianPairwiseDistanceND(double[][] Z, int limit, double[] clampOut) {
+        int n = Math.min(Z.length, limit);
+        if (n < 3) {
+            if (clampOut != null) { clampOut[0] = 1e-12; clampOut[1] = 1e12; }
+            return 1.0;
+        }
+        int d = Z[0].length;
+        if (d == 0) {
+            if (clampOut != null) { clampOut[0] = 1e-12; clampOut[1] = 1e12; }
+            return 1.0;
+        }
+
+        double[] dists = new double[n * (n - 1) / 2];
+        int idx = 0;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                double ss = 0.0;
+                for (int k = 0; k < d; k++) {
+                    double diff = Z[i][k] - Z[j][k];
+                    ss += diff * diff;
+                }
+                double dist = Math.sqrt(ss);
+                if (dist > 0 && Double.isFinite(dist)) dists[idx++] = dist;
+            }
+        }
+        if (idx == 0) {
+            if (clampOut != null) { clampOut[0] = 1e-12; clampOut[1] = 1e12; }
+            return 1.0;
+        }
+
+        Arrays.sort(dists, 0, idx);
+
+        if (clampOut != null) {
+            double[] lr = sigmaClampFromDistances(dists, idx);
+            clampOut[0] = lr[0];
+            clampOut[1] = lr[1];
+        }
+
         return dists[idx / 2];
     }
 
