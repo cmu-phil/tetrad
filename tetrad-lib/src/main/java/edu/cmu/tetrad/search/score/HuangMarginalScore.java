@@ -65,6 +65,13 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
 
     // -------------------- construction --------------------
 
+    /**
+     * Constructs a HuangMarginalScore object by initializing it with the given dataset
+     * and precomputing internal structures required for scoring.
+     *
+     * @param dataSet The input data set to be used for computing marginal scores.
+     *                Must not be null; a NullPointerException is thrown if the input is null.
+     */
     public HuangMarginalScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
@@ -161,25 +168,56 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
         }
     }
 
+    /**
+     * Determines whether a given edge has an effect based on the specified bump value.
+     *
+     * @param bump The numerical value used to evaluate the edge's effect. A positive value indicates
+     *             that the edge is considered to have an effect.
+     * @return {@code true} if the bump value is greater than 0, indicating the edge has an effect;
+     *         {@code false} otherwise.
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
+    /**
+     * Retrieves the data model associated with this instance.
+     *
+     * @return The {@code DataModel} representing the dataset used for scoring.
+     */
     public DataModel getDataModel() {
         return dataSet;
     }
 
+    /**
+     * Retrieves the effective sample size used in the scoring algorithm.
+     * The effective sample size is a parameter that reflects the number of
+     * data points effectively contributing to the score calculation.
+     *
+     * @return The effective sample size as an integer.
+     */
     @Override
     public int getEffectiveSampleSize() {
         return nEff;
     }
 
+    /**
+     * Sets the effective sample size for score calculations.
+     * If the provided effective sample size is negative, the method defaults to using the original sample size.
+     *
+     * @param nEff The effective sample size to be set. If less than 0, the original sample size is used.
+     */
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
     }
 
+    /**
+     * Returns a string representation of the HuangMarginalScore object.
+     *
+     * @return A string describing the Huang Kernel Marginal Score as "Huang Kernel Marginal Score (continuous)".
+     */
     @Override
     public String toString() {
         return "Huang Kernel Marginal Score (continuous)";
@@ -187,20 +225,51 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
 
     // -------------------- public tuning knobs --------------------
 
+    /**
+     * Retrieves the value of the lambda parameter.
+     *
+     * @return The current value of the lambda parameter as a double.
+     */
     public double getLambda() {
         return lambda;
     }
 
+    /**
+     * Sets the value of the lambda parameter and clears the local score cache.
+     * The lambda parameter is a positive value that may be used in computations
+     * involving kernel-based methods, such as controlling the regularization strength.
+     * If the provided value is less than or equal to 0, an {@link IllegalArgumentException}
+     * is thrown.
+     *
+     * @param lambda The value to set for the lambda parameter. Must be greater than 0.
+     * @throws IllegalArgumentException if the provided lambda value is less than or equal to 0.
+     */
     public void setLambda(double lambda) {
         if (lambda <= 0) throw new IllegalArgumentException("lambda must be > 0");
         this.lambda = lambda;
         localScoreCache.clear();
     }
 
+    /**
+     * Retrieves the value of the jitter parameter.
+     * The jitter parameter is a small positive value added to the diagonal
+     * of certain matrices during computations to improve numerical stability.
+     *
+     * @return The current value of the jitter parameter as a double.
+     */
     public double getJitter() {
         return jitter;
     }
 
+    /**
+     * Sets the value of the jitter parameter and clears the local score cache.
+     * The jitter parameter is a small positive value added to the diagonal of certain
+     * matrices during computations to improve numerical stability.
+     * If the provided jitter value is less than or equal to 0, an {@code IllegalArgumentException} is thrown.
+     *
+     * @param jitter The value to set for the jitter parameter. Must be a positive double.
+     * @throws IllegalArgumentException if the provided jitter value is less than or equal to 0.
+     */
     public void setJitter(double jitter) {
         if (jitter <= 0) throw new IllegalArgumentException("jitter must be > 0");
         this.jitter = jitter;

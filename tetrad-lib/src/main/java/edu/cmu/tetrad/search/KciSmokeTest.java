@@ -99,7 +99,7 @@ public class KciSmokeTest {
         Map<Node, Integer> map = Map.of(X, 0, Y, 1, Z, 2);
         List<Integer> rows = new ArrayList<>();
         for (int i = 0; i < data.getNumCols(); i++) rows.add(i);
-        Kci k = new Kci(data, map, null, rows);
+        Kci k = new Kci(data, map, rows);
         k.setApproximate(approximate);
         k.setKernelType(Kci.KernelType.GAUSSIAN);
         k.setEpsilon(1e-3);

@@ -329,7 +329,9 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
-     * A <- (A + A^T)/2 for numeric symmetry.
+     * Ensures that the matrix is symmetric by averaging each pair of off-diagonal elements.
+     *
+     * @param A The matrix to symmetrize in place.
      */
     public static void symmetrizeInPlace(DMatrixRMaj A) {
         int n = A.numRows;
@@ -385,7 +387,17 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
-     * RFF features for RBF kernel: Phi = sqrt(2/m) * cos( W z + b ) with W ~ N(0, 1/sigma), b ~ Uniform(0, 2π).
+     * Computes random Fourier features for a given dataset using the random projection method.
+     * Random Fourier features are used to approximate shift-invariant kernel functions, such as the RBF kernel.
+     *
+     * @param Z The input dataset, represented as a 2D array of shape (n x d), where n is the number of data points,
+     *          and d is the dimensionality of each data point.
+     * @param n The number of data points in the input dataset.
+     * @param d The dimensionality of each data point in the input dataset.
+     * @param m The number of random features to generate; controls the dimensionality of the output features.
+     * @param sigma The bandwidth parameter for the RBF kernel; influences the scaling of the random projections.
+     * @param rng A Random object used to generate random values for the random projection and phase terms.
+     * @return A DMatrixRMaj object of shape (n x m), containing the computed random Fourier feature matrix.
      */
     private static DMatrixRMaj rffFeatures(double[][] Z, int n, int d, int m, double sigma, Random rng) {
         double sd = 1.0 / sigma;
