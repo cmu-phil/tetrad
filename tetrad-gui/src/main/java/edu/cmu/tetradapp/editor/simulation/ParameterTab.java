@@ -65,7 +65,7 @@ public class ParameterTab extends JPanel {
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
 //            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
-            SimulationTypes.CAUSAL_ADDITIVE_MODEL,
+            SimulationTypes.GENERAL_ADDITIVE_MODEL,
             SimulationTypes.GENERAL_NOISE_SEM,
             SimulationTypes.ADDITIVE_NOISE_SEM,
 //            SimulationTypes.POST_NONLINEAR_MODEL,
@@ -208,7 +208,7 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.ADDITIVE_NOISE_SEM:
                         this.simulation.setSimulation(new AdditiveNoiseSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.CAUSAL_ADDITIVE_MODEL:
+                    case SimulationTypes.GENERAL_ADDITIVE_MODEL:
                         this.simulation.setSimulation(new AdditiveAnmSimulator(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LG_MNAR_SIMULATION:
@@ -246,7 +246,7 @@ public class ParameterTab extends JPanel {
 //                    case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
 //                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
 //                        break;
-                    case SimulationTypes.CAUSAL_ADDITIVE_MODEL:
+                    case SimulationTypes.GENERAL_ADDITIVE_MODEL:
                         this.simulation.setSimulation(new AdditiveAnmSimulator(randomGraph), this.simulation.getParams());
                         break;
 //                    case SimulationTypes.POST_NONLINEAR_MODEL:
