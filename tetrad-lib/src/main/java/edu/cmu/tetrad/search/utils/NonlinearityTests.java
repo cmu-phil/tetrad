@@ -2,9 +2,18 @@ package edu.cmu.tetrad.search.utils;
 
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.FDistribution;
+import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.inference.TTest;
 
 import java.util.*;
+
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
+import org.ejml.interfaces.linsol.LinearSolverDense;
+
+import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Practical nonlinearity tests for conditional mean E(Y|X).
@@ -395,15 +404,6 @@ public final class NonlinearityTests {
         return yhat;
     }
 
-    private static double mse(double[] y, double[] yhat) {
-        double s = 0.0;
-        for (int i = 0; i < y.length; i++) {
-            double e = y[i] - yhat[i];
-            s += e * e;
-        }
-        return s / y.length;
-    }
-
     private static int[] shuffledIndices(int n, long seed) {
         int[] idx = new int[n];
         for (int i = 0; i < n; i++) idx[i] = i;
@@ -595,14 +595,509 @@ public final class NonlinearityTests {
         return stack(feats, n);
     }
 
+    // In edu.cmu.tetrad.search.utils.NonlinearityTests
+
+
+    public static TestResult cvAdditiveVsRff(double[] y, double[][] X, int kfold, double alpha) {
+        // Compares:
+        //   Additive hinge-basis ridge  vs  Full RFF-ridge (RBF kernel) using k-fold CV.
+        // reject=true => "Non-additive" (general model significantly better).
+
+        if (y == null || X == null || y.length == 0 || X.length != y.length) {
+            return new TestResult(Double.NaN, Double.NaN, false);
+        }
+        int n = y.length;
+        int d = X[0].length;
+
+        if (d < 2 || n < 30) {
+            // With <2 regressors additivity isn't meaningful; with too small n CV is noisy.
+            return new TestResult(Double.NaN, Double.NaN, false);
+        }
+
+        // --- sane fold count (like your other CV method) ---
+        int folds = Math.max(2, Math.min(kfold, Math.max(2, n / 5)));
+
+        final long seed = 1729L;
+
+        // Hyperparams (UI tool): keep modest but not tiny.
+        final double ridge = 1e-3;
+
+        final int knotsPerVar = 6;
+
+        // RFF feature count: you can bump this (e.g., 600 or 1000) when you want more power.
+        final int rffFeatures = 600;
+        final boolean useCosSinPairs = true;
+
+        // ---- make folds ----
+        int[] perm = new int[n];
+        for (int i = 0; i < n; i++) perm[i] = i;
+        shuffleInPlace(perm, new Random(seed));
+
+        int[] foldId = new int[n];
+        for (int i = 0; i < n; i++) foldId[perm[i]] = i % folds;
+
+        double[] diffs = new double[folds];  // diff = mse_additive - mse_rff ; positive => RFF better => non-additive
+        Arrays.fill(diffs, Double.NaN);
+
+        for (int f = 0; f < folds; f++) {
+            // Split indices
+            int nTrain = 0, nTest = 0;
+            for (int i = 0; i < n; i++) {
+                if (foldId[i] == f) nTest++;
+                else nTrain++;
+            }
+            if (nTrain < 15 || nTest < 8) continue;
+
+            int[] tr = new int[nTrain];
+            int[] te = new int[nTest];
+            int it = 0, ie = 0;
+            for (int i = 0; i < n; i++) {
+                if (foldId[i] == f) te[ie++] = i;
+                else tr[it++] = i;
+            }
+
+            double[] yTr = take(y, tr);
+            double[] yTe = take(y, te);
+
+            // Center y using TRAIN mean
+            double yMean = mean(yTr);
+            for (int i = 0; i < yTr.length; i++) yTr[i] -= yMean;
+            for (int i = 0; i < yTe.length; i++) yTe[i] -= yMean;
+
+            double[][] XTr = takeRows(X, tr);
+            double[][] XTe = takeRows(X, te);
+
+            // Z-score X using TRAIN stats
+            Standardizer st = new Standardizer(XTr);
+            st.applyInPlace(XTr);
+            st.applyInPlace(XTe);
+
+            // ---- additive hinge design ----
+            AdditiveHingeBasis basis = new AdditiveHingeBasis(XTr, knotsPerVar);
+            DMatrixRMaj PhiTrAdd = basis.designMatrix(XTr);
+            DMatrixRMaj PhiTeAdd = basis.designMatrix(XTe);
+
+            double[] yHatAdd = ridgePredict(PhiTrAdd, yTr, PhiTeAdd, ridge);
+            double mseAdd = mse(yTe, yHatAdd);
+
+            // ---- RFF design (RBF) ----
+            double sigma = medianPairwiseDistanceND(XTr, Math.min(400, XTr.length));
+            if (!(sigma > 0) || !Double.isFinite(sigma)) sigma = 1.0;
+
+            Random rng = new Random(mix64(seed ^ (long) f));
+            RffMap rff = new RffMap(d, rffFeatures, sigma, rng, useCosSinPairs);
+
+            DMatrixRMaj PhiTr = rff.transform(XTr);
+            DMatrixRMaj PhiTe = rff.transform(XTe);
+
+            // Add an intercept column to RFF features (important in practice)
+            PhiTr = addInterceptColumn(PhiTr);
+            PhiTe = addInterceptColumn(PhiTe);
+
+            // Standardize RFF columns using TRAIN stats (skip intercept col=0)
+//            zscoreColumnsInPlaceSkipFirst(PhiTr);
+//            zscoreColumnsInPlaceWithTrainStatsSkipFirst(PhiTe, PhiTr);
+            zscoreWithTrainStatsSkipFirst(PhiTr, PhiTe);
+
+            double[] yHatRff = ridgePredict(PhiTr, yTr, PhiTe, ridge);
+            double mseRff = mse(yTe, yHatRff);
+
+            diffs[f] = mseAdd - mseRff; // positive => RFF better (non-additive evidence)
+        }
+
+        // Keep only valid folds
+        double[] good = Arrays.stream(diffs).filter(Double::isFinite).toArray();
+        if (good.length < 3) return new TestResult(Double.NaN, Double.NaN, false);
+
+        double meanDiff = mean(good);
+        double p = pairedTTestGreaterThanZeroPValue(good);
+
+        boolean reject = Double.isFinite(p) ? (p < alpha) : (meanDiff > 0);
+
+        // statistic = mean CV improvement (additive - rff) [positive => RFF better]
+        return new TestResult(meanDiff, p, reject);
+    }
+
+// ----- helpers for intercept + skipping intercept in z-score -----
+
+    private static DMatrixRMaj addInterceptColumn(DMatrixRMaj M) {
+        DMatrixRMaj out = new DMatrixRMaj(M.numRows, M.numCols + 1);
+        for (int i = 0; i < M.numRows; i++) {
+            out.set(i, 0, 1.0);
+            for (int j = 0; j < M.numCols; j++) out.set(i, j + 1, M.get(i, j));
+        }
+        return out;
+    }
+
+    private static void zscoreWithTrainStatsSkipFirst(DMatrixRMaj train, DMatrixRMaj test) {
+        int nTr = train.numRows;
+        int nTe = test.numRows;
+        int d = train.numCols;
+        if (nTr < 2 || d <= 1) return;
+
+        for (int j = 1; j < d; j++) {
+            double sum = 0.0, sumsq = 0.0;
+            for (int i = 0; i < nTr; i++) {
+                double v = train.get(i, j);
+                sum += v;
+                sumsq += v * v;
+            }
+            double mean = sum / nTr;
+            double var = (sumsq - nTr * mean * mean) / (nTr - 1);
+            double sd = (var > 0) ? Math.sqrt(var) : 1.0;
+
+            for (int i = 0; i < nTr; i++) train.set(i, j, (train.get(i, j) - mean) / sd);
+            for (int i = 0; i < nTe; i++) test.set(i, j, (test.get(i, j) - mean) / sd);
+        }
+    }
+
+    private static void zscoreColumnsInPlaceSkipFirst(DMatrixRMaj M) {
+        int n = M.numRows, d = M.numCols;
+        if (n < 2 || d <= 1) return;
+
+        for (int j = 1; j < d; j++) {
+            double sum = 0.0, sumsq = 0.0;
+            for (int i = 0; i < n; i++) {
+                double v = M.get(i, j);
+                sum += v;
+                sumsq += v * v;
+            }
+            double mean = sum / n;
+            double var = (sumsq - n * mean * mean) / (n - 1);
+            double sd = (var > 0) ? Math.sqrt(var) : 1.0;
+
+            for (int i = 0; i < n; i++) M.set(i, j, (M.get(i, j) - mean) / sd);
+        }
+    }
+
+    private static void zscoreColumnsInPlaceWithTrainStatsSkipFirst(DMatrixRMaj M, DMatrixRMaj train) {
+        int n = M.numRows, d = M.numCols;
+        int nTr = train.numRows;
+        if (nTr < 2 || d <= 1) return;
+
+        for (int j = 1; j < d; j++) {
+            double sum = 0.0, sumsq = 0.0;
+            for (int i = 0; i < nTr; i++) {
+                double v = train.get(i, j);
+                sum += v;
+                sumsq += v * v;
+            }
+            double mean = sum / nTr;
+            double var = (sumsq - nTr * mean * mean) / (nTr - 1);
+            double sd = (var > 0) ? Math.sqrt(var) : 1.0;
+
+            for (int i = 0; i < n; i++) M.set(i, j, (M.get(i, j) - mean) / sd);
+        }
+    }
+
+    /* ---------------- helpers used above ---------------- */
+
+    private static double[] ridgePredict(DMatrixRMaj PhiTr, double[] yTr, DMatrixRMaj PhiTe, double ridge) {
+        int n = PhiTr.numRows;
+        int m = PhiTr.numCols;
+
+        // A = Phi^T Phi + ridge I
+        DMatrixRMaj A = new DMatrixRMaj(m, m);
+        CommonOps_DDRM.multTransA(PhiTr, PhiTr, A);
+        addDiagonalInPlace(A, ridge);
+
+        // b = Phi^T y
+        DMatrixRMaj b = new DMatrixRMaj(m, 1);
+        multTransA_vec(PhiTr, yTr, b);
+
+        LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.symmPosDef(m);
+        if (!solver.setA(A)) {
+            // mild fallback jitter
+            DMatrixRMaj Aj = A.copy();
+            addDiagonalInPlace(Aj, Math.max(1e-10, ridge));
+            if (!solver.setA(Aj)) return fillNaN(PhiTe.numRows);
+        }
+
+        DMatrixRMaj beta = new DMatrixRMaj(m, 1);
+        solver.solve(b, beta);
+
+        // yhat = PhiTe * beta
+        double[] yHat = new double[PhiTe.numRows];
+        for (int i = 0; i < PhiTe.numRows; i++) {
+            double s = 0.0;
+            int base = i * m;
+            for (int j = 0; j < m; j++) s += PhiTe.data[base + j] * beta.data[j];
+            yHat[i] = s;
+        }
+        return yHat;
+    }
+
+    private static double[] fillNaN(int n) {
+        double[] x = new double[n];
+        Arrays.fill(x, Double.NaN);
+        return x;
+    }
+
+    private static double mse(double[] y, double[] yhat) {
+        double s = 0.0;
+        int n = y.length;
+        for (int i = 0; i < n; i++) {
+            double e = y[i] - yhat[i];
+            s += e * e;
+        }
+        return s / n;
+    }
+
+    private static double mean(double[] x) {
+        double s = 0.0;
+        for (double v : x) s += v;
+        return s / x.length;
+    }
+
+    private static double varSample(double[] x) {
+        if (x.length < 2) return Double.NaN;
+        double mu = mean(x);
+        double s = 0.0;
+        for (double v : x) {
+            double d = v - mu;
+            s += d * d;
+        }
+        return s / (x.length - 1);
+    }
+
+    /** One-sided paired t-test p-value for H1: mean(diffs) > 0. */
+    private static double pairedTTestGreaterThanZeroPValue(double[] diffs) {
+        int n = diffs.length;
+        if (n < 3) return Double.NaN;
+
+        double mu = mean(diffs);
+        double s2 = varSample(diffs);
+        if (!(s2 > 0) || !Double.isFinite(s2)) return Double.NaN;
+
+        double t = mu / Math.sqrt(s2 / n);
+
+        // Use normal approx if you don't want Apache commons:
+        // p = 1 - Phi(t)
+        // (This is fine for UI diagnostics; folds usually ~10.)
+        TDistribution dist = new TDistribution(n - 1);
+        return 1.0 - dist.cumulativeProbability(t);
+    }
+
+    private static double normalCdf(double z) {
+        // Abramowitz-Stegun erf approximation
+        // Phi(z) = 0.5 * (1 + erf(z/sqrt(2)))
+        double x = z / Math.sqrt(2.0);
+        return 0.5 * (1.0 + erfApprox(x));
+    }
+
+    private static double erfApprox(double x) {
+        // numerical approximation to erf
+        double sign = (x < 0) ? -1.0 : 1.0;
+        x = Math.abs(x);
+
+        double a1 = 0.254829592;
+        double a2 = -0.284496736;
+        double a3 = 1.421413741;
+        double a4 = -1.453152027;
+        double a5 = 1.061405429;
+        double p = 0.3275911;
+
+        double t = 1.0 / (1.0 + p * x);
+        double y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+        return sign * y;
+    }
+
+    private static void shuffleInPlace(int[] a, Random rng) {
+        for (int i = a.length - 1; i > 0; i--) {
+            int j = rng.nextInt(i + 1);
+            int tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+        }
+    }
+
+    private static long mix64(long z) {
+        z = (z ^ (z >>> 33)) * 0xff51afd7ed558ccdL;
+        z = (z ^ (z >>> 33)) * 0xc4ceb9fe1a85ec53L;
+        return z ^ (z >>> 33);
+    }
+
+    private static double[] take(double[] y, int[] idx) {
+        double[] out = new double[idx.length];
+        for (int i = 0; i < idx.length; i++) out[i] = y[idx[i]];
+        return out;
+    }
+
+    private static double[][] takeRows(double[][] X, int[] idx) {
+        int n = idx.length;
+        int d = X[0].length;
+        double[][] out = new double[n][d];
+        for (int i = 0; i < n; i++) {
+            int r = idx[i];
+            System.arraycopy(X[r], 0, out[i], 0, d);
+        }
+        return out;
+    }
+
+    private static final class Standardizer {
+        final int d;
+        final double[] mean;
+        final double[] sd;
+
+        Standardizer(double[][] X) {
+            int n = X.length;
+            this.d = X[0].length;
+            this.mean = new double[d];
+            this.sd = new double[d];
+
+            for (int j = 0; j < d; j++) {
+                double s = 0.0;
+                for (int i = 0; i < n; i++) s += X[i][j];
+                mean[j] = s / n;
+
+                double ss = 0.0;
+                for (int i = 0; i < n; i++) {
+                    double v = X[i][j] - mean[j];
+                    ss += v * v;
+                }
+                double var = (n > 1) ? ss / (n - 1) : 0.0;
+                sd[j] = (var > 0) ? Math.sqrt(var) : 1.0;
+            }
+        }
+
+        void applyInPlace(double[][] X) {
+            for (int i = 0; i < X.length; i++) {
+                for (int j = 0; j < d; j++) {
+                    X[i][j] = (X[i][j] - mean[j]) / sd[j];
+                }
+            }
+        }
+    }
+
+    private static final class AdditiveHingeBasis {
+        final int d;
+        final int k;
+        final double[][] knots; // [d][k]
+        final boolean includeLinear = true;
+        final boolean includeIntercept = true;
+
+        AdditiveHingeBasis(double[][] Xtr, int knotsPerVar) {
+            this.d = Xtr[0].length;
+            this.k = Math.max(2, knotsPerVar);
+            this.knots = new double[d][k];
+
+            for (int j = 0; j < d; j++) {
+                double[] col = new double[Xtr.length];
+                for (int i = 0; i < Xtr.length; i++) col[i] = Xtr[i][j];
+                Arrays.sort(col);
+
+                // choose interior quantile knots
+                for (int t = 0; t < k; t++) {
+                    double q = (t + 1.0) / (k + 1.0); // (0,1)
+                    int idx = (int) Math.round(q * (col.length - 1));
+                    idx = Math.max(0, Math.min(col.length - 1, idx));
+                    knots[j][t] = col[idx];
+                }
+            }
+        }
+
+        DMatrixRMaj designMatrix(double[][] X) {
+            int n = X.length;
+            int perVar = (includeLinear ? 1 : 0) + k; // x plus k hinges
+            int m = (includeIntercept ? 1 : 0) + d * perVar;
+
+            DMatrixRMaj Phi = new DMatrixRMaj(n, m);
+
+            for (int i = 0; i < n; i++) {
+                int col = 0;
+                if (includeIntercept) {
+                    Phi.set(i, col++, 1.0);
+                }
+                for (int j = 0; j < d; j++) {
+                    double x = X[i][j];
+                    if (includeLinear) Phi.set(i, col++, x);
+                    for (int t = 0; t < k; t++) {
+                        double h = x - knots[j][t];
+                        Phi.set(i, col++, (h > 0) ? h : 0.0);
+                    }
+                }
+            }
+
+            return Phi;
+        }
+    }
+
+    private static final class RffMap {
+        final int d;
+        final int outM;
+        final double[][] W;
+        final double[] b;
+        final boolean useCosSinPairs;
+        final double scale;
+
+        RffMap(int d, int m, double sigma, Random rng, boolean useCosSinPairs) {
+            this.d = d;
+            this.useCosSinPairs = useCosSinPairs;
+
+            if (!useCosSinPairs) {
+                this.outM = Math.max(1, m);
+                this.W = new double[outM][d];
+                this.b = new double[outM];
+                double wStd = 1.0 / sigma;
+                for (int i = 0; i < outM; i++) {
+                    for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
+                    b[i] = rng.nextDouble() * 2.0 * Math.PI;
+                }
+                this.scale = Math.sqrt(2.0 / outM);
+            } else {
+                int mf = Math.max(1, m / 2);
+                this.outM = 2 * mf;
+                this.W = new double[mf][d];
+                this.b = new double[mf];
+                double wStd = 1.0 / sigma;
+                for (int i = 0; i < mf; i++) {
+                    for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
+                    b[i] = rng.nextDouble() * 2.0 * Math.PI;
+                }
+                this.scale = Math.sqrt(2.0 / outM);
+            }
+        }
+
+        DMatrixRMaj transform(double[][] X) {
+            int n = X.length;
+            DMatrixRMaj Phi = new DMatrixRMaj(n, outM);
+
+            if (!useCosSinPairs) {
+                for (int i = 0; i < n; i++) {
+                    double[] xi = X[i];
+                    for (int f = 0; f < outM; f++) {
+                        double dot = 0.0;
+                        double[] wf = W[f];
+                        for (int j = 0; j < d; j++) dot += wf[j] * xi[j];
+                        Phi.set(i, f, scale * Math.cos(dot + b[f]));
+                    }
+                }
+                return Phi;
+            }
+
+            int mf = outM / 2;
+            for (int i = 0; i < n; i++) {
+                double[] xi = X[i];
+                int col = 0;
+                for (int f = 0; f < mf; f++) {
+                    double dot = 0.0;
+                    double[] wf = W[f];
+                    for (int j = 0; j < d; j++) dot += wf[j] * xi[j];
+                    double t = dot + b[f];
+                    Phi.set(i, col++, scale * Math.cos(t));
+                    Phi.set(i, col++, scale * Math.sin(t));
+                }
+            }
+            return Phi;
+        }
+    }
+
     private static double medianPairwiseDistanceND(double[][] X, int limit) {
         int n = Math.min(X.length, limit);
         if (n < 3) return 1.0;
         int d = X[0].length;
-        if (d == 0) return 1.0;
 
         double[] dists = new double[n * (n - 1) / 2];
         int idx = 0;
+
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
                 double ss = 0.0;
@@ -617,5 +1112,66 @@ public final class NonlinearityTests {
         if (idx == 0) return 1.0;
         Arrays.sort(dists, 0, idx);
         return dists[idx / 2];
+    }
+
+    private static void zscoreColumnsInPlace(DMatrixRMaj M) {
+        int n = M.numRows, d = M.numCols;
+        if (n < 2 || d == 0) return;
+
+        for (int j = 0; j < d; j++) {
+            double sum = 0.0, sumsq = 0.0;
+            for (int i = 0; i < n; i++) {
+                double v = M.get(i, j);
+                sum += v;
+                sumsq += v * v;
+            }
+            double mean = sum / n;
+            double var = (sumsq - n * mean * mean) / (n - 1);
+            double sd = (var > 0) ? Math.sqrt(var) : 1.0;
+
+            for (int i = 0; i < n; i++) {
+                M.set(i, j, (M.get(i, j) - mean) / sd);
+            }
+        }
+    }
+
+    /** Standardize columns of M using the mean/sd computed from TRAIN matrix train. */
+    private static void zscoreColumnsInPlaceWithTrainStats(DMatrixRMaj M, DMatrixRMaj train) {
+        int n = M.numRows, d = M.numCols;
+        int nTr = train.numRows;
+        if (nTr < 2 || d == 0) return;
+
+        for (int j = 0; j < d; j++) {
+            double sum = 0.0, sumsq = 0.0;
+            for (int i = 0; i < nTr; i++) {
+                double v = train.get(i, j);
+                sum += v;
+                sumsq += v * v;
+            }
+            double mean = sum / nTr;
+            double var = (sumsq - nTr * mean * mean) / (nTr - 1);
+            double sd = (var > 0) ? Math.sqrt(var) : 1.0;
+
+            for (int i = 0; i < n; i++) {
+                M.set(i, j, (M.get(i, j) - mean) / sd);
+            }
+        }
+    }
+
+    private static void addDiagonalInPlace(DMatrixRMaj M, double v) {
+        int n = Math.min(M.numRows, M.numCols);
+        for (int i = 0; i < n; i++) M.add(i, i, v);
+    }
+
+    private static void multTransA_vec(DMatrixRMaj A, double[] x, DMatrixRMaj out) {
+        int n = A.numRows;
+        int m = A.numCols;
+        if (out.numRows != m || out.numCols != 1) throw new IllegalArgumentException("out dim mismatch");
+        Arrays.fill(out.data, 0.0);
+        for (int i = 0; i < n; i++) {
+            double xi = x[i];
+            int idx = i * m;
+            for (int j = 0; j < m; j++) out.data[j] += A.data[idx + j] * xi;
+        }
     }
 }

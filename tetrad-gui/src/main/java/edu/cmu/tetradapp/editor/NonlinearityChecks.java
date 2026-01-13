@@ -7,6 +7,7 @@ import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public final class NonlinearityChecks extends JPanel {
     private final JButton runButton = new JButton("Check Nonlinearity");
     private final JButton showStatsButton = new JButton("Show Stats");
 
-    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests", false);
+    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (CV + Additivity)", false);
 
     private final ResultsTableModel tableModel = new ResultsTableModel();
     private final JTable table = new JTable(tableModel);
@@ -147,6 +148,30 @@ public final class NonlinearityChecks extends JPanel {
         table.getColumnModel().getColumn(4).setPreferredWidth(140);  // CV
         table.getColumnModel().getColumn(5).setPreferredWidth(140);  // MOMENT
         table.getColumnModel().getColumn(6).setPreferredWidth(140);  // ADDITIVE
+        table.getColumnModel().getColumn(7).setPreferredWidth(160); // Additivity
+
+        JTableHeader header = table.getTableHeader();
+        header.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(java.awt.event.MouseEvent e) {
+                int col = header.columnAtPoint(e.getPoint());
+                if (col < 0) {
+                    header.setToolTipText(null);
+                    return;
+                }
+
+                String tip = switch (col) {
+                    case 7 -> // <-- adjust index if needed
+                            "<html><b>Additivity</b><br>" +
+                                    "“Additive OK” = additive nonlinear model is sufficient;<br>" +
+                                    "“Non-additive” = evidence for interactions " +
+                                    "(general nonlinear fit wins).</html>";
+                    default -> null;
+                };
+
+                header.setToolTipText(tip);
+            }
+        });
 
         add(new JScrollPane(table), BorderLayout.CENTER);
 
@@ -253,7 +278,7 @@ public final class NonlinearityChecks extends JPanel {
                         for (Node x : Xs) {
                             for (Node y : Ys) {
                                 if (x.equals(y)) continue;
-                                rows.add(runOne(idx++, Collections.singletonList(x), y, alpha, kfold, runSlow));
+                                rows.add(runOne(idx++, Collections.singletonList(x), y, alpha, kfold));
                             }
                         }
                     } else {
@@ -264,7 +289,7 @@ public final class NonlinearityChecks extends JPanel {
                         for (Node y : Ys) {
                             List<Node> parents = Xs.stream().filter(v -> !v.equals(y)).collect(Collectors.toList());
                             if (parents.isEmpty()) continue;
-                            rows.add(runOne(idx++, parents, y, alpha, kfold, runSlow));
+                            rows.add(runOne(idx++, parents, y, alpha, kfold));
                         }
                     }
 
@@ -287,7 +312,7 @@ public final class NonlinearityChecks extends JPanel {
         return this;
     }
 
-    private ResultRow runOne(int index, List<Node> xs, Node y, double alpha, int kfold, boolean runSlow) {
+    private ResultRow runOne(int index, List<Node> xs, Node y, double alpha, int kfold) {
         double[] yy = col(y);
 
         double[][] XX = new double[yy.length][xs.size()];
@@ -303,19 +328,26 @@ public final class NonlinearityChecks extends JPanel {
 
         NonlinearityTests.TestResult reset = NonlinearityTests.resetTest(yy, XX, alpha);
 
-        // Slow tests: gated by checkbox
-        NonlinearityTests.TestResult cv = runSlow ? NonlinearityTests.cvLinearVsNonlinear(yy, XX, kfold, alpha) : null;
-        NonlinearityTests.TestResult add = runSlow ? NonlinearityTests.additiveHingeTest(yy, XX, alpha) : null;
+        final boolean doSlow = includeSlowTests.isSelected();
 
-        // Fast (keep always-on)
-        NonlinearityTests.TestResult mom = NonlinearityTests.conditionalMomentTest(yy, XX, alpha);
+        NonlinearityTests.TestResult cv =
+                doSlow ? NonlinearityTests.cvLinearVsNonlinear(yy, XX, kfold, alpha) : null;
 
-        String xLabel = (xs.size() == 1)
-                ? xs.get(0).getName()
+        NonlinearityTests.TestResult mom =
+                NonlinearityTests.conditionalMomentTest(yy, XX, alpha);
+
+        NonlinearityTests.TestResult add =
+                NonlinearityTests.additiveHingeTest(yy, XX, alpha);
+
+        // NEW: additivity check (additive hinge predictor vs full RFF predictor)
+        NonlinearityTests.TestResult addit =
+                doSlow ? NonlinearityTests.cvAdditiveVsRff(yy, XX, kfold, alpha) : null;
+
+        String xLabel = (xs.size() == 1) ? xs.get(0).getName()
                 : xs.stream().map(Node::getName).collect(Collectors.joining(", "));
         String yLabel = y.getName();
 
-        return new ResultRow(index, xLabel, yLabel, reset, cv, mom, add, !runSlow);
+        return new ResultRow(index, xLabel, yLabel, reset, cv, mom, add, addit);
     }
 
     private double[] col(Node v) {
@@ -408,7 +440,9 @@ public final class NonlinearityChecks extends JPanel {
                         "RESET: " + formatStats(row.reset) + "\n" +
                         "CV (linear vs nonlinear): " + formatStats(row.cv) + "\n" +
                         "Conditional-moment: " + formatStats(row.moment) + "\n" +
-                        "Additive-component: " + formatStats(row.additive) + "\n";
+                        "Additive-component: " + formatStats(row.additive) + "\n" +
+                        "Additivity (Additive vs RFF): " + row.additivity + "\n";
+        ;
 
         JOptionPane.showMessageDialog(this, msg, "Nonlinearity stats", JOptionPane.INFORMATION_MESSAGE);
     }
@@ -420,8 +454,43 @@ public final class NonlinearityChecks extends JPanel {
     // ---------------- table model ----------------
 
     private final class ResultsTableModel extends AbstractTableModel {
-        private final String[] cols = {"#", "X", "Y", "RESET", "CV (slow)", "Moment", "Additive (slow)"};
+        private final String[] cols = {"#", "X", "Y", "RESET", "CV", "Moment", "Additive", "Additivity"}; // NEW
         private List<ResultRow> rows = new ArrayList<>();
+
+//        @Override public int getColumnCount() { return cols.length; }
+
+        @Override
+        public Object getValueAt(int r, int c) {
+            ResultRow row = rows.get(r);
+            return switch (c) {
+                case 0 -> row.index;
+                case 1 -> row.xLabel;
+                case 2 -> row.yLabel;
+                case 3 -> summarize(row.reset, "");              // RESET always run
+                case 4 -> summarize(row.cv, "Skipped");          // CV is slow
+                case 5 -> summarize(row.moment, "");             // Moment is fast-ish
+                case 6 -> summarize(row.additive, "");           // Additive-component is fast-ish
+                case 7 -> summarizeAdditivity(row.additivity);   // NEW
+                default -> "";
+            };
+        }
+
+        private String summarize(NonlinearityTests.TestResult tr, String ifNull) {
+            if (tr == null) return ifNull;
+            String label = tr.reject ? "Nonlinear" : "Linear";
+            if (!Double.isFinite(tr.pValue)) return label;
+            return label + " (p=" + pFmt.format(tr.pValue) + ")";
+        }
+
+        private String summarizeAdditivity(NonlinearityTests.TestResult tr) {
+            if (tr == null) return "Skipped";
+
+            // For additivity, reject == "Non-additive" (full RFF wins)
+            String label = tr.reject ? "Non-additive" : "Additive OK";
+
+            if (!Double.isFinite(tr.pValue)) return label;
+            return label + " (p=" + pFmt.format(tr.pValue) + ")";
+        }
 
         void setRows(List<ResultRow> rows) {
             this.rows = (rows == null) ? new ArrayList<>() : rows;
@@ -446,46 +515,75 @@ public final class NonlinearityChecks extends JPanel {
         public String getColumnName(int c) {
             return cols[c];
         }
-
-        @Override
-        public Object getValueAt(int r, int c) {
-            ResultRow row = rows.get(r);
-            return switch (c) {
-                case 0 -> row.index;
-                case 1 -> row.xLabel;
-                case 2 -> row.yLabel;
-                case 3 -> summarize(row.reset);
-                case 4 -> summarize(row.cv);
-                case 5 -> summarize(row.moment);
-                case 6 -> summarize(row.additive);
-                default -> "";
-            };
-        }
-
-        private String summarize(NonlinearityTests.TestResult tr) {
-            if (tr == null) return "Skipped";
-            String label = tr.reject ? "Nonlinear" : "Linear";
-            if (!Double.isFinite(tr.pValue)) return label;
-            return label + " (p=" + pFmt.format(tr.pValue) + ")";
-        }
     }
+
+//    private final class ResultsTableModel extends AbstractTableModel {
+//        private final String[] cols = {"#", "X", "Y", "RESET", "CV (slow)", "Moment", "Additive (slow)"};
+//        private List<ResultRow> rows = new ArrayList<>();
+//
+//        void setRows(List<ResultRow> rows) {
+//            this.rows = (rows == null) ? new ArrayList<>() : rows;
+//            fireTableDataChanged();
+//        }
+//
+//        ResultRow getRow(int r) {
+//            return rows.get(r);
+//        }
+//
+//        @Override
+//        public int getRowCount() {
+//            return rows.size();
+//        }
+//
+//        @Override
+//        public int getColumnCount() {
+//            return cols.length;
+//        }
+//
+//        @Override
+//        public String getColumnName(int c) {
+//            return cols[c];
+//        }
+//
+//        @Override
+//        public Object getValueAt(int r, int c) {
+//            ResultRow row = rows.get(r);
+//            return switch (c) {
+//                case 0 -> row.index;
+//                case 1 -> row.xLabel;
+//                case 2 -> row.yLabel;
+//                case 3 -> summarize(row.reset);
+//                case 4 -> summarize(row.cv);
+//                case 5 -> summarize(row.moment);
+//                case 6 -> summarize(row.additive);
+//                default -> "";
+//            };
+//        }
+//
+//        private String summarize(NonlinearityTests.TestResult tr) {
+//            if (tr == null) return "Skipped";
+//            String label = tr.reject ? "Nonlinear" : "Linear";
+//            if (!Double.isFinite(tr.pValue)) return label;
+//            return label + " (p=" + pFmt.format(tr.pValue) + ")";
+//        }
+//    }
 
     private static final class ResultRow {
         final int index;
         final String xLabel;
         final String yLabel;
         final NonlinearityTests.TestResult reset;
-        final NonlinearityTests.TestResult cv;        // may be null if skipped
+        final NonlinearityTests.TestResult cv;
         final NonlinearityTests.TestResult moment;
-        final NonlinearityTests.TestResult additive;  // may be null if skipped
-        final boolean slowSkipped;
+        final NonlinearityTests.TestResult additive;
+        final NonlinearityTests.TestResult additivity; // NEW
 
         ResultRow(int index, String xLabel, String yLabel,
                   NonlinearityTests.TestResult reset,
                   NonlinearityTests.TestResult cv,
                   NonlinearityTests.TestResult moment,
                   NonlinearityTests.TestResult additive,
-                  boolean slowSkipped) {
+                  NonlinearityTests.TestResult additivity) {  // NEW
             this.index = index;
             this.xLabel = xLabel;
             this.yLabel = yLabel;
@@ -493,7 +591,7 @@ public final class NonlinearityChecks extends JPanel {
             this.cv = cv;
             this.moment = moment;
             this.additive = additive;
-            this.slowSkipped = slowSkipped;
+            this.additivity = additivity; // NEW
         }
     }
 }
