@@ -26,8 +26,8 @@ public final class NonlinearityChecks extends JPanel {
     private final DataSet dataSet;
     private final List<Node> variables;
 
-    private final JTextArea treatmentsArea = new JTextArea(3, 30);
-    private final JTextArea outcomesArea = new JTextArea(3, 30);
+    private final JTextField treatmentsArea = new JTextField(30);
+    private final JTextField outcomesArea = new JTextField(30);
 
     private final JRadioButton rbPairwise = new JRadioButton("Nonlinear effects for all X/Y pairs (single regressor)", true);
     private final JRadioButton rbConditional = new JRadioButton("Nonlinear effects of each Y conditional on all X (multiple regressors)", false);
@@ -59,11 +59,11 @@ public final class NonlinearityChecks extends JPanel {
     // ---------------- UI ----------------
 
     private void buildUi() {
-        treatmentsArea.setLineWrap(true);
-        treatmentsArea.setWrapStyleWord(true);
-
-        outcomesArea.setLineWrap(true);
-        outcomesArea.setWrapStyleWord(true);
+//        treatmentsArea.setLineWrap(true);
+//        treatmentsArea.setWrapStyleWord(true);
+//
+//        outcomesArea.setLineWrap(true);
+//        outcomesArea.setWrapStyleWord(true);
 
         // Suggest defaults (optional): empty means "all"
         treatmentsArea.setText("");
