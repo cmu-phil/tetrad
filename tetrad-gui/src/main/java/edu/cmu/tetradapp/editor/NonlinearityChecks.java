@@ -13,6 +13,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
@@ -261,42 +263,102 @@ public final class NonlinearityChecks extends JPanel {
                         return;
                     }
 
+//                    final boolean runSlow = includeSlowTests.isSelected();
+
+//                    double alpha = 0.05; // could be a UI knob later
+//                    int kfold = 10;      // could be a UI knob later
+
+//                    List<ResultRow> rows = new ArrayList<>();
+
+//                    if (rbPairwise.isSelected()) {
+//                        if (Xs.isEmpty()) {
+//                            Set<Node> yset = new HashSet<>(Ys);
+//                            Xs = variables.stream().filter(v -> !yset.contains(v)).collect(Collectors.toList());
+//                        }
+//
+//                        int idx = 1;
+//                        for (Node x : Xs) {
+//                            for (Node y : Ys) {
+//                                if (x.equals(y)) continue;
+//                                rows.add(runOne(idx++, Collections.singletonList(x), y, alpha, kfold));
+//                            }
+//                        }
+//                    } else {
+//                        if (Xs.isEmpty()) {
+//                            Xs = new ArrayList<>(variables);
+//                        }
+//                        int idx = 1;
+//                        for (Node y : Ys) {
+//                            List<Node> parents = Xs.stream().filter(v -> !v.equals(y)).collect(Collectors.toList());
+//                            if (parents.isEmpty()) continue;
+//                            rows.add(runOne(idx++, parents, y, alpha, kfold));
+//                        }
+//                    }
+
+                    // --- build jobs (deterministic order) ---
                     final boolean runSlow = includeSlowTests.isSelected();
+                    final double alpha = 0.05;
+                    final int kfold = 10;
 
-                    double alpha = 0.05; // could be a UI knob later
-                    int kfold = 10;      // could be a UI knob later
-
-                    List<ResultRow> rows = new ArrayList<>();
+                    final List<Job> jobs = new ArrayList<>();
 
                     if (rbPairwise.isSelected()) {
                         if (Xs.isEmpty()) {
                             Set<Node> yset = new HashSet<>(Ys);
                             Xs = variables.stream().filter(v -> !yset.contains(v)).collect(Collectors.toList());
                         }
-
                         int idx = 1;
                         for (Node x : Xs) {
                             for (Node y : Ys) {
                                 if (x.equals(y)) continue;
-                                rows.add(runOne(idx++, Collections.singletonList(x), y, alpha, kfold));
+                                jobs.add(new Job(idx++, Collections.singletonList(x), y));
                             }
                         }
                     } else {
-                        if (Xs.isEmpty()) {
-                            Xs = new ArrayList<>(variables);
-                        }
+                        if (Xs.isEmpty()) Xs = new ArrayList<>(variables);
                         int idx = 1;
                         for (Node y : Ys) {
                             List<Node> parents = Xs.stream().filter(v -> !v.equals(y)).collect(Collectors.toList());
                             if (parents.isEmpty()) continue;
-                            rows.add(runOne(idx++, parents, y, alpha, kfold));
+                            jobs.add(new Job(idx++, parents, y));
                         }
                     }
 
-                    SwingUtilities.invokeLater(() -> {
-                        tableModel.setRows(rows);
-                        showStatsButton.setEnabled(false);
-                    });
+// --- parallel execute jobs ---
+                    int cores = Math.max(1, Runtime.getRuntime().availableProcessors());
+                    int threads = Math.max(1, cores - 1); // leave one core for UI/GC
+                    ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(threads);
+
+                    try {
+                        @SuppressWarnings("unchecked")
+                        Future<ResultRow>[] futures = new Future[jobs.size()];
+
+                        for (int i = 0; i < jobs.size(); i++) {
+                            Job job = jobs.get(i);
+                            futures[i] = pool.submit(() ->
+                                    runOne(job.index, job.xs, job.y, alpha, kfold)
+                            );
+                        }
+
+                        // Collect in submission order (which matches job order)
+                        List<ResultRow> rows = new ArrayList<>(jobs.size());
+                        for (Future<ResultRow> f : futures) {
+                            rows.add(f.get()); // consider timeout if you want
+                        }
+
+                        SwingUtilities.invokeLater(() -> {
+                            tableModel.setRows(rows);
+                            showStatsButton.setEnabled(false);
+                        });
+
+                    } finally {
+                        pool.shutdownNow();
+                    }
+
+//                    SwingUtilities.invokeLater(() -> {
+//                        tableModel.setRows(rows);
+//                        showStatsButton.setEnabled(false);
+//                    });
                 } catch (IllegalArgumentException ex) {
                     JOptionPane.showMessageDialog(getThisComponent(), ex.getMessage());
                 } catch (Exception ex) {
@@ -306,6 +368,18 @@ public final class NonlinearityChecks extends JPanel {
         }
 
         new MyWatchedProcess();
+    }
+
+    private static final class Job {
+        final int index;
+        final List<Node> xs;
+        final Node y;
+
+        Job(int index, List<Node> xs, Node y) {
+            this.index = index;
+            this.xs = xs;
+            this.y = y;
+        }
     }
 
     private Component getThisComponent() {
