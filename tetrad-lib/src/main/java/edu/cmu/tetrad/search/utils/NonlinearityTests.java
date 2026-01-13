@@ -12,7 +12,8 @@ import java.util.*;
  */
 public final class NonlinearityTests {
 
-    private NonlinearityTests() {}
+    private NonlinearityTests() {
+    }
 
     public static final class TestResult {
         public final double statistic;
@@ -31,6 +32,9 @@ public final class NonlinearityTests {
         }
     }
 
+    /**
+     * Represents cleaned data for nonlinearity tests, with NaNs removed from y and X.
+     */
     public static final class CleanData {
         public final double[] y;
         public final double[][] X;
@@ -41,7 +45,9 @@ public final class NonlinearityTests {
         }
     }
 
-    /** Remove rows with NaNs in y or any X column. */
+    /**
+     * Remove rows with NaNs in y or any X column.
+     */
     public static CleanData clean(double[] y, double[][] X) {
         int n = y.length;
         int d = (X.length == 0) ? 0 : X[0].length;
@@ -74,6 +80,16 @@ public final class NonlinearityTests {
     // 1) RESET (Ramsey): augment with powers of fitted values
     // ============================================================
 
+    /**
+     * Performs the RESET (Regression Equation Specification Error Test) to assess model specification.
+     * The test evaluates whether nonlinear transformations of the predicted values improve the model's fit.
+     *
+     * @param y the response variable array, of length n
+     * @param X the predictor variable matrix, of size n-by-d
+     * @param alpha the significance level for the hypothesis test
+     * @return a TestResult object containing the test statistic, p-value, and a boolean indicating whether
+     *         the null hypothesis is rejected
+     */
     public static TestResult resetTest(double[] y, double[][] X, double alpha) {
         int n = y.length;
         int d = (X.length == 0) ? 0 : X[0].length;
@@ -116,6 +132,14 @@ public final class NonlinearityTests {
     // 2) CV: linear ridge vs nonlinear kernel-ridge via RFF
     // ============================================================
 
+    /**
+     * Performs cross-validation to compare linear ridge regression with nonlinear kernel ridge regression using Random Fourier Features (RFF).
+     * @param y The target variable values.
+     * @param X The feature matrix.
+     * @param kfold The number of folds for cross-validation.
+     * @param alpha The significance level for hypothesis testing.
+     * @return TestResult containing F-statistic, p-value, and rejection status.
+     */
     public static TestResult cvLinearVsNonlinear(double[] y, double[][] X, int kfold, double alpha) {
         int n = y.length;
         int d = (X.length == 0) ? 0 : X[0].length;
@@ -158,6 +182,17 @@ public final class NonlinearityTests {
     // 3) Conditional-moment / nonlinear-features LM test
     // ============================================================
 
+    /**
+     * Performs a conditional moment test to assess the specification of a linear model.
+     * This test evaluates whether non-linear transformations of the predictor variables
+     * contain additional information not captured by the linear model.
+     *
+     * @param y the response variable array, of length n
+     * @param X the predictor variable matrix, of size n-by-d
+     * @param alpha the significance level for hypothesis testing
+     * @return a TestResult object containing the test statistic, p-value, and a boolean indicating
+     *         whether the null hypothesis of linearity is rejected
+     */
     public static TestResult conditionalMomentTest(double[] y, double[][] X, double alpha) {
         int n = y.length;
         int d = (X.length == 0) ? 0 : X[0].length;
@@ -203,6 +238,14 @@ public final class NonlinearityTests {
     // 4) Additive-component test (GAM-ish hinge basis)
     // ============================================================
 
+    /**
+     * Performs an additive-component test using hinge basis functions to assess nonlinearity in the data.
+     *
+     * @param y The response variable.
+     * @param X The predictor variables.
+     * @param alpha The significance level for hypothesis testing.
+     * @return A TestResult object containing the test statistic, p-value, and rejection decision.
+     */
     public static TestResult additiveHingeTest(double[] y, double[][] X, double alpha) {
         int n = y.length;
         int d = (X.length == 0) ? 0 : X[0].length;
@@ -255,7 +298,9 @@ public final class NonlinearityTests {
         }
     }
 
-    /** Ridge fit using normal equations with small gaussian elimination (OK for small d). */
+    /**
+     * Ridge fit using normal equations with small gaussian elimination (OK for small d).
+     */
     private static Fit ridgeFit(double[] y, double[][] X, double lambda) {
         int n = y.length;
         int d = (X.length == 0) ? 0 : X[0].length;
@@ -290,7 +335,9 @@ public final class NonlinearityTests {
         return new Fit(beta, yhat, resid, rss);
     }
 
-    /** Very small SPD-ish solver via Gaussian elimination with partial pivoting (fine for modest d). */
+    /**
+     * Very small SPD-ish solver via Gaussian elimination with partial pivoting (fine for modest d).
+     */
     private static double[] solveSymmetric(double[][] A, double[] b) {
         int n = b.length;
         double[][] M = new double[n][n];
@@ -302,11 +349,18 @@ public final class NonlinearityTests {
             double best = Math.abs(M[p][p]);
             for (int i = p + 1; i < n; i++) {
                 double v = Math.abs(M[i][p]);
-                if (v > best) { best = v; max = i; }
+                if (v > best) {
+                    best = v;
+                    max = i;
+                }
             }
             if (max != p) {
-                double[] tmp = M[p]; M[p] = M[max]; M[max] = tmp;
-                double t = x[p]; x[p] = x[max]; x[max] = t;
+                double[] tmp = M[p];
+                M[p] = M[max];
+                M[max] = tmp;
+                double t = x[p];
+                x[p] = x[max];
+                x[max] = t;
             }
             double piv = M[p][p];
             if (Math.abs(piv) < 1e-12) piv = (piv >= 0 ? 1e-12 : -1e-12);
@@ -356,7 +410,9 @@ public final class NonlinearityTests {
         Random r = new Random(seed);
         for (int i = n - 1; i > 0; i--) {
             int j = r.nextInt(i + 1);
-            int t = idx[i]; idx[i] = idx[j]; idx[j] = t;
+            int t = idx[i];
+            idx[i] = idx[j];
+            idx[j] = t;
         }
         return idx;
     }
@@ -379,8 +435,12 @@ public final class NonlinearityTests {
     private static final class Split {
         final double[] yTr, yTe;
         final double[][] XTr, XTe;
+
         Split(double[] yTr, double[][] XTr, double[] yTe, double[][] XTe) {
-            this.yTr = yTr; this.XTr = XTr; this.yTe = yTe; this.XTe = XTe;
+            this.yTr = yTr;
+            this.XTr = XTr;
+            this.yTe = yTe;
+            this.XTe = XTe;
         }
     }
 

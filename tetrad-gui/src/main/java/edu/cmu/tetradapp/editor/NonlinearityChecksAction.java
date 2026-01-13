@@ -13,11 +13,20 @@ class NonlinearityChecksAction extends AbstractAction {
 
     private final DataEditor dataEditor;
 
+    /**
+     * Constructor for NonlinearityChecksAction.
+     * @param editor The DataEditor instance to associate with this action.
+     */
     public NonlinearityChecksAction(DataEditor editor) {
         super("Nonlinearity Checks...");
         this.dataEditor = editor;
     }
 
+    /**
+     * Invoked when an action occurs, opening the Nonlinearity Checks tool for the selected data set.
+     *
+     * @param e The ActionEvent triggered by the user interaction.
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();

@@ -16,11 +16,17 @@ import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 /**
- * UI panel that runs four nonlinearity checks for E(Y|X):
- * 1) RESET (Ramsey)
- * 2) CV: linear vs nonlinear predictor
- * 3) Residual conditional-moment / nonlinear features LM test
- * 4) Additive-component nonlinearity test (hinge-basis per regressor)
+ * <p>
+ * UI panel that runs four nonlinearity checks for the conditional mean
+ * <code>E(Y | X)</code>:
+ * </p>
+ *
+ * <ol>
+ *   <li><strong>RESET</strong> (Ramsey)</li>
+ *   <li><strong>Cross-validation</strong>: linear vs. nonlinear predictor</li>
+ *   <li><strong>Conditional-moment / nonlinear-features LM</strong> test on residual structure</li>
+ *   <li><strong>Additive-component</strong> nonlinearity test (hinge-basis per regressor)</li>
+ * </ol>
  */
 public final class NonlinearityChecks extends JPanel {
 
@@ -51,6 +57,13 @@ public final class NonlinearityChecks extends JPanel {
     private static final String KEY_MODE = "nonlin.mode"; // "PAIRWISE" or "MULTIVARIATE"
     private static final String KEY_INCLUDE_SLOW = "nonlin.includeSlow";
 
+    /**
+     * Constructs a new NonlinearityChecks panel with the provided dataset.
+     * Initializes the user interface and sets up event handling for the panel.
+     *
+     * @param dataSet the dataset to be used for nonlinearity checks. Must not be null.
+     * @throws NullPointerException if the provided dataset is null.
+     */
     public NonlinearityChecks(DataSet dataSet) {
         super(new BorderLayout());
         this.dataSet = Objects.requireNonNull(dataSet, "dataSet");
