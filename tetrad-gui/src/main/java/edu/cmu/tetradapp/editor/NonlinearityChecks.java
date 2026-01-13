@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.NonlinearityTests;
+import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -122,6 +123,8 @@ public final class NonlinearityChecks extends JPanel {
         // Table
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.setAutoCreateRowSorter(true); // enable column-header sorting
+
 
         // Some reasonable column widths
         table.getColumnModel().getColumn(0).setPreferredWidth(40);   // #
@@ -209,55 +212,66 @@ public final class NonlinearityChecks extends JPanel {
     // ---------------- logic ----------------
 
     private void runChecks() {
-        try {
-            List<Node> Xs = parseVars(treatmentsArea.getText(), /*allowEmptyAll*/ true);
-            List<Node> Ys = parseVars(outcomesArea.getText(), /*allowEmptyAll*/ true);
+        class MyWatchedProcess extends WatchedProcess {
+            public void watch() {
+                try {
+                    List<Node> Xs = parseVars(treatmentsArea.getText(), /*allowEmptyAll*/ true);
+                    List<Node> Ys = parseVars(outcomesArea.getText(), /*allowEmptyAll*/ true);
 
-            if (Ys.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No outcomes selected (Y).");
-                return;
-            }
-
-            final boolean runSlow = includeSlowTests.isSelected();
-
-            double alpha = 0.05; // could be a UI knob later
-            int kfold = 10;      // could be a UI knob later
-
-            List<ResultRow> rows = new ArrayList<>();
-
-            if (rbPairwise.isSelected()) {
-                if (Xs.isEmpty()) {
-                    Set<Node> yset = new HashSet<>(Ys);
-                    Xs = variables.stream().filter(v -> !yset.contains(v)).collect(Collectors.toList());
-                }
-
-                int idx = 1;
-                for (Node x : Xs) {
-                    for (Node y : Ys) {
-                        if (x.equals(y)) continue;
-                        rows.add(runOne(idx++, Collections.singletonList(x), y, alpha, kfold, runSlow));
+                    if (Ys.isEmpty()) {
+                        JOptionPane.showMessageDialog(getThisComponent(), "No outcomes selected (Y).");
+                        return;
                     }
-                }
-            } else {
-                if (Xs.isEmpty()) {
-                    Xs = new ArrayList<>(variables);
-                }
-                int idx = 1;
-                for (Node y : Ys) {
-                    List<Node> parents = Xs.stream().filter(v -> !v.equals(y)).collect(Collectors.toList());
-                    if (parents.isEmpty()) continue;
-                    rows.add(runOne(idx++, parents, y, alpha, kfold, runSlow));
+
+                    final boolean runSlow = includeSlowTests.isSelected();
+
+                    double alpha = 0.05; // could be a UI knob later
+                    int kfold = 10;      // could be a UI knob later
+
+                    List<ResultRow> rows = new ArrayList<>();
+
+                    if (rbPairwise.isSelected()) {
+                        if (Xs.isEmpty()) {
+                            Set<Node> yset = new HashSet<>(Ys);
+                            Xs = variables.stream().filter(v -> !yset.contains(v)).collect(Collectors.toList());
+                        }
+
+                        int idx = 1;
+                        for (Node x : Xs) {
+                            for (Node y : Ys) {
+                                if (x.equals(y)) continue;
+                                rows.add(runOne(idx++, Collections.singletonList(x), y, alpha, kfold, runSlow));
+                            }
+                        }
+                    } else {
+                        if (Xs.isEmpty()) {
+                            Xs = new ArrayList<>(variables);
+                        }
+                        int idx = 1;
+                        for (Node y : Ys) {
+                            List<Node> parents = Xs.stream().filter(v -> !v.equals(y)).collect(Collectors.toList());
+                            if (parents.isEmpty()) continue;
+                            rows.add(runOne(idx++, parents, y, alpha, kfold, runSlow));
+                        }
+                    }
+
+                    SwingUtilities.invokeLater(() -> {
+                        tableModel.setRows(rows);
+                        showStatsButton.setEnabled(false);
+                    });
+                } catch (IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(getThisComponent(), ex.getMessage());
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(getThisComponent(), "Error: " + ex.getMessage());
                 }
             }
-
-            tableModel.setRows(rows);
-            showStatsButton.setEnabled(false);
-
-        } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage());
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
+
+        new MyWatchedProcess();
+    }
+
+    private Component getThisComponent() {
+        return this;
     }
 
     private ResultRow runOne(int index, List<Node> xs, Node y, double alpha, int kfold, boolean runSlow) {
