@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 
 /**
  * UI panel that runs four nonlinearity checks for E(Y|X):
- *  1) RESET (Ramsey)
- *  2) CV: linear vs nonlinear predictor
- *  3) Residual conditional-moment / nonlinear features LM test
- *  4) Additive-component nonlinearity test (hinge-basis per regressor)
+ * 1) RESET (Ramsey)
+ * 2) CV: linear vs nonlinear predictor
+ * 3) Residual conditional-moment / nonlinear features LM test
+ * 4) Additive-component nonlinearity test (hinge-basis per regressor)
  */
 public final class NonlinearityChecks extends JPanel {
 
@@ -35,6 +35,8 @@ public final class NonlinearityChecks extends JPanel {
     private final JButton runButton = new JButton("Check Nonlinearity");
     private final JButton showStatsButton = new JButton("Show Stats");
 
+    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests", false);
+
     private final ResultsTableModel tableModel = new ResultsTableModel();
     private final JTable table = new JTable(tableModel);
 
@@ -44,8 +46,9 @@ public final class NonlinearityChecks extends JPanel {
             Preferences.userNodeForPackage(NonlinearityChecks.class);
 
     private static final String KEY_TREATMENTS = "nonlin.treatments";
-    private static final String KEY_OUTCOMES   = "nonlin.outcomes";
-    private static final String KEY_MODE       = "nonlin.mode"; // "PAIRWISE" or "MULTIVARIATE"
+    private static final String KEY_OUTCOMES = "nonlin.outcomes";
+    private static final String KEY_MODE = "nonlin.mode"; // "PAIRWISE" or "MULTIVARIATE"
+    private static final String KEY_INCLUDE_SLOW = "nonlin.includeSlow";
 
     public NonlinearityChecks(DataSet dataSet) {
         super(new BorderLayout());
@@ -59,11 +62,6 @@ public final class NonlinearityChecks extends JPanel {
     // ---------------- UI ----------------
 
     private void buildUi() {
-//        treatmentsArea.setLineWrap(true);
-//        treatmentsArea.setWrapStyleWord(true);
-//
-//        outcomesArea.setLineWrap(true);
-//        outcomesArea.setWrapStyleWord(true);
 
         // Suggest defaults (optional): empty means "all"
         treatmentsArea.setText("");
@@ -77,15 +75,19 @@ public final class NonlinearityChecks extends JPanel {
         c.weightx = 1.0;
 
         // Treatments
-        c.gridx = 0; c.gridy = 0;
+        c.gridx = 0;
+        c.gridy = 0;
         top.add(new JLabel("Treatments (X):"), c);
-        c.gridx = 1; c.gridy = 0;
+        c.gridx = 1;
+        c.gridy = 0;
         top.add(new JScrollPane(treatmentsArea), c);
 
         // Outcomes
-        c.gridx = 0; c.gridy = 1;
+        c.gridx = 0;
+        c.gridy = 1;
         top.add(new JLabel("Outcomes (Y):"), c);
-        c.gridx = 1; c.gridy = 1;
+        c.gridx = 1;
+        c.gridy = 1;
         top.add(new JScrollPane(outcomesArea), c);
 
         // Mode
@@ -98,16 +100,21 @@ public final class NonlinearityChecks extends JPanel {
         modePanel.add(rbPairwise);
         modePanel.add(rbConditional);
 
-        c.gridx = 0; c.gridy = 2; c.gridwidth = 2;
+        c.gridx = 0;
+        c.gridy = 2;
+        c.gridwidth = 2;
         top.add(modePanel, c);
 
         // Buttons
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttons.add(runButton);
+        buttons.add(includeSlowTests);
         buttons.add(showStatsButton);
         showStatsButton.setEnabled(false);
 
-        c.gridx = 0; c.gridy = 3; c.gridwidth = 2;
+        c.gridx = 0;
+        c.gridy = 3;
+        c.gridwidth = 2;
         top.add(buttons, c);
 
         add(top, BorderLayout.NORTH);
@@ -143,6 +150,8 @@ public final class NonlinearityChecks extends JPanel {
 
         installPrefsListeners();
         loadPrefs();
+
+        includeSlowTests.setToolTipText("Includes slower tests such as cross-validation and additive hinge checks.");
     }
 
     private void loadPrefs() {
@@ -155,25 +164,36 @@ public final class NonlinearityChecks extends JPanel {
         } else {
             rbPairwise.setSelected(true);
         }
+
+        includeSlowTests.setSelected(PREFS.getBoolean(KEY_INCLUDE_SLOW, false));
     }
 
     private void installPrefsListeners() {
         treatmentsArea.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override public void focusLost(java.awt.event.FocusEvent e) { savePrefs(); }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                savePrefs();
+            }
         });
 
         outcomesArea.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override public void focusLost(java.awt.event.FocusEvent e) { savePrefs(); }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                savePrefs();
+            }
         });
 
         rbPairwise.addActionListener(e -> savePrefs());
         rbConditional.addActionListener(e -> savePrefs());
+
+        includeSlowTests.addActionListener(e -> savePrefs());
     }
 
     private void savePrefs() {
         PREFS.put(KEY_TREATMENTS, treatmentsArea.getText().trim());
         PREFS.put(KEY_OUTCOMES, outcomesArea.getText().trim());
         PREFS.put(KEY_MODE, rbConditional.isSelected() ? "MULTIVARIATE" : "PAIRWISE");
+        PREFS.putBoolean(KEY_INCLUDE_SLOW, includeSlowTests.isSelected());
     }
 
     private void wireEvents() {
@@ -198,6 +218,8 @@ public final class NonlinearityChecks extends JPanel {
                 return;
             }
 
+            final boolean runSlow = includeSlowTests.isSelected();
+
             double alpha = 0.05; // could be a UI knob later
             int kfold = 10;      // could be a UI knob later
 
@@ -205,7 +227,6 @@ public final class NonlinearityChecks extends JPanel {
 
             if (rbPairwise.isSelected()) {
                 if (Xs.isEmpty()) {
-                    // if treatments empty => all variables except outcomes? we’ll just use all vars not in Ys
                     Set<Node> yset = new HashSet<>(Ys);
                     Xs = variables.stream().filter(v -> !yset.contains(v)).collect(Collectors.toList());
                 }
@@ -214,20 +235,18 @@ public final class NonlinearityChecks extends JPanel {
                 for (Node x : Xs) {
                     for (Node y : Ys) {
                         if (x.equals(y)) continue;
-                        rows.add(runOne(idx++, Collections.singletonList(x), y, alpha, kfold));
+                        rows.add(runOne(idx++, Collections.singletonList(x), y, alpha, kfold, runSlow));
                     }
                 }
             } else {
-                // conditional: for each outcome y, regress on all Xs (multi-regressor)
                 if (Xs.isEmpty()) {
-                    // default Xs = all variables except Y itself
                     Xs = new ArrayList<>(variables);
                 }
                 int idx = 1;
                 for (Node y : Ys) {
                     List<Node> parents = Xs.stream().filter(v -> !v.equals(y)).collect(Collectors.toList());
                     if (parents.isEmpty()) continue;
-                    rows.add(runOne(idx++, parents, y, alpha, kfold));
+                    rows.add(runOne(idx++, parents, y, alpha, kfold, runSlow));
                 }
             }
 
@@ -241,7 +260,7 @@ public final class NonlinearityChecks extends JPanel {
         }
     }
 
-    private ResultRow runOne(int index, List<Node> xs, Node y, double alpha, int kfold) {
+    private ResultRow runOne(int index, List<Node> xs, Node y, double alpha, int kfold, boolean runSlow) {
         double[] yy = col(y);
 
         double[][] XX = new double[yy.length][xs.size()];
@@ -256,14 +275,20 @@ public final class NonlinearityChecks extends JPanel {
         XX = cd.X;
 
         NonlinearityTests.TestResult reset = NonlinearityTests.resetTest(yy, XX, alpha);
-        NonlinearityTests.TestResult cv    = NonlinearityTests.cvLinearVsNonlinear(yy, XX, kfold, alpha);
-        NonlinearityTests.TestResult mom   = NonlinearityTests.conditionalMomentTest(yy, XX, alpha);
-        NonlinearityTests.TestResult add   = NonlinearityTests.additiveHingeTest(yy, XX, alpha);
 
-        String xLabel = (xs.size() == 1) ? xs.get(0).getName() : xs.stream().map(Node::getName).collect(Collectors.joining(", "));
+        // Slow tests: gated by checkbox
+        NonlinearityTests.TestResult cv = runSlow ? NonlinearityTests.cvLinearVsNonlinear(yy, XX, kfold, alpha) : null;
+        NonlinearityTests.TestResult add = runSlow ? NonlinearityTests.additiveHingeTest(yy, XX, alpha) : null;
+
+        // Fast (keep always-on)
+        NonlinearityTests.TestResult mom = NonlinearityTests.conditionalMomentTest(yy, XX, alpha);
+
+        String xLabel = (xs.size() == 1)
+                ? xs.get(0).getName()
+                : xs.stream().map(Node::getName).collect(Collectors.joining(", "));
         String yLabel = y.getName();
 
-        return new ResultRow(index, xLabel, yLabel, reset, cv, mom, add);
+        return new ResultRow(index, xLabel, yLabel, reset, cv, mom, add, !runSlow);
     }
 
     private double[] col(Node v) {
@@ -273,24 +298,6 @@ public final class NonlinearityChecks extends JPanel {
         for (int i = 0; i < n; i++) out[i] = dataSet.getDouble(i, j);
         return out;
     }
-
-//    private List<Node> parseVars(String text, boolean allowEmptyAll) {
-//        String s = (text == null) ? "" : text.trim();
-//        if (s.isEmpty()) return allowEmptyAll ? Collections.emptyList() : Collections.emptyList();
-//
-//        // split on commas or whitespace
-//        String[] toks = s.split("[,\\s]+");
-//        List<Node> out = new ArrayList<>();
-//        Map<String, Node> byName = variables.stream().collect(Collectors.toMap(Node::getName, n -> n, (a, b) -> a));
-//
-//        for (String t : toks) {
-//            if (t == null || t.isBlank()) continue;
-//            Node v = byName.get(t.trim());
-//            if (v == null) throw new IllegalArgumentException("Unknown variable: " + t.trim());
-//            out.add(v);
-//        }
-//        return out;
-//    }
 
     private List<Node> parseVars(String text, boolean allowEmptyAll) {
         String s = (text == null) ? "" : text.trim();
@@ -341,7 +348,9 @@ public final class NonlinearityChecks extends JPanel {
         return new ArrayList<>(out);
     }
 
-    /** Convert glob pattern with '*' and '?' to a Java regex that matches the full string. */
+    /**
+     * Convert glob pattern with '*' and '?' to a Java regex that matches the full string.
+     */
     private static String globToRegex(String glob) {
         StringBuilder sb = new StringBuilder();
         sb.append("^");
@@ -369,18 +378,22 @@ public final class NonlinearityChecks extends JPanel {
                 "Row #" + row.index + "\n\n" +
                         "X: " + row.xLabel + "\n" +
                         "Y: " + row.yLabel + "\n\n" +
-                        "RESET: " + row.reset + "\n" +
-                        "CV (linear vs nonlinear): " + row.cv + "\n" +
-                        "Conditional-moment: " + row.moment + "\n" +
-                        "Additive-component: " + row.additive + "\n";
+                        "RESET: " + formatStats(row.reset) + "\n" +
+                        "CV (linear vs nonlinear): " + formatStats(row.cv) + "\n" +
+                        "Conditional-moment: " + formatStats(row.moment) + "\n" +
+                        "Additive-component: " + formatStats(row.additive) + "\n";
 
         JOptionPane.showMessageDialog(this, msg, "Nonlinearity stats", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private static String formatStats(NonlinearityTests.TestResult tr) {
+        return (tr == null) ? "Skipped" : tr.toString();
     }
 
     // ---------------- table model ----------------
 
     private final class ResultsTableModel extends AbstractTableModel {
-        private final String[] cols = {"#", "X", "Y", "RESET", "CV", "Moment", "Additive"};
+        private final String[] cols = {"#", "X", "Y", "RESET", "CV (slow)", "Moment", "Additive (slow)"};
         private List<ResultRow> rows = new ArrayList<>();
 
         void setRows(List<ResultRow> rows) {
@@ -392,9 +405,20 @@ public final class NonlinearityChecks extends JPanel {
             return rows.get(r);
         }
 
-        @Override public int getRowCount() { return rows.size(); }
-        @Override public int getColumnCount() { return cols.length; }
-        @Override public String getColumnName(int c) { return cols[c]; }
+        @Override
+        public int getRowCount() {
+            return rows.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return cols.length;
+        }
+
+        @Override
+        public String getColumnName(int c) {
+            return cols[c];
+        }
 
         @Override
         public Object getValueAt(int r, int c) {
@@ -412,7 +436,7 @@ public final class NonlinearityChecks extends JPanel {
         }
 
         private String summarize(NonlinearityTests.TestResult tr) {
-            if (tr == null) return "";
+            if (tr == null) return "Skipped";
             String label = tr.reject ? "Nonlinear" : "Linear";
             if (!Double.isFinite(tr.pValue)) return label;
             return label + " (p=" + pFmt.format(tr.pValue) + ")";
@@ -424,15 +448,17 @@ public final class NonlinearityChecks extends JPanel {
         final String xLabel;
         final String yLabel;
         final NonlinearityTests.TestResult reset;
-        final NonlinearityTests.TestResult cv;
+        final NonlinearityTests.TestResult cv;        // may be null if skipped
         final NonlinearityTests.TestResult moment;
-        final NonlinearityTests.TestResult additive;
+        final NonlinearityTests.TestResult additive;  // may be null if skipped
+        final boolean slowSkipped;
 
         ResultRow(int index, String xLabel, String yLabel,
                   NonlinearityTests.TestResult reset,
                   NonlinearityTests.TestResult cv,
                   NonlinearityTests.TestResult moment,
-                  NonlinearityTests.TestResult additive) {
+                  NonlinearityTests.TestResult additive,
+                  boolean slowSkipped) {
             this.index = index;
             this.xLabel = xLabel;
             this.yLabel = yLabel;
@@ -440,6 +466,7 @@ public final class NonlinearityChecks extends JPanel {
             this.cv = cv;
             this.moment = moment;
             this.additive = additive;
+            this.slowSkipped = slowSkipped;
         }
     }
 }
