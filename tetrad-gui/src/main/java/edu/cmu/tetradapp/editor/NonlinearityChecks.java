@@ -555,14 +555,15 @@ public final class NonlinearityChecks extends JPanel {
                 throw new IllegalArgumentException("Invalid combination range: [" + k1 + ".." + k2 + "]");
             }
             combo = new ComboSpec(k1, k2);
+
+            // Reuse your existing parseVars for the base portion.
+            List<Node> base = parseVars(basePart, allowEmptyAll);
+            return new TreatmentsParsed(base, combo);
         } else {
-            combo = new ComboSpec(1, 1);
+            List<Node> base = parseVars(basePart, allowEmptyAll);
+            combo = new ComboSpec(base.size(), base.size());
+            return new TreatmentsParsed(base, combo);
         }
-
-        // Reuse your existing parseVars for the base portion.
-        List<Node> base = parseVars(basePart, allowEmptyAll);
-
-        return new TreatmentsParsed(base, combo);
     }
 
     /** Generate all k-subsets of the given list in deterministic lexicographic index order. */

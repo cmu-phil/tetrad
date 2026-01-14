@@ -1197,7 +1197,7 @@ public final class NonlinearityTests {
         final long seed = 90125L;
 
         // Additive mean model complexity (hinge knots)
-        final int knotsPerVar = 6;
+        final int knotsPerVar = 10;
 
         // RFF sizes (keep modest for speed)
         final int rffX = 200;   // features for X kernel approx
@@ -1207,7 +1207,7 @@ public final class NonlinearityTests {
         final int perms = 100;
 
         // Ridge used when fitting additive mean model
-        final double ridge = 1e-4;
+        final double ridge = 1e-6;
 
         // ---- standardize X (helps everything) ----
         double[][] Xs = deepCopy(X);

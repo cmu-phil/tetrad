@@ -34,19 +34,19 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * Wrapper for linear, Gaussian SEM BIC score.
-// *
-// * @author josephramsey
-// * @version $Id: $Id
-// */
-//@edu.cmu.tetrad.annotation.Score(
-//        name = "Huang Marginal Score",
-//        command = "huang-marginal-score",
-//        dataType = {DataType.Continuous}
-//)
-//@LinearGaussian
-//@Experimental
+/**
+ * Wrapper for linear, Gaussian SEM BIC score.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
+@edu.cmu.tetrad.annotation.Score(
+        name = "Huang Marginal Score",
+        command = "huang-marginal-score",
+        dataType = {DataType.Continuous}
+)
+@LinearGaussian
+@Experimental
 public class HuangMarginalScore implements ScoreWrapper {
 
     @Serial
