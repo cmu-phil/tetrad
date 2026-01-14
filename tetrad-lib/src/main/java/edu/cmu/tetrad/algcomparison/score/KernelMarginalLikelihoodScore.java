@@ -35,19 +35,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for linear, Gaussian SEM BIC score.
+ * Wrapper for Kernel Marginal Likelihood Score.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Huang Marginal Score",
-        command = "huang-marginal-score",
+        name = "KML Score",
+        command = "kml-score",
         dataType = {DataType.Continuous}
 )
 @LinearGaussian
 @Experimental
-public class HuangMarginalScore implements ScoreWrapper {
+public class KernelMarginalLikelihoodScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -60,7 +60,7 @@ public class HuangMarginalScore implements ScoreWrapper {
     /**
      * Constructs a new instance of the SemBicScore.
      */
-    public HuangMarginalScore() {
+    public KernelMarginalLikelihoodScore() {
     }
 
     /**
@@ -70,28 +70,29 @@ public class HuangMarginalScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.HuangMarginalScore score;
+        edu.cmu.tetrad.search.score.KernelMarginalLikelihoodScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.HuangMarginalScore((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.KernelMarginalLikelihoodScore((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
         score.setLambda(parameters.getDouble(Params.RCIT_LAMBDA));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+        score.setBandwidthMultiplier(parameters.getDouble(Params.KERNEL_WIDTH));
 
         return score;
     }
 
     /**
-     * Returns the description of the Sem BIC Score.
+     * Returns the description of the Score.
      *
-     * @return the description of the Sem BIC Score
+     * @return the description of the Score
      */
     @Override
     public String getDescription() {
-        return "Huang Marginal Score";
+        return "KML Score";
     }
 
     /**
@@ -114,6 +115,7 @@ public class HuangMarginalScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.RCIT_LAMBDA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.KERNEL_WIDTH);
         return parameters;
     }
 
