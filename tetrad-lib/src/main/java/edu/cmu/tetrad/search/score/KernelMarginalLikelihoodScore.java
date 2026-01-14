@@ -10,6 +10,8 @@ import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.IntStream;
 
 /**
  * GP / kernel ridge marginal likelihood score for continuous variables:
@@ -67,7 +69,7 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
     private final double[][] zCols;
 
     /** Cache: (target i, sorted parents) -> score. */
-    private final Map<Long, Double> localScoreCache = new HashMap<>();
+    private final ConcurrentHashMap<Long, Double> localScoreCache = new ConcurrentHashMap<>();
 
     public KernelMarginalLikelihoodScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
@@ -319,9 +321,27 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
 
         double invBw = 1.0 / bw2;
 
+//        DMatrixRMaj K = new DMatrixRMaj(n, n);
+//        for (int i = 0; i < n; i++) {
+//            K.set(i, i, 1.0);
+//            for (int j = 0; j < i; j++) {
+//                double dist2 = 0.0;
+//                for (int k = 0; k < d; k++) {
+//                    double diff = Z[i][k] - Z[j][k];
+//                    dist2 += diff * diff;
+//                }
+//                double v = Math.exp(-dist2 * invBw);
+//                K.set(i, j, v);
+//                K.set(j, i, v);
+//            }
+//        }
+
         DMatrixRMaj K = new DMatrixRMaj(n, n);
-        for (int i = 0; i < n; i++) {
-            K.set(i, i, 1.0);
+
+        // fill diagonal
+        for (int i = 0; i < n; i++) K.set(i, i, 1.0);
+
+        IntStream.range(0, n).parallel().forEach(i -> {
             for (int j = 0; j < i; j++) {
                 double dist2 = 0.0;
                 for (int k = 0; k < d; k++) {
@@ -329,8 +349,14 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
                     dist2 += diff * diff;
                 }
                 double v = Math.exp(-dist2 * invBw);
-                K.set(i, j, v);
-                K.set(j, i, v);
+                K.set(i, j, v);  // write only lower triangle in parallel
+            }
+        });
+
+        // mirror single-thread
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < i; j++) {
+                K.set(j, i, K.get(i, j));
             }
         }
 
