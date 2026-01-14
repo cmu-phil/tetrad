@@ -255,7 +255,11 @@ public final class NonlinearityChecks extends JPanel {
         class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 try {
-                    List<Node> Xs = parseVars(treatmentsArea.getText(), /*allowEmptyAll*/ true);
+//                    List<Node> Xs = parseVars(treatmentsArea.getText(), /*allowEmptyAll*/ true);
+//                    List<Node> Ys = parseVars(outcomesArea.getText(), /*allowEmptyAll*/ true);
+
+                    TreatmentsParsed tp = parseTreatmentsMaybeWithCombos(treatmentsArea.getText(), /*allowEmptyAll*/ true);
+
                     List<Node> Ys = parseVars(outcomesArea.getText(), /*allowEmptyAll*/ true);
 
                     if (Ys.isEmpty()) {
@@ -271,6 +275,8 @@ public final class NonlinearityChecks extends JPanel {
                     final List<Job> jobs = new ArrayList<>();
 
                     if (rbPairwise.isSelected()) {
+                        List<Node> Xs = tp.base;
+
                         if (Xs.isEmpty()) {
                             Set<Node> yset = new HashSet<>(Ys);
                             Xs = variables.stream().filter(v -> !yset.contains(v)).collect(Collectors.toList());
@@ -282,13 +288,46 @@ public final class NonlinearityChecks extends JPanel {
                                 jobs.add(new Job(idx++, Collections.singletonList(x), y));
                             }
                         }
+
+//                        if (Xs.isEmpty()) Xs = new ArrayList<>(variables);
+//                        int idx = 1;
+//                        for (Node y : Ys) {
+//                            List<Node> parents = Xs.stream().filter(v -> !v.equals(y)).collect(Collectors.toList());
+//                            if (parents.isEmpty()) continue;
+//                            jobs.add(new Job(idx++, parents, y));
+//                        }
                     } else {
+//                        if (Xs.isEmpty()) Xs = new ArrayList<>(variables);
+//                        int idx = 1;
+//                        for (Node y : Ys) {
+//                            List<Node> parents = Xs.stream().filter(v -> !v.equals(y)).collect(Collectors.toList());
+//                            if (parents.isEmpty()) continue;
+//                            jobs.add(new Job(idx++, parents, y));
+//                        }
+
+                        List<Node> Xs = tp.base;
                         if (Xs.isEmpty()) Xs = new ArrayList<>(variables);
+
+                        // Expand parent sets if user supplied [k] or [k..m]
+                        List<List<Node>> parentSets = expandTreatmentsToParentSets(Xs, tp.combo);
+
                         int idx = 1;
+                        final int MAX_JOBS = 5000; // guardrail; tweak as you like
+
                         for (Node y : Ys) {
-                            List<Node> parents = Xs.stream().filter(v -> !v.equals(y)).collect(Collectors.toList());
-                            if (parents.isEmpty()) continue;
-                            jobs.add(new Job(idx++, parents, y));
+                            for (List<Node> parents : parentSets) {
+                                if (parents.isEmpty()) continue;
+                                if (parents.contains(y)) continue;
+
+                                jobs.add(new Job(idx++, parents, y));
+
+                                if (jobs.size() > MAX_JOBS) {
+                                    throw new IllegalArgumentException(
+                                            "Too many (X-set, Y) checks (" + jobs.size() + "). " +
+                                                    "Try fewer treatments, smaller [k], or a narrower wildcard."
+                                    );
+                                }
+                            }
                         }
                     }
 
@@ -464,6 +503,118 @@ public final class NonlinearityChecks extends JPanel {
         return sb.toString();
     }
 
+    // ---------------- combo parsing for Treatments ----------------
+
+    private static final class ComboSpec {
+        final int kMin;
+        final int kMax;
+
+        ComboSpec(int kMin, int kMax) {
+            this.kMin = kMin;
+            this.kMax = kMax;
+        }
+    }
+
+    private static final class TreatmentsParsed {
+        final List<Node> base;            // expanded variables
+        final ComboSpec combo;            // null if no [k] suffix
+
+        TreatmentsParsed(List<Node> base, ComboSpec combo) {
+            this.base = base;
+            this.combo = combo;
+        }
+    }
+
+    /**
+     * Parse treatments text possibly ending with a combination suffix like:
+     *   "*[2]" or "X1,X2,X3[2..3]" or "X*[3]"
+     *
+     * Returns base variables (expanded) plus optional combo spec.
+     */
+    private TreatmentsParsed parseTreatmentsMaybeWithCombos(String text, boolean allowEmptyAll) {
+        String s = (text == null) ? "" : text.trim();
+        if (s.isEmpty()) {
+            return new TreatmentsParsed(
+                    allowEmptyAll ? Collections.emptyList() : Collections.emptyList(),
+                    null
+            );
+        }
+
+        // Look for trailing [ ... ] as combo spec.
+        // Examples: [2], [2..3]
+        ComboSpec combo = null;
+
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("^(.*)\\[(\\d+)(?:\\.\\.(\\d+))?\\]\\s*$")
+                .matcher(s);
+
+        String basePart = s;
+        if (m.matches()) {
+            basePart = m.group(1).trim();
+            int k1 = Integer.parseInt(m.group(2));
+            int k2 = (m.group(3) != null) ? Integer.parseInt(m.group(3)) : k1;
+
+            if (k1 <= 0 || k2 <= 0) {
+                throw new IllegalArgumentException("Combination size must be positive: [" + k1 + ".." + k2 + "]");
+            }
+            if (k2 < k1) {
+                throw new IllegalArgumentException("Invalid combination range: [" + k1 + ".." + k2 + "]");
+            }
+            combo = new ComboSpec(k1, k2);
+        } else {
+            combo = new ComboSpec(1, 1);
+        }
+
+        // Reuse your existing parseVars for the base portion.
+        List<Node> base = parseVars(basePart, allowEmptyAll);
+
+        return new TreatmentsParsed(base, combo);
+    }
+
+    /** Generate all k-subsets of the given list in deterministic lexicographic index order. */
+    private static List<List<Node>> combinationsOfSize(List<Node> items, int k) {
+
+        int n = items.size();
+        if (k < 0 || k > n) return Collections.emptyList();
+        if (k == 0) return Collections.singletonList(Collections.emptyList());
+
+        List<List<Node>> out = new ArrayList<>();
+        int[] idx = new int[k];
+        for (int i = 0; i < k; i++) idx[i] = i;
+
+        while (true) {
+            List<Node> comb = new ArrayList<>(k);
+            for (int i = 0; i < k; i++) comb.add(items.get(idx[i]));
+            out.add(comb);
+
+            // next combination
+            int t = k - 1;
+            while (t >= 0 && idx[t] == n - k + t) t--;
+            if (t < 0) break;
+            idx[t]++;
+            for (int i = t + 1; i < k; i++) idx[i] = idx[i - 1] + 1;
+        }
+
+        return out;
+    }
+
+    /**
+     * Expand base treatments into parent-sets:
+     * - if no combo spec: one set = base
+     * - if combo spec: many sets = all kMin..kMax combinations
+     */
+    private static List<List<Node>> expandTreatmentsToParentSets(List<Node> base, ComboSpec combo) {
+        if (combo == null) {
+            return Collections.singletonList(new ArrayList<>(base));
+        }
+
+        List<List<Node>> sets = new ArrayList<>();
+        for (int k = combo.kMin; k <= combo.kMax; k++) {
+            sets.addAll(combinationsOfSize(base, k));
+        }
+        return sets;
+    }
+
     private void showStats() {
         int r = table.getSelectedRow();
         if (r < 0) return;
@@ -519,6 +670,7 @@ public final class NonlinearityChecks extends JPanel {
 
         private String summarizeAdditivity(NonlinearityTests.TestResult tr) {
             if (tr == null) return "Skipped";
+            if (Double.isNaN(tr.pValue)) return "Skipped";
 
             // For additivity, reject == "Non-additive" (full RFF wins)
             String label = tr.reject ? "Non-additive" : "Additive OK";
