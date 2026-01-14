@@ -263,38 +263,6 @@ public final class NonlinearityChecks extends JPanel {
                         return;
                     }
 
-//                    final boolean runSlow = includeSlowTests.isSelected();
-
-//                    double alpha = 0.05; // could be a UI knob later
-//                    int kfold = 10;      // could be a UI knob later
-
-//                    List<ResultRow> rows = new ArrayList<>();
-
-//                    if (rbPairwise.isSelected()) {
-//                        if (Xs.isEmpty()) {
-//                            Set<Node> yset = new HashSet<>(Ys);
-//                            Xs = variables.stream().filter(v -> !yset.contains(v)).collect(Collectors.toList());
-//                        }
-//
-//                        int idx = 1;
-//                        for (Node x : Xs) {
-//                            for (Node y : Ys) {
-//                                if (x.equals(y)) continue;
-//                                rows.add(runOne(idx++, Collections.singletonList(x), y, alpha, kfold));
-//                            }
-//                        }
-//                    } else {
-//                        if (Xs.isEmpty()) {
-//                            Xs = new ArrayList<>(variables);
-//                        }
-//                        int idx = 1;
-//                        for (Node y : Ys) {
-//                            List<Node> parents = Xs.stream().filter(v -> !v.equals(y)).collect(Collectors.toList());
-//                            if (parents.isEmpty()) continue;
-//                            rows.add(runOne(idx++, parents, y, alpha, kfold));
-//                        }
-//                    }
-
                     // --- build jobs (deterministic order) ---
                     final boolean runSlow = includeSlowTests.isSelected();
                     final double alpha = 0.05;
@@ -324,7 +292,7 @@ public final class NonlinearityChecks extends JPanel {
                         }
                     }
 
-// --- parallel execute jobs ---
+                    // --- parallel execute jobs ---
                     int cores = Math.max(1, Runtime.getRuntime().availableProcessors());
                     int threads = Math.max(1, cores - 1); // leave one core for UI/GC
                     ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(threads);
@@ -354,11 +322,6 @@ public final class NonlinearityChecks extends JPanel {
                     } finally {
                         pool.shutdownNow();
                     }
-
-//                    SwingUtilities.invokeLater(() -> {
-//                        tableModel.setRows(rows);
-//                        showStatsButton.setEnabled(false);
-//                    });
                 } catch (IllegalArgumentException ex) {
                     JOptionPane.showMessageDialog(getThisComponent(), ex.getMessage());
                 } catch (Exception ex) {
@@ -531,8 +494,6 @@ public final class NonlinearityChecks extends JPanel {
         private final String[] cols = {"#", "X", "Y", "RESET", "CV", "Moment", "Additive", "Additivity"}; // NEW
         private List<ResultRow> rows = new ArrayList<>();
 
-//        @Override public int getColumnCount() { return cols.length; }
-
         @Override
         public Object getValueAt(int r, int c) {
             ResultRow row = rows.get(r);
@@ -590,57 +551,6 @@ public final class NonlinearityChecks extends JPanel {
             return cols[c];
         }
     }
-
-//    private final class ResultsTableModel extends AbstractTableModel {
-//        private final String[] cols = {"#", "X", "Y", "RESET", "CV (slow)", "Moment", "Additive (slow)"};
-//        private List<ResultRow> rows = new ArrayList<>();
-//
-//        void setRows(List<ResultRow> rows) {
-//            this.rows = (rows == null) ? new ArrayList<>() : rows;
-//            fireTableDataChanged();
-//        }
-//
-//        ResultRow getRow(int r) {
-//            return rows.get(r);
-//        }
-//
-//        @Override
-//        public int getRowCount() {
-//            return rows.size();
-//        }
-//
-//        @Override
-//        public int getColumnCount() {
-//            return cols.length;
-//        }
-//
-//        @Override
-//        public String getColumnName(int c) {
-//            return cols[c];
-//        }
-//
-//        @Override
-//        public Object getValueAt(int r, int c) {
-//            ResultRow row = rows.get(r);
-//            return switch (c) {
-//                case 0 -> row.index;
-//                case 1 -> row.xLabel;
-//                case 2 -> row.yLabel;
-//                case 3 -> summarize(row.reset);
-//                case 4 -> summarize(row.cv);
-//                case 5 -> summarize(row.moment);
-//                case 6 -> summarize(row.additive);
-//                default -> "";
-//            };
-//        }
-//
-//        private String summarize(NonlinearityTests.TestResult tr) {
-//            if (tr == null) return "Skipped";
-//            String label = tr.reject ? "Nonlinear" : "Linear";
-//            if (!Double.isFinite(tr.pValue)) return label;
-//            return label + " (p=" + pFmt.format(tr.pValue) + ")";
-//        }
-//    }
 
     private static final class ResultRow {
         final int index;
