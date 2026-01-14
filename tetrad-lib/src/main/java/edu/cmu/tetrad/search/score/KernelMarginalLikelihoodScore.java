@@ -11,19 +11,20 @@ import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 /**
  * GP / kernel ridge marginal likelihood score for continuous variables:
- *
- *   y = f(Z) + e,    e ~ N(0, sigma^2 I)
- *   f ~ GP(0, k(.,.))
- *
+ * <p>
+ * y = f(Z) + e,    e ~ N(0, sigma^2 I)
+ * f ~ GP(0, k(.,.))
+ * <p>
  * Score (up to constants):
- *   S = -0.5 * y^T C^{-1} y - 0.5 * log|C|,  C = Kz + sigma^2 I
- *
+ * S = -0.5 * y^T C^{-1} y - 0.5 * log|C|,  C = Kz + sigma^2 I
+ * <p>
  * Higher is better (Tetrad convention).
- *
+ * <p>
  * This is a "kernel marginal score" that is stable in greedy search
  * (BOSS/FGES-style) compared to operator/Kx-based surrogates.
  */
@@ -31,45 +32,56 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
 
     // -------------------- configuration knobs --------------------
 
-    /** Base ridge/noise knob. Used to form sigma^2. Must be > 0. */
-    private double lambda = 1e-3;
+    /**
+     * Base ridge/noise knob. Used to form sigma^2. Must be > 0.
+     */
+    private volatile double lambda = 1e-3;
 
     /**
      * If true, sigma^2 = n * lambda. If false, sigma^2 = lambda.
      * Many kernel ridge / GP scoring derivations use an n-scaling.
      */
-    private boolean useNScaledSigma2 = true;
+    private volatile boolean useNScaledSigma2 = true;
 
-    /** Jitter escalation base for Cholesky stabilization. Must be > 0. */
-    private double jitter = 1e-10;
+    /**
+     * Jitter escalation base for Cholesky stabilization. Must be > 0.
+     */
+    private volatile double jitter = 1e-10;
 
-    /** If true, use valid row subsets when missing exists. */
+    /**
+     * If true, use valid row subsets when missing exists.
+     */
     private final boolean calculateRowSubsets;
 
     /**
      * Bandwidth multiplier on the median heuristic.
      * 1.0 is default; try 0.5 or 2.0 if things feel too smooth/too spiky.
      */
-    private double bandwidthMultiplier = 1.0;
+    private volatile double bandwidthMultiplier = 1.0;
 
     /**
      * Max rows used to estimate median bandwidth (subsample for speed).
      * Kernel itself still uses all rows.
      */
-    private int bwMaxRows = 400;
+    private volatile int bwMaxRows = 400;
 
     // -------------------- data --------------------
 
     private final DataSet dataSet;
     private final List<Node> variables;
     private final int sampleSize;
-    private int nEff;
+    private volatile int nEff;
 
-    /** Standardized columns (z-scored globally, NaNs preserved). zCols[p][n]. */
+    /**
+     * Standardized columns (z-scored globally, NaNs preserved). zCols[p][n].
+     */
     private final double[][] zCols;
 
-    /** Cache: (target i, sorted parents) -> score. */
-    private final ConcurrentHashMap<Long, Double> localScoreCache = new ConcurrentHashMap<>();
+    /**
+     * Cache: (target i, sorted parents) -> score.
+     */
+    private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
+            new AtomicReference<>(new ConcurrentHashMap<>());
 
     public KernelMarginalLikelihoodScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
@@ -103,41 +115,41 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
     @Override
     public double localScore(int i, int... parents) {
         Arrays.sort(parents);
-
         long key = cacheKey(i, parents);
-        Double cached = localScoreCache.get(key);
-        if (cached != null) return cached;
 
-        try {
-            int[] all = concat(i, parents);
-            int[] rows = calculateRowSubsets ? validRows(all) : null;
+        final ConcurrentHashMap<Long, Double> cache = localScoreCacheRef.get();
 
-            int n = (rows == null) ? nEff : rows.length;
-            if (n < 5) return Double.NaN;
+        // computeIfAbsent is atomic for the map (no duplicate computes per key)
+        return cache.computeIfAbsent(key, k -> {
+            try {
+                int[] all = concat(i, parents);
+                int[] rows = calculateRowSubsets ? validRows(all) : null;
 
-            // Response y = standardized Xi (subset rows if needed)
-            double[] y = extract1D(i, rows, n);
+                int n = (rows == null) ? nEff : rows.length;
+                if (n < 5) return Double.NaN;
 
-            // Center y (mean function = constant)
-            centerInPlace(y);
+                double[] y = extract1D(i, rows, n);
+                centerInPlace(y);
 
-            // Build C = K(Z,Z) + sigma^2 I
-            double sigma2 = useNScaledSigma2 ? (n * lambda) : lambda;
-            if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
+                double sigma2 = useNScaledSigma2 ? (n * lambda) : lambda;
+                if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
 
-            DMatrixRMaj C = (parents.length == 0)
-                    ? new DMatrixRMaj(n, n)  // K = 0
-                    : rbfGramND(parents, rows, n);
+                DMatrixRMaj C = (parents.length == 0)
+                        ? new DMatrixRMaj(n, n)
+                        : rbfGramND(parents, rows, n);
 
-            addDiagonalInPlace(C, sigma2);
+                addDiagonalInPlace(C, sigma2);
 
-            double score = gpLogMarginalLikelihood(y, C, jitter);
-            localScoreCache.put(key, score);
-            return score;
-        } catch (RuntimeException e) {
-            TetradLogger.getInstance().log(e.getMessage());
-            return Double.NaN;
-        }
+                return gpLogMarginalLikelihood(y, C, jitter);
+            } catch (RuntimeException e) {
+                TetradLogger.getInstance().log(e.getMessage());
+                return Double.NaN;
+            }
+        });
+    }
+
+    private void resetCache() {
+        localScoreCacheRef.set(new ConcurrentHashMap<>());
     }
 
     @Override
@@ -182,7 +194,7 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
-        localScoreCache.clear();
+        resetCache();
     }
 
     @Override
@@ -192,44 +204,54 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
 
     // -------------------- public tuning knobs --------------------
 
-    public double getLambda() { return lambda; }
+    public double getLambda() {
+        return lambda;
+    }
 
     public void setLambda(double lambda) {
         if (lambda <= 0) throw new IllegalArgumentException("lambda must be > 0");
         this.lambda = lambda;
-        localScoreCache.clear();
+        resetCache();
     }
 
-    public boolean isUseNScaledSigma2() { return useNScaledSigma2; }
+    public boolean isUseNScaledSigma2() {
+        return useNScaledSigma2;
+    }
 
     public void setUseNScaledSigma2(boolean useNScaledSigma2) {
         this.useNScaledSigma2 = useNScaledSigma2;
-        localScoreCache.clear();
+        resetCache();
     }
 
-    public double getJitter() { return jitter; }
+    public double getJitter() {
+        return jitter;
+    }
 
     public void setJitter(double jitter) {
         if (jitter <= 0) throw new IllegalArgumentException("jitter must be > 0");
         this.jitter = jitter;
-        localScoreCache.clear();
+        resetCache();
     }
 
-    public double getBandwidthMultiplier() { return bandwidthMultiplier; }
+    public double getBandwidthMultiplier() {
+        return bandwidthMultiplier;
+    }
 
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
         if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
             throw new IllegalArgumentException("bandwidthMultiplier must be > 0");
         }
         this.bandwidthMultiplier = bandwidthMultiplier;
-        localScoreCache.clear();
+        resetCache();
     }
 
-    public int getBwMaxRows() { return bwMaxRows; }
+    public int getBwMaxRows() {
+        return bwMaxRows;
+    }
 
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = Math.max(50, bwMaxRows);
-        localScoreCache.clear();
+        resetCache();
     }
 
     // -------------------- GP marginal likelihood core --------------------
@@ -302,7 +324,7 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
 
     /**
      * RBF kernel Gram matrix on standardized parents:
-     *   K_ij = exp(-||z_i - z_j||^2 / bw2)
+     * K_ij = exp(-||z_i - z_j||^2 / bw2)
      * where bw2 is median ||zi-zj||^2 times multiplier.
      */
     private DMatrixRMaj rbfGramND(int[] parentIdx, int[] rows, int n) {
@@ -321,27 +343,12 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
 
         double invBw = 1.0 / bw2;
 
-//        DMatrixRMaj K = new DMatrixRMaj(n, n);
-//        for (int i = 0; i < n; i++) {
-//            K.set(i, i, 1.0);
-//            for (int j = 0; j < i; j++) {
-//                double dist2 = 0.0;
-//                for (int k = 0; k < d; k++) {
-//                    double diff = Z[i][k] - Z[j][k];
-//                    dist2 += diff * diff;
-//                }
-//                double v = Math.exp(-dist2 * invBw);
-//                K.set(i, j, v);
-//                K.set(j, i, v);
-//            }
-//        }
-
         DMatrixRMaj K = new DMatrixRMaj(n, n);
 
-        // fill diagonal
+        // fill diagonal (RBF has k(x,x)=1)
         for (int i = 0; i < n; i++) K.set(i, i, 1.0);
 
-        IntStream.range(0, n).parallel().forEach(i -> {
+        for (int i = 0; i < n; i++) {
             for (int j = 0; j < i; j++) {
                 double dist2 = 0.0;
                 for (int k = 0; k < d; k++) {
@@ -349,17 +356,10 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
                     dist2 += diff * diff;
                 }
                 double v = Math.exp(-dist2 * invBw);
-                K.set(i, j, v);  // write only lower triangle in parallel
-            }
-        });
-
-        // mirror single-thread
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < i; j++) {
-                K.set(j, i, K.get(i, j));
+                K.set(i, j, v);
+                K.set(j, i, v);
             }
         }
-
         return K;
     }
 
