@@ -1116,37 +1116,6 @@ public class Fges implements IGraphSearch, DagScorer {
      * @param recordScores Indicates whether or not to record the scores for each node in the graph.
      * @return The total score of the DAG.
      */
-//    private double scoreDag(Graph dag, boolean recordScores) {
-//        if (score instanceof GraphScore) return 0.0;
-//        dag = GraphUtils.replaceNodes(dag, getVariables());
-//
-//        double _score = 0;
-//
-//        for (Node node : getVariables()) {
-//            List<Node> x = dag.getParents(node);
-//
-//            int[] parentIndices = new int[x.size()];
-//
-//            int count = 0;
-//            for (Node parent : x) {
-//                parentIndices[count++] = hashIndices.get(parent);
-//            }
-//
-//            final double nodeScore = score.localScore(hashIndices.get(node), parentIndices);
-//
-//            if (recordScores) {
-//                node.addAttribute("Score", nodeScore);
-//            }
-//
-//            _score += nodeScore;
-//        }
-//
-//        if (recordScores) {
-//            graph.addAttribute("Score", _score);
-//        }
-//
-//        return _score;
-//    }
     private double scoreDag(Graph dag, boolean recordScores) {
         dag = GraphUtils.replaceNodes(dag, getVariables());
 
