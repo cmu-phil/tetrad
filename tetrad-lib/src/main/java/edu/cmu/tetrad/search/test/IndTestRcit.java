@@ -24,7 +24,7 @@ import static java.lang.Double.NaN;
  * <ul>
  *   <li>Standardize X, Y, Z (z-score, ddof=1)</li>
  *   <li>Bandwidths (σ) via median pairwise Euclidean distance using first min(n,500) rows</li>
- *   <li>Random Fourier Features (RFF): sqrt(2) * cos(W X^T + b), W ~ N(0, 1/σ), b ~ U[0, 2π]</li>
+ *   <li>Random Fourier Features (RFF): sqrt(2 / m) * cos(W X^T + b), W ~ N(0, 1/σ), b ~ U[0, 2π]</li>
  *   <li>Statistic: n * || Cxy - Cxz Czz^{-1} Czy ||_F^2 (RIT if Z empty)</li>
  *   <li>Null: Gamma (Satterthwaite–Welch) / Edgeworth (HBE/LPB4) / Chi2, or permutation</li>
  * </ul>
@@ -144,12 +144,19 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     /**
      * Frobenius norm squared.
      */
+//    private static double frob2(SimpleMatrix M) {
+//        double s = 0.0;
+//        for (int i = 0; i < M.getNumElements(); i++) {
+//            double v = M.get(i);
+//            s += v * v;
+//        }
+//        return s;
+//    }
+
     private static double frob2(SimpleMatrix M) {
         double s = 0.0;
-        for (int i = 0; i < M.getNumElements(); i++) {
-            double v = M.get(i);
-            s += v * v;
-        }
+        double[] a = M.getDDRM().data;
+        for (double v : a) s += v * v;
         return s;
     }
 
@@ -165,53 +172,39 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Column means replicated to n rows (for convenience).
-     */
-    private static SimpleMatrix colMeanRow(SimpleMatrix M) {
-        int n = M.getNumRows(), d = M.getNumCols();
-        SimpleMatrix r = new SimpleMatrix(1, d);
-        for (int j = 0; j < d; j++) {
-            double s = 0;
-            for (int i = 0; i < n; i++) s += M.get(i, j);
-            r.set(0, j, s / n);
-        }
-        return tileRow(r, n);
-    }
-
-    private static SimpleMatrix tileRow(SimpleMatrix row1xd, int n) {
-        SimpleMatrix out = new SimpleMatrix(n, row1xd.getNumCols());
-        for (int i = 0; i < n; i++) out.insertIntoThis(i, 0, row1xd);
-        return out;
-    }
-
-    /**
      * Random Fourier Features for RBF: sqrt(2)*cos(W X^T + b), with W ~ N(0, 1/σ).
      */
     private static SimpleMatrix rff(SimpleMatrix X, int numF, double sigma, Random rng) {
         int n = X.getNumRows(), d = X.getNumCols();
         if (sigma <= 0 || !Double.isFinite(sigma)) sigma = 1.0;
 
-        SimpleMatrix W = new SimpleMatrix(numF, d);
-        double sd = 1.0 / sigma;
-        for (int i = 0; i < numF; i++)
-            for (int j = 0; j < d; j++)
-                W.set(i, j, rng.nextGaussian() * sd);
-
-        double twoPi = 2.0 * Math.PI;
+        double invSigma = 1.0 / sigma;
         double[] b = new double[numF];
+        double twoPi = 2.0 * Math.PI;
         for (int i = 0; i < numF; i++) b[i] = rng.nextDouble() * twoPi;
 
-        SimpleMatrix Xt = X.transpose();            // d x n
-        SimpleMatrix WX = W.mult(Xt);               // numF x n
-        for (int i = 0; i < numF; i++)
-            for (int j = 0; j < n; j++)
-                WX.set(i, j, WX.get(i, j) + b[i]);
+        // Store W row-major in a plain array: W[i*d + j]
+        double[] W = new double[numF * d];
+        for (int i = 0; i < numF; i++) {
+            int base = i * d;
+            for (int j = 0; j < d; j++) {
+                W[base + j] = rng.nextGaussian() * invSigma;
+            }
+        }
 
         SimpleMatrix feat = new SimpleMatrix(n, numF);
-        double scale = Math.sqrt(2.0);
-        for (int i = 0; i < numF; i++)
-            for (int j = 0; j < n; j++)
-                feat.set(j, i, scale * Math.cos(WX.get(i, j)));
+        double scale = Math.sqrt(2.0 / numF);
+
+        for (int r = 0; r < n; r++) {
+            for (int f = 0; f < numF; f++) {
+                int base = f * d;
+                double dot = 0.0;
+                for (int j = 0; j < d; j++) {
+                    dot += W[base + j] * X.get(r, j);
+                }
+                feat.set(r, f, scale * Math.cos(dot + b[f]));
+            }
+        }
 
         return feat;
     }
@@ -238,6 +231,37 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         Collections.sort(dists);
         int m = dists.size();
         return (m % 2 == 1) ? dists.get(m / 2) : 0.5 * (dists.get(m / 2 - 1) + dists.get(m / 2));
+    }
+
+    private static double medianPairwiseDistanceSampled(SimpleMatrix A, int maxPairs, Random rng) {
+        int n = A.getNumRows();
+        int d = A.getNumCols();
+        if (n <= 1 || d == 0) return 1.0;
+
+        int pairs = Math.min(maxPairs, n * (n - 1) / 2);
+        if (pairs <= 0) return 1.0;
+
+        double[] dist = new double[pairs];
+        int filled = 0;
+
+        for (int t = 0; t < pairs; t++) {
+            int i = rng.nextInt(n);
+            int j = rng.nextInt(n - 1);
+            if (j >= i) j++;
+
+            double ss = 0.0;
+            for (int k = 0; k < d; k++) {
+                double diff = A.get(i, k) - A.get(j, k);
+                ss += diff * diff;
+            }
+            double dd = Math.sqrt(ss);
+            if (dd > 0 && Double.isFinite(dd)) dist[filled++] = dd;
+        }
+
+        if (filled == 0) return 1.0;
+        Arrays.sort(dist, 0, filled);
+        int m = filled;
+        return (m % 2 == 1) ? dist[m / 2] : 0.5 * (dist[m / 2 - 1] + dist[m / 2]);
     }
 
     // ---------------- IndependenceTest ----------------
@@ -268,7 +292,8 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         ArrayList<Double> pos = new ArrayList<>(m);
         for (int i = 0; i < m; i++) {
             double lam = evd.getEigenvalue(i).getReal();
-            if (lam > 0 && Double.isFinite(lam)) pos.add(lam);
+//            if (lam > 0 && Double.isFinite(lam)) pos.add(lam);
+            if (lam > 1e-12 && Double.isFinite(lam)) pos.add(lam);
         }
         double[] e = new double[pos.size()];
         for (int i = 0; i < e.length; i++) e[i] = pos.get(i);
@@ -319,7 +344,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         double z = t + (gamma1 / 6.0) * (t * t - 1.0);
         if (useKurtosis) {
             z += (gamma2 / 24.0) * (t * t * t - 3.0 * t)
-                 - (gamma1 * gamma1 / 36.0) * (2.0 * t * t * t - 5.0 * t);
+                    - (gamma1 * gamma1 / 36.0) * (2.0 * t * t * t - 5.0 * t);
         }
         NormalDistribution nd = new NormalDistribution();
         return 1.0 - nd.cumulativeProbability(z);
@@ -628,8 +653,13 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                         int greater = 0;
                         for (int b = 0; b < permutations; b++) {
                             int[] perm = randomPermutation(n, rng);
-                            SimpleMatrix fYp = permuteRows(fY, perm);
-                            double s = n * frob2(cov(fX, fYp));
+
+//                            SimpleMatrix fYp = permuteRows(fY, perm);
+//                            double s = n * frob2(cov(fX, fYp));
+
+                            SimpleMatrix C = covWithPermutedB(fX, fY, perm);
+                            double s = n * frob2(C);
+
                             if (s >= stat) greater++;
                         }
                         p = (greater + 1.0) / (permutations + 1.0);
@@ -658,10 +688,10 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
             // Key must depend on Z, n, numFeatZ, sigmaZ, lambda, seedZ, doRcit? (doesn't affect fZ)
 
             String cholKey = "cholZ|" + keySigma("Z", Z)  // includes n and sorted var names
-                             + "|Fz=" + numFeatZ
-                             + "|lam=" + Double.doubleToLongBits(lambda)
-                             + "|sigZ=" + Double.doubleToLongBits(sigZ)
-                             + "|seedZ=" + seedZ;
+                    + "|Fz=" + numFeatZ
+                    + "|lam=" + Double.doubleToLongBits(lambda)
+                    + "|sigZ=" + Double.doubleToLongBits(sigZ)
+                    + "|seedZ=" + seedZ;
 
             SimpleMatrix L = cholCache.computeIfAbsent(cholKey, k -> choleskyLower(A));
 
@@ -680,13 +710,17 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                     int[] perm = randomPermutation(n, rng);
 
                     // Avoid allocating fYp if you want later; keep simple for now:
-                    SimpleMatrix fYp = permuteRows(fY, perm);
+//                    SimpleMatrix fYp = permuteRows(fY, perm);
 
-                    SimpleMatrix Cyp = cov(fX, fYp);
-                    SimpleMatrix Czyp = cov(fZ, fYp);
+//                    SimpleMatrix Cyp = cov(fX, fYp);
+//                    SimpleMatrix Czyp = cov(fZ, fYp);
+
+                    SimpleMatrix Cyp  = covWithPermutedB(fX, fY, perm);
+                    SimpleMatrix Czyp = covWithPermutedB(fZ, fY, perm);
+                    SimpleMatrix Cxy_z_p = Cyp.minus(U.mult(Czyp));
 
                     // Cxy|z perm = Cyp - U * Czyp   (since U = Cxz inv(A) is unchanged)
-                    SimpleMatrix Cxy_z_p = Cyp.minus(U.mult(Czyp));
+//                    SimpleMatrix Cxy_z_p = Cyp.minus(U.mult(Czyp));
 
                     double s = n * frob2(Cxy_z_p);
                     if (s >= stat) greater++;
@@ -817,8 +851,28 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         return sigmaCache.computeIfAbsent(key, k -> {
             int n = raw.getNumRows();
             int r1 = Math.min(n, 500);
-            return medianPairwiseDistance(raw.rows(0, r1));
+//            return medianPairwiseDistance(raw.rows(0, r1));
+            return medianPairwiseDistanceSampled(raw.rows(0, r1), 5000, new Random(12345));
         });
+    }
+
+    private static SimpleMatrix covWithPermutedB(SimpleMatrix A, SimpleMatrix B, int[] perm) {
+        int n = A.getNumRows();
+        int p = A.getNumCols();
+        int q = B.getNumCols();
+        SimpleMatrix C = new SimpleMatrix(p, q);
+
+        // C[a,b] = sum_i A[i,a] * B[perm[i], b]
+        for (int i = 0; i < n; i++) {
+            int bi = perm[i];
+            for (int a = 0; a < p; a++) {
+                double av = A.get(i, a);
+                for (int b = 0; b < q; b++) {
+                    C.set(a, b, C.get(a, b) + av * B.get(bi, b));
+                }
+            }
+        }
+        return C.scale(1.0 / (n - 1));
     }
 
     private SimpleMatrix rffCached(String tag, SimpleMatrix raw, List<Node> varsForKey, int numF, double sigma,
@@ -828,7 +882,9 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         return rffCache.computeIfAbsent(key, k -> {
             Random rr = new Random(seed);
             SimpleMatrix feat = rff(raw, numF, sigma, rr);
+//            if (center) zscoreInPlace(feat);
             if (center) zscoreInPlace(feat);
+            else subtractColumnMeansInPlace(feat);
             return feat;
         });
     }

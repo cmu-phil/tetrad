@@ -35,19 +35,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Kernel Marginal Likelihood Score.
+ * Wrapper for RFF Marginal Likelihood Score.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "KML Score RFF",
-        command = "kml-score-rff",
+        name = "RFF-ML Score",
+        command = "rff-ml-score",
         dataType = {DataType.Continuous}
 )
 @LinearGaussian
 @Experimental
-public class KernelMarginalLikelihoodScoreRff implements ScoreWrapper {
+public class RffMarginalLikelihoodScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -60,7 +60,7 @@ public class KernelMarginalLikelihoodScoreRff implements ScoreWrapper {
     /**
      * Constructs a new instance of the SemBicScore.
      */
-    public KernelMarginalLikelihoodScoreRff() {
+    public RffMarginalLikelihoodScore() {
     }
 
     /**
@@ -70,10 +70,10 @@ public class KernelMarginalLikelihoodScoreRff implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.KernelMarginalLikelihoodScoreRff score;
+        edu.cmu.tetrad.search.score.RffMarginalLikelihoodScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.KernelMarginalLikelihoodScoreRff((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.RffMarginalLikelihoodScore((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
@@ -92,7 +92,7 @@ public class KernelMarginalLikelihoodScoreRff implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "KML Score RFF";
+        return "RFF-ML Score";
     }
 
     /**

@@ -17,20 +17,57 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * GP / kernel ridge marginal likelihood score for continuous variables:
+ * RFF-ML Score (Random Fourier Features Maximum-Likelihood score).
  * <p>
- * y = f(Z) + e,    e ~ N(0, sigma^2 I)
- * f ~ GP(0, k(.,.))
+ * This score is a kernel-based, likelihood-style score for structure learning that approximates
+ * nonlinear dependence using Random Fourier Features (RFF). Conceptually, it replaces an explicit
+ * kernel representation (e.g., a Gaussian/RBF kernel matrix) with a finite-dimensional feature map
+ * so that the resulting computations can be performed using standard linear-algebra operations.
  * <p>
- * Score (up to constants):
- * S = -0.5 * y^T C^{-1} y - 0.5 * log|C|,  C = Kz + sigma^2 I
- * <p>
- * Higher is better (Tetrad convention).
- * <p>
- * This is a "kernel marginal score" that is stable in greedy search
- * (BOSS/FGES-style) compared to operator/Kx-based surrogates.
+ * At a high level, for a target variable {@code Y} and a candidate parent set {@code Pa(Y)}, the score:
+ * <ul>
+ *   <li>Constructs RFF embeddings for {@code Y} and for {@code Pa(Y)} (and any additional variables used by the test/score),
+ *       where the embedding approximates an RBF kernel via {@code cos(Wx + b)} features.</li>
+ *   <li>Fits a regularized linear model in the embedded space (typically ridge-regularized) to capture
+ *       conditional mean structure of {@code Y} given {@code Pa(Y)} in a flexible nonlinear way.</li>
+ *   <li>Computes a maximum-likelihood-style objective (or an equivalent quadratic form) from the residual
+ *       covariance in the embedded space.</li>
+ *   <li>Adds a complexity penalty that depends on sample size and the effective degrees of freedom
+ *       (analogous in spirit to BIC-type penalties), so that larger parent sets are penalized.</li>
+ * </ul>
+ *
+ * <h2>Why Random Fourier Features?</h2>
+ * RFF provides a scalable approximation to shift-invariant kernels. Instead of forming and factoring
+ * an {@code n × n} kernel matrix (which can be expensive in both time and memory), RFF uses an
+ * {@code n × m} feature matrix where {@code m} is the number of random features. This allows the
+ * score to scale more gracefully with sample size while still capturing nonlinear relationships.
+ *
+ * <h2>Intended use</h2>
+ * This score is designed for use in score-based causal discovery procedures (e.g., FGES/BOSS-style
+ * searches), where the score must be evaluated repeatedly for many candidate parent sets. The RFF
+ * approximation and internal caching (if enabled) are particularly helpful in that setting.
+ *
+ * <h2>Important hyperparameters</h2>
+ * Typical configuration parameters include:
+ * <ul>
+ *   <li>{@code numFeatures}: number of random Fourier features (tradeoff between accuracy and speed).</li>
+ *   <li>{@code bandwidth / sigma}: kernel bandwidth (often chosen using a median-distance heuristic).</li>
+ *   <li>{@code lambda}: ridge regularization strength used for stability in embedded regression/covariance operations.</li>
+ *   <li>{@code seed}: random seed controlling the RFF projection (recommended for reproducibility).</li>
+ * </ul>
+ *
+ * <h2>Notes</h2>
+ * <ul>
+ *   <li>This score is not restricted to linear-Gaussian relationships; it is intended to capture
+ *       nonlinear structure through the kernel approximation.</li>
+ *   <li>Like other kernel/RFF methods, performance can be sensitive to bandwidth and feature count.</li>
+ *   <li>Reproducibility requires fixing the random seed (and, if caching is used, ensuring cache keys
+ *       incorporate relevant aspects such as variable sets and active rows).</li>
+ * </ul>
+ *
+ * @see edu.cmu.tetrad.search.score.Score
  */
-public final class KernelMarginalLikelihoodScoreRff implements Score, EffectiveSampleSizeSettable {
+public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- configuration knobs --------------------
 
@@ -85,7 +122,7 @@ public final class KernelMarginalLikelihoodScoreRff implements Score, EffectiveS
     private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
 
-    public KernelMarginalLikelihoodScoreRff(DataSet dataSet) {
+    public RffMarginalLikelihoodScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
