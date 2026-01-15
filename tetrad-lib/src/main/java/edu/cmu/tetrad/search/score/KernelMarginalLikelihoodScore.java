@@ -15,18 +15,112 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 /**
- * GP / kernel ridge marginal likelihood score for continuous variables:
+ * Kernel Marginal Likelihood (KML) score for continuous variables.
+ *
  * <p>
- * y = f(Z) + e,    e ~ N(0, sigma^2 I)
- * f ~ GP(0, k(.,.))
+ * This score implements the exact Gaussian Process (GP) marginal likelihood
+ * for evaluating candidate parent sets in score-based causal discovery.
+ * For a target variable {@code Y} and parent set {@code Z}, the model is
+ * </p>
+ *
+ * <pre>
+ *   Y = f(Z) + ε,    ε ~ N(0, σ² I)
+ *   f ~ GP(0, k(·,·))
+ * </pre>
+ *
  * <p>
- * Score (up to constants):
- * S = -0.5 * y^T C^{-1} y - 0.5 * log|C|,  C = Kz + sigma^2 I
+ * where {@code k} is a positive-definite kernel (typically an RBF kernel).
+ * The marginal covariance of {@code Y} is
+ * </p>
+ *
+ * <pre>
+ *   C = K_Z + σ² I
+ * </pre>
+ *
  * <p>
- * Higher is better (Tetrad convention).
+ * with {@code K_Z} the kernel Gram matrix over the parent variables.
+ * The score (up to an additive constant) is the GP marginal log-likelihood
+ * </p>
+ *
+ * <pre>
+ *   S = -0.5 · Yᵀ C⁻¹ Y - 0.5 · log |C|.
+ * </pre>
+ *
  * <p>
- * This is a "kernel marginal score" that is stable in greedy search
- * (BOSS/FGES-style) compared to operator/Kx-based surrogates.
+ * Higher scores indicate better fit under the GP model, following
+ * Tetrad's score convention.
+ * </p>
+ *
+ * <h2>Key properties</h2>
+ *
+ * <ul>
+ *   <li>
+ *     <b>Exact kernel likelihood:</b>
+ *     This score evaluates the full GP marginal likelihood without
+ *     low-rank or feature approximations.
+ *   </li>
+ *   <li>
+ *     <b>Stable under greedy search:</b>
+ *     Unlike operator-based or regression-style kernel scores, the
+ *     marginal likelihood changes smoothly under single-parent additions
+ *     and deletions, making it well-suited for FGES/BOSS-style searches.
+ *   </li>
+ *   <li>
+ *     <b>Handles high-dimensional parent sets:</b>
+ *     The score remains well-defined even when the number of parents
+ *     exceeds the sample size.
+ *   </li>
+ *   <li>
+ *     <b>Principled probabilistic interpretation:</b>
+ *     Parent sets are compared via an integrated likelihood that
+ *     marginalizes over the latent function {@code f}.
+ *   </li>
+ * </ul>
+ *
+ * <h2>Computational considerations</h2>
+ *
+ * <p>
+ * Computing the KML score requires forming and factorizing an
+ * {@code n × n} kernel covariance matrix, which has
+ * {@code O(n³)} time and {@code O(n²)} memory complexity.
+ * As a result, this score is best suited for small to moderate
+ * sample sizes.
+ * </p>
+ *
+ * <p>
+ * For large-sample settings, the {@code KFF-ML} (Random Fourier Feature /
+ * Orthogonal Random Feature Marginal Likelihood) score provides a scalable
+ * low-rank approximation that preserves the same probabilistic structure.
+ * </p>
+ *
+ * <h2>Regularization and numerical stability</h2>
+ *
+ * <ul>
+ *   <li>
+ *     A noise variance {@code σ²} (exposed as {@code lambda}) is added
+ *     to the kernel covariance to ensure positive definiteness.
+ *   </li>
+ *   <li>
+ *     Cholesky factorization is used with adaptive jitter escalation
+ *     to improve numerical robustness.
+ *   </li>
+ *   <li>
+ *     Columns are globally standardized prior to kernel evaluation
+ *     to stabilize bandwidth selection.
+ *   </li>
+ * </ul>
+ *
+ * <h2>Intended use</h2>
+ *
+ * <p>
+ * This class is intended for benchmarking, validation, and small-sample
+ * causal discovery where exact kernel inference is computationally feasible.
+ * It serves as a reference implementation against which approximate
+ * kernel scores can be compared.
+ * </p>
+ *
+ * @see edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore
+ * @see edu.cmu.tetrad.search.score .Score
  */
 public final class KernelMarginalLikelihoodScore implements Score, EffectiveSampleSizeSettable {
 
@@ -38,20 +132,9 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
     private volatile double lambda = 1e-3;
 
     /**
-     * If true, sigma^2 = n * lambda. If false, sigma^2 = lambda.
-     * Many kernel ridge / GP scoring derivations use an n-scaling.
-     */
-    private volatile boolean useNScaledSigma2 = true;
-
-    /**
      * Jitter escalation base for Cholesky stabilization. Must be > 0.
      */
     private volatile double jitter = 1e-10;
-
-    /**
-     * If true, use valid row subsets when missing exists.
-     */
-    private final boolean calculateRowSubsets;
 
     /**
      * Bandwidth multiplier on the median heuristic.
@@ -65,11 +148,33 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
      */
     private volatile int bwMaxRows = 400;
 
-    // -------------------- data --------------------
+    /**
+     * If true, use valid row subsets when missing exists.
+     */
+    private final boolean calculateRowSubsets;
 
+    /**
+     * Represents the dataset used within the kernel-based marginal likelihood scoring process.
+     * The dataset contains the data upon which calculations and evaluations are performed.
+     * It serves as the primary source of input data for various scoring and statistical methods
+     * in the KernelMarginalLikelihoodScore class.
+     */
     private final DataSet dataSet;
+
+    /**
+     * Represents the list of variables associated with the dataset.
+     * This list contains the nodes representing the variables in the dataset.
+     */
     private final List<Node> variables;
+
+    /**
+     * Number of rows in the dataset.
+     */
     private final int sampleSize;
+
+    /**
+     * Effective sample size, or -1 if not set.
+     */
     private volatile int nEff;
 
     /**
@@ -83,6 +188,14 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
     private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
 
+    /**
+     * Constructs an instance of KernelMarginalLikelihoodScore using the provided data set.
+     * This constructor initializes internal variables, processes the input data,
+     * and applies z-scoring to standardize the columns while preserving NaN values.
+     *
+     * @param dataSet The data set to be used for computing the Kernel Marginal Likelihood Score.
+     *                Must not be null. Throws a {@code NullPointerException} if the data set is null.
+     */
     public KernelMarginalLikelihoodScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
@@ -107,6 +220,17 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
 
     // -------------------- Score interface --------------------
 
+    /**
+     * Computes the difference in local scores when adding a variable to the conditioning set.
+     * <p>
+     * The method calculates the local score difference by determining the score when the variable `x`
+     * is added to the conditioning set `z`, compared to the score with the original conditioning set `z`.
+     *
+     * @param x The variable to be added to the conditioning set.
+     * @param y The target variable for which the score is being computed.
+     * @param z The original conditioning set of variables.
+     * @return The difference in local scores between the modified and original conditioning sets.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
@@ -131,7 +255,7 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
                 double[] y = extract1D(i, rows, n);
                 centerInPlace(y);
 
-                double sigma2 = useNScaledSigma2 ? (n * lambda) : lambda;
+                double sigma2 = lambda;
                 if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
 
                 DMatrixRMaj C = (parents.length == 0)
@@ -148,25 +272,43 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
         });
     }
 
-    private void resetCache() {
-        localScoreCacheRef.set(new ConcurrentHashMap<>());
-    }
-
+    /**
+     * Retrieves the list of variables associated with this score object.
+     *
+     * @return A list of Node objects representing the variables.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Retrieves the sample size used for scoring.
+     *
+     * @return The sample size as an integer.
+     */
     @Override
     public int getSampleSize() {
         return dataSet.getNumRows();
     }
 
+    /**
+     * Retrieves the maximum degree allowed for scoring.
+     *
+     * @return The maximum degree as an integer.
+     */
     @Override
     public int getMaxDegree() {
         return (int) Math.ceil(Math.log(Math.max(5, nEff)));
     }
 
+    /**
+     * Determines if a node is determined by a set of nodes.
+     *
+     * @param z The set of nodes.
+     * @param y The node.
+     * @return True if the node is determined by the set of nodes, false otherwise.
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = variables.indexOf(y);
@@ -177,66 +319,95 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
         return Double.isNaN(s) || Double.isInfinite(s);
     }
 
+    /**
+     * Determines if an edge is an effect edge based on a given bump value.
+     *
+     * @param bump The bump value.
+     * @return True if the edge is an effect edge, false otherwise.
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
+    /**
+     * Retrieves the data model used for scoring.
+     *
+     * @return The data model.
+     */
     public DataModel getDataModel() {
         return dataSet;
     }
 
+    /**
+     * Retrieves the effective sample size used for scoring.
+     *
+     * @return The effective sample size as an integer.
+     */
     @Override
     public int getEffectiveSampleSize() {
         return nEff;
     }
 
+    /**
+     * Sets the effective sample size used for scoring.
+     *
+     * @param nEff the effective sample size
+     */
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
         resetCache();
     }
 
+    /**
+     * Retrieves the name of the score.
+     *
+     * @return The name of the score as a String.
+     */
     @Override
     public String toString() {
         return "Huang Kernel Marginal Score (GP form, continuous)";
     }
 
-    // -------------------- public tuning knobs --------------------
-
-    public double getLambda() {
-        return lambda;
-    }
-
+    /**
+     * Sets the lambda hyperparameter for the Kernel Marginal Likelihood Score.
+     * The lambda parameter is expected to be a positive value.
+     * Throws an {@link IllegalArgumentException} if the given value is less than or equal to 0.
+     * After setting the lambda value, the local score cache is reset.
+     *
+     * @param lambda The new value for the lambda hyperparameter. Must be greater than 0.
+     */
     public void setLambda(double lambda) {
         if (lambda <= 0) throw new IllegalArgumentException("lambda must be > 0");
         this.lambda = lambda;
         resetCache();
     }
 
-    public boolean isUseNScaledSigma2() {
-        return useNScaledSigma2;
-    }
-
-    public void setUseNScaledSigma2(boolean useNScaledSigma2) {
-        this.useNScaledSigma2 = useNScaledSigma2;
-        resetCache();
-    }
-
-    public double getJitter() {
-        return jitter;
-    }
-
+    /**
+     * Sets the jitter parameter for the Kernel Marginal Likelihood Score.
+     * The jitter parameter is expected to be a positive value.
+     * Throws an {@link IllegalArgumentException} if the given value is less than or equal to 0.
+     * After setting the jitter value, the local score cache is reset.
+     *
+     * @param jitter The new value for the jitter parameter. Must be greater than 0.
+     */
     public void setJitter(double jitter) {
         if (jitter <= 0) throw new IllegalArgumentException("jitter must be > 0");
         this.jitter = jitter;
         resetCache();
     }
 
-    public double getBandwidthMultiplier() {
-        return bandwidthMultiplier;
-    }
-
+    /**
+     * Sets the bandwidth multiplier parameter for the Kernel Marginal Likelihood Score.
+     * The bandwidth multiplier is expected to be a positive finite value.
+     * Throws an {@link IllegalArgumentException} if the provided value
+     * is less than or equal to 0, or is not finite.
+     * After setting the bandwidth multiplier, the local score cache is reset.
+     *
+     * @param bandwidthMultiplier The new value for the bandwidth multiplier.
+     *                            Must be greater than 0 and finite.
+     */
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
         if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
             throw new IllegalArgumentException("bandwidthMultiplier must be > 0");
@@ -245,10 +416,15 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
         resetCache();
     }
 
-    public int getBwMaxRows() {
-        return bwMaxRows;
-    }
-
+    /**
+     * Sets the maximum number of rows to be used in bandwidth calculations.
+     * The specified value is constrained to a minimum of 50.
+     * After setting the value, the local score cache is reset.
+     *
+     * @param bwMaxRows The new maximum number of rows for bandwidth calculations.
+     *                  If the provided value is less than 50, it will be automatically
+     *                  adjusted to 50.
+     */
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = Math.max(50, bwMaxRows);
         resetCache();
@@ -491,5 +667,9 @@ public final class KernelMarginalLikelihoodScore implements Score, EffectiveSamp
         h = (h ^ i) * 1099511628211L;
         for (int p : parents) h = (h ^ p) * 1099511628211L;
         return h;
+    }
+
+    private void resetCache() {
+        localScoreCacheRef.set(new ConcurrentHashMap<>());
     }
 }
