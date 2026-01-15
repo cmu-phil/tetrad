@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * RFF-ML Score (Random Fourier Features Maximum-Likelihood score).
+ * KFF-ML Score (Kernel Fourier Features Maximum-Likelihood score).
  * <p>
  * This score is a kernel-based, likelihood-style score for structure learning that approximates
  * nonlinear dependence using Random Fourier Features (RFF). Conceptually, it replaces an explicit
@@ -67,7 +67,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @see edu.cmu.tetrad.search.score.Score
  */
-public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleSizeSettable {
+public final class KffMarginalLikelihoodScore implements Score, EffectiveSampleSizeSettable {
 
     /**
      * Represents the types of features that can be used in random feature mappings.
@@ -92,11 +92,6 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
     private volatile double lambda = 1.0;
 
     /**
-     * Jitter escalation base for Cholesky stabilization. Must be > 0.
-     */
-    private volatile double jitter = 1e-10;
-
-    /**
      * If true, use valid row subsets when missing exists.
      */
     private final boolean calculateRowSubsets;
@@ -114,25 +109,78 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
     private volatile int bwMaxRows = 400;
 
     /**
+     * Represents the number of random features used for certain kernel approximations
+     * like Random Fourier Features (RFF) or Orthogonal Random Features (ORF).
+     * The value of this variable may impact the accuracy and computational
+     * efficiency of approximate methods for evaluating kernel-based models.
+     *
+     * This variable is volatile to ensure thread-safe read and write
+     * operations in a concurrent environment.
+     */
+    private volatile int numFeatures = 256;
+
+    /**
+     * Represents the effective sample size, which is a measure of the
+     * equivalent number of independent observations in a statistical model.
+     * This variable is used to adjust computations to account for dependencies
+     * or other factors that reduce the effective sample count.
+     * <p>
+     * The value of this variable may affect various calculations in the
+     * {@code KffMarginalLikelihoodScore} class, including likelihood scores
+     * and related model evaluations.
+     * <p>
+     * This field is declared as {@code volatile} to ensure thread-safe
+     * read and write operations in a concurrent environment.
+     */
+    private volatile int nEff;
+
+    /**
      * The feature type utilized in the current instance for random feature mapping.
      * This variable determines the specific method applied for generating random features
      * within the associated statistical models or machine learning algorithms.
      * <p>
      * The supported feature types are:
-     * - {@code FeatureType.RFF}: Random Fourier Features, a method for kernel approximation through random projections.
-     * - {@code FeatureType.ORF}: Orthogonal Random Features, an extension of Random Fourier Features
+     * <ol>
+     * <li>{@code FeatureType.RFF}: Random Fourier Features, a method for kernel approximation through random projections.
+     * <li>{@code FeatureType.ORF}: Orthogonal Random Features, an extension of Random Fourier Features
+     * /ol>
      * ensuring orthogonality in the generated projections, often enhancing stability and performance.
      * <p>
      * The default value is set to {@code FeatureType.ORF}, indicating the use of Orthogonal Random Features.
      */
     private FeatureType featureType = FeatureType.ORF;
 
-    // -------------------- data --------------------
-
+    /**
+     * The dataset containing the observations or measurements used for
+     * computations in the KffMarginalLikelihoodScore class.
+     * This dataset is central to various scoring and statistical
+     * methods implemented in this class, serving as the underlying
+     * data source for evaluating marginal likelihoods, determining
+     * conditional dependencies, and other related operations.
+     */
     private final DataSet dataSet;
+
+    /**
+     * A list of variables represented as {@code Node} objects. These variables
+     * are used in the context of scoring and computations within the
+     * {@code KffMarginalLikelihoodScore} class.
+     * <p>
+     * The {@code variables} list typically holds the nodes or features that form
+     * the underlying structure of the dataset being analyzed. It is a fundamental
+     * component utilized for various methods and calculations within the class,
+     * such as determining local scores, effective sample size, and evaluating
+     * dependencies.
+     */
     private final List<Node> variables;
+
+    /**
+     * Represents the total number of data points (or observations) used in the computations for this instance.
+     * This value is fixed for the lifetime of the object and is initialized during object construction.
+     * <p>
+     * The sample size is an essential parameter in statistical modeling and influences the calculations
+     * of marginal likelihood scores and other statistical measures within this class.
+     */
     private final int sampleSize;
-    private volatile int nEff;
 
     /**
      * Standardized columns (z-scored globally, NaNs preserved). zCols[p][n].
@@ -145,7 +193,7 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
     private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
 
-    public RffMarginalLikelihoodScore(DataSet dataSet) {
+    public KffMarginalLikelihoodScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
@@ -169,11 +217,29 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
 
     // -------------------- Score interface --------------------
 
+    /**
+     * Calculates the difference in local scores between two configurations of variables.
+     * Specifically, this method computes the difference between the local score of variable {@code y}
+     * conditioned on {@code z} and {@code x}, and the local score of {@code y} conditioned only on {@code z}.
+     *
+     * @param x the variable being added to the parent set of {@code y}.
+     * @param y the target variable whose local score is being computed.
+     * @param z an array of integers representing the current set of parent variables of {@code y}.
+     * @return the difference in local score resulting from adding {@code x} to the parent set {@code z} of {@code y}.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
+    /**
+     * Computes the local score for a given variable and its parent set in a Bayesian network.
+     *
+     * @param i The index of the target variable for which the local score is to be computed.
+     * @param parents The indices of the parent variables of the target variable.
+     * @return The computed local score as a double value. If the score cannot be computed due to invalid input
+     *         or other issues, returns Double.NaN.
+     */
     @Override
     public double localScore(int i, int... parents) {
         Arrays.sort(parents);
@@ -216,10 +282,8 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
                 // Deterministic seed per (target, parent set).
                 long seed = key ^ 0x9E3779B97F4A7C15L;
 
-                int mFeatures = 256; // TODO: make this a knob
-
                 return gpLogMarginalLikelihoodRFF(
-                        y, parents, rows, n, mFeatures, bw2, sigma2, seed
+                        y, parents, rows, n, numFeatures, bw2, sigma2, seed
                 );
 
             } catch (RuntimeException e) {
@@ -263,21 +327,49 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
         localScoreCacheRef.set(new ConcurrentHashMap<>());
     }
 
+    /**
+     * Retrieves the list of variables in the current instance.
+     *
+     * @return a new list containing the variables of type {@code Node}.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Retrieves the sample size, which corresponds to the number of rows in the associated data set.
+     *
+     * @return the sample size as an integer.
+     */
     @Override
     public int getSampleSize() {
         return dataSet.getNumRows();
     }
 
+    /**
+     * Computes the maximum degree based on a logarithmic function
+     * that evaluates the current effective sample size.
+     * The result is the ceiling of the logarithm of the larger value
+     * between 5 and the effective sample size {@code nEff}.
+     *
+     * @return the maximum degree as an integer, calculated as the ceiling
+     *         of the logarithm of the larger value between 5 and {@code nEff}.
+     */
     @Override
     public int getMaxDegree() {
         return (int) Math.ceil(Math.log(Math.max(5, nEff)));
     }
 
+    /**
+     * Determines whether a given node is conditionally independent of a set of nodes
+     * based on the local score calculation.
+     *
+     * @param z a list of nodes representing the conditional set.
+     * @param y the node whose conditional independence is being evaluated.
+     * @return true if the local score calculation results in NaN or infinity, indicating
+     *         that the conditional independence cannot be determined reliably; false otherwise.
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = variables.indexOf(y);
@@ -288,26 +380,56 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
         return Double.isNaN(s) || Double.isInfinite(s);
     }
 
+    /**
+     * Determines if the given bump value represents an "effect edge."
+     *
+     * @param bump the bump value to evaluate
+     * @return true if the bump value is greater than 0, otherwise false
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
+    /**
+     * Retrieves the data model associated with the current instance.
+     *
+     * @return the data model object of type DataModel
+     */
     public DataModel getDataModel() {
         return dataSet;
     }
 
+    /**
+     * Returns the effective sample size, which represents the number of observations
+     * adjusted for correlations or weighting within the sample data.
+     *
+     * @return the effective sample size as an integer
+     */
     @Override
     public int getEffectiveSampleSize() {
         return nEff;
     }
 
+    /**
+     * Sets the effective sample size to be used in calculations.
+     * If the provided sample size is negative, it will default to the current sample size.
+     *
+     * @param nEff the effective sample size to set; defaults to the current sample size if negative
+     */
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
         resetCache();
     }
 
+    /**
+     * Returns a string representation of this object.
+     * The string provides a descriptive label for this kernel,
+     * indicating its type and mathematical form.
+     *
+     * @return a string describing this kernel, including its name and characteristics
+     */
     @Override
     public String toString() {
         return "Huang Kernel Marginal Score (GP form, continuous)";
@@ -315,30 +437,30 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
 
     // -------------------- public tuning knobs --------------------
 
-    public double getLambda() {
-        return lambda;
-    }
-
+    /**
+     * Sets the value of the lambda parameter in the current instance. Lambda is
+     * a positive scalar value that influences specific scoring computations.
+     * If the provided value is not greater than zero, an
+     * IllegalArgumentException is thrown.
+     *
+     * @param lambda the new value to be set for the lambda parameter. Must be
+     *               greater than zero.
+     * @throws IllegalArgumentException if the input lambda is less than or
+     *                                   equal to zero.
+     */
     public void setLambda(double lambda) {
         if (lambda <= 0) throw new IllegalArgumentException("lambda must be > 0");
         this.lambda = lambda;
         resetCache();
     }
 
-    public double getJitter() {
-        return jitter;
-    }
-
-    public void setJitter(double jitter) {
-        if (jitter <= 0) throw new IllegalArgumentException("jitter must be > 0");
-        this.jitter = jitter;
-        resetCache();
-    }
-
-    public double getBandwidthMultiplier() {
-        return bandwidthMultiplier;
-    }
-
+    /**
+     * Sets the value of the bandwidth multiplier parameter in the current instance.
+     * The bandwidth multiplier is a positive scalar that scales the bandwidth
+     * parameter in the kernel function. The value must be greater than zero.
+     *
+     * @param bandwidthMultiplier the new value to be set for the bandwidth multiplier parameter.
+     */
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
         if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
             throw new IllegalArgumentException("bandwidthMultiplier must be > 0");
@@ -347,80 +469,30 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
         resetCache();
     }
 
-    public int getBwMaxRows() {
-        return bwMaxRows;
-    }
-
+    /**
+     * Sets the maximum number of rows to consider for bandwidth estimation in the current instance.
+     * This parameter limits the number of rows used for bandwidth estimation to prevent excessive computation.
+     * Default 50.
+     *
+     * @param bwMaxRows the maximum number of rows to set. Must be a positive integer.
+     */
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = Math.max(50, bwMaxRows);
         resetCache();
     }
 
-    // -------------------- GP marginal likelihood core --------------------
-
     /**
-     * Computes: -0.5*y^T C^{-1} y - 0.5*log|C|
-     * using Cholesky with jitter escalation.
+     * Sets the number of features for computations in the current instance.
+     * This parameter defines the dimensionality of the random feature mappings.
+     * Default 256.
+     *
+     * @param numFeatures the number of features to set. Must be a positive integer.
      */
-    private static double gpLogMarginalLikelihood(double[] y, DMatrixRMaj C, double jitter) {
-        final int n = y.length;
-        if (C.numRows != n || C.numCols != n) throw new IllegalArgumentException("C dimension mismatch");
-
-        // Try Cholesky with escalating jitter.
-        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-
-        double eps = 0.0;
-        DMatrixRMaj Cf = null;
-
-        boolean ok = false;
-        for (int k = 0; k < 8; k++) {
-            Cf = (k == 0) ? C : C.copy();
-            if (k > 0) addDiagonalInPlace(Cf, eps);
-
-            if (chol.decompose(Cf)) {
-                ok = true;
-                break;
-            }
-            eps = (eps == 0.0) ? jitter : eps * 10.0;
-        }
-        if (!ok) return Double.NaN;
-
-        DMatrixRMaj L = chol.getT(null); // lower triangular
-        double logDet = 0.0;
-        for (int i = 0; i < n; i++) {
-            double di = L.get(i, i);
-            if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
-            logDet += Math.log(di);
-        }
-        logDet *= 2.0;
-
-        // Solve C^{-1} y via two triangular solves: L u = y, L^T x = u.
-        double[] u = Arrays.copyOf(y, n);
-
-        // Forward solve (L u = y)
-        for (int i = 0; i < n; i++) {
-            double sum = u[i];
-            for (int j = 0; j < i; j++) sum -= L.get(i, j) * u[j];
-            double di = L.get(i, i);
-            u[i] = sum / di;
-        }
-
-        // Back solve (L^T x = u) reusing u as x
-        for (int i = n - 1; i >= 0; i--) {
-            double sum = u[i];
-            for (int j = i + 1; j < n; j++) sum -= L.get(j, i) * u[j];
-            double di = L.get(i, i);
-            u[i] = sum / di;
-        }
-
-        // quad = y^T x
-        double quad = 0.0;
-        for (int i = 0; i < n; i++) quad += y[i] * u[i];
-
-        if (!Double.isFinite(quad) || !Double.isFinite(logDet)) return Double.NaN;
-
-        return -0.5 * quad - 0.5 * logDet;
+    public void setNumFeatures(int numFeatures) {
+        this.numFeatures = numFeatures;
     }
+
+    // -------------------- GP marginal likelihood core --------------------
 
     /**
      * Sets the feature type for the current instance based on the provided integer value.
@@ -435,12 +507,11 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
      *                    </ul>
      * @throws IllegalArgumentException if the input {@code featureType} is not 1 or 2.
      */
-    public void setFeatureType(int featureType) {
-        switch (featureType) {
-            case 1 -> this.featureType = FeatureType.RFF;
-            case 2 -> this.featureType = FeatureType.ORF;
-            default -> throw new IllegalArgumentException("featureType must be 1 or 2");
+    public void setFeatureType(FeatureType featureType) {
+        if (featureType == null) {
+            throw new IllegalArgumentException("featureType cannot be null");
         }
+        this.featureType = featureType;
     }
 
     /**
@@ -453,8 +524,8 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
      *    <li>2: if the feature type to {@code FeatureType.ORF} (Orthogonal Random Features).</li>
      * </ul>
      */
-    public int getFeatureType() {
-        return featureType == FeatureType.RFF ? 1 : 2;
+    public FeatureType getFeatureType() {
+        return featureType;
     }
 
     private double gpLogMarginalLikelihoodRFF(

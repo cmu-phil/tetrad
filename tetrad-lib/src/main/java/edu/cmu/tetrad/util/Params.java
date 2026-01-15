@@ -1082,6 +1082,14 @@ public final class Params {
      */
     public static final String KML_BW_MAX_ROWS = "kmlBwMaxRows";
     /**
+     * Constant <code>KML_NUM_FEATURES="kmlNumFeatures"</code>
+     */
+    public static final String KML_NUM_FEATURES = "kmlNumFeatures";
+    /**
+     * Constant <code>KML_FEATURE_TYPE="kmlFeatureType"</code>
+     */
+    public static final String KML_FEATURE_TYPE = "kmlFeatureType";
+    /**
      * Constant <code>CLUSTER_SIZES="clusterSizes"</code>
      */
     public static final String CLUSTER_SIZES = "clusterSizes";

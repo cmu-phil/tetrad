@@ -35,19 +35,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for RFF Marginal Likelihood Score.
+ * Wrapper for KFF Marginal Likelihood Score.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "RFF-ML Score",
-        command = "rff-ml-score",
+        name = "KFF-ML Score",
+        command = "kff-ml-score",
         dataType = {DataType.Continuous}
 )
 @LinearGaussian
 @Experimental
-public class RffMarginalLikelihoodScore implements ScoreWrapper {
+public class KffMarginalLikelihoodScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -60,7 +60,7 @@ public class RffMarginalLikelihoodScore implements ScoreWrapper {
     /**
      * Constructs a new instance of the SemBicScore.
      */
-    public RffMarginalLikelihoodScore() {
+    public KffMarginalLikelihoodScore() {
     }
 
     /**
@@ -70,19 +70,23 @@ public class RffMarginalLikelihoodScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.RffMarginalLikelihoodScore score;
+        edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.RffMarginalLikelihoodScore((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
         score.setLambda(parameters.getDouble(Params.KML_LAMBDA));
-        score.setJitter(parameters.getDouble(Params.KML_JITTER));
         score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+
+        score.setNumFeatures(parameters.getInt(Params.KML_NUM_FEATURES));
+        edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore.FeatureType[] values
+                = edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore.FeatureType.values();
+        score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
 
         return score;
     }
@@ -94,7 +98,7 @@ public class RffMarginalLikelihoodScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "RFF-ML Score";
+        return "KFF-ML Score";
     }
 
     /**
@@ -116,9 +120,10 @@ public class RffMarginalLikelihoodScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.KML_LAMBDA);
-        parameters.add(Params.KML_JITTER);
         parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
         parameters.add(Params.KML_BW_MAX_ROWS);
+        parameters.add(Params.KML_NUM_FEATURES);
+        parameters.add(Params.KML_FEATURE_TYPE);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
