@@ -42,7 +42,7 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "HT SEM BIC Score",
-        command = "ng-sem-bic-score",
+        command = "ht-sem-bic-score",
         dataType = {DataType.Continuous}
 )
 @Experimental

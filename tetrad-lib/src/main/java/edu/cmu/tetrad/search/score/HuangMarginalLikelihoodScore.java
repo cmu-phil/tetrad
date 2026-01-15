@@ -27,7 +27,7 @@ import java.util.*;
  * regression function in an RKHS.
  * </p>
  *
- * <h3>Model and Interpretation</h3>
+ * <p>Model and Interpretation</p>
  *
  * <p>
  * Let {@code X} be a univariate response and {@code Z} a (possibly multivariate)
@@ -55,7 +55,7 @@ import java.util.*;
  * avoiding explicit matrix inversion.
  * </p>
  *
- * <h3>Numerical Characteristics</h3>
+ * <p>Numerical Characteristics</p>
  *
  * <p>
  * Because the centered kernel matrices are singular by construction,
@@ -75,7 +75,7 @@ import java.util.*;
  * when parent sets differ by small changes.
  * </p>
  *
- * <h3>Comparison to Other Kernel Scores</h3>
+ * <p>Comparison to Other Kernel Scores</p>
  *
  * <ul>
  *   <li>
@@ -94,7 +94,7 @@ import java.util.*;
  *   </li>
  * </ul>
  *
- * <h3>Implementation Notes</h3>
+ * <p>Implementation Notes</p>
  *
  * <ul>
  *   <li>Uses Gaussian RBF kernels with a median-distance bandwidth heuristic.</li>
