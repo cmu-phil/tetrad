@@ -316,63 +316,99 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
     private double huangLogLikelihoodFromCenteredKernels(DMatrixRMaj KxCentered,
                                                          DMatrixRMaj KzCentered,
                                                          int n,
-                                                         double sigma2,   // <-- interpret this as \hat\sigma_i^2 (noise variance), NOT "ridge lambda"
+                                                         double lambda,
                                                          double jitter) {
-        if (n <= 0) return Double.NaN;
-        if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
+        if (n <= 2) return Double.NaN;
+        if (!(lambda > 0) || !Double.isFinite(lambda)) return Double.NaN;
+        if (!(jitter > 0) || !Double.isFinite(jitter)) return Double.NaN;
 
-        // A = Kz + sigma^2 I
+        // Huang Eq.(6): A = Kz~ + n*lambda*I
+        final double nl = n * lambda;
+
         DMatrixRMaj A = KzCentered.copy();
-        addDiagonalInPlace(A, sigma2);
+        addDiagonalInPlace(A, nl);
 
-        // We need:
-        //  (1) traceTerm = tr( Kx * A^{-1} * Kx )
-        //  (2) logDetA  = log |A|
-        //
-        // Do both stably using Cholesky on A (with escalating jitter if needed).
+        // Factorize A with escalating jitter (SPD expected after adding nl*I).
+        CholeskyDecomposition_F64<DMatrixRMaj> cholA = DecompositionFactory_DDRM.chol(true);
 
-        // Factorize A (SPD) with jitter escalation if needed
-        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-
-        double eps = 0.0;
+        double epsA = 0.0;
         DMatrixRMaj Af = A;
 
         boolean ok = false;
-        for (int k = 0; k < 7; k++) {
+        for (int k = 0; k < 8; k++) {
             Af = (k == 0) ? A : A.copy();
-            if (k > 0) addDiagonalInPlace(Af, eps);
+            if (k > 0) addDiagonalInPlace(Af, epsA);
 
-            if (chol.decompose(Af)) {
+            if (cholA.decompose(Af)) {
                 ok = true;
                 break;
             }
-            eps = (eps == 0.0) ? jitter : eps * 10.0;
+            epsA = (epsA == 0.0) ? jitter : epsA * 10.0;
         }
         if (!ok) return Double.NaN;
 
-        // logdet(A) from Cholesky: log|A| = 2 * sum log diag(L)
-        double logDetA = logDetFromCholesky(chol, n);
-        if (!Double.isFinite(logDetA)) return Double.NaN;
+        // Solve A * D = Kx~  => D = A^{-1} Kx~
+        LinearSolverDense<DMatrixRMaj> solverA = LinearSolverFactory_DDRM.symmPosDef(n);
+        if (!solverA.setA(Af)) return Double.NaN;
 
-        // Solve A X = Kx  => X = A^{-1} Kx, using the same factorization via a solver
-        LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.symmPosDef(n);
-        if (!solver.setA(Af)) return Double.NaN;
+        DMatrixRMaj D = new DMatrixRMaj(n, n);
+        solverA.solve(KxCentered, D);
 
-        DMatrixRMaj X = new DMatrixRMaj(n, n);
-        solver.solve(KxCentered, X);
+        // M = D^T D = Kx~ * A^{-2} * Kx~
+        DMatrixRMaj M = new DMatrixRMaj(n, n);
+        CommonOps_DDRM.multTransA(D, D, M);   // M = D^T * D
 
-        // traceTerm = tr( Kx * X ) = sum_ij Kx_ij * X_ij  (Frobenius inner product)
-        double traceTerm = frobeniusDot(KxCentered, X);
-        if (!Double.isFinite(traceTerm)) return Double.NaN;
+        // Numerical symmetry cleanup (optional but helpful).
+        // If you have symmetrizeInPlace available, use it; otherwise omit.
+        // symmetrizeInPlace(M);
 
-        // Huang Eq.(9), up to an additive constant:
-        // S = -1/2 * traceTerm - (n/2) * logDetA + const
-        //
-        // You may omit constants entirely. If you want them:
-        // const = - (n*n/2)*log(2*pi)
-        double score = -0.5 * traceTerm - 0.5 * n * logDetA;
+        // Ridge determinant to avoid log|M| = -inf due to centering-induced rank deficiency.
+        // This is the key practical choice.
+        double logDetM = logDetSpdWithJitter(M, jitter);
+        if (!Double.isFinite(logDetM)) return Double.NaN;
 
-        return score;
+        // log | (n*lambda/2) * M | = n*log(n*lambda/2) + log|M|
+        // (since M is n x n)
+        double scale = nl / 2.0;
+        if (!(scale > 0) || !Double.isFinite(scale)) return Double.NaN;
+
+        double logDetScaled = n * Math.log(scale) + logDetM;
+
+        // Huang Eq.(6), dropping constants:
+        // S = -(n/2) * log| (n*lambda/2) * M | - n/2  (+ const)
+        // The "-n/2" term does not depend on parents, so you can omit it if you want.
+        return -0.5 * n * logDetScaled - 0.5 * n;
+    }
+
+    /**
+     * log|M + eps I| with escalating eps until Cholesky succeeds.
+     * This implements the "ridge determinant" option for PSD/near-singular M.
+     */
+    private static double logDetSpdWithJitter(DMatrixRMaj M, double jitter) {
+        int n = M.numRows;
+        if (M.numCols != n) throw new IllegalArgumentException("M must be square");
+
+        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+
+        double eps = 0.0;
+        for (int k = 0; k < 10; k++) {
+            DMatrixRMaj Mf = (k == 0) ? M.copy() : M.copy();
+            if (k > 0) addDiagonalInPlace(Mf, eps);
+
+            if (chol.decompose(Mf)) {
+                DMatrixRMaj L = chol.getT(null);
+                double sum = 0.0;
+                for (int i = 0; i < n; i++) {
+                    double di = L.get(i, i);
+                    if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
+                    sum += Math.log(di);
+                }
+                return 2.0 * sum;
+            }
+            eps = (eps == 0.0) ? jitter : eps * 10.0;
+        }
+
+        return Double.NaN;
     }
 
     private static void addDiagonalInPlace(DMatrixRMaj M, double v) {
