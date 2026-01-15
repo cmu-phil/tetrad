@@ -69,6 +69,21 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleSizeSettable {
 
+    /**
+     * Represents the types of features that can be used in random feature mappings.
+     * This enumeration is utilized to distinguish between different methods for
+     * generating random features in machine learning or statistical models.
+     * <p>
+     * Available feature types:
+     * <p>
+     * - RFF (Random Fourier Features): A method commonly used to approximate kernel functions
+     * in machine learning via random projections.
+     * <p>
+     * - ORF (Orthogonal Random Features): A variant of Random Fourier Features that ensures orthogonality
+     * in the generated random projections for better numerical stability and performance.
+     */
+    public enum FeatureType {RFF, ORF}
+
     // -------------------- configuration knobs --------------------
 
     /**
@@ -97,6 +112,20 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
      * Kernel itself still uses all rows.
      */
     private volatile int bwMaxRows = 400;
+
+    /**
+     * The feature type utilized in the current instance for random feature mapping.
+     * This variable determines the specific method applied for generating random features
+     * within the associated statistical models or machine learning algorithms.
+     * <p>
+     * The supported feature types are:
+     * - {@code FeatureType.RFF}: Random Fourier Features, a method for kernel approximation through random projections.
+     * - {@code FeatureType.ORF}: Orthogonal Random Features, an extension of Random Fourier Features
+     * ensuring orthogonality in the generated projections, often enhancing stability and performance.
+     * <p>
+     * The default value is set to {@code FeatureType.ORF}, indicating the use of Orthogonal Random Features.
+     */
+    private FeatureType featureType = FeatureType.ORF;
 
     // -------------------- data --------------------
 
@@ -200,7 +229,9 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
         });
     }
 
-    /** Exact sigma-only case: C = sigma2 I. */
+    /**
+     * Exact sigma-only case: C = sigma2 I.
+     */
     private static double gpLogMarginalLikelihoodSigmaOnly(double[] yCentered, double sigma2) {
         int n = yCentered.length;
         if (n == 0) return Double.NaN;
@@ -391,6 +422,41 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
         return -0.5 * quad - 0.5 * logDet;
     }
 
+    /**
+     * Sets the feature type for the current instance based on the provided integer value.
+     * The feature type determines which type of random feature mapping is utilized.
+     * Valid feature types are defined in the {@code FeatureType} enumeration.
+     *
+     * @param featureType an integer representing the desired feature type.
+     *                    Acceptable values are:
+     *                    <ul>
+     *                       <li>1: Sets the feature type to {@code FeatureType.RFF} (Random Fourier Features).</li>
+     *                       <li>2: Sets the feature type to {@code FeatureType.ORF} (Orthogonal Random Features).</li>
+     *                    </ul>
+     * @throws IllegalArgumentException if the input {@code featureType} is not 1 or 2.
+     */
+    public void setFeatureType(int featureType) {
+        switch (featureType) {
+            case 1 -> this.featureType = FeatureType.RFF;
+            case 2 -> this.featureType = FeatureType.ORF;
+            default -> throw new IllegalArgumentException("featureType must be 1 or 2");
+        }
+    }
+
+    /**
+     * Retrieves the feature type for the current instance.
+     * The feature type determines the type of random feature mapping being utilized.
+     *
+     * @return an integer representing the feature type:
+     * <ul>
+     *    <li>1: if the feature type to {@code FeatureType.RFF} (Random Fourier Features).</li>
+     *    <li>2: if the feature type to {@code FeatureType.ORF} (Orthogonal Random Features).</li>
+     * </ul>
+     */
+    public int getFeatureType() {
+        return featureType == FeatureType.RFF ? 1 : 2;
+    }
+
     private double gpLogMarginalLikelihoodRFF(
             double[] yCentered,          // length n
             int[] parentIdx,             // d parents
@@ -416,14 +482,29 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
 
         // Sample W (m x d) and b (m)
         // Store as [m][d] for fast dot(row,d) per feature.
-        double[][] W = new double[mFeatures][d];
-        double[] b = new double[mFeatures];
+        double[][] W;
+        double[] b;
 
-        for (int j = 0; j < mFeatures; j++) {
-            for (int k = 0; k < d; k++) {
-                W[j][k] = wStd * nextGaussian(rng);
+        if (featureType == FeatureType.RFF) {
+
+            W = new double[mFeatures][d];
+            b = new double[mFeatures];
+
+            for (int j = 0; j < mFeatures; j++) {
+                for (int k = 0; k < d; k++) {
+                    W[j][k] = wStd * nextGaussian(rng);
+                }
+                b[j] = 2.0 * Math.PI * rng.nextDouble();
             }
-            b[j] = 2.0 * Math.PI * rng.nextDouble();
+        } else if (featureType == FeatureType.ORF) {
+            W = sampleOrthogonalW(mFeatures, d, wStd, rng);
+
+            b = new double[mFeatures];
+            for (int j = 0; j < mFeatures; j++) {
+                b[j] = 2.0 * Math.PI * rng.nextDouble();
+            }
+        } else {
+            throw new IllegalArgumentException("featureType must be RFF or ORF");
         }
 
         // Accumulate G = Phi^T Phi (m x m, symmetric) and v = Phi^T y (m)
@@ -527,6 +608,77 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
         return -0.5 * quad - 0.5 * logDetC;
     }
 
+    /**
+     * Orthogonal Random Features (ORF) weights for RBF kernel.
+     * <p>
+     * Produces W with (block-)orthogonal rows:
+     * W_row = (wStd * r) * q_row
+     * where q_row are orthonormal directions and r ~ chi(d).
+     * <p>
+     * If mFeatures > d, rows are generated in blocks of size d; orthogonality holds within each block.
+     */
+    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, SplittableRandom rng) {
+        double[][] W = new double[mFeatures][d];
+        if (d <= 0) return W;
+
+        int filled = 0;
+
+        // Generate in blocks of size d (or remaining rows).
+        while (filled < mFeatures) {
+            int block = Math.min(d, mFeatures - filled);
+
+            // Step 1: Gaussian block G (block x d)
+            double[][] Q = new double[block][d];
+            for (int i = 0; i < block; i++) {
+                for (int j = 0; j < d; j++) {
+                    Q[i][j] = nextGaussian(rng);
+                }
+            }
+
+            // Step 2: Orthonormalize rows of Q (Gram-Schmidt on rows)
+            for (int i = 0; i < block; i++) {
+                // subtract projections on previous rows
+                for (int k = 0; k < i; k++) {
+                    double dot = 0.0;
+                    for (int j = 0; j < d; j++) dot += Q[i][j] * Q[k][j];
+                    for (int j = 0; j < d; j++) Q[i][j] -= dot * Q[k][j];
+                }
+                // normalize
+                double norm2 = 0.0;
+                for (int j = 0; j < d; j++) norm2 += Q[i][j] * Q[i][j];
+                double norm = Math.sqrt(Math.max(1e-18, norm2));
+                for (int j = 0; j < d; j++) Q[i][j] /= norm;
+            }
+
+            // Step 3: scale each row by chi(d) radius (approximate Gaussian row norm)
+            for (int i = 0; i < block; i++) {
+                double r = chiRadius(d, rng);     // ~ ||N(0,I_d)||
+
+                double s = wStd * r;
+                int outRow = filled + i;
+                for (int j = 0; j < d; j++) {
+                    W[outRow][j] = s * Q[i][j];
+                }
+            }
+
+            filled += block;
+        }
+
+        return W;
+    }
+
+    /**
+     * Radius r ~ chi(d) via sqrt(sum_k g_k^2), g_k ~ N(0,1).
+     */
+    private static double chiRadius(int d, SplittableRandom rng) {
+        double ss = 0.0;
+        for (int k = 0; k < d; k++) {
+            double g = nextGaussian(rng);
+            ss += g * g;
+        }
+        return Math.sqrt(Math.max(1e-18, ss));
+    }
+
     // Box–Muller-ish gaussian from SplittableRandom (fast enough)
     private static double nextGaussian(SplittableRandom rng) {
         // Use Marsaglia polar
@@ -534,7 +686,7 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
         do {
             u = 2.0 * rng.nextDouble() - 1.0;
             v = 2.0 * rng.nextDouble() - 1.0;
-            s = u*u + v*v;
+            s = u * u + v * v;
         } while (s >= 1.0 || s == 0.0);
         return u * Math.sqrt(-2.0 * Math.log(s) / s);
     }
