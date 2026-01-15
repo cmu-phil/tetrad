@@ -12,7 +12,6 @@ import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.IntStream;
 
 /**
  * Kernel Marginal Likelihood (KML) score for continuous variables.
