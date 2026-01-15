@@ -70,20 +70,17 @@ public class HuangMarginalLikelihoodScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.HuangMarginalScore score;
+        edu.cmu.tetrad.search.score.HuangMarginalLikelihoodScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.HuangMarginalScore((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.HuangMarginalLikelihoodScore((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         score.setLambda(parameters.getDouble(Params.KML_LAMBDA));
-//        score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
-//        score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         score.setJitter(parameters.getDouble(Params.KML_JITTER));
-        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore.FeatureType[] values
                 = edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore.FeatureType.values();
@@ -121,10 +118,7 @@ public class HuangMarginalLikelihoodScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
-        parameters.add(Params.RCIT_LAMBDA);
         parameters.add(Params.KML_LAMBDA);
-        parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
-        parameters.add(Params.KML_BW_MAX_ROWS);
         parameters.add(Params.KML_JITTER);
 
         return parameters;

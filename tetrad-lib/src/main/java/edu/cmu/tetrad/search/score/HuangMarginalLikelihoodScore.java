@@ -14,53 +14,86 @@ import org.ejml.interfaces.linsol.LinearSolverDense;
 
 import java.util.*;
 
-import static edu.cmu.tetrad.search.score.KcvBicScore.symmetrizeInPlace;
-
 /**
  * Huang et al. (kernel-based) marginal score for continuous variables.
- *
+ * <p>
  * Implements the marginal log-likelihood score (Huang et al., Eq. 6) for
  * a variable X regressed on its parent set Z using kernel ridge regression /
  * Gaussian process style marginal likelihood.
- *
+ * <p>
  * Continuous-only version.
- *
+ * <p>
  * Notes:
- * - Uses RBF kernels with median heuristic bandwidth.
- * - Uses EJML; avoids explicit inverses (Cholesky/solves).
- * - Handles missingness via row filtering (testwise deletion on {i} ∪ parents).
- *
+ * <ol>
+ * <li> Uses RBF kernels with median heuristic bandwidth.</li>
+ * <li> Uses EJML; avoids explicit inverses (Cholesky/solves).</li>
+ * <li> Handles missingness via row filtering (testwise deletion on {i} ∪ parents).</li>
+ * </ol>
+ * <p>
  * Higher is better, consistent with Tetrad Score conventions.
  */
-public final class HuangMarginalScore implements Score, EffectiveSampleSizeSettable {
+public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- configuration --------------------
 
-    /** Ridge parameter (lambda). Huang uses n*lambda in the stabilization term. Must be > 0. */
+    /**
+     * Ridge parameter (lambda). Huang uses n*lambda in the stabilization term. Must be > 0.
+     */
     private double lambda = 1e-3;
 
-    /** Small jitter added to G for logdet stability; will be adaptively increased if needed. */
+    /**
+     * Small jitter added to G for logdet stability; will be adaptively increased if needed.
+     */
     private double jitter = 1e-10;
 
-    /** If true, compute valid row subsets when missing values exist. */
+    /**
+     * If true, compute valid row subsets when missing values exist.
+     */
     private final boolean calculateRowSubsets;
 
-    // -------------------- data --------------------
-
+    /**
+     * The data set used for computing marginal likelihood scores within the
+     * HuangMarginalLikelihoodScore class. This dataset forms the basis for
+     * statistical operations, kernel computations, and score evaluations.
+     * <p>
+     * This field is immutable and initialized during the construction of the
+     * HuangMarginalLikelihoodScore instance. It must not be null, and attempting
+     * to construct an instance with a null dataset will result in a
+     * NullPointerException.
+     */
     private final DataSet dataSet;
+
+    /**
+     * A list of variables represented as {@link Node} objects used in the scoring algorithm.
+     * This field contains the set of variables associated with the data model and is
+     * integral to various calculations, such as computing marginal likelihood scores.
+     * The list is initialized based on the dataset provided at the time of object construction.
+     * It is immutable once set.
+     */
     private final List<Node> variables;
-    private final Map<Node, Integer> indexMap;
+
+    /**
+     * Represents the original sample size for the dataset used in the scoring algorithm.
+     * This variable holds the total number of data points in the dataset and is constant
+     * throughout the lifecycle of the object.
+     */
     private final int sampleSize;
 
-    /** Cached columns (full length, may include NaNs). cols[varIndex][row]. */
+    /**
+     * Cached columns (full length, may include NaNs). cols[varIndex][row].
+     */
     private final double[][] cols;
 
-    /** Effective sample size (defaults to sampleSize). */
+    /**
+     * Effective sample size (defaults to sampleSize).
+     */
     private int nEff;
 
-    // Optional: lightweight cache to avoid recomputing kernels for repeated parent sets.
-    // Key is (target i, parents array) -> score.
-    // You can delete this if you’d rather not cache at first.
+    /**
+     * Optional: lightweight cache to avoid recomputing kernels for repeated parent sets.
+     * Key is (target i, parents array) -> score.
+     * You can delete this if you’d rather not cache at first.
+     */
     private final Map<Long, Double> localScoreCache = new HashMap<>();
 
     // -------------------- construction --------------------
@@ -72,15 +105,12 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
      * @param dataSet The input data set to be used for computing marginal scores.
      *                Must not be null; a NullPointerException is thrown if the input is null.
      */
-    public HuangMarginalScore(DataSet dataSet) {
+    public HuangMarginalLikelihoodScore(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         this.sampleSize = dataSet.getNumRows();
         setEffectiveSampleSize(-1);
-
-        this.indexMap = new HashMap<>();
-        for (int i = 0; i < variables.size(); i++) indexMap.put(variables.get(i), i);
 
         this.calculateRowSubsets = dataSet.existsMissingValue();
 
@@ -96,12 +126,36 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
 
     // -------------------- Score interface --------------------
 
+    /**
+     * Computes the difference between two local scores:
+     * `score(y | z ∪ {x})` and `score(y | z)`. This method evaluates
+     * the impact of adding a variable `x` to the conditioning set `z`
+     * for predicting the target variable `y`.
+     *
+     * @param x The index of the variable being added to the conditioning set.
+     * @param y The index of the target variable whose score is being evaluated.
+     * @param z An array containing the indices of the conditioning variables.
+     * @return The difference between the local scores:
+     * `score(y | z ∪ {x}) - score(y | z)`.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         // score(y | z ∪ {x}) - score(y | z)
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
+    /**
+     * Computes the local score for a given target variable and a set of parent variables.
+     * The local score reflects the statistical relationship between the target variable and
+     * its conditioning parents based on kernel methods. This method uses precomputed results
+     * from a cache if available; otherwise, it computes the score and caches it.
+     *
+     * @param i       The index of the target variable whose local score is being computed.
+     * @param parents An array of indices representing the parent variables used for computation.
+     *                This array may be empty if the target variable has no parents.
+     * @return The computed local score as a double. NaN is returned if there are insufficient
+     * effective samples or other conditions make the score indeterminable.
+     */
     @Override
     public double localScore(int i, int... parents) {
         Arrays.sort(parents);
@@ -136,16 +190,35 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
         return ll;
     }
 
+    /**
+     * Retrieves the list of variables used in the scoring process.
+     * The returned list contains all variables associated with the dataset.
+     *
+     * @return A new {@code List} of {@code Node} objects representing the variables.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Retrieves the sample size used in the scoring process.
+     *
+     * @return The total number of rows in the dataset, representing the sample size as an integer.
+     */
     @Override
     public int getSampleSize() {
         return dataSet.getNumRows();
     }
 
+    /**
+     * Computes the maximum degree based on a heuristic approach.
+     * The calculation is performed as the ceiling of the logarithm
+     * of the effective sample size (nEff). A minimum value of 3 is
+     * considered for the logarithmic calculation to ensure robustness.
+     *
+     * @return the maximum allowed degree as an integer
+     */
     @Override
     public int getMaxDegree() {
         // Similar heuristic to SEM BIC: ceil(log(n)).
@@ -153,6 +226,16 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
         return (int) Math.ceil(Math.log(Math.max(3, nEff)));
     }
 
+    /**
+     * Determines whether the given variable y is conditionally independent of the
+     * set of variables z based on a computed score. This is typically used in
+     * causal structure discovery algorithms.
+     *
+     * @param z the list of parent nodes to check for conditional independence
+     * @param y the target node to test against the parent set
+     * @return true if the score calculation results in NaN or infinity, indicating
+     * an error or undefined state; otherwise, false
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = variables.indexOf(y);
@@ -174,7 +257,7 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
      * @param bump The numerical value used to evaluate the edge's effect. A positive value indicates
      *             that the edge is considered to have an effect.
      * @return {@code true} if the bump value is greater than 0, indicating the edge has an effect;
-     *         {@code false} otherwise.
+     * {@code false} otherwise.
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -223,17 +306,6 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
         return "Huang Kernel Marginal Score (continuous)";
     }
 
-    // -------------------- public tuning knobs --------------------
-
-    /**
-     * Retrieves the value of the lambda parameter.
-     *
-     * @return The current value of the lambda parameter as a double.
-     */
-    public double getLambda() {
-        return lambda;
-    }
-
     /**
      * Sets the value of the lambda parameter and clears the local score cache.
      * The lambda parameter is a positive value that may be used in computations
@@ -251,17 +323,6 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
     }
 
     /**
-     * Retrieves the value of the jitter parameter.
-     * The jitter parameter is a small positive value added to the diagonal
-     * of certain matrices during computations to improve numerical stability.
-     *
-     * @return The current value of the jitter parameter as a double.
-     */
-    public double getJitter() {
-        return jitter;
-    }
-
-    /**
      * Sets the value of the jitter parameter and clears the local score cache.
      * The jitter parameter is a small positive value added to the diagonal of certain
      * matrices during computations to improve numerical stability.
@@ -274,43 +335,6 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
         if (jitter <= 0) throw new IllegalArgumentException("jitter must be > 0");
         this.jitter = jitter;
         localScoreCache.clear();
-    }
-
-    // -------------------- core Huang computation --------------------
-
-    private static double logDetSymPosDef(DMatrixRMaj A, double jitter) {
-        int n = A.numRows;
-
-        LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.symmPosDef(n);
-
-        // Try with escalating jitter to ensure SPD numerically
-        double eps = 0.0;
-        for (int k = 0; k < 6; k++) {
-            DMatrixRMaj Aj = A.copy();
-            if (eps > 0) {
-                for (int i = 0; i < n; i++) Aj.add(i, i, eps);
-            }
-            if (solver.setA(Aj)) {
-                // We need the Cholesky factor diagonal; EJML solvers hide it,
-                // so use a decomposition directly:
-                CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-                if (!chol.decompose(Aj)) {
-                    eps = (eps == 0.0) ? jitter : eps * 10.0;
-                    continue;
-                }
-                DMatrixRMaj L = chol.getT(null); // lower-triangular
-                double sumLogDiag = 0.0;
-                for (int i = 0; i < n; i++) {
-                    double di = L.get(i, i);
-                    if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
-                    sumLogDiag += Math.log(di);
-                }
-                return 2.0 * sumLogDiag;
-            }
-            eps = (eps == 0.0) ? jitter : eps * 10.0;
-        }
-
-        return Double.NaN;
     }
 
     private double huangLogLikelihoodFromCenteredKernels(DMatrixRMaj KxCentered,
@@ -392,7 +416,7 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
 
         double eps = 0.0;
         for (int k = 0; k < 10; k++) {
-            DMatrixRMaj Mf = (k == 0) ? M.copy() : M.copy();
+            DMatrixRMaj Mf = M.copy();
             if (k > 0) addDiagonalInPlace(Mf, eps);
 
             if (chol.decompose(Mf)) {
@@ -416,30 +440,6 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
         for (int i = 0; i < n; i++) {
             M.add(i, i, v);
         }
-    }
-
-    private static double logDetFromCholesky(CholeskyDecomposition_F64<DMatrixRMaj> chol, int n) {
-        // chol.getT(null) returns the triangular factor (lower if chol(true))
-        DMatrixRMaj L = chol.getT(null);
-        double sum = 0.0;
-        for (int i = 0; i < n; i++) {
-            double di = L.get(i, i);
-            if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
-            sum += Math.log(di);
-        }
-        return 2.0 * sum;
-    }
-
-    private static double frobeniusDot(DMatrixRMaj A, DMatrixRMaj B) {
-        if (A.numRows != B.numRows || A.numCols != B.numCols) {
-            throw new IllegalArgumentException("Dimension mismatch in frobeniusDot");
-        }
-        double s = 0.0;
-        int len = A.getNumElements();
-        for (int i = 0; i < len; i++) {
-            s += A.data[i] * B.data[i];
-        }
-        return s;
     }
 
     // -------------------- kernels --------------------
@@ -508,9 +508,9 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
         return new DMatrixRMaj(n, n);
     }
 
-    // -------------------- centering --------------------
-
-    /** Centers a symmetric Gram matrix in-place: K <- H K H, where H = I - (1/n)11^T. */
+    /**
+     * Centers a symmetric Gram matrix in-place: K <- H K H, where H = I - (1/n)11^T.
+     */
     private static void centerInPlace(DMatrixRMaj K) {
         int n = K.numRows;
         if (n == 0) return;
@@ -538,8 +538,6 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
         }
     }
 
-    // -------------------- row selection for missingness --------------------
-
     private int[] validRows(int[] vars) {
         // vars are column indices; keep rows where all vars are non-NaN
         int n = sampleSize;
@@ -557,8 +555,6 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
 
         return Arrays.copyOf(tmp, m);
     }
-
-    // -------------------- bandwidth heuristics --------------------
 
     private static double medianDistanceSquared1D(double[] x) {
         int n = x.length;
@@ -616,8 +612,6 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
         return d2[mid];
     }
 
-    // -------------------- column extraction --------------------
-
     private double[] extract1D(int varIndex, int[] rows) {
         int n = (rows == null) ? nEff : rows.length;
         double[] x = new double[n];
@@ -631,8 +625,6 @@ public final class HuangMarginalScore implements Score, EffectiveSampleSizeSetta
 
         return x;
     }
-
-    // -------------------- small utilities --------------------
 
     public int[] append(int[] z, int x) {
         int[] out = Arrays.copyOf(z, z.length + 1);
