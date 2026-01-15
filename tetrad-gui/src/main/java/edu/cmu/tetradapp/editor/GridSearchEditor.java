@@ -1090,7 +1090,7 @@ public class GridSearchEditor extends JPanel {
             case 0 -> BayesNetSimulation.class;
             case 1 -> SemSimulation.class;
             case 2 -> LinearFisherModel.class;
-            case 3 -> AdditiveAnmSimulator.class;
+            case 3 -> GeneralizedAdditiveModelSimulator.class;
             case 4 -> GeneralNoiseSimulation.class;
             case 5 -> AdditiveNoiseSimulation.class;
             case 6 -> PostnonlinearSem.class;
@@ -1324,7 +1324,8 @@ public class GridSearchEditor extends JPanel {
         File graphFile;
 
         if (trueGraph) {
-            graphFile = new File(trueDir, "simulation" + selectedSimulation + "/save/graph/graph." + selectedGraphIndex + ".txt");
+            graphFile = new File(trueDir, "simulation1" + "/save/" + selectedSimulation + "/graph" + "/graph." + selectedGraphIndex + ".txt");
+            System.out.println(graphFile.getAbsolutePath());
         } else {
             File dir = new File(resultsDir, selectedSimulation + "." + selectedAlgorithm);
             graphFile = new File(dir, "graph." + selectedGraphIndex + ".txt");
@@ -1337,6 +1338,7 @@ public class GridSearchEditor extends JPanel {
             model.setSelectedGraph(graph);
 
             model.setSelectedSimulation((int) selectedSimulation);
+            model.setSelectedGraphIndex((int) selectedGraphIndex);
             model.setSelectedAlgorithm((int) selectedAlgorithm);
             model.setSelectedGraphIndex((int) selectedGraphIndex);
 
@@ -2106,7 +2108,7 @@ public class GridSearchEditor extends JPanel {
         }
 
         if (model.getSelectedSimulation() != null) {
-            simulationComboBox.setSelectedItem(model.getSelectedSimulation());
+            simulationComboBox.setSelectedItem(model.getSelectedSimulationIndex());
         }
 
         updateAlgorithmBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
@@ -2115,6 +2117,9 @@ public class GridSearchEditor extends JPanel {
         if (model.getSelectedGraphIndex() > 0) {
             graphIndexComboBox.setSelectedItem(model.getSelectedGraphIndex());
         }
+
+        selectors.add(new JLabel("Simulation:"));
+        selectors.add(simulationComboBox);
 
         selectors.add(new JLabel("Algorithm:"));
         selectors.add(algorithmComboBox);
@@ -2378,34 +2383,6 @@ public class GridSearchEditor extends JPanel {
         JButton cancelButton = new JButton("Cancel");
 
         // Add action listeners for the buttons
-//        addButton.addActionListener(e1 -> {
-//            String graphString = (String) graphsDropdown.getSelectedItem();
-//            String simulationString = (String) simulationsDropdown.getSelectedItem();
-//
-//            Class<? extends RandomGraph> graphClazz = getGraphClazz(graphString);
-//
-//            GridSearchModel.SimulationSpec spec = getSimulationSpec(simulationString, graphClazz);
-//
-//            // Single-simulation policy: replace the current selection rather than accumulating.
-//            // (We keep the existing model API by clearing the current list before adding.)
-//            try {
-//                Simulations sims = model.getSelectedSimulations();
-//                if (sims != null && sims.getSimulations() != null) {
-//                    sims.getSimulations().clear();
-//                }
-//            } catch (Exception ignore) {
-//                // If the model changes later, failing to clear here is non-fatal; addSimulationSpec will still set something.
-//            }
-//
-//            model.setSelectedSimulation(spec);
-//            setComparisonText();
-//            setSimulationText();
-//
-//            onSelectedAlgorithmsChanged();
-//
-//            dialog.dispose(); // Close the dialog
-//        });
-
         addButton.addActionListener(e1 -> {
             String graphString = (String) graphsDropdown.getSelectedItem();
             String simulationString = (String) simulationsDropdown.getSelectedItem();
@@ -2451,24 +2428,6 @@ public class GridSearchEditor extends JPanel {
     private void addEditAlgorithmParametersListener() {
         editAlgorithmParameters.addActionListener(e -> openEditAlgorithmParametersDialog());
     }
-
-//    private DataType getDataTypeForGridSearch() {
-//        // Best: infer from the actual dataset being analyzed.
-//        // Placeholder: return model.getDataType() if you already have it.
-//        // Fallback: Continuous.
-//
-//        if (model.getSelectedAlgorithms() == null) {
-//            return inferSuppliedDataType();
-//        } else if (!model.getSelectedAlgorithms().isEmpty()) {
-//            if (model.getSuppliedData() != null) {
-//                return inferSuppliedDataType();
-//            } else {
-//                return model.getSelectedSimulation().getSimulationImpl().getDataType();
-//            }
-//        } else {
-//            return DataType.Continuous;
-//        }
-//    }
 
     private DataType getDataTypeForGridSearch() {
         // 1) If we're running from supplied data, that is the most reliable signal.
@@ -2594,9 +2553,6 @@ public class GridSearchEditor extends JPanel {
     private void addAddTableColumnsListener(JTabbedPane tabbedPane) {
         addTableColumns.addActionListener(e -> {
             java.util.Set<GridSearchModel.MyTableColumn> selectedColumns = new HashSet<>();
-
-//            List<GridSearchModel.MyTableColumn> allTableColumns = model.getAllTableColumns();
-//            TableColumnSelectionModel columnSelectionTableModel = new TableColumnSelectionModel(allTableColumns, selectedColumns);
 
             boolean suppliedData = model.getSuppliedData() != null;
             boolean truthAvailable = model.getSuppliedGraph() != null; // or your real condition

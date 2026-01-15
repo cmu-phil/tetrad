@@ -209,7 +209,7 @@ public class ParameterTab extends JPanel {
                         this.simulation.setSimulation(new AdditiveNoiseSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.GENERAL_ADDITIVE_MODEL:
-                        this.simulation.setSimulation(new AdditiveAnmSimulator(randomGraph), this.simulation.getParams());
+                        this.simulation.setSimulation(new GeneralizedAdditiveModelSimulator(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
@@ -247,7 +247,7 @@ public class ParameterTab extends JPanel {
 //                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
 //                        break;
                     case SimulationTypes.GENERAL_ADDITIVE_MODEL:
-                        this.simulation.setSimulation(new AdditiveAnmSimulator(randomGraph), this.simulation.getParams());
+                        this.simulation.setSimulation(new GeneralizedAdditiveModelSimulator(randomGraph), this.simulation.getParams());
                         break;
 //                    case SimulationTypes.POST_NONLINEAR_MODEL:
 //                        this.simulation.setSimulation(new PostnonlinearSem(randomGraph), this.simulation.getParams());

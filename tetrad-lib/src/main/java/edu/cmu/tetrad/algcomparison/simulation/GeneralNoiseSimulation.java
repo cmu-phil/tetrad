@@ -201,7 +201,7 @@ public class GeneralNoiseSimulation implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Additive Noise SEM (Deep Net)";
+        return "General Noise SEM (Deep Net)";
     }
 
     /**

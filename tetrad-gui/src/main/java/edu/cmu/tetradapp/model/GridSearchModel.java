@@ -1554,6 +1554,10 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.showTrueGraph = showTrueGraph;
     }
 
+    public Object getSelectedSimulationIndex() {
+        return selectedSimulation;
+    }
+
     /**
      * This class represents the comparison graph type for graph-based comparison algorithms. ComparisonGraphType is an
      * enumeration type that represents different types of comparison graphs. The available types are DAG (Directed
