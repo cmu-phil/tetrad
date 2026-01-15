@@ -253,7 +253,8 @@ public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampl
 
         // Build Kx (n x n) from target column, and Kz from parent matrix (n x n).
         DMatrixRMaj Kx = rbfGram1D(i, rows);
-        DMatrixRMaj Kz = (parents.length == 0) ? zeroGram(n) : rbfGramND(parents, rows);
+//        DMatrixRMaj Kz = (parents.length == 0) ? zeroGram(n) : rbfGramND(parents, rows);
+        DMatrixRMaj Kz = (parents.length == 0) ? identityGram(n) : rbfGramND(parents, rows);
 
         // Center both.
         centerInPlace(Kx);
@@ -267,6 +268,12 @@ public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampl
         // Cache & return.
         localScoreCache.put(key, ll);
         return ll;
+    }
+
+    private static DMatrixRMaj identityGram(int n) {
+        DMatrixRMaj I = new DMatrixRMaj(n, n);
+        for (int i = 0; i < n; i++) I.set(i, i, 1.0);
+        return I;
     }
 
     /**
