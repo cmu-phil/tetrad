@@ -81,6 +81,7 @@ public class HuangMarginalLikelihoodScore implements ScoreWrapper {
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         score.setLambda(parameters.getDouble(Params.KML_LAMBDA));
         score.setJitter(parameters.getDouble(Params.KML_JITTER));
+        score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
 
         edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore.FeatureType[] values
                 = edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore.FeatureType.values();
@@ -120,6 +121,7 @@ public class HuangMarginalLikelihoodScore implements ScoreWrapper {
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.KML_LAMBDA);
         parameters.add(Params.KML_JITTER);
+        parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
 
         return parameters;
     }

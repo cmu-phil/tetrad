@@ -126,6 +126,15 @@ public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampl
     private double jitter = 1e-10;
 
     /**
+     * Represents a multiplier used to adjust the bandwidth.
+     * This value is used to scale the bandwidth in various calculations.
+     * The default value is 1.0, which indicates no scaling is applied.
+     * A value greater than 1.0 increases the bandwidth, while a value less
+     * than 1.0 decreases it.
+     */
+    private double bandwidthMultiplier = 1.0;
+
+    /**
      * If true, compute valid row subsets when missing values exist.
      */
     private final boolean calculateRowSubsets;
@@ -382,6 +391,22 @@ public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampl
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
     }
 
+
+    /**
+     * Sets the multiplier used to adjust the bandwidth in calculations.
+     * The value must be greater than 0 and finite.
+     *
+     * @param m the value to set as the bandwidth multiplier
+     * @throws IllegalArgumentException if the value is not greater than 0 or is not finite
+     */
+    public void setBandwidthMultiplier(double m) {
+        if (!(m > 0) || !Double.isFinite(m)) {
+            throw new IllegalArgumentException("bandwidthMultiplier must be > 0 and finite");
+        }
+        this.bandwidthMultiplier = m;
+        localScoreCache.clear();
+    }
+
     /**
      * Returns a string representation of the HuangMarginalScore object.
      *
@@ -535,8 +560,8 @@ public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampl
         double[] x = extract1D(varIndex, rows);
 
         double bw2 = medianDistanceSquared1D(x);
-        // Fallback if degenerate.
-        if (!(bw2 > 0)) bw2 = 1.0;
+        bw2 *= bandwidthMultiplier * bandwidthMultiplier;
+        if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
 
         // RBF: exp( -||xi-xj||^2 / (2*sigma^2) ), with sigma^2 = bw2/2  => exp( -||..||^2 / bw2 )
         double invBw = 1.0 / bw2;
@@ -569,7 +594,9 @@ public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampl
         }
 
         double bw2 = medianDistanceSquaredND(Z);
-        if (!(bw2 > 0)) bw2 = 1.0;
+        bw2 *= bandwidthMultiplier * bandwidthMultiplier;
+        if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
+
         double invBw = 1.0 / bw2;
 
         DMatrixRMaj K = new DMatrixRMaj(n, n);
