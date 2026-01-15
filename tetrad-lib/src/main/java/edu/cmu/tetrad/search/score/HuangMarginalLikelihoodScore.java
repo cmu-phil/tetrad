@@ -15,22 +15,101 @@ import org.ejml.interfaces.linsol.LinearSolverDense;
 import java.util.*;
 
 /**
- * Huang et al. (kernel-based) marginal score for continuous variables.
+ * Kernel-based marginal likelihood score of Huang et al. (2018) for continuous variables.
+ *
  * <p>
- * Implements the marginal log-likelihood score (Huang et al., Eq. 6) for
- * a variable X regressed on its parent set Z using kernel ridge regression /
- * Gaussian process style marginal likelihood.
+ * This score implements the kernel marginal score proposed by
+ * Huang, Zhang, Schölkopf, and Zhang (2018) for evaluating the fit of a
+ * regression of a target variable {@code X} on a parent set {@code Z}
+ * using reproducing kernel Hilbert space (RKHS) methods.
+ * The score is derived from kernel ridge regression and can be interpreted
+ * as a surrogate marginal likelihood obtained by integrating out the
+ * regression function in an RKHS.
+ * </p>
+ *
+ * <h3>Model and Interpretation</h3>
+ *
  * <p>
- * Continuous-only version.
+ * Let {@code X} be a univariate response and {@code Z} a (possibly multivariate)
+ * set of predictors. Huang et al. consider a kernel regression model
+ * in which the conditional mean function of {@code X} given {@code Z}
+ * lies in an RKHS associated with a positive-definite kernel.
+ * The score is constructed from centered kernel Gram matrices
+ * {@code Kx} (for the response) and {@code Kz} (for the predictors),
+ * together with a ridge parameter {@code lambda}.
+ * </p>
+ *
  * <p>
- * Notes:
- * <ol>
- * <li> Uses RBF kernels with median heuristic bandwidth.</li>
- * <li> Uses EJML; avoids explicit inverses (Cholesky/solves).</li>
- * <li> Handles missingness via row filtering (testwise deletion on {i} ∪ parents).</li>
- * </ol>
+ * After kernel centering, the score depends on the matrix
+ * {@code A = Kz + n * lambda * I}, and is computed via the expression
+ * </p>
+ *
+ * <pre>
+ *   S = - (n / 2) * log | (n * lambda / 2) * (Kx * A^{-2} * Kx) |  + const,
+ * </pre>
+ *
  * <p>
- * Higher is better, consistent with Tetrad Score conventions.
+ * where {@code n} is the sample size and {@code |·|} denotes a
+ * (pseudo-)determinant. The implementation evaluates this expression
+ * using stable linear-algebraic operations (Cholesky decompositions and solves),
+ * avoiding explicit matrix inversion.
+ * </p>
+ *
+ * <h3>Numerical Characteristics</h3>
+ *
+ * <p>
+ * Because the centered kernel matrices are singular by construction,
+ * the matrix whose determinant appears in the score is typically
+ * positive semidefinite rather than strictly positive definite.
+ * As a result, the score relies on either a pseudo-determinant
+ * (based on eigenvalues) or an implicit ridge regularization
+ * to ensure numerical stability.
+ * </p>
+ *
+ * <p>
+ * In practice, this makes the Huang marginal score more sensitive to
+ * kernel bandwidth choice, regularization strength, and numerical noise
+ * than a full Gaussian process marginal likelihood.
+ * While the score can perform well in some nonlinear regression settings,
+ * it may exhibit instability in greedy score-based causal search
+ * when parent sets differ by small changes.
+ * </p>
+ *
+ * <h3>Comparison to Other Kernel Scores</h3>
+ *
+ * <ul>
+ *   <li>
+ *     Unlike the exact kernel marginal likelihood (KML),
+ *     this score does not correspond to a full probabilistic
+ *     marginal likelihood over functions.
+ *   </li>
+ *   <li>
+ *     Compared to operator-based surrogates, it is more principled
+ *     but still approximate.
+ *   </li>
+ *   <li>
+ *     Compared to KML or its low-rank variants (e.g., RFF-ML / KFF-ML),
+ *     it is generally less stable for greedy structure search,
+ *     though computationally cheaper than exact GP scoring.
+ *   </li>
+ * </ul>
+ *
+ * <h3>Implementation Notes</h3>
+ *
+ * <ul>
+ *   <li>Uses Gaussian RBF kernels with a median-distance bandwidth heuristic.</li>
+ *   <li>Centers all kernel Gram matrices in feature space.</li>
+ *   <li>Handles missing data via row-wise deletion over {@code X ∪ Z}.</li>
+ *   <li>Avoids explicit matrix inversion; relies on Cholesky factorizations.</li>
+ * </ul>
+ *
+ * <p>
+ * Higher scores indicate better fit, consistent with Tetrad {@link Score}
+ * conventions.
+ * </p>
+ *
+ * @see edu.cmu.tetrad.search.score.KernelMarginalLikelihoodScore
+ * @see edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore
  */
 public final class HuangMarginalLikelihoodScore implements Score, EffectiveSampleSizeSettable {
 

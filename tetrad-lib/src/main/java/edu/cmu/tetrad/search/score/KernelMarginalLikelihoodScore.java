@@ -14,102 +14,114 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Kernel-based marginal likelihood score of Huang et al. (2018) for continuous variables.
+ * Kernel Marginal Likelihood (KML) score for continuous variables.
  *
  * <p>
- * This score implements the kernel marginal score proposed by
- * Huang, Zhang, Schölkopf, and Zhang (2018) for evaluating the fit of a
- * regression of a target variable {@code X} on a parent set {@code Z}
- * using reproducing kernel Hilbert space (RKHS) methods.
- * The score is derived from kernel ridge regression and can be interpreted
- * as a surrogate marginal likelihood obtained by integrating out the
- * regression function in an RKHS.
- * </p>
- *
- * <h3>Model and Interpretation</h3>
- *
- * <p>
- * Let {@code X} be a univariate response and {@code Z} a (possibly multivariate)
- * set of predictors. Huang et al. consider a kernel regression model
- * in which the conditional mean function of {@code X} given {@code Z}
- * lies in an RKHS associated with a positive-definite kernel.
- * The score is constructed from centered kernel Gram matrices
- * {@code Kx} (for the response) and {@code Kz} (for the predictors),
- * together with a ridge parameter {@code lambda}.
- * </p>
- *
- * <p>
- * After kernel centering, the score depends on the matrix
- * {@code A = Kz + n * lambda * I}, and is computed via the expression
+ * This score implements the exact Gaussian Process (GP) marginal likelihood
+ * for evaluating candidate parent sets in score-based causal discovery.
+ * For a target variable {@code Y} and parent set {@code Z}, the model is
  * </p>
  *
  * <pre>
- *   S = - (n / 2) * log | (n * lambda / 2) * (Kx * A^{-2} * Kx) |  + const,
+ *   Y = f(Z) + ε,    ε ~ N(0, σ² I)
+ *   f ~ GP(0, k(·,·))
  * </pre>
  *
  * <p>
- * where {@code n} is the sample size and {@code |·|} denotes a
- * (pseudo-)determinant. The implementation evaluates this expression
- * using stable linear-algebraic operations (Cholesky decompositions and solves),
- * avoiding explicit matrix inversion.
+ * where {@code k} is a positive-definite kernel (typically an RBF kernel).
+ * The marginal covariance of {@code Y} is
  * </p>
  *
- * <h3>Numerical Characteristics</h3>
+ * <pre>
+ *   C = K_Z + σ² I
+ * </pre>
  *
  * <p>
- * Because the centered kernel matrices are singular by construction,
- * the matrix whose determinant appears in the score is typically
- * positive semidefinite rather than strictly positive definite.
- * As a result, the score relies on either a pseudo-determinant
- * (based on eigenvalues) or an implicit ridge regularization
- * to ensure numerical stability.
+ * with {@code K_Z} the kernel Gram matrix over the parent variables.
+ * The score (up to an additive constant) is the GP marginal log-likelihood
  * </p>
+ *
+ * <pre>
+ *   S = -0.5 · Yᵀ C⁻¹ Y - 0.5 · log |C|.
+ * </pre>
  *
  * <p>
- * In practice, this makes the Huang marginal score more sensitive to
- * kernel bandwidth choice, regularization strength, and numerical noise
- * than a full Gaussian process marginal likelihood.
- * While the score can perform well in some nonlinear regression settings,
- * it may exhibit instability in greedy score-based causal search
- * when parent sets differ by small changes.
+ * Higher scores indicate better fit under the GP model, following
+ * Tetrad's score convention.
  * </p>
  *
- * <h3>Comparison to Other Kernel Scores</h3>
+ * <h2>Key properties</h2>
  *
  * <ul>
  *   <li>
- *     Unlike the exact kernel marginal likelihood (KML),
- *     this score does not correspond to a full probabilistic
- *     marginal likelihood over functions.
+ *     <b>Exact kernel likelihood:</b>
+ *     This score evaluates the full GP marginal likelihood without
+ *     low-rank or feature approximations.
  *   </li>
  *   <li>
- *     Compared to operator-based surrogates, it is more principled
- *     but still approximate.
+ *     <b>Stable under greedy search:</b>
+ *     Unlike operator-based or regression-style kernel scores, the
+ *     marginal likelihood changes smoothly under single-parent additions
+ *     and deletions, making it well-suited for FGES/BOSS-style searches.
  *   </li>
  *   <li>
- *     Compared to KML or its low-rank variants (e.g., RFF-ML / KFF-ML),
- *     it is generally less stable for greedy structure search,
- *     though computationally cheaper than exact GP scoring.
+ *     <b>Handles high-dimensional parent sets:</b>
+ *     The score remains well-defined even when the number of parents
+ *     exceeds the sample size.
+ *   </li>
+ *   <li>
+ *     <b>Principled probabilistic interpretation:</b>
+ *     Parent sets are compared via an integrated likelihood that
+ *     marginalizes over the latent function {@code f}.
  *   </li>
  * </ul>
  *
- * <h3>Implementation Notes</h3>
- *
- * <ul>
- *   <li>Uses Gaussian RBF kernels with a median-distance bandwidth heuristic.</li>
- *   <li>Centers all kernel Gram matrices in feature space.</li>
- *   <li>Handles missing data via row-wise deletion over {@code X ∪ Z}.</li>
- *   <li>Avoids explicit matrix inversion; relies on Cholesky factorizations.</li>
- * </ul>
+ * <h2>Computational considerations</h2>
  *
  * <p>
- * Higher scores indicate better fit, consistent with Tetrad {@link Score}
- * conventions.
+ * Computing the KML score requires forming and factorizing an
+ * {@code n × n} kernel covariance matrix, which has
+ * {@code O(n³)} time and {@code O(n²)} memory complexity.
+ * As a result, this score is best suited for small to moderate
+ * sample sizes.
  * </p>
  *
- * @see edu.cmu.tetrad.search.score.KernelMarginalLikelihoodScore
+ * <p>
+ * For large-sample settings, the {@code KFF-ML} (Random Fourier Feature /
+ * Orthogonal Random Feature Marginal Likelihood) score provides a scalable
+ * low-rank approximation that preserves the same probabilistic structure.
+ * </p>
+ *
+ * <h2>Regularization and numerical stability</h2>
+ *
+ * <ul>
+ *   <li>
+ *     A noise variance {@code σ²} (exposed as {@code lambda}) is added
+ *     to the kernel covariance to ensure positive definiteness.
+ *   </li>
+ *   <li>
+ *     Cholesky factorization is used with adaptive jitter escalation
+ *     to improve numerical robustness.
+ *   </li>
+ *   <li>
+ *     Columns are globally standardized prior to kernel evaluation
+ *     to stabilize bandwidth selection.
+ *   </li>
+ * </ul>
+ *
+ * <h2>Intended use</h2>
+ *
+ * <p>
+ * This class is intended for benchmarking, validation, and small-sample
+ * causal discovery where exact kernel inference is computationally feasible.
+ * It serves as a reference implementation against which approximate
+ * kernel scores can be compared.
+ * </p>
+ *
  * @see edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore
- */public final class KernelMarginalLikelihoodScore implements Score, EffectiveSampleSizeSettable {
+ * @see edu.cmu.tetrad.search.score .Score
+ */
+public final class KernelMarginalLikelihoodScore implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- configuration knobs --------------------
 
