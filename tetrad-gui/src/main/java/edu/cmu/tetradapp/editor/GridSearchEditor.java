@@ -1325,10 +1325,11 @@ public class GridSearchEditor extends JPanel {
 
         if (trueGraph) {
             graphFile = new File(trueDir, "simulation1" + "/save/" + selectedSimulation + "/graph" + "/graph." + selectedGraphIndex + ".txt");
-            System.out.println(graphFile.getAbsolutePath());
+            System.out.println("True: " + graphFile.getAbsolutePath());
         } else {
             File dir = new File(resultsDir, selectedSimulation + "." + selectedAlgorithm);
             graphFile = new File(dir, "graph." + selectedGraphIndex + ".txt");
+            System.out.println("Est: " + graphFile.getAbsolutePath());
         }
 
         if (graphFile.exists()) {
