@@ -78,9 +78,11 @@ public class RffMarginalLikelihoodScore implements ScoreWrapper {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
 
-        score.setLambda(parameters.getDouble(Params.RCIT_LAMBDA));
+        score.setLambda(parameters.getDouble(Params.KML_LAMBDA));
+        score.setJitter(parameters.getDouble(Params.KML_JITTER));
+        score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
+        score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
-        score.setBandwidthMultiplier(parameters.getDouble(Params.KERNEL_WIDTH));
 
         return score;
     }
@@ -113,13 +115,15 @@ public class RffMarginalLikelihoodScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.RCIT_LAMBDA);
+        parameters.add(Params.KML_LAMBDA);
+        parameters.add(Params.KML_JITTER);
+        parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
+        parameters.add(Params.KML_BW_MAX_ROWS);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
-        parameters.add(Params.KERNEL_WIDTH);
         return parameters;
     }
 
-    /**
+    /**d
      * Retrieves the variable with the given name from the data set.
      *
      * @param name the name of the variable

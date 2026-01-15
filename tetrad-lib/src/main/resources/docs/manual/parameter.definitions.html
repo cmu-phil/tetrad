@@ -1304,7 +1304,6 @@ Source:
         <li>Value Type: <span id="effectiveSampleSize_value_type">Integer</span></li>
     </ul>
 
-
     === errorsNormal ===
     <h3 class="parameter_description" id="errorsNormal">errorsNormal</h3>
     <ul class="parameter_description_list">
@@ -2512,6 +2511,65 @@ Source:
             Type: <span id="kernelWidth_value_type">Double</span></li>
     </ul>
 
+    === kmlLambda ===
+    <h3 class="parameter_description" id="kmlLambda">kmlLambda</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="kmlLambda_short_desc">
+                    Ridge lambda, default = 1
+                    </span></li>
+        <li>Long Description: <span id="kmlLambda_long_desc">
+                    Ridge lambda, default = 1
+        </span></li>
+        <li>Default Value: <span id="kmlLambda_default_value">1</span></li>
+        <li>Lower Bound: <span id="kmlLambda_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="kmlLambda_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="kmlLambda_value_type">Double</span></li>
+    </ul>
+
+    === kmlJitter ===
+    <h3 class="parameter_description" id="kmlJitter">kmlJitter</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="kmlJitter_short_desc">
+                    Jitter escalation base for Cholesky stabilization. Must be > 0.
+                    </span></li>
+        <li>Long Description: <span id="kmlJitter_long_desc">
+                    Jitter escalation base for Cholesky stabilization. Must be > 0.
+        </span></li>
+        <li>Default Value: <span id="kmlJitter_default_value">1e-10</span></li>
+        <li>Lower Bound: <span id="kmlJitter_lower_bound">1e-50</span></li>
+        <li>Upper Bound: <span id="kmlJitter_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="kmlJitter_value_type">Double</span></li>
+    </ul>
+
+    === kmlBandwidthMultiplier ===
+    <h3 class="parameter_description" id="kmlBandwidthMultiplier">kmlBandwidthMultiplier</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="kmlBandwidthMultiplier_short_desc">
+                    Bandwidth multiplier on the median heuristic, default = 1
+                    </span></li>
+        <li>Long Description: <span id="kmlBandwidthMultiplier_long_desc">
+                    Bandwidth multiplier on the median heuristic, default = 1.
+        </span></li>
+        <li>Default Value: <span id="kmlBandwidthMultiplier_default_value">1</span></li>
+        <li>Lower Bound: <span id="kmlBandwidthMultiplier_lower_bound">1e-50</span></li>
+        <li>Upper Bound: <span id="kmlBandwidthMultiplier_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="kmlBandwidthMultiplier_value_type">Double</span></li>
+    </ul>
+
+    === kmlBwMaxRows ===
+    <h3 class="parameter_description" id="kmlBwMaxRows">kmlBwMaxRows</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="kmlBwMaxRows_short_desc">
+                    Max rows used to estimate median bandwidth (subsample for speed).
+                    </span></li>
+        <li>Long Description: <span id="kmlBwMaxRows_long_desc">
+                    Max rows used to estimate median bandwidth (subsample for speed).
+        </span></li>
+        <li>Default Value: <span id="kmlBwMaxRows_default_value">50</span></li>
+        <li>Lower Bound: <span id="kmlBwMaxRows_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="kmlBwMaxRows_upper_bound">2000000</span></li>
+        <li>Value Type: <span id="kmlBwMaxRows_value_type">Integer</span></li>
+    </ul>
 
     === lambda1 ===
     <h3 class="parameter_description" id="lambda1">lambda1</h3>
@@ -4362,10 +4420,8 @@ Source:
         records is 1; the default is set to 1000.</span></li>
         <li>Default
             Value: <span id="sampleSize_default_value">1000</span></li>
-        <li>Lower
-            Bound: <span id="sampleSize_lower_bound">1</span></li>
-        <li>Upper
-            Bound: <span id="sampleSize_upper_bound">2147483647</span></li>
+        <li>Lower Bound: <span id="sampleSize_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="sampleSize_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="sampleSize_value_type">Integer</span></li>
     </ul>
 

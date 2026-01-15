@@ -74,13 +74,7 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
     /**
      * Base ridge/noise knob. Used to form sigma^2. Must be > 0.
      */
-    private volatile double lambda = 1e-3;
-
-    /**
-     * If true, sigma^2 = n * lambda. If false, sigma^2 = lambda.
-     * Many kernel ridge / GP scoring derivations use an n-scaling.
-     */
-    private volatile boolean useNScaledSigma2 = true;
+    private volatile double lambda = 1.0;
 
     /**
      * Jitter escalation base for Cholesky stabilization. Must be > 0.
@@ -169,7 +163,7 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
                 double[] y = extract1D(i, rows, n);
                 centerInPlace(y);
 
-                double sigma2 = useNScaledSigma2 ? (n * lambda) : lambda;
+                double sigma2 = lambda;
                 if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
 
                 // Exact closed-form for no parents: C = sigma2 I
@@ -297,15 +291,6 @@ public final class RffMarginalLikelihoodScore implements Score, EffectiveSampleS
     public void setLambda(double lambda) {
         if (lambda <= 0) throw new IllegalArgumentException("lambda must be > 0");
         this.lambda = lambda;
-        resetCache();
-    }
-
-    public boolean isUseNScaledSigma2() {
-        return useNScaledSigma2;
-    }
-
-    public void setUseNScaledSigma2(boolean useNScaledSigma2) {
-        this.useNScaledSigma2 = useNScaledSigma2;
         resetCache();
     }
 
