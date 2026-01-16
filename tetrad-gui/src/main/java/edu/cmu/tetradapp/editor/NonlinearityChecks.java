@@ -45,7 +45,7 @@ public final class NonlinearityChecks extends JPanel {
     private final JButton runButton = new JButton("Check Nonlinearity");
     private final JButton showStatsButton = new JButton("Show Stats");
 
-    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (CV + Additivity + Additive Noise)", false);
+    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (CV + Additivity)", false);
 
     private final ResultsTableModel tableModel = new ResultsTableModel();
     private final JTable table = new JTable(tableModel);
@@ -151,7 +151,6 @@ public final class NonlinearityChecks extends JPanel {
         table.getColumnModel().getColumn(5).setPreferredWidth(140);  // MOMENT
         table.getColumnModel().getColumn(6).setPreferredWidth(140);  // ADDITIVE
         table.getColumnModel().getColumn(7).setPreferredWidth(160); // Additivity
-        table.getColumnModel().getColumn(8).setPreferredWidth(180); // Additive noise
 
         JTableHeader header = table.getTableHeader();
         header.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
@@ -164,16 +163,9 @@ public final class NonlinearityChecks extends JPanel {
                 }
 
                 String tip = switch (col) {
-                    case 7 ->
-                            "<html><b>Additivity</b><br>" +
-                                    "“Additive OK” = additive nonlinear model is sufficient;<br>" +
-                                    "“Non-additive” = evidence for interactions (general nonlinear fit wins).</html>";
-
-                    case 8 ->
-                            "<html><b>Additive-noise</b><br>" +
-                                    "Tests whether residuals from an additive mean model are independent of X.<br>" +
-                                    "“Additive noise OK” = no evidence residual depends on X;<br>" +
-                                    "“Noise depends on X” = violates additive-noise assumption.</html>";
+                    case 7 -> "<html><b>Additivity</b><br>" +
+                            "“Additive OK” = additive nonlinear model is sufficient;<br>" +
+                            "“Non-additive” = evidence for interactions (general nonlinear fit wins).</html>";
 
                     default -> null;
                 };
@@ -262,9 +254,6 @@ public final class NonlinearityChecks extends JPanel {
         class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 try {
-//                    List<Node> Xs = parseVars(treatmentsArea.getText(), /*allowEmptyAll*/ true);
-//                    List<Node> Ys = parseVars(outcomesArea.getText(), /*allowEmptyAll*/ true);
-
                     TreatmentsParsed tp = parseTreatmentsMaybeWithCombos(treatmentsArea.getText(), /*allowEmptyAll*/ true);
 
                     List<Node> Ys = parseVars(outcomesArea.getText(), /*allowEmptyAll*/ true);
@@ -410,14 +399,11 @@ public final class NonlinearityChecks extends JPanel {
         NonlinearityTests.TestResult addit =
                 doSlow ? NonlinearityTests.cvAdditiveVsRff(yy, XX, kfold, alpha) : null;
 
-        NonlinearityTests.TestResult addNoise =
-                doSlow ? NonlinearityTests.additiveNoiseIndependenceTest(yy, XX, alpha) : null;
-
         String xLabel = (xs.size() == 1) ? xs.get(0).getName()
                 : xs.stream().map(Node::getName).collect(Collectors.joining(", "));
         String yLabel = y.getName();
 
-        return new ResultRow(index, xLabel, yLabel, reset, cv, mom, add, addit, addNoise);
+        return new ResultRow(index, xLabel, yLabel, reset, cv, mom, add, addit);//, addNoise);
     }
 
     private double[] col(Node v) {
@@ -521,8 +507,8 @@ public final class NonlinearityChecks extends JPanel {
 
     /**
      * Parse treatments text possibly ending with a combination suffix like:
-     *   "*[2]" or "X1,X2,X3[2..3]" or "X*[3]"
-     *
+     * "*[2]" or "X1,X2,X3[2..3]" or "X*[3]"
+     * <p>
      * Returns base variables (expanded) plus optional combo spec.
      */
     private TreatmentsParsed parseTreatmentsMaybeWithCombos(String text, boolean allowEmptyAll) {
@@ -566,7 +552,9 @@ public final class NonlinearityChecks extends JPanel {
         }
     }
 
-    /** Generate all k-subsets of the given list in deterministic lexicographic index order. */
+    /**
+     * Generate all k-subsets of the given list in deterministic lexicographic index order.
+     */
     private static List<List<Node>> combinationsOfSize(List<Node> items, int k) {
 
         int n = items.size();
@@ -634,17 +622,10 @@ public final class NonlinearityChecks extends JPanel {
         return (tr == null) ? "Skipped" : tr.toString();
     }
 
-    private String summarizeAdditiveNoise(NonlinearityTests.TestResult tr) {
-        if (tr == null) return "Skipped";
-        String label = tr.reject ? "Noise depends on X" : "Additive noise OK";
-        if (!Double.isFinite(tr.pValue)) return label;
-        return label + " (p=" + pFmt.format(tr.pValue) + ")";
-    }
-
     // ---------------- table model ----------------
 
     private final class ResultsTableModel extends AbstractTableModel {
-        private final String[] cols = {"#", "X", "Y", "RESET", "CV", "Moment", "Additive", "Additivity", "Additive Noise"}; // NEW
+        private final String[] cols = {"#", "X", "Y", "RESET", "CV", "Moment", "Additive", "Additivity"};//, "Additive Noise"}; // NEW
         private List<ResultRow> rows = new ArrayList<>();
 
         @Override
@@ -659,7 +640,6 @@ public final class NonlinearityChecks extends JPanel {
                 case 5 -> summarize(row.moment, "");             // Moment is fast-ish
                 case 6 -> summarize(row.additive, "");           // Additive-component is fast-ish
                 case 7 -> summarizeAdditivity(row.additivity);
-                case 8 -> summarizeAdditiveNoise(row.additiveNoise); // NEW
                 default -> "";
             };
         }
@@ -716,15 +696,14 @@ public final class NonlinearityChecks extends JPanel {
         final NonlinearityTests.TestResult moment;
         final NonlinearityTests.TestResult additive;
         final NonlinearityTests.TestResult additivity;
-        final NonlinearityTests.TestResult additiveNoise;
 
         ResultRow(int index, String xLabel, String yLabel,
                   NonlinearityTests.TestResult reset,
                   NonlinearityTests.TestResult cv,
                   NonlinearityTests.TestResult moment,
                   NonlinearityTests.TestResult additive,
-                  NonlinearityTests.TestResult additivity,
-                  NonlinearityTests.TestResult additiveNoise) {  // NEW
+                  NonlinearityTests.TestResult additivity
+        ) {
             this.index = index;
             this.xLabel = xLabel;
             this.yLabel = yLabel;
@@ -733,7 +712,6 @@ public final class NonlinearityChecks extends JPanel {
             this.moment = moment;
             this.additive = additive;
             this.additivity = additivity;
-            this.additiveNoise = additiveNoise;
         }
     }
 }
