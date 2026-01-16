@@ -452,12 +452,14 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
         if (x.equals(y)) {
             if (verbose) TetradLogger.getInstance().log(new IndependenceFact(x, y, new HashSet<>(Z)) + " x == y");
             lastP = 0.0;
-            return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), false, lastP, alpha - lastP, false);
+            double p_ = 0.0;
+            return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), false, p_, alpha - p_, false);
         }
         if (n < 5) {
             if (verbose) TetradLogger.getInstance().log(new IndependenceFact(x, y, new HashSet<>(Z)) + " n < 5");
             lastP = 1.0;
-            return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), true, lastP, alpha - lastP, false);
+            double p_ = 1.0;
+            return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), true, p_, alpha - p_, false);
         }
 
         // Data matrices (n x d)
@@ -502,9 +504,10 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
             TetradLogger.getInstance().log(new IndependenceFact(x, y, new HashSet<>(Z)) + " p = " + p);
         }
 
-        lastP = clamp01(p);
-        boolean indep = (lastP > alpha);
-        return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), indep, lastP, alpha - lastP);
+        double p_ = clamp01(p);
+        lastP = p_;
+        boolean indep = (p_ > alpha);
+        return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), indep, p_, alpha - lastP);
     }
 
     // ---------------- RowsSettable ----------------

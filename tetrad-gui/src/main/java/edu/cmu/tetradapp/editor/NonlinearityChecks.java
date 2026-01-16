@@ -164,8 +164,7 @@ public final class NonlinearityChecks extends JPanel {
 
                 String tip = switch (col) {
                     case 7 -> "<html><b>Additivity</b><br>" +
-                            "“Additive OK” = additive nonlinear model is sufficient;<br>" +
-                            "“Non-additive” = evidence for interactions (general nonlinear fit wins).</html>";
+                            "Tests whether nonlinear effects of the parents combine additively, or whether interactions among parents improve prediction.</html>";
 
                     default -> null;
                 };
@@ -625,7 +624,7 @@ public final class NonlinearityChecks extends JPanel {
     // ---------------- table model ----------------
 
     private final class ResultsTableModel extends AbstractTableModel {
-        private final String[] cols = {"#", "X", "Y", "RESET", "CV", "Moment", "Additive", "Additivity"};//, "Additive Noise"}; // NEW
+        private final String[] cols = {"#", "X", "Y", "RESET", "CV", "Moment", "Additive", "Additivity (Parents)"};//, "Additive Noise"}; // NEW
         private List<ResultRow> rows = new ArrayList<>();
 
         @Override

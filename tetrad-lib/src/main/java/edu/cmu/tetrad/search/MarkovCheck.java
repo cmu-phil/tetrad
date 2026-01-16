@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -715,10 +715,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         NumberFormat nf = new DecimalFormat("0.00");
         System.out.println("Whole graph statistics: " + " \n" +
-                           " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
-                           " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr) + " \n" +
-                           " TailPrecision = " + nf.format(tp) + " TailRecall = " + nf.format(tr) + " \n" +
-                           " CirclePrecision = " + nf.format(cp) + " CircleRecall = " + nf.format(cr) + " \n");
+                " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
+                " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr) + " \n" +
+                " TailPrecision = " + nf.format(tp) + " TailRecall = " + nf.format(tr) + " \n" +
+                " CirclePrecision = " + nf.format(cp) + " CircleRecall = " + nf.format(cr) + " \n");
     }
 
     /**
@@ -833,8 +833,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         NumberFormat nf = new DecimalFormat("0.00");
         System.out.println("Node " + x + "'s statistics: " + " \n" +
-                           " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
-                           " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
+                " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
+                " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr));
     }
 
     /**
@@ -940,7 +940,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         NumberFormat nf = new DecimalFormat("0.00");
         System.out.println("Node " + x + "'s statistics: " + " \n" +
-                           " LocalGraphPrecision = " + nf.format(lgp) + " LocalGraphRecall = " + nf.format(lgr) + " \n");
+                " LocalGraphPrecision = " + nf.format(lgp) + " LocalGraphRecall = " + nf.format(lgr) + " \n");
     }
 
     /**
@@ -1054,7 +1054,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     mag = graph;
                 } else if (graph.paths().isLegalCpdag()) {
                     mag = GraphTransforms.dagFromCpdag(graph);
-                } else if  (graph.paths().isLegalMag()) {
+                } else if (graph.paths().isLegalMag()) {
                     mag = graph;
                 } else {
                     mag = GraphTransforms.zhangMagFromPag(graph);
@@ -1431,9 +1431,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     public void setKnowledge(Knowledge knowledge) {
         if (!(knowledge.getListOfExplicitlyForbiddenEdges().isEmpty() && knowledge.getListOfRequiredEdges().isEmpty())) {
             throw new IllegalArgumentException("Knowledge object for the Markov checker cannot contain required of " +
-                                               "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
-                                               "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
-                                               "| Z1,..,Zn.");
+                    "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
+                    "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
+                    "| Z1,..,Zn.");
         }
 
         int lastTier = 0;
@@ -1511,17 +1511,17 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         MarkovCheckRecord record = getMarkovCheckRecord();
 
         return "Anderson-Darling p-value (indep): " + nf.format(record.adInd()) + "\n" +
-               "Anderson-Darling p-value (dep): " + nf.format(record.adDep()) + "\n" +
-               "Kolmogorov-Smirnoff p-value (indep): " + nf.format(record.ksInd()) + "\n" +
-               "Kolmogorov-Smirnoff p-value (dep): " + nf.format(record.kdDep()) + "\n" +
-               "Fisher combined p-value (indep): " + nf.format(record.fishInd()) + "\n" +
-               "Fisher combined p-value (dep): " + nf.format(record.fishDep()) + "\n" +
-               "Binomial p-value (indep): " + nf.format(record.binInd()) + "\n" +
-               "Binomial p-value (dep): " + nf.format(record.binDep()) + "\n" +
-               "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd()) + "\n" +
-               "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep()) + "\n" +
-               "Number of tests (indep): " + record.numTestsInd() + "\n" +
-               "Number of tests (dep): " + record.numTestsDep();
+                "Anderson-Darling p-value (dep): " + nf.format(record.adDep()) + "\n" +
+                "Kolmogorov-Smirnoff p-value (indep): " + nf.format(record.ksInd()) + "\n" +
+                "Kolmogorov-Smirnoff p-value (dep): " + nf.format(record.kdDep()) + "\n" +
+                "Fisher combined p-value (indep): " + nf.format(record.fishInd()) + "\n" +
+                "Fisher combined p-value (dep): " + nf.format(record.fishDep()) + "\n" +
+                "Binomial p-value (indep): " + nf.format(record.binInd()) + "\n" +
+                "Binomial p-value (dep): " + nf.format(record.binDep()) + "\n" +
+                "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd()) + "\n" +
+                "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep()) + "\n" +
+                "Number of tests (indep): " + record.numTestsInd() + "\n" +
+                "Number of tests (dep): " + record.numTestsDep();
     }
 
     /**
@@ -1830,8 +1830,19 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         for (int i = 0; i < sampleSize; i++) {
             rows.add(i);
         }
+
         Collections.shuffle(rows);
-        return rows.subList(0, subsampleSize);
+        List<Integer> integers = rows.subList(0, subsampleSize);
+
+        List<Integer> selectedRows = new ArrayList<>(integers.size());
+
+        for (int row : rows) {
+            if (integers.contains(row)) {
+                selectedRows.add(row);
+            }
+        }
+
+        return selectedRows;
     }
 
     private List<Integer> getBootstrapRows(double v) {
