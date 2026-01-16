@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.annotation.Experimental;
+import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -46,7 +47,7 @@ import java.util.List;
         dataType = {DataType.Continuous}
 )
 @Experimental
-@LinearGaussian
+@General
 public class KcvBicScore implements ScoreWrapper {
 
     @Serial

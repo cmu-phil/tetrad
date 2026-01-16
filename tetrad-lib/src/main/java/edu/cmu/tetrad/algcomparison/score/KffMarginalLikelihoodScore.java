@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.annotation.Experimental;
+import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -45,7 +46,7 @@ import java.util.List;
         command = "kff-ml-score",
         dataType = {DataType.Continuous}
 )
-@LinearGaussian
+@General
 @Experimental
 public class KffMarginalLikelihoodScore implements ScoreWrapper {
 

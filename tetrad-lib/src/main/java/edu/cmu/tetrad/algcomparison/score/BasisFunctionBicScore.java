@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
@@ -42,6 +43,7 @@ import java.util.List;
 // */
 //@edu.cmu.tetrad.annotation.Score(name = "BF-SEM-BIC", command = "bf-sem-bic-score", dataType = DataType.Mixed)
 //@Mixed
+//@General
 public class BasisFunctionBicScore implements ScoreWrapper {
 
     @Serial
