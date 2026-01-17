@@ -122,7 +122,7 @@ import static java.lang.Double.NaN;
  *       for fast non-parametric causal discovery. <i>Journal of Causal Inference</i>, 7(1).</li>
  * </ul>
  */
-public final class IndTestRcitKff implements IndependenceTest, RowsSettable {
+public final class KffRcit implements IndependenceTest, RowsSettable {
 
     public enum FeatureType { RFF, ORF }
 
@@ -175,11 +175,11 @@ public final class IndTestRcitKff implements IndependenceTest, RowsSettable {
 
     // ---------------- ctor ----------------
 
-    public IndTestRcitKff(DataSet dataSet) {
+    public KffRcit(DataSet dataSet) {
         this(dataSet, new Parameters());
     }
 
-    public IndTestRcitKff(DataSet dataSet, Parameters params) {
+    public KffRcit(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         this.n = getActiveRowCount();
@@ -362,7 +362,7 @@ public final class IndTestRcitKff implements IndependenceTest, RowsSettable {
 
             // alphaRidge controls how hard we project out Z-features.
             // Mapping: alphaRidge = lambda*(n-1) is a sane default given cov normalization / ridge semantics.
-            final double alphaRidge = Math.max(1e-18, lambda * (n - 1));
+            final double alphaRidge = Math.max(1e-18, lambda);// * ((n - 1) / (double) n));
 
             // Residualize
             SimpleMatrix rX = ridgeResidual(fX, fZ, alphaRidge);

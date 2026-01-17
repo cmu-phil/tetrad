@@ -25,7 +25,6 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.search.test.IndTestRcitKff;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -41,12 +40,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "RCIT-KFF (Random Conditional Independence Test, KFF)",
-        command = "rcit-kff-test",
+        name = "KFF-RCIT (RCIT with Kernel Fourier Features)",
+        command = "kff-rcit",
         dataType = DataType.Continuous
 )
 @General
-public class RcitKff implements IndependenceWrapper {
+public class KffRcit implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -54,7 +53,7 @@ public class RcitKff implements IndependenceWrapper {
     /**
      * `Kci` constructor.
      */
-    public RcitKff() {
+    public KffRcit() {
 
     }
 
@@ -65,7 +64,7 @@ public class RcitKff implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.IndTestRcitKff test = new edu.cmu.tetrad.search.test.IndTestRcitKff((DataSet) dataSet);
+        edu.cmu.tetrad.search.test.KffRcit test = new edu.cmu.tetrad.search.test.KffRcit((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
@@ -86,7 +85,7 @@ public class RcitKff implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "RCIT-KFF";
+        return "KFF-RCIT";
     }
 
     /**
