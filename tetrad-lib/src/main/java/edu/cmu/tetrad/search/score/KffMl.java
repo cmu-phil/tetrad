@@ -73,16 +73,27 @@ public final class KffMl implements Score, EffectiveSampleSizeSettable {
      * Represents the types of features that can be used in random feature mappings.
      * This enumeration is utilized to distinguish between different methods for
      * generating random features in machine learning or statistical models.
-     * <p>
-     * Available feature types:
-     * <p>
-     * - RFF (Random Fourier Features): A method commonly used to approximate kernel functions
-     * in machine learning via random projections.
-     * <p>
-     * - ORF (Orthogonal Random Features): A variant of Random Fourier Features that ensures orthogonality
-     * in the generated random projections for better numerical stability and performance.
      */
-    public enum FeatureType {RFF, ORF}
+    public enum FeatureType {
+
+        /**
+         * Denotes the type of Random Fourier Features (RFF) used in random feature
+         * mappings for machine learning or statistical models.
+         * RFF is a method to approximate kernel functions through random projections,
+         * enabling scalable computation for high-dimensional data.
+         * It is primarily used to facilitate efficient data transformations in non-linear models.
+         */
+        RFF,
+
+        /**
+         * Denotes the type of Orthogonal Random Features (ORF) used in random feature
+         * mappings for machine learning or statistical models.
+         * ORF is a variation of Random Fourier Features that ensures orthogonality
+         * in the generated random projections, improving numerical stability,
+         * reducing redundancy, and enhancing the quality of feature representations
+         * in high-dimensional data transformations.
+         */
+        ORF}
 
     // -------------------- configuration knobs --------------------
 
@@ -193,6 +204,15 @@ public final class KffMl implements Score, EffectiveSampleSizeSettable {
     private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
 
+    /**
+     * Constructs a KffMl instance for performing kernel-based statistical analysis on the given dataset.
+     *
+     * @param dataSet The input dataset on which the kernel-based methods will operate.
+     *                Must not be null, and is expected to contain variables and rows with numeric data.
+     *                If any missing values exist in the dataset, the class will appropriately flag it during instantiation.
+     *
+     * @throws NullPointerException If the provided {@code dataSet} is null.
+     */
     public KffMl(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2026 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -33,8 +33,6 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static java.lang.Double.NaN;
 
 /**
  * <p>RCIT-KFF: Randomized Conditional Independence Test with KFF-ML-consistent Fourier features</p>
@@ -124,7 +122,29 @@ import static java.lang.Double.NaN;
  */
 public final class KffRcit implements IndependenceTest, RowsSettable {
 
-    public enum FeatureType { RFF, ORF }
+    /**
+     * An enumeration representing the types of feature generation methods
+     * used in machine learning for kernel approximation tasks.
+     */
+    public enum FeatureType {
+
+        /**
+         * Represents the Random Fourier Features (RFF) method used for kernel
+         * approximation in machine learning tasks. This method is commonly employed
+         * to approximate shift-invariant kernels, such as the Gaussian kernel, by
+         * mapping input features into a lower-dimensional randomized feature space.
+         */
+        RFF,
+
+        /**
+         * Represents the Orthogonal Random Features (ORF) method used for kernel
+         * approximation in machine learning tasks. This method builds on Random Fourier
+         * Features (RFF) by enforcing orthogonality in the randomized feature space,
+         * potentially leading to improved approximation quality and numerical stability
+         * compared to standard RFF.
+         */
+        ORF
+    }
 
     // ---------------- core data ----------------
     private final DataSet data;
@@ -136,8 +156,8 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
     private int n;
 
     // ---------------- hyperparams ----------------
-    private int numFeatXY = 5;       // features for X and Y (default aligns with causal-learn-ish defaults)
-    private int numFeatZ  = 100;     // features for Z
+    private int numFeatXY = 10;       // features for X and Y (default aligns with causal-learn-ish defaults)
+    private int numFeatZ = 100;     // features for Z
 
     private Approx approx = Approx.GAMMA;
     private int permutations = 0;    // only if approx == PERMUTATION
@@ -162,23 +182,38 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
     private int bwMaxRows = 500;
 
     /** Feature type. */
-    private FeatureType featureType = FeatureType.ORF;
+    private FeatureType featureType = FeatureType.RFF;
 
     // ---------------- IndependenceTest state ----------------
     private double alpha = 0.05;
-    private double lastP = NaN;
     private boolean verbose = false;
 
     // --------- caches ----------
-    private final Map<String, SimpleMatrix> featCache  = new ConcurrentHashMap<>();
-    private final Map<String, Double> bw2Cache         = new ConcurrentHashMap<>();
+    private final Map<String, SimpleMatrix> featCache = new ConcurrentHashMap<>();
+    private final Map<String, Double> bw2Cache = new ConcurrentHashMap<>();
 
     // ---------------- ctor ----------------
 
+    /**
+     * Constructs a new instance of the KffRcit class using the specified DataSet and default parameters.
+     *
+     * @param dataSet The DataSet to be used for the KffRcit instance. This dataset typically contains the
+     *                data needed for independence testing and feature construction.
+     */
     public KffRcit(DataSet dataSet) {
         this(dataSet, new Parameters());
     }
 
+    /**
+     * Constructs a new instance of the KffRcit class using the specified DataSet and Parameters.
+     *
+     * @param dataSet The DataSet to be used for the KffRcit instance. This DataSet typically contains
+     *                the data required for kernel-based independence testing and feature construction.
+     *                It must not be null.
+     * @param params  The Parameters object that provides configuration options for the instance,
+     *                such as the number of features, random seed, and specific algorithm settings.
+     *                It must not be null.
+     */
     public KffRcit(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
@@ -215,6 +250,19 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
 
     // ---------------- public setters ----------------
 
+    /**
+     * Sets the approximation method used for statistical calculations based on an integer code.
+     * This method maps the provided integer code to a specific {@code Approx} enumeration value.
+     * If the code does not match any defined approximation type, the default value {@code Approx.GAMMA} is used.
+     *
+     * @param approxCode An integer code representing the desired approximation method:
+     *                   1 -> {@code Approx.LPB4},
+     *                   2 -> {@code Approx.HBE},
+     *                   3 -> {@code Approx.GAMMA},
+     *                   4 -> {@code Approx.CHI2},
+     *                   5 -> {@code Approx.PERMUTATION}.
+     *                   Any other value defaults to {@code Approx.GAMMA}.
+     */
     public void setApproximationFromInt(int approxCode) {
         switch (approxCode) {
             case 1 -> this.approx = Approx.LPB4;
@@ -226,18 +274,89 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
         }
     }
 
-    public void setDoRcit(boolean doRcit) { this.doRcit = doRcit; }
+    /**
+     * Sets whether to perform Randomized Conditional Independence Testing (RCIT).
+     *
+     * @param doRcit A boolean value indicating whether RCIT should be enabled.
+     *               If true, RCIT is performed; otherwise, RCoT is used.
+     */
+    public void setDoRcit(boolean doRcit) {
+        this.doRcit = doRcit;
+    }
 
-    public void setLambda(double lambda) { this.lambda = Math.max(1e-12, lambda); }
+    /**
+     * Sets the value of the lambda parameter for the KffRcit instance.
+     * The lambda parameter is a regularization term used to ensure numerical
+     * stability. If the provided value of lambda is less than 1e-12, it will
+     * be clamped to 1e-12. Default is 1.
+     *
+     * @param lambda The value to set for the lambda parameter. Must be a positive
+     *               double value to ensure proper regularization. Values lower
+     *               than 1e-12 will be automatically adjusted to 1e-12.
+     */
+    public void setLambda(double lambda) {
+        this.lambda = Math.max(1e-12, lambda);
+    }
 
-    public void setPermutations(int permutations) { this.permutations = Math.max(0, permutations); }
+    /**
+     * Sets the number of permutations to be used in statistical testing or feature generation.
+     * The value is clamped to ensure it is non-negative.
+     *
+     * @param permutations The desired number of permutations.
+     *                      If the input value is negative, it will automatically be set to 0.
+     */
+    public void setPermutations(int permutations) {
+        this.permutations = Math.max(0, permutations);
+    }
 
-    public void setCenterFeatures(boolean centerFeatures) { this.centerFeatures = centerFeatures; }
+    /**
+     * Enables or disables the centering of features for the KffRcit instance.
+     * Centering is typically used to preprocess feature data by subtracting the
+     * mean value from each feature dimension, ensuring zero mean for the features.
+     * Default is true.
+     *
+     * @param centerFeatures A boolean value indicating whether feature centering
+     *                       should be applied. If true, features will be centered;
+     *                       if false, centering will be skipped.
+     */
+    public void setCenterFeatures(boolean centerFeatures) {
+        this.centerFeatures = centerFeatures;
+    }
 
-    public void setNumFeaturesXY(int d) { this.numFeatXY = Math.max(1, d); }
+    /**
+     * Sets the number of features to be used for the X and Y variables.
+     * The value of the number of features is clamped to ensure it is at least 1.
+     * This parameter determines the dimensionality of random features generated
+     * for testing or feature representation tasks within the KffRcit framework.
+     * Default is 10.
+     *
+     * @param d The desired number of features for the X and Y variables.
+     *          If the input value is less than 1, it will be automatically
+     *          adjusted to 1 to ensure validity.
+     */
+    public void setNumFeaturesXY(int d) {
+        this.numFeatXY = Math.max(1, d);
+    }
 
-    public void setNumFeaturesZ(int d) { this.numFeatZ = Math.max(1, d); }
+    /**
+     * Sets the number of features for the Z dimension. Ensures that the value
+     * is at least 1 by applying a minimum bound of 1.
+     * Default is 100.
+     *
+     * @param d the desired number of features for the Z dimension
+     */
+    public void setNumFeaturesZ(int d) {
+        this.numFeatZ = Math.max(1, d);
+    }
 
+    /**
+     * Sets the bandwidth multiplier for the current instance. This value must be greater than 0 and finite.
+     * The method also clears the cached data related to bandwidth and feature computations to ensure consistency.
+     * Default is 1.0.
+     *
+     * @param bandwidthMultiplier the multiplier to adjust the bandwidth, must be a positive and finite value
+     * @throws IllegalArgumentException if the provided bandwidthMultiplier is not greater than 0 or is not finite
+     */
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
         if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
             throw new IllegalArgumentException("bandwidthMultiplier must be > 0 and finite");
@@ -248,19 +367,47 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
         this.featCache.clear();
     }
 
+    /**
+     * Sets the maximum number of rows for the bw (bandwidth) configuration. The provided
+     * value will be clamped to a minimum of 50. This method also clears the associated
+     * caches to ensure consistency with the updated maximum rows setting.
+     * Default is 500.
+     *
+     * @param bwMaxRows The desired maximum number of rows. Values less than 50 will be
+     *                  automatically adjusted to 50.
+     */
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = Math.max(50, bwMaxRows);
         this.bw2Cache.clear();
         this.featCache.clear();
     }
 
+    /**
+     * Sets the feature type for this instance and clears the feature cache.
+     * Default is RFF.
+     *
+     * @param featureType the feature type to be set; must not be null
+     * @throws NullPointerException if the provided featureType is null
+     */
     public void setFeatureType(FeatureType featureType) {
         this.featureType = Objects.requireNonNull(featureType, "featureType");
         this.featCache.clear();
     }
 
-    public FeatureType getFeatureType() { return featureType; }
+    /**
+     * Retrieves the feature type associated with this instance.
+     *
+     * @return the feature type of the current instance
+     */
+    public FeatureType getFeatureType() {
+        return featureType;
+    }
 
+    /**
+     * Sets the seed for the random number generator and clears the feature cache.
+     *
+     * @param seed the seed value to initialize the random number generator
+     */
     public void setSeed(long seed) {
         this.rng.setSeed(seed);
         this.featCache.clear();
@@ -268,6 +415,23 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
 
     // ---------------- IndependenceTest interface ----------------
 
+    /**
+     * Determines whether two nodes, {@code x} and {@code y}, are independent
+     * given a set of conditioning nodes {@code z}, using statistical tests
+     * and feature space projections. The method can operate under different
+     * approximation schemes, handles permutations if specified, and uses
+     * feature-based approaches for dimensionality reduction and residualization.
+     *
+     * @param x The first node whose independence with respect to {@code y} is being tested.
+     *          Must not be null.
+     * @param y The second node whose independence with respect to {@code x} is being tested.
+     *          Must not be null.
+     * @param z The set of nodes (conditioning set) to be conditioned on during the independence test.
+     *          Can be empty or null if no conditioning is needed.
+     * @return An {@code IndependenceResult} object containing the details of the independence test, including
+     *         whether the nodes are deemed independent, the computed p-value, and statistical measures.
+     * @throws InterruptedException If the thread executing the method is interrupted during computation.
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
@@ -284,13 +448,11 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
 
         if (x.equals(y)) {
             if (verbose) TetradLogger.getInstance().log(fact + " x == y");
-            lastP = 0.0;
             double p_ = 0.0;
             return new IndependenceResult(fact, false, p_, alpha - p_, false);
         }
         if (n < 5) {
             if (verbose) TetradLogger.getInstance().log(fact + " n < 5");
-            lastP = 1.0;
             double p_ = 1.0;
             return new IndependenceResult(fact, true, p_, alpha - p_, false);
         }
@@ -406,7 +568,6 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
         }
 
         double p_ = clamp01(p);
-        lastP = p_;
         boolean indep = (p_ > alpha);
 
         if (verbose) {
@@ -415,36 +576,80 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
                     + " ft=" + featureType + " bwMult=" + bandwidthMultiplier + " lam=" + lambda);
         }
 
-        return new IndependenceResult(fact, indep, lastP, alpha - lastP);
+        return new IndependenceResult(fact, indep, p_, alpha - p_);
     }
 
+    /**
+     * Retrieves the list of variable nodes.
+     *
+     * @return a list of Node objects representing the variables
+     */
     @Override
-    public List<Node> getVariables() { return vars; }
+    public List<Node> getVariables() {
+        return vars;
+    }
 
+    /**
+     * Retrieves the alpha value.
+     *
+     * @return the alpha value as a double
+     */
     @Override
-    public double getAlpha() { return alpha; }
+    public double getAlpha() {
+        return alpha;
+    }
 
+    /**
+     * Sets the value of alpha for the current instance.
+     * The alpha value must be a double within the range (0, 1), exclusive.
+     * An IllegalArgumentException will be thrown if the specified value
+     * is not within the valid range.
+     *
+     * @param alpha the new alpha value, must be greater than 0 and less than 1
+     * @throws IllegalArgumentException if alpha is not in the range (0, 1)
+     */
     @Override
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("alpha in (0,1)");
         this.alpha = alpha;
     }
 
+    /**
+     * Retrieves the data encapsulated in this object.
+     *
+     * @return the DataSet instance contained within this object
+     */
     @Override
-    public DataSet getData() { return data; }
+    public DataSet getData() {
+        return data;
+    }
 
+    /**
+     * Determines whether verbose mode is enabled.
+     *
+     * @return true if verbose mode is enabled, false otherwise.
+     */
     @Override
-    public boolean isVerbose() { return verbose; }
+    public boolean isVerbose() {
+        return verbose;
+    }
 
+    /**
+     * Sets the verbosity mode for the system.
+     *
+     * @param verbose a boolean indicating whether verbose mode should be enabled (true) or disabled (false)
+     */
     @Override
-    public void setVerbose(boolean verbose) { this.verbose = verbose; }
-
-    public double getPValue() { return lastP; }
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 
     // ---------------- RowsSettable ----------------
 
     @Override
-    public List<Integer> getRows() { return rows; }
+    public List<Integer> getRows() {
+        return rows;
+    }
 
     @Override
     public void setRows(List<Integer> rows) {
@@ -700,7 +905,7 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
 
         if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
 
-        final double wStd  = Math.sqrt(2.0 / bw2);
+        final double wStd = Math.sqrt(2.0 / bw2);
         final double scale = Math.sqrt(2.0 / mFeatures);
 
         SplittableRandom rng = new SplittableRandom(seed);
@@ -1040,11 +1245,49 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
 
     // ---------------- Internal enum ----------------
 
+    /**
+     * Represents a set of approximation methods used for probabilistic or statistical computations.
+     * These methods may be used in various domains such as machine learning, data analysis,
+     * or other applications involving approximate calculations.
+     */
     public enum Approx {
+
+        /**
+         * An approximation method based on the LPB4 algorithm.
+         */
         LPB4,
+
+        /**
+         * Represents an approximation method based on the Hilbert-based Estimation (HBE) technique.
+         * This technique is used for probabilistic or statistical computations, often applied in domains
+         * such as data analysis, machine learning, and scenarios requiring approximate results.
+         */
         HBE,
+
+        /**
+         * Utilizes the Gamma distribution for approximation purposes.
+         * This method is commonly applied in statistical computations,
+         * particularly in scenarios requiring probabilistic modeling
+         * or handling continuous data distributions.
+         */
         GAMMA,
+
+        /**
+         * An approximation method derived from the Chi-squared distribution.
+         * This method is commonly used in statistical computations and hypothesis testing.
+         * It provides a means to approximate probabilities or test the goodness-of-fit
+         * for observed data against an expected distribution.
+         */
         CHI2,
+
+        /**
+         * An approximation method based on permutation algorithms.
+         * This approach is commonly used in probabilistic or statistical computations
+         * where randomization or reordering of elements is employed.
+         * Permutation-based methods are often applied in hypothesis testing,
+         * resampling techniques, or simulations to assess statistical significance
+         * or estimate probabilities.
+         */
         PERMUTATION
     }
 }

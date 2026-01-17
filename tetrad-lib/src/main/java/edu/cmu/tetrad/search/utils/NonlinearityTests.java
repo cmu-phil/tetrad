@@ -24,17 +24,65 @@ public final class NonlinearityTests {
     private NonlinearityTests() {
     }
 
+    /**
+     * Encapsulates the result of a statistical test, including the test statistic, p-value,
+     * and the decision to reject the null hypothesis.
+     *
+     * This class is immutable and provides information about the outcome of a hypothesis test.
+     */
     public static final class TestResult {
+
+        /**
+         * Represents the value of the test statistic computed during a statistical hypothesis test.
+         *
+         * This value is used to determine the evidence against the null hypothesis based on the
+         * context of the test being performed. The interpretation of this value depends on the specific
+         * test type and its corresponding distribution.
+         */
         public final double statistic;
+
+        /**
+         * Represents the p-value of a statistical hypothesis test.
+         *
+         * The p-value is the probability of observing a test statistic as extreme as,
+         * or more extreme than, the one observed, under the assumption that the null
+         * hypothesis is true. It quantifies the strength of evidence against the null
+         * hypothesis. A smaller p-value indicates stronger evidence against the null
+         * hypothesis.
+         *
+         * If the p-value is not applicable or cannot be computed, this value is set to NaN.
+         */
         public final double pValue;   // NaN if not applicable
+
+        /**
+         * Indicates whether the null hypothesis of the statistical hypothesis test is rejected.
+         */
         public final boolean reject;
 
+        /**
+         * Constructs a TestResult instance with the specified test statistic, p-value,
+         * and decision on whether to reject the null hypothesis.
+         *
+         * @param statistic the value of the test statistic computed in the statistical hypothesis test
+         * @param pValue the p-value of the test, representing the probability of observing a test statistic
+         *               as extreme as, or more extreme than, the one observed, under the null hypothesis
+         * @param reject a boolean value indicating whether the null hypothesis is rejected based on the test result
+         */
         public TestResult(double statistic, double pValue, boolean reject) {
             this.statistic = statistic;
             this.pValue = pValue;
             this.reject = reject;
         }
 
+        /**
+         * Returns a string representation of this TestResult instance.
+         *
+         * The returned string includes the test statistic, p-value, and the rejection decision
+         * of the null hypothesis, formatted as key-value pairs.
+         *
+         * @return a string representation of the TestResult in the format:
+         *         "stat={statistic}, p={pValue}, reject={reject}"
+         */
         @Override
         public String toString() {
             return "stat=" + statistic + ", p=" + pValue + ", reject=" + reject;
@@ -45,9 +93,23 @@ public final class NonlinearityTests {
      * Represents cleaned data for nonlinearity tests, with NaNs removed from y and X.
      */
     public static final class CleanData {
+
+        /**
+         * The array of dependent variable values, cleaned of NaNs.
+         */
         public final double[] y;
+
+        /**
+         * The 2D array of independent variable values, cleaned of NaNs.
+         */
         public final double[][] X;
 
+        /**
+         * Constructs a CleanData object with the provided data arrays.
+         *
+         * @param y the array of dependent variable values, cleaned of NaNs
+         * @param X the 2D array of independent variable values, cleaned of NaNs
+         */
         public CleanData(double[] y, double[][] X) {
             this.y = y;
             this.X = X;
@@ -56,6 +118,10 @@ public final class NonlinearityTests {
 
     /**
      * Remove rows with NaNs in y or any X column.
+     *
+     * @param y the array of dependent variable values
+     * @param X the 2D array of independent variable values
+     * @return a CleanData object containing the cleaned data arrays
      */
     public static CleanData clean(double[] y, double[][] X) {
         int n = y.length;
@@ -598,6 +664,16 @@ public final class NonlinearityTests {
     // In edu.cmu.tetrad.search.utils.NonlinearityTests
 
 
+    /**
+     * Compares additive hinge-basis ridge regression with full RFF-ridge (RBF kernel) using k-fold cross-validation.
+     * Returns a TestResult object containing the test statistic, p-value, and decision to reject the null hypothesis.
+     *
+     * @param y       the array of dependent variable values
+     * @param X       the 2D array of independent variable values
+     * @param kfold   the number of folds for cross-validation
+     * @param alpha   the regularization parameter for ridge regression
+     * @return        a TestResult object with the test statistic, p-value, and decision to reject the null hypothesis
+     */
     public static TestResult cvAdditiveVsRff(double[] y, double[][] X, int kfold, double alpha) {
         // Compares:
         //   Additive hinge-basis ridge  vs  Full RFF-ridge (RBF kernel) using k-fold CV.
