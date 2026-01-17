@@ -22,7 +22,6 @@ package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.General;
-import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -48,7 +47,7 @@ import java.util.List;
 )
 @General
 @Experimental
-public class KffMarginalLikelihoodScore implements ScoreWrapper {
+public class KffMl implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -61,7 +60,7 @@ public class KffMarginalLikelihoodScore implements ScoreWrapper {
     /**
      * Constructs a new instance of the SemBicScore.
      */
-    public KffMarginalLikelihoodScore() {
+    public KffMl() {
     }
 
     /**
@@ -71,10 +70,10 @@ public class KffMarginalLikelihoodScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore score;
+        edu.cmu.tetrad.search.score.KffMl score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.KffMl((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
@@ -85,8 +84,8 @@ public class KffMarginalLikelihoodScore implements ScoreWrapper {
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         score.setNumFeatures(parameters.getInt(Params.KML_NUM_FEATURES));
-        edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore.FeatureType[] values
-                = edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore.FeatureType.values();
+        edu.cmu.tetrad.search.score.KffMl.FeatureType[] values
+                = edu.cmu.tetrad.search.score.KffMl.FeatureType.values();
         score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
 
         return score;

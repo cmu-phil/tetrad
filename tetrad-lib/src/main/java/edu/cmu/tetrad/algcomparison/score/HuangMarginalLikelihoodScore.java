@@ -22,11 +22,11 @@ package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.General;
-import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.KffMl;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -84,8 +84,8 @@ public class HuangMarginalLikelihoodScore implements ScoreWrapper {
         score.setJitter(parameters.getDouble(Params.KML_JITTER));
         score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
 
-        edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore.FeatureType[] values
-                = edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore.FeatureType.values();
+        KffMl.FeatureType[] values
+                = KffMl.FeatureType.values();
 
 
         return score;

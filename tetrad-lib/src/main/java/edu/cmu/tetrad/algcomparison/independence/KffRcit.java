@@ -74,6 +74,9 @@ public class KffRcit implements IndependenceWrapper {
         test.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
         test.setApproximationFromInt(parameters.getInt(Params.RCIT_APPROX));
+        edu.cmu.tetrad.search.test.KffRcit.FeatureType[] values
+                = edu.cmu.tetrad.search.test.KffRcit.FeatureType.values();
+        test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         return test;
     }
@@ -118,6 +121,7 @@ public class KffRcit implements IndependenceWrapper {
         params.add(Params.RCIT_CENTER_FEATURES);
         params.add(Params.RCIT_NUM_FEATURES_XY);
         params.add(Params.RCIT_NUM_FEATURES_Z);
+        params.add(Params.KML_FEATURE_TYPE);
         params.add(Params.VERBOSE);
         return params;
     }

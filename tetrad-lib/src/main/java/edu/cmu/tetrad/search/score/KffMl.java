@@ -67,7 +67,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @see edu.cmu.tetrad.search.score.Score
  */
-public final class KffMarginalLikelihoodScore implements Score, EffectiveSampleSizeSettable {
+public final class KffMl implements Score, EffectiveSampleSizeSettable {
 
     /**
      * Represents the types of features that can be used in random feature mappings.
@@ -193,7 +193,7 @@ public final class KffMarginalLikelihoodScore implements Score, EffectiveSampleS
     private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
 
-    public KffMarginalLikelihoodScore(DataSet dataSet) {
+    public KffMl(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();

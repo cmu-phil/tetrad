@@ -118,7 +118,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * kernel scores can be compared.
  * </p>
  *
- * @see edu.cmu.tetrad.search.score.KffMarginalLikelihoodScore
+ * @see KffMl
  * @see edu.cmu.tetrad.search.score .Score
  */
 public final class KernelMarginalLikelihoodScore implements Score, EffectiveSampleSizeSettable {
