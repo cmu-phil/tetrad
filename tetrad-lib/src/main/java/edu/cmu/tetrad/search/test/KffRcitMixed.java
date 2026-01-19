@@ -91,7 +91,7 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
 
     private double catRho = 0.0; // default: current one-hot behavior
 
-    public enum MixedMode { STACK, STRATA_ZDISC }
+    public enum MixedMode {STACK, STRATA_ZDISC}
 
     private MixedMode mixedMode = MixedMode.STACK;
 
@@ -103,7 +103,6 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
     // so the behavior is identical to PC-KFF-RCIT.
     private final boolean dataHasAnyDiscrete;
     private final KffRcit continuousDelegate;
-
 
 
     // ---------------- ctor ----------------
@@ -475,8 +474,11 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
                 if (col < 0) throw new IllegalArgumentException("Variable not found: " + dv.getName());
 
                 int val;
-                try { val = data.getInt(row, col); }
-                catch (Throwable t) { val = (int) Math.round(data.getDouble(row, col)); }
+                try {
+                    val = data.getInt(row, col);
+                } catch (Throwable t) {
+                    val = (int) Math.round(data.getDouble(row, col));
+                }
 
                 // clamp defensively
                 int k = Math.max(1, dv.getNumCategories());
@@ -757,11 +759,11 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
      * Extracts a mixed block for a set of variables:
      * - Continuous vars -> double[][] cont (n x dc), z-scored columnwise
      * - Discrete vars   -> double[][] discFeat (n x sum(levels)), where each discrete var contributes
-     *   either:
-     *     (a) one-hot (delta kernel) if catRho == 0, or
-     *     (b) an exact PSD categorical feature map (Cholesky row features) if catRho > 0,
-     *         i.e. features f(c) s.t. f(c)^T f(c') = 1 if c=c', else catRho.
-     *
+     * either:
+     * (a) one-hot (delta kernel) if catRho == 0, or
+     * (b) an exact PSD categorical feature map (Cholesky row features) if catRho > 0,
+     * i.e. features f(c) s.t. f(c)^T f(c') = 1 if c=c', else catRho.
+     * <p>
      * Note: centering/z-scoring is handled later in kffFeatMixedCached(...) via zscoreInPlace(SimpleMatrix).
      */
     private MixedBlock extractMixedBlock(List<Node> vv) {
@@ -846,11 +848,11 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
 
     /**
      * Returns an exact feature matrix A (k x k) for the categorical kernel:
-     *   K_ij = 1 if i==j else rho
+     * K_ij = 1 if i==j else rho
      * such that A * A^T = K.
-     *
+     * <p>
      * If rho == 0, this returns the identity (one-hot features).
-     *
+     * <p>
      * Requirements:
      * - k >= 1
      * - 0 <= rho < 1
@@ -1068,10 +1070,10 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
 
     /**
      * Build Random Fourier (or Orthogonal Random) Features for an RBF kernel:
-     *   k(x,x') = exp(-||x-x'||^2 / bw2)
+     * k(x,x') = exp(-||x-x'||^2 / bw2)
      * RFF/ORF:
-     *   wStd = sqrt(2/bw2)
-     *   phi_j(x) = sqrt(2/m) cos(w_j^T x + b_j)
+     * wStd = sqrt(2/bw2)
+     * phi_j(x) = sqrt(2/m) cos(w_j^T x + b_j)
      */
     private double[][] rffFeatures(double[][] Z, int mFeatures, double bw2, long seed) {
         final int n = Z.length;
@@ -1466,9 +1468,19 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
     private static final class IntArrayList {
         private int[] a = new int[16];
         private int size = 0;
-        void add(int v) { if (size == a.length) a = Arrays.copyOf(a, a.length * 2); a[size++] = v; }
-        int size() { return size; }
-        int[] toArray() { return Arrays.copyOf(a, size); }
+
+        void add(int v) {
+            if (size == a.length) a = Arrays.copyOf(a, a.length * 2);
+            a[size++] = v;
+        }
+
+        int size() {
+            return size;
+        }
+
+        int[] toArray() {
+            return Arrays.copyOf(a, size);
+        }
 
         public int get(int i) {
             return a[i];
