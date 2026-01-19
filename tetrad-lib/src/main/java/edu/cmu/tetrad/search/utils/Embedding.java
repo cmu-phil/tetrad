@@ -108,7 +108,8 @@ public class Embedding {
 
                 int numCategories = ((DiscreteVariable) v).getNumCategories();
 
-                for (int c = 0; c < numCategories - 1; c++) {
+                for (int c = 0; c < numCategories; c++) {
+//                    for (int c = 0; c < numCategories - 1; c++) {
                     List<Integer> key = new ArrayList<>();
                     i++;
                     key.add(c);
