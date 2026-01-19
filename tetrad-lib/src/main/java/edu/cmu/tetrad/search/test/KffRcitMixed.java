@@ -431,7 +431,7 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
         double p_ = clamp01(p);
         boolean indep = (p_ > alpha);
 
-        if (verbose) {
+        if (verbose && indep) {
             TetradLogger.getInstance().log(fact + " p = " + p_ + " stat=" + stat
                     + " approx=" + approx + " Fx=" + numFeatXY + " Fz=" + numFeatZ
                     + " ft=" + featureType + " bwMult=" + bandwidthMultiplier + " lam=" + lambda);
