@@ -78,7 +78,7 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
      * rho closer to 0 => categories treated as very distinct blocks.
      * rho closer to 1 => categories treated as nearly identical.
      */
-    private volatile double catRho = 0.0;
+    private volatile double catRho = 0.5;
 
     // -------------------- data --------------------
 

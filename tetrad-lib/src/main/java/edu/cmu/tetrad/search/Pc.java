@@ -789,6 +789,58 @@ public class Pc implements IGraphSearch {
     // Meek closure (cycle-safe)
     // ------------------------------------------------------------------------------------
 
+//    private void applyMeekRules(Graph g) {
+//        if (!meekCycleSafe || !forbidDirectedCycles) {
+//            MeekRules meekRules = new MeekRules();
+//            meekRules.setKnowledge(knowledge);
+//            meekRules.orientImplied(g);
+//            return;
+//        }
+//
+//        // Cycle-safe Meek: repeatedly apply Meek, but only keep implied orientations that do not introduce cycles.
+//        boolean changed;
+//        int guard = 0;
+//
+//        do {
+//            changed = false;
+//            guard++;
+//            if (guard > 10_000) break; // safety
+//
+//            // snapshot edges before
+//            List<Edge> before = new ArrayList<>(g.getEdges());
+//
+//            MeekRules meekRules = new MeekRules();
+//            meekRules.setKnowledge(knowledge);
+//            meekRules.orientImplied(g);
+//
+//            // detect new directed edges introduced (or newly oriented)
+//            List<Edge> after = new ArrayList<>(g.getEdges());
+//
+//            // Build a map key -> edge for comparisons
+//            Map<String, Edge> beforeMap = new HashMap<>();
+//            for (Edge e : before) beforeMap.put(edgeKey(e), e);
+//
+//            for (Edge eAfter : after) {
+//                Edge eBefore = beforeMap.get(edgeKey(eAfter));
+//                if (eBefore == null) continue;
+//
+//                // If orientation changed to introduce arrowhead(s), validate it
+//                if (!sameOrientation(eBefore, eAfter)) {
+//                    // If this particular change creates a cycle, rollback it.
+//                    // Rollback by restoring the old edge.
+//                    if (wouldCreateCycleIfSetEdge(g, eAfter)) {
+//                        // revert
+//                        g.removeEdge(eAfter);
+//                        g.addEdge(eBefore);
+//                        changed = true;
+//                    }
+//                }
+//            }
+//
+//            // If we reverted anything, we should rerun meek to closure again, hence loop.
+//        } while (changed);
+//    }
+
     private void applyMeekRules(Graph g) {
         if (!meekCycleSafe || !forbidDirectedCycles) {
             MeekRules meekRules = new MeekRules();
@@ -797,48 +849,90 @@ public class Pc implements IGraphSearch {
             return;
         }
 
-        // Cycle-safe Meek: repeatedly apply Meek, but only keep implied orientations that do not introduce cycles.
-        boolean changed;
         int guard = 0;
 
-        do {
-            changed = false;
+        while (true) {
             guard++;
-            if (guard > 10_000) break; // safety
+            if (guard > 10_000) break;
 
-            // snapshot edges before
+            // Snapshot current graph edges (this is our "before" for this round)
             List<Edge> before = new ArrayList<>(g.getEdges());
 
+            // Run full Meek to closure on the current graph to discover what it *wants* to change
             MeekRules meekRules = new MeekRules();
             meekRules.setKnowledge(knowledge);
             meekRules.orientImplied(g);
 
-            // detect new directed edges introduced (or newly oriented)
             List<Edge> after = new ArrayList<>(g.getEdges());
 
-            // Build a map key -> edge for comparisons
+            // Build maps keyed by unordered node-pair
             Map<String, Edge> beforeMap = new HashMap<>();
             for (Edge e : before) beforeMap.put(edgeKey(e), e);
 
-            for (Edge eAfter : after) {
-                Edge eBefore = beforeMap.get(edgeKey(eAfter));
-                if (eBefore == null) continue;
+            Map<String, Edge> afterMap = new HashMap<>();
+            for (Edge e : after) afterMap.put(edgeKey(e), e);
 
-                // If orientation changed to introduce arrowhead(s), validate it
+            // Collect candidate changes: those pairs that existed before and after but orientation differs
+            List<EdgeChange> changes = new ArrayList<>();
+            for (Map.Entry<String, Edge> ent : afterMap.entrySet()) {
+                String k = ent.getKey();
+                Edge eAfter = ent.getValue();
+                Edge eBefore = beforeMap.get(k);
+                if (eBefore == null) continue; // ignore truly-new edges (PC/Meek shouldn't add adjacencies anyway)
                 if (!sameOrientation(eBefore, eAfter)) {
-                    // If this particular change creates a cycle, rollback it.
-                    // Rollback by restoring the old edge.
-                    if (wouldCreateCycleIfSetEdge(g, eAfter)) {
-                        // revert
-                        g.removeEdge(eAfter);
-                        g.addEdge(eBefore);
-                        changed = true;
-                    }
+                    changes.add(new EdgeChange(eBefore, eAfter));
                 }
             }
 
-            // If we reverted anything, we should rerun meek to closure again, hence loop.
-        } while (changed);
+            // If Meek produced no orientation changes, we're done.
+            if (changes.isEmpty()) {
+                // IMPORTANT: we are currently sitting at the "after" graph from the meek call.
+                // That's fine since no changes were proposed; it equals the prior state.
+                return;
+            }
+
+            // Revert graph *completely* back to "before"
+            // (We do this by restoring each edge pair to its before version.)
+            for (EdgeChange ch : changes) {
+                // Remove current edge for that pair and restore before
+                Edge cur = afterMap.get(edgeKey(ch.after));
+                if (cur != null) g.removeEdge(cur);
+                // Ensure before edge is present
+                g.addEdge(ch.before);
+            }
+
+            // Now replay proposed changes one by one, keeping only those that don't create cycles
+            boolean acceptedAny = false;
+
+            for (EdgeChange ch : changes) {
+                // Apply the proposed oriented edge
+                g.removeEdge(ch.before);
+                g.addEdge(ch.after);
+
+                if (hasDirectedCycle(g)) {
+                    // Roll back THIS change
+                    g.removeEdge(ch.after);
+                    g.addEdge(ch.before);
+                } else {
+                    acceptedAny = true;
+                }
+            }
+
+            // If we couldn't accept anything without a cycle, stop.
+            if (!acceptedAny) return;
+
+            // Otherwise, loop: run Meek again from this new (partially oriented) state.
+        }
+    }
+
+    private static final class EdgeChange {
+        final Edge before;
+        final Edge after;
+
+        EdgeChange(Edge before, Edge after) {
+            this.before = before;
+            this.after = after;
+        }
     }
 
     /** Return true if the current graph contains any directed cycle. */

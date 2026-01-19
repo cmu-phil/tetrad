@@ -470,13 +470,20 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
         double[][] YaugRaw = (doRcit && !Z.isEmpty()) ? hstackRaw(Yraw, Zraw) : Yraw;
 
         // Deterministic seeds (cache-friendly)
+//        long seedX = seedForX(x) ^ 1729L;
+//        long seedY = seedForY(y, Z, doRcit) ^ 1729L;
+//        long seedZ = seedForZ(Z) ^ 1729L;
+
         long seedX = seedForX(x) ^ 1729L;
-        long seedY = seedForY(y, Z, doRcit) ^ 1729L;
-        long seedZ = seedForZ(Z) ^ 1729L;
+
+        List<Node> yKeyVars = (doRcit && !Z.isEmpty()) ? hstackVarList(y, Z) : Collections.singletonList(y);
+
+        long seedY = seedForBlock("Y", yKeyVars) ^ 1729L;
+        long seedZ = seedForBlock("Z", Z) ^ 1729L;
 
         // Features
         SimpleMatrix fX = kffFeatCached("X", Collections.singletonList(x), Xraw, numFeatXY, seedX);
-        List<Node> yKeyVars = (doRcit && !Z.isEmpty()) ? hstackVarList(y, Z) : Collections.singletonList(y);
+//        List<Node> yKeyVars = (doRcit && !Z.isEmpty()) ? hstackVarList(y, Z) : Collections.singletonList(y);
         SimpleMatrix fY = kffFeatCached("Y", yKeyVars, YaugRaw, numFeatXY, seedY);
 
         SimpleMatrix fZ = Z.isEmpty() ? null : kffFeatCached("Z", Z, Zraw, numFeatZ, seedZ);
@@ -577,6 +584,20 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
         }
 
         return new IndependenceResult(fact, indep, p_, alpha - p_);
+    }
+
+    private long seedForBlock(String tag, List<Node> block) {
+        long h = 1469598103934665603L;
+        h = 1099511628211L * (h ^ tag.hashCode());
+
+        ArrayList<String> names = new ArrayList<>(block.size());
+        for (Node v : block) names.add(v.getName());
+        names.sort(String::compareTo);
+        for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
+
+        h = 1099511628211L * (h ^ getActiveRowCount());
+        h = 1099511628211L * (h ^ activeRowsHash());
+        return h;
     }
 
     /**

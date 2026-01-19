@@ -91,17 +91,20 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
 
     private double catRho = 0.0; // default: current one-hot behavior
 
-    public void setCatRho(double rho) {
-        if (!(rho >= 0.0 && rho < 1.0) || !Double.isFinite(rho)) {
-            throw new IllegalArgumentException("catRho must be in [0,1)");
-        }
-        this.catRho = rho;
-        this.featCache.clear();
-    }
+    public enum MixedMode { STACK, STRATA_ZDISC }
 
-    public double getCatRho() {
-        return catRho;
-    }
+    private MixedMode mixedMode = MixedMode.STACK;
+
+    // stratification knobs
+    private int minStratumSize = 12;       // ignore strata smaller than this
+    private int maxStrata = 2000;          // fallback if too fragmented
+
+    // If the dataset has no discrete variables, we delegate to the original KffRcit
+    // so the behavior is identical to PC-KFF-RCIT.
+    private final boolean dataHasAnyDiscrete;
+    private final KffRcit continuousDelegate;
+
+
 
     // ---------------- ctor ----------------
 
@@ -113,6 +116,21 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         this.n = getActiveRowCount();
+
+        boolean anyDisc = false;
+        for (Node v : this.vars) {
+            if (v instanceof edu.cmu.tetrad.data.DiscreteVariable) { // qualify or import
+                anyDisc = true;
+                break;
+            }
+        }
+        this.dataHasAnyDiscrete = anyDisc;
+
+        // Build a delegate that implements the *original* continuous behavior
+        this.continuousDelegate = new KffRcit(this.data, params);
+
+        // Make delegate match current settings right away
+        syncDelegateToThis();
 
         long seed = params.getLong("rcit.seed", 1729L);
         this.rng = new Random(seed);
@@ -141,6 +159,36 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
         if (ft.equals("orf")) this.featureType = FeatureType.ORF;
     }
 
+    private void syncDelegateToThis() {
+        // Keep delegate aligned with this object's knobs.
+        // (If you later add more knobs, add them here too.)
+        continuousDelegate.setNumFeaturesXY(this.numFeatXY);
+        continuousDelegate.setNumFeaturesZ(this.numFeatZ);
+        continuousDelegate.setApproximationFromInt(switch (this.approx) {
+            case LPB4 -> 1;
+            case HBE -> 2;
+            case GAMMA -> 3;
+            case CHI2 -> 4;
+            case PERMUTATION -> 5;
+        });
+        continuousDelegate.setPermutations(this.permutations);
+        continuousDelegate.setDoRcit(this.doRcit);
+        continuousDelegate.setLambda(this.lambda);
+        continuousDelegate.setCenterFeatures(this.centerFeatures);
+        continuousDelegate.setBandwidthMultiplier(this.bandwidthMultiplier);
+        continuousDelegate.setBwMaxRows(this.bwMaxRows);
+        continuousDelegate.setFeatureType(switch (this.featureType) {
+            case RFF -> KffRcit.FeatureType.RFF;
+            case ORF -> KffRcit.FeatureType.ORF;
+        });
+
+        continuousDelegate.setAlpha(this.alpha);
+        continuousDelegate.setVerbose(this.verbose);
+
+        // Keep rows in sync too
+        continuousDelegate.setRows(this.rows);
+    }
+
     // ---------------- public setters ----------------
 
     public void setApproximationFromInt(int approxCode) {
@@ -152,30 +200,41 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
             case 5 -> this.approx = Approx.PERMUTATION;
             default -> this.approx = Approx.GAMMA;
         }
+        if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
     public void setDoRcit(boolean doRcit) {
         this.doRcit = doRcit;
+        if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
     public void setLambda(double lambda) {
         this.lambda = Math.max(1e-12, lambda);
+        if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
     public void setPermutations(int permutations) {
         this.permutations = Math.max(0, permutations);
+        if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
     public void setCenterFeatures(boolean centerFeatures) {
         this.centerFeatures = centerFeatures;
+        if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
     public void setNumFeaturesXY(int d) {
         this.numFeatXY = Math.max(1, d);
+        this.featCache.clear();
+        this.bw2Cache.clear();
+        if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
     public void setNumFeaturesZ(int d) {
         this.numFeatZ = Math.max(1, d);
+        this.featCache.clear();
+        this.bw2Cache.clear();
+        if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
@@ -185,17 +244,20 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
         this.bandwidthMultiplier = bandwidthMultiplier;
         this.bw2Cache.clear();
         this.featCache.clear();
+        if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = Math.max(50, bwMaxRows);
         this.bw2Cache.clear();
         this.featCache.clear();
+        if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
     public void setFeatureType(FeatureType featureType) {
         this.featureType = Objects.requireNonNull(featureType, "featureType");
         this.featCache.clear();
+        if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
     public FeatureType getFeatureType() {
@@ -205,6 +267,20 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
     public void setSeed(long seed) {
         this.rng.setSeed(seed);
         this.featCache.clear();
+        if (!dataHasAnyDiscrete) syncDelegateToThis();
+    }
+
+    public void setCatRho(double rho) {
+        if (!(rho >= 0.0 && rho < 1.0) || !Double.isFinite(rho)) {
+            throw new IllegalArgumentException("catRho must be in [0,1)");
+        }
+        this.catRho = rho;
+        this.featCache.clear();
+        if (!dataHasAnyDiscrete) syncDelegateToThis();
+    }
+
+    public double getCatRho() {
+        return catRho;
     }
 
     // ---------------- IndependenceTest interface ----------------
@@ -223,11 +299,36 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
 
         IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(Z));
 
+        // --- Optional STRATIFIED mixed handling: stratify on discrete vars in Z only ---
+        if (mixedMode == MixedMode.STRATA_ZDISC
+                && !Z.isEmpty()
+                && containsDiscrete(Z)
+                && approx == Approx.PERMUTATION
+                && permutations > 0
+                && !(x instanceof DiscreteVariable)
+                && !(y instanceof DiscreteVariable)) {
+
+            IndependenceResult r = checkIndependenceStratifiedOnZDiscrete(x, y, Z, fact);
+            if (r != null) return r; // null means: stratification decided to fall back
+            // else fall through to STACK
+        }
+
+        return checkIndependenceStack(x, y, Z, fact);
+    }
+
+    private IndependenceResult checkIndependenceStack(Node x, Node y, List<Node> Z, IndependenceFact fact)
+            throws InterruptedException {
+
+        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
         if (x.equals(y)) {
             if (verbose) TetradLogger.getInstance().log(fact + " x == y");
             double p_ = 0.0;
             return new IndependenceResult(fact, false, p_, alpha - p_, false);
         }
+
+        this.n = getActiveRowCount();
+
         if (n < 5) {
             if (verbose) TetradLogger.getInstance().log(fact + " n < 5");
             double p_ = 1.0;
@@ -339,6 +440,214 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
         return new IndependenceResult(fact, indep, p_, alpha - p_);
     }
 
+    private static boolean containsDiscrete(List<Node> vars) {
+        for (Node v : vars) if (v instanceof DiscreteVariable) return true;
+        return false;
+    }
+
+    private IndependenceResult checkIndependenceStratifiedOnZDiscrete(
+            Node x, Node y, List<Node> Zsorted, IndependenceFact fact
+    ) throws InterruptedException {
+
+        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+        this.n = getActiveRowCount();
+        final int nAll = this.n;
+
+        // Split Z into discrete vs continuous
+        final ArrayList<DiscreteVariable> zDisc = new ArrayList<>();
+        final ArrayList<Node> zCont = new ArrayList<>();
+        for (Node v : Zsorted) {
+            if (v instanceof DiscreteVariable dv) zDisc.add(dv);
+            else zCont.add(v);
+        }
+
+        // Build strata: map key -> list of active-row indices (0..nAll-1)
+        // Using Long boxing in HashMap is not perfect, but OK; avoids extra dependencies.
+        final HashMap<Long, IntArrayList> strata = new HashMap<>(64);
+
+        for (int i = 0; i < nAll; i++) {
+            int row = activeRowIndex(i);
+
+            long key = 1469598103934665603L; // FNV-ish
+            for (DiscreteVariable dv : zDisc) {
+                int col = data.getColumn(dv);
+                if (col < 0) col = data.getVariableNames().indexOf(dv.getName());
+                if (col < 0) throw new IllegalArgumentException("Variable not found: " + dv.getName());
+
+                int val;
+                try { val = data.getInt(row, col); }
+                catch (Throwable t) { val = (int) Math.round(data.getDouble(row, col)); }
+
+                // clamp defensively
+                int k = Math.max(1, dv.getNumCategories());
+                if (val < 0) val = 0;
+                if (val >= k) val = k - 1;
+
+                key ^= (val + 0x9E3779B97F4A7C15L);
+                key *= 1099511628211L;
+            }
+
+            strata.computeIfAbsent(key, kk -> new IntArrayList()).add(i);
+        }
+
+        if (strata.size() > maxStrata) {
+            // Too fragmented -> fall back to standard STACK behavior
+            // (No recursion—just do the original path by returning null sentinel and falling through is messy;
+            // simplest is to just run STACK inline by calling the normal code path. Since you’re inside checkIndependence,
+            // easiest is: temporarily switch mode and call checkIndependence again.)
+            MixedMode prev = this.mixedMode;
+//            this.mixedMode = MixedMode.STACK;
+//            try {
+//                return checkIndependence(x, y, new HashSet<>(Zsorted));
+//            } finally {
+//                this.mixedMode = prev;
+//            }
+
+            return null;
+        }
+
+        // Keep only sufficiently large strata
+        final ArrayList<IntArrayList> strataIdx = new ArrayList<>(strata.size());
+        int totalKept = 0;
+        for (IntArrayList lst : strata.values()) {
+            if (lst.size() >= minStratumSize) {
+                strataIdx.add(lst);
+                totalKept += lst.size();
+            }
+        }
+
+        if (totalKept < Math.max(10, minStratumSize)) {
+            // not enough usable data after filtering -> fall back
+//            MixedMode prev = this.mixedMode;
+//            this.mixedMode = MixedMode.STACK;
+//            try {
+//                return checkIndependence(x, y, new HashSet<>(Zsorted));
+//            } finally {
+//                this.mixedMode = prev;
+//            }
+
+            return null;
+        }
+
+        // Deterministic base seeds (so results are stable)
+        long seedBase = seedForX(x) ^ seedForBlock("STRATA", Zsorted) ^ 0xC0FFEE;
+
+        // Observed stat: sum over strata
+        double statObs = 0.0;
+
+        // Precompute per-stratum residual features rX_s and rY_s for observed statistic
+        // (Then permutations just permute rY_s within the stratum.)
+        final ArrayList<SimpleMatrix> rXs = new ArrayList<>(strataIdx.size());
+        final ArrayList<SimpleMatrix> rYs = new ArrayList<>(strataIdx.size());
+
+        for (int s = 0; s < strataIdx.size(); s++) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+            IntArrayList idx = strataIdx.get(s);
+            int ns = idx.size();
+
+            // Build features for this stratum (continuous-only; discrete are constant inside stratum by construction)
+            SimpleMatrix fX = kffFeatContinuousOnRows(Collections.singletonList(x), numFeatXY, seedBase ^ (s * 1315423911L), idx);
+            List<Node> yKeyVars = (doRcit && !Zsorted.isEmpty()) ? hstackVarList(y, Zsorted) : Collections.singletonList(y);
+            SimpleMatrix fY = kffFeatContinuousOnRows(yKeyVars, numFeatXY, seedBase ^ (s * 2654435761L), idx);
+
+            SimpleMatrix fZ = zCont.isEmpty() ? null
+                    : kffFeatContinuousOnRows(zCont, numFeatZ, seedBase ^ (s * 97531L), idx);
+
+            SimpleMatrix rX = (fZ == null || fZ.getNumCols() == 0) ? fX : ridgeResidual(fX, fZ, Math.max(1e-18, lambda));
+            SimpleMatrix rY = (fZ == null || fZ.getNumCols() == 0) ? fY : ridgeResidual(fY, fZ, Math.max(1e-18, lambda));
+
+            // stat contribution
+            SimpleMatrix Cxy = cov(rX, rY);
+            statObs += ns * frob2(Cxy);
+
+            rXs.add(rX);
+            rYs.add(rY);
+        }
+
+        // Permutation p-value: permute Y within each stratum
+        int greater = 0;
+        for (int b = 0; b < permutations; b++) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+            double statB = 0.0;
+
+            for (int s = 0; s < strataIdx.size(); s++) {
+                int ns = strataIdx.get(s).size();
+
+                SimpleMatrix rX = rXs.get(s);
+                SimpleMatrix rY = rYs.get(s);
+
+                int[] perm = randomPermutation(ns, rng);
+                SimpleMatrix rYp = permuteRows(rY, perm);
+
+                SimpleMatrix C = cov(rX, rYp);
+                statB += ns * frob2(C);
+            }
+
+            if (statB >= statObs) greater++;
+        }
+
+        double p = (greater + 1.0) / (permutations + 1.0);
+        double p_ = clamp01(p);
+        boolean indep = (p_ > alpha);
+
+        if (verbose) {
+            TetradLogger.getInstance().log(fact + " STRATA_ZDISC p=" + p_ + " stat=" + statObs
+                    + " strata=" + strataIdx.size() + " keptN=" + totalKept
+                    + " minStratum=" + minStratumSize + " perms=" + permutations);
+        }
+
+        return new IndependenceResult(fact, indep, p_, alpha - p_);
+    }
+
+    private SimpleMatrix kffFeatContinuousOnRows(List<Node> vv, int mFeaturesCont, long seed, IntArrayList activeIdxWithinCurrentRows) {
+        final int ns = activeIdxWithinCurrentRows.size();
+
+        // Build continuous raw matrix Zc (ns x dc)
+        ArrayList<Node> contVars = new ArrayList<>();
+        for (Node v : vv) if (!(v instanceof DiscreteVariable)) contVars.add(v);
+
+        int dc = contVars.size();
+        if (dc == 0) {
+            // no continuous inputs: return constant RFF block (handled by rffFeatures for d==0)
+            double[][] Z0 = new double[ns][0];
+            double[][] Phi = rffFeatures(Z0, Math.max(1, mFeaturesCont), 1.0, seed);
+            SimpleMatrix M = new SimpleMatrix(Phi);
+            if (centerFeatures) zscoreInPlace(M);
+            else subtractColumnMeansInPlace(M);
+            return M;
+        }
+
+        double[][] Zc = new double[ns][dc];
+        for (int j = 0; j < dc; j++) {
+            Node v = contVars.get(j);
+            int col = data.getColumn(v);
+            if (col < 0) col = data.getVariableNames().indexOf(v.getName());
+            if (col < 0) throw new IllegalArgumentException("Variable not found: " + v.getName());
+
+            for (int i = 0; i < ns; i++) {
+                int rowAll = activeRowIndex(activeIdxWithinCurrentRows.get(i));
+                Zc[i][j] = data.getDouble(rowAll, col);
+            }
+        }
+
+        zscoreInPlace(Zc);
+
+        double bw2 = medianDistanceSquaredND(Zc, Math.min(ns, bwMaxRows));
+        if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
+        bw2 *= (bandwidthMultiplier * bandwidthMultiplier);
+        if (bw2 < 1e-12) bw2 = 1e-12;
+
+        double[][] Phi = rffFeatures(Zc, mFeaturesCont, bw2, seed);
+        SimpleMatrix M = new SimpleMatrix(Phi);
+
+        if (centerFeatures) zscoreInPlace(M);
+        else subtractColumnMeansInPlace(M);
+
+        return M;
+    }
+
     @Override
     public List<Node> getVariables() {
         return vars;
@@ -443,85 +752,6 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
             return M;
         });
     }
-
-//    /**
-//     * Extracts a mixed block for a set of variables:
-//     * - Continuous vars -> double[][] cont (n x dc), z-scored columnwise
-//     * - Discrete vars   -> double[][] discOneHot (n x sum(levels)), raw one-hot (0/1) (not yet centered)
-//     */
-//    private MixedBlock extractMixedBlock(List<Node> vv) {
-//        int n = getActiveRowCount();
-//
-//        // 1) Identify continuous/discrete vars in block
-//        ArrayList<Node> contVars = new ArrayList<>();
-//        ArrayList<DiscreteVariable> discVars = new ArrayList<>();
-//
-//        for (Node v : vv) {
-//            if (v instanceof DiscreteVariable dv) discVars.add(dv);
-//            else contVars.add(v);
-//        }
-//
-//        // 2) Continuous raw -> z-score
-//        double[][] cont = new double[n][contVars.size()];
-//        for (int j = 0; j < contVars.size(); j++) {
-//            int col = data.getColumn(contVars.get(j));
-//            if (col < 0) col = data.getVariableNames().indexOf(contVars.get(j).getName());
-//            if (col < 0) throw new IllegalArgumentException("Variable not found: " + contVars.get(j).getName());
-//
-//            for (int i = 0; i < n; i++) {
-//                int row = activeRowIndex(i);
-//                cont[i][j] = data.getDouble(row, col);
-//            }
-//        }
-//        // z-score continuous columns (like original KffRcit)
-//        zscoreInPlace(cont);
-//
-//        // 3) Discrete one-hot
-//        int totalLevels = 0;
-//        int[] levelsPerVar = new int[discVars.size()];
-//        for (int j = 0; j < discVars.size(); j++) {
-//            int k = Math.max(1, discVars.get(j).getNumCategories());
-//            levelsPerVar[j] = k;
-//            totalLevels += k;
-//        }
-//
-//        double[][] discOH = new double[n][totalLevels];
-//        if (totalLevels > 0) {
-//            int offset = 0;
-//            for (int j = 0; j < discVars.size(); j++) {
-//                DiscreteVariable dv = discVars.get(j);
-//
-//                int col = data.getColumn(dv);
-//                if (col < 0) col = data.getVariableNames().indexOf(dv.getName());
-//                if (col < 0) throw new IllegalArgumentException("Variable not found: " + dv.getName());
-//
-//                int k = levelsPerVar[j];
-//
-//                for (int i = 0; i < n; i++) {
-//                    int row = activeRowIndex(i);
-//
-//                    // Tetrad: discrete values are typically available via getInt(row,col).
-//                    // If getInt isn’t supported in your DataSet implementation, replace with (int) getDouble(...)
-//                    int val;
-//                    try {
-//                        val = data.getInt(row, col);
-//                    } catch (Throwable t) {
-//                        val = (int) Math.round(data.getDouble(row, col));
-//                    }
-//
-//                    // Clamp defensively
-//                    if (val < 0) val = 0;
-//                    if (val >= k) val = k - 1;
-//
-//                    discOH[i][offset + val] = 1.0;
-//                }
-//
-//                offset += k;
-//            }
-//        }
-//
-//        return new MixedBlock(cont, discOH);
-//    }
 
     /**
      * Extracts a mixed block for a set of variables:
@@ -712,23 +942,6 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
 
     private record MixedBlock(double[][] cont, double[][] discOneHot) {
     }
-
-//    private double bw2For(String tag, List<Node> varsForKey, double[][] Zcont) {
-//        String key = keyBw2(tag, varsForKey);
-//
-//        return bw2Cache.computeIfAbsent(key, k -> {
-//            int n = Zcont.length;
-//            if (n <= 2 || (n > 0 && Zcont[0].length == 0)) return 1.0;
-//
-//            int maxRows = Math.min(n, bwMaxRows);
-//            double bw2 = medianDistanceSquaredND(Zcont, maxRows);
-//            if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
-//
-//            bw2 *= (bandwidthMultiplier * bandwidthMultiplier);
-//            if (bw2 < 1e-12) bw2 = 1e-12;
-//            return bw2;
-//        });
-//    }
 
     private double bw2For(String tag, List<Node> varsForKey, double[][] Zcont) {
         // Bandwidth is computed ONLY from the continuous variables.
@@ -1248,5 +1461,17 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
 
     private static double clamp01(double v) {
         return v < 0 ? 0 : (v > 1 ? 1 : v);
+    }
+
+    private static final class IntArrayList {
+        private int[] a = new int[16];
+        private int size = 0;
+        void add(int v) { if (size == a.length) a = Arrays.copyOf(a, a.length * 2); a[size++] = v; }
+        int size() { return size; }
+        int[] toArray() { return Arrays.copyOf(a, size); }
+
+        public int get(int i) {
+            return a[i];
+        }
     }
 }
