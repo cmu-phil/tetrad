@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
@@ -52,9 +52,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class KffRcitMixed implements IndependenceTest, RowsSettable {
 
-    public enum FeatureType { RFF, ORF }
+    public enum FeatureType {RFF, ORF}
 
-    public enum Approx { LPB4, HBE, GAMMA, CHI2, PERMUTATION }
+    public enum Approx {LPB4, HBE, GAMMA, CHI2, PERMUTATION}
 
     // ---------------- core data ----------------
     private final DataSet data;
@@ -88,6 +88,20 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
     // --------- caches ----------
     private final Map<String, SimpleMatrix> featCache = new ConcurrentHashMap<>();
     private final Map<String, Double> bw2Cache = new ConcurrentHashMap<>();
+
+    private double catRho = 0.0; // default: current one-hot behavior
+
+    public void setCatRho(double rho) {
+        if (!(rho >= 0.0 && rho < 1.0) || !Double.isFinite(rho)) {
+            throw new IllegalArgumentException("catRho must be in [0,1)");
+        }
+        this.catRho = rho;
+        this.featCache.clear();
+    }
+
+    public double getCatRho() {
+        return catRho;
+    }
 
     // ---------------- ctor ----------------
 
@@ -140,17 +154,29 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
         }
     }
 
-    public void setDoRcit(boolean doRcit) { this.doRcit = doRcit; }
+    public void setDoRcit(boolean doRcit) {
+        this.doRcit = doRcit;
+    }
 
-    public void setLambda(double lambda) { this.lambda = Math.max(1e-12, lambda); }
+    public void setLambda(double lambda) {
+        this.lambda = Math.max(1e-12, lambda);
+    }
 
-    public void setPermutations(int permutations) { this.permutations = Math.max(0, permutations); }
+    public void setPermutations(int permutations) {
+        this.permutations = Math.max(0, permutations);
+    }
 
-    public void setCenterFeatures(boolean centerFeatures) { this.centerFeatures = centerFeatures; }
+    public void setCenterFeatures(boolean centerFeatures) {
+        this.centerFeatures = centerFeatures;
+    }
 
-    public void setNumFeaturesXY(int d) { this.numFeatXY = Math.max(1, d); }
+    public void setNumFeaturesXY(int d) {
+        this.numFeatXY = Math.max(1, d);
+    }
 
-    public void setNumFeaturesZ(int d) { this.numFeatZ = Math.max(1, d); }
+    public void setNumFeaturesZ(int d) {
+        this.numFeatZ = Math.max(1, d);
+    }
 
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
         if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
@@ -172,7 +198,9 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
         this.featCache.clear();
     }
 
-    public FeatureType getFeatureType() { return featureType; }
+    public FeatureType getFeatureType() {
+        return featureType;
+    }
 
     public void setSeed(long seed) {
         this.rng.setSeed(seed);
@@ -312,10 +340,14 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
     }
 
     @Override
-    public List<Node> getVariables() { return vars; }
+    public List<Node> getVariables() {
+        return vars;
+    }
 
     @Override
-    public double getAlpha() { return alpha; }
+    public double getAlpha() {
+        return alpha;
+    }
 
     @Override
     public void setAlpha(double alpha) {
@@ -324,18 +356,26 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
     }
 
     @Override
-    public DataSet getData() { return data; }
+    public DataSet getData() {
+        return data;
+    }
 
     @Override
-    public boolean isVerbose() { return verbose; }
+    public boolean isVerbose() {
+        return verbose;
+    }
 
     @Override
-    public void setVerbose(boolean verbose) { this.verbose = verbose; }
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 
     // ---------------- RowsSettable ----------------
 
     @Override
-    public List<Integer> getRows() { return rows; }
+    public List<Integer> getRows() {
+        return rows;
+    }
 
     @Override
     public void setRows(List<Integer> rows) {
@@ -404,17 +444,102 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
         });
     }
 
+//    /**
+//     * Extracts a mixed block for a set of variables:
+//     * - Continuous vars -> double[][] cont (n x dc), z-scored columnwise
+//     * - Discrete vars   -> double[][] discOneHot (n x sum(levels)), raw one-hot (0/1) (not yet centered)
+//     */
+//    private MixedBlock extractMixedBlock(List<Node> vv) {
+//        int n = getActiveRowCount();
+//
+//        // 1) Identify continuous/discrete vars in block
+//        ArrayList<Node> contVars = new ArrayList<>();
+//        ArrayList<DiscreteVariable> discVars = new ArrayList<>();
+//
+//        for (Node v : vv) {
+//            if (v instanceof DiscreteVariable dv) discVars.add(dv);
+//            else contVars.add(v);
+//        }
+//
+//        // 2) Continuous raw -> z-score
+//        double[][] cont = new double[n][contVars.size()];
+//        for (int j = 0; j < contVars.size(); j++) {
+//            int col = data.getColumn(contVars.get(j));
+//            if (col < 0) col = data.getVariableNames().indexOf(contVars.get(j).getName());
+//            if (col < 0) throw new IllegalArgumentException("Variable not found: " + contVars.get(j).getName());
+//
+//            for (int i = 0; i < n; i++) {
+//                int row = activeRowIndex(i);
+//                cont[i][j] = data.getDouble(row, col);
+//            }
+//        }
+//        // z-score continuous columns (like original KffRcit)
+//        zscoreInPlace(cont);
+//
+//        // 3) Discrete one-hot
+//        int totalLevels = 0;
+//        int[] levelsPerVar = new int[discVars.size()];
+//        for (int j = 0; j < discVars.size(); j++) {
+//            int k = Math.max(1, discVars.get(j).getNumCategories());
+//            levelsPerVar[j] = k;
+//            totalLevels += k;
+//        }
+//
+//        double[][] discOH = new double[n][totalLevels];
+//        if (totalLevels > 0) {
+//            int offset = 0;
+//            for (int j = 0; j < discVars.size(); j++) {
+//                DiscreteVariable dv = discVars.get(j);
+//
+//                int col = data.getColumn(dv);
+//                if (col < 0) col = data.getVariableNames().indexOf(dv.getName());
+//                if (col < 0) throw new IllegalArgumentException("Variable not found: " + dv.getName());
+//
+//                int k = levelsPerVar[j];
+//
+//                for (int i = 0; i < n; i++) {
+//                    int row = activeRowIndex(i);
+//
+//                    // Tetrad: discrete values are typically available via getInt(row,col).
+//                    // If getInt isn’t supported in your DataSet implementation, replace with (int) getDouble(...)
+//                    int val;
+//                    try {
+//                        val = data.getInt(row, col);
+//                    } catch (Throwable t) {
+//                        val = (int) Math.round(data.getDouble(row, col));
+//                    }
+//
+//                    // Clamp defensively
+//                    if (val < 0) val = 0;
+//                    if (val >= k) val = k - 1;
+//
+//                    discOH[i][offset + val] = 1.0;
+//                }
+//
+//                offset += k;
+//            }
+//        }
+//
+//        return new MixedBlock(cont, discOH);
+//    }
+
     /**
      * Extracts a mixed block for a set of variables:
      * - Continuous vars -> double[][] cont (n x dc), z-scored columnwise
-     * - Discrete vars   -> double[][] discOneHot (n x sum(levels)), raw one-hot (0/1) (not yet centered)
+     * - Discrete vars   -> double[][] discFeat (n x sum(levels)), where each discrete var contributes
+     *   either:
+     *     (a) one-hot (delta kernel) if catRho == 0, or
+     *     (b) an exact PSD categorical feature map (Cholesky row features) if catRho > 0,
+     *         i.e. features f(c) s.t. f(c)^T f(c') = 1 if c=c', else catRho.
+     *
+     * Note: centering/z-scoring is handled later in kffFeatMixedCached(...) via zscoreInPlace(SimpleMatrix).
      */
     private MixedBlock extractMixedBlock(List<Node> vv) {
-        int n = getActiveRowCount();
+        final int n = getActiveRowCount();
 
         // 1) Identify continuous/discrete vars in block
-        ArrayList<Node> contVars = new ArrayList<>();
-        ArrayList<DiscreteVariable> discVars = new ArrayList<>();
+        final ArrayList<Node> contVars = new ArrayList<>();
+        final ArrayList<DiscreteVariable> discVars = new ArrayList<>();
 
         for (Node v : vv) {
             if (v instanceof DiscreteVariable dv) discVars.add(dv);
@@ -422,11 +547,12 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
         }
 
         // 2) Continuous raw -> z-score
-        double[][] cont = new double[n][contVars.size()];
+        final double[][] cont = new double[n][contVars.size()];
         for (int j = 0; j < contVars.size(); j++) {
-            int col = data.getColumn(contVars.get(j));
-            if (col < 0) col = data.getVariableNames().indexOf(contVars.get(j).getName());
-            if (col < 0) throw new IllegalArgumentException("Variable not found: " + contVars.get(j).getName());
+            Node v = contVars.get(j);
+            int col = data.getColumn(v);
+            if (col < 0) col = data.getVariableNames().indexOf(v.getName());
+            if (col < 0) throw new IllegalArgumentException("Variable not found: " + v.getName());
 
             for (int i = 0; i < n; i++) {
                 int row = activeRowIndex(i);
@@ -436,18 +562,19 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
         // z-score continuous columns (like original KffRcit)
         zscoreInPlace(cont);
 
-        // 3) Discrete one-hot
+        // 3) Discrete features: one-hot (rho=0) OR Cholesky row features (rho>0)
         int totalLevels = 0;
-        int[] levelsPerVar = new int[discVars.size()];
+        final int[] levelsPerVar = new int[discVars.size()];
         for (int j = 0; j < discVars.size(); j++) {
             int k = Math.max(1, discVars.get(j).getNumCategories());
             levelsPerVar[j] = k;
             totalLevels += k;
         }
 
-        double[][] discOH = new double[n][totalLevels];
+        final double[][] discFeat = new double[n][totalLevels];
         if (totalLevels > 0) {
             int offset = 0;
+
             for (int j = 0; j < discVars.size(); j++) {
                 DiscreteVariable dv = discVars.get(j);
 
@@ -455,13 +582,16 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
                 if (col < 0) col = data.getVariableNames().indexOf(dv.getName());
                 if (col < 0) throw new IllegalArgumentException("Variable not found: " + dv.getName());
 
-                int k = levelsPerVar[j];
+                final int k = levelsPerVar[j];
+
+                // Build categorical feature map rows for this variable:
+                // - if catRho == 0: rows are standard basis (one-hot)
+                // - else: rows are Cholesky factor rows for K_levels (diag=1, offdiag=catRho)
+                final double[][] A = buildCatFeatureRows(k, this.catRho);
 
                 for (int i = 0; i < n; i++) {
                     int row = activeRowIndex(i);
 
-                    // Tetrad: discrete values are typically available via getInt(row,col).
-                    // If getInt isn’t supported in your DataSet implementation, replace with (int) getDouble(...)
                     int val;
                     try {
                         val = data.getInt(row, col);
@@ -473,17 +603,115 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
                     if (val < 0) val = 0;
                     if (val >= k) val = k - 1;
 
-                    discOH[i][offset + val] = 1.0;
+                    // Copy row features into the appropriate slice
+                    System.arraycopy(A[val], 0, discFeat[i], offset, k);
                 }
 
                 offset += k;
             }
         }
 
-        return new MixedBlock(cont, discOH);
+        return new MixedBlock(cont, discFeat);
     }
 
-    private record MixedBlock(double[][] cont, double[][] discOneHot) {}
+    /**
+     * Returns an exact feature matrix A (k x k) for the categorical kernel:
+     *   K_ij = 1 if i==j else rho
+     * such that A * A^T = K.
+     *
+     * If rho == 0, this returns the identity (one-hot features).
+     *
+     * Requirements:
+     * - k >= 1
+     * - 0 <= rho < 1
+     */
+    private static double[][] buildCatFeatureRows(int k, double rho) {
+        if (k <= 0) throw new IllegalArgumentException("k must be >= 1");
+
+        // Treat tiny rho as zero for stability.
+        if (!(rho > 0.0) || rho < 1e-15) {
+            double[][] I = new double[k][k];
+            for (int i = 0; i < k; i++) I[i][i] = 1.0;
+            return I;
+        }
+
+        if (!(rho >= 0.0 && rho < 1.0) || !Double.isFinite(rho)) {
+            throw new IllegalArgumentException("rho must be in [0,1)");
+        }
+
+        // Build K (k x k): diag 1, offdiag rho
+        double[][] K = new double[k][k];
+        for (int i = 0; i < k; i++) {
+            K[i][i] = 1.0;
+            for (int j = 0; j < i; j++) {
+                K[i][j] = rho;
+                K[j][i] = rho;
+            }
+        }
+
+        // Cholesky lower factor L such that K = L L^T.
+        // This exists for 0 <= rho < 1.
+        double[][] L = choleskyLowerOrThrow(K);
+
+        // We want row-features. Using rows of L is fine: row_i dot row_j = K_ij.
+        // (Because (L L^T)_{ij} = row_i(L) · row_j(L).)
+        return L;
+    }
+
+    /**
+     * Basic Cholesky (lower-triangular) with a small jitter fallback for numerical safety.
+     * Returns L where M = L L^T.
+     */
+    private static double[][] choleskyLowerOrThrow(double[][] M) {
+        int n = M.length;
+        double[][] L = new double[n][n];
+
+        // Try without jitter first
+        if (choleskyLowerInto(M, L, 0.0)) return L;
+
+        // Add a tiny diagonal jitter if needed (rare, but defensive)
+        // Keep it small so it doesn't materially change the kernel.
+        double jitter = 1e-12;
+        for (int tries = 0; tries < 3; tries++) {
+            if (choleskyLowerInto(M, L, jitter)) return L;
+            jitter *= 10.0;
+        }
+
+        throw new IllegalArgumentException("Categorical kernel matrix not PD (unexpected for rho in [0,1)).");
+    }
+
+    /**
+     * Computes Cholesky lower factor into L, optionally adding 'jitter' to the diagonal of M.
+     * Returns true on success, false if not PD.
+     */
+    private static boolean choleskyLowerInto(double[][] M, double[][] L, double jitter) {
+        int n = M.length;
+
+        // zero L
+        for (int i = 0; i < n; i++) Arrays.fill(L[i], 0.0);
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j <= i; j++) {
+                double sum = M[i][j];
+                if (i == j) sum += jitter;
+
+                for (int k = 0; k < j; k++) sum -= L[i][k] * L[j][k];
+
+                if (i == j) {
+                    if (!(sum > 1e-15) || !Double.isFinite(sum)) return false;
+                    L[i][j] = Math.sqrt(sum);
+                } else {
+                    double denom = L[j][j];
+                    if (!(denom > 0) || !Double.isFinite(denom)) return false;
+                    L[i][j] = sum / denom;
+                }
+            }
+        }
+        return true;
+    }
+
+    private record MixedBlock(double[][] cont, double[][] discOneHot) {
+    }
 
 //    private double bw2For(String tag, List<Node> varsForKey, double[][] Zcont) {
 //        String key = keyBw2(tag, varsForKey);
@@ -563,7 +791,8 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
                 .append("|bwMult=").append(Double.doubleToLongBits(bandwidthMultiplier))
                 .append("|bwMax=").append(bwMaxRows)
                 .append("|seed=").append(seed)
-                .append("|vars=");
+                .append("|vars=")
+                .append("|catRho=").append(Double.doubleToLongBits(catRho));
         for (String s : pair) sb.append(s).append(",");
         return sb.toString();
     }
