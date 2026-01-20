@@ -78,7 +78,7 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
      * rho closer to 0 => categories treated as very distinct blocks.
      * rho closer to 1 => categories treated as nearly identical.
      */
-    private volatile double catRho = 0.5;
+    private volatile double catRho = 0.8;
 
     // -------------------- data --------------------
 
@@ -166,16 +166,8 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
                 int n = (rows == null) ? nEff : rows.length;
                 if (n < 5) return Double.NaN;
 
-                double[] y = extract1DContinuous(i, rows, n);
-                centerInPlace(y);
-
                 double sigma2 = lambda;
                 if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
-
-                // Exact closed-form for no parents: C = sigma2 I
-                if (parents.length == 0) {
-                    return gpLogMarginalLikelihoodSigmaOnly(y, sigma2);
-                }
 
                 // Split parents into continuous and discrete
                 int[] contParents = new int[parents.length];
@@ -208,8 +200,42 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
                 // Deterministic seed per (target, parent set)
                 long seed = key ^ 0x9E3779B97F4A7C15L;
 
-                return gpLogMarginalLikelihoodRFFMixed(
-                        y, contParents, discParents, rows, n,
+                // ----------------------------
+                // CASE A: continuous target (your existing behavior)
+                // ----------------------------
+                if (!isDiscrete[i]) {
+                    double[] y = extract1DContinuous(i, rows, n);
+                    centerInPlace(y);
+
+                    // Exact closed-form for no parents: C = sigma2 I
+                    if (parents.length == 0) {
+                        return gpLogMarginalLikelihoodSigmaOnly(y, sigma2);
+                    }
+
+                    return gpLogMarginalLikelihoodRFFMixed(
+                            y, contParents, discParents, rows, n,
+                            numFeatures, bw2, sigma2, seed
+                    );
+                }
+
+                // ----------------------------
+                // CASE B: discrete target (new)
+                // One-hot encode child, center columns, score each column with GP-ML and sum.
+                // ----------------------------
+
+                int[] yDisc = extractDiscrete(i, rows, n);
+                double[][] Y = oneHotCentered(yDisc); // n x L, each col centered
+
+                if (Y == null || Y[0].length == 0) return Double.NaN;
+
+                // If no parents: sigma-only per column (fast)
+                if (parents.length == 0) {
+                    return gpLogMarginalLikelihoodSigmaOnlyMulti(Y, sigma2);
+                }
+
+                // With parents: sum GP-ML across columns
+                return gpLogMarginalLikelihoodRFFMixedMultiOutput(
+                        Y, contParents, discParents, rows, n,
                         numFeatures, bw2, sigma2, seed
                 );
 
@@ -218,6 +244,115 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
                 return Double.NaN;
             }
         });
+    }
+
+    /**
+     * Build a one-hot matrix for a discrete variable and center each column.
+     * Levels are taken as the distinct observed values in the current row subset.
+     *
+     * Returns Y (n x L) where each column has mean 0.
+     */
+    private static double[][] oneHotCentered(int[] vals) {
+        int n = vals.length;
+        if (n == 0) return null;
+
+        // Use observed levels in this subset (important when some levels are absent after filtering)
+        int[] uniq = Arrays.stream(vals).distinct().sorted().toArray();
+        int L = uniq.length;
+        if (L <= 0) return null;
+
+        // Map each value -> level index 0..L-1
+        double[][] Y = new double[n][L];
+
+        for (int r = 0; r < n; r++) {
+            int v = vals[r];
+            int pos = Arrays.binarySearch(uniq, v);
+            if (pos < 0) {
+                // Shouldn't happen, but defensively clamp
+                pos = 0;
+            }
+            Y[r][pos] = 1.0;
+        }
+
+        // Center each column
+        for (int j = 0; j < L; j++) {
+            double sum = 0.0;
+            for (int r = 0; r < n; r++) sum += Y[r][j];
+            double mean = sum / n;
+            for (int r = 0; r < n; r++) Y[r][j] -= mean;
+        }
+
+        return Y;
+    }
+
+    /**
+     * Sigma-only multi-output: sum the sigma-only GP marginal likelihood across columns.
+     * Each column is treated as an independent output with the same sigma^2 I covariance.
+     */
+    private static double gpLogMarginalLikelihoodSigmaOnlyMulti(double[][] Ycentered, double sigma2) {
+        int n = Ycentered.length;
+        if (n == 0) return Double.NaN;
+        int L = Ycentered[0].length;
+        if (L == 0) return Double.NaN;
+
+        double sum = 0.0;
+        for (int j = 0; j < L; j++) {
+            double[] col = new double[n];
+            for (int r = 0; r < n; r++) col[r] = Ycentered[r][j];
+            sum += gpLogMarginalLikelihoodSigmaOnly(col, sigma2);
+        }
+        return sum;
+    }
+
+    /**
+     * Mixed multi-output GP-ML surrogate for discrete targets:
+     * score each centered one-hot column using your existing mixed-parent GP-ML,
+     * and sum across columns.
+     *
+     * Note: This is a Gaussian multi-output surrogate (not a true multinomial likelihood),
+     * but it is often very effective for structure scoring (detecting dependencies).
+     */
+    private double gpLogMarginalLikelihoodRFFMixedMultiOutput(
+            double[][] Ycentered,          // n x L, columns already centered
+            int[] contParents,
+            int[] discParents,
+            int[] rows,
+            int n,
+            int mFeatures,
+            double bw2,
+            double sigma2,
+            long seed
+    ) {
+        int L = Ycentered[0].length;
+        if (L == 0) return Double.NaN;
+
+        double total = 0.0;
+
+        // Simple deterministic per-output seed derivation
+        long s = seed;
+        for (int j = 0; j < L; j++) {
+            double[] yj = new double[n];
+            for (int r = 0; r < n; r++) yj[r] = Ycentered[r][j];
+
+            // Slightly perturb seed per column so the RFF sampling isn't identical across outputs
+            s = mix64(s + 0x9E3779B97F4A7C15L + j);
+
+            double ll = gpLogMarginalLikelihoodRFFMixed(
+                    yj, contParents, discParents, rows, n,
+                    mFeatures, bw2, sigma2, s
+            );
+            if (!Double.isFinite(ll)) return Double.NaN;
+            total += ll;
+        }
+
+        return total;
+    }
+
+    /** A tiny 64-bit mixing function for seed diversification. */
+    private static long mix64(long z) {
+        z = (z ^ (z >>> 33)) * 0xff51afd7ed558ccdL;
+        z = (z ^ (z >>> 33)) * 0xc4ceb9fe1a85ec53L;
+        return z ^ (z >>> 33);
     }
 
     @Override
