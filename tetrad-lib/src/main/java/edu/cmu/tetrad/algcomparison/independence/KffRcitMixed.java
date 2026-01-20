@@ -76,6 +76,7 @@ public class KffRcitMixed implements IndependenceWrapper {
         test.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
         test.setApproximationFromInt(parameters.getInt(Params.RCIT_APPROX));
+        test.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
         edu.cmu.tetrad.search.test.KffRcitMixed.FeatureType[] values
                 = edu.cmu.tetrad.search.test.KffRcitMixed.FeatureType.values();
         test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
@@ -124,6 +125,7 @@ public class KffRcitMixed implements IndependenceWrapper {
         params.add(Params.RCIT_NUM_FEATURES_XY);
         params.add(Params.RCIT_NUM_FEATURES_Z);
         params.add(Params.KML_FEATURE_TYPE);
+        params.add(Params.KML_CAT_RHO);
         params.add(Params.VERBOSE);
         return params;
     }

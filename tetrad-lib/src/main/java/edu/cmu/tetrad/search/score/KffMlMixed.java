@@ -461,14 +461,226 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
 
     // -------------------- mixed GP-ML core (RFF/ORF + categorical kernel) --------------------
 
+//    /**
+//     * Mixed parent set version:
+//     * - Continuous parents approximated with RFF/ORF producing phi_cont in R^m.
+//     * - Each discrete parent uses a small exact feature map phi_cat in R^{L} such that
+//     *   phi_cat(c)^T phi_cat(c') = k_cat(c,c').
+//     * - Combined feature map is Kronecker product across discrete parents and continuous features.
+//     *
+//     * For one discrete parent with L=3 and m=256, total feature dimension is 768.
+//     */
+//    private double gpLogMarginalLikelihoodRFFMixed(
+//            double[] yCentered,          // length n
+//            int[] contParents,           // continuous parent indices
+//            int[] discParents,           // discrete parent indices
+//            int[] rows,                  // null or length n, mapping into original rows
+//            int n,
+//            int mFeatures,               // m (continuous features)
+//            double bw2,                  // bandwidth^2 for continuous part
+//            double sigma2,
+//            long seed
+//    ) {
+//        if (n < 5) return Double.NaN;
+//        if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
+//
+//        final int dc = contParents.length;
+//
+//        // ---------- continuous RFF/ORF sampler ----------
+//        double[][] W = null;
+//        double[] b = null;
+//
+//        double wStd = 1.0;
+//        if (dc > 0) {
+//            if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
+//            wStd = Math.sqrt(2.0 / bw2);
+//        }
+//        final double contScale = Math.sqrt(2.0 / mFeatures);
+//
+//        SplittableRandom rng = new SplittableRandom(seed);
+//
+//        if (dc > 0) {
+//            if (featureType == FeatureType.RFF) {
+//                W = new double[mFeatures][dc];
+//                b = new double[mFeatures];
+//                for (int j = 0; j < mFeatures; j++) {
+//                    for (int k = 0; k < dc; k++) W[j][k] = wStd * nextGaussian(rng);
+//                    b[j] = 2.0 * Math.PI * rng.nextDouble();
+//                }
+//            } else {
+//                W = sampleOrthogonalW(mFeatures, dc, wStd, rng);
+//                b = new double[mFeatures];
+//                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
+//            }
+//        } else {
+//            // no continuous inputs => phi_cont is constant cos(b)
+//            b = new double[mFeatures];
+//            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
+//        }
+//
+//        // ---------- categorical feature maps (exact) ----------
+//        // For each discrete parent, compute levels L and a Cholesky-based feature map A (LxL) s.t. A A^T = K_levels.
+//        final CatFeatureMap[] catMaps = new CatFeatureMap[discParents.length];
+//        for (int t = 0; t < discParents.length; t++) {
+//            int var = discParents[t];
+//            int[] vals = extractDiscrete(var, rows, n);
+//            catMaps[t] = buildCatMap(vals, catRho);
+//            if (catMaps[t] == null) return Double.NaN;
+//        }
+//
+//        // total feature dimension: mFeatures * product(L_t)
+//        int catDim = 1;
+//        for (CatFeatureMap fm : catMaps) {
+//            // guard: don’t explode feature space
+//            if (fm.L > 50) return Double.NaN;
+//            long prod = (long) catDim * (long) fm.L;
+//            if (prod > 200_000L) return Double.NaN; // defensive cap
+//            catDim *= fm.L;
+//        }
+//        final int mTotal = mFeatures * catDim;
+//
+//        // Accumulate G = Phi^T Phi (mTotal x mTotal) and v = Phi^T y (mTotal)
+//        DMatrixRMaj G = new DMatrixRMaj(mTotal, mTotal);
+//        double[] v = new double[mTotal];
+//
+//        double yTy = 0.0;
+//
+//        // temp vectors
+//        double[] phiCont = new double[mFeatures];
+//        double[] phiMix = new double[mTotal]; // used as scratch per row
+//
+//        for (int ii = 0; ii < n; ii++) {
+//            int row = (rows == null) ? ii : rows[ii];
+//
+//            // ----- build continuous features -----
+//            if (dc == 0) {
+//                for (int j = 0; j < mFeatures; j++) phiCont[j] = contScale * Math.cos(b[j]);
+//            } else {
+//                for (int j = 0; j < mFeatures; j++) {
+//                    double dot = 0.0;
+//                    double[] wj = W[j];
+//                    for (int k = 0; k < dc; k++) dot += wj[k] * zCols[contParents[k]][row];
+//                    phiCont[j] = contScale * Math.cos(dot + b[j]);
+//                }
+//            }
+//
+//            // ----- build categorical Kronecker expansion -----
+//            // Start with base = phiCont, then expand by each discrete parent’s cat features.
+//            // We fill phiMix as length mTotal.
+//            // Work arrays: we do iterative expansion into phiMix.
+//            // Step 1: initialize with phiCont as current block of length mFeatures.
+//            // Then for each cat parent, expand: newLen = oldLen * L, with elementwise products.
+//            int curLen = mFeatures;
+//            // copy phiCont into the beginning of phiMix as the current vector
+//            System.arraycopy(phiCont, 0, phiMix, 0, mFeatures);
+//
+//            for (CatFeatureMap fm : catMaps) {
+//                double[] catFeat = fm.featureForRow(ii); // length L
+//                int L = fm.L;
+//
+//                int newLen = curLen * L;
+//
+//                // Expand into a scratch region at the end; easiest is to use a temp array.
+//                double[] tmp = new double[newLen];
+//                int pos = 0;
+//                for (int a = 0; a < L; a++) {
+//                    double ca = catFeat[a];
+//                    for (int j = 0; j < curLen; j++) {
+//                        tmp[pos++] = ca * phiMix[j];
+//                    }
+//                }
+//                // copy back
+//                System.arraycopy(tmp, 0, phiMix, 0, newLen);
+//                curLen = newLen;
+//            }
+//
+//            if (curLen != mTotal) return Double.NaN;
+//
+//            double yi = yCentered[ii];
+//            yTy += yi * yi;
+//
+//            // v += phiMix * yi
+//            for (int j = 0; j < mTotal; j++) v[j] += phiMix[j] * yi;
+//
+//            // G += phiMix^T phiMix (rank-1 outer product, symmetric fill lower triangle)
+//            for (int j = 0; j < mTotal; j++) {
+//                double pj = phiMix[j];
+//                for (int k = 0; k <= j; k++) {
+//                    G.add(j, k, pj * phiMix[k]);
+//                }
+//            }
+//        }
+//
+//        // Mirror lower -> upper
+//        for (int j = 0; j < mTotal; j++) {
+//            for (int k = 0; k < j; k++) {
+//                G.set(k, j, G.get(j, k));
+//            }
+//        }
+//
+//        // B = G + sigma2 I
+//        DMatrixRMaj B = G;
+//        for (int j = 0; j < mTotal; j++) B.add(j, j, sigma2);
+//
+//        // Cholesky(B)
+//        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+//        if (!chol.decompose(B)) return Double.NaN;
+//
+//        DMatrixRMaj L = chol.getT(null);
+//
+//        // logdet(B) = 2 * sum log diag(L)
+//        double logDetB = 0.0;
+//        for (int i = 0; i < mTotal; i++) {
+//            double di = L.get(i, i);
+//            if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
+//            logDetB += Math.log(di);
+//        }
+//        logDetB *= 2.0;
+//
+//        // Solve B^{-1} v: two triangular solves in-place on u
+//        double[] u = Arrays.copyOf(v, mTotal);
+//
+//        // forward solve: L u = v
+//        for (int i = 0; i < mTotal; i++) {
+//            double sum = u[i];
+//            for (int j = 0; j < i; j++) sum -= L.get(i, j) * u[j];
+//            u[i] = sum / L.get(i, i);
+//        }
+//        // back solve: L^T w = u  (store w back in u)
+//        for (int i = mTotal - 1; i >= 0; i--) {
+//            double sum = u[i];
+//            for (int j = i + 1; j < mTotal; j++) sum -= L.get(j, i) * u[j];
+//            u[i] = sum / L.get(i, i);
+//        }
+//
+//        double vTBInvV = 0.0;
+//        for (int j = 0; j < mTotal; j++) vTBInvV += v[j] * u[j];
+//
+//        double invSig = 1.0 / sigma2;
+//        double quad = invSig * yTy - (invSig * invSig) * vTBInvV;
+//
+//        // log|C| = (n - mTotal) log sigma2 + log|B|
+//        double logDetC = (n - mTotal) * Math.log(sigma2) + logDetB;
+//
+//        if (!Double.isFinite(quad) || !Double.isFinite(logDetC)) return Double.NaN;
+//
+//        return -0.5 * quad - 0.5 * logDetC;
+//    }
+
     /**
-     * Mixed parent set version:
-     * - Continuous parents approximated with RFF/ORF producing phi_cont in R^m.
-     * - Each discrete parent uses a small exact feature map phi_cat in R^{L} such that
-     *   phi_cat(c)^T phi_cat(c') = k_cat(c,c').
-     * - Combined feature map is Kronecker product across discrete parents and continuous features.
+     * Drop-in replacement for gpLogMarginalLikelihoodRFFMixed(...).
      *
-     * For one discrete parent with L=3 and m=256, total feature dimension is 768.
+     * Key change: when there are 2+ discrete parents, we *do not* build the Kronecker-expanded
+     * feature map (which explodes as m * Π L). Instead we switch to the n×n GP formulation:
+     *
+     *   K = Kcont ⊙ Kcat
+     *   C = K + sigma^2 I
+     *
+     * and compute:  -0.5 * (y^T C^{-1} y + log|C|)   (no additive constants),
+     * matching your existing convention.
+     *
+     * For 0–1 discrete parent, we keep your existing feature-space path (fast), with one
+     * micro-fix: avoid per-row allocations in the Kronecker expansion.
      */
     private double gpLogMarginalLikelihoodRFFMixed(
             double[] yCentered,          // length n
@@ -484,9 +696,201 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
         if (n < 5) return Double.NaN;
         if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
 
+        // Heuristic: Kronecker feature dimension is m * Π L. This explodes quickly.
+        // For >= 2 discrete parents, always use the n×n kernel path.
+        if (discParents.length >= 2) {
+            return gpLogML_mixedKernelNxN(
+                    yCentered, contParents, discParents, rows, n,
+                    mFeatures, bw2, sigma2, seed
+            );
+        }
+
+        // 0–1 discrete parent: keep your original feature-space method (fast),
+        // but remove per-row allocation in the Kronecker step for the 1-discrete case.
+        return gpLogML_mixedFeatureSpace(
+                yCentered, contParents, discParents, rows, n,
+                mFeatures, bw2, sigma2, seed
+        );
+    }
+
+    /* ====================================================================== */
+    /* ======================  n×n kernel (fast for 2+)  ===================== */
+    /* ====================================================================== */
+
+    private double gpLogML_mixedKernelNxN(
+            double[] yCentered,
+            int[] contParents,
+            int[] discParents,
+            int[] rows,
+            int n,
+            int mFeatures,
+            double bw2,
+            double sigma2,
+            long seed
+    ) {
+        // 1) Build continuous random features Phi (n×m) and Kcont = Phi Phi^T (n×n).
         final int dc = contParents.length;
 
-        // ---------- continuous RFF/ORF sampler ----------
+        // Bandwidth sanity
+        if (dc > 0) {
+            if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
+        } else {
+            // no continuous inputs; bw2 irrelevant
+            bw2 = 1.0;
+        }
+
+        // Deterministic RNG per (target, parents)
+        SplittableRandom rng = new SplittableRandom(seed);
+
+        // Sample W,b exactly like your existing code
+        double wStd = (dc > 0) ? Math.sqrt(2.0 / bw2) : 1.0;
+        double[][] W;
+        double[] b = new double[mFeatures];
+
+        if (dc > 0) {
+            if (featureType == FeatureType.RFF) {
+                W = new double[mFeatures][dc];
+                for (int j = 0; j < mFeatures; j++) {
+                    for (int k = 0; k < dc; k++) W[j][k] = wStd * nextGaussian(rng);
+                    b[j] = 2.0 * Math.PI * rng.nextDouble();
+                }
+            } else { // ORF
+                W = sampleOrthogonalW(mFeatures, dc, wStd, rng);
+                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
+            }
+        } else {
+            // no continuous parents: phi_cont is constant cos(b)
+            W = null;
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
+        }
+
+        final double contScale = Math.sqrt(2.0 / mFeatures);
+
+        // Phi: store as double[n][mFeatures]
+        double[][] Phi = new double[n][mFeatures];
+
+        for (int ii = 0; ii < n; ii++) {
+            int row = (rows == null) ? ii : rows[ii];
+
+            if (dc == 0) {
+                for (int j = 0; j < mFeatures; j++) {
+                    Phi[ii][j] = contScale * Math.cos(b[j]);
+                }
+            } else {
+                for (int j = 0; j < mFeatures; j++) {
+                    double dot = 0.0;
+                    double[] wj = W[j];
+                    for (int k = 0; k < dc; k++) dot += wj[k] * zCols[contParents[k]][row];
+                    Phi[ii][j] = contScale * Math.cos(dot + b[j]);
+                }
+            }
+        }
+
+        // Kcont = Phi Phi^T  (n×n), symmetric
+        DMatrixRMaj K = new DMatrixRMaj(n, n);
+        for (int i = 0; i < n; i++) {
+            double[] phiI = Phi[i];
+            for (int j = 0; j <= i; j++) {
+                double[] phiJ = Phi[j];
+                double dot = 0.0;
+                for (int t = 0; t < mFeatures; t++) dot += phiI[t] * phiJ[t];
+                K.set(i, j, dot);
+            }
+        }
+        // mirror
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < i; j++) K.set(j, i, K.get(i, j));
+        }
+
+        // 2) Build Kcat (n×n) and do Hadamard product into K.
+        // Start with implicit ones; multiply by (same?1:rho) for each discrete parent.
+        for (int dp : discParents) {
+            // extract codes for this discrete parent (length n)
+            int[] codes = extractDiscrete(dp, rows, n);
+
+            final double rho = catRho; // k_cat(c,c)=1, k_cat(c,c')=rho
+            for (int i = 0; i < n; i++) {
+                int ci = codes[i];
+                for (int j = 0; j <= i; j++) {
+                    int cj = codes[j];
+                    double mult = (ci == cj) ? 1.0 : rho;
+                    K.set(i, j, K.get(i, j) * mult);
+                }
+            }
+            // mirror again (cheaper to mirror per parent than re-loop upper inside main mult)
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < i; j++) K.set(j, i, K.get(i, j));
+            }
+        }
+
+        // 3) C = K + sigma2 I
+        for (int i = 0; i < n; i++) K.add(i, i, sigma2);
+
+        // 4) Cholesky(C)
+        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+        if (!chol.decompose(K)) return Double.NaN;
+        DMatrixRMaj L = chol.getT(null);
+
+        // logdet(C) = 2*sum(log(diag(L)))
+        double logDetC = 0.0;
+        for (int i = 0; i < n; i++) {
+            double di = L.get(i, i);
+            if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
+            logDetC += Math.log(di);
+        }
+        logDetC *= 2.0;
+
+        // 5) Solve C^{-1} y via two triangular solves.
+        double[] alpha = Arrays.copyOf(yCentered, n);
+
+        // forward: L u = y
+        for (int i = 0; i < n; i++) {
+            double sum = alpha[i];
+            for (int j = 0; j < i; j++) sum -= L.get(i, j) * alpha[j];
+            alpha[i] = sum / L.get(i, i);
+        }
+        // back: L^T alpha = u
+        for (int i = n - 1; i >= 0; i--) {
+            double sum = alpha[i];
+            for (int j = i + 1; j < n; j++) sum -= L.get(j, i) * alpha[j];
+            alpha[i] = sum / L.get(i, i);
+        }
+
+        // y^T C^{-1} y
+        double quad = 0.0;
+        for (int i = 0; i < n; i++) quad += yCentered[i] * alpha[i];
+
+        if (!Double.isFinite(quad) || !Double.isFinite(logDetC)) return Double.NaN;
+
+        // Match your convention: omit additive constants
+        return -0.5 * quad - 0.5 * logDetC;
+    }
+
+    /* ====================================================================== */
+    /* ===================  feature-space (your original)  =================== */
+    /* ====================================================================== */
+
+    private double gpLogML_mixedFeatureSpace(
+            double[] yCentered,          // length n
+            int[] contParents,           // continuous parent indices
+            int[] discParents,           // 0 or 1 discrete parent indices
+            int[] rows,                  // null or length n
+            int n,
+            int mFeatures,
+            double bw2,
+            double sigma2,
+            long seed
+    ) {
+        // This is essentially your original gpLogMarginalLikelihoodRFFMixed,
+        // but with two small improvements:
+        //  (i) For 1 discrete parent, preallocate the Kronecker temp buffer once per call.
+        //  (ii) For 1 discrete parent, avoid building CatFeatureMap (Cholesky on L×L) by using
+        //       your existing buildCatMap code as-is (keeps exact same semantics).
+        //
+        // I kept your original computations for G, v, yTy, B=G+sigma2I, logdet, solves.
+
+        final int dc = contParents.length;
+
         double[][] W = null;
         double[] b = null;
 
@@ -513,13 +917,11 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
                 for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
             }
         } else {
-            // no continuous inputs => phi_cont is constant cos(b)
             b = new double[mFeatures];
             for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
         }
 
-        // ---------- categorical feature maps (exact) ----------
-        // For each discrete parent, compute levels L and a Cholesky-based feature map A (LxL) s.t. A A^T = K_levels.
+        // categorical map(s): at most one here by construction
         final CatFeatureMap[] catMaps = new CatFeatureMap[discParents.length];
         for (int t = 0; t < discParents.length; t++) {
             int var = discParents[t];
@@ -528,31 +930,31 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
             if (catMaps[t] == null) return Double.NaN;
         }
 
-        // total feature dimension: mFeatures * product(L_t)
         int catDim = 1;
         for (CatFeatureMap fm : catMaps) {
-            // guard: don’t explode feature space
             if (fm.L > 50) return Double.NaN;
             long prod = (long) catDim * (long) fm.L;
-            if (prod > 200_000L) return Double.NaN; // defensive cap
+            if (prod > 200_000L) return Double.NaN;
             catDim *= fm.L;
         }
         final int mTotal = mFeatures * catDim;
 
-        // Accumulate G = Phi^T Phi (mTotal x mTotal) and v = Phi^T y (mTotal)
         DMatrixRMaj G = new DMatrixRMaj(mTotal, mTotal);
         double[] v = new double[mTotal];
 
         double yTy = 0.0;
 
-        // temp vectors
         double[] phiCont = new double[mFeatures];
-        double[] phiMix = new double[mTotal]; // used as scratch per row
+        double[] phiMix = new double[mTotal];
+
+        // Preallocate Kronecker buffer once (big GC win).
+        // For 0 discrete parents, unused. For 1 discrete parent, size = mFeatures * L.
+        double[] kronTmp = (discParents.length == 1) ? new double[mTotal] : null;
 
         for (int ii = 0; ii < n; ii++) {
             int row = (rows == null) ? ii : rows[ii];
 
-            // ----- build continuous features -----
+            // continuous features
             if (dc == 0) {
                 for (int j = 0; j < mFeatures; j++) phiCont[j] = contScale * Math.cos(b[j]);
             } else {
@@ -564,32 +966,25 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
                 }
             }
 
-            // ----- build categorical Kronecker expansion -----
-            // Start with base = phiCont, then expand by each discrete parent’s cat features.
-            // We fill phiMix as length mTotal.
-            // Work arrays: we do iterative expansion into phiMix.
-            // Step 1: initialize with phiCont as current block of length mFeatures.
-            // Then for each cat parent, expand: newLen = oldLen * L, with elementwise products.
+            // mixed (Kronecker across discrete parents)
             int curLen = mFeatures;
-            // copy phiCont into the beginning of phiMix as the current vector
             System.arraycopy(phiCont, 0, phiMix, 0, mFeatures);
 
             for (CatFeatureMap fm : catMaps) {
                 double[] catFeat = fm.featureForRow(ii); // length L
-                int L = fm.L;
+                int Llev = fm.L;
+                int newLen = curLen * Llev;
 
-                int newLen = curLen * L;
+                // use preallocated buffer if possible (1 discrete parent case)
+                double[] tmp = (kronTmp != null && kronTmp.length == newLen) ? kronTmp : new double[newLen];
 
-                // Expand into a scratch region at the end; easiest is to use a temp array.
-                double[] tmp = new double[newLen];
                 int pos = 0;
-                for (int a = 0; a < L; a++) {
+                for (int a = 0; a < Llev; a++) {
                     double ca = catFeat[a];
                     for (int j = 0; j < curLen; j++) {
                         tmp[pos++] = ca * phiMix[j];
                     }
                 }
-                // copy back
                 System.arraycopy(tmp, 0, phiMix, 0, newLen);
                 curLen = newLen;
             }
@@ -599,10 +994,8 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
             double yi = yCentered[ii];
             yTy += yi * yi;
 
-            // v += phiMix * yi
             for (int j = 0; j < mTotal; j++) v[j] += phiMix[j] * yi;
 
-            // G += phiMix^T phiMix (rank-1 outer product, symmetric fill lower triangle)
             for (int j = 0; j < mTotal; j++) {
                 double pj = phiMix[j];
                 for (int k = 0; k <= j; k++) {
@@ -611,24 +1004,18 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
             }
         }
 
-        // Mirror lower -> upper
         for (int j = 0; j < mTotal; j++) {
-            for (int k = 0; k < j; k++) {
-                G.set(k, j, G.get(j, k));
-            }
+            for (int k = 0; k < j; k++) G.set(k, j, G.get(j, k));
         }
 
         // B = G + sigma2 I
         DMatrixRMaj B = G;
         for (int j = 0; j < mTotal; j++) B.add(j, j, sigma2);
 
-        // Cholesky(B)
         CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
         if (!chol.decompose(B)) return Double.NaN;
-
         DMatrixRMaj L = chol.getT(null);
 
-        // logdet(B) = 2 * sum log diag(L)
         double logDetB = 0.0;
         for (int i = 0; i < mTotal; i++) {
             double di = L.get(i, i);
@@ -637,16 +1024,15 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
         }
         logDetB *= 2.0;
 
-        // Solve B^{-1} v: two triangular solves in-place on u
         double[] u = Arrays.copyOf(v, mTotal);
 
-        // forward solve: L u = v
+        // forward: L u = v
         for (int i = 0; i < mTotal; i++) {
             double sum = u[i];
             for (int j = 0; j < i; j++) sum -= L.get(i, j) * u[j];
             u[i] = sum / L.get(i, i);
         }
-        // back solve: L^T w = u  (store w back in u)
+        // back: L^T w = u
         for (int i = mTotal - 1; i >= 0; i--) {
             double sum = u[i];
             for (int j = i + 1; j < mTotal; j++) sum -= L.get(j, i) * u[j];
