@@ -84,11 +84,11 @@ public class KffMlMixed implements ScoreWrapper {
         score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
-
         score.setNumFeatures(parameters.getInt(Params.KML_NUM_FEATURES));
         edu.cmu.tetrad.search.score.KffMlMixed.FeatureType[] values
                 = edu.cmu.tetrad.search.score.KffMlMixed.FeatureType.values();
         score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
+        score.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
 
         return score;
     }
@@ -126,6 +126,7 @@ public class KffMlMixed implements ScoreWrapper {
         parameters.add(Params.KML_BW_MAX_ROWS);
         parameters.add(Params.KML_NUM_FEATURES);
         parameters.add(Params.KML_FEATURE_TYPE);
+        parameters.add(Params.KML_CAT_RHO);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }

@@ -1090,6 +1090,10 @@ public final class Params {
      */
     public static final String KML_FEATURE_TYPE = "kmlFeatureType";
     /**
+     * Constant <code>KML_CAT_RHO="kmlCatRho"</code>
+     */
+    public static final String KML_CAT_RHO = "kmlCatRho";
+    /**
      * Constant <code>CLUSTER_SIZES="clusterSizes"</code>
      */
     public static final String CLUSTER_SIZES = "clusterSizes";
