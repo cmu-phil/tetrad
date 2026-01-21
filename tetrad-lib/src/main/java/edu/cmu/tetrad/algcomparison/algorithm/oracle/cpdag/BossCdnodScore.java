@@ -25,13 +25,18 @@ import java.util.*;
  * add Context -> Y edges when they improve the local score of Y given its current parents.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-CDNOD (Score)",
-        command = "boss-cdnod-score",
+        name = "CDNOD-BOSS",
+        command = "cdnod-boss",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
 public class BossCdnodScore extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, HasKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+
+    // 	•	cdnodScoreContextMargin (default 0.0 or small positive)
+    //	•	cdnodMaxContextsPerNode (default 2 or 3)
+    //	•	cdnodDoVariancePass (default false initially)
+    //	•	cdnodExcludeContextsFromParentSetsInBOSS (I’d set this false; let BOSS use contexts as parents, but forbid X→C.)a
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -96,8 +101,8 @@ public class BossCdnodScore extends AbstractBootstrapAlgorithm implements Algori
         // ---- Score-based CD-NOD augmentation: add context -> Y when it helps local score.
         boolean doAugment = parameters.getBoolean("cdnodScoreContexts", true); // you can replace with Params.*
         if (doAugment && !contexts.isEmpty()) {
-            double margin = parameters.getDouble("cdnodContextMargin", 0.0);
-            int maxPerNode = parameters.getInt("cdnodMaxContextsPerNode", 2);
+            double margin = parameters.getDouble("cdnodContextMargin", 0.1);
+            int maxPerNode = parameters.getInt("cdnodMaxContextsPerNode", 1);
             boolean greedy = parameters.getBoolean("cdnodGreedyContexts", true);
 
             augmentWithContextsByLocalScore(g, myScore, contexts, margin, maxPerNode, greedy);
