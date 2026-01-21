@@ -696,9 +696,13 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
         if (n < 5) return Double.NaN;
         if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
 
+        // TODO: I am using the n x n formulation for all discrete variables here
+        // by choosing discParents.length >= 1 instead of >= 2. Might want a class-level
+        // field to allow this to be configured. jdramsey 2026-1-21.
+
         // Heuristic: Kronecker feature dimension is m * Π L. This explodes quickly.
         // For >= 2 discrete parents, always use the n×n kernel path.
-        if (discParents.length >= 2) {
+        if (discParents.length >= 1) {
             return gpLogML_mixedKernelNxN(
                     yCentered, contParents, discParents, rows, n,
                     mFeatures, bw2, sigma2, seed
