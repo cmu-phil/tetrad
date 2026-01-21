@@ -159,7 +159,7 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
     private int numFeatXY = 10;       // features for X and Y (default aligns with causal-learn-ish defaults)
     private int numFeatZ = 100;     // features for Z
 
-    private Approx approx = Approx.GAMMA;
+    private Approx approx = Approx.LPB4;
     private int permutations = 0;    // only if approx == PERMUTATION
     private boolean doRcit = true;   // true => RCIT (augment Y with Z), false => RCoT
 
@@ -532,6 +532,10 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
             // alphaRidge controls how hard we project out Z-features.
             // Mapping: alphaRidge = lambda*(n-1) is a sane default given cov normalization / ridge semantics.
             final double alphaRidge = Math.max(1e-18, lambda);// * ((n - 1) / (double) n));
+
+//            SimpleMatrix ZtZ = fZ.transpose().mult(fZ);
+//            double tr = ZtZ.trace();
+//            double alphaRidge = Math.max(1e-8, lambda) * (tr / ZtZ.getNumRows());
 
             // Residualize
             SimpleMatrix rX = ridgeResidual(fX, fZ, alphaRidge);

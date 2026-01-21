@@ -84,7 +84,6 @@ public class KernelMarginalLikelihoodScore implements ScoreWrapper {
         score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         score.setJitter(parameters.getDouble(Params.KML_JITTER));
-        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         KffMl.FeatureType[] values
                 = KffMl.FeatureType.values();
@@ -122,7 +121,6 @@ public class KernelMarginalLikelihoodScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
-        parameters.add(Params.RCIT_LAMBDA);
         parameters.add(Params.KML_LAMBDA);
         parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
         parameters.add(Params.KML_BW_MAX_ROWS);
