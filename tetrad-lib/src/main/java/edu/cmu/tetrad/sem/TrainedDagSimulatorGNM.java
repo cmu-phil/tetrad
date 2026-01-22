@@ -1334,16 +1334,6 @@ public final class TrainedDagSimulatorGNM {
             }
             return p;
         }
-
-//        private int safeGetInt(DataSet data, int row, int col) {
-//            try {
-//                return data.getInt(row, col);
-//            } catch (Throwable t) {
-//                double x = data.getDouble(row, col);
-//                if (!Double.isFinite(x)) return -1;
-//                return (int) Math.rint(x);
-//            }
-//        }
     }
 
     // Root: continuous variable sampled by bootstrap (preserves histogram)
