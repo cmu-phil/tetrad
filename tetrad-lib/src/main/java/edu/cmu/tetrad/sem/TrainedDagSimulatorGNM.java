@@ -63,7 +63,7 @@ import java.util.*;
  *   <li>This is intentionally a lightweight, dependency-minimal mechanism learner (single hidden layer, SGD, L2 decay),
  *       intended for simulation fidelity and portability rather than best-in-class predictive modeling.</li>
  *   <li>Because the simulator runs forward under the supplied DAG, unrealistic samples may occur when simulated parent
- *       configurations leave the support of the trafining data (extrapolation). Optional diagnostics may warn when
+ *       configurations leave the support of the training data (extrapolation). Optional diagnostics may warn when
  *       parent z-scores become extreme.</li>
  *   <li>The GNM is strictly more expressive than the ANM: it can represent non-additive effects of noise on the child
  *       given parents, while still using bootstrapped noise anchored to the observed dataset.</li>
