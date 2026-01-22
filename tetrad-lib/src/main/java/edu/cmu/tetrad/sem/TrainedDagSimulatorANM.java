@@ -12,20 +12,55 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * Trains a simple per-node conditional mechanism on (DataSet, DAG) and then resimulates data
- * by running the DAG forward.
- * <p>
- * Mixed-type support:
- * - Continuous child: 1-hidden-layer MLP regressor; generation adds bootstrapped residuals.
- * - Discrete child:   1-hidden-layer MLP classifier (softmax); generation samples from softmax probs.
- * <p>
- * Mixed parent sets:
- * - Continuous parents enter as z-scored scalars.
- * - Discrete parents enter as one-hot blocks (levels inferred from data / variable metadata).
- * <p>
- * Notes:
- * - v1 keeps things intentionally simple (SGD, tanh hidden, L2 weight decay).
- * - Missing handling: rows with any missing among {child, parents} are skipped for that node’s training.
+ * <h2>Trained DAG simulator (ANM): learn local mechanisms from a real dataset and resimulate</h2>
+ *
+ * <p>This class is a “train-then-resimulate” simulator: given an observed {@link DataSet} and a
+ * user-supplied acyclic {@link Graph} (treated as a DAG), it learns a local conditional mechanism
+ * for each node and then generates new samples by running the DAG forward in topological order.</p>
+ *
+ * <p><b>Primary motivation.</b> This simulator is designed to demonstrate that (i) marginal and
+ * pairwise plots can often be made to look “realistic” under substantially different DAGs when the
+ * mechanisms are flexible and noise is bootstrapped, yet (ii) likelihood/score-based evaluation
+ * should systematically penalize fitting the wrong graph to data generated from the learned
+ * mechanisms. In other words: visual realism is cheap; causal correctness should still matter for
+ * scoring.</p>
+ *
+ * <h3>Model family (ANM)</h3>
+ * <p>For each node {@code Y} with parents {@code Pa(Y)}, the fitted mechanism is an additive-noise model</p>
+ * <pre>
+ *   Y = f(Pa(Y)) + e
+ * </pre>
+ * <p>where {@code f} is a small neural regressor/classifier and {@code e} is drawn by bootstrap from
+ * training residuals (continuous) or via sampling from fitted class probabilities (discrete).</p>
+ *
+ * <h3>Mixed data support</h3>
+ * <ul>
+ *   <li><b>Continuous child:</b> 1-hidden-layer MLP regressor trained by SGD; during simulation,
+ *       generate {@code yHat = f(x)} and add a bootstrapped residual {@code e} from the training rows
+ *       used for that node.</li>
+ *   <li><b>Discrete child:</b> 1-hidden-layer MLP softmax classifier; during simulation, sample a
+ *       category from the predicted class probabilities.</li>
+ * </ul>
+ *
+ * <h3>Parent encoding</h3>
+ * <ul>
+ *   <li><b>Continuous parents</b> enter as z-scored scalars (mean/sd computed from available rows).</li>
+ *   <li><b>Discrete parents</b> enter as one-hot blocks (levels inferred from {@link DiscreteVariable}
+ *       metadata, with a configurable cap).</li>
+ * </ul>
+ *
+ * <h3>Missingness</h3>
+ * <p>Training is done node-by-node using only rows where the child and all of its parents are observed
+ * (rows with any missing among {@code {Y} ∪ Pa(Y)} are skipped for that node). Simulation produces
+ * complete samples given the learned mechanisms.</p>
+ *
+ * <h3>Notes and limitations</h3>
+ * <ul>
+ *   <li>This is intentionally a lightweight baseline (single hidden layer, tanh activation, SGD, L2 decay),
+ *       aimed at robustness and ease of packaging rather than state-of-the-art prediction accuracy.</li>
+ *   <li>The quality of the resimulation depends on the supplied DAG and on support coverage of parent values;
+ *       extrapolation may occur when simulated parent configurations fall outside the training support.</li>
+ * </ul>
  */
 public final class TrainedDagSimulatorANM {
 

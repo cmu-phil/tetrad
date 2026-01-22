@@ -12,20 +12,62 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * Trains a simple per-node conditional mechanism on (DataSet, DAG) and then resimulates data
- * by running the DAG forward.
- * <p>
- * Mixed-type support:
- * - Continuous child: 1-hidden-layer MLP regressor; generation adds bootstrapped residuals.
- * - Discrete child:   1-hidden-layer MLP classifier (softmax); generation samples from softmax probs.
- * <p>
- * Mixed parent sets:
- * - Continuous parents enter as z-scored scalars.
- * - Discrete parents enter as one-hot blocks (levels inferred from data / variable metadata).
- * <p>
- * Notes:
- * - v1 keeps things intentionally simple (SGD, tanh hidden, L2 weight decay).
- * - Missing handling: rows with any missing among {child, parents} are skipped for that node’s training.
+ * <h2>Trained DAG simulator (GNM): learn local mechanisms with non-additive noise and resimulate</h2>
+ *
+ * <p>This class is a “train-then-resimulate” simulator: given an observed {@link DataSet} and a
+ * user-supplied acyclic {@link Graph} (treated as a DAG), it learns a local conditional mechanism
+ * for each node and then generates new samples by running the DAG forward in topological order.</p>
+ *
+ * <p><b>Primary motivation.</b> The purpose is to construct realistic-looking synthetic datasets
+ * anchored to an observed dataset while making the assumed causal structure explicit. Because the
+ * mechanisms are learned from real data and noise is bootstrapped, substantially different DAGs can
+ * yield resimulated data with similar marginals and pairwise structure; however, scoring the resulting
+ * data with the wrong graph should degrade in a systematic way. This helps separate “looks plausible”
+ * from “fits the causal structure.”</p>
+ *
+ * <h3>Model family (GNM)</h3>
+ * <p>For each node {@code Y} with parents {@code Pa(Y)}, the fitted mechanism is a general-noise model</p>
+ * <pre>
+ *   Y = g(Pa(Y), e)
+ * </pre>
+ * <p>where {@code e} is a bootstrapped noise term and {@code g} is learned by a small neural network that
+ * allows the noise to enter <em>non-additively</em>. One simple realization is a two-stage fit:</p>
+ * <ol>
+ *   <li>Fit {@code μ(x) ≈ E[Y | x]} using an MLP on parent features {@code x}.</li>
+ *   <li>Compute residuals {@code e = y - μ(x)} on the training rows, bootstrap {@code e}, and train a
+ *       second network to predict {@code y} from {@code (x, e)}.</li>
+ * </ol>
+ * <p>At simulation time, sample {@code e} by bootstrap and generate {@code y = g(x, e)}.</p>
+ *
+ * <h3>Mixed data support</h3>
+ * <ul>
+ *   <li><b>Continuous child:</b> uses the general-noise mechanism described above; noise values are bootstrapped
+ *       (optionally stratified by discrete-parent signatures) and injected as an explicit input to {@code g}.</li>
+ *   <li><b>Discrete child:</b> uses a softmax classifier; optionally mixes unconditional base rates with
+ *       parent-conditional probabilities to “turn down” parent influence.</li>
+ * </ul>
+ *
+ * <h3>Parent encoding</h3>
+ * <ul>
+ *   <li><b>Continuous parents</b> enter as z-scored scalars.</li>
+ *   <li><b>Discrete parents</b> enter as one-hot blocks (with a configurable maximum number of levels).</li>
+ * </ul>
+ *
+ * <h3>Missingness</h3>
+ * <p>Training is done node-by-node using only rows where the child and all of its parents are observed.
+ * Rows with any missing among {@code {Y} ∪ Pa(Y)} are skipped for that node. Simulation produces complete
+ * samples given the learned mechanisms.</p>
+ *
+ * <h3>Notes and limitations</h3>
+ * <ul>
+ *   <li>This is intentionally a lightweight, dependency-minimal mechanism learner (single hidden layer, SGD, L2 decay),
+ *       intended for simulation fidelity and portability rather than best-in-class predictive modeling.</li>
+ *   <li>Because the simulator runs forward under the supplied DAG, unrealistic samples may occur when simulated parent
+ *       configurations leave the support of the trafining data (extrapolation). Optional diagnostics may warn when
+ *       parent z-scores become extreme.</li>
+ *   <li>The GNM is strictly more expressive than the ANM: it can represent non-additive effects of noise on the child
+ *       given parents, while still using bootstrapped noise anchored to the observed dataset.</li>
+ * </ul>
  */
 public final class TrainedDagSimulatorGNM {
 
