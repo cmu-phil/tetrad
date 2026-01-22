@@ -40,12 +40,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "RCIT (Random Conditional Independence Test)",
-        command = "rcit-test",
+        name = "KFF-RCIT (RCIT with Kernel Fourier Features)",
+        command = "kff-rcit",
         dataType = DataType.Continuous
 )
 @General
-public class Rcit implements IndependenceWrapper {
+public class KffRcit implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -53,7 +53,7 @@ public class Rcit implements IndependenceWrapper {
     /**
      * `Kci` constructor.
      */
-    public Rcit() {
+    public KffRcit() {
 
     }
 
@@ -64,14 +64,19 @@ public class Rcit implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.IndTestRcit test = new edu.cmu.tetrad.search.test.IndTestRcit((DataSet) dataSet);
+        edu.cmu.tetrad.search.test.KffRcit test = new edu.cmu.tetrad.search.test.KffRcit((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
-//        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
-        test.setLambda(parameters.getDouble(Params.RCIT_LAMBDA));
         test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
         test.setPermutations(parameters.getInt(Params.RCIT_PERMUTATIONS));
         test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
+        test.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
+        test.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
+        test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
+        test.setApproximationFromInt(parameters.getInt(Params.RCIT_APPROX));
+        edu.cmu.tetrad.search.test.KffRcit.FeatureType[] values
+                = edu.cmu.tetrad.search.test.KffRcit.FeatureType.values();
+        test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         return test;
     }
@@ -83,7 +88,7 @@ public class Rcit implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "RCIT";
+        return "KFF-RCIT";
     }
 
     /**
@@ -108,12 +113,16 @@ public class Rcit implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.SEED);
         params.add(Params.ALPHA);
-        params.add(Params.RCIT_LAMBDA);
-//        params.add(Params.RCIT_MODE);
+        params.add(Params.KML_LAMBDA);
+        params.add(Params.RCIT_PERMUTATIONS);
+        params.add(Params.KML_BANDWIDTH_MULTIPLIER);
+        params.add(Params.KML_BW_MAX_ROWS);
         params.add(Params.RCIT_APPROX);
         params.add(Params.RCIT_CENTER_FEATURES);
         params.add(Params.RCIT_NUM_FEATURES_XY);
         params.add(Params.RCIT_NUM_FEATURES_Z);
+        params.add(Params.KML_FEATURE_TYPE);
+        params.add(Params.VERBOSE);
         return params;
     }
 }

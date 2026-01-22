@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -48,6 +49,7 @@ import java.util.Objects;
         command = "bf-blocks-bic-score",
         dataType = DataType.Mixed)
 @Mixed
+@General
 public class BfBlocksBicScore implements ScoreWrapper {
 
     @Serial

@@ -60,7 +60,7 @@ import java.util.List;
  *
  * <p>Keeps existing post-processing knobs: STANDARDIZE, etc.</p>
  */
-public class AdditiveAnmSimulator implements Simulation {
+public class GeneralizedAdditiveModelSimulator implements Simulation {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -103,7 +103,7 @@ public class AdditiveAnmSimulator implements Simulation {
      * @param graph the random graph to be used for the simulation; must not be null
      * @throws NullPointerException if the provided graph is null
      */
-    public AdditiveAnmSimulator(RandomGraph graph) {
+    public GeneralizedAdditiveModelSimulator(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -237,7 +237,7 @@ public class AdditiveAnmSimulator implements Simulation {
      * @return a description of the simulation
      */
     public String getDescription() {
-        return "Additive Noise SEM using " + this.randomGraph.getDescription();
+        return "Generalized Additive Model (GAM) using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -246,7 +246,7 @@ public class AdditiveAnmSimulator implements Simulation {
      * @return the short name
      */
     public String getShortName() {
-        return "ANM";
+        return "GAM";
     }
 
     /**

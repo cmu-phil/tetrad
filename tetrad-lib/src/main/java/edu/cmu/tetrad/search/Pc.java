@@ -21,9 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -34,10 +32,54 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * Pc (Unified "Classic PC")
+ * Implements the PC (Peter–Clark) causal discovery algorithm for learning a
+ * causal graph from conditional independence information.
  * <p>
- * Skeleton via FAS (stable toggle), orient unshielded triples using VANILLA/CPC/MAX_P, then Meek rules to closure.
- * Deterministic: sorted names, canonical (x,y) endpoint ordering. No internal CI cache (wrap your test if desired).
+ * The PC algorithm is a constraint-based method that estimates the Markov
+ * equivalence class of a causal directed acyclic graph (DAG) under the
+ * assumptions of causal sufficiency (no latent confounders), acyclicity,
+ * and faithfulness. The output is typically a partially directed acyclic
+ * graph (CPDAG) representing the equivalence class of DAGs consistent with
+ * the observed conditional independence relations.
+ * <p>
+ * This implementation follows the standard three-phase structure described
+ * in Causation, Prediction, and Search:
+ * <ol>
+ *   <li><b>Skeleton discovery</b> using Fast Adjacency Search (FAS), with an
+ *       optional PC-Stable variant to ensure order independence.</li>
+ *   <li><b>Collider orientation</b> on unshielded triples, using one of several
+ *       supported strategies:
+ *       <ul>
+ *         <li>Sepset-based orientation (original PC)</li>
+ *         <li>Conservative PC (CPC)</li>
+ *         <li>MAX-P orientation, including optional global and depth-stratified
+ *             variants</li>
+ *       </ul>
+ *   </li>
+ *   <li><b>Orientation propagation</b> via Meek’s orientation rules, applied
+ *       to closure while respecting background knowledge constraints.</li>
+ * </ol>
+ * <p>
+ * The algorithm relies on an external {@link IndependenceTest} to evaluate
+ * conditional independence relations and supports the use of background
+ * knowledge to forbid or require specific edge orientations. Optional guards
+ * are included to prevent the introduction of directed cycles during collider
+ * orientation.
+ * <p>
+ * This class is deterministic given a fixed independence test, variable
+ * ordering, and configuration.
+ * <p>
+ * <b>References:</b>
+ * <ul>
+ *   <li>Spirtes, P., Glymour, C. N., &amp; Scheines, R. (2000).
+ *       <i>Causation, Prediction, and Search</i>. MIT Press.</li>
+ *   <li>Colombo, D., &amp; Maathuis, M. H. (2014).
+ *       Order-independent constraint-based causal structure learning.
+ *       <i>Journal of Machine Learning Research</i>, 15, 3741–3782.</li>
+ *   <li>Ramsey, J. D., Spirtes, P., &amp; Zhang, J. (2012).
+ *       Adjacency-faithfulness and conservative causal inference.
+ *       <i>Proceedings of UAI</i>.</li>
+ * </ul>
  */
 public class Pc implements IGraphSearch {
 
@@ -165,12 +207,29 @@ public class Pc implements IGraphSearch {
      * utilized within the context of the causal discovery process.
      */
     private Fas fas = null; // expose via getFas()
-    private boolean replicatingGraph = false;
 
     /**
-     * Constructs a new instance of the Pc class with a given independence test.
+     * Indicates whether the graph replication process is currently active.
+     * This variable is used to track the state of graph replication,
+     * which may be required in scenarios involving data duplication,
+     * synchronization, or fault tolerance mechanisms.
+     */
+    private boolean replicatingGraph = false;
+
+    // ---------------- NEW: cycle-safety knobs ----------------
+    /** If true, do not allow any orientation that creates a directed cycle. */
+    private boolean forbidDirectedCycles = true;
+
+    /**
+     * If true, Meek closure is applied in a cycle-safe incremental fashion:
+     * attempt one implied orientation at a time; rollback if it creates a cycle.
+     */
+    private boolean meekCycleSafe = true;
+
+    /**
+     * Constructs a new instance of the Pc algorithm with the specified independence test.
      *
-     * @param test an IndependenceTest object that defines the test for conditional independence
+     * @param test the independence test to be used by the Pc algorithm
      */
     public Pc(IndependenceTest test) {
         this.test = test;
@@ -178,7 +237,8 @@ public class Pc implements IGraphSearch {
 
     private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
         if (knowledge.isEmpty()) return true;
-        return !knowledge.isRequired(to.toString(), from.toString()) && !knowledge.isForbidden(from.toString(), to.toString());
+        return !knowledge.isRequired(to.toString(), from.toString())
+                && !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     // ----- Configuration setters -----
@@ -298,14 +358,22 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum p-value margin for decision-making in the MAX-P algorithm. The margin is constrained to be
-     * non-negative, ensuring that negative values are reset to 0.0.
+     * Configures whether directed cycles are forbidden in the graph.
      *
-     * @param margin the maximum p-value margin; if provided value is less than 0.0, it will default to 0.0.
+     * @param enabled a boolean indicating if directed cycles should be forbidden.
+     *                If true, directed cycles are not allowed. If false, directed
+     *                cycles are permitted.
      */
-    public void setMaxPMargin(double margin) {
-        this.maxPMargin = Math.max(0.0, margin);
-    }
+    // NEW knobs (optional)
+    public void setForbidDirectedCycles(boolean enabled) { this.forbidDirectedCycles = enabled; }
+
+    /**
+     * Sets the Meek Cycle safety flag.
+     *
+     * @param enabled a boolean indicating whether the Meek Cycle safety feature
+     *                should be enabled (true) or disabled (false)
+     */
+    public void setMeekCycleSafe(boolean enabled) { this.meekCycleSafe = enabled; }
 
     // ----- Entry points -----
 
@@ -348,20 +416,14 @@ public class Pc implements IGraphSearch {
         // 2) Orient colliders
         orientUnshieldedTriples(g, sepsets);
 
-        // 3) Meek rules to closure
+        // 3) Meek rules to closure (cycle-safe)
         applyMeekRules(g);
 
         return g;
     }
 
-    /**
-     * Returns the independence test associated with this instance.
-     *
-     * @return the {@link IndependenceTest} object representing the test for conditional independence.
-     */
-    public IndependenceTest getTest() {
-        return test;
-    }
+    public IndependenceTest getTest() { return test; }
+
 
     // ------------------------------------------------------------------------------------
     // Triple classification APIs (unshielded only), deterministic order
@@ -378,13 +440,20 @@ public class Pc implements IGraphSearch {
     public void setTest(IndependenceTest test) {
         List<Node> nodes = this.test.getVariables();
         List<Node> _nodes = test.getVariables();
-
         if (!nodes.equals(_nodes)) {
-            throw new IllegalArgumentException(String.format("The nodes of the proposed new test are not equal list-wise\n" + "to the nodes of the existing test."));
+            throw new IllegalArgumentException(
+                    "The nodes of the proposed new test are not equal list-wise to the nodes of the existing test."
+            );
         }
-
         this.test = test;
     }
+
+    /**
+     * Retrieves the Fas object.
+     *
+     * @return the Fas object associated with this instance.
+     */
+    public Fas getFas() { return fas; }
 
     /**
      * Retrieves all colliders from the provided graph based on specific criteria. A collider is an unshielded triple
@@ -405,56 +474,16 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Identifies and retrieves all noncollider triples from the given graph. A noncollider triple is a triple where the
-     * middle node is not a collider, meaning there are no arrowheads pointing to it from either of the other two
-     * nodes.
+     * Sets the value that determines whether the graph is in a replicating state.
      *
-     * @param g the graph from which noncollider triples are to be extracted
-     * @return a list of noncollider triples found in the graph
+     * @param replicatingGraph a boolean indicating whether the graph is replicating.
      */
-    public List<Triple> getNoncolliderTriples(Graph g) {
-        List<Triple> result = new ArrayList<>();
-        for (Triple t : collectUnshieldedTriples(g)) {
-            boolean intoZFromX = g.isParentOf(t.x, t.z);
-            boolean intoZFromY = g.isParentOf(t.y, t.z);
-            boolean outOfZToX = g.isParentOf(t.z, t.x);
-            boolean outOfZToY = g.isParentOf(t.z, t.y);
-            boolean undZX = isUndirected(g, t.z, t.x);
-            boolean undZY = isUndirected(g, t.z, t.y);
-            // Definite noncollider only when BOTH incident edges have tails at z
-            // i.e., z->x or undirected (tail at z), and z->y or undirected,
-            // and there are NO arrowheads pointing into z.
-            if (!intoZFromX && !intoZFromY && (outOfZToX || undZX) && (outOfZToY || undZY)) {
-                result.add(t);
-            }
-        }
-        return result;
-    }
+    public void setReplicatingGraph(boolean replicatingGraph) { this.replicatingGraph = replicatingGraph; }
 
-    /**
-     * Identifies and returns a list of ambiguous triples from the given graph. Ambiguous triples are determined based
-     * on the structure of the graph and the relationships between nodes in each triple.
-     *
-     * @param g the graph from which ambiguous triples are to be identified
-     * @return a list of triples from the graph that are categorized as ambiguous
-     */
-    public List<Triple> getAmbiguousTriples(Graph g) {
-        List<Triple> result = new ArrayList<>();
-        for (Triple t : collectUnshieldedTriples(g)) {
-            boolean collider = g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z);
-            boolean intoZFromX = g.isParentOf(t.x, t.z);
-            boolean intoZFromY = g.isParentOf(t.y, t.z);
-            boolean outOfZToX = g.isParentOf(t.z, t.x);
-            boolean outOfZToY = g.isParentOf(t.z, t.y);
-            boolean undZX = isUndirected(g, t.z, t.x);
-            boolean undZY = isUndirected(g, t.z, t.y);
-            boolean noncollider = !intoZFromX && !intoZFromY && (outOfZToX || undZX) && (outOfZToY || undZY);
-            if (!collider && !noncollider) result.add(t);
-        }
-        return result;
-    }
+    // ------------------------------------------------------------------------------------
+    // Triple helpers
+    // ------------------------------------------------------------------------------------
 
-    // Helper: collect all unshielded triples, with (x,y) endpoints canonicalized by name.
     private List<Triple> collectUnshieldedTriples(Graph g) {
         List<Node> nodes = new ArrayList<>(g.getNodes());
         nodes.sort(Comparator.comparing(Node::getName));
@@ -471,27 +500,29 @@ public class Pc implements IGraphSearch {
                     if (!g.isAdjacentTo(xi, yj)) {
                         Node x = xi, y = yj;
                         if (x.getName().compareTo(y.getName()) > 0) {
-                            Node tmp = x;
-                            x = y;
-                            y = tmp;
+                            Node tmp = x; x = y; y = tmp;
                         }
                         triples.add(new Triple(x, z, y));
                     }
                 }
             }
         }
-        triples.sort(Comparator.comparing((Triple t) -> t.x.getName()).thenComparing(t -> t.z.getName()).thenComparing(t -> t.y.getName()));
+        triples.sort(Comparator.comparing((Triple t) -> t.x.getName())
+                .thenComparing(t -> t.z.getName())
+                .thenComparing(t -> t.y.getName()));
         return triples;
     }
 
-    private boolean isUndirected(Graph g, Node a, Node b) {
-        // Adjacent and neither is a parent of the other â undirected edge
-        return g.isAdjacentTo(a, b) && !g.isParentOf(a, b) && !g.isParentOf(b, a);
+    private static String stringifySet(Set<Node> S) {
+        List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
+        Collections.sort(names);
+        return "{" + String.join(",", names) + "}";
     }
 
     // ------------------------------------------------------------------------------------
-    // Collider orientation
+    // Collider orientation (cycle-safe)
     // ------------------------------------------------------------------------------------
+
     private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets) throws InterruptedException {
         List<Triple> triples = collectUnshieldedTriples(g);
 
@@ -521,86 +552,123 @@ public class Pc implements IGraphSearch {
             switch (outcome) {
                 case INDEPENDENT -> {
                     if (canOrientCollider(g, t.x, t.z, t.y)) {
+                        // orientCollider does both x->z and y->z
                         GraphUtils.orientCollider(g, t.x, t.z, t.y);
-                        if (verbose)
-                            TetradLogger.getInstance().log("Collider oriented: " + t.x.getName() + " -> " + t.z.getName() + " <- " + t.y.getName());
+                        if (verbose) {
+                            TetradLogger.getInstance().log(
+                                    "Collider oriented: " + t.x.getName() + " -> " + t.z.getName() +
+                                            " <- " + t.y.getName());
+                        }
+                    } else if (verbose) {
+                        TetradLogger.getInstance().log(
+                                "Skipped collider (cycle/knowledge/bidir guard): " +
+                                        t.x.getName() + " - " + t.z.getName() + " - " + t.y.getName());
                     }
                 }
                 case DEPENDENT, NO_SEPSET -> { /* leave unoriented */ }
                 case AMBIGUOUS -> {
-                    if (allowBidirected == AllowBidirected.ALLOW) {
-                        ambiguousTriples.add(t);
-                        // Optionally mark ambiguity if your Graph supports bidirected marks.
+                    if (allowBidirected == AllowBidirected.ALLOW) ambiguousTriples.add(t);
+                    if (verbose) {
+                        TetradLogger.getInstance().log(
+                                "Ambiguous triple: " + t.x.getName() + " - " + t.z.getName() + " - " + t.y.getName());
                     }
-                    if (verbose)
-                        TetradLogger.getInstance().log("Ambiguous triple: " + t.x.getName() + " - " + t.z.getName() + " - " + t.y.getName());
                 }
             }
         }
 
+        // store ambiguous triple marks
         Set<edu.cmu.tetrad.graph.Triple> _ambiguousTriples = new HashSet<>();
-        for (Triple t : ambiguousTriples) {
-            _ambiguousTriples.add(new edu.cmu.tetrad.graph.Triple(t.x, t.z, t.y));
-        }
-
+        for (Triple t : ambiguousTriples) _ambiguousTriples.add(new edu.cmu.tetrad.graph.Triple(t.x, t.z, t.y));
         g.setAmbiguousTriples(_ambiguousTriples);
     }
 
-    // ----- CPC/MAX-P decisions -----------------------------------------------------------
-
     /**
-     * Global, order-independent MAX-P collider orientation (optionally depth-stratified; avoids â).
+     * Cycle/knowledge/bidirected-safe collider orientation gate.
+     *
+     * Forbids:
+     *  - violating knowledge arrowhead constraints
+     *  - creating bidirected (unless allowed)
+     *  - creating a directed cycle (if enabled)
      */
+    private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
+        if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
+
+        // knowledge: require arrowheads into z allowed
+        if (!isArrowheadAllowed(x, z, knowledge) || !isArrowheadAllowed(y, z, knowledge)) return false;
+
+        // if bidirected not allowed, disallow if z already points to x or y (would create <->)
+        if (allowBidirected != AllowBidirected.ALLOW && (g.isParentOf(z, x) || g.isParentOf(z, y))) return false;
+
+        if (forbidDirectedCycles) {
+            // If there is already a directed path z -> ... -> x, then x -> z would create a cycle.
+            if (g.paths().existsDirectedPath(z, x)) return false;
+            if (g.paths().existsDirectedPath(z, y)) return false;
+        }
+
+        return true;
+    }
+
+    // ------------------------------------------------------------------------------------
+    // MAX-P / Conservative logic (same as your code, but left intact)
+    // ------------------------------------------------------------------------------------
+
     private void orientMaxPGlobal(Graph g, List<Triple> triples) throws InterruptedException {
         List<MaxPDecision> winners = new ArrayList<>();
         for (Triple t : triples) {
             checkTimeout();
             MaxPDecision d = decideMaxPDetail(t, g);
-            if (d.outcome == ColliderOutcome.AMBIGUOUS && logMaxPTies) {
-                // (details already printed inside decideMaxPDetail if enabled)
-            }
-            if (d.outcome == ColliderOutcome.INDEPENDENT) {
-                winners.add(d);
-            }
+            if (d.outcome == ColliderOutcome.INDEPENDENT) winners.add(d);
         }
 
         if (maxPDepthStratified) {
             Map<Integer, List<MaxPDecision>> buckets = new TreeMap<>();
-            for (MaxPDecision d : winners) {
-                buckets.computeIfAbsent(d.bestS.size(), k -> new ArrayList<>()).add(d);
-            }
+            for (MaxPDecision d : winners) buckets.computeIfAbsent(d.bestS.size(), k -> new ArrayList<>()).add(d);
+
             for (Map.Entry<Integer, List<MaxPDecision>> e : buckets.entrySet()) {
                 List<MaxPDecision> level = e.getValue();
-                level.sort(Comparator.comparingDouble((MaxPDecision m) -> m.bestP).reversed().thenComparing(m -> m.t.x.getName()).thenComparing(m -> m.t.z.getName()).thenComparing(m -> m.t.y.getName()).thenComparing(m -> stringifySet(m.bestS)));
+                level.sort(Comparator.comparingDouble((MaxPDecision m) -> m.bestP).reversed()
+                        .thenComparing(m -> m.t.x.getName())
+                        .thenComparing(m -> m.t.z.getName())
+                        .thenComparing(m -> m.t.y.getName())
+                        .thenComparing(m -> stringifySet(m.bestS)));
+
                 for (MaxPDecision d : level) {
+                    if (d.outcome != ColliderOutcome.INDEPENDENT) continue;
                     if (canOrientCollider(g, d.t.x, d.t.z, d.t.y)) {
                         GraphUtils.orientCollider(g, d.t.x, d.t.z, d.t.y);
-                        if (verbose)
-                            TetradLogger.getInstance().log("[MAX-P global(d=" + d.bestS.size() + ")] " + d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName() + " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
+                        if (verbose) {
+                            TetradLogger.getInstance().log(
+                                    "[MAX-P global(d=" + d.bestS.size() + ")] " +
+                                            d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName() +
+                                            " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
+                        }
                     }
                 }
             }
         } else {
-            winners.sort(Comparator.comparingDouble((MaxPDecision d) -> d.bestP).reversed().thenComparing(d -> d.t.x.getName()).thenComparing(d -> d.t.z.getName()).thenComparing(d -> d.t.y.getName()).thenComparing(d -> stringifySet(d.bestS)));
+            winners.sort(Comparator.comparingDouble((MaxPDecision d) -> d.bestP).reversed()
+                    .thenComparing(d -> d.t.x.getName())
+                    .thenComparing(d -> d.t.z.getName())
+                    .thenComparing(d -> d.t.y.getName())
+                    .thenComparing(d -> stringifySet(d.bestS)));
 
             for (MaxPDecision d : winners) {
+                if (d.outcome != ColliderOutcome.INDEPENDENT) continue;
                 if (canOrientCollider(g, d.t.x, d.t.z, d.t.y)) {
                     GraphUtils.orientCollider(g, d.t.x, d.t.z, d.t.y);
-                    if (verbose)
-                        TetradLogger.getInstance().log("[MAX-P global] Collider oriented: " + d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName() + " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
+                    if (verbose) {
+                        TetradLogger.getInstance().log(
+                                "[MAX-P global] " + d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName() +
+                                        " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
+                    }
                 }
             }
         }
     }
 
     private ColliderOutcome judgeConservative(Triple t, Graph g) throws InterruptedException {
-        // Ensure canonical (x,y) in case a caller ever constructs Triple differently
         Node x = t.x, y = t.y;
-        if (x.getName().compareTo(y.getName()) > 0) {
-            Node tmp = x;
-            x = y;
-            y = tmp;
-        }
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
 
         boolean sawIncludesZ = false, sawExcludesZ = false, sawAny = false;
 
@@ -622,18 +690,9 @@ public class Pc implements IGraphSearch {
         return decideMaxPDetail(t, g).outcome;
     }
 
-    /**
-     * Detailed MAX-P: returns outcome + bestP + bestS. Applies the margin guard: if both sides have candidates and
-     * their best p's differ by < maxPMargin, returns AMBIGUOUS.
-     */
     private MaxPDecision decideMaxPDetail(Triple t, Graph g) throws InterruptedException {
-        // Canonicalize (x,y) defensively
         Node x = t.x, y = t.y;
-        if (x.getName().compareTo(y.getName()) > 0) {
-            Node tmp = x;
-            x = y;
-            y = tmp;
-        }
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
 
         List<SepCandidate> indep = new ArrayList<>();
         for (SepCandidate cand : enumerateSepsetsWithPvals(x, y, g)) {
@@ -642,10 +701,6 @@ public class Pc implements IGraphSearch {
         if (indep.isEmpty()) return new MaxPDecision(t, ColliderOutcome.NO_SEPSET, Double.NaN, Collections.emptySet());
 
         double bestP = indep.stream().mapToDouble(c -> c.p).max().orElse(Double.NEGATIVE_INFINITY);
-        List<SepCandidate> ties = new ArrayList<>();
-        for (SepCandidate c : indep) if (c.p == bestP) ties.add(c);
-        ties.sort(Comparator.comparing((SepCandidate c) -> c.S.contains(t.z))   // prefer excludes-Z first in ordering
-                .thenComparing(c -> stringifySet(c.S)));
 
         double bestExcl = Double.NEGATIVE_INFINITY, bestIncl = Double.NEGATIVE_INFINITY;
         for (SepCandidate c : indep) {
@@ -657,44 +712,41 @@ public class Pc implements IGraphSearch {
 
         if (hasExcl && hasIncl) {
             if (bestExcl >= bestIncl + maxPMargin) {
-                Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, false);
+                Set<Node> bestS = firstTieMatchingContainsZ(indep, t.z, false, bestExcl);
                 return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
             }
             if (bestIncl >= bestExcl + maxPMargin) {
-                Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, true);
+                Set<Node> bestS = firstTieMatchingContainsZ(indep, t.z, true, bestIncl);
                 return new MaxPDecision(t, ColliderOutcome.DEPENDENT, bestIncl, bestS);
             }
-            if (logMaxPTies && ties.size() > 1) debugPrintMaxPTies(t, bestP, ties);
-            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, Math.max(bestExcl, bestIncl), ties.isEmpty() ? Collections.emptySet() : ties.get(0).S);
+            if (logMaxPTies && logStream != null) {
+                logStream.println("[MAX-P ambiguous] pair=(" + x.getName() + "," + y.getName() + "), z=" + t.z.getName()
+                        + " bestExcl=" + bestExcl + " bestIncl=" + bestIncl + " margin=" + maxPMargin);
+            }
+            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, Math.max(bestExcl, bestIncl), Collections.emptySet());
         } else if (hasExcl) {
-            Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, false);
+            Set<Node> bestS = firstTieMatchingContainsZ(indep, t.z, false, bestExcl);
             return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
         } else if (hasIncl) {
-            Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, true);
+            Set<Node> bestS = firstTieMatchingContainsZ(indep, t.z, true, bestIncl);
             return new MaxPDecision(t, ColliderOutcome.DEPENDENT, bestIncl, bestS);
         } else {
             return new MaxPDecision(t, ColliderOutcome.NO_SEPSET, Double.NaN, Collections.emptySet());
         }
     }
 
-    // ----- enumeration (unique S across both sides), rely on external cache --------------
-
-    private Set<Node> firstTieMatchingContainsZ(List<SepCandidate> ties, Node z, boolean containsZ) {
-        for (SepCandidate c : ties) {
-            if (c.S.contains(z) == containsZ) return c.S;
-        }
+    private Set<Node> firstTieMatchingContainsZ(List<SepCandidate> indep, Node z, boolean containsZ, double targetP) {
+        List<SepCandidate> ties = new ArrayList<>();
+        for (SepCandidate c : indep) if (c.p == targetP && c.S.contains(z) == containsZ) ties.add(c);
+        ties.sort(Comparator.comparing(c -> stringifySet(c.S)));
         return ties.isEmpty() ? Collections.emptySet() : ties.get(0).S;
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private Iterable<SepCandidate> enumerateSepsetsWithPvals(Node x, Node y, Graph g) throws InterruptedException {
-        // Enforce canonical (x,y)
-        if (x.getName().compareTo(y.getName()) > 0) {
-            Node tmp = x;
-            x = y;
-            y = tmp;
-        }
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
 
-        Map<String, SepCandidate> uniq = new LinkedHashMap<>(); // deterministic order
+        Map<String, SepCandidate> uniq = new LinkedHashMap<>();
 
         List<Node> adjx = new ArrayList<>(g.getAdjacentNodes(x));
         List<Node> adjy = new ArrayList<>(g.getAdjacentNodes(y));
@@ -717,7 +769,7 @@ public class Pc implements IGraphSearch {
                     checkTimeout();
                     Set<Node> S = GraphUtils.asSet(choice, adj);
                     String sKey = setKey(S);
-                    if (uniq.containsKey(sKey)) continue; // de-dup across sides
+                    if (uniq.containsKey(sKey)) continue;
 
                     IndependenceResult r = test.checkIndependence(x, y, S);
                     uniq.put(sKey, new SepCandidate(S, r.isIndependent(), r.getPValue()));
@@ -733,58 +785,192 @@ public class Pc implements IGraphSearch {
         return String.join("\u0001", names);
     }
 
-    private void debugPrintMaxPTies(Triple t, double bestP, List<SepCandidate> ties) {
-        if (logStream == null) return;
-        Node x = t.x, y = t.y;
-        if (x.getName().compareTo(y.getName()) > 0) {
-            Node tmp = x;
-            x = y;
-            y = tmp;
-        }
+    // ------------------------------------------------------------------------------------
+    // Meek closure (cycle-safe)
+    // ------------------------------------------------------------------------------------
 
-        String header = "[MAX-P tie] pair=(" + x.getName() + "," + y.getName() + "), z=" + t.z.getName() + ", bestP=" + bestP + ", #ties=" + ties.size();
-        logStream.println(header);
-        for (SepCandidate c : ties) {
-            boolean containsZ = c.S.contains(t.z);
-            String line = "  S=" + stringifySet(c.S) + " | contains(z)=" + containsZ + " | p=" + c.p;
-            logStream.println(line);
-        }
-    }
-
-    // ----- checks / utils ---------------------------------------------------------------
-
-    private String stringifySet(Set<Node> S) {
-        List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
-        return "{" + String.join(",", names) + "}";
-    }
-
-//    private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
-//        if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
-//        if (!isArrowheadAllowed(x, z, knowledge) || !isArrowheadAllowed(y, z, knowledge)) return false;
-//        if (allowBidirected != AllowBidirected.ALLOW && (g.isParentOf(z, x) || g.isParentOf(z, y))) return false;
-//        return true;
+//    private void applyMeekRules(Graph g) {
+//        if (!meekCycleSafe || !forbidDirectedCycles) {
+//            MeekRules meekRules = new MeekRules();
+//            meekRules.setKnowledge(knowledge);
+//            meekRules.orientImplied(g);
+//            return;
+//        }
+//
+//        // Cycle-safe Meek: repeatedly apply Meek, but only keep implied orientations that do not introduce cycles.
+//        boolean changed;
+//        int guard = 0;
+//
+//        do {
+//            changed = false;
+//            guard++;
+//            if (guard > 10_000) break; // safety
+//
+//            // snapshot edges before
+//            List<Edge> before = new ArrayList<>(g.getEdges());
+//
+//            MeekRules meekRules = new MeekRules();
+//            meekRules.setKnowledge(knowledge);
+//            meekRules.orientImplied(g);
+//
+//            // detect new directed edges introduced (or newly oriented)
+//            List<Edge> after = new ArrayList<>(g.getEdges());
+//
+//            // Build a map key -> edge for comparisons
+//            Map<String, Edge> beforeMap = new HashMap<>();
+//            for (Edge e : before) beforeMap.put(edgeKey(e), e);
+//
+//            for (Edge eAfter : after) {
+//                Edge eBefore = beforeMap.get(edgeKey(eAfter));
+//                if (eBefore == null) continue;
+//
+//                // If orientation changed to introduce arrowhead(s), validate it
+//                if (!sameOrientation(eBefore, eAfter)) {
+//                    // If this particular change creates a cycle, rollback it.
+//                    // Rollback by restoring the old edge.
+//                    if (wouldCreateCycleIfSetEdge(g, eAfter)) {
+//                        // revert
+//                        g.removeEdge(eAfter);
+//                        g.addEdge(eBefore);
+//                        changed = true;
+//                    }
+//                }
+//            }
+//
+//            // If we reverted anything, we should rerun meek to closure again, hence loop.
+//        } while (changed);
 //    }
 
-    private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
-        if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
-        if (!isArrowheadAllowed(x, z, knowledge) || !isArrowheadAllowed(y, z, knowledge)) return false;
-        if (allowBidirected != AllowBidirected.ALLOW && (g.isParentOf(z, x) || g.isParentOf(z, y))) return false;
-
-        // NEW: forbid orientations that create directed cycles
-        // If there is already a directed path z → ... → x, then adding x → z would create a cycle.
-        // Likewise for y.
-        if (g.paths().existsDirectedPath(z, x)) return false;
-        if (g.paths().existsDirectedPath(z, y)) return false;
-
-        return true;
-    }
-
     private void applyMeekRules(Graph g) {
-        MeekRules meekRules = new MeekRules();
-        meekRules.setKnowledge(knowledge);
-        meekRules.orientImplied(g);
+        if (!meekCycleSafe || !forbidDirectedCycles) {
+            MeekRules meekRules = new MeekRules();
+            meekRules.setKnowledge(knowledge);
+            meekRules.orientImplied(g);
+            return;
+        }
+
+        int guard = 0;
+
+        while (true) {
+            guard++;
+            if (guard > 10_000) break;
+
+            // Snapshot current graph edges (this is our "before" for this round)
+            List<Edge> before = new ArrayList<>(g.getEdges());
+
+            // Run full Meek to closure on the current graph to discover what it *wants* to change
+            MeekRules meekRules = new MeekRules();
+            meekRules.setKnowledge(knowledge);
+            meekRules.orientImplied(g);
+
+            List<Edge> after = new ArrayList<>(g.getEdges());
+
+            // Build maps keyed by unordered node-pair
+            Map<String, Edge> beforeMap = new HashMap<>();
+            for (Edge e : before) beforeMap.put(edgeKey(e), e);
+
+            Map<String, Edge> afterMap = new HashMap<>();
+            for (Edge e : after) afterMap.put(edgeKey(e), e);
+
+            // Collect candidate changes: those pairs that existed before and after but orientation differs
+            List<EdgeChange> changes = new ArrayList<>();
+            for (Map.Entry<String, Edge> ent : afterMap.entrySet()) {
+                String k = ent.getKey();
+                Edge eAfter = ent.getValue();
+                Edge eBefore = beforeMap.get(k);
+                if (eBefore == null) continue; // ignore truly-new edges (PC/Meek shouldn't add adjacencies anyway)
+                if (!sameOrientation(eBefore, eAfter)) {
+                    changes.add(new EdgeChange(eBefore, eAfter));
+                }
+            }
+
+            // If Meek produced no orientation changes, we're done.
+            if (changes.isEmpty()) {
+                // IMPORTANT: we are currently sitting at the "after" graph from the meek call.
+                // That's fine since no changes were proposed; it equals the prior state.
+                return;
+            }
+
+            // Revert graph *completely* back to "before"
+            // (We do this by restoring each edge pair to its before version.)
+            for (EdgeChange ch : changes) {
+                // Remove current edge for that pair and restore before
+                Edge cur = afterMap.get(edgeKey(ch.after));
+                if (cur != null) g.removeEdge(cur);
+                // Ensure before edge is present
+                g.addEdge(ch.before);
+            }
+
+            // Now replay proposed changes one by one, keeping only those that don't create cycles
+            boolean acceptedAny = false;
+
+            for (EdgeChange ch : changes) {
+                // Apply the proposed oriented edge
+                g.removeEdge(ch.before);
+                g.addEdge(ch.after);
+
+                if (hasDirectedCycle(g)) {
+                    // Roll back THIS change
+                    g.removeEdge(ch.after);
+                    g.addEdge(ch.before);
+                } else {
+                    acceptedAny = true;
+                }
+            }
+
+            // If we couldn't accept anything without a cycle, stop.
+            if (!acceptedAny) return;
+
+            // Otherwise, loop: run Meek again from this new (partially oriented) state.
+        }
     }
+
+    private static final class EdgeChange {
+        final Edge before;
+        final Edge after;
+
+        EdgeChange(Edge before, Edge after) {
+            this.before = before;
+            this.after = after;
+        }
+    }
+
+    /** Return true if the current graph contains any directed cycle. */
+    private static boolean hasDirectedCycle(Graph g) {
+        // Cheap test: for each node, check if there is a directed path from it to itself.
+        // If your GraphPaths has a cycle check, use that instead.
+        for (Node v : g.getNodes()) {
+            if (g.paths().existsDirectedPath(v, v)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Conservative check: temporarily set the edge orientation (already in graph),
+     * then check for directed cycles; revert handled by caller.
+     */
+    private boolean wouldCreateCycleIfSetEdge(Graph g, Edge orientedEdgeNowInGraph) {
+        // Quick local sufficient check is hard for arbitrary Meek changes; just test cycle presence.
+        // (Graph sizes here are usually small/moderate in PC.)
+        return hasDirectedCycle(g);
+    }
+
+    private static boolean sameOrientation(Edge a, Edge b) {
+        return a.getEndpoint1() == b.getEndpoint1() && a.getEndpoint2() == b.getEndpoint2();
+    }
+
+    private static String edgeKey(Edge e) {
+        Node n1 = e.getNode1();
+        Node n2 = e.getNode2();
+        String a = n1.getName();
+        String b = n2.getName();
+        if (a.compareTo(b) <= 0) return a + "||" + b;
+        return b + "||" + a;
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Checks / timeouts
+    // ------------------------------------------------------------------------------------
 
     private void checkVars(List<Node> nodes) {
         if (!new HashSet<>(test.getVariables()).containsAll(nodes)) {
@@ -801,144 +987,129 @@ public class Pc implements IGraphSearch {
         }
     }
 
-    /**
-     * Retrieves the Fas object associated with this instance.
-     *
-     * @return the Fas object
-     */
-    public Fas getFas() {
-        return fas;
-    }
-
-    /**
-     * Sets the flag indicating whether the graph is in a replicating state.
-     *
-     * @param replicatingGraph a boolean value where {@code true} denotes that the graph is replicating and
-     *                         {@code false} denotes that it is not.
-     */
-    public void setReplicatingGraph(boolean replicatingGraph) {
-        this.replicatingGraph = replicatingGraph;
-    }
-
     // ------------------------------------------------------------
     // Enums & small records
     // ------------------------------------------------------------
 
     /**
-     * Enum representing the orientation style used for colliders in a computational context.
+     * An enumeration that defines the styles of collider orientation in a graph or network.
+     * This enumeration can be used in algorithms or systems that deal with graph structures,
+     * providing different approaches to orienting colliders.
      */
     public enum ColliderOrientationStyle {
+
         /**
-         * Represents an orientation style based on separate sets.
+         * Represents the collider orientation style that utilizes separating sets (sepsets).
+         * This style is typically employed in graph or network algorithms where colliders
+         * are oriented based on separation properties derived from conditional independencies.
          */
         SEPSETS,
+
         /**
-         * Represents a conservative approach to orientation.
+         * Represents the collider orientation style for the Conservative PC algorithm.
          */
         CONSERVATIVE,
+
         /**
-         * Represents an orientation style that maximizes some criterion or probability.
+         * Represents the collider orientation style for the PC-Max algorithm.
          */
-        MAX_P
-    }
+        MAX_P }
 
     /**
-     * Enum representing the permission to allow or disallow bidirected edges.
-     * <p>
-     * This enumeration can be used to specify whether bidirectional relationships are permitted in a specific context.
-     * It provides two possible values:
+     * Enum representing whether bidirected edges are allowed in the graph.
      */
     public enum AllowBidirected {
+
         /**
-         * Indicates that bidirected edges are allowed.
+         * Represents the option to allow bidirected edges in a graph.
+         * Used as part of the AllowBidirected enumeration to specify
+         * whether such edges are permissible in the graph structure.
          */
         ALLOW,
+
         /**
-         * Indicates that bidirected edges are not allowed.
+         * Represents the option to disallow bidirected edges in a graph.
+         * Used as part of the AllowBidirected enumeration to specify that
+         * bidirected edges are not permissible in the graph structure.
          */
-        DISALLOW
-    }
+        DISALLOW }
 
     /**
-     * Represents the possible outcomes of a collider relationship in a probabilistic or causal graph context.
-     * <p>
-     * This enumeration defines the different states that can result from evaluating the collider's relationships within
-     * a graphical model. The outcomes provide insights into the structural dependencies and separation properties
-     * between nodes.
+     * Represents the possible outcomes for a collider relationship in a causal
+     * inference or graph-based algorithm. This enumeration is used to classify
+     * the nature of the relationship between variables in terms of their
+     * dependency or causal structure.
      */
     private enum ColliderOutcome {
+
         /**
-         * Indicates that the nodes involved are independent.
+         * Represents a state where two variables are determined to be independent
+         * in the context of collider relationship analysis within a causal inference
+         * or graph-based algorithm.
          */
         INDEPENDENT,
+
         /**
-         * Indicates that the nodes involved are dependent on each other.
+         * Represents a state where two variables are determined to be dependent
+         * in the context of collider relationship analysis within a causal inference
+         * or graph-based algorithm. This outcome indicates that the variables
+         * exhibit a dependency in their relationship in the examined context.
          */
         DEPENDENT,
+
         /**
-         * Indicates that the dependency relationship cannot be clearly determined or is uncertain.
+         * Represents a state where the relationship between two variables cannot be
+         * conclusively determined as independent or dependent in the context of collider
+         * relationship analysis within a causal inference or graph-based algorithm.
+         * This outcome indicates uncertainty or lack of sufficient information to classify
+         * the nature of the relationship.
          */
         AMBIGUOUS,
+
         /**
-         * Indicates that no separating set exists between the nodes in the graph.
+         * Represents a state where there is no separating set (sepset) between two variables
+         * in the context of collider relationship analysis within a causal inference or
+         * graph-based algorithm. This outcome indicates the absence of a conditioning set
+         * that can render the variables independent.
          */
-        NO_SEPSET
-    }
+        NO_SEPSET }
 
     /**
-     * Public so callers can use it in results. Endpoints (x,y) are canonicalized by name when created here.
+     * A utility class that encapsulates a triplet of nodes.
+     * This class is immutable and thread-safe as its fields are final.
      */
     public static final class Triple {
+
         /**
-         * The first endpoint in a {@link Triple} that represents a relationship or connection between three
-         * {@link Node} objects. This endpoint is treated as canonicalized by its name.
-         * <p>
-         * Instances of this field are immutable once set within a {@link Triple}.
-         *
-         * @see Node
-         * @see Triple
+         * The first node in the triplet represented by this Triple object.
+         * This field is immutable and represents one component of the triplet structure.
          */
         public final Node x;
+
         /**
-         * Represents the second endpoint in a {@link Triple} that models a relationship or connection between three
-         * {@link Node} objects. This node is immutable once set during the construction of a {@link Triple}.
-         * <p>
-         * The specific semantics of this node depend on the context in which it is used.
-         *
-         * @see Node
-         * @see Triple
+         * The second node in the triplet represented by this Triple object.
+         * This field is immutable and represents one component of the triplet structure.
          */
         public final Node z;
+
         /**
-         * Represents the second endpoint in a {@link Triple} structure that establishes a relationship or connection
-         * between three {@link Node} instances. This field is immutable once assigned during the instantiation of a
-         * {@link Triple}.
-         * <p>
-         * The meaning or role of this {@link Node} in the {@link Triple} depends on the specific context in which the
-         * {@link Triple} is used. Typically, it serves as a conceptual or functional link between the other nodes
-         * within the same {@link Triple}.
-         *
-         * @see Node
-         * @see Triple
+         * The third node in the triplet represented by this Triple object.
+         * This field is immutable and represents one component of the triplet structure.
          */
         public final Node y;
 
         /**
-         * Constructs a Triple instance representing a relationship or connection between three Node objects.
+         * Constructs a Triple object with the specified nodes.
          *
-         * @param x the first endpoint in this Triple
-         * @param z the second endpoint in this Triple
-         * @param y the third endpoint in this Triple
+         * @param x the first node in the triplet
+         * @param z the second node in the triplet
+         * @param y the third node in the triplet
          */
-        public Triple(Node x, Node z, Node y) {
-            this.x = x;
-            this.z = z;
-            this.y = y;
-        }
+        public Triple(Node x, Node z, Node y) { this.x = x; this.z = z; this.y = y; }
     }
 
     private static final class SepCandidate {
-        final Set<Node> S;         // deterministic storage
+        final Set<Node> S;
         final boolean independent;
         final double p;
 

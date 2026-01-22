@@ -31,7 +31,7 @@ public class AdditiveNoiseSimulation {
     private final Graph graph;
     private final int numSamples;
     private final RealDistribution noiseDistribution;
-    private final double rescaleMin, rescaleMax;
+//    private final double rescaleMin, rescaleMax;
     private final int[] hiddenDimensions;
     private final double inputScale;
     private final Function<Double, Double> activationFunction;
@@ -46,8 +46,8 @@ public class AdditiveNoiseSimulation {
      * @param graph              The causal graph representing the structural relationships.
      * @param numSamples         The number of data samples to generate.
      * @param noiseDistribution  The distribution for additive noise.
-     * @param rescaleMin         The minimum value for data rescaling.
-     * @param rescaleMax         The maximum value for data rescaling.
+//     * @param rescaleMin         The minimum value for data rescaling.
+//     * @param rescaleMax         The maximum value for data rescaling.
      * @param hiddenDimensions   The dimensions of hidden layers in the MLP.
      * @param inputScale         The scaling factor for input data.
      * @param activationFunction The activation function for the MLP.
@@ -55,14 +55,14 @@ public class AdditiveNoiseSimulation {
     public AdditiveNoiseSimulation(Graph graph,
                                    int numSamples,
                                    RealDistribution noiseDistribution,
-                                   double rescaleMin,
-                                   double rescaleMax,
+//                                   double rescaleMin,
+//                                   double rescaleMax,
                                    int[] hiddenDimensions,
                                    double inputScale,
                                    Function<Double, Double> activationFunction) {
         if (!graph.paths().isAcyclic()) throw new IllegalArgumentException("Graph contains cycles.");
         if (numSamples < 1) throw new IllegalArgumentException("numSamples must be positive.");
-        if (rescaleMin > rescaleMax) throw new IllegalArgumentException("rescaleMin > rescaleMax");
+//        if (rescaleMin > rescaleMax) throw new IllegalArgumentException("rescaleMin > rescaleMax");
         Objects.requireNonNull(noiseDistribution, "noiseDistribution");
         Objects.requireNonNull(hiddenDimensions, "hiddenDimensions");
         Objects.requireNonNull(activationFunction, "activationFunction");
@@ -72,8 +72,8 @@ public class AdditiveNoiseSimulation {
         this.graph = graph;
         this.numSamples = numSamples;
         this.noiseDistribution = noiseDistribution;
-        this.rescaleMin = rescaleMin;
-        this.rescaleMax = rescaleMax;
+//        this.rescaleMin = rescaleMin;
+//        this.rescaleMax = rescaleMax;
         this.hiddenDimensions = hiddenDimensions.clone();
         this.inputScale = inputScale;
         this.activationFunction = activationFunction;
@@ -217,41 +217,41 @@ public class AdditiveNoiseSimulation {
 
             // Optional per-column *robust* rescale to [rescaleMin, rescaleMax]
             // (percentile clip + linear map). Much less sensitive to outliers than min/max.
-            if (rescaleMax > rescaleMin) {
-                final double qLo = 0.01;
-                final double qHi = 0.99;
-
-                double lo = quantileOfColumn(raw, j, qLo);
-                double hi = quantileOfColumn(raw, j, qHi);
-
-                // Fallback: if degenerate (or tiny N), fall back to min/max
-                if (!(hi > lo)) {
-                    double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
-                    for (int i = 0; i < N; i++) {
-                        double v = raw[i][j];
-                        if (v < min) min = v;
-                        if (v > max) max = v;
-                    }
-                    lo = min;
-                    hi = max;
-                }
-
-                if (hi > lo) {
-                    final double outR = (rescaleMax - rescaleMin);
-                    final double inR = (hi - lo);
-
-                    for (int i = 0; i < N; i++) {
-                        double v = raw[i][j];
-
-                        // clip
-                        if (v < lo) v = lo;
-                        else if (v > hi) v = hi;
-
-                        // map
-                        raw[i][j] = rescaleMin + outR * (v - lo) / inR;
-                    }
-                }
-            }
+//            if (rescaleMax > rescaleMin) {
+//                final double qLo = 0.01;
+//                final double qHi = 0.99;
+//
+//                double lo = quantileOfColumn(raw, j, qLo);
+//                double hi = quantileOfColumn(raw, j, qHi);
+//
+//                // Fallback: if degenerate (or tiny N), fall back to min/max
+//                if (!(hi > lo)) {
+//                    double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+//                    for (int i = 0; i < N; i++) {
+//                        double v = raw[i][j];
+//                        if (v < min) min = v;
+//                        if (v > max) max = v;
+//                    }
+//                    lo = min;
+//                    hi = max;
+//                }
+//
+//                if (hi > lo) {
+//                    final double outR = (rescaleMax - rescaleMin);
+//                    final double inR = (hi - lo);
+//
+//                    for (int i = 0; i < N; i++) {
+//                        double v = raw[i][j];
+//
+//                        // clip
+//                        if (v < lo) v = lo;
+//                        else if (v > hi) v = hi;
+//
+//                        // map
+//                        raw[i][j] = rescaleMin + outR * (v - lo) / inR;
+//                    }
+//                }
+//            }
         }
 
         return new BoxDataSet(new DoubleDataBox(raw), new ArrayList<>(topo));

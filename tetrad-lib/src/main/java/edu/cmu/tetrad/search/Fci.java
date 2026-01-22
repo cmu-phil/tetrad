@@ -383,6 +383,10 @@ public final class Fci implements IGraphSearch {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
+                if (knowledge.isRequired(x.getName(), y.getName()) || knowledge.isRequired(y.getName(), x.getName())) {
+                    continue;
+                }
+
                 Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, 3));
                 d.remove(x);
                 d.remove(y);

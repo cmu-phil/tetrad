@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,11 +20,12 @@
 
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
@@ -34,17 +35,21 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * Wrapper for Basis Function BIC Score (Basis-BIC) version.
-// *
-// * @author josephramsey
-// * @author bryanandrews
-// * @version $Id: $Id
-// */
-//@edu.cmu.tetrad.annotation.Score(name = "BF-SEM-BIC", command = "bf-sem-bic-score", dataType = DataType.Mixed)
-//@Mixed
-//@General
-public class BasisFunctionBicScore implements ScoreWrapper {
+/**
+ * Wrapper for KFF MIxed Marginal Likelihood Score.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
+@edu.cmu.tetrad.annotation.Score(
+        name = "KFF-ML-Mixed Score",
+        command = "kff-ml-mixed-score",
+        dataType = {DataType.Mixed}
+)
+@General
+@Mixed
+@Experimental
+public class KffMlMixed implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -55,10 +60,9 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     private DataModel dataSet;
 
     /**
-     * Initializes a new instance of the BasisFunctionBicScore class.
+     * Constructs a new instance of the SemBicScore.
      */
-    public BasisFunctionBicScore() {
-
+    public KffMlMixed() {
     }
 
     /**
@@ -67,28 +71,42 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.score.BasisFunctionBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
-                SimpleDataLoader.getMixedDataSet(dataSet),
-                parameters.getInt(Params.TRUNCATION_LIMIT),
-                parameters.getDouble(Params.REGULARIZATION_LAMBDA));
-//        edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample score = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample(
-//                SimpleDataLoader.getMixedDataSet(dataSet),
-//                parameters.getInt(Params.TRUNCATION_LIMIT),
-//                parameters.getDouble(Params.REGULARIZATION_LAMBDA));
-        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+
+        edu.cmu.tetrad.search.score.KffMlMixed score;
+
+        if (dataSet instanceof DataSet) {
+            score = new edu.cmu.tetrad.search.score.KffMlMixed((DataSet) this.dataSet);
+        } else {
+            throw new IllegalArgumentException("Expecting a dataset.");
+        }
+
+        score.setLambda(parameters.getDouble(Params.KML_LAMBDA));
+        score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
+        score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
+        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+        score.setNumFeatures(parameters.getInt(Params.KML_NUM_FEATURES));
+        edu.cmu.tetrad.search.score.KffMlMixed.FeatureType[] values
+                = edu.cmu.tetrad.search.score.KffMlMixed.FeatureType.values();
+        score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
+        score.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
+
         return score;
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the description of the Score.
+     *
+     * @return the description of the Score
      */
     @Override
     public String getDescription() {
-        return "BF SEM BIC";
+        return "KFF-ML-Mixed Score";
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data type of the current score.
+     *
+     * @return the data type of the score
      */
     @Override
     public DataType getDataType() {
@@ -96,23 +114,33 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a list of parameters applicable to this method.
+     *
+     * @return a list of parameters
      */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.TRUNCATION_LIMIT);
-        parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.REGULARIZATION_LAMBDA);
+        parameters.add(Params.KML_LAMBDA);
+        parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
+        parameters.add(Params.KML_BW_MAX_ROWS);
+        parameters.add(Params.KML_NUM_FEATURES);
+        parameters.add(Params.KML_FEATURE_TYPE);
+        parameters.add(Params.KML_CAT_RHO);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
 
-    /**
-     * {@inheritDoc}
+    /**d
+     * Retrieves the variable with the given name from the data set.
+     *
+     * @param name the name of the variable
+     * @return the variable with the given name, or null if no such variable exists
      */
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);
     }
+
 }
 

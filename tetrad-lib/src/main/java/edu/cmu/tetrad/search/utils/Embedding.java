@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -108,6 +108,7 @@ public class Embedding {
 
                 int numCategories = ((DiscreteVariable) v).getNumCategories();
 
+//                for (int c = 0; c < numCategories; c++) {
                 for (int c = 0; c < numCategories - 1; c++) {
                     List<Integer> key = new ArrayList<>();
                     i++;

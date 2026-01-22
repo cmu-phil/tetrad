@@ -396,7 +396,7 @@ Source:
     <h3 class="parameter_description" id="anmNoiseStrength">anmNoiseStrength</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="anmNoiseStrength_short_desc">
-        Controls variance/strength of noise in ANM simulator
+        Controls variance/strength of noise in GAM simulator
     </span></li>
         <li>Long Description: <span id="anmNoiseStrength_long_desc">
         A slider in [0,1] that scales the standard deviation of the chosen noise distribution.
@@ -414,7 +414,7 @@ Source:
     <h3 class="parameter_description" id="anmNonlinearity">anmNonlinearity</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="anmNonlinearity_short_desc">
-        Controls strength of nonlinearity in ANM simulator
+        Controls strength of nonlinearity in GAM simulator
     </span></li>
         <li>Long Description: <span id="anmNonlinearity_long_desc">
         A slider in [0,1] that simultaneously controls the number of basis units
@@ -1304,7 +1304,6 @@ Source:
         <li>Value Type: <span id="effectiveSampleSize_value_type">Integer</span></li>
     </ul>
 
-
     === errorsNormal ===
     <h3 class="parameter_description" id="errorsNormal">errorsNormal</h3>
     <ul class="parameter_description_list">
@@ -2113,7 +2112,7 @@ Source:
                 For perceptrons, the number of nodes in hidden layers (comma separated)
         </span></li>
         <li>Default
-            Value: <span id="hiddenDimensions_default_value">50,50,50,50,50</span></li>
+            Value: <span id="hiddenDimensions_default_value">50,50,50</span></li>
         <li>Lower Bound: <span id="hiddenDimensions_lower_bound"></span></li>
         <li>Upper
             Bound: <span id="hiddenDimensions_upper_bound"></span></li>
@@ -2512,6 +2511,110 @@ Source:
             Type: <span id="kernelWidth_value_type">Double</span></li>
     </ul>
 
+    === kmlLambda ===
+    <h3 class="parameter_description" id="kmlLambda">kmlLambda</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="kmlLambda_short_desc">
+                    Ridge lambda, default = 1
+                    </span></li>
+        <li>Long Description: <span id="kmlLambda_long_desc">
+                    Ridge lambda, default = 1
+        </span></li>
+        <li>Default Value: <span id="kmlLambda_default_value">1</span></li>
+        <li>Lower Bound: <span id="kmlLambda_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="kmlLambda_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="kmlLambda_value_type">Double</span></li>
+    </ul>
+
+    === kmlJitter ===
+    <h3 class="parameter_description" id="kmlJitter">kmlJitter</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="kmlJitter_short_desc">
+                    Jitter escalation base for Cholesky stabilization. Must be > 0.
+                    </span></li>
+        <li>Long Description: <span id="kmlJitter_long_desc">
+                    Jitter escalation base for Cholesky stabilization. Must be > 0.
+        </span></li>
+        <li>Default Value: <span id="kmlJitter_default_value">1e-10</span></li>
+        <li>Lower Bound: <span id="kmlJitter_lower_bound">1e-50</span></li>
+        <li>Upper Bound: <span id="kmlJitter_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="kmlJitter_value_type">Double</span></li>
+    </ul>
+
+    === kmlBandwidthMultiplier ===
+    <h3 class="parameter_description" id="kmlBandwidthMultiplier">kmlBandwidthMultiplier</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="kmlBandwidthMultiplier_short_desc">
+                    Bandwidth multiplier on the median heuristic, default = 1
+                    </span></li>
+        <li>Long Description: <span id="kmlBandwidthMultiplier_long_desc">
+                    Bandwidth multiplier on the median heuristic, default = 1.
+        </span></li>
+        <li>Default Value: <span id="kmlBandwidthMultiplier_default_value">1</span></li>
+        <li>Lower Bound: <span id="kmlBandwidthMultiplier_lower_bound">1e-50</span></li>
+        <li>Upper Bound: <span id="kmlBandwidthMultiplier_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="kmlBandwidthMultiplier_value_type">Double</span></li>
+    </ul>
+
+    === kmlBwMaxRows ===
+    <h3 class="parameter_description" id="kmlBwMaxRows">kmlBwMaxRows</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="kmlBwMaxRows_short_desc">
+                    Max rows used to estimate median bandwidth (subsample for speed).
+                    </span></li>
+        <li>Long Description: <span id="kmlBwMaxRows_long_desc">
+                    Max rows used to estimate median bandwidth (subsample for speed).
+        </span></li>
+        <li>Default Value: <span id="kmlBwMaxRows_default_value">50</span></li>
+        <li>Lower Bound: <span id="kmlBwMaxRows_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="kmlBwMaxRows_upper_bound">2000000</span></li>
+        <li>Value Type: <span id="kmlBwMaxRows_value_type">Integer</span></li>
+    </ul>
+
+    === kmlNumFeatures ===
+    <h3 class="parameter_description" id="kmlNumFeatures">kmlNumFeatures</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="kmlNumFeatures_short_desc">
+                    The number of random features used for kernel approximations
+                    </span></li>
+        <li>Long Description: <span id="kmlNumFeatures_long_desc">
+                    The number of random features used for kernel approximations
+        </span></li>
+        <li>Default Value: <span id="kmlNumFeatures_default_value">100</span></li>
+        <li>Lower Bound: <span id="kmlNumFeatures_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="kmlNumFeatures_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="kmlNumFeatures_value_type">Integer</span></li>
+    </ul>
+
+    === kmlFeatureType ===
+    <h3 class="parameter_description" id="kmlFeatureType">kmlFeatureType</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="kmlFeatureType_short_desc">
+                    Type type of random features: 1 = RFF or 2 = ORF
+                    </span></li>
+        <li>Long Description: <span id="kmlFeatureType_long_desc">
+                    Type type of random features: 1 = RFF or 2 = ORF
+        </span></li>
+        <li>Default Value: <span id="kmlFeatureType_default_value">1</span></li>
+        <li>Lower Bound: <span id="kmlFeatureType_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="kmlFeatureType_upper_bound">2</span></li>
+        <li>Value Type: <span id="kmlFeatureType_value_type">Integer</span></li>
+    </ul>
+
+    === kmlCatRho ===
+    <h3 class="parameter_description" id="kmlCatRho">kmlCatRho</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="kmlCatRho_short_desc">
+                    Categorical kernel similarity (rho, range 0-1)
+                    </span></li>
+        <li>Long Description: <span id="kmlCatRho_long_desc">
+                    0 = categories fully distinct; values closer to 1 make categories more similar
+        </span></li>
+        <li>Default Value: <span id="kmlCatRho_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="kmlCatRho_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="kmlCatRho_upper_bound">1</span></li>
+        <li>Value Type: <span id="kmlCatRho_value_type">Double</span></li>
+    </ul>
 
     === lambda1 ===
     <h3 class="parameter_description" id="lambda1">lambda1</h3>
@@ -4145,7 +4248,7 @@ Source:
               Small values (e.g., 3–10) often suffice; increasing improves power but adds cost.
             </span>
         </li>
-        <li>Default Value: <span id="rcit.numFeaturesXY_default_value">5</span></li>
+        <li>Default Value: <span id="rcit.numFeaturesXY_default_value">10</span></li>
         <li>Lower Bound: <span id="rcit.numFeaturesXY_lower_bound">1</span></li>
         <li>Upper Bound: <span id="rcit.numFeaturesXY_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="rcit.numFeaturesXY_value_type">Integer</span></li>
@@ -4362,10 +4465,8 @@ Source:
         records is 1; the default is set to 1000.</span></li>
         <li>Default
             Value: <span id="sampleSize_default_value">1000</span></li>
-        <li>Lower
-            Bound: <span id="sampleSize_lower_bound">1</span></li>
-        <li>Upper
-            Bound: <span id="sampleSize_upper_bound">2147483647</span></li>
+        <li>Lower Bound: <span id="sampleSize_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="sampleSize_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="sampleSize_value_type">Integer</span></li>
     </ul>
 

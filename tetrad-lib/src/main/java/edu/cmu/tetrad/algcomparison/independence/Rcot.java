@@ -40,12 +40,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "RCIT (Random Conditional Independence Test)",
-        command = "rcit-test",
+        name = "RCoT (Randomized Conditional Correlation Test)",
+        command = "rcot-test",
         dataType = DataType.Continuous
 )
 @General
-public class Rcit implements IndependenceWrapper {
+public class Rcot implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -53,7 +53,7 @@ public class Rcit implements IndependenceWrapper {
     /**
      * `Kci` constructor.
      */
-    public Rcit() {
+    public Rcot() {
 
     }
 
@@ -64,14 +64,11 @@ public class Rcit implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.IndTestRcit test = new edu.cmu.tetrad.search.test.IndTestRcit((DataSet) dataSet);
+        edu.cmu.tetrad.search.test.IndTestRcot test = new edu.cmu.tetrad.search.test.IndTestRcot((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
-//        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
         test.setLambda(parameters.getDouble(Params.RCIT_LAMBDA));
         test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
-        test.setPermutations(parameters.getInt(Params.RCIT_PERMUTATIONS));
-        test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         return test;
     }
@@ -83,7 +80,7 @@ public class Rcit implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "RCIT";
+        return "RCoT";
     }
 
     /**
@@ -109,9 +106,6 @@ public class Rcit implements IndependenceWrapper {
         params.add(Params.SEED);
         params.add(Params.ALPHA);
         params.add(Params.RCIT_LAMBDA);
-//        params.add(Params.RCIT_MODE);
-        params.add(Params.RCIT_APPROX);
-        params.add(Params.RCIT_CENTER_FEATURES);
         params.add(Params.RCIT_NUM_FEATURES_XY);
         params.add(Params.RCIT_NUM_FEATURES_Z);
         return params;

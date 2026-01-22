@@ -1066,6 +1066,34 @@ public final class Params {
      */
     public static final String EFFECTIVE_SAMPLE_SIZE = "effectiveSampleSize";
     /**
+     * Constant <code>KML_LAMBDA="kmlLambda"</code>
+     */
+    public static final String KML_LAMBDA = "kmlLambda";
+    /**
+     * Constant <code>KML_JITTER="kmlJitter"</code>
+     */
+    public static final String KML_JITTER = "kmlJitter";
+    /**
+     * Constant <code>KML_BANDWIDTH_MULTIPLIER="kmlBandwidthMultiplier"</code>
+     */
+    public static final String KML_BANDWIDTH_MULTIPLIER = "kmlBandwidthMultiplier";
+    /**
+     * Constant <code>KML_BW_MAX_ROWS="kmlBwMaxRows"</code>
+     */
+    public static final String KML_BW_MAX_ROWS = "kmlBwMaxRows";
+    /**
+     * Constant <code>KML_NUM_FEATURES="kmlNumFeatures"</code>
+     */
+    public static final String KML_NUM_FEATURES = "kmlNumFeatures";
+    /**
+     * Constant <code>KML_FEATURE_TYPE="kmlFeatureType"</code>
+     */
+    public static final String KML_FEATURE_TYPE = "kmlFeatureType";
+    /**
+     * Constant <code>KML_CAT_RHO="kmlCatRho"</code>
+     */
+    public static final String KML_CAT_RHO = "kmlCatRho";
+    /**
      * Constant <code>CLUSTER_SIZES="clusterSizes"</code>
      */
     public static final String CLUSTER_SIZES = "clusterSizes";

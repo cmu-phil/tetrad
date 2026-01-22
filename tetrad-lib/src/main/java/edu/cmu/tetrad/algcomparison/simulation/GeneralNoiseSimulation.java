@@ -201,7 +201,7 @@ public class GeneralNoiseSimulation implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Additive Noise SEM (Deep Net)";
+        return "General Noise SEM (Deep Net)";
     }
 
     /**
@@ -226,8 +226,8 @@ public class GeneralNoiseSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        parameters.add(Params.AM_RESCALE_MIN);
-        parameters.add(Params.AM_RESCALE_MAX);
+//        parameters.add(Params.AM_RESCALE_MIN);
+//        parameters.add(Params.AM_RESCALE_MAX);
         parameters.add(Params.AM_BETA_ALPHA);
         parameters.add(Params.AM_BETA_BETA);
         parameters.add(Params.HIDDEN_DIMENSIONS);
@@ -294,7 +294,7 @@ public class GeneralNoiseSimulation implements Simulation {
         edu.cmu.tetrad.sem.GeneralNoiseSimulation generator = new edu.cmu.tetrad.sem.GeneralNoiseSimulation(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
-                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
+//                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
                 hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE), activation);
 
         return generator.generateData();

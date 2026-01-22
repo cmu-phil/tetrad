@@ -680,113 +680,50 @@ public class Fges implements IGraphSearch, DagScorer {
      * @param b the ending node
      */
     private void calculateArrowsForward(Node a, Node b) throws InterruptedException {
-        if (boundGraph != null && !boundGraph.isAdjacentTo(a, b)) {
+        if (boundGraph != null && !boundGraph.isAdjacentTo(a, b)) return;
+        if (a == b) return;
+        if (graph.isAdjacentTo(a, b)) return;
+
+        if (existsKnowledge() && getKnowledge().isForbidden(a.getName(), b.getName())) {
             return;
         }
 
-        if (a == b) return;
+        // Current structural context needed for Insert evaluation.
+        final Set<Node> naYX = getNaYX(a, b);
+        final List<Node> tNeighborsList = getTNeighbors(a, b);
+        final Set<Node> parents = new HashSet<>(graph.getParents(b));
 
-        if (graph.isAdjacentTo(a, b)) return;
+        final Set<Node> tNeighborsSet = new HashSet<>(tNeighborsList);
 
-        if (existsKnowledge()) {
-            if (getKnowledge().isForbidden(a.getName(), b.getName())) {
-                return;
-            }
-        }
+        // Cache config guard: if nothing structurally changed for (a,b), skip.
+        final ArrowConfig config = new ArrowConfig(tNeighborsSet, naYX, parents);
+        final Edge e = directedEdge(a, b);
+        final ArrowConfig stored = arrowsMap.get(e);
+        if (stored != null && stored.equals(config)) return;
+        arrowsMap.put(e, config);
 
-        Set<Node> naYX = getNaYX(a, b);
-        List<Node> TNeighbors = getTNeighbors(a, b);
-        Set<Node> parents = new HashSet<>(graph.getParents(b));
+        final int _depth = min(depth, tNeighborsList.size());
+        final SublistGenerator gen = new SublistGenerator(tNeighborsList.size(), _depth);
 
-        HashSet<Node> TNeighborsSet = new HashSet<>(TNeighbors);
-        ArrowConfig config = new ArrowConfig(TNeighborsSet, naYX, parents);
-        ArrowConfig storedConfig = arrowsMap.get(directedEdge(a, b));
-        if (storedConfig != null && storedConfig.equals(config)) return;
-        arrowsMap.put(directedEdge(a, b), new ArrowConfig(TNeighborsSet, naYX, parents));
+        Set<Node> bestT = null;
+        double bestBump = Double.NEGATIVE_INFINITY;
 
-        int _depth = min(depth, TNeighbors.size());
-
-        final SublistGenerator gen = new SublistGenerator(TNeighbors.size(), _depth);// TNeighbors.size());
         int[] choice;
-
-        Set<Node> maxT = null;
-        double maxBump = Double.NEGATIVE_INFINITY;
-        List<Set<Node>> TT = new ArrayList<>();
-
         while ((choice = gen.next()) != null) {
-            Set<Node> _T = GraphUtils.asSet(choice, TNeighbors);
-            TT.add(_T);
-        }
+            // Convert subset indices -> actual T set.
+            // GraphUtils.asSet allocates; that's OK now because we no longer allocate TT for *all* subsets up front.
+            final Set<Node> T = GraphUtils.asSet(choice, tNeighborsList);
 
-        class EvalTask implements Callable<EvalPair> {
-            private final List<Set<Node>> Ts;
-            private final ConcurrentMap<Node, Integer> hashIndices;
-            private final int from;
-            private final int to;
-            private Set<Node> maxT = null;
-            private double maxBump = Double.NEGATIVE_INFINITY;
+            final double bump = insertBump(a, b, T, naYX, parents, hashIndices);
 
-            public EvalTask(List<Set<Node>> Ts, int from, int to, ConcurrentMap<Node, Integer> hashIndices) {
-                this.Ts = Ts;
-                this.hashIndices = hashIndices;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            public EvalPair call() throws InterruptedException {
-                for (int k = from; k < to; k++) {
-                    if (Thread.currentThread().isInterrupted()) break;
-//                    double _bump = insertEval(a, b, Ts.get(k), naYX, parents, this.hashIndices);
-                    double _bump = insertBump(a, b, Ts.get(k), naYX, parents, this.hashIndices);
-
-                    if (_bump > maxBump) {
-                        maxT = Ts.get(k);
-                        maxBump = _bump;
-                    }
-                }
-
-                EvalPair pair = new EvalPair();
-                pair.T = maxT;
-                pair.bump = maxBump;
-
-                return pair;
+            if (bump > bestBump) {
+                bestBump = bump;
+                bestT = T;
             }
         }
 
-        int chunkSize = getChunkSize(TT.size());
-        List<EvalTask> tasks = new ArrayList<>();
-
-        for (int i = 0; i < TT.size(); i += chunkSize) {
-            if (Thread.currentThread().isInterrupted()) {
-                pool.shutdownNow();
-//                break;
-                throw new RuntimeException("Interrupted");
-            }
-
-            EvalTask task = new EvalTask(TT, i, min(TT.size(), i + chunkSize), hashIndices);
-            tasks.add(task);
-        }
-
-        List<Future<EvalPair>> futures = null;
-        futures = pool.invokeAll(tasks);
-
-        for (Future<EvalPair> future : futures) {
-            try {
-                EvalPair pair = future.get();
-                if (pair.bump > maxBump) {
-                    maxT = pair.T;
-                    maxBump = pair.bump;
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                Thread.currentThread().interrupt();
-                TetradLogger.getInstance().log(e.getMessage());
-                return;
-            }
-        }
-
-        if (maxBump > 0) {
-            addArrowForward(a, b, maxT, TNeighborsSet, naYX, parents, maxBump);
+        if (bestBump > 0) {
+            addArrowForward(a, b, bestT, tNeighborsSet, naYX, parents, bestBump);
         }
     }
 
@@ -1179,37 +1116,6 @@ public class Fges implements IGraphSearch, DagScorer {
      * @param recordScores Indicates whether or not to record the scores for each node in the graph.
      * @return The total score of the DAG.
      */
-//    private double scoreDag(Graph dag, boolean recordScores) {
-//        if (score instanceof GraphScore) return 0.0;
-//        dag = GraphUtils.replaceNodes(dag, getVariables());
-//
-//        double _score = 0;
-//
-//        for (Node node : getVariables()) {
-//            List<Node> x = dag.getParents(node);
-//
-//            int[] parentIndices = new int[x.size()];
-//
-//            int count = 0;
-//            for (Node parent : x) {
-//                parentIndices[count++] = hashIndices.get(parent);
-//            }
-//
-//            final double nodeScore = score.localScore(hashIndices.get(node), parentIndices);
-//
-//            if (recordScores) {
-//                node.addAttribute("Score", nodeScore);
-//            }
-//
-//            _score += nodeScore;
-//        }
-//
-//        if (recordScores) {
-//            graph.addAttribute("Score", _score);
-//        }
-//
-//        return _score;
-//    }
     private double scoreDag(Graph dag, boolean recordScores) {
         dag = GraphUtils.replaceNodes(dag, getVariables());
 

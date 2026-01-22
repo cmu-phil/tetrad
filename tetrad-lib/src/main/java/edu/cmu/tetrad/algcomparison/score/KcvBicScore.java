@@ -18,14 +18,16 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.algcomparison.independence;
+package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.General;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
+import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -34,64 +36,71 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for RCIT test.
+ * Wrapper for linear, Gaussian SEM BIC score.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-@TestOfIndependence(
-        name = "RCIT (Random Conditional Independence Test)",
-        command = "rcit-test",
-        dataType = DataType.Continuous
+@edu.cmu.tetrad.annotation.Score(
+        name = "KCV BIC Score",
+        command = "kcv-bic-score",
+        dataType = {DataType.Continuous}
 )
+@Experimental
 @General
-public class Rcit implements IndependenceWrapper {
+public class KcvBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * `Kci` constructor.
+     * The data set.
      */
-    public Rcit() {
+    private DataModel dataSet;
 
+    /**
+     * Constructs a new instance of the SemBicScore.
+     */
+    public KcvBicScore() {
     }
 
     /**
      * {@inheritDoc}
-     * <p>
-     * Returns a RCIT test.
      */
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.IndTestRcit test = new edu.cmu.tetrad.search.test.IndTestRcit((DataSet) dataSet);
-        test.setAlpha(parameters.getDouble(Params.ALPHA));
-//        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
-        test.setLambda(parameters.getDouble(Params.RCIT_LAMBDA));
-        test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
-        test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
-        test.setPermutations(parameters.getInt(Params.RCIT_PERMUTATIONS));
-        test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
-        test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        return test;
+    public Score getScore(DataModel dataSet, Parameters parameters) {
+        this.dataSet = dataSet;
+
+        edu.cmu.tetrad.search.score.KcvBicScore score;
+
+        if (dataSet instanceof DataSet) {
+            score = new edu.cmu.tetrad.search.score.KcvBicScore((DataSet) this.dataSet);
+        } else {
+            throw new IllegalArgumentException("Expecting a dataset.");
+        }
+
+        score.setLambda(parameters.getDouble(Params.RCIT_LAMBDA));
+        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
+
+        return score;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the name of the test.
+     * Returns the description of the Sem BIC Score.
+     *
+     * @return the description of the Sem BIC Score
      */
     @Override
     public String getDescription() {
-        return "RCIT";
+        return "KCV BIC Score";
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the data type of the test, which is continuous.
+     * Returns the data type of the current score.
      *
-     * @see DataType
+     * @return the data type of the score
      */
     @Override
     public DataType getDataType() {
@@ -99,22 +108,30 @@ public class Rcit implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the parameters of the test.
+     * Returns a list of parameters applicable to this method.
+     *
+     * @return a list of parameters
      */
     @Override
     public List<String> getParameters() {
-        List<String> params = new ArrayList<>();
-        params.add(Params.SEED);
-        params.add(Params.ALPHA);
-        params.add(Params.RCIT_LAMBDA);
-//        params.add(Params.RCIT_MODE);
-        params.add(Params.RCIT_APPROX);
-        params.add(Params.RCIT_CENTER_FEATURES);
-        params.add(Params.RCIT_NUM_FEATURES_XY);
-        params.add(Params.RCIT_NUM_FEATURES_Z);
-        return params;
+        List<String> parameters = new ArrayList<>();
+        parameters.add(Params.RCIT_LAMBDA);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.RCIT_CENTER_FEATURES);
+        return parameters;
     }
+
+    /**
+     * Retrieves the variable with the given name from the data set.
+     *
+     * @param name the name of the variable
+     * @return the variable with the given name, or null if no such variable exists
+     */
+    @Override
+    public Node getVariable(String name) {
+        return this.dataSet.getVariable(name);
+    }
+
 }
 
