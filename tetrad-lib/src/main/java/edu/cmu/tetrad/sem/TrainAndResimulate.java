@@ -40,7 +40,7 @@ public final class TrainAndResimulate {
 
         int nSamples = (args.length >= 5) ? Integer.parseInt(args[4]) : data.getNumRows();
 
-    TrainedDagSimulatorANM.Params p = new TrainedDagSimulatorANM.Params();
+    TrainedDagSimulatorGNM.Params p = new TrainedDagSimulatorGNM.Params();
         // You can tweak these quickly:
         p.hidden = 24;
         p.epochs = 300;
@@ -49,10 +49,10 @@ public final class TrainAndResimulate {
         p.batchSize = 64;
         p.seed = 12345L;
 
-        TrainedDagSimulatorANM sim = new TrainedDagSimulatorANM(data, dag, p);
+        TrainedDagSimulatorGNM sim = new TrainedDagSimulatorGNM(data, dag, p);
         sim.fit();
 
-        TrainedDagSimulatorANM.SimResult res = sim.simulate(nSamples);
+        TrainedDagSimulatorGNM.SimResult res = sim.simulate(nSamples);
 
         // Write outputs
         writeTabularMixed(outData, data.getVariables(), res.cont, res.disc);
