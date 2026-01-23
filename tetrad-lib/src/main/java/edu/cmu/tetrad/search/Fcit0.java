@@ -280,7 +280,7 @@ public final class Fcit0 implements IGraphSearch {
             nodes = new ArrayList<>(test.getVariables());
         }
 
-        TetradLogger.getInstance().log("===Starting FCIT===");
+        TetradLogger.getInstance().log("===Starting FCIT0===");
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(sepsets);
@@ -437,7 +437,7 @@ public final class Fcit0 implements IGraphSearch {
         int round = 0;
 
         do {
-            System.out.println("Round: " + (++round));
+//            System.out.println("Round: " + (++round));
         } while (removeEdgesRecursivelyBryan(checks, excludeSelectionBias));
 
         if (superVerbose) {
@@ -455,7 +455,7 @@ public final class Fcit0 implements IGraphSearch {
             node.setNodeType(NodeType.LATENT);
         }
 
-        TetradLogger.getInstance().log("FCIT finished.");
+        TetradLogger.getInstance().log("FCIT0 finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
@@ -518,21 +518,16 @@ public final class Fcit0 implements IGraphSearch {
 
             {
                 List<Node> adjx = this.pag.getAdjacentNodes(x);
+                adjx.removeAll(this.pag.getNodesOutTo(x, Endpoint.ARROW));
                 adjx.remove(y);
                 SublistGenerator choiceGen = new SublistGenerator(adjx.size(), adjx.size());
                 int[] choice;
 
                 while ((choice = choiceGen.next()) != null) {
-                    System.out.println("Choice = " + Arrays.toString(choice));
-
                     Set<Node> b = GraphUtils.asSet(choice, adjx);
                     try {
-                        System.out.println("Checking " + x + " _||_ " + y + " | " + b);
-
                         if (test.checkIndependence(x, y, b).isIndependent()) {
-                            System.out.println("Found independent");
-
-                            if (tryToModifyGraph(x, y, b, "bryan", excludeSelectionBias)) {
+                            if (tryToModifyGraph(x, y, b, "fcit0", excludeSelectionBias)) {
                                 checks.add(new IndependenceCheck(edge, b));
                                 return true;
                             }
@@ -545,21 +540,16 @@ public final class Fcit0 implements IGraphSearch {
 
             {
                 List<Node> adjy = this.pag.getAdjacentNodes(y);
+                adjy.removeAll(this.pag.getNodesOutTo(y, Endpoint.ARROW));
                 adjy.remove(x);
                 SublistGenerator choiceGen = new SublistGenerator(adjy.size(), adjy.size());
                 int[] choice;
 
                 while ((choice = choiceGen.next()) != null) {
-                    System.out.println("Choice = " + Arrays.toString(choice));
-
                     Set<Node> b = GraphUtils.asSet(choice, adjy);
                     try {
-                        System.out.println("Checking " + x + " _||_ " + y + " | " + b);
-
                         if (test.checkIndependence(x, y, b).isIndependent()) {
-                            System.out.println("Found independent");
-
-                            if (tryToModifyGraph(x, y, b, "bryan", excludeSelectionBias)) {
+                            if (tryToModifyGraph(x, y, b, "fcit0", excludeSelectionBias)) {
                                 checks.add(new IndependenceCheck(edge, b));
                                 return true;
                             }
@@ -689,8 +679,7 @@ public final class Fcit0 implements IGraphSearch {
 
         if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
-                TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
-                        + " reasons, but it didn't lead to a PAG");
+                TetradLogger.getInstance().log("Tried removing " + _edge + " conditioning on " + b + ", but it didn't lead to a PAG");
             }
 
             this.pag = _pag;
@@ -699,7 +688,7 @@ public final class Fcit0 implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing " + _edge + " for " + type + " reasons.");
+            TetradLogger.getInstance().log("Removing " + _edge + " conditioning on " + b);
         }
 
         return true;
