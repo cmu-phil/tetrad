@@ -35,92 +35,120 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>RCIT-KFF: Randomized Conditional Independence Test with KFF-ML-consistent Fourier features</p>
+ * <p><b>FF-CI: Feature-Function Conditional Independence Test</b></p>
  *
  * <p>
- * This class implements a fast, kernel-based conditional independence test intended as a practical
- * alternative to {@code IndTestKci} when runtime is the dominant constraint. Empirically, KCI often
- * provides excellent accuracy but can be too slow for routine use inside constraint-based searches
- * (e.g., PC/PC-Max), especially at moderate-to-large sample sizes and repeated CI queries.
+ * This class implements a fast conditional independence test based on explicit
+ * feature-function expansions of the variables, intended as a practical
+ * alternative to kernel-based tests such as {@code IndTestKci} when runtime is
+ * the dominant constraint. While KCI often provides strong accuracy, it can be
+ * prohibitively slow inside constraint-based search procedures (e.g., PC,
+ * PC-Max) due to repeated conditional independence queries.
  * </p>
  *
  * <p>
- * <b>Core idea.</b> RCIT-KFF follows the randomized-approximation strategy of RCIT/RCoT
- * (Strobl, Zhang, Visweswaran, 2019) but replaces the standard random Fourier feature construction
- * with the same Fourier-feature kernel approximation used by the KFF-ML score
- * ({@code KffMarginalLikelihoodScore}). The goal is to make the CI test and the score a coherent
- * pair: they rely on the same kernel approximation machinery, reducing “test/score mismatch” in
- * hybrid workflows.
+ * <b>Core idea.</b> FF-CI operates in an explicit, finite-dimensional feature
+ * space rather than an implicit RKHS. Variables are mapped to feature matrices
+ * via randomized feature-function expansions, after which conditional
+ * independence is assessed using partial cross-covariance in feature space.
+ * P-value calibration borrows moment-matching approximations originally
+ * developed for RCIT/RCoT (Strobl, Zhang, Visweswaran, 2019), but the test itself
+ * does not rely on kernel approximation or RKHS representations.
  * </p>
  *
- * <p>Hypotheses</p>
+ * <p>
+ * This design makes FF-CI conceptually aligned with basis-function and
+ * block-based CI tests, while retaining the smooth finite-sample behavior and
+ * flexible null approximations of RCIT-style statistics.
+ * </p>
+ *
+ * <p><b>Hypotheses</b></p>
  * <ul>
  *   <li>{@code H0}: {@code X ⟂ Y | Z}</li>
  *   <li>{@code H1}: {@code X ⟂̸ Y | Z}</li>
  * </ul>
  *
- * <p>Feature maps (KFF-style)</p>
+ * <p><b>Feature maps</b></p>
  * <p>
- * Each variable block is mapped to a fixed-dimensional feature representation using randomized
- * Fourier features that approximate an RBF (Gaussian) kernel. Two feature types are supported:
+ * Each variable block is mapped to a fixed-dimensional feature representation
+ * using randomized feature functions. This implementation supports:
  * </p>
  * <ul>
  *   <li><b>RFF</b>: standard Random Fourier Features.</li>
- *   <li><b>ORF</b>: Orthogonal Random Features (block-orthogonal directions), often improving stability.</li>
+ *   <li><b>ORF</b>: Orthogonal Random Features, which often improve numerical
+ *       stability and variance.</li>
  * </ul>
  *
  * <p>
- * Bandwidths are chosen by a median pairwise distance heuristic (on a subsample for speed),
- * and random-feature generation is seeded deterministically from the variable set (and the active
- * row subset) so repeated calls are reproducible and cacheable.
+ * Feature bandwidths are chosen via a median pairwise distance heuristic
+ * (computed on a subsample for speed). Feature generation is seeded
+ * deterministically from the variable set and active row subset, enabling
+ * reproducibility and aggressive caching across repeated CI queries.
  * </p>
  *
- * <p>Test statistic (RCIT / RCoT style)</p>
+ * <p><b>Test statistic (RCIT-style)</b></p>
  * <p>
- * Let {@code fX}, {@code fY}, {@code fZ} denote feature matrices for {@code X}, {@code Y} (or an
- * augmented {@code Y} block), and {@code Z}. The statistic is based on the squared Frobenius norm of the
- * (conditional) cross-covariance in feature space:
+ * Let {@code fX}, {@code fY}, and {@code fZ} denote the feature matrices for
+ * {@code X}, {@code Y} (or an augmented {@code Y} block), and {@code Z},
+ * respectively. The test statistic is the squared Frobenius norm of the
+ * conditional cross-covariance in feature space:
  * </p>
+ *
  * <ul>
- *   <li><b>RIT</b> (no conditioning): {@code T = n ||Cov(fX, fY)||_F^2}</li>
- *   <li><b>RCIT/RCoT</b> (with conditioning): {@code T = n || Cov(fX,fY) - Cov(fX,fZ)(Cov(fZ,fZ)+λI)^{-1}Cov(fZ,fY) ||_F^2}</li>
+ *   <li><b>RIT</b> (no conditioning):
+ *     {@code T = n ||Cov(fX, fY)||_F^2}
+ *   </li>
+ *   <li><b>Conditional case</b>:
+ *     {@code
+ *     T = n || Cov(fX,fY)
+ *           - Cov(fX,fZ)(Cov(fZ,fZ)+λI)^{-1}Cov(fZ,fY) ||_F^2
+ *     }
+ *   </li>
  * </ul>
  *
  * <p>
- * The ridge parameter {@code λ} stabilizes the inversion of {@code Cov(fZ,fZ)}.
+ * The ridge parameter {@code λ} stabilizes inversion of
+ * {@code Cov(fZ,fZ)} and is treated as a fixed regularization constant.
  * </p>
  *
- * <p>P-value approximations</p>
+ * <p><b>P-value approximations</b></p>
  * <p>
- * Under the null, the statistic is approximated as a weighted sum of chi-square variables whose
- * weights are obtained from the eigenvalues of a covariance matrix formed from elementwise products
- * of residual feature matrices. This implementation supports the same family of approximations commonly
- * used in RCIT:
+ * Under the null hypothesis, the statistic is approximated as a weighted sum of
+ * chi-square variables. The weights are obtained from the eigenvalues of a
+ * covariance matrix formed from elementwise products of residual feature
+ * matrices. The following RCIT-style approximations are supported:
  * </p>
+ *
  * <ul>
  *   <li><b>GAMMA</b>: Satterthwaite–Welch moment-matched Gamma approximation.</li>
- *   <li><b>HBE</b>: Cornish–Fisher/Edgeworth correction using skewness.</li>
+ *   <li><b>HBE</b>: Edgeworth correction using skewness.</li>
  *   <li><b>LPB4</b>: Edgeworth correction using skewness and kurtosis.</li>
- *   <li><b>CHI2</b>: chi-square approximation based on pseudo-inverse weighting.</li>
- *   <li><b>PERMUTATION</b>: optional permutation p-values (slow, but robust).</li>
+ *   <li><b>CHI2</b>: Chi-square approximation via pseudo-inverse weighting.</li>
+ *   <li><b>PERMUTATION</b>: Permutation-based p-values (computationally expensive
+ *       but robust).</li>
  * </ul>
  *
- * <p>Practical notes</p>
+ * <p><b>Practical notes</b></p>
  * <ul>
- *   <li>This test is intended for continuous variables; input columns are standardized internally.</li>
- *   <li>Caching is used aggressively (features, bandwidths, and Cholesky factors) to reduce repeated work
- *       in search procedures.</li>
- *   <li>As with other randomized-feature CI tests, p-values are approximate and depend on the
- *       feature dimension and bandwidth heuristic; they are best interpreted as a fast screening tool.</li>
+ *   <li>Input variables are treated as continuous and standardized internally.</li>
+ *   <li>Caching of feature matrices, bandwidths, and Cholesky factors is used
+ *       extensively to accelerate repeated CI queries in search procedures.</li>
+ *   <li>P-values are approximate and depend on feature dimension and bandwidth
+ *       heuristics; FF-CI is best viewed as a fast screening and search-time CI
+ *       test rather than an exact inferential procedure.</li>
  * </ul>
  *
- * <p>References</p>
+ * <p><b>Reference</b></p>
  * <ul>
- *   <li>Strobl, E. V., Zhang, K., &amp; Visweswaran, S. (2019). Approximate kernel-based conditional independence tests
- *       for fast non-parametric causal discovery. <i>Journal of Causal Inference</i>, 7(1).</li>
+ *   <li>
+ *     Strobl, E. V., Zhang, K., &amp; Visweswaran, S. (2019).
+ *     Approximate kernel-based conditional independence tests for fast
+ *     non-parametric causal discovery.
+ *     <i>Journal of Causal Inference</i>, 7(1).
+ *   </li>
  * </ul>
  */
-public final class KffRcit implements IndependenceTest, RowsSettable {
+public final class FfCi implements IndependenceTest, RowsSettable {
 
     // ---------------- core data ----------------
     private final DataSet data;
@@ -162,7 +190,7 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
      * @param dataSet The DataSet to be used for the KffRcit instance. This dataset typically contains the
      *                data needed for independence testing and feature construction.
      */
-    public KffRcit(DataSet dataSet) {
+    public FfCi(DataSet dataSet) {
         this(dataSet, new Parameters());
     }
 
@@ -178,7 +206,7 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
      *                such as the number of features, random seed, and specific algorithm settings.
      *                It must not be null.
      */
-    public KffRcit(DataSet dataSet, Parameters params) {
+    public FfCi(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         this.n = getActiveRowCount();

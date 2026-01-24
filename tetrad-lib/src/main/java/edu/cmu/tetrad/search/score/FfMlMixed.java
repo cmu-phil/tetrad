@@ -18,32 +18,76 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * KFF-ML Mixed score: continuous + discrete parents.
+ * <p><b>FF-ML-Mixed: Feature-Function Marginal Likelihood score for mixed (continuous + discrete) parents</b></p>
  *
- * <p>This variant extends KFF-ML to handle mixed continuous/discrete parent sets by using a
- * product kernel:
+ * <p>
+ * This class extends the continuous FF-ML (GP marginal-likelihood / “kernel ML”) score to parent sets that
+ * include both continuous and discrete variables. The intent is to preserve the nonlinear flexibility of the
+ * RBF/GP model for continuous parents while treating discrete parents with an appropriate categorical kernel,
+ * rather than forcing integer-coded categories into a smooth Euclidean geometry.
+ * </p>
+ *
+ * <p><b>Product-kernel model</b></p>
+ * <p>
+ * For a parent vector {@code Z = (Z_c, Z_d)} with continuous part {@code Z_c} and discrete part {@code Z_d},
+ * we use a product kernel:
+ * </p>
  *
  * <pre>
  *   k((z_c, z_d), (z'_c, z'_d)) = k_cont(z_c, z'_c) * k_cat(z_d, z'_d)
  * </pre>
  *
- * where:
  * <ul>
- *   <li>{@code k_cont} is an RBF kernel approximated with RFF/ORF as in KFF-ML.</li>
- *   <li>{@code k_cat} is a simple PSD categorical kernel on the discrete levels:
- *       {@code k_cat(c,c)=1} and {@code k_cat(c,c')=rho} for {@code c!=c'}.</li>
+ *   <li>{@code k_cont} is an RBF kernel over continuous parents, approximated using Random Fourier Features
+ *       (RFF) or Orthogonal Random Features (ORF), as in the continuous FF-ML score.</li>
+ *   <li>{@code k_cat} is a simple positive semidefinite (PSD) categorical kernel over discrete levels:
+ *       it returns {@code 1} for a level match and {@code ρ} for a mismatch (with {@code 0 ≤ ρ < 1}).</li>
  * </ul>
  *
- * <p>The product kernel is represented via a Kronecker feature map:
+ * <p><b>Feature representation via a Kronecker map</b></p>
+ * <p>
+ * The product kernel is implemented using an explicit (finite) feature map. The discrete component is mapped
+ * to a categorical feature vector (one block per joint discrete level), and the continuous component is mapped
+ * via Fourier features. The mixed feature map is the Kronecker product:
+ * </p>
  *
  * <pre>
- *   phi_mix(z_c, z_d) = phi_cat(z_d) ⊗ phi_cont(z_c)
+ *   φ_mix(z_c, z_d) = φ_cat(z_d) ⊗ φ_cont(z_c)
  * </pre>
  *
- * For Auto-MPG's Origin (3 levels), this multiplies the feature dimension by 3 and avoids
- * treating discrete codes as continuous numeric inputs to an RBF kernel.
- */
-public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
+ * <p>
+ * This construction guarantees that the inner product in feature space corresponds to the product kernel above,
+ * and it avoids treating discrete codes as continuous numeric inputs to an RBF kernel. For example, if a single
+ * discrete parent has {@code L} levels, the effective feature dimension is multiplied by {@code L}. (If multiple
+ * discrete parents are present, the categorical feature space corresponds to their joint level combinations.)
+ * </p>
+ *
+ * <p><b>Scoring objective (GP marginal likelihood)</b></p>
+ * <p>
+ * As in FF-ML, the local score for {@code Y | Pa(Y)} is the log Gaussian-process marginal likelihood in the
+ * random-feature approximation. Computation is performed using the standard “Woodbury/dual” reduction to an
+ * {@code m×m} system (where {@code m} is the mixed feature dimension) rather than forming an {@code n×n} kernel
+ * matrix.
+ * </p>
+ *
+ * <p><b>Bandwidths and preprocessing</b></p>
+ * <ul>
+ *   <li>Continuous parent columns are globally z-scored.</li>
+ *   <li>The RBF bandwidth for {@code k_cont} is chosen by a median pairwise (squared) distance heuristic on the
+ *       continuous parents only (typically using a row subsample for speed). If no continuous parents are present,
+ *       the continuous bandwidth defaults to {@code 1.0} and the score reduces to a purely categorical-kernel model.</li>
+ *   <li>Random-feature generation is deterministic per (target, parent set), enabling stable caching and reproducibility.</li>
+ * </ul>
+ *
+ * <p><b>Practical notes</b></p>
+ * <ul>
+ *   <li>This score is intended for mixed data where discrete parents are genuinely categorical (unordered) variables.</li>
+ *   <li>The mixed feature dimension can grow quickly with multiple discrete parents (via joint-level combinations),
+ *       so feature counts and discrete cardinalities materially affect runtime.</li>
+ *   <li>The parameter {@code ρ} controls how strongly different categorical levels are treated as “similar”:
+ *       {@code ρ=0} corresponds to a strict delta kernel; larger {@code ρ} smooths across levels.</li>
+ * </ul>
+ */public final class FfMlMixed implements Score, EffectiveSampleSizeSettable {
 
     public enum FeatureType { RFF, ORF }
 
@@ -99,7 +143,7 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
     private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
 
-    public KffMlMixed(DataSet dataSet) {
+    public FfMlMixed(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
@@ -458,214 +502,6 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
     public double getCatRho() {
         return catRho;
     }
-
-    // -------------------- mixed GP-ML core (RFF/ORF + categorical kernel) --------------------
-
-//    /**
-//     * Mixed parent set version:
-//     * - Continuous parents approximated with RFF/ORF producing phi_cont in R^m.
-//     * - Each discrete parent uses a small exact feature map phi_cat in R^{L} such that
-//     *   phi_cat(c)^T phi_cat(c') = k_cat(c,c').
-//     * - Combined feature map is Kronecker product across discrete parents and continuous features.
-//     *
-//     * For one discrete parent with L=3 and m=256, total feature dimension is 768.
-//     */
-//    private double gpLogMarginalLikelihoodRFFMixed(
-//            double[] yCentered,          // length n
-//            int[] contParents,           // continuous parent indices
-//            int[] discParents,           // discrete parent indices
-//            int[] rows,                  // null or length n, mapping into original rows
-//            int n,
-//            int mFeatures,               // m (continuous features)
-//            double bw2,                  // bandwidth^2 for continuous part
-//            double sigma2,
-//            long seed
-//    ) {
-//        if (n < 5) return Double.NaN;
-//        if (!(sigma2 > 0) || !Double.isFinite(sigma2)) return Double.NaN;
-//
-//        final int dc = contParents.length;
-//
-//        // ---------- continuous RFF/ORF sampler ----------
-//        double[][] W = null;
-//        double[] b = null;
-//
-//        double wStd = 1.0;
-//        if (dc > 0) {
-//            if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
-//            wStd = Math.sqrt(2.0 / bw2);
-//        }
-//        final double contScale = Math.sqrt(2.0 / mFeatures);
-//
-//        SplittableRandom rng = new SplittableRandom(seed);
-//
-//        if (dc > 0) {
-//            if (featureType == FeatureType.RFF) {
-//                W = new double[mFeatures][dc];
-//                b = new double[mFeatures];
-//                for (int j = 0; j < mFeatures; j++) {
-//                    for (int k = 0; k < dc; k++) W[j][k] = wStd * nextGaussian(rng);
-//                    b[j] = 2.0 * Math.PI * rng.nextDouble();
-//                }
-//            } else {
-//                W = sampleOrthogonalW(mFeatures, dc, wStd, rng);
-//                b = new double[mFeatures];
-//                for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
-//            }
-//        } else {
-//            // no continuous inputs => phi_cont is constant cos(b)
-//            b = new double[mFeatures];
-//            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
-//        }
-//
-//        // ---------- categorical feature maps (exact) ----------
-//        // For each discrete parent, compute levels L and a Cholesky-based feature map A (LxL) s.t. A A^T = K_levels.
-//        final CatFeatureMap[] catMaps = new CatFeatureMap[discParents.length];
-//        for (int t = 0; t < discParents.length; t++) {
-//            int var = discParents[t];
-//            int[] vals = extractDiscrete(var, rows, n);
-//            catMaps[t] = buildCatMap(vals, catRho);
-//            if (catMaps[t] == null) return Double.NaN;
-//        }
-//
-//        // total feature dimension: mFeatures * product(L_t)
-//        int catDim = 1;
-//        for (CatFeatureMap fm : catMaps) {
-//            // guard: don’t explode feature space
-//            if (fm.L > 50) return Double.NaN;
-//            long prod = (long) catDim * (long) fm.L;
-//            if (prod > 200_000L) return Double.NaN; // defensive cap
-//            catDim *= fm.L;
-//        }
-//        final int mTotal = mFeatures * catDim;
-//
-//        // Accumulate G = Phi^T Phi (mTotal x mTotal) and v = Phi^T y (mTotal)
-//        DMatrixRMaj G = new DMatrixRMaj(mTotal, mTotal);
-//        double[] v = new double[mTotal];
-//
-//        double yTy = 0.0;
-//
-//        // temp vectors
-//        double[] phiCont = new double[mFeatures];
-//        double[] phiMix = new double[mTotal]; // used as scratch per row
-//
-//        for (int ii = 0; ii < n; ii++) {
-//            int row = (rows == null) ? ii : rows[ii];
-//
-//            // ----- build continuous features -----
-//            if (dc == 0) {
-//                for (int j = 0; j < mFeatures; j++) phiCont[j] = contScale * Math.cos(b[j]);
-//            } else {
-//                for (int j = 0; j < mFeatures; j++) {
-//                    double dot = 0.0;
-//                    double[] wj = W[j];
-//                    for (int k = 0; k < dc; k++) dot += wj[k] * zCols[contParents[k]][row];
-//                    phiCont[j] = contScale * Math.cos(dot + b[j]);
-//                }
-//            }
-//
-//            // ----- build categorical Kronecker expansion -----
-//            // Start with base = phiCont, then expand by each discrete parent’s cat features.
-//            // We fill phiMix as length mTotal.
-//            // Work arrays: we do iterative expansion into phiMix.
-//            // Step 1: initialize with phiCont as current block of length mFeatures.
-//            // Then for each cat parent, expand: newLen = oldLen * L, with elementwise products.
-//            int curLen = mFeatures;
-//            // copy phiCont into the beginning of phiMix as the current vector
-//            System.arraycopy(phiCont, 0, phiMix, 0, mFeatures);
-//
-//            for (CatFeatureMap fm : catMaps) {
-//                double[] catFeat = fm.featureForRow(ii); // length L
-//                int L = fm.L;
-//
-//                int newLen = curLen * L;
-//
-//                // Expand into a scratch region at the end; easiest is to use a temp array.
-//                double[] tmp = new double[newLen];
-//                int pos = 0;
-//                for (int a = 0; a < L; a++) {
-//                    double ca = catFeat[a];
-//                    for (int j = 0; j < curLen; j++) {
-//                        tmp[pos++] = ca * phiMix[j];
-//                    }
-//                }
-//                // copy back
-//                System.arraycopy(tmp, 0, phiMix, 0, newLen);
-//                curLen = newLen;
-//            }
-//
-//            if (curLen != mTotal) return Double.NaN;
-//
-//            double yi = yCentered[ii];
-//            yTy += yi * yi;
-//
-//            // v += phiMix * yi
-//            for (int j = 0; j < mTotal; j++) v[j] += phiMix[j] * yi;
-//
-//            // G += phiMix^T phiMix (rank-1 outer product, symmetric fill lower triangle)
-//            for (int j = 0; j < mTotal; j++) {
-//                double pj = phiMix[j];
-//                for (int k = 0; k <= j; k++) {
-//                    G.add(j, k, pj * phiMix[k]);
-//                }
-//            }
-//        }
-//
-//        // Mirror lower -> upper
-//        for (int j = 0; j < mTotal; j++) {
-//            for (int k = 0; k < j; k++) {
-//                G.set(k, j, G.get(j, k));
-//            }
-//        }
-//
-//        // B = G + sigma2 I
-//        DMatrixRMaj B = G;
-//        for (int j = 0; j < mTotal; j++) B.add(j, j, sigma2);
-//
-//        // Cholesky(B)
-//        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
-//        if (!chol.decompose(B)) return Double.NaN;
-//
-//        DMatrixRMaj L = chol.getT(null);
-//
-//        // logdet(B) = 2 * sum log diag(L)
-//        double logDetB = 0.0;
-//        for (int i = 0; i < mTotal; i++) {
-//            double di = L.get(i, i);
-//            if (!(di > 0) || !Double.isFinite(di)) return Double.NaN;
-//            logDetB += Math.log(di);
-//        }
-//        logDetB *= 2.0;
-//
-//        // Solve B^{-1} v: two triangular solves in-place on u
-//        double[] u = Arrays.copyOf(v, mTotal);
-//
-//        // forward solve: L u = v
-//        for (int i = 0; i < mTotal; i++) {
-//            double sum = u[i];
-//            for (int j = 0; j < i; j++) sum -= L.get(i, j) * u[j];
-//            u[i] = sum / L.get(i, i);
-//        }
-//        // back solve: L^T w = u  (store w back in u)
-//        for (int i = mTotal - 1; i >= 0; i--) {
-//            double sum = u[i];
-//            for (int j = i + 1; j < mTotal; j++) sum -= L.get(j, i) * u[j];
-//            u[i] = sum / L.get(i, i);
-//        }
-//
-//        double vTBInvV = 0.0;
-//        for (int j = 0; j < mTotal; j++) vTBInvV += v[j] * u[j];
-//
-//        double invSig = 1.0 / sigma2;
-//        double quad = invSig * yTy - (invSig * invSig) * vTBInvV;
-//
-//        // log|C| = (n - mTotal) log sigma2 + log|B|
-//        double logDetC = (n - mTotal) * Math.log(sigma2) + logDetB;
-//
-//        if (!Double.isFinite(quad) || !Double.isFinite(logDetC)) return Double.NaN;
-//
-//        return -0.5 * quad - 0.5 * logDetC;
-//    }
 
     /**
      * Drop-in replacement for gpLogMarginalLikelihoodRFFMixed(...).

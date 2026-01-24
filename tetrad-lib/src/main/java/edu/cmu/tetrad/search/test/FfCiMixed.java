@@ -36,21 +36,58 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>KFF-RCIT Mixed: RCIT-KFF with basic mixed continuous/discrete support.</p>
+ * <p><b>FF-CI-Mixed: Feature-Function Conditional Independence Test for mixed data</b></p>
  *
- * <p><b>What changes vs. KffRcit?</b></p>
+ * <p>
+ * This class extends {@code FF-CI} with basic support for mixed
+ * continuous and discrete variables. For purely continuous data, this
+ * implementation is equivalent to {@code FF-CI} and yields identical
+ * results.
+ * </p>
+ *
+ * <p><b>Mixed feature mapping</b></p>
  * <ul>
- *   <li>Continuous variables use KFF-style Random Fourier Features (RFF/ORF) as before.</li>
- *   <li>Discrete variables (e.g., Origin with 3 categories) are mapped using a one-hot (delta-kernel) feature map,
- *       then centered/z-scored like other feature blocks.</li>
- *   <li>Bandwidth selection (median heuristic) is computed using only the continuous columns in the block.
- *       If a block has no continuous columns, bandwidth defaults to 1.0 and only discrete one-hot features are used.</li>
+ *   <li>
+ *     <b>Continuous variables</b> are mapped using randomized feature-function
+ *     expansions (e.g., Random Fourier Features or Orthogonal Random Features),
+ *     exactly as in {@code FF-CI}.
+ *   </li>
+ *   <li>
+ *     <b>Discrete variables</b> are mapped using a one-hot (delta-kernel)
+ *     feature representation, which preserves category identity without
+ *     imposing a smooth geometry.
+ *   </li>
  * </ul>
  *
- * <p>This is intentionally “minimal background knowledge”: we do not encode causal constraints; we encode
- * the <i>variable type</i> into the feature map so discrete variables are not forced into a smooth RBF geometry.</p>
+ * <p>
+ * All feature blocks are centered (and, where appropriate, standardized)
+ * before covariance computation. For blocks containing both continuous and
+ * discrete variables, bandwidth selection via the median pairwise distance
+ * heuristic is computed using only the continuous columns.
+ * </p>
+ *
+ * <p>
+ * If a variable block contains no continuous columns, the bandwidth is
+ * set to a default value of {@code 1.0}, and the test proceeds using only
+ * the discrete one-hot feature representation.
+ * </p>
+ *
+ * <p><b>Design philosophy</b></p>
+ * <p>
+ * This implementation deliberately encodes only minimal background knowledge:
+ * the <i>measurement type</i> of each variable (continuous vs. discrete).
+ * No causal constraints or structural assumptions are imposed. The goal is to
+ * avoid forcing discrete variables into a smooth RBF geometry while retaining
+ * the efficiency and flexibility of feature-function CI testing.
+ * </p>
+ *
+ * <p>
+ * Aside from the feature mapping for discrete variables, the test statistic,
+ * conditioning strategy, and p-value approximations are identical to those of
+ * {@code FF-CI}.
+ * </p>
  */
-public final class KffRcitMixed implements IndependenceTest, RowsSettable {
+public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
     public enum FeatureType {RFF, ORF}
 
@@ -102,16 +139,16 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
     // If the dataset has no discrete variables, we delegate to the original KffRcit
     // so the behavior is identical to PC-KFF-RCIT.
     private final boolean dataHasAnyDiscrete;
-    private final KffRcit continuousDelegate;
+    private final FfCi continuousDelegate;
 
 
     // ---------------- ctor ----------------
 
-    public KffRcitMixed(DataSet dataSet) {
+    public FfCiMixed(DataSet dataSet) {
         this(dataSet, new Parameters());
     }
 
-    public KffRcitMixed(DataSet dataSet, Parameters params) {
+    public FfCiMixed(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         this.n = getActiveRowCount();
@@ -126,7 +163,7 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
         this.dataHasAnyDiscrete = anyDisc;
 
         // Build a delegate that implements the *original* continuous behavior
-        this.continuousDelegate = new KffRcit(this.data, params);
+        this.continuousDelegate = new FfCi(this.data, params);
 
         // Make delegate match current settings right away
         syncDelegateToThis();
@@ -177,8 +214,8 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
         continuousDelegate.setBandwidthMultiplier(this.bandwidthMultiplier);
         continuousDelegate.setBwMaxRows(this.bwMaxRows);
         continuousDelegate.setFeatureType(switch (this.featureType) {
-            case RFF -> KffRcit.FeatureType.RFF;
-            case ORF -> KffRcit.FeatureType.ORF;
+            case RFF -> FfCi.FeatureType.RFF;
+            case ORF -> FfCi.FeatureType.ORF;
         });
 
         continuousDelegate.setAlpha(this.alpha);

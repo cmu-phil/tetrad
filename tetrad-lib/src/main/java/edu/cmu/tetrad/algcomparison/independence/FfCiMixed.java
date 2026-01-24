@@ -35,19 +35,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for RCIT test.
+ * Wrapper for FF-CI-Mixed test.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "KFF-RCIT-Mixed (RCIT with Kernel Fourier Features)",
-        command = "kff-rcit-mixed",
+        name = "FF-CI-Mixed (Fourier Features Conditional Independence Mixed)",
+        command = "ff-ci-mixed",
         dataType = DataType.Mixed
 )
 @General
 @Mixed
-public class KffRcitMixed implements IndependenceWrapper {
+public class FfCiMixed implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -55,7 +55,7 @@ public class KffRcitMixed implements IndependenceWrapper {
     /**
      * `Kci` constructor.
      */
-    public KffRcitMixed() {
+    public FfCiMixed() {
 
     }
 
@@ -66,7 +66,7 @@ public class KffRcitMixed implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.KffRcitMixed test = new edu.cmu.tetrad.search.test.KffRcitMixed((DataSet) dataSet);
+        edu.cmu.tetrad.search.test.FfCiMixed test = new edu.cmu.tetrad.search.test.FfCiMixed((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
@@ -77,8 +77,8 @@ public class KffRcitMixed implements IndependenceWrapper {
         test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
         test.setApproximationFromInt(parameters.getInt(Params.RCIT_APPROX));
         test.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
-        edu.cmu.tetrad.search.test.KffRcitMixed.FeatureType[] values
-                = edu.cmu.tetrad.search.test.KffRcitMixed.FeatureType.values();
+        edu.cmu.tetrad.search.test.FfCiMixed.FeatureType[] values
+                = edu.cmu.tetrad.search.test.FfCiMixed.FeatureType.values();
         test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
         test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -92,7 +92,7 @@ public class KffRcitMixed implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "KFF-RCIT-Mixed";
+        return "FF-CI-Mixed";
     }
 
     /**

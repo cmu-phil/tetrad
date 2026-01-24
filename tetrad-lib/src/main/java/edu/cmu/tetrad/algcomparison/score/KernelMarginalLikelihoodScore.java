@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.KffMl;
+import edu.cmu.tetrad.search.score.FfMl;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -85,8 +85,8 @@ public class KernelMarginalLikelihoodScore implements ScoreWrapper {
         score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         score.setJitter(parameters.getDouble(Params.KML_JITTER));
 
-        KffMl.FeatureType[] values
-                = KffMl.FeatureType.values();
+        FfMl.FeatureType[] values
+                = FfMl.FeatureType.values();
 
 
         return score;

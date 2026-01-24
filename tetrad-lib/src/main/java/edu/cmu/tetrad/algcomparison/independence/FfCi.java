@@ -34,18 +34,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for RCIT test.
+ * Wrapper for FF-CI test.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "KFF-RCIT (RCIT with Kernel Fourier Features)",
-        command = "kff-rcit",
+        name = "FF-CI (Fourier Features Conditional Independence)",
+        command = "ff-ci",
         dataType = DataType.Continuous
 )
 @General
-public class KffRcit implements IndependenceWrapper {
+public class FfCi implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -53,7 +53,7 @@ public class KffRcit implements IndependenceWrapper {
     /**
      * `Kci` constructor.
      */
-    public KffRcit() {
+    public FfCi() {
 
     }
 
@@ -64,7 +64,7 @@ public class KffRcit implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.KffRcit test = new edu.cmu.tetrad.search.test.KffRcit((DataSet) dataSet);
+        edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
@@ -74,8 +74,8 @@ public class KffRcit implements IndependenceWrapper {
         test.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
         test.setApproximationFromInt(parameters.getInt(Params.RCIT_APPROX));
-        edu.cmu.tetrad.search.test.KffRcit.FeatureType[] values
-                = edu.cmu.tetrad.search.test.KffRcit.FeatureType.values();
+        edu.cmu.tetrad.search.test.FfCi.FeatureType[] values
+                = edu.cmu.tetrad.search.test.FfCi.FeatureType.values();
         test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
         test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -89,7 +89,7 @@ public class KffRcit implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "KFF-RCIT";
+        return "FF-CI";
     }
 
     /**

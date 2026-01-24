@@ -22,7 +22,6 @@ package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.General;
-import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -36,20 +35,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for KFF MIxed Marginal Likelihood Score.
+ * Wrapper for FF Marginal Likelihood Score.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "KFF-ML-Mixed Score",
-        command = "kff-ml-mixed-score",
-        dataType = {DataType.Mixed}
+        name = "FF-ML Score",
+        command = "ff-ml-score",
+        dataType = {DataType.Continuous}
 )
 @General
-@Mixed
 @Experimental
-public class KffMlMixed implements ScoreWrapper {
+public class FfMl implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -62,7 +60,7 @@ public class KffMlMixed implements ScoreWrapper {
     /**
      * Constructs a new instance of the SemBicScore.
      */
-    public KffMlMixed() {
+    public FfMl() {
     }
 
     /**
@@ -72,10 +70,10 @@ public class KffMlMixed implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.KffMlMixed score;
+        edu.cmu.tetrad.search.score.FfMl score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.KffMlMixed((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.FfMl((DataSet) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
@@ -84,11 +82,11 @@ public class KffMlMixed implements ScoreWrapper {
         score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         score.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+
         score.setNumFeatures(parameters.getInt(Params.KML_NUM_FEATURES));
-        edu.cmu.tetrad.search.score.KffMlMixed.FeatureType[] values
-                = edu.cmu.tetrad.search.score.KffMlMixed.FeatureType.values();
+        edu.cmu.tetrad.search.score.FfMl.FeatureType[] values
+                = edu.cmu.tetrad.search.score.FfMl.FeatureType.values();
         score.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
-        score.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
 
         return score;
     }
@@ -100,7 +98,7 @@ public class KffMlMixed implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "KFF-ML-Mixed Score";
+        return "FF-ML Score";
     }
 
     /**
@@ -110,7 +108,7 @@ public class KffMlMixed implements ScoreWrapper {
      */
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        return DataType.Continuous;
     }
 
     /**
@@ -126,7 +124,6 @@ public class KffMlMixed implements ScoreWrapper {
         parameters.add(Params.KML_BW_MAX_ROWS);
         parameters.add(Params.KML_NUM_FEATURES);
         parameters.add(Params.KML_FEATURE_TYPE);
-        parameters.add(Params.KML_CAT_RHO);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         return parameters;
     }
