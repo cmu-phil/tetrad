@@ -411,7 +411,7 @@ public class VertexCheckEditor extends JPanel {
         conditioningCombo.addItem("MarkovBlanket(X)");
         conditioningCombo.addItem("Parents(X)");
         conditioningCombo.addItem("Parents(X) and Neighbors(X)");
-        conditioningCombo.addItem("Recursive M-Sep (Union)");
+//        conditioningCombo.addItem("Recursive M-Sep (Union)");
         conditioningCombo.setPreferredSize(new Dimension(220, 24));
         controls.add(conditioningCombo);
 
@@ -809,7 +809,7 @@ public class VertexCheckEditor extends JPanel {
         return switch (s) {
             case "Parents(X)" -> ConditioningSetType.LOCAL_MARKOV;
             case "Parents(X) and Neighbors(X)" -> ConditioningSetType.PARENTS_AND_NEIGHBORS;
-            case "Recursive M-Sep (Union)" -> ConditioningSetType.RECURSIVE_MSEP;
+//            case "Recursive M-Sep (Union)" -> ConditioningSetType.RECURSIVE_MSEP;
             case "MarkovBlanket(X)" -> ConditioningSetType.MARKOV_BLANKET;
             default -> ConditioningSetType.MARKOV_BLANKET;
         };

@@ -303,7 +303,7 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         final double[] ry = RY.getDDRM().data;
 
         // --- 1) Estimate null mean and variance via a small number of permutations
-        final int Bmom = 200;               // 128â512 is a good range
+        final int Bmom = 500;               // 128â512 is a good range
         final Random rng = new Random(7);   // fixed seed for stability in tests
 
         double mean = 0.0, m2 = 0.0;

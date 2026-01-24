@@ -702,7 +702,7 @@ public final class KffMlMixed implements Score, EffectiveSampleSizeSettable {
 
         // Heuristic: Kronecker feature dimension is m * Π L. This explodes quickly.
         // For >= 2 discrete parents, always use the n×n kernel path.
-        if (discParents.length >= 1) {
+        if (discParents.length >= 2) {
             return gpLogML_mixedKernelNxN(
                     yCentered, contParents, discParents, rows, n,
                     mFeatures, bw2, sigma2, seed
