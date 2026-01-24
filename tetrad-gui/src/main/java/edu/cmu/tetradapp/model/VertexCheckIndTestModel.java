@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -22,12 +22,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.IndependenceFact;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -61,24 +56,16 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     private final DataModel dataModel;
     private final Graph graph;
     private final Parameters parameters;
-
-    private String name = "";
-
-    private transient IndependenceTest independenceTest;
-
-    private ConditioningSetType conditioningSetType = ConditioningSetType.MARKOV_BLANKET;
-
-    private Knowledge knowledge;
-
-    private List<String> vertexNames = new ArrayList<>();
-
-    private boolean verbose = false;
-
     // Results
     private final Map<String, VertexSummary> summariesByVertex = new LinkedHashMap<>();
     private final Map<String, List<IndependenceResult>> resultsByVertex = new LinkedHashMap<>();
     private final Map<String, List<String>> conditioningSetByVertex = new LinkedHashMap<>();
-
+    private String name = "";
+    private transient IndependenceTest independenceTest;
+    private ConditioningSetType conditioningSetType = ConditioningSetType.MARKOV_BLANKET;
+    private Knowledge knowledge;
+    private List<String> vertexNames = new ArrayList<>();
+    private boolean verbose = false;
     // For RECURSIVE_MSEP-like options (optional; default -1 means no limit)
     private int maxLength = -1;
 
@@ -99,6 +86,18 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     public static Knowledge serializableInstance() {
         return new Knowledge();
+    }
+
+    private static double median(List<Double> xs) {
+        if (xs == null || xs.isEmpty()) return Double.NaN;
+        List<Double> copy = new ArrayList<>(xs);
+        copy.sort(Double::compare);
+        int n = copy.size();
+        if (n % 2 == 1) {
+            return copy.get(n / 2);
+        } else {
+            return 0.5 * (copy.get(n / 2 - 1) + copy.get(n / 2));
+        }
     }
 
     @Override
@@ -147,12 +146,12 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         this.knowledge = (knowledge == null) ? null : knowledge.copy();
     }
 
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
     public boolean isVerbose() {
         return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     @Override
@@ -160,12 +159,12 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return name;
     }
 
+    // --- Core API used by the editor ------------------------------------------------------------
+
     @Override
     public void setName(String name) {
         this.name = name;
     }
-
-    // --- Core API used by the editor ------------------------------------------------------------
 
     /**
      * Clears all cached results.
@@ -232,11 +231,11 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return resultsByVertex.getOrDefault(vertexName, List.of());
     }
 
+    // --- Implementation -------------------------------------------------------------------------
+
     public List<String> getConditioningSetForVertex(String vertexName) {
         return conditioningSetByVertex.getOrDefault(vertexName, List.of());
     }
-
-    // --- Implementation -------------------------------------------------------------------------
 
     private void runVertex(Graph alignedGraph, Node x) {
         Set<Node> cs = computeConditioningSet(alignedGraph, x);
@@ -300,18 +299,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return new VertexSummary(vertexName, csSize, results.size(), n, ksP, fracReject, numReject, minP, medianP);
     }
 
-    private static double median(List<Double> xs) {
-        if (xs == null || xs.isEmpty()) return Double.NaN;
-        List<Double> copy = new ArrayList<>(xs);
-        copy.sort(Double::compare);
-        int n = copy.size();
-        if (n % 2 == 1) {
-            return copy.get(n / 2);
-        } else {
-            return 0.5 * (copy.get(n / 2 - 1) + copy.get(n / 2));
-        }
-    }
-
     private Set<Node> computeConditioningSet(Graph alignedGraph, Node x) {
         switch (conditioningSetType) {
             case LOCAL_MARKOV: {
@@ -338,6 +325,9 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
                 // So we interpret this as: CS(X) = union over Y of RecursiveBlocking(...) up to maxLength.
                 // This is optional; you can remove this if you don’t want the semantics.
                 return recursiveMsepUnion(alignedGraph, x);
+
+            case ORDERED_LOCAL_MARKOV_MAG:
+
 
             default:
                 // For now, keep the Vertex Checker tight and predictable.

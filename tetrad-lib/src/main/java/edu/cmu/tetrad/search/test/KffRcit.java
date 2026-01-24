@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
@@ -122,78 +122,40 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class KffRcit implements IndependenceTest, RowsSettable {
 
-    /**
-     * An enumeration representing the types of feature generation methods
-     * used in machine learning for kernel approximation tasks.
-     */
-    public enum FeatureType {
-
-        /**
-         * Represents the Random Fourier Features (RFF) method used for kernel
-         * approximation in machine learning tasks. This method is commonly employed
-         * to approximate shift-invariant kernels, such as the Gaussian kernel, by
-         * mapping input features into a lower-dimensional randomized feature space.
-         */
-        RFF,
-
-        /**
-         * Represents the Orthogonal Random Features (ORF) method used for kernel
-         * approximation in machine learning tasks. This method builds on Random Fourier
-         * Features (RFF) by enforcing orthogonality in the randomized feature space,
-         * potentially leading to improved approximation quality and numerical stability
-         * compared to standard RFF.
-         */
-        ORF
-    }
-
     // ---------------- core data ----------------
     private final DataSet data;
     private final List<Node> vars;
     private final Random rng;
-
+    // --------- caches ----------
+    private final Map<String, SimpleMatrix> featCache = new ConcurrentHashMap<>();
+    private final Map<String, Double> bw2Cache = new ConcurrentHashMap<>();
     // Active rows state
     private List<Integer> rows = null;
     private int n;
-
     // ---------------- hyperparams ----------------
     private int numFeatXY = 10;       // features for X and Y (default aligns with causal-learn-ish defaults)
     private int numFeatZ = 100;     // features for Z
-
     private Approx approx = Approx.LPB4;
     private int permutations = 0;    // only if approx == PERMUTATION
     private boolean doRcit = true;   // true => RCIT (augment Y with Z), false => RCoT
-
     /**
-     * Ridge strength for feature-space residualization.
-     * Internally used as alpha = lambda * (n-1) unless you change the mapping.
+     * Ridge strength for feature-space residualization, default to 1.
      */
-    private double lambda = 1e-10;
-
+    private double lambda = 1;
     /**
      * If true: z-score the features columnwise (ddof=1) after Fourier mapping.
      * If false: only subtract feature column means.
      */
     private boolean centerFeatures = true;
-
     /** Bandwidth multiplier applied to bw2 (squared dist median). */
     private double bandwidthMultiplier = 1.0;
-
     /** Maximum rows used to compute median squared distance for bandwidth (deterministic subsample). */
     private int bwMaxRows = 500;
-
     /** Feature type. */
     private FeatureType featureType = FeatureType.RFF;
-
     // ---------------- IndependenceTest state ----------------
     private double alpha = 0.05;
     private boolean verbose = false;
-
-    // --------- caches ----------
-    private final Map<String, SimpleMatrix> featCache = new ConcurrentHashMap<>();
-    private final Map<String, Double> bw2Cache = new ConcurrentHashMap<>();
-
-    // ---------------- ctor ----------------
-
     /**
      * Constructs a new instance of the KffRcit class using the specified DataSet and default parameters.
      *
@@ -203,6 +165,8 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
     public KffRcit(DataSet dataSet) {
         this(dataSet, new Parameters());
     }
+
+    // ---------------- ctor ----------------
 
     /**
      * Constructs a new instance of the KffRcit class using the specified DataSet and Parameters.
@@ -248,551 +212,6 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
         if (ft.equals("orf")) this.featureType = FeatureType.ORF;
     }
 
-    // ---------------- public setters ----------------
-
-    /**
-     * Sets the approximation method used for statistical calculations based on an integer code.
-     * This method maps the provided integer code to a specific {@code Approx} enumeration value.
-     * If the code does not match any defined approximation type, the default value {@code Approx.GAMMA} is used.
-     *
-     * @param approxCode An integer code representing the desired approximation method:
-     *                   1 -> {@code Approx.LPB4},
-     *                   2 -> {@code Approx.HBE},
-     *                   3 -> {@code Approx.GAMMA},
-     *                   4 -> {@code Approx.CHI2},
-     *                   5 -> {@code Approx.PERMUTATION}.
-     *                   Any other value defaults to {@code Approx.GAMMA}.
-     */
-    public void setApproximationFromInt(int approxCode) {
-        switch (approxCode) {
-            case 1 -> this.approx = Approx.LPB4;
-            case 2 -> this.approx = Approx.HBE;
-            case 3 -> this.approx = Approx.GAMMA;
-            case 4 -> this.approx = Approx.CHI2;
-            case 5 -> this.approx = Approx.PERMUTATION;
-            default -> this.approx = Approx.GAMMA;
-        }
-    }
-
-    /**
-     * Sets whether to perform Randomized Conditional Independence Testing (RCIT).
-     *
-     * @param doRcit A boolean value indicating whether RCIT should be enabled.
-     *               If true, RCIT is performed; otherwise, RCoT is used.
-     */
-    public void setDoRcit(boolean doRcit) {
-        this.doRcit = doRcit;
-    }
-
-    /**
-     * Sets the value of the lambda parameter for the KffRcit instance.
-     * The lambda parameter is a regularization term used to ensure numerical
-     * stability. If the provided value of lambda is less than 1e-12, it will
-     * be clamped to 1e-12. Default is 1.
-     *
-     * @param lambda The value to set for the lambda parameter. Must be a positive
-     *               double value to ensure proper regularization. Values lower
-     *               than 1e-12 will be automatically adjusted to 1e-12.
-     */
-    public void setLambda(double lambda) {
-        this.lambda = Math.max(1e-12, lambda);
-    }
-
-    /**
-     * Sets the number of permutations to be used in statistical testing or feature generation.
-     * The value is clamped to ensure it is non-negative.
-     *
-     * @param permutations The desired number of permutations.
-     *                      If the input value is negative, it will automatically be set to 0.
-     */
-    public void setPermutations(int permutations) {
-        this.permutations = Math.max(0, permutations);
-    }
-
-    /**
-     * Enables or disables the centering of features for the KffRcit instance.
-     * Centering is typically used to preprocess feature data by subtracting the
-     * mean value from each feature dimension, ensuring zero mean for the features.
-     * Default is true.
-     *
-     * @param centerFeatures A boolean value indicating whether feature centering
-     *                       should be applied. If true, features will be centered;
-     *                       if false, centering will be skipped.
-     */
-    public void setCenterFeatures(boolean centerFeatures) {
-        this.centerFeatures = centerFeatures;
-    }
-
-    /**
-     * Sets the number of features to be used for the X and Y variables.
-     * The value of the number of features is clamped to ensure it is at least 1.
-     * This parameter determines the dimensionality of random features generated
-     * for testing or feature representation tasks within the KffRcit framework.
-     * Default is 10.
-     *
-     * @param d The desired number of features for the X and Y variables.
-     *          If the input value is less than 1, it will be automatically
-     *          adjusted to 1 to ensure validity.
-     */
-    public void setNumFeaturesXY(int d) {
-        this.numFeatXY = Math.max(1, d);
-    }
-
-    /**
-     * Sets the number of features for the Z dimension. Ensures that the value
-     * is at least 1 by applying a minimum bound of 1.
-     * Default is 100.
-     *
-     * @param d the desired number of features for the Z dimension
-     */
-    public void setNumFeaturesZ(int d) {
-        this.numFeatZ = Math.max(1, d);
-    }
-
-    /**
-     * Sets the bandwidth multiplier for the current instance. This value must be greater than 0 and finite.
-     * The method also clears the cached data related to bandwidth and feature computations to ensure consistency.
-     * Default is 1.0.
-     *
-     * @param bandwidthMultiplier the multiplier to adjust the bandwidth, must be a positive and finite value
-     * @throws IllegalArgumentException if the provided bandwidthMultiplier is not greater than 0 or is not finite
-     */
-    public void setBandwidthMultiplier(double bandwidthMultiplier) {
-        if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
-            throw new IllegalArgumentException("bandwidthMultiplier must be > 0 and finite");
-        }
-        this.bandwidthMultiplier = bandwidthMultiplier;
-        // invalidate bw2 cache (conservative)
-        this.bw2Cache.clear();
-        this.featCache.clear();
-    }
-
-    /**
-     * Sets the maximum number of rows for the bw (bandwidth) configuration. The provided
-     * value will be clamped to a minimum of 50. This method also clears the associated
-     * caches to ensure consistency with the updated maximum rows setting.
-     * Default is 500.
-     *
-     * @param bwMaxRows The desired maximum number of rows. Values less than 50 will be
-     *                  automatically adjusted to 50.
-     */
-    public void setBwMaxRows(int bwMaxRows) {
-        this.bwMaxRows = Math.max(50, bwMaxRows);
-        this.bw2Cache.clear();
-        this.featCache.clear();
-    }
-
-    /**
-     * Sets the feature type for this instance and clears the feature cache.
-     * Default is RFF.
-     *
-     * @param featureType the feature type to be set; must not be null
-     * @throws NullPointerException if the provided featureType is null
-     */
-    public void setFeatureType(FeatureType featureType) {
-        this.featureType = Objects.requireNonNull(featureType, "featureType");
-        this.featCache.clear();
-    }
-
-    /**
-     * Retrieves the feature type associated with this instance.
-     *
-     * @return the feature type of the current instance
-     */
-    public FeatureType getFeatureType() {
-        return featureType;
-    }
-
-    /**
-     * Sets the seed for the random number generator and clears the feature cache.
-     *
-     * @param seed the seed value to initialize the random number generator
-     */
-    public void setSeed(long seed) {
-        this.rng.setSeed(seed);
-        this.featCache.clear();
-    }
-
-    // ---------------- IndependenceTest interface ----------------
-
-    /**
-     * Determines whether two nodes, {@code x} and {@code y}, are independent
-     * given a set of conditioning nodes {@code z}, using statistical tests
-     * and feature space projections. The method can operate under different
-     * approximation schemes, handles permutations if specified, and uses
-     * feature-based approaches for dimensionality reduction and residualization.
-     *
-     * @param x The first node whose independence with respect to {@code y} is being tested.
-     *          Must not be null.
-     * @param y The second node whose independence with respect to {@code x} is being tested.
-     *          Must not be null.
-     * @param z The set of nodes (conditioning set) to be conditioned on during the independence test.
-     *          Can be empty or null if no conditioning is needed.
-     * @return An {@code IndependenceResult} object containing the details of the independence test, including
-     *         whether the nodes are deemed independent, the computed p-value, and statistical measures.
-     * @throws InterruptedException If the thread executing the method is interrupted during computation.
-     */
-    @Override
-    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-
-        Objects.requireNonNull(x, "x");
-        Objects.requireNonNull(y, "y");
-
-        this.n = getActiveRowCount();
-
-        final List<Node> Z = (z == null) ? new ArrayList<>() : new ArrayList<>(z);
-        Z.sort(Comparator.comparing(Node::getName));
-
-        IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(Z));
-
-        if (x.equals(y)) {
-            if (verbose) TetradLogger.getInstance().log(fact + " x == y");
-            double p_ = 0.0;
-            return new IndependenceResult(fact, false, p_, alpha - p_, false);
-        }
-        if (n < 5) {
-            if (verbose) TetradLogger.getInstance().log(fact + " n < 5");
-            double p_ = 1.0;
-            return new IndependenceResult(fact, true, p_, alpha - p_, false);
-        }
-
-        // --- raw data matrices as double[][] (active rows only), then z-score columns ---
-        double[][] Xraw = rawMatrix(Collections.singletonList(x));
-        double[][] Yraw = rawMatrix(Collections.singletonList(y));
-        double[][] Zraw = Z.isEmpty() ? new double[n][0] : rawMatrix(Z);
-
-        zscoreInPlace(Xraw);
-        zscoreInPlace(Yraw);
-        if (!Z.isEmpty()) zscoreInPlace(Zraw);
-
-        // RCIT: augment Y with Z in the *input space* before features
-        double[][] YaugRaw = (doRcit && !Z.isEmpty()) ? hstackRaw(Yraw, Zraw) : Yraw;
-
-        // Deterministic seeds (cache-friendly)
-//        long seedX = seedForX(x) ^ 1729L;
-//        long seedY = seedForY(y, Z, doRcit) ^ 1729L;
-//        long seedZ = seedForZ(Z) ^ 1729L;
-
-        long seedX = seedForX(x) ^ 1729L;
-
-        List<Node> yKeyVars = (doRcit && !Z.isEmpty()) ? hstackVarList(y, Z) : Collections.singletonList(y);
-
-        long seedY = seedForBlock("Y", yKeyVars) ^ 1729L;
-        long seedZ = seedForBlock("Z", Z) ^ 1729L;
-
-        // Features
-        SimpleMatrix fX = kffFeatCached("X", Collections.singletonList(x), Xraw, numFeatXY, seedX);
-//        List<Node> yKeyVars = (doRcit && !Z.isEmpty()) ? hstackVarList(y, Z) : Collections.singletonList(y);
-        SimpleMatrix fY = kffFeatCached("Y", yKeyVars, YaugRaw, numFeatXY, seedY);
-
-        SimpleMatrix fZ = Z.isEmpty() ? null : kffFeatCached("Z", Z, Zraw, numFeatZ, seedZ);
-
-        final double stat;
-        double p;
-
-        if (fZ == null || fZ.getNumCols() == 0) {
-            // ---------------- RIT (no conditioning) ----------------
-            SimpleMatrix Cxy = cov(fX, fY);
-            stat = n * frob2(Cxy);
-
-            SimpleMatrix resX = fX.copy();
-            SimpleMatrix resY = fY.copy();
-            subtractColumnMeansInPlace(resX);
-            subtractColumnMeansInPlace(resY);
-
-            SimpleMatrix Cov = kronResCov(resX, resY);
-            double[] eig = positiveEigs(Cov);
-
-            switch (approx) {
-                case PERMUTATION -> {
-                    if (permutations > 0) {
-                        int greater = 0;
-                        for (int b = 0; b < permutations; b++) {
-                            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-                            int[] perm = randomPermutation(n, rng);
-                            SimpleMatrix C = covWithPermutedB(fX, fY, perm);
-                            double s = n * frob2(C);
-                            if (s >= stat) greater++;
-                        }
-                        p = (greater + 1.0) / (permutations + 1.0);
-                    } else {
-                        p = gammaApproxP(stat, eig);
-                    }
-                }
-                case HBE -> p = edgeworthP(stat, eig, false);
-                case LPB4 -> p = edgeworthP(stat, eig, true);
-                case CHI2 -> p = chi2ApproxP(n, vec(Cxy), Cov);
-                case GAMMA -> p = gammaApproxP(stat, eig);
-                default -> p = gammaApproxP(stat, eig);
-            }
-        } else {
-            // ---------------- Conditional: KFF-ML style ridge residualization in feature space ----------------
-
-            // alphaRidge controls how hard we project out Z-features.
-            // Mapping: alphaRidge = lambda*(n-1) is a sane default given cov normalization / ridge semantics.
-            final double alphaRidge = Math.max(1e-18, lambda);// * ((n - 1) / (double) n));
-
-//            SimpleMatrix ZtZ = fZ.transpose().mult(fZ);
-//            double tr = ZtZ.trace();
-//            double alphaRidge = Math.max(1e-8, lambda) * (tr / ZtZ.getNumRows());
-
-            // Residualize
-            SimpleMatrix rX = ridgeResidual(fX, fZ, alphaRidge);
-            SimpleMatrix rY = ridgeResidual(fY, fZ, alphaRidge);
-
-            SimpleMatrix Cxy = cov(rX, rY);
-            stat = n * frob2(Cxy);
-
-            if (approx == Approx.PERMUTATION && permutations > 0) {
-                int greater = 0;
-                for (int b = 0; b < permutations; b++) {
-                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-                    int[] perm = randomPermutation(n, rng);
-
-                    // Permute rY rows (keep rX fixed)
-                    SimpleMatrix rYp = permuteRows(rY, perm);
-                    SimpleMatrix C = cov(rX, rYp);
-
-                    double s = n * frob2(C);
-                    if (s >= stat) greater++;
-                }
-                p = (greater + 1.0) / (permutations + 1.0);
-            } else {
-                // Null approx based on residual products
-                SimpleMatrix resX = rX.copy();
-                SimpleMatrix resY = rY.copy();
-                subtractColumnMeansInPlace(resX);
-                subtractColumnMeansInPlace(resY);
-
-                SimpleMatrix Cov = kronResCov(resX, resY);
-                double[] eig = positiveEigs(Cov);
-
-                switch (approx) {
-                    case HBE -> p = edgeworthP(stat, eig, false);
-                    case LPB4 -> p = edgeworthP(stat, eig, true);
-                    case CHI2 -> p = chi2ApproxP(n, vec(Cxy), Cov);
-                    case GAMMA -> p = gammaApproxP(stat, eig);
-                    default -> p = gammaApproxP(stat, eig);
-                }
-            }
-        }
-
-        double p_ = clamp01(p);
-        boolean indep = (p_ > alpha);
-
-        if (verbose) {
-            TetradLogger.getInstance().log(fact + " p = " + p_ + " stat=" + stat
-                    + " approx=" + approx + " Fx=" + numFeatXY + " Fz=" + numFeatZ
-                    + " ft=" + featureType + " bwMult=" + bandwidthMultiplier + " lam=" + lambda);
-        }
-
-        return new IndependenceResult(fact, indep, p_, alpha - p_);
-    }
-
-    private long seedForBlock(String tag, List<Node> block) {
-        long h = 1469598103934665603L;
-        h = 1099511628211L * (h ^ tag.hashCode());
-
-        ArrayList<String> names = new ArrayList<>(block.size());
-        for (Node v : block) names.add(v.getName());
-        names.sort(String::compareTo);
-        for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
-
-        h = 1099511628211L * (h ^ getActiveRowCount());
-        h = 1099511628211L * (h ^ activeRowsHash());
-        return h;
-    }
-
-    /**
-     * Retrieves the list of variable nodes.
-     *
-     * @return a list of Node objects representing the variables
-     */
-    @Override
-    public List<Node> getVariables() {
-        return vars;
-    }
-
-    /**
-     * Retrieves the alpha value.
-     *
-     * @return the alpha value as a double
-     */
-    @Override
-    public double getAlpha() {
-        return alpha;
-    }
-
-    /**
-     * Sets the value of alpha for the current instance.
-     * The alpha value must be a double within the range (0, 1), exclusive.
-     * An IllegalArgumentException will be thrown if the specified value
-     * is not within the valid range.
-     *
-     * @param alpha the new alpha value, must be greater than 0 and less than 1
-     * @throws IllegalArgumentException if alpha is not in the range (0, 1)
-     */
-    @Override
-    public void setAlpha(double alpha) {
-        if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("alpha in (0,1)");
-        this.alpha = alpha;
-    }
-
-    /**
-     * Retrieves the data encapsulated in this object.
-     *
-     * @return the DataSet instance contained within this object
-     */
-    @Override
-    public DataSet getData() {
-        return data;
-    }
-
-    /**
-     * Determines whether verbose mode is enabled.
-     *
-     * @return true if verbose mode is enabled, false otherwise.
-     */
-    @Override
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    /**
-     * Sets the verbosity mode for the system.
-     *
-     * @param verbose a boolean indicating whether verbose mode should be enabled (true) or disabled (false)
-     */
-    @Override
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    // ---------------- RowsSettable ----------------
-
-    @Override
-    public List<Integer> getRows() {
-        return rows;
-    }
-
-    @Override
-    public void setRows(List<Integer> rows) {
-        if (rows == null) {
-            this.rows = null;
-            this.n = data.getNumRows();
-            featCache.clear();
-            bw2Cache.clear();
-            return;
-        }
-
-        for (int i = 0; i < rows.size(); i++) {
-            Integer r = rows.get(i);
-            if (r == null) throw new NullPointerException("Row " + i + " is null.");
-            if (r < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
-            if (r >= data.getNumRows()) throw new IllegalArgumentException("Row " + i + " out of bounds: " + r);
-        }
-
-        this.rows = new ArrayList<>(rows);
-        this.n = this.rows.size();
-        featCache.clear();
-        bw2Cache.clear();
-    }
-
-    private int getActiveRowCount() {
-        return (rows == null) ? data.getNumRows() : rows.size();
-    }
-
-    private int activeRowIndex(int i) {
-        return (rows == null) ? i : rows.get(i);
-    }
-
-    // ---------------- Feature construction (KFF-ML style) ----------------
-
-    private SimpleMatrix kffFeatCached(String tag, List<Node> varsForKey, double[][] Z, int mFeatures, long seed)
-            throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-
-        String key = keyFeat(tag, varsForKey, mFeatures, seed);
-
-        return featCache.computeIfAbsent(key, k -> {
-            // Compute bw2 (cached separately but keyed compatibly)
-            double bw2 = bw2For(tag, varsForKey, Z);
-
-            double[][] Phi = rffFeatures(Z, mFeatures, bw2, seed);
-            SimpleMatrix M = new SimpleMatrix(Phi);
-
-            if (centerFeatures) zscoreInPlace(M);
-            else subtractColumnMeansInPlace(M);
-
-            return M;
-        });
-    }
-
-    private double bw2For(String tag, List<Node> varsForKey, double[][] Z) {
-        String key = keyBw2(tag, varsForKey);
-
-        return bw2Cache.computeIfAbsent(key, k -> {
-            int n = Z.length;
-            if (n <= 2 || Z[0].length == 0) return 1.0;
-
-            int maxRows = Math.min(n, bwMaxRows);
-            double bw2 = medianDistanceSquaredND(Z, maxRows);
-            if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
-
-            double mult2 = bandwidthMultiplier * bandwidthMultiplier;
-            bw2 *= mult2;
-
-            // Keep it from being insanely tiny
-            if (bw2 < 1e-12) bw2 = 1e-12;
-
-            return bw2;
-        });
-    }
-
-    private String keyFeat(String tag, List<Node> vs, int mFeatures, long seed) {
-        ArrayList<String> names = new ArrayList<>(vs.size());
-        for (Node v : vs) names.add(v.getName());
-        names.sort(String::compareTo);
-
-        StringBuilder sb = new StringBuilder(160);
-        sb.append(tag)
-                .append("|n=").append(getActiveRowCount())
-                .append("|rows=").append(activeRowsHash())
-                .append("|m=").append(mFeatures)
-                .append("|ft=").append(featureType.name())
-                .append("|ctr=").append(centerFeatures ? 1 : 0)
-                .append("|bwMult=").append(Double.doubleToLongBits(bandwidthMultiplier))
-                .append("|bwMax=").append(bwMaxRows)
-                .append("|seed=").append(seed)
-                .append("|vars=");
-        for (String s : names) sb.append(s).append(",");
-        return sb.toString();
-    }
-
-    private String keyBw2(String tag, List<Node> vs) {
-        ArrayList<String> names = new ArrayList<>(vs.size());
-        for (Node v : vs) names.add(v.getName());
-        names.sort(String::compareTo);
-
-        StringBuilder sb = new StringBuilder(140);
-        sb.append(tag)
-                .append("|n=").append(getActiveRowCount())
-                .append("|rows=").append(activeRowsHash())
-                .append("|bwMult=").append(Double.doubleToLongBits(bandwidthMultiplier))
-                .append("|bwMax=").append(bwMaxRows)
-                .append("|vars=");
-        for (String s : names) sb.append(s).append(",");
-        return sb.toString();
-    }
-
-    private int activeRowsHash() {
-        if (rows == null) return 0;
-        int h = 1;
-        for (int r : rows) h = 31 * h + r;
-        return h;
-    }
-
     private static List<Node> hstackVarList(Node y, List<Node> Z) {
         ArrayList<Node> out = new ArrayList<>(1 + Z.size());
         out.add(y);
@@ -800,64 +219,7 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
         return out;
     }
 
-    // ---------------- Seeds (stable, order-invariant over Z) ----------------
-
-    private long seedForX(Node x) {
-        long h = 1469598103934665603L;
-        h = 1099511628211L * (h ^ x.getName().hashCode());
-        h = 1099511628211L * (h ^ getActiveRowCount());
-        h = 1099511628211L * (h ^ activeRowsHash());
-        return h;
-    }
-
-    private long seedForY(Node y, List<Node> Z, boolean doRcit) {
-        long h = 1469598103934665603L;
-        h = 1099511628211L * (h ^ y.getName().hashCode());
-
-        if (doRcit) {
-            ArrayList<String> names = new ArrayList<>(Z.size());
-            for (Node z : Z) names.add(z.getName());
-            names.sort(String::compareTo);
-            for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
-        }
-
-        h = 1099511628211L * (h ^ getActiveRowCount());
-        h = 1099511628211L * (h ^ activeRowsHash());
-        return h;
-    }
-
-    private long seedForZ(List<Node> Z) {
-        long h = 1469598103934665603L;
-        ArrayList<String> names = new ArrayList<>(Z.size());
-        for (Node z : Z) names.add(z.getName());
-        names.sort(String::compareTo);
-        for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
-        h = 1099511628211L * (h ^ getActiveRowCount());
-        h = 1099511628211L * (h ^ activeRowsHash());
-        return h;
-    }
-
-    // ---------------- Raw extraction + standardization ----------------
-
-    private double[][] rawMatrix(List<Node> vv) {
-        int n = getActiveRowCount();
-        int d = vv.size();
-        double[][] M = new double[n][d];
-
-        for (int j = 0; j < d; j++) {
-            int col = data.getColumn(vv.get(j));
-            if (col < 0) {
-                // fallback: name lookup
-                col = data.getVariableNames().indexOf(vv.get(j).getName());
-                if (col < 0) throw new IllegalArgumentException("Variable not found: " + vv.get(j).getName());
-            }
-            for (int i = 0; i < n; i++) {
-                int row = activeRowIndex(i);
-                M[i][j] = data.getDouble(row, col);
-            }
-        }
-        return M;
-    }
+    // ---------------- public setters ----------------
 
     // z-score each column of a raw n×d double matrix (ddof=1)
     private static void zscoreInPlace(double[][] M) {
@@ -899,71 +261,6 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
             System.arraycopy(B[i], 0, out[i], p, q);
         }
         return out;
-    }
-
-    // ---------------- KFF Fourier features ----------------
-
-    /**
-     * Build Random Fourier (or Orthogonal Random) Features for an RBF kernel:
-     *   k(x,x') = exp(-||x-x'||^2 / bw2)
-     * RFF/ORF:
-     *   wStd = sqrt(2/bw2)
-     *   phi_j(x) = sqrt(2/m) cos(w_j^T x + b_j)
-     */
-    private double[][] rffFeatures(double[][] Z, int mFeatures, double bw2, long seed) {
-        final int n = Z.length;
-        final int d = (n == 0) ? 0 : Z[0].length;
-
-        if (n == 0 || mFeatures <= 0) return new double[n][Math.max(mFeatures, 0)];
-        if (d == 0) {
-            // No inputs: features are just cos(b) constants.
-            double[][] Phi = new double[n][mFeatures];
-            SplittableRandom rng0 = new SplittableRandom(seed);
-            double scale0 = Math.sqrt(2.0 / mFeatures);
-            double[] b0 = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * Math.PI * rng0.nextDouble();
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < mFeatures; j++) Phi[i][j] = scale0 * Math.cos(b0[j]);
-            }
-            return Phi;
-        }
-
-        if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
-
-        final double wStd = Math.sqrt(2.0 / bw2);
-        final double scale = Math.sqrt(2.0 / mFeatures);
-
-        SplittableRandom rng = new SplittableRandom(seed);
-
-        double[][] W;
-        double[] b = new double[mFeatures];
-
-        if (featureType == FeatureType.RFF) {
-            W = new double[mFeatures][d];
-            for (int j = 0; j < mFeatures; j++) {
-                for (int k = 0; k < d; k++) W[j][k] = wStd * nextGaussian(rng);
-                b[j] = 2.0 * Math.PI * rng.nextDouble();
-            }
-        } else if (featureType == FeatureType.ORF) {
-            W = sampleOrthogonalW(mFeatures, d, wStd, rng);
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
-        } else {
-            throw new IllegalArgumentException("featureType must be RFF or ORF");
-        }
-
-        double[][] Phi = new double[n][mFeatures];
-
-        for (int i = 0; i < n; i++) {
-            double[] Zi = Z[i];
-            for (int j = 0; j < mFeatures; j++) {
-                double dot = 0.0;
-                double[] wj = W[j];
-                for (int k = 0; k < d; k++) dot += wj[k] * Zi[k];
-                Phi[i][j] = scale * Math.cos(dot + b[j]);
-            }
-        }
-
-        return Phi;
     }
 
     // Box–Muller-ish gaussian from SplittableRandom (Marsaglia polar)
@@ -1075,8 +372,6 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
         return d2[mid];
     }
 
-    // ---------------- Feature-space ridge residualization ----------------
-
     private static SimpleMatrix ridgeResidual(SimpleMatrix X, SimpleMatrix Z, double alpha) {
         if (Z == null || Z.getNumCols() == 0) return X;
         if (!(alpha > 0) || !Double.isFinite(alpha)) alpha = 1e-18;
@@ -1087,8 +382,6 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
         SimpleMatrix B = A.solve(Z.transpose().mult(X));
         return X.minus(Z.mult(B));
     }
-
-    // ---------------- Stats + approximations (from RCIT-style code) ----------------
 
     private static void zscoreInPlace(SimpleMatrix M) {
         int n = M.getNumRows(), d = M.getNumCols();
@@ -1108,8 +401,10 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
     }
 
     private static SimpleMatrix cov(SimpleMatrix A, SimpleMatrix B) {
-        int n = A.getNumRows();
-        return A.transpose().mult(B).scale(1.0 / (n - 1));
+        return covCentered(A, B);
+
+//        int n = A.getNumRows();
+//        return A.transpose().mult(B).scale(1.0 / (n - 1));
     }
 
     private static double frob2(SimpleMatrix M) {
@@ -1144,6 +439,8 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
         for (int i = 0; i < e.length; i++) e[i] = pos.get(i);
         return e;
     }
+
+    // ---------------- IndependenceTest interface ----------------
 
     private static double gammaApproxP(double stat, double[] eig) {
         if (eig.length == 0) return (stat <= 1e-12) ? 1.0 : 0.0;
@@ -1264,8 +561,706 @@ public final class KffRcit implements IndependenceTest, RowsSettable {
         }
     }
 
+    // ---------------- RowsSettable ----------------
+
     private static double clamp01(double v) {
         return v < 0 ? 0 : (v > 1 ? 1 : v);
+    }
+
+    private static SimpleMatrix covCentered(SimpleMatrix A, SimpleMatrix B) {
+        SimpleMatrix Ac = A.copy();
+        SimpleMatrix Bc = B.copy();
+        subtractColumnMeansInPlace(Ac);
+        subtractColumnMeansInPlace(Bc);
+        int n = A.getNumRows();
+        return Ac.transpose().mult(Bc).scale(1.0 / (n - 1));
+    }
+
+    /**
+     * Sets the approximation method used for statistical calculations based on an integer code.
+     * This method maps the provided integer code to a specific {@code Approx} enumeration value.
+     * If the code does not match any defined approximation type, the default value {@code Approx.GAMMA} is used.
+     *
+     * @param approxCode An integer code representing the desired approximation method:
+     *                   1 -> {@code Approx.LPB4},
+     *                   2 -> {@code Approx.HBE},
+     *                   3 -> {@code Approx.GAMMA},
+     *                   4 -> {@code Approx.CHI2},
+     *                   5 -> {@code Approx.PERMUTATION}.
+     *                   Any other value defaults to {@code Approx.GAMMA}.
+     */
+    public void setApproximationFromInt(int approxCode) {
+        switch (approxCode) {
+            case 1 -> this.approx = Approx.LPB4;
+            case 2 -> this.approx = Approx.HBE;
+            case 3 -> this.approx = Approx.GAMMA;
+            case 4 -> this.approx = Approx.CHI2;
+            case 5 -> this.approx = Approx.PERMUTATION;
+            default -> this.approx = Approx.GAMMA;
+        }
+    }
+
+    /**
+     * Sets whether to perform Randomized Conditional Independence Testing (RCIT).
+     *
+     * @param doRcit A boolean value indicating whether RCIT should be enabled.
+     *               If true, RCIT is performed; otherwise, RCoT is used.
+     */
+    public void setDoRcit(boolean doRcit) {
+        this.doRcit = doRcit;
+    }
+
+    // ---------------- Feature construction (KFF-ML style) ----------------
+
+    /**
+     * Sets the value of the lambda parameter for the KffRcit instance.
+     * The lambda parameter is a regularization term used to ensure numerical
+     * stability. If the provided value of lambda is less than 1e-12, it will
+     * be clamped to 1e-12. Default is 1.
+     *
+     * @param lambda The value to set for the lambda parameter. Must be a positive
+     *               double value to ensure proper regularization. Values lower
+     *               than 1e-12 will be automatically adjusted to 1e-12.
+     */
+    public void setLambda(double lambda) {
+        this.lambda = Math.max(1e-12, lambda);
+    }
+
+    /**
+     * Sets the number of permutations to be used in statistical testing or feature generation.
+     * The value is clamped to ensure it is non-negative.
+     *
+     * @param permutations The desired number of permutations.
+     *                      If the input value is negative, it will automatically be set to 0.
+     */
+    public void setPermutations(int permutations) {
+        this.permutations = Math.max(0, permutations);
+    }
+
+    /**
+     * Enables or disables the centering of features for the KffRcit instance.
+     * Centering is typically used to preprocess feature data by subtracting the
+     * mean value from each feature dimension, ensuring zero mean for the features.
+     * Default is true.
+     *
+     * @param centerFeatures A boolean value indicating whether feature centering
+     *                       should be applied. If true, features will be centered;
+     *                       if false, centering will be skipped.
+     */
+    public void setCenterFeatures(boolean centerFeatures) {
+        this.centerFeatures = centerFeatures;
+    }
+
+    /**
+     * Sets the number of features to be used for the X and Y variables.
+     * The value of the number of features is clamped to ensure it is at least 1.
+     * This parameter determines the dimensionality of random features generated
+     * for testing or feature representation tasks within the KffRcit framework.
+     * Default is 10.
+     *
+     * @param d The desired number of features for the X and Y variables.
+     *          If the input value is less than 1, it will be automatically
+     *          adjusted to 1 to ensure validity.
+     */
+    public void setNumFeaturesXY(int d) {
+        this.numFeatXY = Math.max(1, d);
+    }
+
+    /**
+     * Sets the number of features for the Z dimension. Ensures that the value
+     * is at least 1 by applying a minimum bound of 1.
+     * Default is 100.
+     *
+     * @param d the desired number of features for the Z dimension
+     */
+    public void setNumFeaturesZ(int d) {
+        this.numFeatZ = Math.max(1, d);
+    }
+
+    /**
+     * Sets the bandwidth multiplier for the current instance. This value must be greater than 0 and finite.
+     * The method also clears the cached data related to bandwidth and feature computations to ensure consistency.
+     * Default is 1.0.
+     *
+     * @param bandwidthMultiplier the multiplier to adjust the bandwidth, must be a positive and finite value
+     * @throws IllegalArgumentException if the provided bandwidthMultiplier is not greater than 0 or is not finite
+     */
+    public void setBandwidthMultiplier(double bandwidthMultiplier) {
+        if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
+            throw new IllegalArgumentException("bandwidthMultiplier must be > 0 and finite");
+        }
+        this.bandwidthMultiplier = bandwidthMultiplier;
+        // invalidate bw2 cache (conservative)
+        this.bw2Cache.clear();
+        this.featCache.clear();
+    }
+
+    // ---------------- Seeds (stable, order-invariant over Z) ----------------
+
+    /**
+     * Sets the maximum number of rows for the bw (bandwidth) configuration. The provided
+     * value will be clamped to a minimum of 50. This method also clears the associated
+     * caches to ensure consistency with the updated maximum rows setting.
+     * Default is 500.
+     *
+     * @param bwMaxRows The desired maximum number of rows. Values less than 50 will be
+     *                  automatically adjusted to 50.
+     */
+    public void setBwMaxRows(int bwMaxRows) {
+        this.bwMaxRows = Math.max(50, bwMaxRows);
+        this.bw2Cache.clear();
+        this.featCache.clear();
+    }
+
+    /**
+     * Retrieves the feature type associated with this instance.
+     *
+     * @return the feature type of the current instance
+     */
+    public FeatureType getFeatureType() {
+        return featureType;
+    }
+
+    /**
+     * Sets the feature type for this instance and clears the feature cache.
+     * Default is RFF.
+     *
+     * @param featureType the feature type to be set; must not be null
+     * @throws NullPointerException if the provided featureType is null
+     */
+    public void setFeatureType(FeatureType featureType) {
+        this.featureType = Objects.requireNonNull(featureType, "featureType");
+        this.featCache.clear();
+    }
+
+    // ---------------- Raw extraction + standardization ----------------
+
+    /**
+     * Sets the seed for the random number generator and clears the feature cache.
+     *
+     * @param seed the seed value to initialize the random number generator
+     */
+    public void setSeed(long seed) {
+        this.rng.setSeed(seed);
+        this.featCache.clear();
+    }
+
+    /**
+     * Determines whether two nodes, {@code x} and {@code y}, are independent
+     * given a set of conditioning nodes {@code z}, using statistical tests
+     * and feature space projections. The method can operate under different
+     * approximation schemes, handles permutations if specified, and uses
+     * feature-based approaches for dimensionality reduction and residualization.
+     *
+     * @param x The first node whose independence with respect to {@code y} is being tested.
+     *          Must not be null.
+     * @param y The second node whose independence with respect to {@code x} is being tested.
+     *          Must not be null.
+     * @param z The set of nodes (conditioning set) to be conditioned on during the independence test.
+     *          Can be empty or null if no conditioning is needed.
+     * @return An {@code IndependenceResult} object containing the details of the independence test, including
+     *         whether the nodes are deemed independent, the computed p-value, and statistical measures.
+     * @throws InterruptedException If the thread executing the method is interrupted during computation.
+     */
+    @Override
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+        Objects.requireNonNull(x, "x");
+        Objects.requireNonNull(y, "y");
+
+        this.n = getActiveRowCount();
+
+        final List<Node> Z = (z == null) ? new ArrayList<>() : new ArrayList<>(z);
+        Z.sort(Comparator.comparing(Node::getName));
+
+        IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(Z));
+
+        if (x.equals(y)) {
+            if (verbose) TetradLogger.getInstance().log(fact + " x == y");
+            double p_ = 0.0;
+            return new IndependenceResult(fact, false, p_, alpha - p_, false);
+        }
+        if (n < 5) {
+            if (verbose) TetradLogger.getInstance().log(fact + " n < 5");
+            double p_ = 1.0;
+            return new IndependenceResult(fact, true, p_, alpha - p_, false);
+        }
+
+        // --- raw data matrices as double[][] (active rows only), then z-score columns ---
+        double[][] Xraw = rawMatrix(Collections.singletonList(x));
+        double[][] Yraw = rawMatrix(Collections.singletonList(y));
+        double[][] Zraw = Z.isEmpty() ? new double[n][0] : rawMatrix(Z);
+
+        zscoreInPlace(Xraw);
+        zscoreInPlace(Yraw);
+        if (!Z.isEmpty()) zscoreInPlace(Zraw);
+
+        // RCIT: augment Y with Z in the *input space* before features
+        double[][] YaugRaw = (doRcit && !Z.isEmpty()) ? hstackRaw(Yraw, Zraw) : Yraw;
+
+        // Deterministic seeds (cache-friendly)
+//        long seedX = seedForX(x) ^ 1729L;
+//        long seedY = seedForY(y, Z, doRcit) ^ 1729L;
+//        long seedZ = seedForZ(Z) ^ 1729L;
+
+        long seedX = seedForX(x) ^ 1729L;
+
+        List<Node> yKeyVars = (doRcit && !Z.isEmpty()) ? hstackVarList(y, Z) : Collections.singletonList(y);
+
+        long seedY = seedForBlock("Y", yKeyVars) ^ 1729L;
+        long seedZ = seedForBlock("Z", Z) ^ 1729L;
+
+        // Features
+        SimpleMatrix fX = kffFeatCached("X", Collections.singletonList(x), Xraw, numFeatXY, seedX);
+//        List<Node> yKeyVars = (doRcit && !Z.isEmpty()) ? hstackVarList(y, Z) : Collections.singletonList(y);
+        SimpleMatrix fY = kffFeatCached("Y", yKeyVars, YaugRaw, numFeatXY, seedY);
+
+        SimpleMatrix fZ = Z.isEmpty() ? null : kffFeatCached("Z", Z, Zraw, numFeatZ, seedZ);
+
+        final double stat;
+        double p;
+
+        if (fZ == null || fZ.getNumCols() == 0) {
+            // ---------------- RIT (no conditioning) ----------------
+            SimpleMatrix Cxy = cov(fX, fY);
+            stat = n * frob2(Cxy);
+
+            SimpleMatrix resX = fX.copy();
+            SimpleMatrix resY = fY.copy();
+            subtractColumnMeansInPlace(resX);
+            subtractColumnMeansInPlace(resY);
+
+            SimpleMatrix Cov = kronResCov(resX, resY);
+            double[] eig = positiveEigs(Cov);
+
+            switch (approx) {
+                case PERMUTATION -> {
+                    if (permutations > 0) {
+                        int greater = 0;
+                        for (int b = 0; b < permutations; b++) {
+                            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                            int[] perm = randomPermutation(n, rng);
+                            SimpleMatrix C = covWithPermutedB(fX, fY, perm);
+                            double s = n * frob2(C);
+                            if (s >= stat) greater++;
+                        }
+                        p = (greater + 1.0) / (permutations + 1.0);
+                    } else {
+                        p = gammaApproxP(stat, eig);
+                    }
+                }
+                case HBE -> p = edgeworthP(stat, eig, false);
+                case LPB4 -> p = edgeworthP(stat, eig, true);
+                case CHI2 -> p = chi2ApproxP(n, vec(Cxy), Cov);
+                case GAMMA -> p = gammaApproxP(stat, eig);
+                default -> p = gammaApproxP(stat, eig);
+            }
+        } else {
+//            final double alphaRidge = Math.max(1e-18, lambda);
+            final double alphaRidge = Math.max(1e-18, lambda / Math.max(1.0, (n - 1.0)));
+
+            // Residualize
+            SimpleMatrix rX = ridgeResidual(fX, fZ, alphaRidge);
+            SimpleMatrix rY = ridgeResidual(fY, fZ, alphaRidge);
+
+            subtractColumnMeansInPlace(rX);
+            subtractColumnMeansInPlace(rY);
+
+            SimpleMatrix Cxy = cov(rX, rY);
+            stat = n * frob2(Cxy);
+
+            if (approx == Approx.PERMUTATION && permutations > 0) {
+                int greater = 0;
+                for (int b = 0; b < permutations; b++) {
+                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                    int[] perm = randomPermutation(n, rng);
+
+                    // Permute rY rows (keep rX fixed)
+                    SimpleMatrix rYp = permuteRows(rY, perm);
+                    SimpleMatrix C = cov(rX, rYp);
+
+                    double s = n * frob2(C);
+                    if (s >= stat) greater++;
+                }
+                p = (greater + 1.0) / (permutations + 1.0);
+            } else {
+                // Null approx based on residual products
+                SimpleMatrix resX = rX.copy();
+                SimpleMatrix resY = rY.copy();
+                subtractColumnMeansInPlace(resX);
+                subtractColumnMeansInPlace(resY);
+
+                SimpleMatrix Cov = kronResCov(resX, resY);
+                double[] eig = positiveEigs(Cov);
+
+                switch (approx) {
+                    case HBE -> p = edgeworthP(stat, eig, false);
+                    case LPB4 -> p = edgeworthP(stat, eig, true);
+                    case CHI2 -> p = chi2ApproxP(n, vec(Cxy), Cov);
+                    case GAMMA -> p = gammaApproxP(stat, eig);
+                    default -> p = gammaApproxP(stat, eig);
+                }
+            }
+        }
+
+        double p_ = clamp01(p);
+        boolean indep = (p_ > alpha);
+
+        if (verbose) {
+            TetradLogger.getInstance().log(fact + " p = " + p_ + " stat=" + stat
+                    + " approx=" + approx + " Fx=" + numFeatXY + " Fz=" + numFeatZ
+                    + " ft=" + featureType + " bwMult=" + bandwidthMultiplier + " lam=" + lambda);
+        }
+
+        return new IndependenceResult(fact, indep, p_, alpha - p_);
+    }
+
+    private long seedForBlock(String tag, List<Node> block) {
+        long h = 1469598103934665603L;
+        h = 1099511628211L * (h ^ tag.hashCode());
+
+        ArrayList<String> names = new ArrayList<>(block.size());
+        for (Node v : block) names.add(v.getName());
+        names.sort(String::compareTo);
+        for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
+
+        h = 1099511628211L * (h ^ getActiveRowCount());
+        h = 1099511628211L * (h ^ activeRowsHash());
+        return h;
+    }
+
+    // ---------------- KFF Fourier features ----------------
+
+    /**
+     * Retrieves the list of variable nodes.
+     *
+     * @return a list of Node objects representing the variables
+     */
+    @Override
+    public List<Node> getVariables() {
+        return vars;
+    }
+
+    /**
+     * Retrieves the alpha value.
+     *
+     * @return the alpha value as a double
+     */
+    @Override
+    public double getAlpha() {
+        return alpha;
+    }
+
+    /**
+     * Sets the value of alpha for the current instance.
+     * The alpha value must be a double within the range (0, 1), exclusive.
+     * An IllegalArgumentException will be thrown if the specified value
+     * is not within the valid range.
+     *
+     * @param alpha the new alpha value, must be greater than 0 and less than 1
+     * @throws IllegalArgumentException if alpha is not in the range (0, 1)
+     */
+    @Override
+    public void setAlpha(double alpha) {
+        if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("alpha in (0,1)");
+        this.alpha = alpha;
+    }
+
+    /**
+     * Retrieves the data encapsulated in this object.
+     *
+     * @return the DataSet instance contained within this object
+     */
+    @Override
+    public DataSet getData() {
+        return data;
+    }
+
+    /**
+     * Determines whether verbose mode is enabled.
+     *
+     * @return true if verbose mode is enabled, false otherwise.
+     */
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    // ---------------- Feature-space ridge residualization ----------------
+
+    /**
+     * Sets the verbosity mode for the system.
+     *
+     * @param verbose a boolean indicating whether verbose mode should be enabled (true) or disabled (false)
+     */
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    // ---------------- Stats + approximations (from RCIT-style code) ----------------
+
+    @Override
+    public List<Integer> getRows() {
+        return rows;
+    }
+
+    @Override
+    public void setRows(List<Integer> rows) {
+        if (rows == null) {
+            this.rows = null;
+            this.n = data.getNumRows();
+            featCache.clear();
+            bw2Cache.clear();
+            return;
+        }
+
+        for (int i = 0; i < rows.size(); i++) {
+            Integer r = rows.get(i);
+            if (r == null) throw new NullPointerException("Row " + i + " is null.");
+            if (r < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+            if (r >= data.getNumRows()) throw new IllegalArgumentException("Row " + i + " out of bounds: " + r);
+        }
+
+        this.rows = new ArrayList<>(rows);
+        this.n = this.rows.size();
+        featCache.clear();
+        bw2Cache.clear();
+    }
+
+    private int getActiveRowCount() {
+        return (rows == null) ? data.getNumRows() : rows.size();
+    }
+
+    private int activeRowIndex(int i) {
+        return (rows == null) ? i : rows.get(i);
+    }
+
+    private SimpleMatrix kffFeatCached(String tag, List<Node> varsForKey, double[][] Z, int mFeatures, long seed)
+            throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+        String key = keyFeat(tag, varsForKey, mFeatures, seed);
+
+        return featCache.computeIfAbsent(key, k -> {
+            // Compute bw2 (cached separately but keyed compatibly)
+            double bw2 = bw2For(tag, varsForKey, Z);
+
+            double[][] Phi = rffFeatures(Z, mFeatures, bw2, seed);
+            SimpleMatrix M = new SimpleMatrix(Phi);
+
+            if (centerFeatures) zscoreInPlace(M);
+            else subtractColumnMeansInPlace(M);
+
+            return M;
+        });
+    }
+
+    private double bw2For(String tag, List<Node> varsForKey, double[][] Z) {
+        String key = keyBw2(tag, varsForKey);
+
+        return bw2Cache.computeIfAbsent(key, k -> {
+            int n = Z.length;
+            if (n <= 2 || Z[0].length == 0) return 1.0;
+
+            int maxRows = Math.min(n, bwMaxRows);
+            double bw2 = medianDistanceSquaredND(Z, maxRows);
+            if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
+
+            double mult2 = bandwidthMultiplier * bandwidthMultiplier;
+            bw2 *= mult2;
+
+            // Keep it from being insanely tiny
+            if (bw2 < 1e-12) bw2 = 1e-12;
+
+            return bw2;
+        });
+    }
+
+    private String keyFeat(String tag, List<Node> vs, int mFeatures, long seed) {
+        ArrayList<String> names = new ArrayList<>(vs.size());
+        for (Node v : vs) names.add(v.getName());
+        names.sort(String::compareTo);
+
+        StringBuilder sb = new StringBuilder(160);
+        sb.append(tag)
+                .append("|n=").append(getActiveRowCount())
+                .append("|rows=").append(activeRowsHash())
+                .append("|m=").append(mFeatures)
+                .append("|ft=").append(featureType.name())
+                .append("|ctr=").append(centerFeatures ? 1 : 0)
+                .append("|bwMult=").append(Double.doubleToLongBits(bandwidthMultiplier))
+                .append("|bwMax=").append(bwMaxRows)
+                .append("|seed=").append(seed)
+                .append("|vars=");
+        for (String s : names) sb.append(s).append(",");
+        return sb.toString();
+    }
+
+    private String keyBw2(String tag, List<Node> vs) {
+        ArrayList<String> names = new ArrayList<>(vs.size());
+        for (Node v : vs) names.add(v.getName());
+        names.sort(String::compareTo);
+
+        StringBuilder sb = new StringBuilder(140);
+        sb.append(tag)
+                .append("|n=").append(getActiveRowCount())
+                .append("|rows=").append(activeRowsHash())
+                .append("|bwMult=").append(Double.doubleToLongBits(bandwidthMultiplier))
+                .append("|bwMax=").append(bwMaxRows)
+                .append("|vars=");
+        for (String s : names) sb.append(s).append(",");
+        return sb.toString();
+    }
+
+    private int activeRowsHash() {
+        if (rows == null) return 0;
+        int h = 1;
+        for (int r : rows) h = 31 * h + r;
+        return h;
+    }
+
+    private long seedForX(Node x) {
+        long h = 1469598103934665603L;
+        h = 1099511628211L * (h ^ x.getName().hashCode());
+        h = 1099511628211L * (h ^ getActiveRowCount());
+        h = 1099511628211L * (h ^ activeRowsHash());
+        return h;
+    }
+
+    private long seedForY(Node y, List<Node> Z, boolean doRcit) {
+        long h = 1469598103934665603L;
+        h = 1099511628211L * (h ^ y.getName().hashCode());
+
+        if (doRcit) {
+            ArrayList<String> names = new ArrayList<>(Z.size());
+            for (Node z : Z) names.add(z.getName());
+            names.sort(String::compareTo);
+            for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
+        }
+
+        h = 1099511628211L * (h ^ getActiveRowCount());
+        h = 1099511628211L * (h ^ activeRowsHash());
+        return h;
+    }
+
+    private long seedForZ(List<Node> Z) {
+        long h = 1469598103934665603L;
+        ArrayList<String> names = new ArrayList<>(Z.size());
+        for (Node z : Z) names.add(z.getName());
+        names.sort(String::compareTo);
+        for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
+        h = 1099511628211L * (h ^ getActiveRowCount());
+        h = 1099511628211L * (h ^ activeRowsHash());
+        return h;
+    }
+
+    private double[][] rawMatrix(List<Node> vv) {
+        int n = getActiveRowCount();
+        int d = vv.size();
+        double[][] M = new double[n][d];
+
+        for (int j = 0; j < d; j++) {
+            int col = data.getColumn(vv.get(j));
+            if (col < 0) {
+                // fallback: name lookup
+                col = data.getVariableNames().indexOf(vv.get(j).getName());
+                if (col < 0) throw new IllegalArgumentException("Variable not found: " + vv.get(j).getName());
+            }
+            for (int i = 0; i < n; i++) {
+                int row = activeRowIndex(i);
+                M[i][j] = data.getDouble(row, col);
+            }
+        }
+        return M;
+    }
+
+    /**
+     * Build Random Fourier (or Orthogonal Random) Features for an RBF kernel:
+     *   k(x,x') = exp(-||x-x'||^2 / bw2)
+     * RFF/ORF:
+     *   wStd = sqrt(2/bw2)
+     *   phi_j(x) = sqrt(2/m) cos(w_j^T x + b_j)
+     */
+    private double[][] rffFeatures(double[][] Z, int mFeatures, double bw2, long seed) {
+        final int n = Z.length;
+        final int d = (n == 0) ? 0 : Z[0].length;
+
+        if (n == 0 || mFeatures <= 0) return new double[n][Math.max(mFeatures, 0)];
+        if (d == 0) {
+            // No inputs: features are just cos(b) constants.
+            double[][] Phi = new double[n][mFeatures];
+            SplittableRandom rng0 = new SplittableRandom(seed);
+            double scale0 = Math.sqrt(2.0 / mFeatures);
+            double[] b0 = new double[mFeatures];
+            for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * Math.PI * rng0.nextDouble();
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < mFeatures; j++) Phi[i][j] = scale0 * Math.cos(b0[j]);
+            }
+            return Phi;
+        }
+
+        if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
+
+        final double wStd = Math.sqrt(2.0 / bw2);
+        final double scale = Math.sqrt(2.0 / mFeatures);
+
+        SplittableRandom rng = new SplittableRandom(seed);
+
+        double[][] W;
+        double[] b = new double[mFeatures];
+
+        if (featureType == FeatureType.RFF) {
+            W = new double[mFeatures][d];
+            for (int j = 0; j < mFeatures; j++) {
+                for (int k = 0; k < d; k++) W[j][k] = wStd * nextGaussian(rng);
+                b[j] = 2.0 * Math.PI * rng.nextDouble();
+            }
+        } else if (featureType == FeatureType.ORF) {
+            W = sampleOrthogonalW(mFeatures, d, wStd, rng);
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
+        } else {
+            throw new IllegalArgumentException("featureType must be RFF or ORF");
+        }
+
+        double[][] Phi = new double[n][mFeatures];
+
+        for (int i = 0; i < n; i++) {
+            double[] Zi = Z[i];
+            for (int j = 0; j < mFeatures; j++) {
+                double dot = 0.0;
+                double[] wj = W[j];
+                for (int k = 0; k < d; k++) dot += wj[k] * Zi[k];
+                Phi[i][j] = scale * Math.cos(dot + b[j]);
+            }
+        }
+
+        return Phi;
+    }
+
+    /**
+     * An enumeration representing the types of feature generation methods
+     * used in machine learning for kernel approximation tasks.
+     */
+    public enum FeatureType {
+
+        /**
+         * Represents the Random Fourier Features (RFF) method used for kernel
+         * approximation in machine learning tasks. This method is commonly employed
+         * to approximate shift-invariant kernels, such as the Gaussian kernel, by
+         * mapping input features into a lower-dimensional randomized feature space.
+         */
+        RFF,
+
+        /**
+         * Represents the Orthogonal Random Features (ORF) method used for kernel
+         * approximation in machine learning tasks. This method builds on Random Fourier
+         * Features (RFF) by enforcing orthogonality in the randomized feature space,
+         * potentially leading to improved approximation quality and numerical stability
+         * compared to standard RFF.
+         */
+        ORF
     }
 
     // ---------------- Internal enum ----------------

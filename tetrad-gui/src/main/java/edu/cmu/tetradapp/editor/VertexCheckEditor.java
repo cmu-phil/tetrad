@@ -40,6 +40,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
@@ -59,8 +60,8 @@ import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
  */
 public class VertexCheckEditor extends JPanel {
 
-    private static final String PREF_KEY_TEST = "vertexCheckerIndependenceTest";
-    private static final String PREF_KEY_SET_TYPE = "vertexCheckerConditioningSetType";
+    private static final String PREF_KEY_TEST = "markovCheckerIndependenceTest";
+    private static final String PREF_KEY_SET_TYPE = "markovCheckerConditioningSetType";
 
     private final VertexCheckIndTestModel model;
 
@@ -80,6 +81,11 @@ public class VertexCheckEditor extends JPanel {
 
     private IndependenceWrapper independenceWrapper;
 
+    private static final Preferences PREFS =
+            Preferences.userNodeForPackage(VertexCheckEditor.class);
+
+    private boolean initializing = false;
+
     public VertexCheckEditor(VertexCheckIndTestModel model) {
         if (model == null) throw new NullPointerException("Expecting a model.");
         this.model = model;
@@ -96,12 +102,37 @@ public class VertexCheckEditor extends JPanel {
 
         setBorder(new EmptyBorder(8, 8, 8, 8));
 
+        initializing = true;
+
         buildControls();
         buildMainPanels();
 
-        refreshTestList();
+        refreshTestList();      // this will select the saved item
         applySavedSetType();
+
         setTestFromCombo();
+
+        initializing = false;
+
+//        buildControls();
+//        buildMainPanels();
+//
+//        refreshTestList();
+//        applySavedSetType();
+//
+//        String savedClassName = Preferences.userRoot().get(PREF_KEY_TEST, null);
+//
+//        if (savedClassName != null) {
+//            for (int i = 0; i < indTestCombo.getItemCount(); i++) {
+//                IndependenceTestModel test = indTestCombo.getItemAt(i);
+//                if (test.getClass().getName().equals(savedClassName)) {
+//                    indTestCombo.setSelectedIndex(i);
+//                    break;
+//                }
+//            }
+//        }
+//
+//        setTestFromCombo();
 
         // Run once initially? (I’m NOT auto-running; feels safer.)
     }
@@ -413,15 +444,19 @@ public class VertexCheckEditor extends JPanel {
 
         // Wiring
         indTestCombo.addActionListener(e -> {
-            setTestFromCombo();   // this replaces the test in the model
-            resetResultsUI();     // invalidate cached vertex results
+            if (initializing) return;
+            setTestFromCombo();
+            resetResultsUI();
         });
 
         conditioningCombo.addActionListener(e -> {
+            if (initializing) return;
+
             String s = (String) conditioningCombo.getSelectedItem();
             ConditioningSetType t = toSetType(s);
             model.setConditioningSetType(t);
-            Preferences.userRoot().put(PREF_KEY_SET_TYPE, s == null ? "" : s);
+
+            PREFS.put(PREF_KEY_SET_TYPE, s == null ? "" : s);
 
             resetResultsUI();
         });
@@ -537,10 +572,6 @@ public class VertexCheckEditor extends JPanel {
         JScrollPane overviewScroll = new JScrollPane(overviewTable);
         overviewScroll.setPreferredSize(new Dimension(520, 500));
 
-//        JPanel overviewPanel = new JPanel(new BorderLayout());
-//        overviewPanel.add(overviewScroll, BorderLayout.NORTH);
-//        overviewPanel.add(overviewScroll, BorderLayout.CENTER);
-
         // Detail: CS list + facts table + histogram
         csList.setVisibleRowCount(8);
         JScrollPane csScroll = new JScrollPane(csList);
@@ -631,7 +662,6 @@ public class VertexCheckEditor extends JPanel {
         new WatchedProcess() {
             @Override
             public void watch() {
-//                applyAlpha(); // ensure alpha matches UI
                 model.ensureVertexComputed(v);
 
                 SwingUtilities.invokeLater(() -> {
@@ -707,14 +737,15 @@ public class VertexCheckEditor extends JPanel {
 
         indTestCombo.setEnabled(indTestCombo.getItemCount() > 0);
 
-        // Restore last test if possible
-        String savedClassName = Preferences.userRoot().get(PREF_KEY_TEST, null);
+        String savedClassName = PREFS.get(PREF_KEY_TEST, null);
+
         IndependenceTestModel toSelect = null;
 
         if (savedClassName != null) {
             for (int i = 0; i < indTestCombo.getItemCount(); i++) {
                 IndependenceTestModel m = indTestCombo.getItemAt(i);
-                if (m.getIndependenceTest().clazz().getName().equals(savedClassName)) {
+                String wrapperName = m.getIndependenceTest().clazz().getName();
+                if (wrapperName.equals(savedClassName)) {
                     toSelect = m;
                     break;
                 }
@@ -731,39 +762,44 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void setTestFromCombo() {
-        IndependenceTestModel selected = (IndependenceTestModel) indTestCombo.getSelectedItem();
-        if (selected == null) return;
+        IndependenceTestModel selectedItem =
+                (IndependenceTestModel) indTestCombo.getSelectedItem();
 
-        try {
-            @SuppressWarnings("unchecked")
-            Class<IndependenceWrapper> clazz = (Class<IndependenceWrapper>) selected.getIndependenceTest().clazz();
-            independenceWrapper = clazz.getDeclaredConstructor().newInstance();
+        Class<IndependenceWrapper> clazz = (selectedItem == null) ? null
+                : (Class<IndependenceWrapper>) selectedItem.getIndependenceTest().clazz();
+        IndependenceTest independenceTest;
 
-//            applyAlpha();
-            IndependenceTest test = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
-            model.setIndependenceTest(test);
+        if (clazz != null) {
+            try {
+                independenceWrapper =
+                        clazz.getDeclaredConstructor(new Class[0]).newInstance();
+                independenceTest =
+                        independenceWrapper.getTest(model.getDataModel(),
+                                model.getParameters());
+                model.setIndependenceTest(independenceTest);
 
-            Preferences.userRoot().put(PREF_KEY_TEST, clazz.getName());
-        } catch (Exception ex) {
-            TetradLogger.getInstance().log("VertexCheckEditor: error setting test: " + ex.getMessage());
-            throw new RuntimeException(ex);
+                PREFS.put(PREF_KEY_TEST, clazz.getName());
+
+                System.out.println("setTestFromCombo: " + clazz.getName());
+
+                invalidate();
+                repaint();
+            } catch (InstantiationException | IllegalAccessException
+                     | InvocationTargetException | NoSuchMethodException e1) {
+                TetradLogger.getInstance().log("Error: " + e1.getMessage());
+                throw new RuntimeException(e1);
+            }
         }
     }
 
-//    private void applyAlpha() {
-//        try {
-//            double a = Double.parseDouble(alphaField.getText().trim());
-//            if (a <= 0.0 || a >= 1.0) return;
-//            model.getParameters().set(Params.ALPHA, a);
-//            alphaField.setValue(a);
-//        } catch (Exception ignored) {
-//        }
-//    }
-
     private void applySavedSetType() {
-        String saved = Preferences.userRoot().get(PREF_KEY_SET_TYPE, "MarkovBlanket(X)");
+        String saved = PREFS.get(PREF_KEY_SET_TYPE, "MarkovBlanket(X)");
+
         conditioningCombo.setSelectedItem(saved);
-        model.setConditioningSetType(toSetType(saved));
+
+        // Optional safety: if saved wasn’t found, fall back to current selection
+        String actual = (String) conditioningCombo.getSelectedItem();
+        model.setConditioningSetType(toSetType(actual));
     }
 
     private ConditioningSetType toSetType(String s) {

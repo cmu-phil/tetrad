@@ -73,7 +73,7 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
     private int permutations = 0;
     private boolean doRcit = true;
 
-    private double lambda = 1e-10;
+    private double lambda = 1;
     private boolean centerFeatures = true;
 
     private double bandwidthMultiplier = 1.0;
@@ -387,10 +387,14 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
             }
         } else {
             // ---------------- Conditional: ridge residualization in feature space ----------------
-            final double alphaRidge = Math.max(1e-18, lambda);
+//            final double alphaRidge = Math.max(1e-18, lambda);
+            final double alphaRidge = Math.max(1e-18, lambda / Math.max(1.0, (n - 1.0)));
 
             SimpleMatrix rX = ridgeResidual(fX, fZ, alphaRidge);
             SimpleMatrix rY = ridgeResidual(fY, fZ, alphaRidge);
+
+            subtractColumnMeansInPlace(rX);
+            subtractColumnMeansInPlace(rY);
 
             SimpleMatrix Cxy = cov(rX, rY);
             stat = n * frob2(Cxy);
@@ -1305,8 +1309,9 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
     }
 
     private static SimpleMatrix cov(SimpleMatrix A, SimpleMatrix B) {
-        int n = A.getNumRows();
-        return A.transpose().mult(B).scale(1.0 / (n - 1));
+        return covCentered(A, B);
+//        int n = A.getNumRows();
+//        return A.transpose().mult(B).scale(1.0 / (n - 1));
     }
 
     private static double frob2(SimpleMatrix M) {
@@ -1459,6 +1464,15 @@ public final class KffRcitMixed implements IndependenceTest, RowsSettable {
             double mean = s / n;
             for (int i = 0; i < n; i++) M.set(i, j, M.get(i, j) - mean);
         }
+    }
+
+    private static SimpleMatrix covCentered(SimpleMatrix A, SimpleMatrix B) {
+        SimpleMatrix Ac = A.copy();
+        SimpleMatrix Bc = B.copy();
+        subtractColumnMeansInPlace(Ac);
+        subtractColumnMeansInPlace(Bc);
+        int n = A.getNumRows();
+        return Ac.transpose().mult(Bc).scale(1.0 / (n - 1));
     }
 
     private static double clamp01(double v) {
