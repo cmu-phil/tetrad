@@ -79,6 +79,8 @@ public class VertexCheckEditor extends JPanel {
     private AbstractTableModel factsModel;
     private JPanel histogramPanel = new JPanel(new BorderLayout());
 
+    private JButton runAll = new JButton("Run All");
+
     private IndependenceWrapper independenceWrapper;
 
     private static final Preferences PREFS =
@@ -419,6 +421,7 @@ public class VertexCheckEditor extends JPanel {
 //        controls.add(alphaField);
 
         controls.add(verbose);
+        controls.add(runAll);
 
         controls.add(Box.createHorizontalGlue());
 
@@ -482,17 +485,16 @@ public class VertexCheckEditor extends JPanel {
             resetResultsUI();
         });
 
-//        runSelectedButton.addActionListener(e -> new WatchedProcess() {
-//            @Override
-//            public void watch() {
-//                applyAlpha();
-//                model.runAllVertices(true);
-//                SwingUtilities.invokeLater(() -> {
-//                    overviewModel.fireTableDataChanged();
-//                    selectFirstRowIfAny();
-//                });
-//            }
-//        });
+        runAll.addActionListener(e -> new WatchedProcess() {
+            @Override
+            public void watch() {
+                model.runAllVertices(true);
+                SwingUtilities.invokeLater(() -> {
+                    overviewModel.fireTableDataChanged();
+                    selectFirstRowIfAny();
+                });
+            }
+        });
 
 //        runSelectedButton.addActionListener(e -> new WatchedProcess() {
 //            @Override
