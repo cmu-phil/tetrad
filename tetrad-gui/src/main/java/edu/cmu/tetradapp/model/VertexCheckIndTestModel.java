@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model;
 
@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.RecursiveAdjustment;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -320,41 +321,12 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
             case MARKOV_BLANKET:
                 return GraphUtils.markovBlanket(x, alignedGraph);
 
-            case RECURSIVE_MSEP:
-                // Here CS depends on Y, but for the Vertex Checker we want CS(X) fixed across Y.
-                // So we interpret this as: CS(X) = union over Y of RecursiveBlocking(...) up to maxLength.
-                // This is optional; you can remove this if you don’t want the semantics.
-                return recursiveMsepUnion(alignedGraph, x);
-
-            case ORDERED_LOCAL_MARKOV_MAG:
-
-
             default:
                 // For now, keep the Vertex Checker tight and predictable.
                 // If you want to include ORDERED_LOCAL_MARKOV_MAG or GLOBAL_MARKOV here, we can,
                 // but the UI story is less clean.
                 throw new IllegalArgumentException("Unsupported conditioning set type for VertexCheck: " + conditioningSetType);
         }
-    }
-
-    private Set<Node> recursiveMsepUnion(Graph alignedGraph, Node x) {
-        Set<Node> union = new HashSet<>();
-        for (Node y : alignedGraph.getNodes()) {
-            if (y.equals(x)) continue;
-            try {
-                Set<Node> z = RecursiveBlocking.blockPathsRecursively(
-                        alignedGraph, x, y, new HashSet<>(), Set.of(), maxLength
-                );
-                union.addAll(z);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            } catch (Exception ignored) {
-                // ignore and continue
-            }
-        }
-        union.remove(x);
-        return union;
     }
 
     // --- Required by KnowledgeBoxInput / GraphSource (kept consistent with MarkovCheckIndTestModel) ----

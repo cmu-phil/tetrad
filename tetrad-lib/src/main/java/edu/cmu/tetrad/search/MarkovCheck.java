@@ -1117,13 +1117,17 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                             case MARKOV_BLANKET:
                                 z = GraphUtils.markovBlanket(x, graph);
                                 break;
-                            case RECURSIVE_MSEP:
-                                try {
-                                    z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
-                                } catch (InterruptedException e) {
-                                    throw new RuntimeException(e);
-                                }
-                                break;
+//                            case RECURSIVE_MSEP:
+////                                try {
+////                                    z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
+////
+//                                    List<Set<Node>> Blist = new RecursiveAdjustment(graph)
+//                                            .adjustmentSetsRB(x, y, "PDAG", 1, 10, 1, 10, false, Set.of(), Set.of() );
+//                                    z = Blist.getFirst();
+////                                } catch (InterruptedException e) {
+////                                    throw new RuntimeException(e);
+////                                }
+//                                break;
                             default:
                                 throw new IllegalArgumentException("Unknown separation set type: " + setType);
                         }

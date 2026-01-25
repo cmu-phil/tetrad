@@ -223,7 +223,7 @@ public final class RecursiveAdjustment {
 
     /**
      * Computes a list of adjustment sets for estimating the causal effect of X on Y within a given graph structure
-     * using the Rubin-Bai / RB-style approach.
+     * using the Recursive-blocking / RB-style approach.
      *
      * @param X                 The node representing the cause in the causal relationship.
      * @param Y                 The node representing the effect in the causal relationship.

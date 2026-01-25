@@ -639,6 +639,11 @@ public final class Fcit implements IGraphSearch {
             // Use recursive blocking to propose a blocking set B; null => no sepset under this NF
             Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1);
 //            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1, this.knowledge);
+
+//            List<Set<Node>> Blist = new RecursiveAdjustment(this.pag)
+//                    .adjustmentSetsRB(x, y, "PAG", 1, 4, 1, 10, false, Set.of(), Set.of() );
+//            Set<Node> B = Blist.getFirst();
+
             if (B == null) {
                 continue; // No separating set possible for this NF; try another NF
             }
