@@ -85,9 +85,7 @@ public class VertexCheckEditor extends JPanel {
     private static final Preferences PREFS =
             Preferences.userNodeForPackage(VertexCheckEditor.class);
 
-    private boolean initializing = false;
-
-//    private volatile boolean computingSelection = false;
+    private boolean initializing;
 
     public VertexCheckEditor(VertexCheckIndTestModel model) {
         if (model == null) throw new NullPointerException("Expecting a model.");
@@ -627,43 +625,6 @@ public class VertexCheckEditor extends JPanel {
         add(split, BorderLayout.CENTER);
     }
 
-//    private void overviewSelectionChanged(ListSelectionEvent e) {
-//        if (e.getValueIsAdjusting()) return;
-//
-//        // Capture selection at the moment the event fires.
-//        final int viewRow = overviewTable.getSelectedRow();
-//        if (viewRow < 0) return;
-//
-//        final int modelRow = overviewTable.convertRowIndexToModel(viewRow);
-//        final String v = getSelectedVertexName();
-//        if (v == null) return;
-//
-//        // If already computed, just refresh details.
-//        if (model.isVertexComputed(v)) {
-//            refreshDetails(v);
-//            return;
-//        }
-//
-//        // Otherwise compute in background (WatchedProcess).
-//        new WatchedProcess() {
-//            @Override
-//            public void watch() {
-//                model.ensureVertexComputed(v);
-//
-//                SwingUtilities.invokeLater(() -> {
-//                    // Only refresh if v is still the selected vertex.
-//                    String stillSelected = getSelectedVertexName();
-//                    if (!v.equals(stillSelected)) return;
-//
-//                    // Update the row that corresponds to v (captured at selection time).
-//                    overviewModel.fireTableRowsUpdated(modelRow, modelRow);
-//
-//                    refreshDetails(v);
-//                });
-//            }
-//        };
-//    }
-
     private void overviewSelectionChanged(ListSelectionEvent e) {
         if (e.getValueIsAdjusting()) return;
 
@@ -840,15 +801,6 @@ public class VertexCheckEditor extends JPanel {
             default -> ConditioningSetType.MARKOV_BLANKET;
         };
     }
-
-//    private String getSelectedVertexName() {
-//        int viewRow = overviewTable.getSelectedRow();
-//        if (viewRow < 0) return null;
-//
-//        int modelRow = overviewTable.convertRowIndexToModel(viewRow);
-//
-//        return model.getVertexNames().get(modelRow);
-//    }
 
     private String getSelectedVertexName() {
         return getActiveSelectedVertexName();
