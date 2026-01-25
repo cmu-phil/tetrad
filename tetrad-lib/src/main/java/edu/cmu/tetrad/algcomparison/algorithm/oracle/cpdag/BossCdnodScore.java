@@ -33,19 +33,50 @@ import java.util.*;
 public class BossCdnodScore extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, HasKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
-    // 	•	cdnodScoreContextMargin (default 0.0 or small positive)
-    //	•	cdnodMaxContextsPerNode (default 2 or 3)
-    //	•	cdnodDoVariancePass (default false initially)
-    //	•	cdnodExcludeContextsFromParentSetsInBOSS (I’d set this false; let BOSS use contexts as parents, but forbid X→C.)a
-
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The score field represents an instance of {@link ScoreWrapper} used to evaluate or
+     * measure the performance or accuracy of specific processes in the containing class.
+     *
+     * This field encapsulates functionality for calculating scores, describing the scoring
+     * process, and interacting with the data models and parameters required for scoring.
+     * It plays a critical role in driving the behavior of the associated algorithms or methods.
+     */
     private ScoreWrapper score;
+
+    /**
+     * Represents the knowledge configuration for the BossCdnodScore class.
+     *
+     * This field holds an instance of the {@code Knowledge} class, which is
+     * typically used to define constraints, background information, or domain
+     * expertise relevant to the operations performed by the containing class.
+     *
+     * The {@code Knowledge} object may be utilized during the processing of
+     * graphs or algorithms, particularly to enforce specific structural or
+     * causal constraints on the data model. Its state can be set or modified
+     * via relevant methods in the containing class.
+     */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * Default constructor for the BossCdnodScore class.
+     *
+     * This constructor initializes an instance of the BossCdnodScore class with
+     * no underlying score or knowledge configuration. It serves as a base
+     * configuration that can be further populated or modified using additional
+     * methods or by setting specific parameters.
+     */
     public BossCdnodScore() { }
 
+    /**
+     * Constructs a BossCdnodScore instance with a specified ScoreWrapper.
+     *
+     * @param score The ScoreWrapper instance to be used by this BossCdnodScore.
+     *              This score is used to evaluate or measure the performance
+     *              or accuracy of certain operations in the containing class.
+     */
     public BossCdnodScore(ScoreWrapper score) {
         this.score = score;
     }

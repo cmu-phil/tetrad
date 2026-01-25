@@ -21,19 +21,17 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.OrderedLocalMarkovProperty;
-import edu.cmu.tetrad.search.RecursiveAdjustment;
-import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializable;
-import edu.cmu.tetrad.util.UniformityTest;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.SessionModel;
+import org.apache.commons.math3.distribution.BinomialDistribution;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import java.io.Serial;
 import java.util.*;
@@ -41,12 +39,12 @@ import java.util.stream.Collectors;
 
 /**
  * Model for a per-vertex ("local") Markov check, a.k.a. "Vertex Checker".
- *
+ * <p>
  * For each vertex X, constructs a conditioning set CS(X) (e.g., Markov blanket, parents, etc.),
  * and tests all claims Ind(X, Y | CS(X)) for Y not in CS(X) (and Y != X) using the chosen
  * IndependenceTest. The resulting p-values are then tested for Uniform(0,1) using KS,
  * producing a per-vertex KS p-value and summary diagnostics.
- *
+ * <p>
  * This is designed to support a Tetrad interface tool that highlights locally reliable regions
  * of an estimated graph relative to data.
  */
@@ -61,7 +59,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     // Results
     private final Map<String, VertexSummary> summariesByVertex = new LinkedHashMap<>();
     private final Map<String, List<IndependenceResult>> resultsByVertex = new LinkedHashMap<>();
-//    private final Map<String, List<String>> conditioningSetByVertex = new LinkedHashMap<>();
+    //    private final Map<String, List<String>> conditioningSetByVertex = new LinkedHashMap<>();
     private String name = "";
     private transient IndependenceTest independenceTest;
     private ConditioningSetType conditioningSetType = ConditioningSetType.MARKOV_BLANKET;
@@ -100,6 +98,32 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         } else {
             return 0.5 * (copy.get(n / 2 - 1) + copy.get(n / 2));
         }
+    }
+
+    /// /            conditioningSetByVertex.put(xName, List.of()); // varying-Z; show Z per row in results table
+//        }
+//    }
+    private static int conditioningSetSizeForSummary(List<IndependenceFact> impliedFacts) {
+        // Preserve your existing "CS size" column semantics:
+        // - uniform-Z: that size
+        // - varying-Z: return -1 (or 0) and let UI show “varies”.
+        Set<Set<Node>> distinct = impliedFacts.stream()
+                .map(IndependenceFact::getZ)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (distinct.size() == 1) return distinct.iterator().next().size();
+        return -1;
+    }
+
+    private static List<IndependenceFact> factsForUniformZ(Graph g, Node x, Set<Node> z) {
+        List<IndependenceFact> out = new ArrayList<>();
+        for (Node y : g.getNodes()) {
+            if (y.equals(x)) continue;
+            if (z.contains(y)) continue;
+            if (g.isAdjacentTo(x, y)) continue;   // <-- NEW LINE
+            out.add(new IndependenceFact(x, y, z));
+        }
+        return out;
     }
 
     @Override
@@ -152,6 +176,8 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return verbose;
     }
 
+    // --- Core API used by the editor ------------------------------------------------------------
+
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
@@ -160,8 +186,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public String getName() {
         return name;
     }
-
-    // --- Core API used by the editor ------------------------------------------------------------
 
     @Override
     public void setName(String name) {
@@ -225,14 +249,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return new ArrayList<>(summariesByVertex.values());
     }
 
-    public VertexSummary getSummary(String vertexName) {
-        return summariesByVertex.get(vertexName);
-    }
-
-    public List<IndependenceResult> getResultsForVertex(String vertexName) {
-        return resultsByVertex.getOrDefault(vertexName, List.of());
-    }
-
     // --- Implementation -------------------------------------------------------------------------
 
 //    public List<String> getConditioningSetForVertex(String vertexName) {
@@ -280,6 +296,26 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 //        summariesByVertex.put(x.getName(), summary);
 //        resultsByVertex.put(x.getName(), results);
 //    }
+
+    public VertexSummary getSummary(String vertexName) {
+        return summariesByVertex.get(vertexName);
+    }
+
+//    private void storeConditioningSetSummary(String xName, List<IndependenceFact> impliedFacts) {
+//        // If all facts share the same Z, store it; else store empty.
+//        Set<Set<Node>> distinct = impliedFacts.stream()
+//                .map(IndependenceFact::getZ)
+//                .collect(Collectors.toCollection(LinkedHashSet::new));
+//
+//        if (distinct.size() == 1) {
+//            Set<Node> z = distinct.iterator().next();
+//            List<String> names = z.stream().map(Node::getName).sorted().toList();
+////            conditioningSetByVertex.put(xName, names);
+//        } else {
+
+    public List<IndependenceResult> getResultsForVertex(String vertexName) {
+        return resultsByVertex.getOrDefault(vertexName, List.of());
+    }
 
     private void runVertex(Graph alignedGraph, Node x) {
         List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x);
@@ -358,41 +394,28 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     }
 
-//    private void storeConditioningSetSummary(String xName, List<IndependenceFact> impliedFacts) {
-//        // If all facts share the same Z, store it; else store empty.
-//        Set<Set<Node>> distinct = impliedFacts.stream()
-//                .map(IndependenceFact::getZ)
-//                .collect(Collectors.toCollection(LinkedHashSet::new));
-//
-//        if (distinct.size() == 1) {
-//            Set<Node> z = distinct.iterator().next();
-//            List<String> names = z.stream().map(Node::getName).sorted().toList();
-////            conditioningSetByVertex.put(xName, names);
-//        } else {
-////            conditioningSetByVertex.put(xName, List.of()); // varying-Z; show Z per row in results table
-//        }
-//    }
-
-    private static int conditioningSetSizeForSummary(List<IndependenceFact> impliedFacts) {
-        // Preserve your existing "CS size" column semantics:
-        // - uniform-Z: that size
-        // - varying-Z: return -1 (or 0) and let UI show “varies”.
-        Set<Set<Node>> distinct = impliedFacts.stream()
-                .map(IndependenceFact::getZ)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        if (distinct.size() == 1) return distinct.iterator().next().size();
-        return -1;
-    }
-
     private VertexSummary summarizeVertex(String vertexName, int csSize,
                                           List<IndependenceResult> results, List<Double> pvals) {
 
         int n = pvals.size();
 
         double ksP = Double.NaN;
+        double adP = Double.NaN;
+        double binP = Double.NaN;
+        double fishP = Double.NaN;
+        double aSquared = Double.NaN;
+        double aSquaredStar = Double.NaN;
+
+
+        GeneralAndersonDarlingTest _generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pvals, new UniformRealDistribution(0, 1));
+
         if (n >= 2) {
+            aSquared = _generalAndersonDarlingTest.getASquared();
+            aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
+            adP = 1. - _generalAndersonDarlingTest.getProbTail(pvals.size(), aSquaredStar);
             ksP = UniformityTest.getKsPValue(pvals, 0, 1);
+            fishP = getFisherCombinedPValue(pvals);
+            binP = getBinomialPValue(pvals);
         }
 
         double alpha = independenceTest.getAlpha();
@@ -402,37 +425,88 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         double minP = pvals.stream().min(Double::compare).orElse(Double.NaN);
         double medianP = median(pvals);
 
-        return new VertexSummary(vertexName, csSize, results.size(), n, ksP, fracReject, numReject, minP, medianP);
+        return new VertexSummary(vertexName, csSize, results.size(), n, ksP, adP, binP, fishP, aSquared, aSquaredStar,
+                fracReject, numReject, minP, medianP);
     }
 
-//    private Set<Node> computeConditioningSet(Graph alignedGraph, Node x) {
-//        switch (conditioningSetType) {
-//            case LOCAL_MARKOV: {
-//                Set<Node> z = new HashSet<>();
-//                for (Node w : alignedGraph.getAdjacentNodes(x)) {
-//                    if (alignedGraph.isParentOf(w, x)) z.add(w);
-//                }
-//                return z;
-//            }
-//            case PARENTS_AND_NEIGHBORS: {
-//                Set<Node> z = new HashSet<>();
-//                for (Node w : alignedGraph.getAdjacentNodes(x)) {
-//                    Edge e = alignedGraph.getEdge(w, x);
-//                    if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
-//                    if (alignedGraph.isParentOf(w, x)) z.add(w);
-//                }
-//                return z;
-//            }
-//            case MARKOV_BLANKET:
-//                return GraphUtils.markovBlanket(x, alignedGraph);
+    /**
+     * Calculates the combined p-value using Fisher's method for a given list of independence test results. Fisher's
+     * method is used to combine independent p-values from multiple tests to determine overall significance.
+     *
+     * @param pvals a list of p-values from independence tests
+     * @return the combined p-value. If the inputs are invalid or computation fails, returns Double.NaN.
+     */
+    public double getFisherCombinedPValue(List<Double> pvals) {
+
+        double sum = 0.0;
+
+        for (double pValue : pvals) {
+            double p = Math.max(pValue, 1e-300);
+            sum += Math.log(p);
+        }
+
+        double c = -2.0 * sum;
+        int m = pvals.size();
+
+        if (m > 0 && (Double.isNaN(c) || c == Double.NEGATIVE_INFINITY)) {
+            return Double.NaN;
+        } else if (m > 0 && c == Double.POSITIVE_INFINITY) {
+            return 0.0;
+        } else if (m > 0 && !(Double.isNaN(c))) {
+            return StatUtils.getChiSquareP(2 * m, c);
+        } else {
+            return Double.NaN;
+        }
+    }
+
+    /**
+     * Returns a Binomial p-value for the hypothesis that the distribution of p-values is not Uniform under the null
+     * hypothesis. Values less than alpha imply non-uniform distributions.
+     *
+     * @param pValues The p-values.
+     * @return The Binomial p-value for non-uniformity.
+     */
+    private double getBinomialPValue(List<Double> pValues) {
+        int n = pValues.size();
+        double q = independenceTest.getAlpha();
+        int k = (int) pValues.stream().filter(p -> p <= q).count();
+
+        BinomialDistribution bd = new BinomialDistribution(n, q);
+
+        // P(K >= k)
+        double pOneSided = 1.0 - bd.cumulativeProbability(k - 1);
+        return pOneSided;
+
+//        int n = pValues.size();
+//        double q = independenceTest.getAlpha();          // under U(0,1), P(p <= q) = q
+//        int k = (int) pValues.stream().filter(p -> p <= q).count();
 //
-//            default:
-//                // For now, keep the Vertex Checker tight and predictable.
-//                // If you want to include ORDERED_LOCAL_MARKOV_MAG or GLOBAL_MARKOV here, we can,
-//                // but the UI story is less clean.
-//                throw new IllegalArgumentException("Unsupported conditioning set type for VertexCheck: " + conditioningSetType);
+//        BinomialDistribution bd = new BinomialDistribution(n, q);
+//
+//        // P(K <= k)
+//        double left = bd.cumulativeProbability(k);
+//
+//        // P(K >= k)
+//        double right = 1.0 - bd.cumulativeProbability(k - 1);
+//
+//        double pTwo = 2.0 * Math.min(left, right);
+//        return Math.min(1.0, pTwo);
+//
+//        int independentJudgements = 0;
+//
+//        for (double pValue : pValues) {
+//            if (pValue > independenceTest.getAlpha()) independentJudgements++;
 //        }
-//    }
+//
+//        int p = pValues.size();
+//
+//        // The left tail of this binomial distribution is a p-value for getting too few dependent judgments for
+//        // the distribution to count as uniform.
+//        BinomialDistribution bd = new BinomialDistribution(p, independenceTest.getAlpha());
+//
+//        // We want the area to the right of this, so we subtract from 1.
+//        return (1.0 - bd.cumulativeProbability(independentJudgements)) + (bd.probability(p - independentJudgements));
+    }
 
     private List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x) {
         switch (conditioningSetType) {
@@ -462,19 +536,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
                 return factsForUniformZ(alignedGraph, x, z);
             }
 
-            // ---------------- varying-Z families ----------------
-
-//            case ORDERED_LOCAL_MARKOV_MAG: {
-//                // Uses your new “facts for x” method in OrderedLocalMarkovProperty.
-//                // Assumes alignedGraph is a legal MAG (you may choose to validate elsewhere).
-//                Set<IndependenceFact> facts = OrderedLocalMarkovProperty.getModelForNode(alignedGraph, x);
-//
-//                // Optional: keep only facts where x is the left endpoint (should already be true).
-//                // facts.removeIf(f -> !f.getX().equals(x));
-//
-//                return new ArrayList<>(facts);
-//            }
-
             case ORDERED_LOCAL_MARKOV_MAG: {
                 Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
 
@@ -490,25 +551,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
                 Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, x);
 
-//                String xName = x.getName();
-//
-//                List<IndependenceFact> mapped = new ArrayList<>();
-//                for (IndependenceFact f : raw) {
-//                    if (!f.getX().getName().equals(xName)) continue;
-//
-//                    Node y = alignedGraph.getNode(f.getY().getName());
-//                    if (y == null) continue;
-//
-//                    Set<Node> z = new HashSet<>();
-//                    for (Node zNode : f.getZ()) {
-//                        Node zz = alignedGraph.getNode(zNode.getName());
-//                        if (zz != null) z.add(zz);
-//                    }
-//
-//                    // IMPORTANT: use x (from alignedGraph), not f.getX()
-//                    mapped.add(new IndependenceFact(x, y, z));
-//                }
-
                 return new ArrayList<>(raw);
             }
 
@@ -517,16 +559,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
                         "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
                 );
         }
-    }
-
-    private static List<IndependenceFact> factsForUniformZ(Graph g, Node x, Set<Node> z) {
-        List<IndependenceFact> out = new ArrayList<>();
-        for (Node y : g.getNodes()) {
-            if (y.equals(x)) continue;
-            if (z.contains(y)) continue;
-            out.add(new IndependenceFact(x, y, z));
-        }
-        return out;
     }
 
     // --- Required by KnowledgeBoxInput / GraphSource (kept consistent with MarkovCheckIndTestModel) ----
@@ -579,19 +611,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         runVertex(alignedGraph, x);
     }
 
-//    public int getConditioningSetSizeFast(String vertexName) {
-//        if (conditioningSetByVertex.containsKey(vertexName)) {
-//            return conditioningSetByVertex.get(vertexName).size();
-//        }
-//        if (independenceTest == null) return -1;
-//
-//        Graph alignedGraph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
-//        Node x = alignedGraph.getNode(vertexName);
-//        if (x == null) return -1;
-//
-//        Set<Node> cs = computeConditioningSet(alignedGraph, x);
-//        return cs.size();
-//    }
     public int getMinConditioningSetSizeFast(String vertexName) {
         ConditioningSetSizeRange r = getConditioningSetSizeRangeFast(vertexName);
         return r.min();
@@ -601,8 +620,6 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         ConditioningSetSizeRange r = getConditioningSetSizeRangeFast(vertexName);
         return r.max();
     }
-
-    private record ConditioningSetSizeRange(int min, int max) {}
 
     private ConditioningSetSizeRange getConditioningSetSizeRangeFast(String vertexName) {
 
@@ -644,71 +661,21 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return new ConditioningSetSizeRange(min, max);
     }
 
+    private record ConditioningSetSizeRange(int min, int max) {
+    }
+
 
     // --- Summary record ----------------------------------------------------------------------------
 
-    public static final class VertexSummary implements TetradSerializable {
-
-        @Serial
-        private static final long serialVersionUID = 1L;
-
-        private final String vertex;
-        private final int conditioningSetSize;
-        private final int numFactsTotal;     // includes weird p-values too
-        private final int numPValuesUsed;    // p in [0,1]
-        private final double ksPValue;
-        private final double fractionReject;
-        private final long numReject;
-        private final double minP;
-        private final double medianP;
-
-        public VertexSummary(String vertex, int conditioningSetSize, int numFactsTotal, int numPValuesUsed,
-                             double ksPValue, double fractionReject, long numReject, double minP, double medianP) {
-            this.vertex = vertex;
-            this.conditioningSetSize = conditioningSetSize;
-            this.numFactsTotal = numFactsTotal;
-            this.numPValuesUsed = numPValuesUsed;
-            this.ksPValue = ksPValue;
-            this.fractionReject = fractionReject;
-            this.numReject = numReject;
-            this.minP = minP;
-            this.medianP = medianP;
-        }
-
-        public String getVertex() {
-            return vertex;
-        }
-
-        public int getConditioningSetSize() {
-            return conditioningSetSize;
-        }
-
-        public int getNumFactsTotal() {
-            return numFactsTotal;
-        }
-
-        public int getNumPValuesUsed() {
-            return numPValuesUsed;
-        }
-
-        public double getKsPValue() {
-            return ksPValue;
-        }
-
-        public double getFractionReject() {
-            return fractionReject;
-        }
-
-        public long getNumReject() {
-            return numReject;
-        }
-
-        public double getMinP() {
-            return minP;
-        }
-
-        public double getMedianP() {
-            return medianP;
-        }
+    /**
+     * @param numFactsTotal  includes weird p-values too
+     * @param numPValuesUsed p in [0,1]
+     */
+    public record VertexSummary(String vertex, int conditioningSetSize, int numFactsTotal, int numPValuesUsed,
+                                double ksPValue, double asP, double binP, double fishP, double aSquared, double aSquaredStar,
+                                double fractionReject, long numReject, double minP,
+                                double medianP) implements TetradSerializable {
+            @Serial
+            private static final long serialVersionUID = 1L;
     }
 }

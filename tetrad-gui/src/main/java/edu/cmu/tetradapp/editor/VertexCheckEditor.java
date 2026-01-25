@@ -71,10 +71,7 @@ public class VertexCheckEditor extends JPanel {
 
     private final JComboBox<IndependenceTestModel> indTestCombo = new JComboBox<>();
     private final JComboBox<String> conditioningCombo = new JComboBox<>();
-    //    private final DoubleTextField alphaField;
     private final JCheckBox verbose = new JCheckBox("Verbose");
-//    private final DefaultListModel<String> csListModel = new DefaultListModel<>();
-//    private final JList<String> csList = new JList<>(csListModel);
     private JTable overviewTable;
     private JTable factsTable;
     private AbstractTableModel overviewModel;
@@ -94,13 +91,6 @@ public class VertexCheckEditor extends JPanel {
         if (model == null) throw new NullPointerException("Expecting a model.");
         this.model = model;
 
-//        alphaField = new DoubleTextField(0.01, 6, new DecimalFormat("0.0##"));
-//
-//        alphaField.addActionListener(e -> {
-//            model.getParameters().set(Params.ALPHA, alphaField.getValue());
-//            resetResultsUI();
-//        });
-
         setPreferredSize(new Dimension(1100, 650));
         setLayout(new BorderLayout(10, 10));
 
@@ -117,28 +107,6 @@ public class VertexCheckEditor extends JPanel {
         setTestFromCombo();
 
         initializing = false;
-
-//        buildControls();
-//        buildMainPanels();
-//
-//        refreshTestList();
-//        applySavedSetType();
-//
-//        String savedClassName = Preferences.userRoot().get(PREF_KEY_TEST, null);
-//
-//        if (savedClassName != null) {
-//            for (int i = 0; i < indTestCombo.getItemCount(); i++) {
-//                IndependenceTestModel test = indTestCombo.getItemAt(i);
-//                if (test.getClass().getName().equals(savedClassName)) {
-//                    indTestCombo.setSelectedIndex(i);
-//                    break;
-//                }
-//            }
-//        }
-//
-//        setTestFromCombo();
-
-        // Run once initially? (I’m NOT auto-running; feels safer.)
     }
 
     private static DataType guessDataType(DataModel dm) {
@@ -158,8 +126,6 @@ public class VertexCheckEditor extends JPanel {
     private static String factString(IndependenceFact fact) {
         List<Node> z = new ArrayList<>(fact.getZ());
         String zStr = z.stream().map(Node::getName).sorted().collect(Collectors.joining(", "));
-//        if (z.isEmpty()) return "Ind(" + fact.getX() + ", " + fact.getY() + ")";
-//        return "Ind(" + fact.getX() + ", " + fact.getY() + " | " + zStr + ")";
         if (z.isEmpty()) return "Ind(" + fact.getX().getName() + ", " + fact.getY().getName() + ")";
         return "Ind(" + fact.getX().getName() + ", " + fact.getY().getName() + " | " + zStr + ")";
     }
@@ -419,11 +385,6 @@ public class VertexCheckEditor extends JPanel {
         conditioningCombo.setPreferredSize(new Dimension(220, 24));
         controls.add(conditioningCombo);
 
-//        controls.add(new JLabel("Alpha:"));
-
-//        alphaField.setText(String.valueOf(model.getParameters().getDouble(Params.ALPHA, 0.05)));
-//        controls.add(alphaField);
-
         controls.add(verbose);
         controls.add(runAll);
 
@@ -484,7 +445,6 @@ public class VertexCheckEditor extends JPanel {
             pane.createDialog(this, "Set Parameters").setVisible(true);
 
             // Ensure alpha box matches parameter state
-//            alphaField.setText(String.valueOf(model.getParameters().getDouble(Params.ALPHA, 0.05)));
             setTestFromCombo();
             resetResultsUI();
         });
@@ -499,36 +459,17 @@ public class VertexCheckEditor extends JPanel {
                 });
             }
         });
-
-//        runSelectedButton.addActionListener(e -> new WatchedProcess() {
-//            @Override
-//            public void watch() {
-//                applyAlpha();
-//                String v = getSelectedVertexName();
-//                if (v == null) {
-//                    SwingUtilities.invokeLater(() ->
-//                            JOptionPane.showMessageDialog(VertexCheckEditor.this,
-//                                    "Select a vertex in the table first."));
-//                    return;
-//                }
-//
-//                // Cached single-vertex run:
-//                model.runVertexByName(v, false);     // or model.runVertexByName(v, false)
-//
-//                SwingUtilities.invokeLater(() -> {
-//                    // refresh the row + details
-//                    overviewModel.fireTableDataChanged(); // simplest
-//                    refreshDetails(v);                    // your helper: updates CS, facts, histogram
-//                });
-//            }
-//        });
     }
 
     private void buildMainPanels() {
         // Overview table
         overviewModel = new AbstractTableModel() {
+//            private final String[] cols = new String[]{
+//                    "Vertex", "CS size", "#p used", "KS p", "Frac(p≤α)", "Min p", "Median p", "Status"
+//            };
+
             private final String[] cols = new String[]{
-                    "Vertex", "CS size", "#p used", "KS p", "Frac(p≤α)", "Min p", "Median p", "Status"
+                    "Vertex", "CS", "#t", "#p", "KS", "AD", "Bin", "Fish", "frac≤q", "min", "med"
             };
 
             @Override
@@ -546,6 +487,34 @@ public class VertexCheckEditor extends JPanel {
                 return cols[column];
             }
 
+//            @Override
+//            public Object getValueAt(int rowIndex, int columnIndex) {
+//                String v = model.getVertexNames().get(rowIndex);
+//                VertexCheckIndTestModel.VertexSummary s = model.getSummary(v);
+//
+//                return switch (columnIndex) {
+//                    case 0 -> v;
+//                    case 1 -> {
+//                        // If computed, use summary if you decide to store min/max there later.
+//                        // Otherwise compute fast range without running tests.
+//                        int min = model.getMinConditioningSetSizeFast(v);
+//                        int max = model.getMaxConditioningSetSizeFast(v);
+//
+//                        if (min < 0 || max < 0) yield "";
+//
+//                        if (min == max) yield String.valueOf(min);
+//                        yield min + "-" + max;
+//                    }
+//                    case 2 -> (s == null ? "" : s.numPValuesUsed());
+//                    case 3 -> (s == null ? "" : fmt(s.ksPValue()));
+//                    case 4 -> (s == null ? "" : fmt(s.fractionReject()));
+//                    case 5 -> (s == null ? "" : fmt(s.minP()));
+//                    case 6 -> (s == null ? "" : fmt(s.medianP()));
+//                    case 7 -> (s == null ? "Not computed" : "Computed");
+//                    default -> "";
+//                };
+//            }
+
             @Override
             public Object getValueAt(int rowIndex, int columnIndex) {
                 String v = model.getVertexNames().get(rowIndex);
@@ -553,34 +522,43 @@ public class VertexCheckEditor extends JPanel {
 
                 return switch (columnIndex) {
                     case 0 -> v;
-//                    case 1 -> {
-//                        if (s != null) yield s.getConditioningSetSize();
-//                        int k = model.getConditioningSetSizeFast(v);
-//                        yield (k >= 0 ? k : "");
-//                    }
-                    case 1 -> {
-                        // If computed, use summary if you decide to store min/max there later.
-                        // Otherwise compute fast range without running tests.
+
+                    case 1 -> { // CS size range
                         int min = model.getMinConditioningSetSizeFast(v);
                         int max = model.getMaxConditioningSetSizeFast(v);
-
                         if (min < 0 || max < 0) yield "";
-
                         if (min == max) yield String.valueOf(min);
                         yield min + "-" + max;
                     }
-                    case 2 -> (s == null ? "" : s.getNumPValuesUsed());
-                    case 3 -> (s == null ? "" : fmt(s.getKsPValue()));
-                    case 4 -> (s == null ? "" : fmt(s.getFractionReject()));
-                    case 5 -> (s == null ? "" : fmt(s.getMinP()));
-                    case 6 -> (s == null ? "" : fmt(s.getMedianP()));
-                    case 7 -> (s == null ? "Not computed" : "Computed");
+
+                    case 2 -> (s == null ? "" : s.numFactsTotal());
+                    case 3 -> (s == null ? "" : s.numPValuesUsed());
+                    case 4 -> (s == null ? "" : fmt(s.ksPValue()));
+                    case 5 -> (s == null ? "" : fmt(s.asP()));      // your AD p
+                    case 6 -> (s == null ? "" : fmt(s.binP()));
+                    case 7 -> (s == null ? "" : fmt(s.fishP()));
+                    case 8 -> (s == null ? "" : fmt(s.fractionReject())); // rename in UI to frac≤q
+                    case 9 -> (s == null ? "" : fmt(s.minP()));
+                    case 10 -> (s == null ? "" : fmt(s.medianP()));
                     default -> "";
                 };
             }
         };
 
         overviewTable = new JTable(overviewModel);
+
+        TableColumnModel ocm = overviewTable.getColumnModel();
+
+        ocm.getColumn(0).setPreferredWidth(80);   // Vertex
+        ocm.getColumn(1).setPreferredWidth(45);   // CS
+
+        ocm.getColumn(2).setPreferredWidth(45);   // #t
+        ocm.getColumn(3).setPreferredWidth(45);   // #p
+
+        for (int c : new int[]{4,5,6,7,8,9,10}) {
+            ocm.getColumn(c).setPreferredWidth(70);  // KS, AD, Fish, frac≤q, min, med
+        }
+
         overviewTable.setRowSorter(new TableRowSorter<>(overviewModel));
         overviewTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -588,11 +566,6 @@ public class VertexCheckEditor extends JPanel {
 
         JScrollPane overviewScroll = new JScrollPane(overviewTable);
         overviewScroll.setPreferredSize(new Dimension(520, 500));
-
-        // Detail: CS list + facts table + histogram
-//        csList.setVisibleRowCount(8);
-//        JScrollPane csScroll = new JScrollPane(csList);
-//        csScroll.setBorder(BorderFactory.createTitledBorder("Conditioning Set CS(X)"));
 
         factsModel = new AbstractTableModel() {
             private final String[] cols = new String[]{"#", "Fact", "Result", "p-value"};
@@ -668,15 +641,9 @@ public class VertexCheckEditor extends JPanel {
 
         factsTable.setRowSorter(new TableRowSorter<>(factsModel));
         JScrollPane factsScroll = new JScrollPane(factsTable);
-//        factsScroll.setBorder(BorderFactory.createTitledBorder("Tests: Ind(X, Y | CS(X)) for Y ∉ CS(X)"));
         factsScroll.setBorder(BorderFactory.createTitledBorder("Tests implied for selected vertex"));
 
         histogramPanel.setBorder(BorderFactory.createTitledBorder("P-value Histogram"));
-
-//        JPanel rightTop = new JPanel(new BorderLayout(8, 8));
-////        rightTop.add(csScroll, BorderLayout.NORTH);
-//        rightTop.add(factsScroll, BorderLayout.CENTER);
-//        rightTop.add(histogramPanel, BorderLayout.SOUTH);
 
         JPanel rightTop = new JPanel(new BorderLayout(8, 8));
         rightTop.add(factsScroll, BorderLayout.CENTER);
@@ -724,14 +691,6 @@ public class VertexCheckEditor extends JPanel {
             }
         };
     }
-
-//    private void refreshDetails(String v) {
-////        csListModel.clear();
-////        for (String s : model.getConditioningSetForVertex(v)) csListModel.addElement(s);
-//
-//        factsModel.fireTableDataChanged();
-//        updateHistogram(v);
-//    }
 
     private void refreshDetails(String v) {
         factsModel.fireTableDataChanged();
@@ -854,16 +813,6 @@ public class VertexCheckEditor extends JPanel {
         model.setConditioningSetType(toSetType(actual));
     }
 
-//    private ConditioningSetType toSetType(String s) {
-//        if (s == null) return ConditioningSetType.MARKOV_BLANKET;
-//        return switch (s) {
-//            case "Parents(X)" -> ConditioningSetType.LOCAL_MARKOV;
-//            case "Parents(X) and Neighbors(X)" -> ConditioningSetType.PARENTS_AND_NEIGHBORS;
-//            case "MarkovBlanket(X)" -> ConditioningSetType.MARKOV_BLANKET;
-//            default -> ConditioningSetType.MARKOV_BLANKET;
-//        };
-//    }
-
     private ConditioningSetType toSetType(String s) {
         if (s == null) return ConditioningSetType.MARKOV_BLANKET;
         return switch (s) {
@@ -881,18 +830,13 @@ public class VertexCheckEditor extends JPanel {
 
         int modelRow = overviewTable.convertRowIndexToModel(viewRow);
 
-        // If your overview table rows are driven by getVertexNames():
         return model.getVertexNames().get(modelRow);
-
-        // If your overview table rows are driven by getSummaries(): (old approach)
-        // return model.getSummaries().get(modelRow).getVertex();
     }
 
     private void selectFirstRowIfAny() {
         if (overviewTable.getRowCount() > 0) {
             overviewTable.setRowSelectionInterval(0, 0);
         } else {
-//            csListModel.clear();
             histogramPanel.removeAll();
             histogramPanel.add(new JLabel("(No results)"), BorderLayout.CENTER);
             factsModel.fireTableDataChanged();
@@ -907,8 +851,6 @@ public class VertexCheckEditor extends JPanel {
     private void resetResultsUI() {
         model.clearResults();
 
-        // Clear detail widgets
-//        csListModel.clear();
         histogramPanel.removeAll();
         histogramPanel.add(new JLabel("(Select a vertex to compute results)"), BorderLayout.CENTER);
 
@@ -921,5 +863,4 @@ public class VertexCheckEditor extends JPanel {
         histogramPanel.revalidate();
         histogramPanel.repaint();
     }
-
 }
