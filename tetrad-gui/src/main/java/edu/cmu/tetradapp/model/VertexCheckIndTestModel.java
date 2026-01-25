@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.SessionModel;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.stat.inference.BinomialTest;
 
 import java.io.Serial;
 import java.util.*;
@@ -473,39 +474,11 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
         BinomialDistribution bd = new BinomialDistribution(n, q);
 
-        // P(K >= k)
-        double pOneSided = 1.0 - bd.cumulativeProbability(k - 1);
-        return pOneSided;
+        double leftTail = bd.cumulativeProbability(k);
+        double rightTail = 1.0 - bd.cumulativeProbability(k - 1);
+        double pValue = Math.min(1.0, 2.0 * Math.min(leftTail, rightTail));
 
-//        int n = pValues.size();
-//        double q = independenceTest.getAlpha();          // under U(0,1), P(p <= q) = q
-//        int k = (int) pValues.stream().filter(p -> p <= q).count();
-//
-//        BinomialDistribution bd = new BinomialDistribution(n, q);
-//
-//        // P(K <= k)
-//        double left = bd.cumulativeProbability(k);
-//
-//        // P(K >= k)
-//        double right = 1.0 - bd.cumulativeProbability(k - 1);
-//
-//        double pTwo = 2.0 * Math.min(left, right);
-//        return Math.min(1.0, pTwo);
-//
-//        int independentJudgements = 0;
-//
-//        for (double pValue : pValues) {
-//            if (pValue > independenceTest.getAlpha()) independentJudgements++;
-//        }
-//
-//        int p = pValues.size();
-//
-//        // The left tail of this binomial distribution is a p-value for getting too few dependent judgments for
-//        // the distribution to count as uniform.
-//        BinomialDistribution bd = new BinomialDistribution(p, independenceTest.getAlpha());
-//
-//        // We want the area to the right of this, so we subtract from 1.
-//        return (1.0 - bd.cumulativeProbability(independentJudgements)) + (bd.probability(p - independentJudgements));
+        return pValue;
     }
 
     private List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x) {

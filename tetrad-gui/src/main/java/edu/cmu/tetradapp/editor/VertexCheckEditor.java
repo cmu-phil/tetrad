@@ -87,6 +87,8 @@ public class VertexCheckEditor extends JPanel {
 
     private boolean initializing = false;
 
+//    private volatile boolean computingSelection = false;
+
     public VertexCheckEditor(VertexCheckIndTestModel model) {
         if (model == null) throw new NullPointerException("Expecting a model.");
         this.model = model;
@@ -464,12 +466,8 @@ public class VertexCheckEditor extends JPanel {
     private void buildMainPanels() {
         // Overview table
         overviewModel = new AbstractTableModel() {
-//            private final String[] cols = new String[]{
-//                    "Vertex", "CS size", "#p used", "KS p", "Frac(p≤α)", "Min p", "Median p", "Status"
-//            };
-
             private final String[] cols = new String[]{
-                    "Vertex", "CS", "#t", "#p", "KS", "AD", "Bin", "Fish", "frac≤q", "min", "med"
+                    "Vertex", "CS", "#t", "#p", "KS", "AD", "Fish", "Bin", "frac≤q", "min", "med"
             };
 
             @Override
@@ -486,34 +484,6 @@ public class VertexCheckEditor extends JPanel {
             public String getColumnName(int column) {
                 return cols[column];
             }
-
-//            @Override
-//            public Object getValueAt(int rowIndex, int columnIndex) {
-//                String v = model.getVertexNames().get(rowIndex);
-//                VertexCheckIndTestModel.VertexSummary s = model.getSummary(v);
-//
-//                return switch (columnIndex) {
-//                    case 0 -> v;
-//                    case 1 -> {
-//                        // If computed, use summary if you decide to store min/max there later.
-//                        // Otherwise compute fast range without running tests.
-//                        int min = model.getMinConditioningSetSizeFast(v);
-//                        int max = model.getMaxConditioningSetSizeFast(v);
-//
-//                        if (min < 0 || max < 0) yield "";
-//
-//                        if (min == max) yield String.valueOf(min);
-//                        yield min + "-" + max;
-//                    }
-//                    case 2 -> (s == null ? "" : s.numPValuesUsed());
-//                    case 3 -> (s == null ? "" : fmt(s.ksPValue()));
-//                    case 4 -> (s == null ? "" : fmt(s.fractionReject()));
-//                    case 5 -> (s == null ? "" : fmt(s.minP()));
-//                    case 6 -> (s == null ? "" : fmt(s.medianP()));
-//                    case 7 -> (s == null ? "Not computed" : "Computed");
-//                    default -> "";
-//                };
-//            }
 
             @Override
             public Object getValueAt(int rowIndex, int columnIndex) {
@@ -535,8 +505,8 @@ public class VertexCheckEditor extends JPanel {
                     case 3 -> (s == null ? "" : s.numPValuesUsed());
                     case 4 -> (s == null ? "" : fmt(s.ksPValue()));
                     case 5 -> (s == null ? "" : fmt(s.asP()));      // your AD p
-                    case 6 -> (s == null ? "" : fmt(s.binP()));
-                    case 7 -> (s == null ? "" : fmt(s.fishP()));
+                    case 6 -> (s == null ? "" : fmt(s.fishP()));
+                    case 7 -> (s == null ? "" : fmt(s.binP()));
                     case 8 -> (s == null ? "" : fmt(s.fractionReject())); // rename in UI to frac≤q
                     case 9 -> (s == null ? "" : fmt(s.minP()));
                     case 10 -> (s == null ? "" : fmt(s.medianP()));
@@ -546,6 +516,7 @@ public class VertexCheckEditor extends JPanel {
         };
 
         overviewTable = new JTable(overviewModel);
+        overviewTable.setTransferHandler(new DefaultTableTransferHandler(0));
 
         TableColumnModel ocm = overviewTable.getColumnModel();
 
@@ -560,7 +531,7 @@ public class VertexCheckEditor extends JPanel {
         }
 
         overviewTable.setRowSorter(new TableRowSorter<>(overviewModel));
-        overviewTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        overviewTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         overviewTable.getSelectionModel().addListSelectionListener(this::overviewSelectionChanged);
 
@@ -614,6 +585,7 @@ public class VertexCheckEditor extends JPanel {
         };
 
         factsTable = new JTable(factsModel);
+        factsTable.setTransferHandler(new DefaultTableTransferHandler(0));
 
         TableColumnModel cm = factsTable.getColumnModel();
 
@@ -655,38 +627,83 @@ public class VertexCheckEditor extends JPanel {
         add(split, BorderLayout.CENTER);
     }
 
+//    private void overviewSelectionChanged(ListSelectionEvent e) {
+//        if (e.getValueIsAdjusting()) return;
+//
+//        // Capture selection at the moment the event fires.
+//        final int viewRow = overviewTable.getSelectedRow();
+//        if (viewRow < 0) return;
+//
+//        final int modelRow = overviewTable.convertRowIndexToModel(viewRow);
+//        final String v = getSelectedVertexName();
+//        if (v == null) return;
+//
+//        // If already computed, just refresh details.
+//        if (model.isVertexComputed(v)) {
+//            refreshDetails(v);
+//            return;
+//        }
+//
+//        // Otherwise compute in background (WatchedProcess).
+//        new WatchedProcess() {
+//            @Override
+//            public void watch() {
+//                model.ensureVertexComputed(v);
+//
+//                SwingUtilities.invokeLater(() -> {
+//                    // Only refresh if v is still the selected vertex.
+//                    String stillSelected = getSelectedVertexName();
+//                    if (!v.equals(stillSelected)) return;
+//
+//                    // Update the row that corresponds to v (captured at selection time).
+//                    overviewModel.fireTableRowsUpdated(modelRow, modelRow);
+//
+//                    refreshDetails(v);
+//                });
+//            }
+//        };
+//    }
+
     private void overviewSelectionChanged(ListSelectionEvent e) {
         if (e.getValueIsAdjusting()) return;
 
-        // Capture selection at the moment the event fires.
-        final int viewRow = overviewTable.getSelectedRow();
-        if (viewRow < 0) return;
+        SelectedRows sel = getSelectedVertices();
+        if (sel.vertices().isEmpty()) return;
 
-        final int modelRow = overviewTable.convertRowIndexToModel(viewRow);
-        final String v = getSelectedVertexName();
-        if (v == null) return;
+        // Decide which vertex is driving details (right panel)
+        final String active = getActiveSelectedVertexName();
+        if (active == null) return;
 
-        // If already computed, just refresh details.
-        if (model.isVertexComputed(v)) {
-            refreshDetails(v);
+        // Compute all selected vertices that aren't computed yet
+        List<String> toCompute = sel.vertices().stream()
+                .filter(v -> !model.isVertexComputed(v))
+                .collect(Collectors.toList());
+
+        // If nothing new to compute, just refresh details for active selection.
+        if (toCompute.isEmpty()) {
+            refreshDetails(active);
             return;
         }
 
-        // Otherwise compute in background (WatchedProcess).
+        // Run all computations in one watched process.
         new WatchedProcess() {
             @Override
             public void watch() {
-                model.ensureVertexComputed(v);
+                for (String v : toCompute) {
+                    model.ensureVertexComputed(v);
+                }
 
                 SwingUtilities.invokeLater(() -> {
-                    // Only refresh if v is still the selected vertex.
-                    String stillSelected = getSelectedVertexName();
-                    if (!v.equals(stillSelected)) return;
+                    // Update all rows that were selected (cheap + keeps table accurate)
+                    for (int mr : sel.modelRows()) {
+                        overviewModel.fireTableRowsUpdated(mr, mr);
+                    }
 
-                    // Update the row that corresponds to v (captured at selection time).
-                    overviewModel.fireTableRowsUpdated(modelRow, modelRow);
-
-                    refreshDetails(v);
+                    // Only refresh details for whichever vertex is currently "active"
+                    String stillActive = getActiveSelectedVertexName();
+                    if (stillActive != null) {
+                        refreshDetails(stillActive);
+                    }
                 });
             }
         };
@@ -824,13 +841,51 @@ public class VertexCheckEditor extends JPanel {
         };
     }
 
+//    private String getSelectedVertexName() {
+//        int viewRow = overviewTable.getSelectedRow();
+//        if (viewRow < 0) return null;
+//
+//        int modelRow = overviewTable.convertRowIndexToModel(viewRow);
+//
+//        return model.getVertexNames().get(modelRow);
+//    }
+
     private String getSelectedVertexName() {
-        int viewRow = overviewTable.getSelectedRow();
-        if (viewRow < 0) return null;
+        return getActiveSelectedVertexName();
+    }
 
-        int modelRow = overviewTable.convertRowIndexToModel(viewRow);
+    private record SelectedRows(List<Integer> modelRows, List<String> vertices) {}
 
-        return model.getVertexNames().get(modelRow);
+    private SelectedRows getSelectedVertices() {
+        int[] viewRows = overviewTable.getSelectedRows();
+        if (viewRows == null || viewRows.length == 0) {
+            return new SelectedRows(List.of(), List.of());
+        }
+
+        List<Integer> modelRows = new ArrayList<>(viewRows.length);
+        List<String> vertices  = new ArrayList<>(viewRows.length);
+
+        for (int vr : viewRows) {
+            int mr = overviewTable.convertRowIndexToModel(vr);
+            modelRows.add(mr);
+            vertices.add(model.getVertexNames().get(mr));
+        }
+
+        return new SelectedRows(modelRows, vertices);
+    }
+
+    /** Pick which selected vertex drives the right-side details panel. */
+    private String getActiveSelectedVertexName() {
+        // Lead selection if present; otherwise first selected.
+        int leadView = overviewTable.getSelectionModel().getLeadSelectionIndex();
+        if (leadView >= 0) {
+            int leadModel = overviewTable.convertRowIndexToModel(leadView);
+            if (leadModel >= 0 && leadModel < model.getVertexNames().size()) {
+                return model.getVertexNames().get(leadModel);
+            }
+        }
+        SelectedRows sel = getSelectedVertices();
+        return sel.vertices().isEmpty() ? null : sel.vertices().get(0);
     }
 
     private void selectFirstRowIfAny() {
