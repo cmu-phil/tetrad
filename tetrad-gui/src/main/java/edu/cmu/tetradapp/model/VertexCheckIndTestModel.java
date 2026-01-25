@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.OrderedLocalMarkovProperty;
 import edu.cmu.tetrad.search.RecursiveAdjustment;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.test.IndependenceResult;
