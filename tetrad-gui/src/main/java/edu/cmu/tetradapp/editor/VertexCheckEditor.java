@@ -38,6 +38,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
@@ -71,8 +73,8 @@ public class VertexCheckEditor extends JPanel {
     private final JComboBox<String> conditioningCombo = new JComboBox<>();
     //    private final DoubleTextField alphaField;
     private final JCheckBox verbose = new JCheckBox("Verbose");
-    private final DefaultListModel<String> csListModel = new DefaultListModel<>();
-    private final JList<String> csList = new JList<>(csListModel);
+//    private final DefaultListModel<String> csListModel = new DefaultListModel<>();
+//    private final JList<String> csList = new JList<>(csListModel);
     private JTable overviewTable;
     private JTable factsTable;
     private AbstractTableModel overviewModel;
@@ -156,8 +158,10 @@ public class VertexCheckEditor extends JPanel {
     private static String factString(IndependenceFact fact) {
         List<Node> z = new ArrayList<>(fact.getZ());
         String zStr = z.stream().map(Node::getName).sorted().collect(Collectors.joining(", "));
-        if (z.isEmpty()) return "Ind(" + fact.getX() + ", " + fact.getY() + ")";
-        return "Ind(" + fact.getX() + ", " + fact.getY() + " | " + zStr + ")";
+//        if (z.isEmpty()) return "Ind(" + fact.getX() + ", " + fact.getY() + ")";
+//        return "Ind(" + fact.getX() + ", " + fact.getY() + " | " + zStr + ")";
+        if (z.isEmpty()) return "Ind(" + fact.getX().getName() + ", " + fact.getY().getName() + ")";
+        return "Ind(" + fact.getX().getName() + ", " + fact.getY().getName() + " | " + zStr + ")";
     }
 
     /**
@@ -411,6 +415,7 @@ public class VertexCheckEditor extends JPanel {
         conditioningCombo.addItem("MarkovBlanket(X)");
         conditioningCombo.addItem("Parents(X)");
         conditioningCombo.addItem("Parents(X) and Neighbors(X)");
+        conditioningCombo.addItem("Ordered Local Markov (MAG)");
         conditioningCombo.setPreferredSize(new Dimension(220, 24));
         controls.add(conditioningCombo);
 
@@ -548,10 +553,21 @@ public class VertexCheckEditor extends JPanel {
 
                 return switch (columnIndex) {
                     case 0 -> v;
+//                    case 1 -> {
+//                        if (s != null) yield s.getConditioningSetSize();
+//                        int k = model.getConditioningSetSizeFast(v);
+//                        yield (k >= 0 ? k : "");
+//                    }
                     case 1 -> {
-                        if (s != null) yield s.getConditioningSetSize();
-                        int k = model.getConditioningSetSizeFast(v);
-                        yield (k >= 0 ? k : "");
+                        // If computed, use summary if you decide to store min/max there later.
+                        // Otherwise compute fast range without running tests.
+                        int min = model.getMinConditioningSetSizeFast(v);
+                        int max = model.getMaxConditioningSetSizeFast(v);
+
+                        if (min < 0 || max < 0) yield "";
+
+                        if (min == max) yield String.valueOf(min);
+                        yield min + "-" + max;
                     }
                     case 2 -> (s == null ? "" : s.getNumPValuesUsed());
                     case 3 -> (s == null ? "" : fmt(s.getKsPValue()));
@@ -574,9 +590,9 @@ public class VertexCheckEditor extends JPanel {
         overviewScroll.setPreferredSize(new Dimension(520, 500));
 
         // Detail: CS list + facts table + histogram
-        csList.setVisibleRowCount(8);
-        JScrollPane csScroll = new JScrollPane(csList);
-        csScroll.setBorder(BorderFactory.createTitledBorder("Conditioning Set CS(X)"));
+//        csList.setVisibleRowCount(8);
+//        JScrollPane csScroll = new JScrollPane(csList);
+//        csScroll.setBorder(BorderFactory.createTitledBorder("Conditioning Set CS(X)"));
 
         factsModel = new AbstractTableModel() {
             private final String[] cols = new String[]{"#", "Fact", "Result", "p-value"};
@@ -625,14 +641,44 @@ public class VertexCheckEditor extends JPanel {
         };
 
         factsTable = new JTable(factsModel);
+
+        TableColumnModel cm = factsTable.getColumnModel();
+
+        // Column indices assumed; adjust if needed
+        TableColumn colIndex  = cm.getColumn(0); // #
+        TableColumn colFact   = cm.getColumn(1); // Fact
+        TableColumn colResult = cm.getColumn(2); // Result
+        TableColumn colPval   = cm.getColumn(3); // p-value
+
+        // # column: very skinny
+        colIndex.setPreferredWidth(40);
+        colIndex.setMaxWidth(40);
+
+        // Result column: "INDEPENDENT"
+        colResult.setPreferredWidth(100);
+        colResult.setMaxWidth(100);
+
+        // p-value column: ~6–8 chars
+        colPval.setMinWidth(70);
+        colPval.setPreferredWidth(70);
+
+        // Fact column: stretch
+        colFact.setMinWidth(300);
+        // no max width → absorbs remaining space
+
         factsTable.setRowSorter(new TableRowSorter<>(factsModel));
         JScrollPane factsScroll = new JScrollPane(factsTable);
-        factsScroll.setBorder(BorderFactory.createTitledBorder("Tests: Ind(X, Y | CS(X)) for Y ∉ CS(X)"));
+//        factsScroll.setBorder(BorderFactory.createTitledBorder("Tests: Ind(X, Y | CS(X)) for Y ∉ CS(X)"));
+        factsScroll.setBorder(BorderFactory.createTitledBorder("Tests implied for selected vertex"));
 
         histogramPanel.setBorder(BorderFactory.createTitledBorder("P-value Histogram"));
 
+//        JPanel rightTop = new JPanel(new BorderLayout(8, 8));
+////        rightTop.add(csScroll, BorderLayout.NORTH);
+//        rightTop.add(factsScroll, BorderLayout.CENTER);
+//        rightTop.add(histogramPanel, BorderLayout.SOUTH);
+
         JPanel rightTop = new JPanel(new BorderLayout(8, 8));
-        rightTop.add(csScroll, BorderLayout.NORTH);
         rightTop.add(factsScroll, BorderLayout.CENTER);
         rightTop.add(histogramPanel, BorderLayout.SOUTH);
 
@@ -679,10 +725,15 @@ public class VertexCheckEditor extends JPanel {
         };
     }
 
-    private void refreshDetails(String v) {
-        csListModel.clear();
-        for (String s : model.getConditioningSetForVertex(v)) csListModel.addElement(s);
+//    private void refreshDetails(String v) {
+////        csListModel.clear();
+////        for (String s : model.getConditioningSetForVertex(v)) csListModel.addElement(s);
+//
+//        factsModel.fireTableDataChanged();
+//        updateHistogram(v);
+//    }
 
+    private void refreshDetails(String v) {
         factsModel.fireTableDataChanged();
         updateHistogram(v);
     }
@@ -803,12 +854,23 @@ public class VertexCheckEditor extends JPanel {
         model.setConditioningSetType(toSetType(actual));
     }
 
+//    private ConditioningSetType toSetType(String s) {
+//        if (s == null) return ConditioningSetType.MARKOV_BLANKET;
+//        return switch (s) {
+//            case "Parents(X)" -> ConditioningSetType.LOCAL_MARKOV;
+//            case "Parents(X) and Neighbors(X)" -> ConditioningSetType.PARENTS_AND_NEIGHBORS;
+//            case "MarkovBlanket(X)" -> ConditioningSetType.MARKOV_BLANKET;
+//            default -> ConditioningSetType.MARKOV_BLANKET;
+//        };
+//    }
+
     private ConditioningSetType toSetType(String s) {
         if (s == null) return ConditioningSetType.MARKOV_BLANKET;
         return switch (s) {
             case "Parents(X)" -> ConditioningSetType.LOCAL_MARKOV;
             case "Parents(X) and Neighbors(X)" -> ConditioningSetType.PARENTS_AND_NEIGHBORS;
             case "MarkovBlanket(X)" -> ConditioningSetType.MARKOV_BLANKET;
+            case "Ordered Local Markov (MAG)" -> ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG;
             default -> ConditioningSetType.MARKOV_BLANKET;
         };
     }
@@ -830,7 +892,7 @@ public class VertexCheckEditor extends JPanel {
         if (overviewTable.getRowCount() > 0) {
             overviewTable.setRowSelectionInterval(0, 0);
         } else {
-            csListModel.clear();
+//            csListModel.clear();
             histogramPanel.removeAll();
             histogramPanel.add(new JLabel("(No results)"), BorderLayout.CENTER);
             factsModel.fireTableDataChanged();
@@ -846,7 +908,7 @@ public class VertexCheckEditor extends JPanel {
         model.clearResults();
 
         // Clear detail widgets
-        csListModel.clear();
+//        csListModel.clear();
         histogramPanel.removeAll();
         histogramPanel.add(new JLabel("(Select a vertex to compute results)"), BorderLayout.CENTER);
 

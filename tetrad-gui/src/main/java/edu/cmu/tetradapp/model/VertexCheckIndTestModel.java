@@ -61,7 +61,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     // Results
     private final Map<String, VertexSummary> summariesByVertex = new LinkedHashMap<>();
     private final Map<String, List<IndependenceResult>> resultsByVertex = new LinkedHashMap<>();
-    private final Map<String, List<String>> conditioningSetByVertex = new LinkedHashMap<>();
+//    private final Map<String, List<String>> conditioningSetByVertex = new LinkedHashMap<>();
     private String name = "";
     private transient IndependenceTest independenceTest;
     private ConditioningSetType conditioningSetType = ConditioningSetType.MARKOV_BLANKET;
@@ -174,7 +174,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public void clearResults() {
         summariesByVertex.clear();
         resultsByVertex.clear();
-        conditioningSetByVertex.clear();
+//        conditioningSetByVertex.clear();
     }
 
     /**
@@ -235,50 +235,154 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     // --- Implementation -------------------------------------------------------------------------
 
-    public List<String> getConditioningSetForVertex(String vertexName) {
-        return conditioningSetByVertex.getOrDefault(vertexName, List.of());
-    }
+//    public List<String> getConditioningSetForVertex(String vertexName) {
+//        return conditioningSetByVertex.getOrDefault(vertexName, List.of());
+//    }
+
+//    private void runVertex(Graph alignedGraph, Node x) {
+//        Set<Node> cs = computeConditioningSet(alignedGraph, x);
+//        List<String> csNames = cs.stream().map(Node::getName).sorted().collect(Collectors.toList());
+//        conditioningSetByVertex.put(x.getName(), csNames);
+//
+//        List<IndependenceResult> results = new ArrayList<>();
+//        List<Double> pvals = new ArrayList<>();
+//
+//        for (Node y : alignedGraph.getNodes()) {
+//            if (y.equals(x)) continue;
+//            if (cs.contains(y)) continue;
+//
+//            try {
+//                IndependenceResult r = independenceTest.checkIndependence(x, y, cs);
+//
+//                // Only keep well-formed p-values for uniformity testing.
+//                double p = r.getPValue();
+//                if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
+//                    results.add(new IndependenceResult(new IndependenceFact(x, y, cs), r.isIndependent(), p, r.getScore()));
+//                    pvals.add(p);
+//                } else {
+//                    // Still record it as an IndependenceResult with whatever p is (editor can show it),
+//                    // but skip for uniformity.
+//                    results.add(new IndependenceResult(new IndependenceFact(x, y, cs), r.isIndependent(), p, r.getScore()));
+//                }
+//
+//                if (verbose) {
+//                    TetradLogger.getInstance().log("VertexCheck: " + x.getName() + " vs " + y.getName()
+//                            + " | CS=" + csNames + "  p=" + p);
+//                }
+//            } catch (Exception ex) {
+//                TetradLogger.getInstance().log("VertexCheck: error checking " + x.getName() + " _||_ " + y.getName()
+//                        + " | CS(X): " + ex.getMessage());
+//            }
+//        }
+//
+//        // Compute summary stats
+//        VertexSummary summary = summarizeVertex(x.getName(), cs.size(), results, pvals);
+//        summariesByVertex.put(x.getName(), summary);
+//        resultsByVertex.put(x.getName(), results);
+//    }
 
     private void runVertex(Graph alignedGraph, Node x) {
-        Set<Node> cs = computeConditioningSet(alignedGraph, x);
-        List<String> csNames = cs.stream().map(Node::getName).sorted().collect(Collectors.toList());
-        conditioningSetByVertex.put(x.getName(), csNames);
+        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x);
+
+//        List<IndependenceFact> impliedFacts = computeImpliedFactsForVertex(alignedGraph, x);
+        TetradLogger.getInstance().log("VertexCheck: x=" + x.getName() + " g impliedFacts=" + impliedFacts.size());
+
+        int tried = 0;
+        int ok = 0;
+
+        for (IndependenceFact fact : impliedFacts) {
+            tried++;
+            try {
+                IndependenceResult r = independenceTest.checkIndependence(fact.getX(), fact.getY(), fact.getZ());
+                double p = r.getPValue();
+                if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) ok++;
+            } catch (Exception ex) {
+                TetradLogger.getInstance().log("VertexCheck: exception for " + fact + " : " + ex);
+            }
+        }
+
+        TetradLogger.getInstance().log("VertexCheck: x=" + x.getName() + " tried=" + tried + " okP=" + ok);
+
+        // Conditioning-set “summary” for UI purposes only:
+        // - If uniform-Z, store that Z.
+        // - If varying-Z (e.g. OLMP), store empty and let the facts table carry Z.
+//        storeConditioningSetSummary(x.getName(), impliedFacts);
 
         List<IndependenceResult> results = new ArrayList<>();
         List<Double> pvals = new ArrayList<>();
 
-        for (Node y : alignedGraph.getNodes()) {
-            if (y.equals(x)) continue;
-            if (cs.contains(y)) continue;
+        for (IndependenceFact fact : impliedFacts) {
+            Node y = fact.getY();
+            Set<Node> z = fact.getZ();
 
             try {
-                IndependenceResult r = independenceTest.checkIndependence(x, y, cs);
+                IndependenceResult r = independenceTest.checkIndependence(fact.getX(), y, z);
 
-                // Only keep well-formed p-values for uniformity testing.
                 double p = r.getPValue();
+                IndependenceResult stored = new IndependenceResult(
+                        fact,
+                        r.isIndependent(),
+                        p,
+                        r.getScore()
+                );
+                results.add(stored);
+
                 if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
-                    results.add(new IndependenceResult(new IndependenceFact(x, y, cs), r.isIndependent(), p, r.getScore()));
                     pvals.add(p);
-                } else {
-                    // Still record it as an IndependenceResult with whatever p is (editor can show it),
-                    // but skip for uniformity.
-                    results.add(new IndependenceResult(new IndependenceFact(x, y, cs), r.isIndependent(), p, r.getScore()));
                 }
 
                 if (verbose) {
-                    TetradLogger.getInstance().log("VertexCheck: " + x.getName() + " vs " + y.getName()
-                            + " | CS=" + csNames + "  p=" + p);
+                    TetradLogger.getInstance().log("VertexCheck: " + fact + "  p=" + p);
                 }
             } catch (Exception ex) {
-                TetradLogger.getInstance().log("VertexCheck: error checking " + x.getName() + " _||_ " + y.getName()
-                        + " | CS(X): " + ex.getMessage());
+                TetradLogger.getInstance().log("VertexCheck: error checking " + fact + ": " + ex.getMessage());
             }
         }
 
-        // Compute summary stats
-        VertexSummary summary = summarizeVertex(x.getName(), cs.size(), results, pvals);
+//        VertexSummary summary = summarizeVertex(
+//                x.getName(),
+//                conditioningSetSizeForSummary(impliedFacts),
+//                results,
+//                pvals
+//        );
+//        summariesByVertex.put(x.getName(), summary);
+
+        VertexSummary summary = summarizeVertex(
+                x.getName(),
+                /* csSize */ -1, // or conditioningSetSizeForSummary(impliedFacts) if you still want it
+                results,
+                pvals
+        );
         summariesByVertex.put(x.getName(), summary);
         resultsByVertex.put(x.getName(), results);
+
+    }
+
+//    private void storeConditioningSetSummary(String xName, List<IndependenceFact> impliedFacts) {
+//        // If all facts share the same Z, store it; else store empty.
+//        Set<Set<Node>> distinct = impliedFacts.stream()
+//                .map(IndependenceFact::getZ)
+//                .collect(Collectors.toCollection(LinkedHashSet::new));
+//
+//        if (distinct.size() == 1) {
+//            Set<Node> z = distinct.iterator().next();
+//            List<String> names = z.stream().map(Node::getName).sorted().toList();
+////            conditioningSetByVertex.put(xName, names);
+//        } else {
+////            conditioningSetByVertex.put(xName, List.of()); // varying-Z; show Z per row in results table
+//        }
+//    }
+
+    private static int conditioningSetSizeForSummary(List<IndependenceFact> impliedFacts) {
+        // Preserve your existing "CS size" column semantics:
+        // - uniform-Z: that size
+        // - varying-Z: return -1 (or 0) and let UI show “varies”.
+        Set<Set<Node>> distinct = impliedFacts.stream()
+                .map(IndependenceFact::getZ)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (distinct.size() == 1) return distinct.iterator().next().size();
+        return -1;
     }
 
     private VertexSummary summarizeVertex(String vertexName, int csSize,
@@ -301,15 +405,48 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return new VertexSummary(vertexName, csSize, results.size(), n, ksP, fracReject, numReject, minP, medianP);
     }
 
-    private Set<Node> computeConditioningSet(Graph alignedGraph, Node x) {
+//    private Set<Node> computeConditioningSet(Graph alignedGraph, Node x) {
+//        switch (conditioningSetType) {
+//            case LOCAL_MARKOV: {
+//                Set<Node> z = new HashSet<>();
+//                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+//                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+//                }
+//                return z;
+//            }
+//            case PARENTS_AND_NEIGHBORS: {
+//                Set<Node> z = new HashSet<>();
+//                for (Node w : alignedGraph.getAdjacentNodes(x)) {
+//                    Edge e = alignedGraph.getEdge(w, x);
+//                    if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
+//                    if (alignedGraph.isParentOf(w, x)) z.add(w);
+//                }
+//                return z;
+//            }
+//            case MARKOV_BLANKET:
+//                return GraphUtils.markovBlanket(x, alignedGraph);
+//
+//            default:
+//                // For now, keep the Vertex Checker tight and predictable.
+//                // If you want to include ORDERED_LOCAL_MARKOV_MAG or GLOBAL_MARKOV here, we can,
+//                // but the UI story is less clean.
+//                throw new IllegalArgumentException("Unsupported conditioning set type for VertexCheck: " + conditioningSetType);
+//        }
+//    }
+
+    private List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x) {
         switch (conditioningSetType) {
+
+            // ---------------- uniform-Z families ----------------
+
             case LOCAL_MARKOV: {
                 Set<Node> z = new HashSet<>();
                 for (Node w : alignedGraph.getAdjacentNodes(x)) {
                     if (alignedGraph.isParentOf(w, x)) z.add(w);
                 }
-                return z;
+                return factsForUniformZ(alignedGraph, x, z);
             }
+
             case PARENTS_AND_NEIGHBORS: {
                 Set<Node> z = new HashSet<>();
                 for (Node w : alignedGraph.getAdjacentNodes(x)) {
@@ -317,17 +454,79 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
                     if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
                     if (alignedGraph.isParentOf(w, x)) z.add(w);
                 }
-                return z;
+                return factsForUniformZ(alignedGraph, x, z);
             }
-            case MARKOV_BLANKET:
-                return GraphUtils.markovBlanket(x, alignedGraph);
+
+            case MARKOV_BLANKET: {
+                Set<Node> z = GraphUtils.markovBlanket(x, alignedGraph);
+                return factsForUniformZ(alignedGraph, x, z);
+            }
+
+            // ---------------- varying-Z families ----------------
+
+//            case ORDERED_LOCAL_MARKOV_MAG: {
+//                // Uses your new “facts for x” method in OrderedLocalMarkovProperty.
+//                // Assumes alignedGraph is a legal MAG (you may choose to validate elsewhere).
+//                Set<IndependenceFact> facts = OrderedLocalMarkovProperty.getModelForNode(alignedGraph, x);
+//
+//                // Optional: keep only facts where x is the left endpoint (should already be true).
+//                // facts.removeIf(f -> !f.getX().equals(x));
+//
+//                return new ArrayList<>(facts);
+//            }
+
+            case ORDERED_LOCAL_MARKOV_MAG: {
+                Graph mag;// = GraphTransforms.zhangMagFromPag(graph);
+
+                if (graph.paths().isLegalDag()) {
+                    mag = graph;
+                } else if (graph.paths().isLegalCpdag()) {
+                    mag = GraphTransforms.dagFromCpdag(graph);
+                } else if (graph.paths().isLegalMag()) {
+                    mag = graph;
+                } else {
+                    mag = GraphTransforms.zhangMagFromPag(graph);
+                }
+
+                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, x);
+
+//                String xName = x.getName();
+//
+//                List<IndependenceFact> mapped = new ArrayList<>();
+//                for (IndependenceFact f : raw) {
+//                    if (!f.getX().getName().equals(xName)) continue;
+//
+//                    Node y = alignedGraph.getNode(f.getY().getName());
+//                    if (y == null) continue;
+//
+//                    Set<Node> z = new HashSet<>();
+//                    for (Node zNode : f.getZ()) {
+//                        Node zz = alignedGraph.getNode(zNode.getName());
+//                        if (zz != null) z.add(zz);
+//                    }
+//
+//                    // IMPORTANT: use x (from alignedGraph), not f.getX()
+//                    mapped.add(new IndependenceFact(x, y, z));
+//                }
+
+                return new ArrayList<>(raw);
+            }
 
             default:
-                // For now, keep the Vertex Checker tight and predictable.
-                // If you want to include ORDERED_LOCAL_MARKOV_MAG or GLOBAL_MARKOV here, we can,
-                // but the UI story is less clean.
-                throw new IllegalArgumentException("Unsupported conditioning set type for VertexCheck: " + conditioningSetType);
+                throw new IllegalArgumentException(
+                        "Unsupported conditioning set type for VertexCheck: " + conditioningSetType
+                );
         }
+    }
+
+    private static List<IndependenceFact> factsForUniformZ(Graph g, Node x, Set<Node> z) {
+        List<IndependenceFact> out = new ArrayList<>();
+        for (Node y : g.getNodes()) {
+            if (y.equals(x)) continue;
+            if (z.contains(y)) continue;
+            out.add(new IndependenceFact(x, y, z));
+        }
+        return out;
     }
 
     // --- Required by KnowledgeBoxInput / GraphSource (kept consistent with MarkovCheckIndTestModel) ----
@@ -380,19 +579,71 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         runVertex(alignedGraph, x);
     }
 
-    public int getConditioningSetSizeFast(String vertexName) {
-        if (conditioningSetByVertex.containsKey(vertexName)) {
-            return conditioningSetByVertex.get(vertexName).size();
+//    public int getConditioningSetSizeFast(String vertexName) {
+//        if (conditioningSetByVertex.containsKey(vertexName)) {
+//            return conditioningSetByVertex.get(vertexName).size();
+//        }
+//        if (independenceTest == null) return -1;
+//
+//        Graph alignedGraph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
+//        Node x = alignedGraph.getNode(vertexName);
+//        if (x == null) return -1;
+//
+//        Set<Node> cs = computeConditioningSet(alignedGraph, x);
+//        return cs.size();
+//    }
+    public int getMinConditioningSetSizeFast(String vertexName) {
+        ConditioningSetSizeRange r = getConditioningSetSizeRangeFast(vertexName);
+        return r.min();
+    }
+
+    public int getMaxConditioningSetSizeFast(String vertexName) {
+        ConditioningSetSizeRange r = getConditioningSetSizeRangeFast(vertexName);
+        return r.max();
+    }
+
+    private record ConditioningSetSizeRange(int min, int max) {}
+
+    private ConditioningSetSizeRange getConditioningSetSizeRangeFast(String vertexName) {
+
+        // ---- Case 1: already computed → cheap and exact ----
+        if (resultsByVertex.containsKey(vertexName)) {
+            List<IndependenceResult> results = resultsByVertex.get(vertexName);
+            if (results.isEmpty()) return new ConditioningSetSizeRange(0, 0);
+
+            int min = Integer.MAX_VALUE;
+            int max = Integer.MIN_VALUE;
+
+            for (IndependenceResult r : results) {
+                int sz = r.getFact().getZ().size();
+                min = Math.min(min, sz);
+                max = Math.max(max, sz);
+            }
+            return new ConditioningSetSizeRange(min, max);
         }
-        if (independenceTest == null) return -1;
+
+        // ---- Case 2: compute implied facts only (no CI tests) ----
+        if (independenceTest == null) return new ConditioningSetSizeRange(-1, -1);
 
         Graph alignedGraph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
         Node x = alignedGraph.getNode(vertexName);
-        if (x == null) return -1;
+        if (x == null) return new ConditioningSetSizeRange(-1, -1);
 
-        Set<Node> cs = computeConditioningSet(alignedGraph, x);
-        return cs.size();
+        List<IndependenceFact> facts = computeImpliedFactsForVertex(alignedGraph, x);
+        if (facts.isEmpty()) return new ConditioningSetSizeRange(0, 0);
+
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+
+        for (IndependenceFact f : facts) {
+            int sz = f.getZ().size();
+            min = Math.min(min, sz);
+            max = Math.max(max, sz);
+        }
+
+        return new ConditioningSetSizeRange(min, max);
     }
+
 
     // --- Summary record ----------------------------------------------------------------------------
 
