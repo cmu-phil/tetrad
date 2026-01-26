@@ -15,6 +15,27 @@ import java.io.FileWriter;
  */
 public final class PlotMatrixMimicDriver {
 
+    /**
+     * Private constructor for the PlotMatrixMimicDriver class.
+     * This constructor is intentionally defined to prevent instantiation of the class,
+     * as it serves as a utility class with a static main method to perform the application's operations.
+     */
+    private PlotMatrixMimicDriver() {}
+
+    /**
+     * Entry point for the PlotMatrixMimicDriver application. This method loads input data,
+     * configures a simulator for generating simulated data based on the provided novelty value,
+     * and writes the simulated data to the specified output file.
+     *
+     * @param args Command-line arguments passed to the program:
+     *             args[0] - Path to the input data file (required).
+     *             args[1] - Path to the output data file where the simulated data will be written (required).
+     *             args[2] - Number of rows to simulate (integer, required).
+     *             args[3] - Novelty strength for the simulation (double, required).
+     *             args[4] - Random seed for simulation reproducibility (long, required).
+     * @throws IllegalArgumentException if the input file does not exist or if arguments are malformed.
+     * @throws Exception if an error occurs during data loading, simulation, or file writing.
+     */
     public static void main(String[] args) throws Exception {
 
         if (args.length != 5) {

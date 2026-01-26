@@ -89,9 +89,73 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
-    public enum FeatureType {RFF, ORF}
+    /**
+     * The FeatureType enum defines the types of feature representations
+     * utilized for kernel and feature-based computations.
+     *
+     * FeatureType is primarily used to parameterize the style of feature
+     * generation for the RBF kernel in contexts where approximate kernel
+     * methods are employed.
+     */
+    public enum FeatureType {
 
-    public enum Approx {LPB4, HBE, GAMMA, CHI2, PERMUTATION}
+        /**
+         * Represents Random Fourier Features (RFF), a method to approximate
+         * shift-invariant kernels, such as the radial basis function (RBF) kernel.
+         * This technique utilizes random projections and trigonometric functions
+         * to efficiently compute feature mappings in high-dimensional space.
+         */
+        RFF,
+
+        /**
+         * Represents Orthogonal Random Features (ORF), a variation of Random Fourier
+         * Features (RFF) where the random projection matrix is block-orthogonal.
+         * This approach provides computational and theoretical benefits for approximating
+         * shift-invariant kernels, such as the radial basis function (RBF) kernel.
+         */
+        ORF}
+
+    /**
+     * The Approx enumeration is used to represent various types of approximation methods
+     * or strategies. These constants can be utilized to specify or identify the desired
+     * approximation type within computations or algorithms.
+     */
+    public enum Approx {
+
+        /**
+         * Represents the LPB4 value in the Approx enumeration.
+         * This constant may be used to specify or identify a specific
+         * approximation type within the enumeration.
+         */
+        LPB4,
+
+        /**
+         * Represents the HBE value in the Approx enumeration.
+         * This constant is used to specify or identify a specific
+         * type of approximation related to the enumeration.
+         */
+        HBE,
+
+        /**
+         * Represents the GAMMA value in the Approx enumeration.
+         * This constant is used to specify or identify a specific
+         * type of approximation within the enumeration.
+         */
+        GAMMA,
+
+        /**
+         * Represents the CHI2 value in the Approx enumeration.
+         * This constant is used to specify or identify a specific
+         * type of approximation within the enumeration.
+         */
+        CHI2,
+
+        /**
+         * Represents the PERMUTATION value in the Approx enumeration.
+         * This constant is used to denote a specific type of approximation
+         * or operation related to permutations within the enumeration.
+         */
+        PERMUTATION}
 
     // ---------------- core data ----------------
     private final DataSet data;
@@ -128,7 +192,30 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
     private double catRho = 0.0; // default: current one-hot behavior
 
-    public enum MixedMode {STACK, STRATA_ZDISC}
+    /**
+     * Enum representing the mixed mode configuration for processing data.
+     *
+     * This enum is used to specify the approach to handle mixed data types
+     * (continuous and discrete). It offers two modes of operation.
+     */
+    public enum MixedMode {
+
+        /**
+         * STACK mode processes mixed data by stacking the feature matrices for
+         * continuous and discrete data types. This approach treats the data as
+         * a unified whole rather than separating discrete and continuous variables
+         * during calculations.
+         */
+        STACK,
+
+        /**
+         * STRATA_ZDISC mode processes mixed data by stratifying based on the discrete
+         * variables. This approach treats discrete and continuous variables separately,
+         * applying methods suited to each type. It is particularly useful for operations
+         * such as independence testing or scenarios where distinguishing between variable
+         * types is critical.
+         */
+        STRATA_ZDISC}
 
     private MixedMode mixedMode = MixedMode.STACK;
 
@@ -144,10 +231,27 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
     // ---------------- ctor ----------------
 
+    /**
+     * Constructs an instance of FfCiMixed with the specified dataset and default parameters.
+     *
+     * @param dataSet the dataset to be used for the independence testing. It is expected to contain
+     *                the variables and data rows needed for the algorithm.
+     */
     public FfCiMixed(DataSet dataSet) {
         this(dataSet, new Parameters());
     }
 
+    /**
+     * Constructs an instance of FfCiMixed, a class designed to handle mixed data
+     * types in a dataset for specific statistical or computational tasks.
+     *
+     * @param dataSet The dataset containing the variables and data to be analyzed.
+     *                Cannot be null.
+     * @param params  A set of parameters used to configure various settings of
+     *                the FfCiMixed instance, such as random seed, feature
+     *                counts, bandwidth settings, permutation settings, and
+     *                approximation type.
+     */
     public FfCiMixed(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
@@ -227,6 +331,20 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
     // ---------------- public setters ----------------
 
+    /**
+     * Sets the approximation method based on the given integer code and updates
+     * related configurations if necessary.
+     *
+     * The method assigns one of the predefined approximation methods to the `approx`
+     * field of the class based on the provided code. If the code does not match any
+     * predefined values, a default approximation is used. Additionally, if the data
+     * contains discrete variables, the delegate is synchronized with the current
+     * instance.
+     *
+     * @param approxCode an integer code representing the desired approximation type:
+     *                   1 for LPB4, 2 for HBE, 3 for GAMMA, 4 for CHI2, 5 for PERMUTATION.
+     *                   Any other value defaults to GAMMA.
+     */
     public void setApproximationFromInt(int approxCode) {
         switch (approxCode) {
             case 1 -> this.approx = Approx.LPB4;
@@ -239,26 +357,60 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
+    /**
+     * Sets the state of the DoRcit flag and synchronizes the delegate if no discrete data exists.
+     *
+     * @param doRcit a boolean value representing the desired state to set for the DoRcit flag
+     */
     public void setDoRcit(boolean doRcit) {
         this.doRcit = doRcit;
         if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
+    /**
+     * Sets the lambda parameter, ensuring it is not less than a minimum threshold.
+     * If the data contains no discrete elements, synchronizes the delegate with the current instance.
+     *
+     * @param lambda the value to set for the lambda parameter. Must be a positive number,
+     *               as it will be clamped to a minimum value of 1e-12.
+     */
     public void setLambda(double lambda) {
         this.lambda = Math.max(1e-12, lambda);
         if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
+    /**
+     * Sets the number of permutations to the specified value.
+     * If the given value is less than zero, it will be set to zero.
+     * Triggers synchronization if the data contains no discrete elements.
+     *
+     * @param permutations the number of permutations to set, must be zero or greater
+     */
     public void setPermutations(int permutations) {
         this.permutations = Math.max(0, permutations);
         if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
+    /**
+     * Sets whether the features should be centered. Centering features ensures
+     * that the data is adjusted around the mean, making it more suitable for
+     * certain statistical computations or machine learning models.
+     *
+     * @param centerFeatures a boolean value indicating whether to center features.
+     *                        If true, the features will be centered. If false,
+     *                        they will remain unchanged.
+     */
     public void setCenterFeatures(boolean centerFeatures) {
         this.centerFeatures = centerFeatures;
         if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
+    /**
+     * Sets the number of features in the XY dimension, ensuring a minimum value of 1.
+     * Clears relevant caches and synchronizes delegate if no discrete data is present.
+     *
+     * @param d the desired number of features in the XY dimension
+     */
     public void setNumFeaturesXY(int d) {
         this.numFeatXY = Math.max(1, d);
         this.featCache.clear();
@@ -266,6 +418,14 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
+    /**
+     * Sets the number of features (Z) to the specified value. The value is
+     * constrained to be at least 1. This method also clears relevant caches
+     * and synchronizes delegate settings if no discrete data is present.
+     *
+     * @param d the desired number of features (Z). If the value is less than 1,
+     *          it will be set to 1.
+     */
     public void setNumFeaturesZ(int d) {
         this.numFeatZ = Math.max(1, d);
         this.featCache.clear();
@@ -273,6 +433,14 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
+    /**
+     * Sets the bandwidth multiplier used for calculations. The value must be greater
+     * than 0 and finite. Invalid values will result in an IllegalArgumentException.
+     * This method also clears cached values and synchronizes data if necessary.
+     *
+     * @param bandwidthMultiplier the multiplier value to set; must be greater than 0 and finite
+     * @throws IllegalArgumentException if the provided value is not greater than 0 or is not finite
+     */
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
         if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
             throw new IllegalArgumentException("bandwidthMultiplier must be > 0 and finite");
@@ -283,6 +451,12 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
+    /**
+     * Sets the maximum number of rows for processing while ensuring a minimum limit of 50.
+     * Clears internal caches and synchronizes the delegate if the data contains no discrete attributes.
+     *
+     * @param bwMaxRows the desired maximum number of rows; if less than 50, it will default to 50
+     */
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = Math.max(50, bwMaxRows);
         this.bw2Cache.clear();
@@ -290,22 +464,49 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
+    /**
+     * Sets the feature type for the current object. This method updates the
+     * feature type and clears any cached features. If the data contains
+     * no discrete values, it synchronizes the delegate to the current instance.
+     *
+     * @param featureType the feature type to be set; must not be null
+     * @throws NullPointerException if the provided featureType is null
+     */
     public void setFeatureType(FeatureType featureType) {
         this.featureType = Objects.requireNonNull(featureType, "featureType");
         this.featCache.clear();
         if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
+    /**
+     * Returns the current feature type.
+     *
+     * @return the current feature type
+     */
     public FeatureType getFeatureType() {
         return featureType;
     }
 
+    /**
+     * Sets the seed for the random number generator (RNG) and clears the feature cache.
+     * If the data does not contain any discrete elements, synchronizes the delegate to this instance.
+     *
+     * @param seed the seed value to initialize the RNG
+     */
     public void setSeed(long seed) {
         this.rng.setSeed(seed);
         this.featCache.clear();
         if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
+    /**
+     * Sets the value of the catRho parameter, which must be within the range [0, 1)
+     * and finite. This method also clears the feature cache and syncs delegate
+     * behavior if necessary.
+     *
+     * @param rho the value to set for catRho; must satisfy 0.0 &lt;= rho &lt; 1.0 and be finite
+     * @throws IllegalArgumentException if rho is not within the valid range or is not finite
+     */
     public void setCatRho(double rho) {
         if (!(rho >= 0.0 && rho < 1.0) || !Double.isFinite(rho)) {
             throw new IllegalArgumentException("catRho must be in [0,1)");
@@ -315,12 +516,29 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
+    /**
+     * Retrieves the value of the catRho property.
+     *
+     * @return the current value of the catRho property as a double
+     */
     public double getCatRho() {
         return catRho;
     }
 
     // ---------------- IndependenceTest interface ----------------
 
+    /**
+     * Checks the independence between two nodes given a set of conditioning nodes.
+     * This method evaluates whether the two specified nodes are independent of each other
+     * when conditioned on the given set of nodes, using various possible statistical methods.
+     *
+     * @param x the first node to test for independence; must not be null
+     * @param y the second node to test for independence; must not be null
+     * @param z the set of conditioning nodes to condition the test upon; can be null or empty
+     * @return an IndependenceResult object containing the result of the independence test,
+     *         including statistical details and decision outcome
+     * @throws InterruptedException if the thread running this method is interrupted during execution
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
@@ -539,13 +757,6 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
             // simplest is to just run STACK inline by calling the normal code path. Since you’re inside checkIndependence,
             // easiest is: temporarily switch mode and call checkIndependence again.)
             MixedMode prev = this.mixedMode;
-//            this.mixedMode = MixedMode.STACK;
-//            try {
-//                return checkIndependence(x, y, new HashSet<>(Zsorted));
-//            } finally {
-//                this.mixedMode = prev;
-//            }
-
             return null;
         }
 
@@ -560,15 +771,6 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         }
 
         if (totalKept < Math.max(10, minStratumSize)) {
-            // not enough usable data after filtering -> fall back
-//            MixedMode prev = this.mixedMode;
-//            this.mixedMode = MixedMode.STACK;
-//            try {
-//                return checkIndependence(x, y, new HashSet<>(Zsorted));
-//            } finally {
-//                this.mixedMode = prev;
-//            }
-
             return null;
         }
 
@@ -691,32 +893,64 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         return M;
     }
 
+    /**
+     * Retrieves the list of nodes representing variables.
+     *
+     * @return a list of Node objects contained in this instance.
+     */
     @Override
     public List<Node> getVariables() {
         return vars;
     }
 
+    /**
+     * Retrieves the alpha value.
+     *
+     * @return the alpha value as a double.
+     */
     @Override
     public double getAlpha() {
         return alpha;
     }
 
+    /**
+     * Sets the alpha value for the object. The alpha determines the level of transparency,
+     * where the value must be strictly between 0 (completely transparent) and 1 (completely opaque).
+     *
+     * @param alpha the transparency level to be set; must be a value in the range (0, 1)
+     * @throws IllegalArgumentException if the alpha value is less than or equal to 0, or greater than or equal to 1
+     */
     @Override
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("alpha in (0,1)");
         this.alpha = alpha;
     }
 
+    /**
+     * Retrieves the current data set.
+     *
+     * @return the DataSet object representing the current data.
+     */
     @Override
     public DataSet getData() {
         return data;
     }
 
+    /**
+     * Determines if verbose mode is enabled.
+     *
+     * @return true if verbose mode is enabled; otherwise, false
+     */
     @Override
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Sets the verbose mode for the current instance.
+     *
+     * @param verbose a boolean value indicating whether verbose mode should be enabled (true) or disabled (false)
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -724,11 +958,23 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
     // ---------------- RowsSettable ----------------
 
+    /**
+     * Retrieves the list of row indices currently set for the instance.
+     *
+     * @return a List containing the row indices, or null if no rows are set
+     */
     @Override
     public List<Integer> getRows() {
         return rows;
     }
 
+    /**
+     * Sets the list of row indices for the current instance.
+     *
+     * @param rows a List containing the row indices to be set, or null to reset to all rows
+     * @throws NullPointerException if any row index in the list is null
+     * @throws IllegalArgumentException if any row index is negative or out of bounds
+     */
     @Override
     public void setRows(List<Integer> rows) {
         if (rows == null) {

@@ -90,6 +90,19 @@ public final class PlotMatrixMimicSimulator {
 
     // ---------------- construction ----------------
 
+    /**
+     * Constructs a new instance of PlotMatrixMimicSimulator, designed for processing continuous-only
+     * datasets and generating matrices used in copula normal-score simulations. This constructor
+     * validates the input dataset and preprocesses it for further computations, such as empirical CDF
+     * mappings and rank-based transformations.
+     *
+     * @param data the dataset to be used for the simulation. It must contain only continuous variables,
+     *             and cannot be null. The dataset should have at least 10 rows after optional
+     *             listwise deletion of rows with missing values.
+     * @throws NullPointerException if the provided dataset is null.
+     * @throws IllegalArgumentException if the dataset contains any non-continuous variables,
+     *                                  or has fewer than 10 rows after preprocessing.
+     */
     public PlotMatrixMimicSimulator(DataSet data) {
         Objects.requireNonNull(data, "data");
 
@@ -387,12 +400,20 @@ public final class PlotMatrixMimicSimulator {
 
     // ---------------- helpers: missingness cleaning ----------------
 
+    /**
+     * Getter for noveltyStrength.
+     * @return the novelty strength parameter
+     */
     public double getNoveltyStrength() {
         return noveltyStrength;
     }
 
     // ---------------- helpers: ranking with ties ----------------
 
+    /**
+     * Setter for noveltyStrength.
+     * @param noveltyStrength the novelty strength parameter
+     */
     public void setNoveltyStrength(double noveltyStrength) {
         if (!(noveltyStrength >= 0.0) || !Double.isFinite(noveltyStrength)) {
             throw new IllegalArgumentException("noveltyStrength must be finite and >= 0");
@@ -402,10 +423,18 @@ public final class PlotMatrixMimicSimulator {
 
     // ---------------- helpers: numeric ----------------
 
+    /**
+     * Setter for listwiseDeleteMissing.
+     * @param listwiseDeleteMissing the listwise delete missing flag
+     */
     public void setListwiseDeleteMissing(boolean listwiseDeleteMissing) {
         this.listwiseDeleteMissing = listwiseDeleteMissing;
     }
 
+    /**
+     * Getter for cholJitter.
+     * @param cholJitter the jitter parameter
+     */
     public void setCholJitter(double cholJitter) {
         if (!(cholJitter > 0) || !Double.isFinite(cholJitter)) {
             throw new IllegalArgumentException("cholJitter must be finite and > 0");
@@ -413,12 +442,25 @@ public final class PlotMatrixMimicSimulator {
         this.cholJitter = cholJitter;
     }
 
+    /**
+     * Sets the maximum number of retries allowed for the Cholesky decomposition process.
+     * The provided value is constrained to a minimum of 1 to ensure at least one retry is performed.
+     *
+     * @param cholRetries the maximum number of retries for the Cholesky decomposition; must be a positive integer.
+     */
     public void setCholRetries(int cholRetries) {
         this.cholRetries = Math.max(1, cholRetries);
     }
 
     /**
-     * Simulate a new dataset with m rows.
+     * Simulates a synthetic dataset by sampling from a multivariate normal distribution,
+     * applying optional nonlinear distortions, and mapping the latent variables to real values
+     * through inverse empirical cumulative distribution functions.
+     *
+     * @param m the number of samples to generate; must be greater than or equal to 1
+     * @param seed the seed for the random number generator to ensure reproducibility
+     * @return a DataSet containing the simulated data
+     * @throws IllegalArgumentException if the specified number of samples (m) is less than 1
      */
     public DataSet simulate(int m, long seed) {
         if (m < 1) throw new IllegalArgumentException("m must be >= 1");

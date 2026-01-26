@@ -708,7 +708,13 @@ public class VertexCheckEditor extends JPanel {
         Histogram histogram = new Histogram(dataSet, "p", false);
         histogram.setNumBins(10);
 
-        edu.cmu.tetradapp.editor.HistogramPanel view = new edu.cmu.tetradapp.editor.HistogramPanel(histogram, true);
+        HistogramPanel view = new HistogramPanel(histogram, true);
+        view.setXAxisBounds(0.0, 1.0, true);  // <-- force [0,1], ignore outside
+
+//        Histogram histogram = new Histogram(dataSet, "p", false);
+//        histogram.setNumBins(10);
+//
+//        edu.cmu.tetradapp.editor.HistogramPanel view = new edu.cmu.tetradapp.editor.HistogramPanel(histogram, true);
         view.setMinimumSize(new Dimension(420, 180));
         view.setPreferredSize(new Dimension(420, 180));
 

@@ -89,7 +89,36 @@ import java.util.concurrent.atomic.AtomicReference;
  * </ul>
  */public final class FfMlMixed implements Score, EffectiveSampleSizeSettable {
 
-    public enum FeatureType { RFF, ORF }
+    /**
+     * Represents the type of features used in the model.
+     *
+     * FeatureType is an enumeration that indicates the feature representation
+     * applied during model computations, especially in scenarios involving
+     * random Fourier features or related feature-based approximations.
+     * This enumeration is utilized in methods and configurations that require
+     * such distinctions.
+     */
+    public enum FeatureType {
+        /**
+         * Represents the Random Fourier Features (RFF) option within the enumeration.
+         *
+         * Random Fourier Features are used for approximating kernel methods by
+         * mapping input data into a randomized feature space. This technique is
+         * commonly employed in machine learning to efficiently calculate approximate
+         * kernel functions for large-scale datasets.
+         */
+        RFF,
+
+        /**
+         * Represents the Orthogonal Random Features (ORF) option within the enumeration.
+         *
+         * Orthogonal Random Features are a variation of Random Fourier Features (RFF),
+         * designed to improve the approximation of kernel methods by introducing
+         * orthogonality constraints in the feature representation. This technique
+         * is commonly employed in machine learning to enhance model performance
+         * and reduce variance during computation, particularly for large-scale datasets.
+         */
+        ORF }
 
     // -------------------- configuration knobs --------------------
 
@@ -143,6 +172,17 @@ import java.util.concurrent.atomic.AtomicReference;
     private final AtomicReference<ConcurrentHashMap<Long, Double>> localScoreCacheRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
 
+    /**
+     * Constructs an instance of FfMlMixed for the given dataset. This constructor processes
+     * the dataset to handle discrete and continuous variables, computes z-scores for continuous
+     * variables, and initializes internal structures used for mixed data modeling.
+     *
+     * @param dataSet the dataset to be used in the mixed data model. Must not be null.
+     *                The dataset is expected to contain a mix of discrete and continuous variables.
+     *                Each variable in the dataset is processed to identify its type and structure
+     *                corresponding internal data representations.
+     * @throws NullPointerException if the provided dataset is null.
+     */
     public FfMlMixed(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
@@ -401,21 +441,48 @@ import java.util.concurrent.atomic.AtomicReference;
         return z ^ (z >>> 33);
     }
 
+    /**
+     * Retrieves a list of variable nodes.
+     *
+     * @return a new list containing the variable nodes.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Returns the sample size of the dataset by retrieving the number
+     * of rows in the dataset.
+     *
+     * @return the number of rows in the dataset, representing the sample size.
+     */
     @Override
     public int getSampleSize() {
         return dataSet.getNumRows();
     }
 
+    /**
+     * Calculates the maximum degree based on the effective size (nEff).
+     * The calculation is performed as the ceiling value of the logarithm
+     * of the larger between 5 and nEff.
+     *
+     * @return the maximum degree as an integer
+     */
     @Override
     public int getMaxDegree() {
         return (int) Math.ceil(Math.log(Math.max(5, nEff)));
     }
 
+    /**
+     * Determines whether a given node y is conditionally independent of other nodes z
+     * based on the local score calculation.
+     *
+     * @param z a list of Node objects representing the conditional set.
+     * @param y a Node object for which the dependency is being determined.
+     * @return true if the local score for the given node and parents is NaN or infinite,
+     *         false otherwise.
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = variables.indexOf(y);
@@ -426,26 +493,59 @@ import java.util.concurrent.atomic.AtomicReference;
         return Double.isNaN(s) || Double.isInfinite(s);
     }
 
+    /**
+     * Determines whether the given bump value indicates an effect edge.
+     * An effect edge is considered true if the bump value is greater than 0.
+     *
+     * @param bump the value to evaluate, typically representing a change or effect magnitude
+     * @return {@code true} if the bump value is greater than 0, otherwise {@code false}
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
+    /**
+     * Retrieves the data model associated with this instance, encapsulating the
+     * data used for computations or analysis in the current context.
+     *
+     * @return the {@code DataModel} object representing the data set.
+     */
     public DataModel getDataModel() {
         return dataSet;
     }
 
+    /**
+     * Returns the effective sample size used in computations. The effective sample size
+     * is a value that represents the number of independent data points after accounting
+     * for dependencies or adjustments.
+     *
+     * @return the effective sample size as an integer
+     */
     @Override
     public int getEffectiveSampleSize() {
         return nEff;
     }
 
+    /**
+     * Sets the effective sample size for computations. If the provided value is less than zero,
+     * the effective sample size is set to the total sample size instead. Invokes a reset
+     * of the internal cache to reflect the updated sample size.
+     *
+     * @param nEff the effective sample size to set; if less than 0, the entire sample size is used
+     */
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = (nEff < 0) ? this.sampleSize : nEff;
         resetCache();
     }
 
+    /**
+     * Returns a string representation of the object, describing the type of kernel
+     * configuration as "KFF-ML Mixed (continuous+categorical product-kernel)".
+     *
+     * @return a string describing the mixed kernel configuration.
+     */
     @Override
     public String toString() {
         return "KFF-ML Mixed (continuous+categorical product-kernel)";
@@ -453,12 +553,27 @@ import java.util.concurrent.atomic.AtomicReference;
 
     // -------------------- tuning knobs --------------------
 
+    /**
+     * Sets the value of the lambda parameter. The lambda parameter must be greater than 0.
+     * Updates the internal state by resetting the cache.
+     *
+     * @param lambda the value of lambda to set (must be > 0)
+     * @throws IllegalArgumentException if the lambda value is less than or equal to 0
+     */
     public void setLambda(double lambda) {
         if (lambda <= 0) throw new IllegalArgumentException("lambda must be > 0");
         this.lambda = lambda;
         resetCache();
     }
 
+    /**
+     * Sets the bandwidth multiplier to adjust the data transfer rate.
+     * The provided value must be greater than 0 and finite.
+     *
+     * @param bandwidthMultiplier the positive finite value to set as the bandwidth multiplier
+     * @throws IllegalArgumentException if the provided bandwidthMultiplier is not greater than 0
+     *                                  or is not a finite value
+     */
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
         if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
             throw new IllegalArgumentException("bandwidthMultiplier must be > 0");
@@ -467,22 +582,46 @@ import java.util.concurrent.atomic.AtomicReference;
         resetCache();
     }
 
+    /**
+     * Sets the maximum number of rows allowed for a given operation, ensuring a minimum value of 50.
+     * If the provided value is less than 50, the limit will default to 50.
+     * Also resets the internal cache after updating the maximum row limit.
+     *
+     * @param bwMaxRows the desired maximum number of rows; must be greater than or equal to 50.
+     */
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = Math.max(50, bwMaxRows);
         resetCache();
     }
 
+    /**
+     * Sets the number of features to be used and resets the internal cache.
+     *
+     * @param numFeatures the number of features to set
+     */
     public void setNumFeatures(int numFeatures) {
         this.numFeatures = numFeatures;
         resetCache();
     }
 
+    /**
+     * Sets the feature type for the current object. This method assigns a new value
+     * to the featureType property and clears any cached data associated with the previous value.
+     *
+     * @param featureType the feature type to set; must not be null
+     * @throws IllegalArgumentException if the featureType parameter is null
+     */
     public void setFeatureType(FeatureType featureType) {
         if (featureType == null) throw new IllegalArgumentException("featureType cannot be null");
         this.featureType = featureType;
         resetCache();
     }
 
+    /**
+     * Retrieves the feature type associated with this object.
+     *
+     * @return the feature type as a FeatureType instance.
+     */
     public FeatureType getFeatureType() {
         return featureType;
     }
@@ -490,6 +629,8 @@ import java.util.concurrent.atomic.AtomicReference;
     /**
      * Set categorical similarity rho in [0,1).
      * Try 0.3, 0.5, 0.7 for Auto-MPG Origin.
+     *
+     * @param rho the categorical similarity rho to set; must be in [0,1)
      */
     public void setCatRho(double rho) {
         if (!(rho >= 0.0 && rho < 1.0) || !Double.isFinite(rho)) {
@@ -499,6 +640,11 @@ import java.util.concurrent.atomic.AtomicReference;
         resetCache();
     }
 
+    /**
+     * Retrieves the value of the catRho property.
+     *
+     * @return the current value of catRho as a double.
+     */
     public double getCatRho() {
         return catRho;
     }
@@ -1177,6 +1323,13 @@ import java.util.concurrent.atomic.AtomicReference;
         localScoreCacheRef.set(new ConcurrentHashMap<>());
     }
 
+    /**
+     * Appends an integer value to the end of an integer array.
+     *
+     * @param z the original array to which the value will be appended
+     * @param x the integer value to append to the array
+     * @return a new array containing all elements of the original array with the appended value at the end
+     */
     public int[] append(int[] z, int x) {
         int[] out = Arrays.copyOf(z, z.length + 1);
         out[z.length] = x;

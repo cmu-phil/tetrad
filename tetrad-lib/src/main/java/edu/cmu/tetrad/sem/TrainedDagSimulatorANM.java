@@ -221,6 +221,14 @@ public final class TrainedDagSimulatorANM {
         return Collections.unmodifiableList(nodeReports);
     }
 
+    /**
+     * Writes a human-readable fit report to a specified text file.
+     * The fit report provides per-node details on the training process
+     * and its results, including error metrics and parent information.
+     *
+     * @param file The output file where the fit report will be written.
+     * @throws IOException If an I/O error occurs during writing.
+     */
     public void writeFitReportTxt(File file) throws IOException {
         try (Writer w = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
             w.write(getFitReportText());
@@ -394,6 +402,12 @@ public final class TrainedDagSimulatorANM {
      * bootstrapping, interpolation, and stratification.
      */
     public static final class Params {
+        /**
+         * Default constructor for the Params class.
+         * Initializes an instance of the Params object with default values.
+         */
+        public Params() { }
+
         /**
          * Represents the number of hidden units or nodes in a layer or model.
          * This variable is commonly used in machine learning or simulation
@@ -1058,6 +1072,15 @@ public final class TrainedDagSimulatorANM {
     }
 
     // Drop-in replacement for TrainedDagSimulator.SimResult
+
+    /**
+     * Represents the result of a simulation, encapsulating the simulation data, variables,
+     * the true Directed Acyclic Graph (DAG), and optional diagnostic information.
+     *
+     * The class contains both continuous and discrete data matrices, as well as information
+     * about any warnings or thresholds exceeded during the simulation process.
+     * It also provides a method to generate a formatted report summarizing the results.
+     */
     public static final class SimResult {
         /**
          * A container for simulation results, including continuous and discrete values, variables, and true DAG.

@@ -437,7 +437,7 @@ public final class Fcit implements IGraphSearch {
         int round = 0;
 
         do {
-//            System.out.println("Round: " + (++round));
+            System.out.println("Round: " + (++round));
         } while (removeEdgesRecursively(checks, excludeSelectionBias));
 
         if (superVerbose) {
@@ -446,9 +446,9 @@ public final class Fcit implements IGraphSearch {
 
         long stop2 = System.currentTimeMillis();
 
-//        if (verbose) {
-//            System.out.println();
-//        }
+        if (verbose) {
+            System.out.println();
+        }
 
         // Revert nodes made latent to latent.
         for (Node node : latents) {
@@ -546,70 +546,41 @@ public final class Fcit implements IGraphSearch {
 
         List<Result> results = findIndependenceChecksRecursive(edgePool, pathsByEdge, checks);
 
-//        if (verbose) {
-//            System.out.println();
-//        }
+        if (verbose) {
+            System.out.println();
+        }
 
         for (Result result : results) {
             Edge edge = result.edge();
             Set<Node> b = result.cond();
-            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, excludeSelectionBias);
+            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias);
             changed |= didChange;
         }
 
         return changed;
     }
 
-//    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
-//        return new HashSet<>(edges).parallelStream().
-//                filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(
-//                edge -> knowledge == null || !Edges.isDirectedEdge(edge)
-//                        || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
-//        ).map(edge -> {
-//            try {
-//                IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
-//                if (checkResult != null) {
-//                    checks.add(checkResult); // guard against null
-//                    return new Result(checkResult.edge(), checkResult.cond());
-//                }
-//                return null;
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }).filter(Objects::nonNull).collect(Collectors.toList());
-//    }
-
-    private List<Result> findIndependenceChecksRecursive(
-            Set<Edge> edges,
-            Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge,
-            Set<IndependenceCheck> checks) {
-
-        return new HashSet<>(edges).parallelStream()
-                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
-                .filter(edge ->
-                        knowledge == null
-                                || !Edges.isDirectedEdge(edge)
+    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
+        return new HashSet<>(edges).parallelStream().
+                filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null).filter(
+                        edge -> knowledge == null || !Edges.isDirectedEdge(edge)
                                 || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
-                )
-                .map(edge -> {
+                ).map(edge -> {
                     try {
-                        IndependenceCheck checkResult =
-                                findIndependenceCheckRecursive(edge, pathsByEdge, checks);
-                        return checkResult == null
-                                ? null
-                                : new Result(checkResult.edge(), checkResult.cond());
+                        IndependenceCheck checkResult = findIndependenceCheckRecursive(edge, pathsByEdge, checks);
+                        if (checkResult != null) {
+                            checks.add(checkResult); // guard against null
+                            return new Result(checkResult.edge(), checkResult.cond());
+                        }
+                        return null;
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                })
-                .filter(Objects::nonNull)
-                .findAny()   // ← short-circuits
-                .map(List::of)   // singleton list
-                .orElse(new ArrayList<>());
+                }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) throws InterruptedException {
-//        if (verbose) System.out.print(".");
+        if (verbose) System.out.print(".");
 
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
@@ -639,11 +610,6 @@ public final class Fcit implements IGraphSearch {
             // Use recursive blocking to propose a blocking set B; null => no sepset under this NF
             Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1);
 //            Set<Node> B = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1, this.knowledge);
-
-//            List<Set<Node>> Blist = new RecursiveAdjustment(this.pag)
-//                    .adjustmentSetsRB(x, y, "PAG", 1, 4, 1, 10, false, Set.of(), Set.of() );
-//            Set<Node> B = Blist.getFirst();
-
             if (B == null) {
                 continue; // No separating set possible for this NF; try another NF
             }
@@ -698,7 +664,7 @@ public final class Fcit implements IGraphSearch {
         return null;
     }
 
-    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, boolean excludeSelectionBias) {
+    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias) {
         Edge _edge = pag.getEdge(x, y);
         Graph _pag = new EdgeListGraph(pag);
 
@@ -709,7 +675,8 @@ public final class Fcit implements IGraphSearch {
 
         if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
-                TetradLogger.getInstance().log("Tried removing " + _edge + " conditioning on " + b + ", but it didn't lead to a PAG");
+                TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
+                        + " reasons, but it didn't lead to a PAG");
             }
 
             this.pag = _pag;
@@ -718,7 +685,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing " + _edge + " conditioning on " + b);
+            TetradLogger.getInstance().log("Removing " + _edge + " for " + type + " reasons.");
         }
 
         return true;
