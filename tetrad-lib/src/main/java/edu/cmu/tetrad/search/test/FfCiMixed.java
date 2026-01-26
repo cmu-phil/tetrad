@@ -35,6 +35,8 @@ import org.ejml.simple.SimpleMatrix;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.lang.Double.NaN;
+
 /**
  * <p><b>FF-CI-Mixed: Feature-Function Conditional Independence Test for mixed data</b></p>
  *
@@ -115,47 +117,7 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
          */
         ORF}
 
-    /**
-     * The Approx enumeration is used to represent various types of approximation methods
-     * or strategies. These constants can be utilized to specify or identify the desired
-     * approximation type within computations or algorithms.
-     */
-    public enum Approx {
-
-        /**
-         * Represents the LPB4 value in the Approx enumeration.
-         * This constant may be used to specify or identify a specific
-         * approximation type within the enumeration.
-         */
-        LPB4,
-
-        /**
-         * Represents the HBE value in the Approx enumeration.
-         * This constant is used to specify or identify a specific
-         * type of approximation related to the enumeration.
-         */
-        HBE,
-
-        /**
-         * Represents the GAMMA value in the Approx enumeration.
-         * This constant is used to specify or identify a specific
-         * type of approximation within the enumeration.
-         */
-        GAMMA,
-
-        /**
-         * Represents the CHI2 value in the Approx enumeration.
-         * This constant is used to specify or identify a specific
-         * type of approximation within the enumeration.
-         */
-        CHI2,
-
-        /**
-         * Represents the PERMUTATION value in the Approx enumeration.
-         * This constant is used to denote a specific type of approximation
-         * or operation related to permutations within the enumeration.
-         */
-        PERMUTATION}
+    public enum Approx {GAMMA, SADDLEPOINT, DAVIES_IMHOF, PERMUTATION}
 
     // ---------------- core data ----------------
     private final DataSet data;
@@ -275,22 +237,6 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         long seed = params.getLong("rcit.seed", 1729L);
         this.rng = new Random(seed);
 
-        this.numFeatZ = Math.max(1, params.getInt("rcit.numF", 100));
-        this.numFeatXY = Math.max(1, params.getInt("rcit.numF2", 5));
-        this.permutations = Math.max(0, params.getInt("rcit.permutations", 0));
-        this.doRcit = params.getBoolean("rcit.rcit", true);
-        this.lambda = Math.max(1e-12, params.getDouble("rcit.lambda", this.lambda));
-        this.centerFeatures = params.getBoolean("rcit.centerFeatures", true);
-
-        String approxStr = params.getString("rcit.approx", "gamma");
-        setApproximationFromInt(switch (approxStr.toLowerCase(Locale.ROOT)) {
-            case "perm", "permutation" -> 5;
-            case "chi2", "chi-sq", "chisq" -> 4;
-            case "hbe" -> 2;
-            case "lpb4", "lpd4" -> 1;
-            default -> 3;
-        });
-
         this.bandwidthMultiplier = params.getDouble("rcit.bwMult", this.bandwidthMultiplier);
         this.bwMaxRows = Math.max(50, params.getInt("rcit.bwMaxRows", this.bwMaxRows));
 
@@ -302,31 +248,39 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
     private void syncDelegateToThis() {
         // Keep delegate aligned with this object's knobs.
         // (If you later add more knobs, add them here too.)
-        continuousDelegate.setNumFeaturesXY(this.numFeatXY);
-        continuousDelegate.setNumFeaturesZ(this.numFeatZ);
-        continuousDelegate.setApproximationFromInt(switch (this.approx) {
-            case LPB4 -> 1;
-            case HBE -> 2;
-            case GAMMA -> 3;
-            case CHI2 -> 4;
-            case PERMUTATION -> 5;
-        });
-        continuousDelegate.setPermutations(this.permutations);
-        continuousDelegate.setDoRcit(this.doRcit);
-        continuousDelegate.setLambda(this.lambda);
-        continuousDelegate.setCenterFeatures(this.centerFeatures);
-        continuousDelegate.setBandwidthMultiplier(this.bandwidthMultiplier);
-        continuousDelegate.setBwMaxRows(this.bwMaxRows);
-        continuousDelegate.setFeatureType(switch (this.featureType) {
-            case RFF -> FfCi.FeatureType.RFF;
-            case ORF -> FfCi.FeatureType.ORF;
-        });
 
-        continuousDelegate.setAlpha(this.alpha);
-        continuousDelegate.setVerbose(this.verbose);
+        if (this.continuousDelegate == null) return;
 
-        // Keep rows in sync too
-        continuousDelegate.setRows(this.rows);
+        // Delegate should see the same active row selection, alpha, verbosity, etc.
+//        this.continuousDelegate.setRows(this.rows);
+
+        this.continuousDelegate.setAlpha(this.alpha);
+        this.continuousDelegate.setVerbose(this.verbose);
+
+//        this.continuousDelegate.setNumFeaturesXY(this.numFeatXY);
+//        this.continuousDelegate.setNumFeaturesZ(this.numFeatZ);
+//
+//        this.continuousDelegate.setApproximationFromInt(switch (this.approx) {
+//            case LPB4 -> 1;
+//            case HBE -> 2;
+//            case GAMMA -> 3;
+//            case CHI2 -> 4;
+//            case PERMUTATION -> 5;
+//        });
+
+//        this.continuousDelegate.setPermutations(this.permutations);
+//        this.continuousDelegate.setDoRcit(this.doRcit);
+//
+//        this.continuousDelegate.setLambda(this.lambda);
+//        this.continuousDelegate.setCenterFeatures(this.centerFeatures);
+//
+//        this.continuousDelegate.setBandwidthMultiplier(this.bandwidthMultiplier);
+//        this.continuousDelegate.setBwMaxRows(this.bwMaxRows);
+//
+//        this.continuousDelegate.setFeatureType(switch (this.featureType) {
+//            case RFF -> FfCi.FeatureType.RFF;
+//            case ORF -> FfCi.FeatureType.ORF;
+//        });
     }
 
     // ---------------- public setters ----------------
@@ -341,20 +295,11 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
      * contains discrete variables, the delegate is synchronized with the current
      * instance.
      *
-     * @param approxCode an integer code representing the desired approximation type:
-     *                   1 for LPB4, 2 for HBE, 3 for GAMMA, 4 for CHI2, 5 for PERMUTATION.
-     *                   Any other value defaults to GAMMA.
+     * @param approx the approximation method to set
      */
-    public void setApproximationFromInt(int approxCode) {
-        switch (approxCode) {
-            case 1 -> this.approx = Approx.LPB4;
-            case 2 -> this.approx = Approx.HBE;
-            case 3 -> this.approx = Approx.GAMMA;
-            case 4 -> this.approx = Approx.CHI2;
-            case 5 -> this.approx = Approx.PERMUTATION;
-            default -> this.approx = Approx.GAMMA;
-        }
-        if (!dataHasAnyDiscrete) syncDelegateToThis();
+    public void setApprox(Approx approx) {
+        if (approx == null) throw new NullPointerException("approx");
+        this.approx = approx;
     }
 
     /**
@@ -603,7 +548,7 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         SimpleMatrix fZ = Z.isEmpty() ? null : kffFeatMixedCached("Z", Z, numFeatZ, seedZ);
 
         final double stat;
-        double p;
+        double p = NaN;
 
         if (fZ == null || fZ.getNumCols() == 0) {
             // ---------------- RIT (no conditioning) ----------------
@@ -634,11 +579,10 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
                         p = gammaApproxP(stat, eig);
                     }
                 }
-                case HBE -> p = edgeworthP(stat, eig, false);
-                case LPB4 -> p = edgeworthP(stat, eig, true);
-                case CHI2 -> p = chi2ApproxP(n, vec(Cxy), Cov);
-                case GAMMA -> p = gammaApproxP(stat, eig);
-                default -> p = gammaApproxP(stat, eig);
+                case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
+                case SADDLEPOINT -> QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);// edgeworthP(stat, eig, true);
+                case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
+                default -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
             }
         } else {
             // ---------------- Conditional: ridge residualization in feature space ----------------
@@ -677,11 +621,10 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
                 double[] eig = positiveEigs(Cov);
 
                 switch (approx) {
-                    case HBE -> p = edgeworthP(stat, eig, false);
-                    case LPB4 -> p = edgeworthP(stat, eig, true);
-                    case CHI2 -> p = chi2ApproxP(n, vec(Cxy), Cov);
-                    case GAMMA -> p = gammaApproxP(stat, eig);
-                    default -> p = gammaApproxP(stat, eig);
+                    case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
+                    case SADDLEPOINT -> QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);// edgeworthP(stat, eig, true);
+                    case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
+                    default -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
                 }
             }
         }

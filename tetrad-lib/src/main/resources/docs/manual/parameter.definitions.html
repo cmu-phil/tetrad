@@ -4177,23 +4177,23 @@ Source:
             Type: <span id="randomSelectionSize_value_type">Integer</span></li>
     </ul>
 
-
     === rcit.approx ===
     <h3 class="parameter_description" id="rcit.approx">rcit.approx</h3>
     <ul class="parameter_description_list">
         <li>Short Description:
             <span id="rcit.approx_short_desc">
-                Null approximation method: 1 = LpB4, 2 = HBE, 3 = Gamma, 4 = Chi², 5 = Permutation
+                Null approximation method: 1 = Gamma, 2 = Saddlepoint, 3 = Davies-Imhof, 4 = Permutation
             </span>
         </li>
         <li>Long Description:
             <span id="rcit.approx_long_desc">
-                    1 = Lindsay–Pilla–Basak (LpB4) 2 = Hall–Buckley–Eagleson (HBE)
-                    3 = Gamma (Satterthwaite–Welch) 4 = Chi² (normalized)
-                    5 = Permutation test (slower, more accurate for small samples)</span></li>
-        <li>Default Value: <span id="rcit.approx_default_value">1</span></li>
+                    1 = Gamma / Satterthwaite Approximation
+                    2 = Saddlepoint / Lugannani–Rice Approximation
+                    3 = Davies / Imhof (Exact) Inversion Methods
+                    4 = Permutation test</span></li>
+        <li>Default Value: <span id="rcit.approx_default_value">2</span></li>
         <li>Lower Bound: <span id="rcit.approx_lower_bound">1</span></li>
-        <li>Upper Bound: <span id="rcit.approx_upper_bound">5</span></li>
+        <li>Upper Bound: <span id="rcit.approx_upper_bound">4</span></li>
         <li>Value Type: <span id="rcit.approx_value_type">Integer</span></li>
     </ul>
 

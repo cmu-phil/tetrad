@@ -329,8 +329,17 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
         for (IndependenceFact fact : impliedFacts) {
             tried++;
+
+            Node X = independenceTest.getVariable(fact.getX().getName());
+            Node Y = independenceTest.getVariable(fact.getY().getName());
+
+            Set<Node> Z = new HashSet<>();
+            for (Node _z : fact.getZ()) {
+                Z.add(independenceTest.getVariable(_z.getName()));
+            }
+
             try {
-                IndependenceResult r = independenceTest.checkIndependence(fact.getX(), fact.getY(), fact.getZ());
+                IndependenceResult r = independenceTest.checkIndependence(X, Y, Z);
                 double p = r.getPValue();
                 if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) ok++;
             } catch (Exception ex) {
@@ -353,7 +362,16 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
             Set<Node> z = fact.getZ();
 
             try {
-                IndependenceResult r = independenceTest.checkIndependence(fact.getX(), y, z);
+                Node X = independenceTest.getVariable(fact.getX().getName());
+                Node Y = independenceTest.getVariable(y.getName());
+
+                Set<Node> Z = new HashSet<>();
+                for (Node _z : z) {
+                    Z.add(independenceTest.getVariable(_z.getName()));
+                }
+
+
+                IndependenceResult r = independenceTest.checkIndependence(X, Y, Z);
 
                 double p = r.getPValue();
                 IndependenceResult stored = new IndependenceResult(
