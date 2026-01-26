@@ -75,14 +75,14 @@ public class FfCiMixed implements IndependenceWrapper {
         test.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         test.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
-        edu.cmu.tetrad.search.test.FfCiMixed.Approx[] approxes
-                = edu.cmu.tetrad.search.test.FfCiMixed.Approx.values();
-        test.setApprox(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
+        edu.cmu.tetrad.search.test.FfCi.Approx[] approxes
+                = edu.cmu.tetrad.search.test.FfCi.Approx.values();
+        test.setApproximation(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
         test.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
         edu.cmu.tetrad.search.test.FfCiMixed.FeatureType[] values
                 = edu.cmu.tetrad.search.test.FfCiMixed.FeatureType.values();
         test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
-        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
+//        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         return test;
     }

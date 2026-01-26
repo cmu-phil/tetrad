@@ -1,4 +1,4 @@
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-/// ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.independence;
 
@@ -25,9 +25,7 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.search.test.IndTestRcit2;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.test.ffci_utils.PValueMethod;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -36,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for RCIT test (delegates to {@link IndTestRcit2}).
+ * Wrapper for RCIT test.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -53,42 +51,32 @@ public class Rcit implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
-     * Constructor.
+     * `Kci` constructor.
      */
     public Rcit() {
+
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Returns an RCIT test.
+     * Returns a RCIT test.
      */
     @Override
-    public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
-        IndTestRcit2 test = new IndTestRcit2((DataSet) dataModel, parameters);
-
-        // Core
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        edu.cmu.tetrad.search.test.IndTestRcit test = new edu.cmu.tetrad.search.test.IndTestRcit((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
-        test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-        // RCIT knobs
-        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
+//        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
         test.setLambda(parameters.getDouble(Params.RCIT_LAMBDA));
-        test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
         test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
-
-        // Seed (optional; IndTestRcit2 ctor already reads rcit.seed from Parameters)
-        // Keeping this line makes the wrapper explicit and ensures consistency with algcomparison seed.
-        test.setSeed(parameters.getLong(Params.SEED));
-
-        // Permutations (if your Params has RCIT_PERMUTATIONS; it was set in the old wrapper)
         test.setPermutations(parameters.getInt(Params.RCIT_PERMUTATIONS));
-
-        edu.cmu.tetrad.search.test.ffci_utils.PValueMethod[] approxes =
-                edu.cmu.tetrad.search.test.ffci_utils.PValueMethod.values();
+        test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
+        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
+        edu.cmu.tetrad.search.test.IndTestRcit.Approx[] approxes
+                = edu.cmu.tetrad.search.test.IndTestRcit.Approx.values();
         test.setApproximation(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
-
+        test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         return test;
     }
 
@@ -104,6 +92,10 @@ public class Rcit implements IndependenceWrapper {
 
     /**
      * {@inheritDoc}
+     * <p>
+     * Returns the data type of the test, which is continuous.
+     *
+     * @see DataType
      */
     @Override
     public DataType getDataType() {
@@ -112,6 +104,8 @@ public class Rcit implements IndependenceWrapper {
 
     /**
      * {@inheritDoc}
+     * <p>
+     * Returns the parameters of the test.
      */
     @Override
     public List<String> getParameters() {
@@ -124,7 +118,7 @@ public class Rcit implements IndependenceWrapper {
         params.add(Params.RCIT_CENTER_FEATURES);
         params.add(Params.RCIT_NUM_FEATURES_XY);
         params.add(Params.RCIT_NUM_FEATURES_Z);
-        params.add(Params.RCIT_PERMUTATIONS);
         return params;
     }
 }
+

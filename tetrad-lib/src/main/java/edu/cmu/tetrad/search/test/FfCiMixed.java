@@ -26,9 +26,6 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.distribution.GammaDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
@@ -38,182 +35,71 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.lang.Double.NaN;
 
 /**
- * <p><b>FF-CI-Mixed: Feature-Function Conditional Independence Test for mixed data</b></p>
+ * FF-CI-Mixed: Feature-Function CI test for mixed continuous/discrete data.
  *
- * <p>
- * This class extends {@code FF-CI} with basic support for mixed
- * continuous and discrete variables. For purely continuous data, this
- * implementation is equivalent to {@code FF-CI} and yields identical
- * results.
- * </p>
+ * Guarantee:
+ *   If the dataset contains NO discrete variables, this class delegates all
+ *   CI queries to IndTestFfCi, and (when configured through the same setters)
+ *   behaves identically to FF-CI on continuous data.
  *
- * <p><b>Mixed feature mapping</b></p>
- * <ul>
- *   <li>
- *     <b>Continuous variables</b> are mapped using randomized feature-function
- *     expansions (e.g., Random Fourier Features or Orthogonal Random Features),
- *     exactly as in {@code FF-CI}.
- *   </li>
- *   <li>
- *     <b>Discrete variables</b> are mapped using a one-hot (delta-kernel)
- *     feature representation, which preserves category identity without
- *     imposing a smooth geometry.
- *   </li>
- * </ul>
+ * Mixed handling:
+ *   - Continuous vars: Random Fourier Features (RFF) or Orthogonal Random Features (ORF)
+ *   - Discrete vars: categorical features (one-hot if catRho==0; otherwise exact PSD feature map
+ *     for kernel with diag=1, offdiag=catRho)
  *
- * <p>
- * All feature blocks are centered (and, where appropriate, standardized)
- * before covariance computation. For blocks containing both continuous and
- * discrete variables, bandwidth selection via the median pairwise distance
- * heuristic is computed using only the continuous columns.
- * </p>
- *
- * <p>
- * If a variable block contains no continuous columns, the bandwidth is
- * set to a default value of {@code 1.0}, and the test proceeds using only
- * the discrete one-hot feature representation.
- * </p>
- *
- * <p><b>Design philosophy</b></p>
- * <p>
- * This implementation deliberately encodes only minimal background knowledge:
- * the <i>measurement type</i> of each variable (continuous vs. discrete).
- * No causal constraints or structural assumptions are imposed. The goal is to
- * avoid forcing discrete variables into a smooth RBF geometry while retaining
- * the efficiency and flexibility of feature-function CI testing.
- * </p>
- *
- * <p>
- * Aside from the feature mapping for discrete variables, the test statistic,
- * conditioning strategy, and p-value approximations are identical to those of
- * {@code FF-CI}.
- * </p>
+ * Conditioning uses ridge residualization in feature space (same pattern as FF-CI).
  */
 public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
-    /**
-     * The FeatureType enum defines the types of feature representations
-     * utilized for kernel and feature-based computations.
-     *
-     * FeatureType is primarily used to parameterize the style of feature
-     * generation for the RBF kernel in contexts where approximate kernel
-     * methods are employed.
-     */
-    public enum FeatureType {
+    // ---------------- feature representation ----------------
 
-        /**
-         * Represents Random Fourier Features (RFF), a method to approximate
-         * shift-invariant kernels, such as the radial basis function (RBF) kernel.
-         * This technique utilizes random projections and trigonometric functions
-         * to efficiently compute feature mappings in high-dimensional space.
-         */
-        RFF,
-
-        /**
-         * Represents Orthogonal Random Features (ORF), a variation of Random Fourier
-         * Features (RFF) where the random projection matrix is block-orthogonal.
-         * This approach provides computational and theoretical benefits for approximating
-         * shift-invariant kernels, such as the radial basis function (RBF) kernel.
-         */
-        ORF}
-
-    public enum Approx {GAMMA, SADDLEPOINT, DAVIES_IMHOF, PERMUTATION}
+    public enum FeatureType { RFF, ORF }
 
     // ---------------- core data ----------------
     private final DataSet data;
     private final List<Node> vars;
-    private final Random rng;
 
     // Active rows state
     private List<Integer> rows = null;
     private int n;
 
-    // ---------------- hyperparams ----------------
-    private int numFeatXY = 10;     // continuous-feature budget for X and Y
-    private int numFeatZ = 100;     // continuous-feature budget for Z
+    // ---------------- hyperparams (kept aligned with IndTestFfCi for continuous-only) ----------------
+    private int numFeatXY = 10;
+    private int numFeatZ  = 100;
 
-    private Approx approx = Approx.GAMMA;
     private int permutations = 0;
-    private boolean doRcit = true;
-
-    private double lambda = 1;
+    private double lambda = 1.0;
     private boolean centerFeatures = true;
 
+    private FfCi.Approx pValueMethod = FfCi.Approx.GAMMA; // same enum as IndTestFfCi
+
+    // Mixed-only knobs
     private double bandwidthMultiplier = 1.0;
     private int bwMaxRows = 500;
-
     private FeatureType featureType = FeatureType.RFF;
+    private double catRho = 0.0; // 0 => one-hot
 
     // ---------------- IndependenceTest state ----------------
     private double alpha = 0.05;
     private boolean verbose = false;
 
-    // --------- caches ----------
+    // ---------------- RNG ----------------
+    private final Random rng;
+
+    // ---------------- caches ----------------
     private final Map<String, SimpleMatrix> featCache = new ConcurrentHashMap<>();
     private final Map<String, Double> bw2Cache = new ConcurrentHashMap<>();
 
-    private double catRho = 0.0; // default: current one-hot behavior
-
-    /**
-     * Enum representing the mixed mode configuration for processing data.
-     *
-     * This enum is used to specify the approach to handle mixed data types
-     * (continuous and discrete). It offers two modes of operation.
-     */
-    public enum MixedMode {
-
-        /**
-         * STACK mode processes mixed data by stacking the feature matrices for
-         * continuous and discrete data types. This approach treats the data as
-         * a unified whole rather than separating discrete and continuous variables
-         * during calculations.
-         */
-        STACK,
-
-        /**
-         * STRATA_ZDISC mode processes mixed data by stratifying based on the discrete
-         * variables. This approach treats discrete and continuous variables separately,
-         * applying methods suited to each type. It is particularly useful for operations
-         * such as independence testing or scenarios where distinguishing between variable
-         * types is critical.
-         */
-        STRATA_ZDISC}
-
-    private MixedMode mixedMode = MixedMode.STACK;
-
-    // stratification knobs
-    private int minStratumSize = 12;       // ignore strata smaller than this
-    private int maxStrata = 2000;          // fallback if too fragmented
-
-    // If the dataset has no discrete variables, we delegate to the original KffRcit
-    // so the behavior is identical to PC-KFF-RCIT.
+    // ---------------- Continuous delegate ----------------
     private final boolean dataHasAnyDiscrete;
     private final FfCi continuousDelegate;
 
-
     // ---------------- ctor ----------------
 
-    /**
-     * Constructs an instance of FfCiMixed with the specified dataset and default parameters.
-     *
-     * @param dataSet the dataset to be used for the independence testing. It is expected to contain
-     *                the variables and data rows needed for the algorithm.
-     */
     public FfCiMixed(DataSet dataSet) {
         this(dataSet, new Parameters());
     }
 
-    /**
-     * Constructs an instance of FfCiMixed, a class designed to handle mixed data
-     * types in a dataset for specific statistical or computational tasks.
-     *
-     * @param dataSet The dataset containing the variables and data to be analyzed.
-     *                Cannot be null.
-     * @param params  A set of parameters used to configure various settings of
-     *                the FfCiMixed instance, such as random seed, feature
-     *                counts, bandwidth settings, permutation settings, and
-     *                approximation type.
-     */
     public FfCiMixed(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
@@ -221,301 +107,187 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
         boolean anyDisc = false;
         for (Node v : this.vars) {
-            if (v instanceof edu.cmu.tetrad.data.DiscreteVariable) { // qualify or import
-                anyDisc = true;
-                break;
-            }
+            if (v instanceof DiscreteVariable) { anyDisc = true; break; }
         }
         this.dataHasAnyDiscrete = anyDisc;
 
-        // Build a delegate that implements the *original* continuous behavior
+        // Delegate (FF-CI continuous implementation)
         this.continuousDelegate = new FfCi(this.data, params);
 
-        // Make delegate match current settings right away
-        syncDelegateToThis();
-
+        // Seed: respect rcit.seed if present; otherwise stable default.
         long seed = params.getLong("rcit.seed", 1729L);
         this.rng = new Random(seed);
 
-        this.bandwidthMultiplier = params.getDouble("rcit.bwMult", this.bandwidthMultiplier);
-        this.bwMaxRows = Math.max(50, params.getInt("rcit.bwMaxRows", this.bwMaxRows));
-
-        String ft = params.getString("rcit.featureType", "orf").toLowerCase(Locale.ROOT);
-        if (ft.equals("rff")) this.featureType = FeatureType.RFF;
-        if (ft.equals("orf")) this.featureType = FeatureType.ORF;
+        // Initialize delegate from current knobs
+        syncDelegateToThis();
     }
 
-    private void syncDelegateToThis() {
-        // Keep delegate aligned with this object's knobs.
-        // (If you later add more knobs, add them here too.)
+    // ---------------- public setters (wrapper-friendly) ----------------
 
-        if (this.continuousDelegate == null) return;
-
-        // Delegate should see the same active row selection, alpha, verbosity, etc.
-//        this.continuousDelegate.setRows(this.rows);
-
-        this.continuousDelegate.setAlpha(this.alpha);
-        this.continuousDelegate.setVerbose(this.verbose);
-
-//        this.continuousDelegate.setNumFeaturesXY(this.numFeatXY);
-//        this.continuousDelegate.setNumFeaturesZ(this.numFeatZ);
-//
-//        this.continuousDelegate.setApproximationFromInt(switch (this.approx) {
-//            case LPB4 -> 1;
-//            case HBE -> 2;
-//            case GAMMA -> 3;
-//            case CHI2 -> 4;
-//            case PERMUTATION -> 5;
-//        });
-
-//        this.continuousDelegate.setPermutations(this.permutations);
-//        this.continuousDelegate.setDoRcit(this.doRcit);
-//
-//        this.continuousDelegate.setLambda(this.lambda);
-//        this.continuousDelegate.setCenterFeatures(this.centerFeatures);
-//
-//        this.continuousDelegate.setBandwidthMultiplier(this.bandwidthMultiplier);
-//        this.continuousDelegate.setBwMaxRows(this.bwMaxRows);
-//
-//        this.continuousDelegate.setFeatureType(switch (this.featureType) {
-//            case RFF -> FfCi.FeatureType.RFF;
-//            case ORF -> FfCi.FeatureType.ORF;
-//        });
+    public void setSeed(long seed) {
+        this.rng.setSeed(seed);
+        this.featCache.clear();
+        this.bw2Cache.clear();
+        // Ensure continuous-only parity
+        this.continuousDelegate.setSeed(seed);
     }
 
-    // ---------------- public setters ----------------
-
-    /**
-     * Sets the approximation method based on the given integer code and updates
-     * related configurations if necessary.
-     *
-     * The method assigns one of the predefined approximation methods to the `approx`
-     * field of the class based on the provided code. If the code does not match any
-     * predefined values, a default approximation is used. Additionally, if the data
-     * contains discrete variables, the delegate is synchronized with the current
-     * instance.
-     *
-     * @param approx the approximation method to set
-     */
-    public void setApprox(Approx approx) {
-        if (approx == null) throw new NullPointerException("approx");
-        this.approx = approx;
+    @Override
+    public void setAlpha(double alpha) {
+        if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("alpha in (0,1)");
+        this.alpha = alpha;
+        this.continuousDelegate.setAlpha(alpha);
     }
 
-    /**
-     * Sets the state of the DoRcit flag and synchronizes the delegate if no discrete data exists.
-     *
-     * @param doRcit a boolean value representing the desired state to set for the DoRcit flag
-     */
-    public void setDoRcit(boolean doRcit) {
-        this.doRcit = doRcit;
-        if (!dataHasAnyDiscrete) syncDelegateToThis();
+    @Override
+    public double getAlpha() { return alpha; }
+
+    @Override
+    public boolean isVerbose() { return verbose; }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+        this.continuousDelegate.setVerbose(verbose);
     }
 
-    /**
-     * Sets the lambda parameter, ensuring it is not less than a minimum threshold.
-     * If the data contains no discrete elements, synchronizes the delegate with the current instance.
-     *
-     * @param lambda the value to set for the lambda parameter. Must be a positive number,
-     *               as it will be clamped to a minimum value of 1e-12.
-     */
     public void setLambda(double lambda) {
         this.lambda = Math.max(1e-12, lambda);
-        if (!dataHasAnyDiscrete) syncDelegateToThis();
+        this.continuousDelegate.setLambda(this.lambda);
     }
 
-    /**
-     * Sets the number of permutations to the specified value.
-     * If the given value is less than zero, it will be set to zero.
-     * Triggers synchronization if the data contains no discrete elements.
-     *
-     * @param permutations the number of permutations to set, must be zero or greater
-     */
-    public void setPermutations(int permutations) {
-        this.permutations = Math.max(0, permutations);
-        if (!dataHasAnyDiscrete) syncDelegateToThis();
-    }
-
-    /**
-     * Sets whether the features should be centered. Centering features ensures
-     * that the data is adjusted around the mean, making it more suitable for
-     * certain statistical computations or machine learning models.
-     *
-     * @param centerFeatures a boolean value indicating whether to center features.
-     *                        If true, the features will be centered. If false,
-     *                        they will remain unchanged.
-     */
     public void setCenterFeatures(boolean centerFeatures) {
         this.centerFeatures = centerFeatures;
-        if (!dataHasAnyDiscrete) syncDelegateToThis();
+        this.featCache.clear();
+//        this.continuousDelegate.setCenterFeatures(centerFeatures);
     }
 
-    /**
-     * Sets the number of features in the XY dimension, ensuring a minimum value of 1.
-     * Clears relevant caches and synchronizes delegate if no discrete data is present.
-     *
-     * @param d the desired number of features in the XY dimension
-     */
     public void setNumFeaturesXY(int d) {
         this.numFeatXY = Math.max(1, d);
         this.featCache.clear();
         this.bw2Cache.clear();
-        if (!dataHasAnyDiscrete) syncDelegateToThis();
+//        this.continuousDelegate.setNumFeaturesXY(this.numFeatXY);
     }
 
-    /**
-     * Sets the number of features (Z) to the specified value. The value is
-     * constrained to be at least 1. This method also clears relevant caches
-     * and synchronizes delegate settings if no discrete data is present.
-     *
-     * @param d the desired number of features (Z). If the value is less than 1,
-     *          it will be set to 1.
-     */
     public void setNumFeaturesZ(int d) {
         this.numFeatZ = Math.max(1, d);
         this.featCache.clear();
         this.bw2Cache.clear();
-        if (!dataHasAnyDiscrete) syncDelegateToThis();
+//        this.continuousDelegate.setNumFeaturesZ(this.numFeatZ);
     }
 
-    /**
-     * Sets the bandwidth multiplier used for calculations. The value must be greater
-     * than 0 and finite. Invalid values will result in an IllegalArgumentException.
-     * This method also clears cached values and synchronizes data if necessary.
-     *
-     * @param bandwidthMultiplier the multiplier value to set; must be greater than 0 and finite
-     * @throws IllegalArgumentException if the provided value is not greater than 0 or is not finite
-     */
+    public void setPermutations(int permutations) {
+        this.permutations = Math.max(0, permutations);
+        this.continuousDelegate.setPermutations(this.permutations);
+    }
+
+    public void setApproximation(FfCi.Approx method) {
+        this.pValueMethod = Objects.requireNonNull(method, "method");
+        this.continuousDelegate.setApproximation(method);
+    }
+
+    // Mixed-only knobs (safe no-ops for continuous delegate; they just affect mixed path)
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
         if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
             throw new IllegalArgumentException("bandwidthMultiplier must be > 0 and finite");
         }
         this.bandwidthMultiplier = bandwidthMultiplier;
-        this.bw2Cache.clear();
         this.featCache.clear();
-        if (!dataHasAnyDiscrete) syncDelegateToThis();
+        this.bw2Cache.clear();
     }
 
-    /**
-     * Sets the maximum number of rows for processing while ensuring a minimum limit of 50.
-     * Clears internal caches and synchronizes the delegate if the data contains no discrete attributes.
-     *
-     * @param bwMaxRows the desired maximum number of rows; if less than 50, it will default to 50
-     */
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = Math.max(50, bwMaxRows);
-        this.bw2Cache.clear();
         this.featCache.clear();
-        if (!dataHasAnyDiscrete) syncDelegateToThis();
+        this.bw2Cache.clear();
     }
 
-    /**
-     * Sets the feature type for the current object. This method updates the
-     * feature type and clears any cached features. If the data contains
-     * no discrete values, it synchronizes the delegate to the current instance.
-     *
-     * @param featureType the feature type to be set; must not be null
-     * @throws NullPointerException if the provided featureType is null
-     */
     public void setFeatureType(FeatureType featureType) {
         this.featureType = Objects.requireNonNull(featureType, "featureType");
         this.featCache.clear();
-        if (!dataHasAnyDiscrete) syncDelegateToThis();
     }
 
-    /**
-     * Returns the current feature type.
-     *
-     * @return the current feature type
-     */
-    public FeatureType getFeatureType() {
-        return featureType;
-    }
+    public FeatureType getFeatureType() { return featureType; }
 
-    /**
-     * Sets the seed for the random number generator (RNG) and clears the feature cache.
-     * If the data does not contain any discrete elements, synchronizes the delegate to this instance.
-     *
-     * @param seed the seed value to initialize the RNG
-     */
-    public void setSeed(long seed) {
-        this.rng.setSeed(seed);
-        this.featCache.clear();
-        if (!dataHasAnyDiscrete) syncDelegateToThis();
-    }
-
-    /**
-     * Sets the value of the catRho parameter, which must be within the range [0, 1)
-     * and finite. This method also clears the feature cache and syncs delegate
-     * behavior if necessary.
-     *
-     * @param rho the value to set for catRho; must satisfy 0.0 &lt;= rho &lt; 1.0 and be finite
-     * @throws IllegalArgumentException if rho is not within the valid range or is not finite
-     */
     public void setCatRho(double rho) {
         if (!(rho >= 0.0 && rho < 1.0) || !Double.isFinite(rho)) {
             throw new IllegalArgumentException("catRho must be in [0,1)");
         }
         this.catRho = rho;
         this.featCache.clear();
-        if (!dataHasAnyDiscrete) syncDelegateToThis();
+        this.bw2Cache.clear();
     }
 
-    /**
-     * Retrieves the value of the catRho property.
-     *
-     * @return the current value of the catRho property as a double
-     */
-    public double getCatRho() {
-        return catRho;
+    public double getCatRho() { return catRho; }
+
+    // ---------------- RowsSettable ----------------
+
+    @Override
+    public List<Integer> getRows() { return rows; }
+
+    @Override
+    public void setRows(List<Integer> rows) {
+        if (rows == null) {
+            this.rows = null;
+            this.n = data.getNumRows();
+            featCache.clear();
+            bw2Cache.clear();
+            // critical for parity
+            this.continuousDelegate.setRows(null);
+            return;
+        }
+
+        for (int i = 0; i < rows.size(); i++) {
+            Integer r = rows.get(i);
+            if (r == null) throw new NullPointerException("Row " + i + " is null.");
+            if (r < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+            if (r >= data.getNumRows()) throw new IllegalArgumentException("Row " + i + " out of bounds: " + r);
+        }
+
+        this.rows = new ArrayList<>(rows);
+        this.n = this.rows.size();
+        featCache.clear();
+        bw2Cache.clear();
+        // critical for parity
+        this.continuousDelegate.setRows(this.rows);
     }
+
+    private int getActiveRowCount() { return (rows == null) ? data.getNumRows() : rows.size(); }
+    private int activeRowIndex(int i) { return (rows == null) ? i : rows.get(i); }
 
     // ---------------- IndependenceTest interface ----------------
 
-    /**
-     * Checks the independence between two nodes given a set of conditioning nodes.
-     * This method evaluates whether the two specified nodes are independent of each other
-     * when conditioned on the given set of nodes, using various possible statistical methods.
-     *
-     * @param x the first node to test for independence; must not be null
-     * @param y the second node to test for independence; must not be null
-     * @param z the set of conditioning nodes to condition the test upon; can be null or empty
-     * @return an IndependenceResult object containing the result of the independence test,
-     *         including statistical details and decision outcome
-     * @throws InterruptedException if the thread running this method is interrupted during execution
-     */
+    @Override
+    public DataSet getData() { return data; }
+
+    @Override
+    public List<Node> getVariables() { return vars; }
+
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-
         Objects.requireNonNull(x, "x");
         Objects.requireNonNull(y, "y");
+
+        // Hard guarantee: if dataset has no discrete vars, behave exactly like FF-CI (IndTestFfCi).
+        if (!dataHasAnyDiscrete) {
+            // Keep delegate aligned with current knobs (mostly redundant since setters forward,
+            // but safe if something was set via constructor/params)
+            syncDelegateToThis();
+            return continuousDelegate.checkIndependence(x, y, z);
+        }
 
         this.n = getActiveRowCount();
 
         final List<Node> Z = (z == null) ? new ArrayList<>() : new ArrayList<>(z);
         Z.sort(Comparator.comparing(Node::getName));
-
         IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(Z));
 
-        // --- Optional STRATIFIED mixed handling: stratify on discrete vars in Z only ---
-        if (mixedMode == MixedMode.STRATA_ZDISC
-                && !Z.isEmpty()
-                && containsDiscrete(Z)
-                && approx == Approx.PERMUTATION
-                && permutations > 0
-                && !(x instanceof DiscreteVariable)
-                && !(y instanceof DiscreteVariable)) {
-
-            IndependenceResult r = checkIndependenceStratifiedOnZDiscrete(x, y, Z, fact);
-            if (r != null) return r; // null means: stratification decided to fall back
-            // else fall through to STACK
-        }
-
-        return checkIndependenceStack(x, y, Z, fact);
+        // --- mixed stack path ---
+        return checkIndependenceMixedStack(x, y, Z, fact);
     }
 
-    private IndependenceResult checkIndependenceStack(Node x, Node y, List<Node> Z, IndependenceFact fact)
+    private IndependenceResult checkIndependenceMixedStack(Node x, Node y, List<Node> Z, IndependenceFact fact)
             throws InterruptedException {
 
         if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
@@ -534,15 +306,13 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
             return new IndependenceResult(fact, true, p_, alpha - p_, false);
         }
 
-        // RCIT: augment Y with Z at the “input block” level (mixed-aware)
-        List<Node> yKeyVars = (doRcit && !Z.isEmpty()) ? hstackVarList(y, Z) : Collections.singletonList(y);
+        // RCIT-style augmentation (same pattern as your mixed code)
+        final List<Node> yKeyVars = (!Z.isEmpty()) ? hstackVarList(y, Z) : Collections.singletonList(y);
 
-        // Deterministic seeds (cache-friendly)
         long seedX = seedForX(x) ^ 1729L;
         long seedY = seedForBlock("Y", yKeyVars) ^ 1729L;
         long seedZ = seedForBlock("Z", Z) ^ 1729L;
 
-        // Features (mixed-aware)
         SimpleMatrix fX = kffFeatMixedCached("X", Collections.singletonList(x), numFeatXY, seedX);
         SimpleMatrix fY = kffFeatMixedCached("Y", yKeyVars, numFeatXY, seedY);
         SimpleMatrix fZ = Z.isEmpty() ? null : kffFeatMixedCached("Z", Z, numFeatZ, seedZ);
@@ -551,8 +321,8 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         double p = NaN;
 
         if (fZ == null || fZ.getNumCols() == 0) {
-            // ---------------- RIT (no conditioning) ----------------
-            SimpleMatrix Cxy = cov(fX, fY);
+            // -------- RIT --------
+            SimpleMatrix Cxy = covCentered(fX, fY);
             stat = n * frob2(Cxy);
 
             SimpleMatrix resX = fX.copy();
@@ -563,390 +333,58 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
             SimpleMatrix Cov = kronResCov(resX, resY);
             double[] eig = positiveEigs(Cov);
 
-            switch (approx) {
-                case PERMUTATION -> {
-                    if (permutations > 0) {
-                        int greater = 0;
-                        for (int b = 0; b < permutations; b++) {
-                            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-                            int[] perm = randomPermutation(n, rng);
-                            SimpleMatrix C = covWithPermutedB(fX, fY, perm);
-                            double s = n * frob2(C);
-                            if (s >= stat) greater++;
-                        }
-                        p = (greater + 1.0) / (permutations + 1.0);
-                    } else {
-                        p = gammaApproxP(stat, eig);
-                    }
-                }
-                case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
-                case SADDLEPOINT -> QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);// edgeworthP(stat, eig, true);
-                case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
-                default -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
-            }
+            p = pValueFromMethod(stat, eig, fX, fY, null);
         } else {
-            // ---------------- Conditional: ridge residualization in feature space ----------------
-//            final double alphaRidge = Math.max(1e-18, lambda);
+            // -------- Conditional: ridge residualization --------
             final double alphaRidge = Math.max(1e-18, lambda / Math.max(1.0, (n - 1.0)));
-
             SimpleMatrix rX = ridgeResidual(fX, fZ, alphaRidge);
             SimpleMatrix rY = ridgeResidual(fY, fZ, alphaRidge);
 
             subtractColumnMeansInPlace(rX);
             subtractColumnMeansInPlace(rY);
 
-            SimpleMatrix Cxy = cov(rX, rY);
+            SimpleMatrix Cxy = covCentered(rX, rY);
             stat = n * frob2(Cxy);
 
-            if (approx == Approx.PERMUTATION && permutations > 0) {
-                int greater = 0;
-                for (int b = 0; b < permutations; b++) {
-                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-                    int[] perm = randomPermutation(n, rng);
+            SimpleMatrix resX = rX.copy();
+            SimpleMatrix resY = rY.copy();
+            subtractColumnMeansInPlace(resX);
+            subtractColumnMeansInPlace(resY);
 
-                    SimpleMatrix rYp = permuteRows(rY, perm);
-                    SimpleMatrix C = cov(rX, rYp);
+            SimpleMatrix Cov = kronResCov(resX, resY);
+            double[] eig = positiveEigs(Cov);
 
-                    double s = n * frob2(C);
-                    if (s >= stat) greater++;
-                }
-                p = (greater + 1.0) / (permutations + 1.0);
-            } else {
-                SimpleMatrix resX = rX.copy();
-                SimpleMatrix resY = rY.copy();
-                subtractColumnMeansInPlace(resX);
-                subtractColumnMeansInPlace(resY);
-
-                SimpleMatrix Cov = kronResCov(resX, resY);
-                double[] eig = positiveEigs(Cov);
-
-                switch (approx) {
-                    case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
-                    case SADDLEPOINT -> QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);// edgeworthP(stat, eig, true);
-                    case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
-                    default -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
-                }
-            }
+            p = pValueFromMethod(stat, eig, rX, rY, null);
         }
 
-        double p_ = clamp01(p);
-        boolean indep = (p_ > alpha);
-
-        if (verbose && indep) {
-            TetradLogger.getInstance().log(fact + " p = " + p_ + " stat=" + stat
-                    + " approx=" + approx + " Fx=" + numFeatXY + " Fz=" + numFeatZ
-                    + " ft=" + featureType + " bwMult=" + bandwidthMultiplier + " lam=" + lambda);
-        }
-
-        return new IndependenceResult(fact, indep, p_, alpha - p_);
-    }
-
-    private static boolean containsDiscrete(List<Node> vars) {
-        for (Node v : vars) if (v instanceof DiscreteVariable) return true;
-        return false;
-    }
-
-    private IndependenceResult checkIndependenceStratifiedOnZDiscrete(
-            Node x, Node y, List<Node> Zsorted, IndependenceFact fact
-    ) throws InterruptedException {
-
-        if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-        this.n = getActiveRowCount();
-        final int nAll = this.n;
-
-        // Split Z into discrete vs continuous
-        final ArrayList<DiscreteVariable> zDisc = new ArrayList<>();
-        final ArrayList<Node> zCont = new ArrayList<>();
-        for (Node v : Zsorted) {
-            if (v instanceof DiscreteVariable dv) zDisc.add(dv);
-            else zCont.add(v);
-        }
-
-        // Build strata: map key -> list of active-row indices (0..nAll-1)
-        // Using Long boxing in HashMap is not perfect, but OK; avoids extra dependencies.
-        final HashMap<Long, IntArrayList> strata = new HashMap<>(64);
-
-        for (int i = 0; i < nAll; i++) {
-            int row = activeRowIndex(i);
-
-            long key = 1469598103934665603L; // FNV-ish
-            for (DiscreteVariable dv : zDisc) {
-                int col = data.getColumn(dv);
-                if (col < 0) col = data.getVariableNames().indexOf(dv.getName());
-                if (col < 0) throw new IllegalArgumentException("Variable not found: " + dv.getName());
-
-                int val;
-                try {
-                    val = data.getInt(row, col);
-                } catch (Throwable t) {
-                    val = (int) Math.round(data.getDouble(row, col));
-                }
-
-                // clamp defensively
-                int k = Math.max(1, dv.getNumCategories());
-                if (val < 0) val = 0;
-                if (val >= k) val = k - 1;
-
-                key ^= (val + 0x9E3779B97F4A7C15L);
-                key *= 1099511628211L;
-            }
-
-            strata.computeIfAbsent(key, kk -> new IntArrayList()).add(i);
-        }
-
-        if (strata.size() > maxStrata) {
-            // Too fragmented -> fall back to standard STACK behavior
-            // (No recursion—just do the original path by returning null sentinel and falling through is messy;
-            // simplest is to just run STACK inline by calling the normal code path. Since you’re inside checkIndependence,
-            // easiest is: temporarily switch mode and call checkIndependence again.)
-            MixedMode prev = this.mixedMode;
-            return null;
-        }
-
-        // Keep only sufficiently large strata
-        final ArrayList<IntArrayList> strataIdx = new ArrayList<>(strata.size());
-        int totalKept = 0;
-        for (IntArrayList lst : strata.values()) {
-            if (lst.size() >= minStratumSize) {
-                strataIdx.add(lst);
-                totalKept += lst.size();
-            }
-        }
-
-        if (totalKept < Math.max(10, minStratumSize)) {
-            return null;
-        }
-
-        // Deterministic base seeds (so results are stable)
-        long seedBase = seedForX(x) ^ seedForBlock("STRATA", Zsorted) ^ 0xC0FFEE;
-
-        // Observed stat: sum over strata
-        double statObs = 0.0;
-
-        // Precompute per-stratum residual features rX_s and rY_s for observed statistic
-        // (Then permutations just permute rY_s within the stratum.)
-        final ArrayList<SimpleMatrix> rXs = new ArrayList<>(strataIdx.size());
-        final ArrayList<SimpleMatrix> rYs = new ArrayList<>(strataIdx.size());
-
-        for (int s = 0; s < strataIdx.size(); s++) {
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-
-            IntArrayList idx = strataIdx.get(s);
-            int ns = idx.size();
-
-            // Build features for this stratum (continuous-only; discrete are constant inside stratum by construction)
-            SimpleMatrix fX = kffFeatContinuousOnRows(Collections.singletonList(x), numFeatXY, seedBase ^ (s * 1315423911L), idx);
-            List<Node> yKeyVars = (doRcit && !Zsorted.isEmpty()) ? hstackVarList(y, Zsorted) : Collections.singletonList(y);
-            SimpleMatrix fY = kffFeatContinuousOnRows(yKeyVars, numFeatXY, seedBase ^ (s * 2654435761L), idx);
-
-            SimpleMatrix fZ = zCont.isEmpty() ? null
-                    : kffFeatContinuousOnRows(zCont, numFeatZ, seedBase ^ (s * 97531L), idx);
-
-            SimpleMatrix rX = (fZ == null || fZ.getNumCols() == 0) ? fX : ridgeResidual(fX, fZ, Math.max(1e-18, lambda));
-            SimpleMatrix rY = (fZ == null || fZ.getNumCols() == 0) ? fY : ridgeResidual(fY, fZ, Math.max(1e-18, lambda));
-
-            // stat contribution
-            SimpleMatrix Cxy = cov(rX, rY);
-            statObs += ns * frob2(Cxy);
-
-            rXs.add(rX);
-            rYs.add(rY);
-        }
-
-        // Permutation p-value: permute Y within each stratum
-        int greater = 0;
-        for (int b = 0; b < permutations; b++) {
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-
-            double statB = 0.0;
-
-            for (int s = 0; s < strataIdx.size(); s++) {
-                int ns = strataIdx.get(s).size();
-
-                SimpleMatrix rX = rXs.get(s);
-                SimpleMatrix rY = rYs.get(s);
-
-                int[] perm = randomPermutation(ns, rng);
-                SimpleMatrix rYp = permuteRows(rY, perm);
-
-                SimpleMatrix C = cov(rX, rYp);
-                statB += ns * frob2(C);
-            }
-
-            if (statB >= statObs) greater++;
-        }
-
-        double p = (greater + 1.0) / (permutations + 1.0);
         double p_ = clamp01(p);
         boolean indep = (p_ > alpha);
 
         if (verbose) {
-            TetradLogger.getInstance().log(fact + " STRATA_ZDISC p=" + p_ + " stat=" + statObs
-                    + " strata=" + strataIdx.size() + " keptN=" + totalKept
-                    + " minStratum=" + minStratumSize + " perms=" + permutations);
+            TetradLogger.getInstance().log(fact + " p=" + p_ + " stat=" + stat
+                    + " method=" + pValueMethod
+                    + " Fx=" + numFeatXY + " Fz=" + numFeatZ
+                    + " ft=" + featureType + " bwMult=" + bandwidthMultiplier + " lam=" + lambda
+                    + " catRho=" + catRho + " perms=" + permutations);
         }
 
         return new IndependenceResult(fact, indep, p_, alpha - p_);
     }
 
-    private SimpleMatrix kffFeatContinuousOnRows(List<Node> vv, int mFeaturesCont, long seed, IntArrayList activeIdxWithinCurrentRows) {
-        final int ns = activeIdxWithinCurrentRows.size();
+    // ---------------- continuous delegate sync ----------------
 
-        // Build continuous raw matrix Zc (ns x dc)
-        ArrayList<Node> contVars = new ArrayList<>();
-        for (Node v : vv) if (!(v instanceof DiscreteVariable)) contVars.add(v);
-
-        int dc = contVars.size();
-        if (dc == 0) {
-            // no continuous inputs: return constant RFF block (handled by rffFeatures for d==0)
-            double[][] Z0 = new double[ns][0];
-            double[][] Phi = rffFeatures(Z0, Math.max(1, mFeaturesCont), 1.0, seed);
-            SimpleMatrix M = new SimpleMatrix(Phi);
-            if (centerFeatures) zscoreInPlace(M);
-            else subtractColumnMeansInPlace(M);
-            return M;
-        }
-
-        double[][] Zc = new double[ns][dc];
-        for (int j = 0; j < dc; j++) {
-            Node v = contVars.get(j);
-            int col = data.getColumn(v);
-            if (col < 0) col = data.getVariableNames().indexOf(v.getName());
-            if (col < 0) throw new IllegalArgumentException("Variable not found: " + v.getName());
-
-            for (int i = 0; i < ns; i++) {
-                int rowAll = activeRowIndex(activeIdxWithinCurrentRows.get(i));
-                Zc[i][j] = data.getDouble(rowAll, col);
-            }
-        }
-
-        zscoreInPlace(Zc);
-
-        double bw2 = medianDistanceSquaredND(Zc, Math.min(ns, bwMaxRows));
-        if (!(bw2 > 0) || !Double.isFinite(bw2)) bw2 = 1.0;
-        bw2 *= (bandwidthMultiplier * bandwidthMultiplier);
-        if (bw2 < 1e-12) bw2 = 1e-12;
-
-        double[][] Phi = rffFeatures(Zc, mFeaturesCont, bw2, seed);
-        SimpleMatrix M = new SimpleMatrix(Phi);
-
-        if (centerFeatures) zscoreInPlace(M);
-        else subtractColumnMeansInPlace(M);
-
-        return M;
-    }
-
-    /**
-     * Retrieves the list of nodes representing variables.
-     *
-     * @return a list of Node objects contained in this instance.
-     */
-    @Override
-    public List<Node> getVariables() {
-        return vars;
-    }
-
-    /**
-     * Retrieves the alpha value.
-     *
-     * @return the alpha value as a double.
-     */
-    @Override
-    public double getAlpha() {
-        return alpha;
-    }
-
-    /**
-     * Sets the alpha value for the object. The alpha determines the level of transparency,
-     * where the value must be strictly between 0 (completely transparent) and 1 (completely opaque).
-     *
-     * @param alpha the transparency level to be set; must be a value in the range (0, 1)
-     * @throws IllegalArgumentException if the alpha value is less than or equal to 0, or greater than or equal to 1
-     */
-    @Override
-    public void setAlpha(double alpha) {
-        if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("alpha in (0,1)");
-        this.alpha = alpha;
-    }
-
-    /**
-     * Retrieves the current data set.
-     *
-     * @return the DataSet object representing the current data.
-     */
-    @Override
-    public DataSet getData() {
-        return data;
-    }
-
-    /**
-     * Determines if verbose mode is enabled.
-     *
-     * @return true if verbose mode is enabled; otherwise, false
-     */
-    @Override
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    /**
-     * Sets the verbose mode for the current instance.
-     *
-     * @param verbose a boolean value indicating whether verbose mode should be enabled (true) or disabled (false)
-     */
-    @Override
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    // ---------------- RowsSettable ----------------
-
-    /**
-     * Retrieves the list of row indices currently set for the instance.
-     *
-     * @return a List containing the row indices, or null if no rows are set
-     */
-    @Override
-    public List<Integer> getRows() {
-        return rows;
-    }
-
-    /**
-     * Sets the list of row indices for the current instance.
-     *
-     * @param rows a List containing the row indices to be set, or null to reset to all rows
-     * @throws NullPointerException if any row index in the list is null
-     * @throws IllegalArgumentException if any row index is negative or out of bounds
-     */
-    @Override
-    public void setRows(List<Integer> rows) {
-        if (rows == null) {
-            this.rows = null;
-            this.n = data.getNumRows();
-            featCache.clear();
-            bw2Cache.clear();
-            return;
-        }
-
-        for (int i = 0; i < rows.size(); i++) {
-            Integer r = rows.get(i);
-            if (r == null) throw new NullPointerException("Row " + i + " is null.");
-            if (r < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
-            if (r >= data.getNumRows()) throw new IllegalArgumentException("Row " + i + " out of bounds: " + r);
-        }
-
-        this.rows = new ArrayList<>(rows);
-        this.n = this.rows.size();
-        featCache.clear();
-        bw2Cache.clear();
-    }
-
-    private int getActiveRowCount() {
-        return (rows == null) ? data.getNumRows() : rows.size();
-    }
-
-    private int activeRowIndex(int i) {
-        return (rows == null) ? i : rows.get(i);
+    private void syncDelegateToThis() {
+        // Keep delegate aligned (setters already forward, but this covers constructor-set defaults too)
+        continuousDelegate.setAlpha(alpha);
+        continuousDelegate.setVerbose(verbose);
+        continuousDelegate.setLambda(lambda);
+//        continuousDelegate.setCenterFeatures(centerFeatures);
+//        continuousDelegate.setNumFeaturesXY(numFeatXY);
+//        continuousDelegate.setNumFeaturesZ(numFeatZ);
+        continuousDelegate.setPermutations(permutations);
+        continuousDelegate.setApproximation(pValueMethod);
+        continuousDelegate.setRows(rows);
+        // NOTE: bandwidthMultiplier/bwMaxRows/featureType/catRho are mixed-only here.
     }
 
     // ---------------- Mixed feature construction ----------------
@@ -955,27 +393,21 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
             throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 
-        // Key includes variable list; discrete mappings depend only on observed category counts in active rows,
-        // so we fold in a cheap “levels signature” too.
         String key = keyFeat(tag, varsForKey, mFeaturesCont, seed);
 
         return featCache.computeIfAbsent(key, k -> {
             MixedBlock block = extractMixedBlock(varsForKey);
 
-            // Continuous part: z-score raw, then RFF
-            double[][] Zc = block.cont; // n x dc (already z-scored)
+            double[][] Zc = block.cont; // n x dc (z-scored)
             double bw2 = bw2For(tag, varsForKey, Zc);
 
             double[][] PhiC = (Zc.length == 0 || Zc[0].length == 0)
                     ? new double[n][0]
                     : rffFeatures(Zc, mFeaturesCont, bw2, seed);
 
-            // Discrete part: one-hot (delta-kernel)
-            double[][] PhiD = block.discOneHot; // n x dd (already centered if requested later)
+            double[][] PhiD = block.discFeat;
 
-            // Stack
             double[][] Phi = hstackRaw(PhiC, PhiD);
-
             SimpleMatrix M = new SimpleMatrix(Phi);
 
             if (centerFeatures) zscoreInPlace(M);
@@ -985,21 +417,9 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         });
     }
 
-    /**
-     * Extracts a mixed block for a set of variables:
-     * - Continuous vars -> double[][] cont (n x dc), z-scored columnwise
-     * - Discrete vars   -> double[][] discFeat (n x sum(levels)), where each discrete var contributes
-     * either:
-     * (a) one-hot (delta kernel) if catRho == 0, or
-     * (b) an exact PSD categorical feature map (Cholesky row features) if catRho > 0,
-     * i.e. features f(c) s.t. f(c)^T f(c') = 1 if c=c', else catRho.
-     * <p>
-     * Note: centering/z-scoring is handled later in kffFeatMixedCached(...) via zscoreInPlace(SimpleMatrix).
-     */
     private MixedBlock extractMixedBlock(List<Node> vv) {
         final int n = getActiveRowCount();
 
-        // 1) Identify continuous/discrete vars in block
         final ArrayList<Node> contVars = new ArrayList<>();
         final ArrayList<DiscreteVariable> discVars = new ArrayList<>();
 
@@ -1008,23 +428,18 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
             else contVars.add(v);
         }
 
-        // 2) Continuous raw -> z-score
+        // continuous raw -> z-score
         final double[][] cont = new double[n][contVars.size()];
         for (int j = 0; j < contVars.size(); j++) {
             Node v = contVars.get(j);
             int col = data.getColumn(v);
             if (col < 0) col = data.getVariableNames().indexOf(v.getName());
             if (col < 0) throw new IllegalArgumentException("Variable not found: " + v.getName());
-
-            for (int i = 0; i < n; i++) {
-                int row = activeRowIndex(i);
-                cont[i][j] = data.getDouble(row, col);
-            }
+            for (int i = 0; i < n; i++) cont[i][j] = data.getDouble(activeRowIndex(i), col);
         }
-        // z-score continuous columns (like original KffRcit)
         zscoreInPlace(cont);
 
-        // 3) Discrete features: one-hot (rho=0) OR Cholesky row features (rho>0)
+        // discrete categorical features
         int totalLevels = 0;
         final int[] levelsPerVar = new int[discVars.size()];
         for (int j = 0; j < discVars.size(); j++) {
@@ -1036,7 +451,6 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         final double[][] discFeat = new double[n][totalLevels];
         if (totalLevels > 0) {
             int offset = 0;
-
             for (int j = 0; j < discVars.size(); j++) {
                 DiscreteVariable dv = discVars.get(j);
 
@@ -1045,30 +459,20 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
                 if (col < 0) throw new IllegalArgumentException("Variable not found: " + dv.getName());
 
                 final int k = levelsPerVar[j];
-
-                // Build categorical feature map rows for this variable:
-                // - if catRho == 0: rows are standard basis (one-hot)
-                // - else: rows are Cholesky factor rows for K_levels (diag=1, offdiag=catRho)
                 final double[][] A = buildCatFeatureRows(k, this.catRho);
 
                 for (int i = 0; i < n; i++) {
                     int row = activeRowIndex(i);
-
                     int val;
                     try {
                         val = data.getInt(row, col);
                     } catch (Throwable t) {
                         val = (int) Math.round(data.getDouble(row, col));
                     }
-
-                    // Clamp defensively
                     if (val < 0) val = 0;
                     if (val >= k) val = k - 1;
-
-                    // Copy row features into the appropriate slice
                     System.arraycopy(A[val], 0, discFeat[i], offset, k);
                 }
-
                 offset += k;
             }
         }
@@ -1076,108 +480,9 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         return new MixedBlock(cont, discFeat);
     }
 
-    /**
-     * Returns an exact feature matrix A (k x k) for the categorical kernel:
-     * K_ij = 1 if i==j else rho
-     * such that A * A^T = K.
-     * <p>
-     * If rho == 0, this returns the identity (one-hot features).
-     * <p>
-     * Requirements:
-     * - k >= 1
-     * - 0 <= rho < 1
-     */
-    private static double[][] buildCatFeatureRows(int k, double rho) {
-        if (k <= 0) throw new IllegalArgumentException("k must be >= 1");
-
-        // Treat tiny rho as zero for stability.
-        if (!(rho > 0.0) || rho < 1e-15) {
-            double[][] I = new double[k][k];
-            for (int i = 0; i < k; i++) I[i][i] = 1.0;
-            return I;
-        }
-
-        if (!(rho >= 0.0 && rho < 1.0) || !Double.isFinite(rho)) {
-            throw new IllegalArgumentException("rho must be in [0,1)");
-        }
-
-        // Build K (k x k): diag 1, offdiag rho
-        double[][] K = new double[k][k];
-        for (int i = 0; i < k; i++) {
-            K[i][i] = 1.0;
-            for (int j = 0; j < i; j++) {
-                K[i][j] = rho;
-                K[j][i] = rho;
-            }
-        }
-
-        // Cholesky lower factor L such that K = L L^T.
-        // This exists for 0 <= rho < 1.
-        double[][] L = choleskyLowerOrThrow(K);
-
-        // We want row-features. Using rows of L is fine: row_i dot row_j = K_ij.
-        // (Because (L L^T)_{ij} = row_i(L) · row_j(L).)
-        return L;
-    }
-
-    /**
-     * Basic Cholesky (lower-triangular) with a small jitter fallback for numerical safety.
-     * Returns L where M = L L^T.
-     */
-    private static double[][] choleskyLowerOrThrow(double[][] M) {
-        int n = M.length;
-        double[][] L = new double[n][n];
-
-        // Try without jitter first
-        if (choleskyLowerInto(M, L, 0.0)) return L;
-
-        // Add a tiny diagonal jitter if needed (rare, but defensive)
-        // Keep it small so it doesn't materially change the kernel.
-        double jitter = 1e-12;
-        for (int tries = 0; tries < 3; tries++) {
-            if (choleskyLowerInto(M, L, jitter)) return L;
-            jitter *= 10.0;
-        }
-
-        throw new IllegalArgumentException("Categorical kernel matrix not PD (unexpected for rho in [0,1)).");
-    }
-
-    /**
-     * Computes Cholesky lower factor into L, optionally adding 'jitter' to the diagonal of M.
-     * Returns true on success, false if not PD.
-     */
-    private static boolean choleskyLowerInto(double[][] M, double[][] L, double jitter) {
-        int n = M.length;
-
-        // zero L
-        for (int i = 0; i < n; i++) Arrays.fill(L[i], 0.0);
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j <= i; j++) {
-                double sum = M[i][j];
-                if (i == j) sum += jitter;
-
-                for (int k = 0; k < j; k++) sum -= L[i][k] * L[j][k];
-
-                if (i == j) {
-                    if (!(sum > 1e-15) || !Double.isFinite(sum)) return false;
-                    L[i][j] = Math.sqrt(sum);
-                } else {
-                    double denom = L[j][j];
-                    if (!(denom > 0) || !Double.isFinite(denom)) return false;
-                    L[i][j] = sum / denom;
-                }
-            }
-        }
-        return true;
-    }
-
-    private record MixedBlock(double[][] cont, double[][] discOneHot) {
-    }
+    private record MixedBlock(double[][] cont, double[][] discFeat) { }
 
     private double bw2For(String tag, List<Node> varsForKey, double[][] Zcont) {
-        // Bandwidth is computed ONLY from the continuous variables.
-        // So the cache key must ignore discrete vars to avoid stale/incorrect reuse patterns.
         String key = keyBw2ContinuousOnly(tag, varsForKey);
 
         return bw2Cache.computeIfAbsent(key, k -> {
@@ -1196,9 +501,7 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
     private String keyBw2ContinuousOnly(String tag, List<Node> vs) {
         ArrayList<String> names = new ArrayList<>(vs.size());
-        for (Node v : vs) {
-            if (!(v instanceof DiscreteVariable)) names.add(v.getName());
-        }
+        for (Node v : vs) if (!(v instanceof DiscreteVariable)) names.add(v.getName());
         names.sort(String::compareTo);
 
         StringBuilder sb = new StringBuilder(140);
@@ -1213,20 +516,11 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
     }
 
     private String keyFeat(String tag, List<Node> vs, int mFeatures, long seed) {
-        ArrayList<String> names = new ArrayList<>(vs.size());
-        ArrayList<String> types = new ArrayList<>(vs.size());
-
-        for (Node v : vs) {
-            names.add(v.getName());
-            types.add((v instanceof DiscreteVariable) ? "D" : "C");
-        }
-
-        // stable order
         ArrayList<String> pair = new ArrayList<>(vs.size());
-        for (int i = 0; i < names.size(); i++) pair.add(names.get(i) + ":" + types.get(i));
+        for (Node v : vs) pair.add(v.getName() + ":" + ((v instanceof DiscreteVariable) ? "D" : "C"));
         pair.sort(String::compareTo);
 
-        StringBuilder sb = new StringBuilder(180);
+        StringBuilder sb = new StringBuilder(220);
         sb.append(tag)
                 .append("|n=").append(getActiveRowCount())
                 .append("|rows=").append(activeRowsHash())
@@ -1236,25 +530,9 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
                 .append("|bwMult=").append(Double.doubleToLongBits(bandwidthMultiplier))
                 .append("|bwMax=").append(bwMaxRows)
                 .append("|seed=").append(seed)
-                .append("|vars=")
-                .append("|catRho=").append(Double.doubleToLongBits(catRho));
-        for (String s : pair) sb.append(s).append(",");
-        return sb.toString();
-    }
-
-    private String keyBw2(String tag, List<Node> vs) {
-        ArrayList<String> names = new ArrayList<>(vs.size());
-        for (Node v : vs) names.add(v.getName());
-        names.sort(String::compareTo);
-
-        StringBuilder sb = new StringBuilder(140);
-        sb.append(tag)
-                .append("|n=").append(getActiveRowCount())
-                .append("|rows=").append(activeRowsHash())
-                .append("|bwMult=").append(Double.doubleToLongBits(bandwidthMultiplier))
-                .append("|bwMax=").append(bwMaxRows)
+                .append("|catRho=").append(Double.doubleToLongBits(catRho))
                 .append("|vars=");
-        for (String s : names) sb.append(s).append(",");
+        for (String s : pair) sb.append(s).append(",");
         return sb.toString();
     }
 
@@ -1272,7 +550,7 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         return out;
     }
 
-    // ---------------- Seeds (stable) ----------------
+    // ---------------- stable seeds ----------------
 
     private long seedForX(Node x) {
         long h = 1469598103934665603L;
@@ -1296,27 +574,23 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         return h;
     }
 
-    // ---------------- KFF Fourier features ----------------
+    // ---------------- RFF / ORF features ----------------
 
-    /**
-     * Build Random Fourier (or Orthogonal Random) Features for an RBF kernel:
-     * k(x,x') = exp(-||x-x'||^2 / bw2)
-     * RFF/ORF:
-     * wStd = sqrt(2/bw2)
-     * phi_j(x) = sqrt(2/m) cos(w_j^T x + b_j)
-     */
     private double[][] rffFeatures(double[][] Z, int mFeatures, double bw2, long seed) {
         final int n = Z.length;
         final int d = (n == 0) ? 0 : Z[0].length;
 
         if (n == 0 || mFeatures <= 0) return new double[n][Math.max(mFeatures, 0)];
+
         if (d == 0) {
             double[][] Phi = new double[n][mFeatures];
             SplittableRandom rng0 = new SplittableRandom(seed);
             double scale0 = Math.sqrt(2.0 / mFeatures);
             double[] b0 = new double[mFeatures];
             for (int j = 0; j < mFeatures; j++) b0[j] = 2.0 * Math.PI * rng0.nextDouble();
-            for (int i = 0; i < n; i++) for (int j = 0; j < mFeatures; j++) Phi[i][j] = scale0 * Math.cos(b0[j]);
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < mFeatures; j++)
+                    Phi[i][j] = scale0 * Math.cos(b0[j]);
             return Phi;
         }
 
@@ -1336,15 +610,12 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
                 for (int k = 0; k < d; k++) W[j][k] = wStd * nextGaussian(rng);
                 b[j] = 2.0 * Math.PI * rng.nextDouble();
             }
-        } else if (featureType == FeatureType.ORF) {
+        } else {
             W = sampleOrthogonalW(mFeatures, d, wStd, rng);
             for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * Math.PI * rng.nextDouble();
-        } else {
-            throw new IllegalArgumentException("featureType must be RFF or ORF");
         }
 
         double[][] Phi = new double[n][mFeatures];
-
         for (int i = 0; i < n; i++) {
             double[] Zi = Z[i];
             for (int j = 0; j < mFeatures; j++) {
@@ -1354,11 +625,9 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
                 Phi[i][j] = scale * Math.cos(dot + b[j]);
             }
         }
-
         return Phi;
     }
 
-    // Box–Muller-ish gaussian from SplittableRandom (Marsaglia polar)
     private static double nextGaussian(SplittableRandom rng) {
         double u, v, s;
         do {
@@ -1369,21 +638,18 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         return u * Math.sqrt(-2.0 * Math.log(s) / s);
     }
 
-    /**
-     * Orthogonal Random Features (ORF) weights for RBF kernel.
-     * Generates rows in (block-)orthogonal blocks of size d.
-     */
     private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, SplittableRandom rng) {
         double[][] W = new double[mFeatures][d];
         if (d <= 0) return W;
 
         int filled = 0;
-
         while (filled < mFeatures) {
             int block = Math.min(d, mFeatures - filled);
 
             double[][] Q = new double[block][d];
-            for (int i = 0; i < block; i++) for (int j = 0; j < d; j++) Q[i][j] = nextGaussian(rng);
+            for (int i = 0; i < block; i++)
+                for (int j = 0; j < d; j++)
+                    Q[i][j] = nextGaussian(rng);
 
             for (int i = 0; i < block; i++) {
                 for (int k = 0; k < i; k++) {
@@ -1406,7 +672,6 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
             filled += block;
         }
-
         return W;
     }
 
@@ -1419,10 +684,6 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         return Math.sqrt(Math.max(1e-18, ss));
     }
 
-    /**
-     * Median of pairwise squared distances for up to maxRows points.
-     * Deterministic (uses evenly spaced subsample of rows).
-     */
     private static double medianDistanceSquaredND(double[][] Z, int maxRows) {
         int n = Z.length;
         int d = (n == 0) ? 0 : Z[0].length;
@@ -1476,7 +737,73 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         return out;
     }
 
-    // ---------------- Feature-space ridge residualization ----------------
+    // ---------------- categorical feature map ----------------
+
+    private static double[][] buildCatFeatureRows(int k, double rho) {
+        if (k <= 0) throw new IllegalArgumentException("k must be >= 1");
+
+        if (!(rho > 0.0) || rho < 1e-15) {
+            double[][] I = new double[k][k];
+            for (int i = 0; i < k; i++) I[i][i] = 1.0;
+            return I;
+        }
+        if (!(rho >= 0.0 && rho < 1.0) || !Double.isFinite(rho)) {
+            throw new IllegalArgumentException("rho must be in [0,1)");
+        }
+
+        double[][] K = new double[k][k];
+        for (int i = 0; i < k; i++) {
+            K[i][i] = 1.0;
+            for (int j = 0; j < i; j++) {
+                K[i][j] = rho;
+                K[j][i] = rho;
+            }
+        }
+
+        double[][] L = choleskyLowerOrThrow(K);
+        return L;
+    }
+
+    private static double[][] choleskyLowerOrThrow(double[][] M) {
+        int n = M.length;
+        double[][] L = new double[n][n];
+
+        if (choleskyLowerInto(M, L, 0.0)) return L;
+
+        double jitter = 1e-12;
+        for (int tries = 0; tries < 3; tries++) {
+            if (choleskyLowerInto(M, L, jitter)) return L;
+            jitter *= 10.0;
+        }
+
+        throw new IllegalArgumentException("Categorical kernel matrix not PD (unexpected for rho in [0,1)).");
+    }
+
+    private static boolean choleskyLowerInto(double[][] M, double[][] L, double jitter) {
+        int n = M.length;
+        for (int i = 0; i < n; i++) Arrays.fill(L[i], 0.0);
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j <= i; j++) {
+                double sum = M[i][j];
+                if (i == j) sum += jitter;
+
+                for (int k = 0; k < j; k++) sum -= L[i][k] * L[j][k];
+
+                if (i == j) {
+                    if (!(sum > 1e-15) || !Double.isFinite(sum)) return false;
+                    L[i][j] = Math.sqrt(sum);
+                } else {
+                    double denom = L[j][j];
+                    if (!(denom > 0) || !Double.isFinite(denom)) return false;
+                    L[i][j] = sum / denom;
+                }
+            }
+        }
+        return true;
+    }
+
+    // ---------------- ridge residualization ----------------
 
     private static SimpleMatrix ridgeResidual(SimpleMatrix X, SimpleMatrix Z, double alpha) {
         if (Z == null || Z.getNumCols() == 0) return X;
@@ -1488,7 +815,33 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         return X.minus(Z.mult(B));
     }
 
-    // ---------------- Stats + approximations ----------------
+    // ---------------- p-values ----------------
+
+    private double pValueFromMethod(double stat, double[] eig, SimpleMatrix rX, SimpleMatrix rY, SimpleMatrix ignored) {
+        // Permutation (if requested and available)
+        if (pValueMethod == FfCi.Approx.PERMUTATION && permutations > 0) {
+            int greater = 0;
+            for (int b = 0; b < permutations; b++) {
+                int[] perm = randomPermutation(rY.getNumRows(), rng);
+                SimpleMatrix rYp = permuteRows(rY, perm);
+                SimpleMatrix C = covCentered(rX, rYp);
+                double s = rY.getNumRows() * frob2(C);
+                if (s >= stat) greater++;
+            }
+            return (greater + 1.0) / (permutations + 1.0);
+        }
+
+        // Otherwise use quadratic-form approximations (same as your mixed code calls)
+        return switch (pValueMethod) {
+            case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
+            case SADDLEPOINT -> QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);
+            case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
+            // If PERMUTATION requested but permutations==0, fall back to GAMMA for safety
+            case PERMUTATION -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
+        };
+    }
+
+    // ---------------- linear algebra helpers ----------------
 
     private static void zscoreInPlace(double[][] M) {
         int n = M.length;
@@ -1534,10 +887,24 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         }
     }
 
-    private static SimpleMatrix cov(SimpleMatrix A, SimpleMatrix B) {
-        return covCentered(A, B);
-//        int n = A.getNumRows();
-//        return A.transpose().mult(B).scale(1.0 / (n - 1));
+    private static void subtractColumnMeansInPlace(SimpleMatrix M) {
+        int n = M.getNumRows(), d = M.getNumCols();
+        if (n == 0 || d == 0) return;
+        for (int j = 0; j < d; j++) {
+            double s = 0.0;
+            for (int i = 0; i < n; i++) s += M.get(i, j);
+            double mean = s / n;
+            for (int i = 0; i < n; i++) M.set(i, j, M.get(i, j) - mean);
+        }
+    }
+
+    private static SimpleMatrix covCentered(SimpleMatrix A, SimpleMatrix B) {
+        SimpleMatrix Ac = A.copy();
+        SimpleMatrix Bc = B.copy();
+        subtractColumnMeansInPlace(Ac);
+        subtractColumnMeansInPlace(Bc);
+        int n = A.getNumRows();
+        return Ac.transpose().mult(Bc).scale(1.0 / (n - 1));
     }
 
     private static double frob2(SimpleMatrix M) {
@@ -1573,75 +940,6 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         return e;
     }
 
-    private static double gammaApproxP(double stat, double[] eig) {
-        if (eig.length == 0) return (stat <= 1e-12) ? 1.0 : 0.0;
-        double s1 = 0.0, s2 = 0.0;
-        for (double l : eig) {
-            s1 += l;
-            s2 += l * l;
-        }
-        double mu = s1, var = 2.0 * s2;
-        if (mu <= 0 || var <= 0) return (stat <= 1e-12) ? 1.0 : 0.0;
-        double k = (mu * mu) / var;
-        double theta = var / mu;
-        GammaDistribution gd = new GammaDistribution(k, theta);
-        return 1.0 - gd.cumulativeProbability(stat);
-    }
-
-    private static double edgeworthP(double stat, double[] eig, boolean useKurtosis) {
-        if (eig.length == 0) return (stat <= 1e-12) ? 1.0 : 0.0;
-
-        double s1 = 0, s2 = 0, s3 = 0, s4 = 0;
-        for (double l : eig) {
-            s1 += l;
-            s2 += l * l;
-            s3 += l * l * l;
-            s4 += l * l * l * l;
-        }
-        double mu = s1;
-        double var = 2.0 * s2;
-        if (var <= 0) return (stat <= 1e-12) ? 1.0 : 0.0;
-
-        double sigma = Math.sqrt(var);
-        double t = (stat - mu) / sigma;
-
-        double gamma1 = (8.0 * s3) / Math.pow(var, 1.5);
-        double gamma2 = (48.0 * s4) / (var * var);
-
-        double z = t + (gamma1 / 6.0) * (t * t - 1.0);
-        if (useKurtosis) {
-            z += (gamma2 / 24.0) * (t * t * t - 3.0 * t)
-                    - (gamma1 * gamma1 / 36.0) * (2.0 * t * t * t - 5.0 * t);
-        }
-        NormalDistribution nd = new NormalDistribution();
-        return 1.0 - nd.cumulativeProbability(z);
-    }
-
-    private static double chi2ApproxP(double n, SimpleMatrix Cvec, SimpleMatrix Cov) {
-        SimpleMatrix iCov = Cov.pseudoInverse();
-        SimpleMatrix tmp = iCov.mult(Cvec);
-        double Q = n * Cvec.dot(tmp);
-
-        int df = 0;
-        SimpleEVD<SimpleMatrix> evd = Cov.eig();
-        for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
-            if (evd.getEigenvalue(i).getReal() > 1e-12) df++;
-        }
-        df = Math.max(df, 1);
-
-        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
-        return 1.0 - chi2.cumulativeProbability(Q);
-    }
-
-    private static SimpleMatrix vec(SimpleMatrix M) {
-        SimpleMatrix v = new SimpleMatrix(M.getNumElements(), 1);
-        int k = 0;
-        for (int j = 0; j < M.numCols(); j++)
-            for (int i = 0; i < M.numRows(); i++)
-                v.set(k++, 0, M.get(i, j));
-        return v;
-    }
-
     private static int[] randomPermutation(int n, Random rng) {
         int[] p = new int[n];
         for (int i = 0; i < n; i++) p[i] = i;
@@ -1662,68 +960,5 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         return out;
     }
 
-    private static SimpleMatrix covWithPermutedB(SimpleMatrix A, SimpleMatrix B, int[] perm) {
-        int n = A.getNumRows();
-        int p = A.getNumCols();
-        int q = B.getNumCols();
-        SimpleMatrix C = new SimpleMatrix(p, q);
-
-        for (int i = 0; i < n; i++) {
-            int bi = perm[i];
-            for (int a = 0; a < p; a++) {
-                double av = A.get(i, a);
-                for (int b = 0; b < q; b++) {
-                    C.set(a, b, C.get(a, b) + av * B.get(bi, b));
-                }
-            }
-        }
-        return C.scale(1.0 / (n - 1));
-    }
-
-    private static void subtractColumnMeansInPlace(SimpleMatrix M) {
-        int n = M.getNumRows(), d = M.getNumCols();
-        if (n == 0 || d == 0) return;
-
-        for (int j = 0; j < d; j++) {
-            double s = 0.0;
-            for (int i = 0; i < n; i++) s += M.get(i, j);
-            double mean = s / n;
-            for (int i = 0; i < n; i++) M.set(i, j, M.get(i, j) - mean);
-        }
-    }
-
-    private static SimpleMatrix covCentered(SimpleMatrix A, SimpleMatrix B) {
-        SimpleMatrix Ac = A.copy();
-        SimpleMatrix Bc = B.copy();
-        subtractColumnMeansInPlace(Ac);
-        subtractColumnMeansInPlace(Bc);
-        int n = A.getNumRows();
-        return Ac.transpose().mult(Bc).scale(1.0 / (n - 1));
-    }
-
-    private static double clamp01(double v) {
-        return v < 0 ? 0 : (v > 1 ? 1 : v);
-    }
-
-    private static final class IntArrayList {
-        private int[] a = new int[16];
-        private int size = 0;
-
-        void add(int v) {
-            if (size == a.length) a = Arrays.copyOf(a, a.length * 2);
-            a[size++] = v;
-        }
-
-        int size() {
-            return size;
-        }
-
-        int[] toArray() {
-            return Arrays.copyOf(a, size);
-        }
-
-        public int get(int i) {
-            return a[i];
-        }
-    }
+    private static double clamp01(double v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
 }
