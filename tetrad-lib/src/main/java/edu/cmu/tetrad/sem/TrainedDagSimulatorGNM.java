@@ -1,9 +1,10 @@
 // File: edu/cmu/tetrad/sem/TrainedDagSimulator.java
 package edu.cmu.tetrad.sem;
 
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
@@ -88,13 +89,13 @@ public final class TrainedDagSimulatorGNM {
      * Constructs a new instance of the TrainedDagSimulatorGNM class. This simulator utilizes a directed acyclic graph (DAG)
      * representation and corresponding data to model variable relationships and simulate values based on learned mechanisms.
      *
-     * @param data A {@code DataSet} object containing the variables and observations to be utilized in the simulation.
-     *             Must not be {@code null}.
-     * @param dag A {@code Graph} object representing the structure of the DAG to be used. The DAG must be acyclic and
-     *            must also not be {@code null}.
+     * @param data   A {@code DataSet} object containing the variables and observations to be utilized in the simulation.
+     *               Must not be {@code null}.
+     * @param dag    A {@code Graph} object representing the structure of the DAG to be used. The DAG must be acyclic and
+     *               must also not be {@code null}.
      * @param params An optional {@code Params} object containing additional configuration parameters for the simulator.
      *               If this parameter is {@code null}, default parameters will be used.
-     * @throws NullPointerException If {@code data} or {@code dag} is {@code null}.
+     * @throws NullPointerException     If {@code data} or {@code dag} is {@code null}.
      * @throws IllegalArgumentException If {@code dag} contains cycles (i.e., is not a valid DAG).
      */
     public TrainedDagSimulatorGNM(DataSet data, Graph dag, Params params) {
@@ -150,6 +151,28 @@ public final class TrainedDagSimulatorGNM {
     // -------------------- encoding parents into feature vectors --------------------
 
     /**
+     * Safely retrieves an integer value from the specified {@code DataSet} at the given row and column.
+     * If the cell contains a non-integer but finite value, it is rounded to the nearest integer.
+     * For non-finite values (e.g., NaN or infinities), a default value of {@code -1} is returned.
+     *
+     * @param data The {@code DataSet} object from which the value is retrieved. Must not be {@code null}.
+     * @param row  The row index of the value to retrieve. Must be a valid index within the dataset.
+     * @param col  The column index of the value to retrieve. Must be a valid index within the dataset.
+     * @return The integer value at the specified cell, or {@code -1} if the cell contains a non-finite value.
+     */
+    public static int safeGetInt(DataSet data, int row, int col) {
+        try {
+            return data.getInt(row, col);
+        } catch (Throwable t) {
+            double x = data.getDouble(row, col);
+            if (!Double.isFinite(x)) return -1;
+            return (int) Math.rint(x);
+        }
+    }
+
+    // -------------------- training row selection per node --------------------
+
+    /**
      * Human-readable report (one block per node).
      *
      * @return A string containing
@@ -182,7 +205,7 @@ public final class TrainedDagSimulatorGNM {
         return sb.toString();
     }
 
-    // -------------------- training row selection per node --------------------
+    // -------------------- tiny MLPs (1 hidden layer) --------------------
 
     /**
      * Structured per-node reports.
@@ -192,8 +215,6 @@ public final class TrainedDagSimulatorGNM {
     public List<NodeReport> getNodeReports() {
         return Collections.unmodifiableList(nodeReports);
     }
-
-    // -------------------- tiny MLPs (1 hidden layer) --------------------
 
     /**
      * Writes a human-readable textual representation of the fit report to the specified file.
@@ -209,6 +230,8 @@ public final class TrainedDagSimulatorGNM {
             w.write(getFitReportText());
         }
     }
+
+    // -------------------- main simulator object --------------------
 
     /**
      * Fit one mechanism per node given its parents in the supplied DAG.
@@ -277,8 +300,6 @@ public final class TrainedDagSimulatorGNM {
         }
     }
 
-    // -------------------- main simulator object --------------------
-
     /**
      * Simulates data by generating continuous and discrete values for all variables in the
      * trained directed acyclic graph (DAG) model. It performs the simulation using a specified
@@ -287,8 +308,8 @@ public final class TrainedDagSimulatorGNM {
      * @param nSamples The number of samples to generate during the simulation. Must be a
      *                 positive integer.
      * @return A {@code SimResult} object containing the simulated continuous and discrete
-     *         values, along with additional metadata related to the DAG and variables used
-     *         in the simulation.
+     * values, along with additional metadata related to the DAG and variables used
+     * in the simulation.
      */
     public SimResult simulate(int nSamples) {
         return simulate(nSamples, params.seed ^ 0x9E3779B97F4A7C15L);
@@ -304,8 +325,8 @@ public final class TrainedDagSimulatorGNM {
      * @param seed     A long value representing the seed for the random number generator.
      *                 Provides deterministic simulation results when the same seed is used.
      * @return A {@code SimResult} object containing the simulated continuous and discrete
-     *         values, along with metadata about the DAG and the set of variables used
-     *         in the simulation.
+     * values, along with metadata about the DAG and the set of variables used
+     * in the simulation.
      * @throws IllegalArgumentException If {@code nSamples} is less than 1.
      */
     public SimResult simulate(int nSamples, long seed) {
@@ -373,26 +394,6 @@ public final class TrainedDagSimulatorGNM {
     }
 
     /**
-     * Safely retrieves an integer value from the specified {@code DataSet} at the given row and column.
-     * If the cell contains a non-integer but finite value, it is rounded to the nearest integer.
-     * For non-finite values (e.g., NaN or infinities), a default value of {@code -1} is returned.
-     *
-     * @param data The {@code DataSet} object from which the value is retrieved. Must not be {@code null}.
-     * @param row  The row index of the value to retrieve. Must be a valid index within the dataset.
-     * @param col  The column index of the value to retrieve. Must be a valid index within the dataset.
-     * @return The integer value at the specified cell, or {@code -1} if the cell contains a non-finite value.
-     */
-    public static int safeGetInt(DataSet data, int row, int col) {
-        try {
-            return data.getInt(row, col);
-        } catch (Throwable t) {
-            double x = data.getDouble(row, col);
-            if (!Double.isFinite(x)) return -1;
-            return (int) Math.rint(x);
-        }
-    }
-
-    /**
      * Encapsulates configuration parameters for the TrainedDagSimulatorGNM class.
      * This class defines a set of tunable options that control the behavior of the simulator,
      * such as training parameters, random seed initialization, and simulation strategies.
@@ -400,12 +401,6 @@ public final class TrainedDagSimulatorGNM {
      * efficiency, or interpretability.
      */
     public static final class Params {
-        /**
-         * Default constructor for the Params class.
-         * Initializes an instance of Params with default values for all fields.
-         */
-        public Params() {}
-
         /**
          * Configuration parameters for the TrainedDagSimulatorGNM class.
          * This class defines a set of tunable options that control the behavior of the simulator,
@@ -451,7 +446,6 @@ public final class TrainedDagSimulatorGNM {
          * as continuous.
          */
         public int maxDiscreteLevels = 50;
-
         /**
          * Whether to preserve marginal distributions at root nodes during simulation.
          * This parameter controls whether the simulator should maintain the marginal distributions
@@ -460,7 +454,6 @@ public final class TrainedDagSimulatorGNM {
          * certain types of simulations or analyses.
          */
         public boolean bootstrapRoots = true;
-
         /**
          * Interpolation factor for unconditional vs structural mechanism during simulation.
          * This parameter controls the balance between using the structural mechanism (based on
@@ -469,7 +462,6 @@ public final class TrainedDagSimulatorGNM {
          * 0.0 means fully unconditional.
          */
         public double lambdaParents = 1.0;
-
         /**
          * A threshold value used to issue a warning for the "z" score in statistical or analytical calculations.
          * This variable may represent a critical boundary, signaling the occurrence of a significant event
@@ -482,7 +474,6 @@ public final class TrainedDagSimulatorGNM {
          * or aiding in anomaly detection. The default value is set to 6.0.
          */
         public double zWarn2 = 6.0;
-
         /**
          * Whether to stratify residual bootstrap by discrete-parent signature.
          * This parameter controls whether the simulator should stratify residual bootstrap based on the
@@ -490,7 +481,6 @@ public final class TrainedDagSimulatorGNM {
          * in mixed variable settings.
          */
         public boolean stratifyResidualsByDiscreteParents = true;
-
         /**
          * Maximum number of residual bootstrap strata to consider.
          * This parameter controls the maximum number of strata maps allowed for residual bootstrap
@@ -498,6 +488,13 @@ public final class TrainedDagSimulatorGNM {
          * complexity.
          */
         public int maxResidualStrata = 5000;
+
+        /**
+         * Default constructor for the Params class.
+         * Initializes an instance of Params with default values for all fields.
+         */
+        public Params() {
+        }
     }
 
     /**
@@ -1128,11 +1125,11 @@ public final class TrainedDagSimulatorGNM {
         /**
          * Tracks the count of occurrences where a specific variable index exceeds a certain
          * z-score warning threshold during simulation. These counts are indexed by variable.
-         *
+         * <p>
          * This field is primarily used to support warnings and validations in simulation reports
          * where z-score thresholds are monitored. The array size matches the number of variables
          * being simulated, allowing each index to correspond to a specific variable.
-         *
+         * <p>
          * Modifications to this field are expected to occur internally within simulation processes
          * that monitor and track z-score exceedance events.
          */
@@ -1140,11 +1137,11 @@ public final class TrainedDagSimulatorGNM {
         /**
          * Tracks the count of occurrences where a specific variable index exceeds a certain
          * z-score warning threshold during simulation. These counts are indexed by variable.
-         *
+         * <p>
          * This field is primarily used to support warnings and validations in simulation reports
          * where z-score thresholds are monitored. The array size matches the number of variables
          * being simulated, allowing each index to correspond to a specific variable.
-         *
+         * <p>
          * Modifications to this field are expected to occur internally within simulation processes
          * that monitor and track z-score exceedance events.
          */
@@ -1152,11 +1149,11 @@ public final class TrainedDagSimulatorGNM {
         /**
          * Tracks the count of occurrences where a specific variable index exceeds a certain
          * z-score warning threshold during simulation. These counts are indexed by variable.
-         *
+         * <p>
          * This field is primarily used to support warnings and validations in simulation reports
          * where z-score thresholds are monitored. The array size matches the number of variables
          * being simulated, allowing each index to correspond to a specific variable.
-         *
+         * <p>
          * Modifications to this field are expected to occur internally within simulation processes
          * that monitor and track z-score exceedance events.
          */
@@ -1203,11 +1200,11 @@ public final class TrainedDagSimulatorGNM {
          * Generates a simulation report as a string, summarizing details of the
          * simulation and support warnings based on input parameters and internal state.
          *
-         * @param lambdaParents The regularization parameter applied to parent weights.
+         * @param lambdaParents  The regularization parameter applied to parent weights.
          * @param bootstrapRoots A flag indicating whether roots were bootstrapped during
          *                       simulation.
          * @return A string containing the simulation report, including the number of
-         *         samples, parameter values, and support warnings if thresholds were tracked.
+         * samples, parameter values, and support warnings if thresholds were tracked.
          */
         public String getSimReportText(double lambdaParents, boolean bootstrapRoots) {
             StringBuilder sb = new StringBuilder();
@@ -1240,8 +1237,8 @@ public final class TrainedDagSimulatorGNM {
          * Writes the simulation report generated by the {@code getSimReportText} method
          * to a specified output file in plain text format.
          *
-         * @param outFile The file to which the simulation report will be written. Must not be null.
-         * @param lambdaParents The regularization parameter applied to parent weights.
+         * @param outFile        The file to which the simulation report will be written. Must not be null.
+         * @param lambdaParents  The regularization parameter applied to parent weights.
          * @param bootstrapRoots A flag indicating whether roots were bootstrapped during simulation.
          * @throws IOException If an I/O error occurs while writing to the file.
          */
@@ -1249,6 +1246,50 @@ public final class TrainedDagSimulatorGNM {
             try (Writer w = new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8)) {
                 w.write(getSimReportText(lambdaParents, bootstrapRoots));
             }
+        }
+
+        public DataSet toDataSet() {
+            List<Node> vars = this.variables;
+
+            int p = vars.size();
+
+            // Determine n from whichever array is present
+            int n;
+            if (cont != null && cont.length > 0) {
+                n = cont.length;
+            } else if (disc != null && disc.length > 0) {
+                n = disc.length;
+            } else {
+                throw new IllegalStateException("Both cont and disc arrays are empty.");
+            }
+
+            // MixedDataBox expects row-major: [row][col]
+            MixedDataBox box = new MixedDataBox(vars, n);
+
+            for (int j = 0; j < p; j++) {
+                Node v = vars.get(j);
+
+                if (v instanceof DiscreteVariable) {
+                    if (disc == null) {
+                        throw new IllegalStateException("Discrete variable " + v.getName() + " but disc array is null.");
+                    }
+
+                    for (int i = 0; i < n; i++) {
+                        box.set(i, j, disc[i][j]);
+                    }
+
+                } else {
+                    if (cont == null) {
+                        throw new IllegalStateException("Continuous variable " + v.getName() + " but cont array is null.");
+                    }
+
+                    for (int i = 0; i < n; i++) {
+                        box.set(i, j, cont[i][j]);
+                    }
+                }
+            }
+
+            return new BoxDataSet(box, vars);
         }
     }
 

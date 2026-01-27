@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -71,7 +71,8 @@ public class ParameterTab extends JPanel {
 //            SimulationTypes.POST_NONLINEAR_MODEL,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
-            SimulationTypes.TIME_SERIES
+            SimulationTypes.TIME_SERIES,
+            SimulationTypes.TRAINED_DAG_SIMULATION
     };
 
     public static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
@@ -232,6 +233,15 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.BOOLEAN_GLASS_SIMULATION:
                         this.simulation.setSimulation(new BooleanGlassSimulation(randomGraph), this.simulation.getParams());
                         break;
+                    case SimulationTypes.TRAINED_DAG_SIMULATION:
+                        try {
+                            this.simulation.setSimulation(new TrainedDagModel(new SingleGraph(simulation.getInputGraph()),
+                                    simulation.getInputData()), this.simulation.getParams());
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(getPanel(), "The trained DAG model simulation " +
+                                    "requires a dataset and a graph whose variables all exist in the dataset.");
+                        }
+                        break;
                     default:
                         throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
@@ -273,6 +283,10 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.TIME_SERIES:
                         this.simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), this.simulation.getParams());
                         break;
+                    case SimulationTypes.TRAINED_DAG_SIMULATION:
+                        this.simulation.setSimulation(new TrainedDagModel(new SingleGraph(simulation.getInputGraph()),
+                                simulation.getInputData()), this.simulation.getParams());
+
                 }
             }
         }

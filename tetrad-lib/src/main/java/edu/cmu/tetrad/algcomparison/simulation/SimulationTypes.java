@@ -92,6 +92,10 @@ public final class SimulationTypes {
      * Constant <code>BOOLEAN_GLASS_SIMULATION="Boolean Glass Simulation"</code>
      */
     public static final String BOOLEAN_GLASS_SIMULATION = "Boolean Glass Simulation";
+    /**
+     * Constant <code>TRAINED_DAG_SIMULATION="Trained DAG Simulation"</code>
+     */
+    public static final String TRAINED_DAG_SIMULATION = "Trained DAG Simulation";
 
     private SimulationTypes() {
     }

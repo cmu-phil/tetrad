@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -47,6 +48,8 @@ public class Simulation extends DataWrapper implements
 
     @Serial
     private static final long serialVersionUID = 23L;
+    private Graph inputGraph = null;
+    private DataSet inputData = null;
 
     /**
      * The simulation.
@@ -328,12 +331,51 @@ public class Simulation extends DataWrapper implements
      * @param parameters  the parameters for the simulation
      */
     public Simulation(DataWrapper dataWrapper, Parameters parameters) {
-        if (this.simulation == null) {
-            this.simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
-            this.parameters = parameters;
-            this.fixedGraph = false;
-            this.fixedSimulation = false;
+//        if (this.simulation == null) {
+//            this.simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
+//            this.parameters = parameters;
+//            this.fixedGraph = false;
+//            this.fixedSimulation = false;
+
+        inputGraph = new RandomForward().createGraph(parameters);
+        inputData = (DataSet) dataWrapper.getDataModelList().getFirst();
+
+        if (inputData == null) {
+            throw new IllegalArgumentException("No data provided for trained data simulation.");
         }
+
+        this.simulation = new TrainedDagModel(new RandomForward(), inputData);
+        this.parameters = parameters;
+        this.fixedGraph = true;
+        this.fixedSimulation = false;
+//        }
+    }
+
+    public Simulation(DataWrapper dataWrapper, GraphWrapper graph, Parameters parameters) {
+//        if (this.simulation == null) {
+//            this.simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
+//            this.parameters = parameters;
+//            this.fixedGraph = false;
+//            this.fixedSimulation = false;
+//        }
+
+        inputGraph = graph.getGraph();
+        inputData = (DataSet) dataWrapper.getDataModelList().getFirst();
+
+        if (inputGraph == null) {
+            throw new IllegalArgumentException("No graph provided for trained data simulation.");
+        }
+
+        if (inputData == null) {
+            throw new IllegalArgumentException("No data provided for trained data simulation.");
+        }
+
+        SingleGraph randomGraph = new SingleGraph(graph.getGraph());
+
+        this.simulation = new TrainedDagModel(randomGraph, inputData);
+        this.parameters = parameters;
+        this.fixedGraph = true;
+        this.fixedSimulation = false;
     }
 
     /**
@@ -561,6 +603,14 @@ public class Simulation extends DataWrapper implements
         } else {
             throw new IllegalArgumentException("Expecting one graph.");
         }
+    }
+
+    public DataSet getInputData() {
+        return inputData;
+    }
+
+    public Graph getInputGraph() {
+        return inputGraph;
     }
 }
 
