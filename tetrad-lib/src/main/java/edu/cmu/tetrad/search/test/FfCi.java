@@ -28,7 +28,7 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     private final List<Node> vars;
     private final Random rng = new Random(1729L);
     // Add these fields to FfCi (or adapt to your existing knobs):
-    private final double bandwidthMultiplier = 1.0;
+    private double bandwidthMultiplier = 1.0;
     // Optional but recommended cache:
     private final Map<String, SimpleMatrix> featCache = new HashMap<>();
     // Active rows state
@@ -545,6 +545,26 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = bwMaxRows;
+        invalidateFeatureCache();
+    }
+
+    public void setBandwidthMultiplier(double bandwidthMultiplier) {
+        if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
+            throw new IllegalArgumentException("bandwidthMultiplier must be > 0 and finite");
+        }
+        this.bandwidthMultiplier = bandwidthMultiplier;
+        invalidateFeatureCache();
+    }
+
+    public void setNumFeaturesXY(int d) {
+        this.numFeatXY = Math.max(1, d);
+        this.featCache.clear();
+        invalidateFeatureCache();
+    }
+
+    public void setNumFeaturesZ(int d) {
+        this.numFeatZ = Math.max(1, d);
+        this.featCache.clear();
         invalidateFeatureCache();
     }
 

@@ -53,7 +53,7 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
     // ---------------- feature representation ----------------
 
-    public enum FeatureType { RFF, ORF }
+//    public enum FeatureType { RFF, ORF }
 
     // ---------------- core data ----------------
     private final DataSet data;
@@ -76,7 +76,7 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
     // Mixed-only knobs
     private double bandwidthMultiplier = 1.0;
     private int bwMaxRows = 500;
-    private FeatureType featureType = FeatureType.RFF;
+    private FfCi.FeatureType featureType = FfCi.FeatureType.RFF;
     private double catRho = 0.0; // 0 => one-hot
 
     // ---------------- IndependenceTest state ----------------
@@ -126,9 +126,7 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
     public void setSeed(long seed) {
         this.rng.setSeed(seed);
-        this.featCache.clear();
-        this.bw2Cache.clear();
-        // Ensure continuous-only parity
+        invalidateCaches();
         this.continuousDelegate.setSeed(seed);
     }
 
@@ -136,6 +134,7 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("alpha in (0,1)");
         this.alpha = alpha;
+        invalidateCaches();
         this.continuousDelegate.setAlpha(alpha);
     }
 
@@ -153,36 +152,42 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
     public void setLambda(double lambda) {
         this.lambda = Math.max(1e-12, lambda);
+        invalidateCaches();
         this.continuousDelegate.setLambda(this.lambda);
     }
 
-    public void setCenterFeatures(boolean centerFeatures) {
-        this.centerFeatures = centerFeatures;
-        this.featCache.clear();
-//        this.continuousDelegate.setCenterFeatures(centerFeatures);
-    }
+//    public void setCenterFeatures(boolean centerFeatures) {
+//        this.centerFeatures = centerFeatures;
+//        this.featCache.clear();
+////        this.continuousDelegate.setCenterFeatures(centerFeatures);
+//    }
 
     public void setNumFeaturesXY(int d) {
         this.numFeatXY = Math.max(1, d);
-        this.featCache.clear();
-        this.bw2Cache.clear();
-//        this.continuousDelegate.setNumFeaturesXY(this.numFeatXY);
+        invalidateCaches();
+        this.continuousDelegate.setNumFeaturesXY(this.numFeatXY);
     }
 
     public void setNumFeaturesZ(int d) {
         this.numFeatZ = Math.max(1, d);
+        invalidateCaches();
+        this.continuousDelegate.setNumFeaturesZ(this.numFeatZ);
+    }
+
+    private void invalidateCaches() {
         this.featCache.clear();
         this.bw2Cache.clear();
-//        this.continuousDelegate.setNumFeaturesZ(this.numFeatZ);
     }
 
     public void setPermutations(int permutations) {
         this.permutations = Math.max(0, permutations);
+        invalidateCaches();
         this.continuousDelegate.setPermutations(this.permutations);
     }
 
     public void setApproximation(FfCi.Approx method) {
         this.pValueMethod = Objects.requireNonNull(method, "method");
+        invalidateCaches();
         this.continuousDelegate.setApproximation(method);
     }
 
@@ -192,30 +197,30 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
             throw new IllegalArgumentException("bandwidthMultiplier must be > 0 and finite");
         }
         this.bandwidthMultiplier = bandwidthMultiplier;
-        this.featCache.clear();
-        this.bw2Cache.clear();
+        invalidateCaches();
+        this.continuousDelegate.setBandwidthMultiplier(bandwidthMultiplier);
     }
 
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = Math.max(50, bwMaxRows);
-        this.featCache.clear();
-        this.bw2Cache.clear();
+        this.continuousDelegate.setBwMaxRows(bwMaxRows);
+        invalidateCaches();
     }
 
-    public void setFeatureType(FeatureType featureType) {
+    public void setFeatureType(FfCi.FeatureType featureType) {
         this.featureType = Objects.requireNonNull(featureType, "featureType");
+        this.continuousDelegate.setFeatureType(featureType);
         this.featCache.clear();
     }
 
-    public FeatureType getFeatureType() { return featureType; }
+    public FfCi.FeatureType getFeatureType() { return featureType; }
 
     public void setCatRho(double rho) {
         if (!(rho >= 0.0 && rho < 1.0) || !Double.isFinite(rho)) {
             throw new IllegalArgumentException("catRho must be in [0,1)");
         }
         this.catRho = rho;
-        this.featCache.clear();
-        this.bw2Cache.clear();
+        invalidateCaches();
     }
 
     public double getCatRho() { return catRho; }
@@ -336,7 +341,7 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
             p = pValueFromMethod(stat, eig, fX, fY, null);
         } else {
             // -------- Conditional: ridge residualization --------
-            final double alphaRidge = Math.max(1e-18, lambda / Math.max(1.0, (n - 1.0)));
+            final double alphaRidge = Math.max(1e-18, lambda);// / Math.max(1.0, (n - 1.0)));
             SimpleMatrix rX = ridgeResidual(fX, fZ, alphaRidge);
             SimpleMatrix rY = ridgeResidual(fY, fZ, alphaRidge);
 
@@ -604,7 +609,7 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         double[][] W;
         double[] b = new double[mFeatures];
 
-        if (featureType == FeatureType.RFF) {
+        if (featureType == FfCi.FeatureType.RFF) {
             W = new double[mFeatures][d];
             for (int j = 0; j < mFeatures; j++) {
                 for (int k = 0; k < d; k++) W[j][k] = wStd * nextGaussian(rng);
