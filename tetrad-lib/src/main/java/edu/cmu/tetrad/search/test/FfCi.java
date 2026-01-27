@@ -27,10 +27,10 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     private final DataSet data;
     private final List<Node> vars;
     private final Random rng = new Random(1729L);
-    // Add these fields to FfCi (or adapt to your existing knobs):
-    private double bandwidthMultiplier = 1.0;
     // Optional but recommended cache:
     private final Map<String, SimpleMatrix> featCache = new HashMap<>();
+    // Add these fields to FfCi (or adapt to your existing knobs):
+    private double bandwidthMultiplier = 1.0;
     // Active rows state
     private List<Integer> rows = null;
     private int n;
@@ -47,21 +47,16 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     private long seed = 1729L;
     private boolean verbose = false;
 
-    /**
-     * Constructs FF-CI with default parameters.
-     */
-    public FfCi(DataSet dataSet) {
-        this(dataSet, new Parameters());
-    }
-
     // --------------------------------------------------------------------
     // Core math utilities
     // --------------------------------------------------------------------
 
     /**
      * Constructs FF-CI with parameters.
+     *
+     * @param dataSet the dataset to be analyzed; must not be null
      */
-    public FfCi(DataSet dataSet, Parameters params) {
+    public FfCi(DataSet dataSet) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         this.n = getActiveRowCount();
@@ -435,7 +430,8 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
             p = switch (approx) {
                 case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
-                case SADDLEPOINT -> QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);// edgeworthP(stat, eig, true);
+                case SADDLEPOINT ->
+                        QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);// edgeworthP(stat, eig, true);
                 case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
                 default -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
             };
@@ -514,40 +510,105 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         return M;
     }
 
+    /**
+     * Sets the lambda parameter, which is typically used as a regularization
+     * parameter or a weighting factor in various computations.
+     *
+     * This method also invalidates the feature cache to ensure that any
+     * computations depending on the lambda parameter use the updated value.
+     *
+     * @param lambda the new value for the lambda parameter
+     */
     public void setLambda(double lambda) {
         this.lambda = lambda;
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the approximation method to be used in various statistical or mathematical computations.
+     * This method updates the internal `approx` field and ensures that the provided approximation
+     * method is not null before setting it.
+     *
+     * @param approx the new approximation method; must not be null
+     * @throws NullPointerException if the provided approximation method is null
+     */
     public void setApprox(Approx approx) {
         if (approx == null) throw new NullPointerException("approx");
         this.approx = approx;
     }
 
+    /**
+     * Sets the number of permutations to be used in statistical or computational methods
+     * within this class. Permutations are often employed in resampling techniques or
+     * randomized algorithms to evaluate significance or variance.
+     *
+     * @param permutations the number of permutations to use; should be a non-negative integer
+     */
     public void setPermutations(int permutations) {
         this.permutations = permutations;
     }
 
+    /**
+     * Sets the number of features to be used for the XY block in computations.
+     * This method updates the internal `numFeatXY` field and ensures that any
+     * dependent computations are refreshed by invalidating the feature cache.
+     *
+     * @param numFeatXY the number of features for the XY block; must be a non-negative integer
+     */
     public void setNumFeatXY(int numFeatXY) {
         this.numFeatXY = numFeatXY;
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the number of features to be used for the Z block in computations.
+     * This method updates the internal `numFeatZ` field and ensures that any
+     * computations depending on this value are refreshed by invalidating the
+     * feature cache.
+     *
+     * @param numFeatZ the number of features for the Z block; must be a non-negative integer
+     */
     public void setNumFeatZ(int numFeatZ) {
         this.numFeatZ = numFeatZ;
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the feature type to be used in computations involving this class.
+     * This method updates the internal `featureType` field and ensures that
+     * any dependent features are refreshed by invalidating the feature cache.
+     *
+     * @param featureType the new feature type to set; must not be null
+     */
     public void setFeatureType(FeatureType featureType) {
         this.featureType = featureType;
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the maximum number of rows to be used for bandwidth estimation
+     * in the context of feature computations or statistical methods.
+     * This method updates the internal `bwMaxRows` field and invalidates
+     * the feature cache to ensure that computations relying on this parameter
+     * use the newly updated value.
+     *
+     * @param bwMaxRows the maximum number of rows to consider for bandwidth estimation;
+     *                  must be a positive integer
+     */
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = bwMaxRows;
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the bandwidth multiplier used in feature computations or statistical methods.
+     * This value impacts the scaling of bandwidth-related parameters and must be a positive,
+     * finite number. The method updates the internal state and ensures any dependent computations
+     * are recalculated by invalidating the feature cache.
+     *
+     * @param bandwidthMultiplier the bandwidth multiplier value; must be greater than 0 and finite
+     * @throws IllegalArgumentException if the provided bandwidthMultiplier is not greater than 0 or is not finite
+     */
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
         if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
             throw new IllegalArgumentException("bandwidthMultiplier must be > 0 and finite");
@@ -556,18 +617,39 @@ public final class FfCi implements IndependenceTest, RowsSettable {
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the number of features in the XY dimensions to the specified value.
+     * The value is constrained to be at least 1. Updates the feature cache
+     * accordingly and invalidates any existing feature cache.
+     *
+     * @param d the desired number of features for the XY dimensions, must be greater than or equal to 1
+     */
     public void setNumFeaturesXY(int d) {
         this.numFeatXY = Math.max(1, d);
         this.featCache.clear();
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the number of features for the Z dimension. Ensures the value is at
+     * least 1. Clears the feature cache and invalidates any precomputed values.
+     *
+     * @param d the desired number of features for the Z dimension; must be a
+     *          positive integer. Values less than 1 will be adjusted to 1.
+     */
     public void setNumFeaturesZ(int d) {
         this.numFeatZ = Math.max(1, d);
         this.featCache.clear();
         invalidateFeatureCache();
     }
 
+    /**
+     * Sets the seed value used for generating random numbers or other operations
+     * dependent on a seed. This method is typically used to initialize or reset
+     * the state of the object with a deterministic input.
+     *
+     * @param seed the new seed value to set
+     */
     public void setSeed(long seed) {
         this.seed = seed;
         invalidateFeatureCache();
@@ -755,6 +837,11 @@ public final class FfCi implements IndependenceTest, RowsSettable {
     //   activeRowsHash()    -> 0
     // --------------------------------------------------------------------
 
+    /**
+     * Retrieves the list of variables associated with this instance.
+     *
+     * @return a list of Node objects representing the variables
+     */
     @Override
     public List<Node> getVariables() {
         return vars;
@@ -762,42 +849,150 @@ public final class FfCi implements IndependenceTest, RowsSettable {
 
     // --------------------------------------------------------------------
 
+    /**
+     * Retrieves the value of alpha.
+     *
+     * @return the current value of the alpha property.
+     */
     @Override
     public double getAlpha() {
         return alpha;
     }
 
+    /**
+     * Sets the alpha value for this instance.
+     *
+     * @param a The alpha value to be set, typically a double between 0.0 (completely transparent)
+     *          and 1.0 (completely opaque).
+     */
     @Override
     public void setAlpha(double a) {
         alpha = a;
         invalidateFeatureCache();
     }
 
+    /**
+     * Retrieves the data set associated with this instance.
+     *
+     * @return the data set held by this instance
+     */
     @Override
     public DataSet getData() {
         return data;
     }
 
+    /**
+     * Retrieves the most recently computed p-value.
+     *
+     * @return the last computed p-value as a double
+     */
     public double getPValue() {
         return lastP;
     }
 
+    /**
+     * Indicates whether verbose mode is enabled.
+     *
+     * @return true if verbose mode is enabled, false otherwise
+     */
     @Override
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Sets the verbose mode to the specified value.
+     *
+     * @param v the new value for the verbose mode; {@code true} enables verbose mode, {@code false} disables it
+     */
     @Override
     public void setVerbose(boolean v) {
         verbose = v;
     }
 
+    /**
+     * Sets the approximation method to be used and invalidates the feature cache.
+     *
+     * @param approx the approximation method to set
+     */
     public void setApproximation(Approx approx) {
         this.approx = approx;
         invalidateFeatureCache();
     }
 
-    public enum FeatureType {RFF, ORF}
+    /**
+     * Enum representing the feature generation methods for random Fourier features (RFF)
+     * and orthogonal random features (ORF).
+     *
+     * The feature type determines how random projections are designed for approximating
+     * the RBF kernel.
+     */
+    public enum FeatureType {
 
-    public enum Approx {GAMMA, SADDLEPOINT, DAVIES_IMHOF, PERMUTATION}
+        /**
+         * Represents the Random Fourier Features (RFF) feature generation method.
+         *
+         * RFF is a technique used to approximate the Radial Basis Function (RBF) kernel
+         * by applying random projections. This method provides an efficient way to
+         * compute kernel features for large-scale machine learning tasks.
+         */
+        RFF,
+
+        /**
+         * Represents the Orthogonal Random Features (ORF) feature generation method.
+         *
+         * ORF is a technique used to approximate the Radial Basis Function (RBF) kernel
+         * by applying random projections with orthogonality constraints. This method
+         * ensures more structured and efficient projections, improving the quality of
+         * the kernel approximation while maintaining computational efficiency.
+         */
+        ORF}
+
+    /**
+     * Represents different approximation methods that can be used for statistical or mathematical computations.
+     *
+     * @see QuadraticFormPValues
+     */
+    public enum Approx {
+
+        /**
+         * Represents the gamma approximation method.
+         * <p>
+         * This method is used in statistical or mathematical computations
+         * where an approximation based on the gamma distribution is appropriate.
+         */
+        GAMMA,
+
+        /**
+         * Represents the saddlepoint approximation method.
+         * <p>
+         * This method is used in statistical or mathematical computations to provide
+         * an accurate approximation of probability distributions, particularly for
+         * small sample sizes or in scenarios where traditional methods may lack precision.
+         */
+        SADDLEPOINT,
+
+        /**
+         * Represents the Davies-Imhof approximation method.
+         * <p>
+         * This method is used in statistical or mathematical computations to approximate
+         * the distribution of quadratic forms in normal variables. It is particularly
+         * useful in scenarios requiring precise evaluation of tail probabilities in
+         * statistical tests or other related calculations.
+         */
+        DAVIES_IMHOF,
+
+        /**
+         * Represents the permutation-based approximation method.
+         * <p>
+         * This method is commonly used in statistical and mathematical computations
+         * that involve resampling techniques. It relies on generating all possible
+         * rearrangements (or permutations) of a dataset to assess the statistical
+         * significance or to estimate a probability distribution. Permutation
+         * methods are often employed in non-parametric tests and other scenarios
+         * where traditional parametric approaches may not be suitable.
+         */
+        PERMUTATION
+    }
 }
+

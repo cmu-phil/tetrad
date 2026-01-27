@@ -1248,6 +1248,21 @@ public final class TrainedDagSimulatorGNM {
             }
         }
 
+        /**
+         * Converts the current simulation result into a DataSet object, combining both
+         * continuous and discrete data variables.
+         *
+         * This method processes the stored continuous and discrete data arrays, validates their
+         * consistency with the variable list, and organizes the data in a format compatible
+         * with the MixedDataBox structure. An IllegalStateException is thrown if there are
+         * mismatches in the variables or data arrays.
+         *
+         * @return A {@code DataSet} object containing the combined continuous and discrete
+         *         data variables, organized in row-major format.
+         * @throws IllegalStateException If both continuous and discrete arrays are empty,
+         *                               or if there are inconsistencies between the variable list
+         *                               and the data arrays.
+         */
         public DataSet toDataSet() {
             List<Node> vars = this.variables;
 

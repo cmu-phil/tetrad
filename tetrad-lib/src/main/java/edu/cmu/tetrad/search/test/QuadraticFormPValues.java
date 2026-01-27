@@ -31,6 +31,11 @@ public final class QuadraticFormPValues {
      * Edgeworth / Cornish–Fisher tail.
      * useKurtosis = false → HBE
      * useKurtosis = true  → LPB4
+     *
+     * @param stat the test statistic
+     * @param eig eigenvalues
+     * @param useKurtosis whether to use kurtosis
+     * @return the p-value
      */
     public static double edgeworthP(double stat, double[] eig, boolean useKurtosis) {
         if (eig.length == 0) return (stat <= 1e-12) ? 1.0 : 0.0;
@@ -65,6 +70,10 @@ public final class QuadraticFormPValues {
     /**
      * Gamma (Satterthwaite–Welch) approximation using first two moments.
      * Keep your existing implementation if you prefer; this is here for completeness.
+     *
+     * @param stat the test statistic
+     * @param eig eigenvalues
+     * @return the p-value
      */
     public static double gammaSatterthwaiteP(double stat, double[] eig) {
         eig = positiveFinite(eig);
@@ -95,6 +104,10 @@ public final class QuadraticFormPValues {
      * Fast (O(m) per evaluation), uses the full spectrum, usually very accurate in tails.
      *
      * Returns right-tail p-value P(Q >= stat).
+     *
+     * @param stat the test statistic
+     * @param eig eigenvalues
+     * @return the p-value
      */
     public static double saddlepointLugannaniRiceP(double stat, double[] eig) {
         eig = positiveFinite(eig);
@@ -214,6 +227,9 @@ public final class QuadraticFormPValues {
      *  - Assumes lambdas are (numerically) nonnegative. Tiny negative values are truncated to 0.
      *  - For very small spectra (e.g., 1–3 eigenvalues) the integral can be more oscillatory; in that
      *    case saddlepoint-LR often wins on speed + stability.
+     * @param stat the test statistic
+     * @param eig eigenvalues
+     * @return the p-value
      */
     public static double daviesP(double stat, double[] eig) {
         // Defaults tuned for “fast but accurate enough” in CI-testing.
@@ -221,9 +237,15 @@ public final class QuadraticFormPValues {
     }
 
     /**
+     * Calculates the right-tail p-value P(Q >= stat) using a method from
+     * Davies and Imhof.
+     *
+     * @param stat the test statistic
+     * @param eig eigenvalues
      * @param epsAbs absolute integration tolerance (cdf accuracy target)
      * @param maxEvals max integrand evaluations
      * @param maxRec max recursion depth for adaptive Simpson
+     * @return the p-value
      */
     public static double daviesP(double stat, double[] eig,
                                  double epsAbs,

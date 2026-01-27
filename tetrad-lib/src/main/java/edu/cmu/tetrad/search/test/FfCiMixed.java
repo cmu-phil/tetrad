@@ -96,10 +96,26 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
     // ---------------- ctor ----------------
 
+    /**
+     * Constructs an instance of FfCiMixed with the specified dataset and default parameters.
+     *
+     * @param dataSet the dataset to be used for initializing the instance
+     */
     public FfCiMixed(DataSet dataSet) {
         this(dataSet, new Parameters());
     }
 
+    /**
+     * Constructs a new FfCiMixed instance for conducting conditional independence tests
+     * on a dataset that may contain both continuous and discrete variables. This class
+     * initializes the necessary delegates and configuration parameters for the mixed data setting.
+     *
+     * @param dataSet the dataset containing the variables and data to be analyzed;
+     *                must not be null
+     * @param params  configuration parameters for the conditional independence tests;
+     *                should contain relevant key-value pairs, including optional "rcit.seed"
+     *                for random seed initialization
+     */
     public FfCiMixed(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
@@ -112,7 +128,7 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         this.dataHasAnyDiscrete = anyDisc;
 
         // Delegate (FF-CI continuous implementation)
-        this.continuousDelegate = new FfCi(this.data, params);
+        this.continuousDelegate = new FfCi(this.data);
 
         // Seed: respect rcit.seed if present; otherwise stable default.
         long seed = params.getLong("rcit.seed", 1729L);
@@ -124,12 +140,27 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
     // ---------------- public setters (wrapper-friendly) ----------------
 
+    /**
+     * Sets the seed for the random number generator and updates any associated components.
+     * This method ensures that the internal random number generator and any dependent
+     * delegates are seeded with the same value, potentially impacting reproducibility of
+     * generated outputs.
+     *
+     * @param seed the initial seed value to set for the random number generator.
+     */
     public void setSeed(long seed) {
         this.rng.setSeed(seed);
         invalidateCaches();
         this.continuousDelegate.setSeed(seed);
     }
 
+    /**
+     * Sets the alpha value to control transparency or blending levels.
+     * The value must be in the range (0, 1), exclusive.
+     *
+     * @param alpha the alpha value to set; must be greater than 0 and less than 1
+     * @throws IllegalArgumentException if the alpha value is not in the range (0, 1)
+     */
     @Override
     public void setAlpha(double alpha) {
         if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("alpha in (0,1)");
@@ -138,18 +169,41 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         this.continuousDelegate.setAlpha(alpha);
     }
 
+    /**
+     * Retrieves the alpha value.
+     *
+     * @return The alpha value as a double.
+     */
     @Override
     public double getAlpha() { return alpha; }
 
+    /**
+     * Determines whether the verbose mode is enabled or not.
+     *
+     * @return true if verbose mode is enabled, false otherwise.
+     */
     @Override
     public boolean isVerbose() { return verbose; }
 
+    /**
+     * Sets the verbosity level for the current instance and its delegate.
+     *
+     * @param verbose a boolean value indicating whether verbose mode
+     *                should be enabled (true) or disabled (false)
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
         this.continuousDelegate.setVerbose(verbose);
     }
 
+    /**
+     * Sets the lambda value for the instance. The value is constrained to a minimum
+     * threshold to ensure numerical stability. This method also invalidates any
+     * cached computations and updates the lambda value in the continuous delegate.
+     *
+     * @param lambda the new lambda value to be set; constrained to a minimum of 1e-12
+     */
     public void setLambda(double lambda) {
         this.lambda = Math.max(1e-12, lambda);
         invalidateCaches();
@@ -162,29 +216,63 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 ////        this.continuousDelegate.setCenterFeatures(centerFeatures);
 //    }
 
+    /**
+     * Sets the number of features in the XY dimension. Ensures the value is at least 1.
+     * Invalidates any cached data and updates the continuous delegate with the new value.
+     *
+     * @param d the desired number of features in the XY dimension
+     */
     public void setNumFeaturesXY(int d) {
         this.numFeatXY = Math.max(1, d);
         invalidateCaches();
         this.continuousDelegate.setNumFeaturesXY(this.numFeatXY);
     }
 
+    /**
+     * Sets the number of features for the Z component. This value is constrained
+     * to be at least 1. Updates dependent caches and delegates with the new value.
+     *
+     * @param d the desired number of features for the Z component
+     */
     public void setNumFeaturesZ(int d) {
         this.numFeatZ = Math.max(1, d);
         invalidateCaches();
         this.continuousDelegate.setNumFeaturesZ(this.numFeatZ);
     }
 
+    /**
+     * Invalidates and clears all cached data to ensure that outdated or stale
+     * entries are removed. This method clears the contents of the `featCache`
+     * and `bw2Cache` collections, effectively resetting their state.
+     *
+     * Intended to be used when the cached data becomes unreliable or requires
+     * a refresh to ensure correctness.
+     */
     private void invalidateCaches() {
         this.featCache.clear();
         this.bw2Cache.clear();
     }
 
+    /**
+     * Sets the number of permutations to be used in the mixed independence test.
+     * The value is clamped to zero or above to ensure non-negative input.
+     * Also invalidates any relevant caches and synchronizes the continuous delegate.
+     *
+     * @param permutations the number of permutations to set; must be non-negative
+     */
     public void setPermutations(int permutations) {
         this.permutations = Math.max(0, permutations);
         invalidateCaches();
         this.continuousDelegate.setPermutations(this.permutations);
     }
 
+    /**
+     * Sets the approximation method to be used in statistical computations within the mixed
+     * independence test. This method updates the internal approximation strategy and ensures
+     * that any necessary caches are invalidated or synchronized accordingly.
+     *
+     * @param method the approximation method to set; must not be null
+     */
     public void setApproximation(FfCi.Approx method) {
         this.pValueMethod = Objects.requireNonNull(method, "method");
         invalidateCaches();
@@ -192,6 +280,15 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
     }
 
     // Mixed-only knobs (safe no-ops for continuous delegate; they just affect mixed path)
+
+    /**
+     * Updates the bandwidth multiplier used for computations. The value must be greater than 0
+     * and finite to ensure valid operation. This method also invalidates cached computations
+     * and updates the corresponding settings in the continuous delegate.
+     *
+     * @param bandwidthMultiplier the new bandwidth multiplier value; must be greater than 0 and finite
+     * @throws IllegalArgumentException if the provided bandwidthMultiplier is less than or equal to 0 or not finite
+     */
     public void setBandwidthMultiplier(double bandwidthMultiplier) {
         if (!(bandwidthMultiplier > 0) || !Double.isFinite(bandwidthMultiplier)) {
             throw new IllegalArgumentException("bandwidthMultiplier must be > 0 and finite");
@@ -201,20 +298,48 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         this.continuousDelegate.setBandwidthMultiplier(bandwidthMultiplier);
     }
 
+    /**
+     * Sets the maximum number of rows to be considered during bandwidth computations.
+     * The value provided is clamped to a minimum of 50 to ensure a valid threshold.
+     * This method also updates the continuous delegate and invalidates any related caches.
+     *
+     * @param bwMaxRows the maximum number of rows to set; must be a non-negative integer.
+     */
     public void setBwMaxRows(int bwMaxRows) {
         this.bwMaxRows = Math.max(50, bwMaxRows);
         this.continuousDelegate.setBwMaxRows(bwMaxRows);
         invalidateCaches();
     }
 
+    /**
+     * Sets the feature type to be used in the mixed independence test.
+     * This method updates the feature type for the continuous delegate, clears the feature cache,
+     * and validates that the provided feature type is non-null.
+     *
+     * @param featureType the feature type to set; must not be null
+     * @throws NullPointerException if the provided featureType is null
+     */
     public void setFeatureType(FfCi.FeatureType featureType) {
         this.featureType = Objects.requireNonNull(featureType, "featureType");
         this.continuousDelegate.setFeatureType(featureType);
         this.featCache.clear();
     }
 
+    /**
+     * Retrieves the current feature type used in the mixed independence test.
+     *
+     * @return the feature type currently set for the mixed independence test
+     */
     public FfCi.FeatureType getFeatureType() { return featureType; }
 
+    /**
+     * Sets the categorical feature correlation coefficient (catRho) for the mixed independence test.
+     * The value of rho must be within the range [0, 1) and must be finite.
+     * This method also invalidates any relevant caches to ensure consistency.
+     *
+     * @param rho the new value for the categorical correlation coefficient; must be in [0, 1) and finite
+     * @throws IllegalArgumentException if rho is not within the range [0, 1) or is not finite
+     */
     public void setCatRho(double rho) {
         if (!(rho >= 0.0 && rho < 1.0) || !Double.isFinite(rho)) {
             throw new IllegalArgumentException("catRho must be in [0,1)");
@@ -223,13 +348,38 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
         invalidateCaches();
     }
 
+    /**
+     * Retrieves the current categorical feature correlation coefficient (catRho)
+     * used in the mixed independence test. This coefficient reflects the assumed
+     * correlation structure for categorical variables and impacts statistical computations
+     * within the model.
+     *
+     * @return the categorical correlation coefficient (catRho), a value in the range [0, 1).
+     */
     public double getCatRho() { return catRho; }
 
     // ---------------- RowsSettable ----------------
 
+    /**
+     * Retrieves the list of integers representing the rows used in the mixed independence test.
+     *
+     * @return a list of integers corresponding to the rows currently considered in the test
+     */
     @Override
     public List<Integer> getRows() { return rows; }
 
+    /**
+     * Sets the rows to be used in computations. Validates that the provided list of rows
+     * is non-null and contains only valid, non-negative indices that are within
+     * the bounds of the data. Clears relevant caches and synchronizes the state
+     * of the continuous delegate to maintain consistency.
+     *
+     * @param rows a list of integers representing the row indices to set; must be non-null,
+     *             must not contain any null elements, and each element must be a
+     *             non-negative index within the bounds of the number of rows in the data.
+     * @throws NullPointerException if any element in the list is null.
+     * @throws IllegalArgumentException if any element is negative or outside the valid range.
+     */
     @Override
     public void setRows(List<Integer> rows) {
         if (rows == null) {
@@ -262,12 +412,38 @@ public final class FfCiMixed implements IndependenceTest, RowsSettable {
 
     // ---------------- IndependenceTest interface ----------------
 
+    /**
+     * Retrieves the current data set associated with this instance.
+     *
+     * @return the current DataSet object
+     */
     @Override
     public DataSet getData() { return data; }
 
+    /**
+     * Retrieves a list of variable nodes.
+     *
+     * @return a list of Node objects representing the variables.
+     */
     @Override
     public List<Node> getVariables() { return vars; }
 
+    /**
+     * Checks the independence between two nodes, x and y, given a set of conditioning nodes, z.
+     * The method performs different operations depending on the properties of the dataset (e.g.,
+     * whether the dataset includes discrete variables). If the dataset does not contain discrete
+     * variables, it delegates the computation to a method for continuous data. Otherwise, it follows
+     * a mixed-discrete approach.
+     *
+     * @param x The first node whose independence is to be tested. Must not be null.
+     * @param y The second node whose independence is to be tested. Must not be null.
+     * @param z The set of conditioning nodes for the independence test. May be null, in which case it
+     *          will be treated as an empty set.
+     * @return An {@code IndependenceResult} object indicating whether x and y are independent given z,
+     *         as well as other details related to the independence test.
+     * @throws InterruptedException If the thread executing this method is interrupted before or during
+     *                              the computation.
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) throw new InterruptedException();

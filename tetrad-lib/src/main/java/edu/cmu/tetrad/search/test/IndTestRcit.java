@@ -50,6 +50,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     private final Map<String, SimpleMatrix> rffCache = new ConcurrentHashMap<>();
     private final Map<String, SimpleMatrix> cholCache = new ConcurrentHashMap<>(); // stores lower-triangular L of Czz+λI
     private final Map<String, Double> sigmaCache = new ConcurrentHashMap<>();
+    private final long masterSeed;
     private int n;
     // ---------------- hyperparams ----------------
     private int numFeatXY = 5;      // features for X and Y (default aligns with causal-learn)
@@ -63,7 +64,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     private double alpha = 0.05;
     private double lastP = NaN;
     private List<Integer> rows = null;  // null => all rows
-    private final long masterSeed;
     private boolean verbose = false;
 
     /**
@@ -510,6 +510,26 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         return C.scale(1.0 / (n - 1));
     }
 
+    private static boolean isFiniteMatrix(SimpleMatrix M) {
+        double[] a = M.getDDRM().data;
+        for (double v : a) {
+            if (!Double.isFinite(v)) return false;
+        }
+        return true;
+    }
+
+    private static void requireFinite(SimpleMatrix M, String what) {
+        if (!isFiniteMatrix(M)) {
+            throw new IllegalArgumentException("RCIT: non-finite values in " + what + " (NaN/Inf).");
+        }
+    }
+
+    private static long mix64(long z) {
+        z = (z ^ (z >>> 33)) * 0xff51afd7ed558ccdL;
+        z = (z ^ (z >>> 33)) * 0xc4ceb9fe1a85ec53L;
+        return z ^ (z >>> 33);
+    }
+
     private SimpleMatrix cols(DataSet ds, List<Node> vv) {
         int n = getActiveRowCount();
         int d = vv.size();
@@ -708,7 +728,8 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                     }
                 }
                 case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
-                case SADDLEPOINT -> QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);// edgeworthP(stat, eig, true);
+                case SADDLEPOINT ->
+                        QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);// edgeworthP(stat, eig, true);
                 case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
                 default -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
             }
@@ -802,7 +823,8 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
 
                 p = switch (approx) {
                     case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
-                    case SADDLEPOINT -> QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);// edgeworthP(stat, eig, true);
+                    case SADDLEPOINT ->
+                            QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);// edgeworthP(stat, eig, true);
                     case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
                     default -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
                 };
@@ -958,24 +980,9 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         return (rows == null) ? data.getNumRows() : rows.size();
     }
 
-
     private int activeRowIndex(int i) {
         // maps active-row i -> original dataset row index
         return (rows == null) ? i : rows.get(i);
-    }
-
-    private static boolean isFiniteMatrix(SimpleMatrix M) {
-        double[] a = M.getDDRM().data;
-        for (double v : a) {
-            if (!Double.isFinite(v)) return false;
-        }
-        return true;
-    }
-
-    private static void requireFinite(SimpleMatrix M, String what) {
-        if (!isFiniteMatrix(M)) {
-            throw new IllegalArgumentException("RCIT: non-finite values in " + what + " (NaN/Inf).");
-        }
     }
 
     private long factHash(Node x, Node y, List<Node> Z) {
@@ -986,12 +993,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         h = 1099511628211L * (h ^ getActiveRowCount());
         h = 1099511628211L * (h ^ activeRowsHash());
         return h;
-    }
-
-    private static long mix64(long z) {
-        z = (z ^ (z >>> 33)) * 0xff51afd7ed558ccdL;
-        z = (z ^ (z >>> 33)) * 0xc4ceb9fe1a85ec53L;
-        return z ^ (z >>> 33);
     }
 
     private long rngSeed() {
@@ -1068,10 +1069,61 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the approximation object to be used.
+     *
+     * @param approx the approximation instance to set; must not be null
+     * @throws NullPointerException if the provided approximation instance is null
+     */
     public void setApproximation(Approx approx) {
         if (approx == null) throw new NullPointerException("approx must not be null");
         this.approx = approx;
     }
 
-    public enum Approx {GAMMA, SADDLEPOINT, DAVIES_IMHOF, PERMUTATION}
+    /**
+     * Represents different approximation methods that can be used for statistical or mathematical computations.
+     *
+     * @see QuadraticFormPValues
+     */
+    public enum Approx {
+
+        /**
+         * Represents the gamma approximation method.
+         * <p>
+         * This method is used in statistical or mathematical computations
+         * where an approximation based on the gamma distribution is appropriate.
+         */
+        GAMMA,
+
+        /**
+         * Represents the saddlepoint approximation method.
+         * <p>
+         * This method is used in statistical or mathematical computations to provide
+         * an accurate approximation of probability distributions, particularly for
+         * small sample sizes or in scenarios where traditional methods may lack precision.
+         */
+        SADDLEPOINT,
+
+        /**
+         * Represents the Davies-Imhof approximation method.
+         * <p>
+         * This method is used in statistical or mathematical computations to approximate
+         * the distribution of quadratic forms in normal variables. It is particularly
+         * useful in scenarios requiring precise evaluation of tail probabilities in
+         * statistical tests or other related calculations.
+         */
+        DAVIES_IMHOF,
+
+        /**
+         * Represents the permutation-based approximation method.
+         * <p>
+         * This method is commonly used in statistical and mathematical computations
+         * that involve resampling techniques. It relies on generating all possible
+         * rearrangements (or permutations) of a dataset to assess the statistical
+         * significance or to estimate a probability distribution. Permutation
+         * methods are often employed in non-parametric tests and other scenarios
+         * where traditional parametric approaches may not be suitable.
+         */
+        PERMUTATION
+    }
 }
