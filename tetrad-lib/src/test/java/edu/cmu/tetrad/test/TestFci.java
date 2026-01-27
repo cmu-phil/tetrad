@@ -418,6 +418,17 @@ public class TestFci {
 
             runLvSearch(outputGraph, fci, graph);
         }
+
+        {
+            Fcit0 fci = new Fcit0(independence, score);
+            fci.setStartWith(Fcit0.START_WITH.GRASP);
+//            fci.setDepth(-1);
+            fci.setKnowledge(knowledge);
+//            fci.setPreserveMarkov(false);
+            fci.setVerbose(verbose);
+
+            runLvSearch(outputGraph, fci, graph);
+        }
     }
 
     //    @Test
