@@ -139,6 +139,7 @@ public final class Fcit0 implements IGraphSearch {
     private @NotNull Graph pag = new EdgeListGraph();
     private boolean replicatingGraph = false;
     private boolean excludeSelectionBias = false;
+    private Graph dag;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -297,8 +298,12 @@ public final class Fcit0 implements IGraphSearch {
         Graph dag;
         List<Node> best;
         long start1 = System.currentTimeMillis();
+        boolean saveCpdag = false;
 
-        if (startWith == START_WITH.BOSS) {
+        if (startWith == START_WITH.COMPLETE_GRAPH) {
+            dag = GraphUtils.completeGraph(new EdgeListGraph(nodes));
+            best = dag.getNodes();
+        } else if (startWith == START_WITH.BOSS) {
 
             if (superVerbose) {
                 TetradLogger.getInstance().log("Running BOSS...");
@@ -313,7 +318,7 @@ public final class Fcit0 implements IGraphSearch {
             PermutationSearch alg = getBossSearch();
             alg.setKnowledge(knowledge);
 
-            dag = alg.search(false);
+            dag = alg.search(saveCpdag);
             best = dag.paths().getValidOrder(dag.getNodes(), true);
 
             long stop = MillisecondTimes.wallTimeMillis();
@@ -338,7 +343,7 @@ public final class Fcit0 implements IGraphSearch {
             Grasp grasp = getGraspSearch();
             grasp.setReplicatingGraph(replicatingGraph);
             best = grasp.bestOrder(nodes);
-            dag = grasp.getGraph(false);
+            dag = grasp.getGraph(saveCpdag);
 
             long stop = MillisecondTimes.wallTimeMillis();
 
@@ -366,7 +371,7 @@ public final class Fcit0 implements IGraphSearch {
             PermutationSearch alg = new PermutationSearch(subAlg);
             alg.setKnowledge(this.knowledge);
 
-            dag = alg.search(false);
+            dag = alg.search(saveCpdag);
             best = dag.paths().getValidOrder(dag.getNodes(), true);
 
             long stop = MillisecondTimes.wallTimeMillis();
@@ -424,6 +429,8 @@ public final class Fcit0 implements IGraphSearch {
                 node.setNodeType(NodeType.MEASURED);
             }
         }
+
+        this.dag = dag;
 
         // The main procedure.
         this.pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias);
@@ -517,8 +524,12 @@ public final class Fcit0 implements IGraphSearch {
             Node y = edge.getNode2();
 
             {
-                List<Node> adjx = this.pag.getAdjacentNodes(x);
-                adjx.removeAll(this.pag.getNodesOutTo(x, Endpoint.ARROW));
+//                List<Node> adjx = this.dag.getParents(x);
+//                List<Node> adjx = this.pag.getAdjacentNodes(x);
+//                adjx.removeAll(this.pag.getNodesOutTo(x, Endpoint.ARROW));
+
+                List<Node> adjx = this.dag.getAdjacentNodes(x);
+                adjx.removeAll(this.dag.getNodesOutTo(x, Endpoint.ARROW));
                 adjx.remove(y);
                 SublistGenerator choiceGen = new SublistGenerator(adjx.size(), adjx.size());
                 int[] choice;
@@ -539,8 +550,13 @@ public final class Fcit0 implements IGraphSearch {
             }
 
             {
-                List<Node> adjy = this.pag.getAdjacentNodes(y);
-                adjy.removeAll(this.pag.getNodesOutTo(y, Endpoint.ARROW));
+//                List<Node> adjy = this.pag.getAdjacentNodes(y);
+
+//                adjy.removeAll(this.pag.getNodesOutTo(y, Endpoint.ARROW));
+
+                List<Node> adjy = this.dag.getAdjacentNodes(y);
+                adjy.removeAll(this.dag.getNodesOutTo(y, Endpoint.ARROW));
+
                 adjy.remove(x);
                 SublistGenerator choiceGen = new SublistGenerator(adjy.size(), adjy.size());
                 int[] choice;
@@ -819,7 +835,13 @@ public final class Fcit0 implements IGraphSearch {
         /**
          * Starts with an initial CPDAG over the variables of the independence test that is given in the constructor.
          */
-        INITIAL_GRAPH
+        INITIAL_GRAPH,
+        /**
+         * Starts with a complete graph over the variables of the independence test
+         * that is provided in the constructor. In this context, a complete graph
+         * implies that every variable is connected to every other variable.
+         */
+        COMPLETE_GRAPH
     }
 
     private record Result(Edge edge, Set<Node> cond) {
