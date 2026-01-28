@@ -234,93 +234,275 @@ public class Histogram {
      *         If no valid data is available, an array of zeros is returned.
      * @throws IllegalArgumentException if the target variable type is unrecognized.
      */
+//    public int[] getFrequencies() {
+//        if (this.target instanceof ContinuousVariable) {
+//            List<Double> rawData = getConditionedDataContinuous();
+//            rawData = removeZeroPointsPerPlot(rawData);
+//
+//            if (rawData.isEmpty()) {
+//                lastDisplayMin = Double.NaN;
+//                lastDisplayMax = Double.NaN;
+//                return new int[this.numBins];
+//            }
+//
+//            // Decide binning range
+//            final double min;
+//            final double max;
+//
+//            if (hasContinuousBounds()) {
+//                min = continuousBoundLow;
+//                max = continuousBoundHigh;
+//            } else {
+//                double[] d = asDoubleArray(rawData);
+//                min = StatUtils.min(d);
+//                max = StatUtils.max(d);
+//            }
+//
+//            lastDisplayMin = min;
+//            lastDisplayMax = max;
+//
+//            // Degenerate range: all values identical (or bounds extremely tight).
+//            if (!(min < max)) {
+//                int[] counts = new int[this.numBins];
+//                // Put everything into last bin (or first—either is fine; last tends to look better)
+//                int bin = this.numBins - 1;
+//                for (double v : rawData.stream().mapToDouble(Double::doubleValue).toArray()) {
+//                    if (hasContinuousBounds() && ignoreOutsideBounds && (v < min || v > max)) continue;
+//                    counts[bin]++;
+//                }
+//                return counts;
+//            }
+//
+//            final int[] counts = new int[this.numBins];
+//            final double width = (max - min) / this.numBins;
+//
+//            // Fast binning with correct edge handling:
+//            // - v < min or v > max ignored if ignoreOutsideBounds
+//            // - v == max goes to last bin
+//            for (double v : rawData.stream().mapToDouble(Double::doubleValue).toArray()) {
+//                if (Double.isNaN(v)) continue;
+//
+//                if (hasContinuousBounds() && ignoreOutsideBounds) {
+//                    if (v < min || v > max) continue;
+//                }
+//
+//                // If bounds not set, we still should ignore extreme NaNs; otherwise include all.
+//                // Compute bin index
+//                int bin;
+//                if (v == max) {
+//                    bin = this.numBins - 1;
+//                } else {
+//                    bin = (int) ((v - min) / width);
+//                    if (bin < 0) {
+//                        if (hasContinuousBounds() && ignoreOutsideBounds) continue;
+//                        bin = 0;
+//                    } else if (bin >= this.numBins) {
+//                        if (hasContinuousBounds() && ignoreOutsideBounds) continue;
+//                        bin = this.numBins - 1;
+//                    }
+//                }
+//
+//                counts[bin]++;
+//            }
+//
+//            return counts;
+//        }
+//
+//        if (this.target instanceof DiscreteVariable var) {
+//            List<Integer> rawData = getConditionedDataDiscrete();
+//            int[] counts = new int[var.getNumCategories()];
+//
+//            int[] data = rawData.stream().mapToInt(Integer::intValue).toArray();
+//            for (int value : data) {
+//                if (value >= 0 && value < counts.length) counts[value]++;
+//            }
+//
+//            return counts;
+//        }
+//
+//        throw new IllegalArgumentException("Unrecognized variable type.");
+//    }
+
     public int[] getFrequencies() {
-        if (this.target instanceof ContinuousVariable) {
-            List<Double> rawData = getConditionedDataContinuous();
-            rawData = removeZeroPointsPerPlot(rawData);
+        if (target instanceof DiscreteVariable dv) {
+            return frequenciesDiscrete(dv);
+        } else if (target instanceof ContinuousVariable) {
+            return frequenciesContinuous();
+        }
+        throw new IllegalArgumentException("Unrecognized variable type.");
+    }
 
-            if (rawData.isEmpty()) {
-                lastDisplayMin = Double.NaN;
-                lastDisplayMax = Double.NaN;
-                return new int[this.numBins];
-            }
+    private int[] frequenciesDiscrete(DiscreteVariable dv) {
+        int[] counts = new int[dv.getNumCategories()];
+        // Precompute condition arrays
+        Cond cond = buildCond();
+        int tcol = dataSet.getColumn(target);
 
-            // Decide binning range
-            final double min;
-            final double max;
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            if (!cond.passes(i)) continue;
+            int v = dataSet.getInt(i, tcol);
+            if (v >= 0 && v < counts.length) counts[v]++;
+        }
+        return counts;
+    }
 
-            if (hasContinuousBounds()) {
-                min = continuousBoundLow;
-                max = continuousBoundHigh;
-            } else {
-                double[] d = asDoubleArray(rawData);
-                min = StatUtils.min(d);
-                max = StatUtils.max(d);
-            }
+    private int[] frequenciesContinuous() {
+        int[] counts = new int[numBins];
+        Cond cond = buildCond();
+        int tcol = dataSet.getColumn(target);
 
-            lastDisplayMin = min;
-            lastDisplayMax = max;
+        final boolean hasBounds = hasContinuousBounds();
+        double min = hasBounds ? continuousBoundLow : Double.POSITIVE_INFINITY;
+        double max = hasBounds ? continuousBoundHigh : Double.NEGATIVE_INFINITY;
 
-            // Degenerate range: all values identical (or bounds extremely tight).
-            if (!(min < max)) {
-                int[] counts = new int[this.numBins];
-                // Put everything into last bin (or first—either is fine; last tends to look better)
-                int bin = this.numBins - 1;
-                for (double v : rawData.stream().mapToDouble(Double::doubleValue).toArray()) {
-                    if (hasContinuousBounds() && ignoreOutsideBounds && (v < min || v > max)) continue;
-                    counts[bin]++;
-                }
-                return counts;
-            }
-
-            final int[] counts = new int[this.numBins];
-            final double width = (max - min) / this.numBins;
-
-            // Fast binning with correct edge handling:
-            // - v < min or v > max ignored if ignoreOutsideBounds
-            // - v == max goes to last bin
-            for (double v : rawData.stream().mapToDouble(Double::doubleValue).toArray()) {
+        // Pass 1: compute min/max if needed
+        if (!hasBounds) {
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                if (!cond.passes(i)) continue;
+                double v = dataSet.getDouble(i, tcol);
                 if (Double.isNaN(v)) continue;
+                if (removeZeroPointsPerPlot && v == 0.0) continue;
+                if (v < min) min = v;
+                if (v > max) max = v;
+            }
+            if (min == Double.POSITIVE_INFINITY) {
+                lastDisplayMin = Double.NaN; lastDisplayMax = Double.NaN;
+                return counts; // all zeros
+            }
+        }
 
-                if (hasContinuousBounds() && ignoreOutsideBounds) {
-                    if (v < min || v > max) continue;
-                }
+        lastDisplayMin = min;
+        lastDisplayMax = max;
 
-                // If bounds not set, we still should ignore extreme NaNs; otherwise include all.
-                // Compute bin index
-                int bin;
-                if (v == max) {
-                    bin = this.numBins - 1;
-                } else {
-                    bin = (int) ((v - min) / width);
-                    if (bin < 0) {
-                        if (hasContinuousBounds() && ignoreOutsideBounds) continue;
-                        bin = 0;
-                    } else if (bin >= this.numBins) {
-                        if (hasContinuousBounds() && ignoreOutsideBounds) continue;
-                        bin = this.numBins - 1;
-                    }
-                }
-
+        // Degenerate range
+        if (!(min < max)) {
+            int bin = numBins - 1;
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                if (!cond.passes(i)) continue;
+                double v = dataSet.getDouble(i, tcol);
+                if (Double.isNaN(v)) continue;
+                if (removeZeroPointsPerPlot && v == 0.0) continue;
+                if (hasBounds && ignoreOutsideBounds && (v < min || v > max)) continue;
                 counts[bin]++;
             }
-
             return counts;
         }
 
-        if (this.target instanceof DiscreteVariable var) {
-            List<Integer> rawData = getConditionedDataDiscrete();
-            int[] counts = new int[var.getNumCategories()];
+        double width = (max - min) / numBins;
 
-            int[] data = rawData.stream().mapToInt(Integer::intValue).toArray();
-            for (int value : data) {
-                if (value >= 0 && value < counts.length) counts[value]++;
+        // Pass 2: bin
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            if (!cond.passes(i)) continue;
+            double v = dataSet.getDouble(i, tcol);
+            if (Double.isNaN(v)) continue;
+            if (removeZeroPointsPerPlot && v == 0.0) continue;
+
+            if (hasBounds && ignoreOutsideBounds && (v < min || v > max)) continue;
+
+            int bin;
+            if (v == max) bin = numBins - 1;
+            else {
+                bin = (int) ((v - min) / width);
+                if (bin < 0) bin = 0;
+                else if (bin >= numBins) bin = numBins - 1;
+            }
+            counts[bin]++;
+        }
+
+        return counts;
+    }
+
+    /** Compact conditioning representation (arrays, not maps) */
+    private Cond buildCond() {
+        // Continuous conditions -> arrays
+        int cSize = (continuousIntervals == null) ? 0 : continuousIntervals.size();
+        int[] contCol = (cSize == 0) ? new int[0] : new int[cSize];
+        double[] contLow = (cSize == 0) ? new double[0] : new double[cSize];
+        double[] contHigh = (cSize == 0) ? new double[0] : new double[cSize];
+
+        // Discrete conditions -> arrays
+        int dSize = (discreteValues == null) ? 0 : discreteValues.size();
+        int[] discCol = (dSize == 0) ? new int[0] : new int[dSize];
+        int[] discVal = (dSize == 0) ? new int[0] : new int[dSize];
+
+        // Fill continuous arrays
+        if (cSize > 0) {
+            int k = 0;
+            for (Map.Entry<Node, double[]> e : continuousIntervals.entrySet()) {
+                Node node = e.getKey();
+                double[] range = e.getValue();
+
+                // Defensive: skip malformed ranges
+                if (range == null || range.length < 2) continue;
+
+                contCol[k] = dataSet.getColumn(node);
+                contLow[k] = range[0];
+                contHigh[k] = range[1];
+                k++;
             }
 
-            return counts;
+            // If we skipped any, trim (rare)
+            if (k != cSize) {
+                contCol = Arrays.copyOf(contCol, k);
+                contLow = Arrays.copyOf(contLow, k);
+                contHigh = Arrays.copyOf(contHigh, k);
+            }
         }
 
-        throw new IllegalArgumentException("Unrecognized variable type.");
+        // Fill discrete arrays
+        if (dSize > 0) {
+            int k = 0;
+            for (Map.Entry<Node, Integer> e : discreteValues.entrySet()) {
+                Node node = e.getKey();
+                Integer val = e.getValue();
+                if (val == null) continue;
+
+                discCol[k] = dataSet.getColumn(node);
+                discVal[k] = val;
+                k++;
+            }
+
+            // If we skipped any, trim (rare)
+            if (k != dSize) {
+                discCol = Arrays.copyOf(discCol, k);
+                discVal = Arrays.copyOf(discVal, k);
+            }
+        }
+
+        return new Cond(dataSet, contCol, contLow, contHigh, discCol, discVal);
+    }
+
+    private static final class Cond {
+        private final DataSet ds;
+
+        private final int[] contCol;
+        private final double[] contLow;
+        private final double[] contHigh;
+
+        private final int[] discCol;
+        private final int[] discVal;
+
+        Cond(DataSet ds,
+             int[] contCol, double[] contLow, double[] contHigh,
+             int[] discCol, int[] discVal) {
+            this.ds = ds;
+            this.contCol = contCol;
+            this.contLow = contLow;
+            this.contHigh = contHigh;
+            this.discCol = discCol;
+            this.discVal = discVal;
+        }
+
+        boolean passes(int row) {
+            for (int k = 0; k < contCol.length; k++) {
+                double v = ds.getDouble(row, contCol[k]);
+                if (!(v >= contLow[k] && v <= contHigh[k])) return false;
+            }
+            for (int k = 0; k < discCol.length; k++) {
+                if (ds.getInt(row, discCol[k]) != discVal[k]) return false;
+            }
+            return true;
+        }
     }
 
     private List<Double> removeZeroPointsPerPlot(List<Double> data) {
@@ -342,9 +524,15 @@ public class Histogram {
      * @return the maximum value in the unconditioned continuous data
      */
     public double getMax() {
-        List<Double> uncond = getUnconditionedDataContinuous();
-        double[] d = asDoubleArray(uncond);
-        return StatUtils.max(d);
+        int col = dataSet.getColumn(target);
+        double max = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            double v = dataSet.getDouble(i, col);
+            if (Double.isNaN(v)) continue;
+            if (removeZeroPointsPerPlot && v == 0.0) continue;
+            if (v > max) max = v;
+        }
+        return max == Double.NEGATIVE_INFINITY ? Double.NaN : max;
     }
 
     /**
@@ -353,9 +541,15 @@ public class Histogram {
      * @return The minimum value from the unconditioned continuous data as a double.
      */
     public double getMin() {
-        List<Double> uncond = getUnconditionedDataContinuous();
-        double[] d = asDoubleArray(uncond);
-        return StatUtils.min(d);
+        int col = dataSet.getColumn(target);
+        double min = Double.POSITIVE_INFINITY;
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            double v = dataSet.getDouble(i, col);
+            if (Double.isNaN(v)) continue;
+            if (removeZeroPointsPerPlot && v == 0.0) continue;
+            if (v < min) min = v;
+        }
+        return min == Double.POSITIVE_INFINITY ? Double.NaN : min;
     }
 
     /**
@@ -364,8 +558,25 @@ public class Histogram {
      * @return the number of elements in the conditioned data list
      */
     public int getN() {
-        List<Double> conditioned = getConditionedDataContinuous();
-        return conditioned.size();
+        Cond cond = buildCond();
+        int tcol = dataSet.getColumn(target);
+
+        int n = 0;
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            if (!cond.passes(i)) continue;
+
+            if (target instanceof ContinuousVariable) {
+                double v = dataSet.getDouble(i, tcol);
+                if (Double.isNaN(v)) continue;
+                if (removeZeroPointsPerPlot && v == 0.0) continue;
+                n++;
+            } else if (target instanceof DiscreteVariable) {
+                int v = dataSet.getInt(i, tcol);
+                // optionally ignore missing category codes if you use them
+                n++;
+            }
+        }
+        return n;
     }
 
     /**
