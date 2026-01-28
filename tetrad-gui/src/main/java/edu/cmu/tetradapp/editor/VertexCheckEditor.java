@@ -22,8 +22,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.IndependenceFact;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -79,6 +79,8 @@ public class VertexCheckEditor extends JPanel {
     private JPanel histogramPanel = new JPanel(new BorderLayout());
 
     private JButton runAll = new JButton("Run All");
+
+    private final JButton showIndepsForRow = new JButton("Show Independencies For Row");
 
     private IndependenceWrapper independenceWrapper;
 
@@ -611,12 +613,27 @@ public class VertexCheckEditor extends JPanel {
 
         factsTable.setRowSorter(new TableRowSorter<>(factsModel));
         JScrollPane factsScroll = new JScrollPane(factsTable);
-        factsScroll.setBorder(BorderFactory.createTitledBorder("Tests implied for selected vertex"));
+
+        // "Show Independencies..." button is only enabled when exactly one row is selected.
+        showIndepsForRow.setEnabled(false);
+        factsTable.getSelectionModel().addListSelectionListener(evt -> {
+            if (evt.getValueIsAdjusting()) return;
+            showIndepsForRow.setEnabled(factsTable.getSelectedRowCount() == 1);
+        });
+        showIndepsForRow.addActionListener(e -> showIndependenciesForSelectedRow());
+
+        JPanel factsPane = new JPanel(new BorderLayout(6, 6));
+        factsPane.setBorder(BorderFactory.createTitledBorder("Tests implied for selected vertex"));
+        factsPane.add(factsScroll, BorderLayout.CENTER);
+
+        JPanel factsButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        factsButtons.add(showIndepsForRow);
+        factsPane.add(factsButtons, BorderLayout.SOUTH);
 
         histogramPanel.setBorder(BorderFactory.createTitledBorder("P-value Histogram"));
 
         JPanel rightTop = new JPanel(new BorderLayout(8, 8));
-        rightTop.add(factsScroll, BorderLayout.CENTER);
+        rightTop.add(factsPane, BorderLayout.CENTER);
         rightTop.add(histogramPanel, BorderLayout.SOUTH);
 
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, overviewScroll, rightTop);
@@ -853,6 +870,340 @@ public class VertexCheckEditor extends JPanel {
             histogramPanel.removeAll();
             histogramPanel.add(new JLabel("(No results)"), BorderLayout.CENTER);
             factsModel.fireTableDataChanged();
+        }
+    }
+
+
+    // ---------------------------------------------------------------------
+    // "Show Independencies For Row" feature
+    // ---------------------------------------------------------------------
+
+    private void showIndependenciesForSelectedRow() {
+        String vName = getActiveSelectedVertexName();
+        if (vName == null) return;
+
+        int viewRow = factsTable.getSelectedRow();
+        if (viewRow < 0) return;
+
+        int modelRow = factsTable.convertRowIndexToModel(viewRow);
+        List<IndependenceResult> rs = model.getResultsForVertex(vName);
+        if (rs == null || modelRow < 0 || modelRow >= rs.size()) return;
+
+        IndependenceFact fact = rs.get(modelRow).getFact();
+        if (fact == null) return;
+
+        // Map to the IndependenceTest's node instances (avoid graph-vs-data node identity issues).
+        Node x = nodeInTestByName(fact.getX().getName());
+        Node y = nodeInTestByName(fact.getY().getName());
+        if (x == null || y == null) return;
+
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        ShowIndepsDialog dialog = new ShowIndepsDialog(owner, x, y);
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    private Node nodeInTestByName(String name) {
+        IndependenceTest test = model.getIndependenceTest();
+        if (test == null) return null;
+
+        for (Node n : test.getVariables()) {
+            if (n != null && Objects.equals(n.getName(), name)) return n;
+        }
+        return null;
+    }
+
+    private enum PoolChoice {
+        MB_UNION("MB(x) U MB(y)"),
+        PARENTS_UNION("Parents(x) U Parents(y)"),
+        PARENTS_AND_NEIGHBORS_UNION("Parents-and-Neighbors(x) U Parents-and-Neighbors(y)"),
+        ALL_NODES("All nodes \\ {x, y}");
+
+        private final String label;
+
+        PoolChoice(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
+
+    private final class ShowIndepsDialog extends JDialog {
+        private final Node x;
+        private final Node y;
+
+        private final JComboBox<PoolChoice> poolBox = new JComboBox<>(PoolChoice.values());
+        private final JSpinner depthSpinner = new JSpinner(new SpinnerNumberModel(3, 0, 10, 1));
+        private final JButton showButton = new JButton("Show independencies");
+
+        private final JPanel resultsPanel = new JPanel(new BorderLayout(6, 6));
+        private final JLabel emptyLabel = new JLabel("No independencies found under those constraints.");
+
+        private final IndepTableModel tableModel = new IndepTableModel();
+        private final JTable table = new JTable(tableModel);
+
+        ShowIndepsDialog(Window owner, Node x, Node y) {
+            super(owner, "Independencies for <" + x.getName() + ", " + y.getName() + ">", Dialog.ModalityType.APPLICATION_MODAL);
+            this.x = x;
+            this.y = y;
+
+            table.setTransferHandler(new DefaultTableTransferHandler(0));
+
+            TableColumnModel cm = table.getColumnModel();
+
+            // Column indices assumed; adjust if needed
+            TableColumn colIndex  = cm.getColumn(0); // #
+            TableColumn colFact   = cm.getColumn(1); // Fact
+            TableColumn colResult = cm.getColumn(2); // Result
+            TableColumn colPval   = cm.getColumn(3); // p-value
+
+            // # column: very skinny
+            colIndex.setPreferredWidth(40);
+            colIndex.setMaxWidth(40);
+
+            // Result column: "INDEPENDENT"
+            colResult.setPreferredWidth(100);
+            colResult.setMaxWidth(100);
+
+            // p-value column: ~6–8 chars
+            colPval.setMinWidth(70);
+            colPval.setPreferredWidth(70);
+
+            // Fact column: stretch
+            colFact.setMinWidth(350);
+            // no max width → absorbs remaining space
+
+            table.setRowSorter(new TableRowSorter<>(factsModel));
+
+            setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+            JPanel controls = new JPanel(new GridBagLayout());
+            controls.setBorder(new EmptyBorder(10, 10, 6, 10));
+            GridBagConstraints gc = new GridBagConstraints();
+            gc.insets = new Insets(3, 3, 3, 3);
+            gc.anchor = GridBagConstraints.WEST;
+
+            gc.gridx = 0; gc.gridy = 0;
+            controls.add(new JLabel("Candidate pool:"), gc);
+            gc.gridx = 1; gc.gridy = 0;
+            gc.fill = GridBagConstraints.HORIZONTAL; gc.weightx = 1.0;
+            controls.add(poolBox, gc);
+
+            gc.gridx = 0; gc.gridy = 1;
+            gc.fill = GridBagConstraints.NONE; gc.weightx = 0;
+            controls.add(new JLabel("Depth:"), gc);
+            gc.gridx = 1; gc.gridy = 1;
+            controls.add(depthSpinner, gc);
+
+            gc.gridx = 0; gc.gridy = 2; gc.gridwidth = 2;
+            gc.fill = GridBagConstraints.NONE; gc.weightx = 0;
+            controls.add(showButton, gc);
+
+            resultsPanel.setBorder(new EmptyBorder(0, 10, 10, 10));
+            resultsPanel.add(new JLabel("(Click 'Show independencies' to run)"), BorderLayout.CENTER);
+
+            table.setFillsViewportHeight(true);
+            table.setAutoCreateRowSorter(true);
+
+            showButton.addActionListener(e -> runSearch());
+
+            getContentPane().setLayout(new BorderLayout());
+            getContentPane().add(controls, BorderLayout.NORTH);
+            getContentPane().add(resultsPanel, BorderLayout.CENTER);
+
+            setSize(780, 520);
+        }
+
+        private void runSearch() {
+            showButton.setEnabled(false);
+            resultsPanel.removeAll();
+            resultsPanel.add(new JLabel("Searching..."), BorderLayout.CENTER);
+            resultsPanel.revalidate();
+            resultsPanel.repaint();
+
+            final PoolChoice choice = (PoolChoice) poolBox.getSelectedItem();
+            final int k = (Integer) depthSpinner.getValue();
+
+            SwingWorker<List<IndependenceResult>, Void> worker = new SwingWorker<>() {
+                @Override
+                protected List<IndependenceResult> doInBackground() {
+                    return findIndependencies(x, y, choice, k);
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        List<IndependenceResult> found = get();
+                        tableModel.setResults(found);
+
+                        resultsPanel.removeAll();
+                        if (found.isEmpty()) {
+                            resultsPanel.add(emptyLabel, BorderLayout.CENTER);
+                        } else {
+                            resultsPanel.add(new JScrollPane(table), BorderLayout.CENTER);
+                        }
+                    } catch (Exception ex) {
+                        resultsPanel.removeAll();
+                        resultsPanel.add(new JLabel("Error: " + ex.getMessage()), BorderLayout.CENTER);
+                    } finally {
+                        showButton.setEnabled(true);
+                        resultsPanel.revalidate();
+                        resultsPanel.repaint();
+                    }
+                }
+            };
+
+            worker.execute();
+        }
+    }
+
+    private List<IndependenceResult> findIndependencies(Node x, Node y, PoolChoice poolChoice, int maxSetSize) {
+        IndependenceTest test = model.getIndependenceTest();
+        if (test == null) return Collections.emptyList();
+
+        Graph g = model.getGraph();
+        if (g == null) return Collections.emptyList();
+
+        // Candidate pool
+        Set<Node> pool = new LinkedHashSet<>();
+        switch (poolChoice) {
+            case MB_UNION -> {
+                pool.addAll(GraphUtils.markovBlanket(x, g));
+                pool.addAll(GraphUtils.markovBlanket(y, g));
+            }
+            case PARENTS_UNION -> {
+                pool.addAll(g.getParents(x));
+                pool.addAll(g.getParents(y));
+            }
+            case PARENTS_AND_NEIGHBORS_UNION -> {
+                pool.addAll(parentsAndNeighbors(x, g));
+                pool.addAll(parentsAndNeighbors(y, g));
+            }
+            case ALL_NODES -> pool.addAll(g.getNodes());
+        }
+
+        pool.remove(x);
+        pool.remove(y);
+
+        // Hard cap to avoid accidental combinatorial explosions from huge pools.
+        final int HARD_CAP = 30;
+        List<Node> poolList = new ArrayList<>(pool);
+        poolList.sort(Comparator.comparing(Node::getName));
+        if (poolList.size() > HARD_CAP) {
+            poolList = poolList.subList(0, HARD_CAP);
+        }
+
+        // Enumerate subsets up to maxSetSize
+        List<IndependenceResult> found = new ArrayList<>();
+        int limit = 200; // UI safety: don't flood the table.
+        for (int k = 0; k <= maxSetSize; k++) {
+            if (found.size() >= limit) break;
+            enumerateSubsets(poolList, k, subset -> {
+                if (found.size() >= limit) return false;
+
+                Set<Node> z = new LinkedHashSet<>(subset);
+                IndependenceResult r = null;
+                try {
+                    r = test.checkIndependence(x, y, z);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                if (r != null && r.isIndependent()) {
+                    found.add(r);
+                }
+                return true;
+            });
+        }
+
+        // Sort: highest p-value first (most comfortable independencies).
+        found.sort((a, b) -> Double.compare(b.getPValue(), a.getPValue()));
+        return found;
+    }
+
+    private Set<Node> parentsAndNeighbors(Node x, Graph g) {
+        Set<Node> z = new LinkedHashSet<>();
+        for (Node w : g.getAdjacentNodes(x)) {
+            Edge e = g.getEdge(w, x);
+            if (e != null && Edges.isUndirectedEdge(e)) z.add(w);
+            if (g.isParentOf(w, x)) z.add(w);
+        }
+        return z;
+    }
+
+    /**
+     * Enumerate all subsets of size k from pool, calling `accept` with each subset (as a List<Node>).
+     * If accept returns false, enumeration halts early.
+     */
+    private void enumerateSubsets(List<Node> pool, int k, Function<List<Node>, Boolean> accept) {
+        if (k == 0) {
+            accept.apply(Collections.emptyList());
+            return;
+        }
+        if (pool.isEmpty() || k > pool.size()) return;
+
+        Node[] a = pool.toArray(new Node[0]);
+        int n = a.length;
+
+        int[] idx = new int[k];
+        for (int i = 0; i < k; i++) idx[i] = i;
+
+        while (true) {
+            List<Node> subset = new ArrayList<>(k);
+            for (int i = 0; i < k; i++) subset.add(a[idx[i]]);
+            Boolean cont = accept.apply(subset);
+            if (cont != null && !cont) return;
+
+            // next combination
+            int i = k - 1;
+            while (i >= 0 && idx[i] == n - k + i) i--;
+            if (i < 0) break;
+            idx[i]++;
+            for (int j = i + 1; j < k; j++) idx[j] = idx[j - 1] + 1;
+        }
+    }
+
+    private final class IndepTableModel extends AbstractTableModel {
+        private List<IndependenceResult> results = Collections.emptyList();
+
+        void setResults(List<IndependenceResult> rs) {
+            this.results = (rs == null) ? Collections.emptyList() : new ArrayList<>(rs);
+            fireTableDataChanged();
+        }
+
+        @Override
+        public int getRowCount() {
+            return results.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return 4;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return switch (column) {
+                case 0 -> "#";
+                case 1 -> "Fact";
+                case 2 -> "Result";
+                case 3 -> "P-value";
+                default -> "";
+            };
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            IndependenceResult r = results.get(rowIndex);
+            return switch (columnIndex) {
+                case 0 -> rowIndex + 1;
+                case 1 -> factString(r.getFact());
+                case 2 -> "INDEPENDENT";
+                case 3 -> fmt(r.getPValue());
+                default -> "";
+            };
         }
     }
 
