@@ -55,7 +55,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     private static final long serialVersionUID = 1L;
 
     private final DataModel dataModel;
-    private final Graph graph;
+    private Graph graph;
     private final Parameters parameters;
     // Results
     private final Map<String, VertexSummary> summariesByVertex = new LinkedHashMap<>();
@@ -499,7 +499,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return pValue;
     }
 
-    private List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x) {
+    public List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x) {
         switch (conditioningSetType) {
 
             // ---------------- uniform-Z families ----------------
@@ -650,6 +650,10 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         }
 
         return new ConditioningSetSizeRange(min, max);
+    }
+
+    public void setGraph(Graph graph) {
+        this.graph = graph;
     }
 
     private record ConditioningSetSizeRange(int min, int max) {

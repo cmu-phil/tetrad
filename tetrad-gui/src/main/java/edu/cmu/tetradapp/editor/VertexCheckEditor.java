@@ -82,6 +82,8 @@ public class VertexCheckEditor extends JPanel {
 
     private final JButton showIndepsForRow = new JButton("Show Independencies For Row");
 
+    private final JButton repairNodeButton = new JButton("Repair Node");
+
     private IndependenceWrapper independenceWrapper;
 
     private static final Preferences PREFS =
@@ -107,6 +109,10 @@ public class VertexCheckEditor extends JPanel {
         applySavedSetType();
 
         setTestFromCombo();
+
+        repairNodeButton.setEnabled(true);
+
+        repairNodeButton.addActionListener(e -> showRepairNodeDialog());
 
         initializing = false;
     }
@@ -628,6 +634,7 @@ public class VertexCheckEditor extends JPanel {
 
         JPanel factsButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         factsButtons.add(showIndepsForRow);
+        factsButtons.add(repairNodeButton);
         factsPane.add(factsButtons, BorderLayout.SOUTH);
 
         histogramPanel.setBorder(BorderFactory.createTitledBorder("P-value Histogram"));
@@ -827,6 +834,10 @@ public class VertexCheckEditor extends JPanel {
 
     private String getSelectedVertexName() {
         return getActiveSelectedVertexName();
+    }
+
+    public VertexCheckIndTestModel getIndTestModel() {
+        return model;
     }
 
     private record SelectedRows(List<Integer> modelRows, List<String> vertices) {}
@@ -1226,5 +1237,50 @@ public class VertexCheckEditor extends JPanel {
 
         histogramPanel.revalidate();
         histogramPanel.repaint();
+    }
+
+    private void updateRepairButtonEnabled() {
+        Node x = getSelectedVertex(); // whatever you already have
+//        boolean enable = x != null && model != null && model.hasViolationsForVertex(x);
+//        repairNodeButton.setEnabled(enable);
+    }
+
+    private void showRepairNodeDialog() {
+        Node x = getSelectedVertex();
+        if (x == null) return;
+
+        VertexRepairPanel panel = new VertexRepairPanel(this, x);
+
+        JDialog dialog = new JDialog(
+                SwingUtilities.getWindowAncestor(this),
+                "Repair Node: " + x.getName(),
+                Dialog.ModalityType.APPLICATION_MODAL
+        );
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dialog.setContentPane(panel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true); // blocks until closed
+
+        // After dialog closes:
+        Graph g2 = panel.getGraph();
+        if (g2 != null && model != null) {
+            model.setGraph(g2); // or whatever your model uses
+            refreshDetails(getSelectedVertexName()); // your existing refresh method
+            updateRepairButtonEnabled();
+        }
+    }
+
+    public Node getSelectedVertex() {
+        List<Node> nodes = model.getGraph().getNodes();
+        String selectedName = getSelectedVertexName();
+
+        for (Node node : nodes) {
+            if (node.getName().equals(selectedName)) {
+                return node;
+            }
+        }
+
+        throw new IllegalStateException("Selected vertex not found in graph");
     }
 }
