@@ -634,7 +634,7 @@ public class VertexCheckEditor extends JPanel {
 
         JPanel factsButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         factsButtons.add(showIndepsForRow);
-        factsButtons.add(repairNodeButton);
+//        factsButtons.add(repairNodeButton);
         factsPane.add(factsButtons, BorderLayout.SOUTH);
 
         histogramPanel.setBorder(BorderFactory.createTitledBorder("P-value Histogram"));
