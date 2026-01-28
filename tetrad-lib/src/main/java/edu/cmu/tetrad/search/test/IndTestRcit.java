@@ -50,6 +50,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     private final Map<String, SimpleMatrix> rffCache = new ConcurrentHashMap<>();
     private final Map<String, SimpleMatrix> cholCache = new ConcurrentHashMap<>(); // stores lower-triangular L of Czz+λI
     private final Map<String, Double> sigmaCache = new ConcurrentHashMap<>();
+    private final long masterSeed;
     private int n;
     // ---------------- hyperparams ----------------
     private int numFeatXY = 5;      // features for X and Y (default aligns with causal-learn)
@@ -90,22 +91,23 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         this.n = getActiveRowCount();
 
         long seed = params.getLong("rcit.seed", 1729L);
+        this.masterSeed = seed;
         this.rng = new Random(seed);
 
-        // legacy names (won’t override later setter calls from wrapper)
-        this.numFeatZ = Math.max(1, params.getInt("rcit.numF", 100));
-        this.numFeatXY = Math.max(1, params.getInt("rcit.numF2", 5));
-        this.permutations = Math.max(0, params.getInt("rcit.permutations", 0));
-        this.doRcit = params.getBoolean("rcit.rcit", true);
+//        // legacy names (won’t override later setter calls from wrapper)
+//        this.numFeatZ = Math.max(1, params.getInt("rcit.numF", 100));
+//        this.numFeatXY = Math.max(1, params.getInt("rcit.numF2", 5));
+//        this.permutations = Math.max(0, params.getInt("rcit.permutations", 0));
+//        this.doRcit = params.getBoolean("rcit.rcit", true);
 
-        String approxStr = params.getString("rcit.approx", "gamma");
-        setApproximationFromInt(switch (approxStr.toLowerCase(Locale.ROOT)) {
-            case "perm", "permutation" -> 5;
-            case "chi2", "chi-sq", "chisq" -> 4;
-            case "hbe" -> 2;
-            case "lpb4", "lpd4" -> 1;
-            default -> 3; // gamma
-        });
+//        String approxStr = params.getString("rcit.approx", "gamma");
+//        setApproximationFromInt(switch (approxStr.toLowerCase(Locale.ROOT)) {
+//            case "perm", "permutation" -> 5;
+//            case "chi2", "chi-sq", "chisq" -> 4;
+//            case "hbe" -> 2;
+//            case "lpb4", "lpd4" -> 1;
+//            default -> 3; // gamma
+//        });
 
         this.lambda = Math.max(1e-12, params.getDouble("rcit.lambda", this.lambda));
         this.centerFeatures = params.getBoolean("rcit.centerFeatures", true);
@@ -152,7 +154,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
 //        }
 //        return s;
 //    }
-
     private static double frob2(SimpleMatrix M) {
         double s = 0.0;
         double[] a = M.getDDRM().data;
@@ -467,6 +468,68 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         return X;
     }
 
+    private static List<Node> hstackVarList(Node y, List<Node> Z) {
+        ArrayList<Node> out = new ArrayList<>(1 + Z.size());
+        out.add(y);
+        out.addAll(Z);
+        return out;
+    }
+
+//    /**
+//     * 1=LPB4, 2=HBE, 3=GAMMA, 4=CHI2, 5=PERMUTATION
+//     *
+//     * @param approxCode The code.
+//     */
+//    public void setApproximationFromInt(int approxCode) {
+//        switch (approxCode) {
+//            case 1 -> this.approx = Approx.LPB4;
+//            case 2 -> this.approx = Approx.HBE;
+//            case 3 -> this.approx = Approx.GAMMA;
+//            case 4 -> this.approx = Approx.CHI2;
+//            case 5 -> this.approx = Approx.PERMUTATION;
+//            default -> this.approx = Approx.GAMMA;
+//        }
+//    }
+
+    private static SimpleMatrix covWithPermutedB(SimpleMatrix A, SimpleMatrix B, int[] perm) {
+        int n = A.getNumRows();
+        int p = A.getNumCols();
+        int q = B.getNumCols();
+        SimpleMatrix C = new SimpleMatrix(p, q);
+
+        // C[a,b] = sum_i A[i,a] * B[perm[i], b]
+        for (int i = 0; i < n; i++) {
+            int bi = perm[i];
+            for (int a = 0; a < p; a++) {
+                double av = A.get(i, a);
+                for (int b = 0; b < q; b++) {
+                    C.set(a, b, C.get(a, b) + av * B.get(bi, b));
+                }
+            }
+        }
+        return C.scale(1.0 / (n - 1));
+    }
+
+    private static boolean isFiniteMatrix(SimpleMatrix M) {
+        double[] a = M.getDDRM().data;
+        for (double v : a) {
+            if (!Double.isFinite(v)) return false;
+        }
+        return true;
+    }
+
+    private static void requireFinite(SimpleMatrix M, String what) {
+        if (!isFiniteMatrix(M)) {
+            throw new IllegalArgumentException("RCIT: non-finite values in " + what + " (NaN/Inf).");
+        }
+    }
+
+    private static long mix64(long z) {
+        z = (z ^ (z >>> 33)) * 0xff51afd7ed558ccdL;
+        z = (z ^ (z >>> 33)) * 0xc4ceb9fe1a85ec53L;
+        return z ^ (z >>> 33);
+    }
+
     private SimpleMatrix cols(DataSet ds, List<Node> vv) {
         int n = getActiveRowCount();
         int d = vv.size();
@@ -484,22 +547,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
             }
         }
         return M;
-    }
-
-    /**
-     * 1=LPB4, 2=HBE, 3=GAMMA, 4=CHI2, 5=PERMUTATION
-     *
-     * @param approxCode The code.
-     */
-    public void setApproximationFromInt(int approxCode) {
-        switch (approxCode) {
-            case 1 -> this.approx = Approx.LPB4;
-            case 2 -> this.approx = Approx.HBE;
-            case 3 -> this.approx = Approx.GAMMA;
-            case 4 -> this.approx = Approx.CHI2;
-            case 5 -> this.approx = Approx.PERMUTATION;
-            default -> this.approx = Approx.GAMMA;
-        }
     }
 
     /**
@@ -588,6 +635,8 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         final List<Node> Z = (z == null) ? new ArrayList<>() : new ArrayList<>(z);
         Z.sort(Comparator.comparing(Node::getName));
 
+        final long basePermSeed = mix64(rngSeed() ^ factHash(x, y, Z));
+
         if (x.equals(y)) {
             if (verbose) TetradLogger.getInstance().log(new IndependenceFact(x, y, new HashSet<>(Z)) + " x == y");
             lastP = 0.0;
@@ -605,10 +654,18 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         SimpleMatrix Y = cols(data, Collections.singletonList(y));
         SimpleMatrix Zm = Z.isEmpty() ? new SimpleMatrix(n, 0) : cols(data, Z);
 
+        requireFinite(X, "raw X");
+        requireFinite(Y, "raw Y");
+        if (Zm.getNumCols() > 0) requireFinite(Zm, "raw Z");
+
         // Standardize raw columns
         zscoreInPlace(X);
         zscoreInPlace(Y);
         zscoreInPlace(Zm);
+
+        requireFinite(X, "z-scored X");
+        requireFinite(Y, "z-scored Y");
+        if (Zm.getNumCols() > 0) requireFinite(Zm, "z-scored Z");
 
         // RCIT: augment Y with Z before features, else RCoT uses Y alone
         SimpleMatrix Yaug = (doRcit && Zm.getNumCols() > 0) ? hstack(Y, Zm) : Y;
@@ -635,7 +692,7 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         // Covariances
         SimpleMatrix Cxy = cov(fX, fY);
         final double stat;
-        double p;
+        double p = NaN;
 
         if (fZ == null || fZ.getNumCols() == 0) {
             // ---------------- RIT (no conditioning) ----------------
@@ -654,7 +711,8 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                     if (permutations > 0) {
                         int greater = 0;
                         for (int b = 0; b < permutations; b++) {
-                            int[] perm = randomPermutation(n, rng);
+                            Random prng = new Random(basePermSeed + 0x9E3779B97F4A7C15L * b);
+                            int[] perm = randomPermutation(n, prng);
 
 //                            SimpleMatrix fYp = permuteRows(fY, perm);
 //                            double s = n * frob2(cov(fX, fYp));
@@ -669,11 +727,11 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                         p = gammaApproxP(stat, eig);
                     }
                 }
-                case HBE -> p = edgeworthP(stat, eig, false);
-                case LPB4 -> p = edgeworthP(stat, eig, true);
-                case CHI2 -> p = chi2ApproxP(n, vec(Cxy), Cov);
-                case GAMMA -> p = gammaApproxP(stat, eig);
-                default -> p = gammaApproxP(stat, eig);
+                case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
+                case SADDLEPOINT ->
+                        QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);// edgeworthP(stat, eig, true);
+                case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
+                default -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
             }
         } else {
             // ---------------- RCIT (with Z) ----------------
@@ -689,11 +747,12 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
             // Cache Cholesky for this Z-set + params (huge win)
             // Key must depend on Z, n, numFeatZ, sigmaZ, lambda, seedZ, doRcit? (doesn't affect fZ)
 
-            String cholKey = "cholZ|" + keySigma("Z", Z)  // includes n and sorted var names
+            String cholKey = "cholZ|" + keySigma("Z", Z)  // includes n and sorted var names + rows hash
                     + "|Fz=" + numFeatZ
                     + "|lam=" + Double.doubleToLongBits(lambda)
                     + "|sigZ=" + Double.doubleToLongBits(sigZ)
-                    + "|seedZ=" + seedZ;
+                    + "|seedZ=" + seedZ
+                    + "|ctr=" + (centerFeatures ? 1 : 0);
 
             SimpleMatrix L = cholCache.computeIfAbsent(cholKey, k -> choleskyLower(A));
 
@@ -707,27 +766,38 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
             stat = n * frob2(Cxy_z);
 
             if (approx == Approx.PERMUTATION && permutations > 0) {
+                // Build residuals once
+                SimpleMatrix V = U_T;                 // inv(A) * Cxz^T
+                SimpleMatrix W = cholSolve(L, Czy);   // inv(A) * Czy
+
+                SimpleMatrix e_x_z = fZ.mult(V);
+                SimpleMatrix e_y_z = fZ.mult(W);
+
+                SimpleMatrix resX = fX.minus(e_x_z);
+                SimpleMatrix resY = fY.minus(e_y_z);
+
+                subtractColumnMeansInPlace(resX);
+                subtractColumnMeansInPlace(resY);
+
+                // observed stat should be based on residual cov (matches Cxy - U*Czy)
+                SimpleMatrix Cobs = cov(resX, resY);
+                double statObs = n * frob2(Cobs);
+
                 int greater = 0;
                 for (int b = 0; b < permutations; b++) {
-                    int[] perm = randomPermutation(n, rng);
+                    Random prng = new Random(basePermSeed + 0x9E3779B97F4A7C15L * b);
+                    int[] perm = randomPermutation(n, prng);
 
-                    // Avoid allocating fYp if you want later; keep simple for now:
-//                    SimpleMatrix fYp = permuteRows(fY, perm);
+                    // cov(resX, resY_perm) without allocating resY_perm:
+                    SimpleMatrix Cperm = covWithPermutedB(resX, resY, perm);
+                    double s = n * frob2(Cperm);
 
-//                    SimpleMatrix Cyp = cov(fX, fYp);
-//                    SimpleMatrix Czyp = cov(fZ, fYp);
-
-                    SimpleMatrix Cyp  = covWithPermutedB(fX, fY, perm);
-                    SimpleMatrix Czyp = covWithPermutedB(fZ, fY, perm);
-                    SimpleMatrix Cxy_z_p = Cyp.minus(U.mult(Czyp));
-
-                    // Cxy|z perm = Cyp - U * Czyp   (since U = Cxz inv(A) is unchanged)
-//                    SimpleMatrix Cxy_z_p = Cyp.minus(U.mult(Czyp));
-
-                    double s = n * frob2(Cxy_z_p);
-                    if (s >= stat) greater++;
+                    if (s >= statObs) greater++;
                 }
                 p = (greater + 1.0) / (permutations + 1.0);
+
+                // keep 'stat' consistent with what you report
+                // (set stat = statObs if you store it)
             } else {
                 // Residuals to form Cov of elementwise products:
                 // e_x|z = fZ inv(A) Cxz^T ; e_y|z = fZ inv(A) Czy
@@ -751,13 +821,13 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
                 SimpleMatrix Cov = kronResCov(resX, resY);
                 double[] eig = positiveEigs(Cov);
 
-                switch (approx) {
-                    case HBE -> p = edgeworthP(stat, eig, false);
-                    case LPB4 -> p = edgeworthP(stat, eig, true);
-                    case CHI2 -> p = chi2ApproxP(n, vec(Cxy_z), Cov);
-                    case GAMMA -> p = gammaApproxP(stat, eig);
-                    default -> p = gammaApproxP(stat, eig);
-                }
+                p = switch (approx) {
+                    case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
+                    case SADDLEPOINT ->
+                            QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);// edgeworthP(stat, eig, true);
+                    case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
+                    default -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
+                };
             }
         }
 
@@ -769,13 +839,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         lastP = p_;
         boolean indep = (p_ > alpha);
         return new IndependenceResult(new IndependenceFact(x, y, new HashSet<>(Z)), indep, lastP, alpha - lastP);
-    }
-
-    private static List<Node> hstackVarList(Node y, List<Node> Z) {
-        ArrayList<Node> out = new ArrayList<>(1 + Z.size());
-        out.add(y);
-        out.addAll(Z);
-        return out;
     }
 
     private long seedFor(Node x, Node y, List<Node> Z) {
@@ -854,28 +917,13 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         return sigmaCache.computeIfAbsent(key, k -> {
             int n = raw.getNumRows();
             int r1 = Math.min(n, 500);
-//            return medianPairwiseDistance(raw.rows(0, r1));
-            return medianPairwiseDistanceSampled(raw.rows(0, r1), 5000, new Random(12345));
+
+            // deterministic RNG keyed to this sigma-key (stable across runs, but varies across variables/rows)
+            long s = mix64(masterSeed ^ k.hashCode());
+            Random rr = new Random(s);
+
+            return medianPairwiseDistanceSampled(raw.rows(0, r1), 5000, rr);
         });
-    }
-
-    private static SimpleMatrix covWithPermutedB(SimpleMatrix A, SimpleMatrix B, int[] perm) {
-        int n = A.getNumRows();
-        int p = A.getNumCols();
-        int q = B.getNumCols();
-        SimpleMatrix C = new SimpleMatrix(p, q);
-
-        // C[a,b] = sum_i A[i,a] * B[perm[i], b]
-        for (int i = 0; i < n; i++) {
-            int bi = perm[i];
-            for (int a = 0; a < p; a++) {
-                double av = A.get(i, a);
-                for (int b = 0; b < q; b++) {
-                    C.set(a, b, C.get(a, b) + av * B.get(bi, b));
-                }
-            }
-        }
-        return C.scale(1.0 / (n - 1));
     }
 
     private SimpleMatrix rffCached(String tag, SimpleMatrix raw, List<Node> varsForKey, int numF, double sigma,
@@ -885,7 +933,6 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
         return rffCache.computeIfAbsent(key, k -> {
             Random rr = new Random(seed);
             SimpleMatrix feat = rff(raw, numF, sigma, rr);
-//            if (center) zscoreInPlace(feat);
             if (center) zscoreInPlace(feat);
             else subtractColumnMeansInPlace(feat);
             return feat;
@@ -922,6 +969,11 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
 
         this.rows = new ArrayList<>(rows);
         this.n = this.rows.size();
+
+        // Optional: prevent unbounded cache growth when rows subsets change frequently.
+        rffCache.clear();
+        cholCache.clear();
+        sigmaCache.clear();
     }
 
     private int getActiveRowCount() {
@@ -931,6 +983,20 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     private int activeRowIndex(int i) {
         // maps active-row i -> original dataset row index
         return (rows == null) ? i : rows.get(i);
+    }
+
+    private long factHash(Node x, Node y, List<Node> Z) {
+        long h = 1469598103934665603L; // FNV-ish
+        h = 1099511628211L * (h ^ x.getName().hashCode());
+        h = 1099511628211L * (h ^ y.getName().hashCode());
+        for (Node z : Z) h = 1099511628211L * (h ^ z.getName().hashCode());
+        h = 1099511628211L * (h ^ getActiveRowCount());
+        h = 1099511628211L * (h ^ activeRowsHash());
+        return h;
+    }
+
+    private long rngSeed() {
+        return masterSeed;
     }
 
     /**
@@ -1004,29 +1070,59 @@ public final class IndTestRcit implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Enumeration representing the approximation methods supported for the randomized conditional independence test
-     * (RCIT). These methods are utilized to calculate p-values or test statistics based on different approximation
-     * techniques.
+     * Sets the approximation object to be used.
+     *
+     * @param approx the approximation instance to set; must not be null
+     * @throws NullPointerException if the provided approximation instance is null
      */
-    private enum Approx {
+    public void setApproximation(Approx approx) {
+        if (approx == null) throw new NullPointerException("approx must not be null");
+        this.approx = approx;
+    }
+
+    /**
+     * Represents different approximation methods that can be used for statistical or mathematical computations.
+     *
+     * @see QuadraticFormPValues
+     */
+    public enum Approx {
+
         /**
-         * Cornish-Fisher approximation leveraging skewness and kurtosis.
-         */
-        LPB4,
-        /**
-         * Moment-matching-based approximation (similar to the Hall-Buckley-Egyptian method).
-         */
-        HBE,
-        /**
-         * Satterthwaite–Welch Gamma approximation for weighted chi-square sums.
+         * Represents the gamma approximation method.
+         * <p>
+         * This method is used in statistical or mathematical computations
+         * where an approximation based on the gamma distribution is appropriate.
          */
         GAMMA,
+
         /**
-         * Chi-square approximation for independence testing.
+         * Represents the saddlepoint approximation method.
+         * <p>
+         * This method is used in statistical or mathematical computations to provide
+         * an accurate approximation of probability distributions, particularly for
+         * small sample sizes or in scenarios where traditional methods may lack precision.
          */
-        CHI2,
+        SADDLEPOINT,
+
         /**
-         * Permutation-based approximation requiring multiple randomized trials.
+         * Represents the Davies-Imhof approximation method.
+         * <p>
+         * This method is used in statistical or mathematical computations to approximate
+         * the distribution of quadratic forms in normal variables. It is particularly
+         * useful in scenarios requiring precise evaluation of tail probabilities in
+         * statistical tests or other related calculations.
+         */
+        DAVIES_IMHOF,
+
+        /**
+         * Represents the permutation-based approximation method.
+         * <p>
+         * This method is commonly used in statistical and mathematical computations
+         * that involve resampling techniques. It relies on generating all possible
+         * rearrangements (or permutations) of a dataset to assess the statistical
+         * significance or to estimate a probability distribution. Permutation
+         * methods are often employed in non-parametric tests and other scenarios
+         * where traditional parametric approaches may not be suitable.
          */
         PERMUTATION
     }

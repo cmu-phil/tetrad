@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
  *
  * @author josephramsey
  */
-public final class Fcit implements IGraphSearch {
+public final class Fcit0 implements IGraphSearch {
     /**
      * The independence test.
      */
@@ -151,7 +151,7 @@ public final class Fcit implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if the score is null.
      */
-    public Fcit(IndependenceTest test, Score score) {
+    public Fcit0(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -280,7 +280,7 @@ public final class Fcit implements IGraphSearch {
             nodes = new ArrayList<>(test.getVariables());
         }
 
-        TetradLogger.getInstance().log("===Starting FCIT===");
+        TetradLogger.getInstance().log("===Starting FCIT0===");
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(sepsets);
@@ -437,8 +437,8 @@ public final class Fcit implements IGraphSearch {
         int round = 0;
 
         do {
-            System.out.println("Round: " + (++round));
-        } while (removeEdgesRecursively(checks, excludeSelectionBias));
+//            System.out.println("Round: " + (++round));
+        } while (removeEdgesRecursivelyBryan(checks, excludeSelectionBias));
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -455,7 +455,7 @@ public final class Fcit implements IGraphSearch {
             node.setNodeType(NodeType.LATENT);
         }
 
-        TetradLogger.getInstance().log("FCIT finished.");
+        TetradLogger.getInstance().log("FCIT0 finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
@@ -507,57 +507,61 @@ public final class Fcit implements IGraphSearch {
         return grasp;
     }
 
-    /**
-     * Attempts to remove additional edges from the current PAG by exploiting discriminating paths that could not be
-     * oriented by the final FCI orientation rules. For each candidate edge, the method:
-     * <p>
-     * 1. Gathers unresolved discriminating paths involving the edge. 2. Uses recursive blocking to propose conditioning
-     * sets that would separate the endpoints. 3. Runs the independence test on those candidate sets. 4. If independence
-     * is found, tries to remove the edge and re-orient the graph accordingly.
-     * <p>
-     * If {@code guaranteePag} is true, removals that would yield an illegal MAG are reverted; otherwise, illegal PAG
-     * states may persist. Verbose logging records each attempted removal and orientation.
-     *
-     * @return true if at least one edge was removed, false otherwise
-     */
-    private boolean removeEdgesRecursively(Set<IndependenceCheck> checks, boolean excludeSelectionBias) {
+    private boolean removeEdgesRecursivelyBryan(Set<IndependenceCheck> checks, boolean excludeSelectionBias) {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
 
-        boolean changed = false;
+        for (Edge edge : this.pag.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
 
-        // The final orientation rules were applied just before this step, so this should list only
-        // discriminating paths that could not be oriented by them...
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag,
-                -1, false);
-        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
-        for (DiscriminatingPath path : discriminatingPaths) {
-            Node x = path.getX();
-            Node y = path.getY();
+            {
+                List<Node> adjx = this.pag.getAdjacentNodes(x);
+                adjx.removeAll(this.pag.getNodesOutTo(x, Endpoint.ARROW));
+                adjx.remove(y);
+                SublistGenerator choiceGen = new SublistGenerator(adjx.size(), adjx.size());
+                int[] choice;
 
-            pathsByEdge.computeIfAbsent(Set.of(x, y), k -> new HashSet<>());
-            pathsByEdge.get(Set.of(x, y)).add(path);
+                while ((choice = choiceGen.next()) != null) {
+                    Set<Node> b = GraphUtils.asSet(choice, adjx);
+                    try {
+                        if (test.checkIndependence(x, y, b).isIndependent()) {
+                            if (tryToModifyGraph(x, y, b, "fcit0", excludeSelectionBias)) {
+                                checks.add(new IndependenceCheck(edge, b));
+                                return true;
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+
+            {
+                List<Node> adjy = this.pag.getAdjacentNodes(y);
+                adjy.removeAll(this.pag.getNodesOutTo(y, Endpoint.ARROW));
+                adjy.remove(x);
+                SublistGenerator choiceGen = new SublistGenerator(adjy.size(), adjy.size());
+                int[] choice;
+
+                while ((choice = choiceGen.next()) != null) {
+                    Set<Node> b = GraphUtils.asSet(choice, adjy);
+                    try {
+                        if (test.checkIndependence(x, y, b).isIndependent()) {
+                            if (tryToModifyGraph(x, y, b, "fcit0", excludeSelectionBias)) {
+                                checks.add(new IndependenceCheck(edge, b));
+                                return true;
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
         }
 
-        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-        // there in this graph.
-        Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
-
-        List<Result> results = findIndependenceChecksRecursive(edgePool, pathsByEdge, checks);
-
-        if (verbose) {
-            System.out.println();
-        }
-
-        for (Result result : results) {
-            Edge edge = result.edge();
-            Set<Node> b = result.cond();
-            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive", excludeSelectionBias);
-            changed |= didChange;
-        }
-
-        return changed;
+        return false;
     }
 
     private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, Set<IndependenceCheck> checks) {
@@ -675,8 +679,7 @@ public final class Fcit implements IGraphSearch {
 
         if (!PagLegalityCheck.isLegalPagQuiet(this.pag, new HashSet<>(selection))) {
             if (verbose) {
-                TetradLogger.getInstance().log("Tried removing " + _edge + " for " + type
-                        + " reasons, but it didn't lead to a PAG");
+                TetradLogger.getInstance().log("Tried removing " + _edge + " conditioning on " + b + ", but it didn't lead to a PAG");
             }
 
             this.pag = _pag;
@@ -685,7 +688,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing " + _edge + " for " + type + " reasons.");
+            TetradLogger.getInstance().log("Removing " + _edge + " conditioning on " + b);
         }
 
         return true;

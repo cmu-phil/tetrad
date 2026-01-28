@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.General;
+import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -34,18 +35,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for RCIT test.
+ * Wrapper for FF-CI-Mixed test.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "KFF-RCIT (RCIT with Kernel Fourier Features)",
-        command = "kff-rcit",
-        dataType = DataType.Continuous
+        name = "FF-CI-Mixed (Fourier Features Conditional Independence Mixed)",
+        command = "ff-ci-mixed",
+        dataType = DataType.Mixed
 )
 @General
-public class KffRcit implements IndependenceWrapper {
+@Mixed
+public class FfCiMixed implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -53,7 +55,7 @@ public class KffRcit implements IndependenceWrapper {
     /**
      * `Kci` constructor.
      */
-    public KffRcit() {
+    public FfCiMixed() {
 
     }
 
@@ -64,19 +66,23 @@ public class KffRcit implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.test.KffRcit test = new edu.cmu.tetrad.search.test.KffRcit((DataSet) dataSet);
+        edu.cmu.tetrad.search.test.FfCiMixed test = new edu.cmu.tetrad.search.test.FfCiMixed((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setNumFeaturesXY(parameters.getInt(Params.RCIT_NUM_FEATURES_XY));
         test.setNumFeaturesZ(parameters.getInt(Params.RCIT_NUM_FEATURES_Z));
         test.setPermutations(parameters.getInt(Params.RCIT_PERMUTATIONS));
-        test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
+//        test.setCenterFeatures(parameters.getBoolean(Params.RCIT_CENTER_FEATURES));
         test.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         test.setBwMaxRows(parameters.getInt(Params.KML_BW_MAX_ROWS));
         test.setLambda(parameters.getDouble(Params.KML_LAMBDA));
-        test.setApproximationFromInt(parameters.getInt(Params.RCIT_APPROX));
-        edu.cmu.tetrad.search.test.KffRcit.FeatureType[] values
-                = edu.cmu.tetrad.search.test.KffRcit.FeatureType.values();
+        edu.cmu.tetrad.search.test.FfCi.Approx[] approxes
+                = edu.cmu.tetrad.search.test.FfCi.Approx.values();
+        test.setApproximation(approxes[parameters.getInt(Params.RCIT_APPROX) - 1]);
+        test.setCatRho(parameters.getDouble(Params.KML_CAT_RHO));
+        edu.cmu.tetrad.search.test.FfCi.FeatureType[] values
+                = edu.cmu.tetrad.search.test.FfCi.FeatureType.values();
         test.setFeatureType(values[parameters.getInt(Params.KML_FEATURE_TYPE) - 1]);
+//        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         return test;
     }
@@ -88,7 +94,7 @@ public class KffRcit implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "KFF-RCIT";
+        return "FF-CI-Mixed";
     }
 
     /**
@@ -100,7 +106,7 @@ public class KffRcit implements IndependenceWrapper {
      */
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Mixed;
     }
 
     /**
@@ -118,10 +124,12 @@ public class KffRcit implements IndependenceWrapper {
         params.add(Params.KML_BANDWIDTH_MULTIPLIER);
         params.add(Params.KML_BW_MAX_ROWS);
         params.add(Params.RCIT_APPROX);
-        params.add(Params.RCIT_CENTER_FEATURES);
+//        params.add(Params.RCIT_CENTER_FEATURES);
         params.add(Params.RCIT_NUM_FEATURES_XY);
         params.add(Params.RCIT_NUM_FEATURES_Z);
         params.add(Params.KML_FEATURE_TYPE);
+        params.add(Params.KML_CAT_RHO);
+        params.add(Params.RCIT_MODE);
         params.add(Params.VERBOSE);
         return params;
     }

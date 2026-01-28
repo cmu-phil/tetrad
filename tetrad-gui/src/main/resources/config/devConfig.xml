@@ -1346,6 +1346,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.MarkovCheckEditor</editor-class>
             </model>
+            <model name="Vertex Checker" acronym="Vertex Checker"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.VertexCheckIndTestModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.VertexCheckEditor</editor-class>
+            </model>
             <!--            <model name="Grid Search" acronym="Grid Search"-->
             <!--                   help="indep_facts" category="Independence Facts Comparison">-->
             <!--                <logger>-->

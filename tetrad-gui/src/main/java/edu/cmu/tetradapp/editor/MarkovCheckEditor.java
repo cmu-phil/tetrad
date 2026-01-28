@@ -244,12 +244,9 @@ public class MarkovCheckEditor extends JPanel {
         setPreferredSize(new Dimension(1100, 600));
 
         conditioningSetTypeJComboBox.addItem("Ordered Local Markov MAG");
-//        conditioningSetTypeJComboBox.addItem("Ordered Local Markov");
         conditioningSetTypeJComboBox.addItem("Parents(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
-        conditioningSetTypeJComboBox.addItem("Recursive M-Sep Conditioning Set");
-        conditioningSetTypeJComboBox.addItem("Conditioning on Noncolliders Only");
         conditioningSetTypeJComboBox.addItem("All Subsets (Global Markov)");
 
         conditioningSetTypeJComboBox.addActionListener(e -> {
@@ -272,14 +269,6 @@ public class MarkovCheckEditor extends JPanel {
 
                     break;
                 case "Ordered Local Markov MAG":
-//                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
-//
-//                    if (model.getMarkovCheck() != null) {
-//                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov");
-//                    }
-//
-//                    break;
-//                case "Ordered Local Markov MAG":
                     model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
 
                     if (model.getMarkovCheck() != null) {
@@ -292,22 +281,6 @@ public class MarkovCheckEditor extends JPanel {
 
                     if (model.getMarkovCheck() != null) {
                         Preferences.userRoot().put("markovCheckerConditioningSetType", "MarkovBlanket(X)");
-                    }
-
-                    break;
-                case "Recursive M-Sep Conditioning Set":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.RECURSIVE_MSEP);
-
-                    if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Recursive M-Sep Conditioning Set");
-                    }
-
-                    break;
-                case "Conditioning on Noncolliders Only":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.NONCOLLIDERS_ONLY);
-
-                    if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Conditioning on Noncolliders Only");
                     }
 
                     break;
@@ -551,6 +524,8 @@ public class MarkovCheckEditor extends JPanel {
         Histogram histogram = new Histogram(dataSet, "P-Value or Bump", false);
         histogram.setNumBins(10);
         HistogramPanel view = new HistogramPanel(histogram, true);
+        view.setXAxisBounds(0.0, 1.0, true);  // <-- force [0,1], ignore outside
+
 
         Color fillColor = new Color(113, 165, 210);
         view.setBarColor(fillColor);

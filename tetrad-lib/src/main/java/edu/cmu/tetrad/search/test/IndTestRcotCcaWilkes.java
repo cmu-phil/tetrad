@@ -49,7 +49,7 @@ import static java.lang.Double.NaN;
  * </li>
  * </ul>
  */
-public final class IndTestRcot implements IndependenceTest, RowsSettable {
+public final class IndTestRcotCcaWilkes implements IndependenceTest, RowsSettable {
 
     // ---------------- core data ----------------
     private final DataSet data;
@@ -59,7 +59,7 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
     // ---------------- hyperparams ----------------
     private int numFeatXY = 5;       // features for X and Y (keep default aligned with IndTestRcit)
     private int numFeatZ = 100;     // features for Z
-    private double lambda = 1e-10;   // ridge for Z projection + covariance stabilization
+    private double lambda = 0.001;   // ridge for Z projection + covariance stabilization
     private boolean centerFeatures = true;
 
     // ---------------- IndependenceTest state ----------------
@@ -73,7 +73,7 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
      *
      * @param dataSet the dataset; must not be null
      */
-    public IndTestRcot(DataSet dataSet) {
+    public IndTestRcotCcaWilkes(DataSet dataSet) {
         this(dataSet, new Parameters());
     }
 
@@ -86,7 +86,7 @@ public final class IndTestRcot implements IndependenceTest, RowsSettable {
      * @param dataSet the dataset; must not be null
      * @param params  parameters; must not be null
      */
-    public IndTestRcot(DataSet dataSet, Parameters params) {
+    public IndTestRcotCcaWilkes(DataSet dataSet, Parameters params) {
         this.data = Objects.requireNonNull(dataSet, "data");
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         this.n = getActiveRowCount();

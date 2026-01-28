@@ -1117,13 +1117,17 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                             case MARKOV_BLANKET:
                                 z = GraphUtils.markovBlanket(x, graph);
                                 break;
-                            case RECURSIVE_MSEP:
-                                try {
-                                    z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
-                                } catch (InterruptedException e) {
-                                    throw new RuntimeException(e);
-                                }
-                                break;
+//                            case RECURSIVE_MSEP:
+////                                try {
+////                                    z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
+////
+//                                    List<Set<Node>> Blist = new RecursiveAdjustment(graph)
+//                                            .adjustmentSetsRB(x, y, "PDAG", 1, 10, 1, 10, false, Set.of(), Set.of() );
+//                                    z = Blist.getFirst();
+////                                } catch (InterruptedException e) {
+////                                    throw new RuntimeException(e);
+////                                }
+//                                break;
                             default:
                                 throw new IllegalArgumentException("Unknown separation set type: " + setType);
                         }
@@ -1886,20 +1890,17 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @return The Binomial p-value for non-uniformity.
      */
     private double getBinomialPValue_(List<Double> pValues) {
-        int independentJudgements = 0;
+        int n = pValues.size();
+        double q = independenceTest.getAlpha();
+        int k = (int) pValues.stream().filter(p -> p <= q).count();
 
-        for (double pValue : pValues) {
-            if (pValue > independenceTest.getAlpha()) independentJudgements++;
-        }
+        BinomialDistribution bd = new BinomialDistribution(n, q);
 
-        int p = pValues.size();
+        double leftTail = bd.cumulativeProbability(k);
+        double rightTail = 1.0 - bd.cumulativeProbability(k - 1);
+        double pValue = Math.min(1.0, 2.0 * Math.min(leftTail, rightTail));
 
-        // The left tail of this binomial distribution is a p-value for getting too few dependent judgments for
-        // the distribution to count as uniform.
-        BinomialDistribution bd = new BinomialDistribution(p, independenceTest.getAlpha());
-
-        // We want the area to the right of this, so we subtract from 1.
-        return (1.0 - bd.cumulativeProbability(independentJudgements)) + (bd.probability(p - independentJudgements));
+        return pValue;
     }
 
     /**

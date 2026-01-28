@@ -81,6 +81,110 @@ public class OrderedLocalMarkovProperty {
         return model;
     }
 
+    /**
+     * Returns the subset of ordered-local-Markov independence facts whose "sink"
+     * is the given node {@code x}. In other words, it returns all facts of the form
+     * {@code (x ⟂ y | MB_x)} (and the recursive/district variants produced by
+     * {@link #processSink}) that are generated when {@code x} is eliminated as a sink
+     * in the sink-elimination ordering induced by the input MAG.
+     *
+     * <p>Notes:
+     * <ul>
+     *   <li>This follows the same sink-selection policy as {@link #getModel(Graph)}:
+     *       repeatedly pick an unprocessed node, walk down children to a sink, process it,
+     *       then remove it.</li>
+     *   <li>Only the iteration where {@code sink == x} contributes facts; once {@code x}
+     *       is processed and removed, the method returns immediately.</li>
+     *   <li>If {@code x} is not in {@code mag}, returns an empty set.</li>
+     * </ul>
+     *
+     * @param mag a legal MAG (not checked for speed).
+     * @param x   the node for which to return implied ordered-local-Markov independencies.
+     * @return the set of implied independence facts with sink {@code x}.
+     */
+//    public static Set<IndependenceFact> getModelForNode(Graph mag, Node x) {
+//        if (mag == null) throw new NullPointerException("mag");
+//        if (x == null) throw new NullPointerException("x");
+//        if (!mag.getNodes().contains(x)) return Collections.emptySet();
+//
+//        Paths paths = new Paths(mag);
+//        Map<Node, Set<Node>> de = paths.getDescendantsMap();
+//
+//        Set<IndependenceFact> out = new HashSet<>();
+//        EdgeListGraph mag_ = new EdgeListGraph(mag);
+//
+//        List<Node> unprocessed = new ArrayList<>(mag.getNodes());
+//        while (!unprocessed.isEmpty()) {
+//            Node sink = findSinkByChildWalk(mag_, unprocessed.getFirst());
+//
+//            Set<Node> dis = GraphUtils.district(sink, mag_);
+//
+//            if (sink == x) {
+//                processSink(out, de, sink, dis, mag_);
+//                // After x is processed, we can stop: we only want x's implied facts.
+//                return out;
+//            }
+//
+//            // Otherwise eliminate and continue.
+//            mag_.removeNode(sink);
+//            unprocessed.remove(sink);
+//        }
+//
+//        // Should not happen if x was in mag, but keep it safe.
+//        return out;
+//    }
+
+    public static Set<IndependenceFact> getModelForNode(Graph mag, Node x) {
+        // Compute full OLMP model on this MAG
+        Set<IndependenceFact> all = getModel(mag);
+
+        // Map names -> the actual Node objects from *mag* (the graph VertexCheck uses)
+        Map<String, Node> byName = new HashMap<>();
+        for (Node n : mag.getNodes()) byName.put(n.getName(), n);
+
+        String xName = x.getName();
+        Set<IndependenceFact> out = new HashSet<>();
+
+        for (IndependenceFact f : all) {
+            if (!f.getX().getName().equals(xName) && !f.getY().getName().equals(xName)) continue;  // name-based match
+
+//            Node X = byName.get(f.getX().getName());
+//            Node Y = byName.get(f.getY().getName());
+
+            boolean xIsLeft = f.getX().getName().equals(xName);
+
+            Node X = byName.get(f.getX().getName());
+            Node Y = byName.get(f.getY().getName());
+
+            // Remap Z nodes by name too
+            Set<Node> Z = new HashSet<>();
+            for (Node z : f.getZ()) {
+                Node zz = byName.get(z.getName());
+                if (zz != null) Z.add(zz);
+            }
+
+//            if (X != null && Y != null) {
+//                out.add(new IndependenceFact(X, Y, Z));
+//            }
+
+            if (X != null && Y != null) {
+                if (xIsLeft) out.add(new IndependenceFact(X, Y, Z));
+                else         out.add(new IndependenceFact(Y, X, Z)); // now x is always the X endpoint
+            }
+        }
+
+        return out;
+    }
+
+    /** Mirrors the sink-selection policy in getModel(): walk down children until none remain. */
+    private static Node findSinkByChildWalk(EdgeListGraph g, Node start) {
+        Node sink = start;
+        while (!g.getChildren(sink).isEmpty()) {
+            sink = g.getChildren(sink).getFirst();
+        }
+        return sink;
+    }
+
     private static void processSink(Set<IndependenceFact> model, Map<Node, Set<Node>> de, Node sink, Set<Node> dis, EdgeListGraph mag) {
         Set<Node> mb = GraphUtils.markovBlanket(sink, mag);
         for (Node node : mag.getNodes()) {

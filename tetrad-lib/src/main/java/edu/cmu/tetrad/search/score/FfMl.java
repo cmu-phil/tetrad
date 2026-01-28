@@ -17,57 +17,65 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * KFF-ML Score (Kernel Fourier Features Maximum-Likelihood score).
+ * <p><b>FF-ML: Feature-Function Marginal Likelihood score (GP form, continuous)</b></p>
+ *
  * <p>
- * This score is a kernel-based, likelihood-style score for structure learning that approximates
- * nonlinear dependence using Random Fourier Features (RFF). Conceptually, it replaces an explicit
- * kernel representation (e.g., a Gaussian/RBF kernel matrix) with a finite-dimensional feature map
- * so that the resulting computations can be performed using standard linear-algebra operations.
+ * This class implements a fast, nonlinear local score for structure learning based on a
+ * Gaussian-process (GP) marginal likelihood model with an RBF kernel, approximated using a
+ * finite-dimensional random-feature map (Random Fourier Features or Orthogonal Random Features).
+ * It is designed for use in score-based searches (FGES/BOSS-style) where thousands of local scores
+ * must be evaluated efficiently.
+ * </p>
+ *
+ * <p><b>Model and objective</b></p>
  * <p>
- * At a high level, for a target variable {@code Y} and a candidate parent set {@code Pa(Y)}, the score:
+ * For a target variable {@code Y} and candidate parent set {@code Pa(Y)}, we model
+ * {@code Y = f(Pa(Y)) + ε}, with {@code ε ~ N(0, σ² I)} and {@code f} drawn from a GP with RBF kernel.
+ * The local score is the (log) GP marginal likelihood of {@code Y} given {@code Pa(Y)}, computed
+ * in a random-feature approximation.
+ * </p>
+ *
+ * <p><b>Random-feature approximation</b></p>
+ * <p>
+ * Instead of forming the full {@code n×n} kernel matrix, we approximate the RBF kernel using a
+ * feature matrix {@code Φ ∈ R^{n×m}}:
+ * </p>
  * <ul>
- *   <li>Constructs RFF embeddings for {@code Y} and for {@code Pa(Y)} (and any additional variables used by the test/score),
- *       where the embedding approximates an RBF kernel via {@code cos(Wx + b)} features.</li>
- *   <li>Fits a regularized linear model in the embedded space (typically ridge-regularized) to capture
- *       conditional mean structure of {@code Y} given {@code Pa(Y)} in a flexible nonlinear way.</li>
- *   <li>Computes a maximum-likelihood-style objective (or an equivalent quadratic form) from the residual
- *       covariance in the embedded space.</li>
- *   <li>Adds a complexity penalty that depends on sample size and the effective degrees of freedom
- *       (analogous in spirit to BIC-type penalties), so that larger parent sets are penalized.</li>
+ *   <li>{@code Φ} is constructed from either <b>RFF</b> or <b>ORF</b> features over the parent columns.</li>
+ *   <li>The RBF bandwidth is chosen by a median pairwise squared-distance heuristic on the (z-scored) parents,
+ *       using at most {@code bwMaxRows} rows for speed, then scaled by {@code bandwidthMultiplier}.</li>
+ *   <li>Random-feature generation is deterministic per (target, parent set) via a fixed seed derived from the cache key,
+ *       ensuring reproducibility and stable caching across repeated calls.</li>
  * </ul>
  *
- * <h2>Why Random Fourier Features?</h2>
- * RFF provides a scalable approximation to shift-invariant kernels. Instead of forming and factoring
- * an {@code n × n} kernel matrix (which can be expensive in both time and memory), RFF uses an
- * {@code n × m} feature matrix where {@code m} is the number of random features. This allows the
- * score to scale more gracefully with sample size while still capturing nonlinear relationships.
+ * <p><b>Efficient GP log marginal likelihood (Woodbury form)</b></p>
+ * <p>
+ * With {@code C = ΦΦᵀ + σ²I}, the GP log marginal likelihood involves {@code yᵀ C^{-1} y} and {@code log|C|}.
+ * Using the random-feature representation, these are computed via an {@code m×m} system:
+ * {@code B = ΦᵀΦ + σ² I_m}, avoiding {@code n×n} matrix factorization.
+ * </p>
  *
- * <h2>Intended use</h2>
- * This score is designed for use in score-based causal discovery procedures (e.g., FGES/BOSS-style
- * searches), where the score must be evaluated repeatedly for many candidate parent sets. The RFF
- * approximation and internal caching (if enabled) are particularly helpful in that setting.
+ * <p><b>Regularization / noise parameter</b></p>
+ * <p>
+ * The parameter {@code lambda} in this implementation is used as the noise variance {@code σ²} (must be &gt; 0).
+ * It stabilizes the computation and controls smoothness/fit in the GP objective.
+ * </p>
  *
- * <h2>Important hyperparameters</h2>
- * Typical configuration parameters include:
+ * <p><b>Missing data</b></p>
+ * <p>
+ * If missing values occur and {@code calculateRowSubsets} is enabled, each local score is computed on the
+ * subset of rows where {@code Y} and its parent variables are all observed (testwise deletion at the local-score level).
+ * </p>
+ *
+ * <p><b>Practical notes</b></p>
  * <ul>
- *   <li>{@code numFeatures}: number of random Fourier features (tradeoff between accuracy and speed).</li>
- *   <li>{@code bandwidth / sigma}: kernel bandwidth (often chosen using a median-distance heuristic).</li>
- *   <li>{@code lambda}: ridge regularization strength used for stability in embedded regression/covariance operations.</li>
- *   <li>{@code seed}: random seed controlling the RFF projection (recommended for reproducibility).</li>
+ *   <li>This score is intended for <b>continuous</b> variables (columns are globally z-scored; NaNs preserved).</li>
+ *   <li>Runtime is dominated by forming {@code ΦᵀΦ} and {@code Φᵀy}, i.e., roughly {@code O(n m d)} with
+ *       parents dimension {@code d} and feature dimension {@code m}, plus an {@code O(m³)} Cholesky on {@code B}.</li>
+ *   <li>Results can be sensitive to {@code numFeatures} and bandwidth selection; these control the speed/accuracy tradeoff.</li>
  * </ul>
- *
- * <h2>Notes</h2>
- * <ul>
- *   <li>This score is not restricted to linear-Gaussian relationships; it is intended to capture
- *       nonlinear structure through the kernel approximation.</li>
- *   <li>Like other kernel/RFF methods, performance can be sensitive to bandwidth and feature count.</li>
- *   <li>Reproducibility requires fixing the random seed (and, if caching is used, ensuring cache keys
- *       incorporate relevant aspects such as variable sets and active rows).</li>
- * </ul>
- *
- * @see edu.cmu.tetrad.search.score.Score
  */
-public final class KffMl implements Score, EffectiveSampleSizeSettable {
+public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
     /**
      * Represents the types of features that can be used in random feature mappings.
@@ -213,7 +221,7 @@ public final class KffMl implements Score, EffectiveSampleSizeSettable {
      *
      * @throws NullPointerException If the provided {@code dataSet} is null.
      */
-    public KffMl(DataSet dataSet) {
+    public FfMl(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException("dataSet");
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();

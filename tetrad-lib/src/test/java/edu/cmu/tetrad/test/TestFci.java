@@ -233,7 +233,7 @@ public class TestFci {
         //9. S --> D
 
         checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
-                    "H-->M,L-->M,S-->D,I-->S,P-->S",
+                        "H-->M,L-->M,S-->D,I-->S,P-->S",
                 "D<->H,D-->L,D-->M,H-->M,Io->S,L<->H,L-->M,Po->S,S-->D", new Knowledge());
     }
 
@@ -254,7 +254,7 @@ public class TestFci {
     @Test
     public void testSearch9() {
         checkSearch("Latent(T1),Latent(T2),T1-->A,T1-->B,B-->E,F-->B,C-->F,C-->H," +
-                    "H-->D,D-->A,T2-->D,T2-->E",
+                        "H-->D,D-->A,T2-->D,T2-->E",
                 "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge()); // Left out E<->A.
     }
 
@@ -418,6 +418,17 @@ public class TestFci {
 
             runLvSearch(outputGraph, fci, graph);
         }
+
+        {
+            Fcit0 fci = new Fcit0(independence, score);
+            fci.setStartWith(Fcit0.START_WITH.GRASP);
+//            fci.setDepth(-1);
+            fci.setKnowledge(knowledge);
+//            fci.setPreserveMarkov(false);
+            fci.setVerbose(verbose);
+
+            runLvSearch(outputGraph, fci, graph);
+        }
     }
 
     //    @Test
@@ -542,34 +553,34 @@ public class TestFci {
         boolean verbose = false;
 
         final String trueDag = "Graph Nodes:\n" +
-                               "(ep);(g);cd;hd;lc;s;i;ps;mb\n" +
-                               "\n" +
-                               "Graph Edges:\n" +
-                               "1. cd --> lc\n" +
-                               "2. cd --> mb\n" +
-                               "3. ep --> cd\n" +
-                               "4. ep --> hd\n" +
-                               "5. g --> hd\n" +
-                               "6. g --> lc\n" +
-                               "7. hd --> mb\n" +
-                               "8. i --> s\n" +
-                               "9. lc --> mb\n" +
-                               "10. ps --> s\n" +
-                               "11. s --> cd";
+                "(ep);(g);cd;hd;lc;s;i;ps;mb\n" +
+                "\n" +
+                "Graph Edges:\n" +
+                "1. cd --> lc\n" +
+                "2. cd --> mb\n" +
+                "3. ep --> cd\n" +
+                "4. ep --> hd\n" +
+                "5. g --> hd\n" +
+                "6. g --> lc\n" +
+                "7. hd --> mb\n" +
+                "8. i --> s\n" +
+                "9. lc --> mb\n" +
+                "10. ps --> s\n" +
+                "11. s --> cd";
 
         final String correctPag = "Graph Nodes:\n" +
-                                  "cd;hd;lc;s;i;ps;mb\n" +
-                                  "\n" +
-                                  "Graph Edges:\n" +
-                                  "1. cd <-> hd\n" +
-                                  "2. cd --> lc\n" +
-                                  "3. cd --> mb\n" +
-                                  "4. hd --> mb\n" +
-                                  "5. i o-> s\n" +
-                                  "6. lc <-> hd\n" +
-                                  "7. lc --> mb\n" +
-                                  "8. ps o-> s\n" +
-                                  "9. s --> cd";
+                "cd;hd;lc;s;i;ps;mb\n" +
+                "\n" +
+                "Graph Edges:\n" +
+                "1. cd <-> hd\n" +
+                "2. cd --> lc\n" +
+                "3. cd --> mb\n" +
+                "4. hd --> mb\n" +
+                "5. i o-> s\n" +
+                "6. lc <-> hd\n" +
+                "7. lc --> mb\n" +
+                "8. ps o-> s\n" +
+                "9. s --> cd";
 
         try {
             Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueDag);
@@ -674,22 +685,22 @@ public class TestFci {
         boolean verbose = false;
 
         final String trueGraph = "Graph Nodes:\n" +
-                                 "X1;X2;X4;X5;X6\n" +
-                                 "\n" +
-                                 "Graph Edges:\n" +
-                                 "1. X1 o-o X4\n" +
-                                 "2. X2 o-> X6\n" +
-                                 "3. X4 o-> X5\n" +
-                                 "4. X5 <-> X6";
+                "X1;X2;X4;X5;X6\n" +
+                "\n" +
+                "Graph Edges:\n" +
+                "1. X1 o-o X4\n" +
+                "2. X2 o-> X6\n" +
+                "3. X4 o-> X5\n" +
+                "4. X5 <-> X6";
 
         final String correctPag = "Graph Nodes:\n" +
-                                  "X1;X2;X4;X5;X6\n" +
-                                  "\n" +
-                                  "Graph Edges:\n" +
-                                  "1. X1 o-o X4\n" +
-                                  "2. X2 o-> X6\n" +
-                                  "3. X4 o-> X5\n" +
-                                  "4. X5 <-> X6";
+                "X1;X2;X4;X5;X6\n" +
+                "\n" +
+                "Graph Edges:\n" +
+                "1. X1 o-o X4\n" +
+                "2. X2 o-> X6\n" +
+                "3. X4 o-> X5\n" +
+                "4. X5 <-> X6";
 
         try {
             Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueGraph);
