@@ -3,7 +3,6 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
 
 import javax.swing.*;
@@ -524,33 +523,33 @@ public final class VertexRepairPanel extends JPanel {
         switch (gt) {
             case DAG -> {
                 // Only directed edges.
-                variants.add(edge(x, y, Endpoint.TAIL, Endpoint.ARROW)); // x->y
-                variants.add(edge(y, x, Endpoint.TAIL, Endpoint.ARROW)); // y->x
+                variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW)); // x->y
+                variants.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW)); // y->x
             }
             case CPDAG -> {
                 // Directed or undirected.
-                variants.add(edge(x, y, Endpoint.TAIL, Endpoint.TAIL));  // x---y
-                variants.add(edge(x, y, Endpoint.TAIL, Endpoint.ARROW)); // x->y
-                variants.add(edge(y, x, Endpoint.TAIL, Endpoint.ARROW)); // y->x
+                variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.TAIL));  // x---y
+                variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW)); // x->y
+                variants.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW)); // y->x
             }
             case MAG -> {
                 // MAG endpoints typically: ->, <-, <->
-                variants.add(edge(x, y, Endpoint.TAIL, Endpoint.ARROW));   // x->y
-                variants.add(edge(y, x, Endpoint.TAIL, Endpoint.ARROW));   // y->x
-                variants.add(edge(x, y, Endpoint.ARROW, Endpoint.ARROW));  // x<->y
+                variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW));   // x->y
+                variants.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW));   // y->x
+                variants.add(new Edge(x, y, Endpoint.ARROW, Endpoint.ARROW));  // x<->y
 
                 // Optional: some MAG codebases allow “---” temporarily; if yours doesn't, omit.
                 // variants.add(edge(x, y, Endpoint.TAIL, Endpoint.TAIL));  // x---y (usually not MAG-legal)
             }
             case PAG -> {
                 // PAG endpoints can be CIRCLE/TAIL/ARROW. Keep a small “useful” menu.
-                variants.add(edge(x, y, Endpoint.CIRCLE, Endpoint.CIRCLE)); // o-o
-                variants.add(edge(x, y, Endpoint.CIRCLE, Endpoint.ARROW));  // x o-> y
-                variants.add(edge(y, x, Endpoint.CIRCLE, Endpoint.ARROW));  // y o-> x  (i.e., x <-o y)
-                variants.add(edge(x, y, Endpoint.TAIL, Endpoint.ARROW));    // x->y
-                variants.add(edge(y, x, Endpoint.TAIL, Endpoint.ARROW));    // y->x
-                variants.add(edge(x, y, Endpoint.ARROW, Endpoint.ARROW));   // x<->y (allowed in PAGs)
-                variants.add(edge(x, y, Endpoint.TAIL, Endpoint.TAIL));     // x---y (if you use this for selection-bias adjacency)
+                variants.add(new Edge(x, y, Endpoint.CIRCLE, Endpoint.CIRCLE)); // o-o
+                variants.add(new Edge(x, y, Endpoint.CIRCLE, Endpoint.ARROW));  // x o-> y
+                variants.add(new Edge(y, x, Endpoint.CIRCLE, Endpoint.ARROW));  // y o-> x  (i.e., x <-o y)
+                variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW));    // x->y
+                variants.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW));    // y->x
+                variants.add(new Edge(x, y, Endpoint.ARROW, Endpoint.ARROW));   // x<->y (allowed in PAGs)
+                variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.TAIL));     // x---y (if you use this for selection-bias adjacency)
             }
         }
 
@@ -567,28 +566,28 @@ public final class VertexRepairPanel extends JPanel {
 
         switch (gt) {
             case DAG -> {
-                adds.add(edge(x, y, Endpoint.TAIL, Endpoint.ARROW)); // x->y
-                adds.add(edge(y, x, Endpoint.TAIL, Endpoint.ARROW)); // y->x
+                adds.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW)); // x->y
+                adds.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW)); // y->x
             }
             case CPDAG -> {
                 // Conservative: add as undirected; you can let later rules orient.
-                adds.add(edge(x, y, Endpoint.TAIL, Endpoint.TAIL));  // x---y
+                adds.add(new Edge(x, y, Endpoint.TAIL, Endpoint.TAIL));  // x---y
 
                 // Optional: if you want, include directed adds too.
-                 adds.add(edge(x, y, Endpoint.TAIL, Endpoint.ARROW)); // x->y
-                 adds.add(edge(y, x, Endpoint.TAIL, Endpoint.ARROW)); // y->x
+                adds.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW)); // x->y
+                adds.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW)); // y->x
             }
             case MAG -> {
                 // MAG: adjacency is directed or bidirected. Adding tail-tail is usually illegal.
-                adds.add(edge(x, y, Endpoint.TAIL, Endpoint.ARROW));   // x->y
-                adds.add(edge(y, x, Endpoint.TAIL, Endpoint.ARROW));   // y->x
-                adds.add(edge(x, y, Endpoint.ARROW, Endpoint.ARROW));  // x<->y
+                adds.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW));   // x->y
+                adds.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW));   // y->x
+                adds.add(new Edge(x, y, Endpoint.ARROW, Endpoint.ARROW));  // x<->y
             }
             case PAG -> {
                 // Conservative PAG additions:
-                adds.add(edge(x, y, Endpoint.CIRCLE, Endpoint.CIRCLE)); // o-o
-                adds.add(edge(x, y, Endpoint.CIRCLE, Endpoint.ARROW));  // x o-> y
-                adds.add(edge(y, x, Endpoint.CIRCLE, Endpoint.ARROW));  // y o-> x  (x <-o y)
+                adds.add(new Edge(x, y, Endpoint.CIRCLE, Endpoint.CIRCLE)); // o-o
+                adds.add(new Edge(x, y, Endpoint.CIRCLE, Endpoint.ARROW));  // x o-> y
+                adds.add(new Edge(y, x, Endpoint.CIRCLE, Endpoint.ARROW));  // y o-> x  (x <-o y)
 
                 // Optional: include definite orientations too.
                 // adds.add(edge(x, y, Endpoint.TAIL, Endpoint.ARROW));    // x->y
@@ -604,35 +603,11 @@ public final class VertexRepairPanel extends JPanel {
     private Graph canonicalizeToCpdagOrNull(Graph h) {
         try {
             Graph h2 = new EdgeListGraph(h);
-
-//            System.out.println("h2 before: " + h2);
-//
-//            // Consistent extension -> unique CPDAG representative (completed PDAG).
-//            MeekRules meek = new MeekRules();
-//            meek.setRevertToUnshieldedColliders(true);
-//            meek.orientImplied(h2);
-//
-//            System.out.println("h2 after: " + h2);
-
-//            return h2;
-
             Graph dag = GraphTransforms.dagFromCpdag(h2);
-
-            Graph graph = GraphTransforms.dagToCpdag(dag);
-
-//            if (Math.abs(dag.getNumEdges() - graph.getNumEdges()) > 1) {
-//                return null;
-//            }
-
-            return graph;
+            return GraphTransforms.dagToCpdag(dag);
         } catch (Throwable t) {
             return null; // no consistent extension => can't be a CPDAG candidate
         }
-    }
-
-    /** Small helper so we don’t accidentally swap endpoints wrong. */
-    private static Edge edge(Node n1, Node n2, Endpoint e1, Endpoint e2) {
-        return new Edge(n1, n2, e1, e2);
     }
 
     private static boolean edgeStructurallyEqual(Edge a, Edge b, Node x, Node y) {
