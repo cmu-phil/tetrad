@@ -5,13 +5,18 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.*;
 import java.awt.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
+
 
 /**
  * Panel that suggests local edits around a selected vertex x to reduce
@@ -44,8 +49,15 @@ public final class VertexRepairPanel extends JPanel {
     // Cache of CI test results for (X,Y|Z) queries.
 // Key is canonicalized by variable names (X,Y unordered; Z sorted).
     private final Map<String, Boolean> indepCache = new HashMap<>();
+    // Replace indepCache with:
+    private final Map<String, Double> pvalCache = new HashMap<>();
+    private IndependenceTest pvalCacheOwner = null;
+
     private Graph workingGraph;
     private IndependenceTest indepCacheOwner = null;
+
+    private static final DecimalFormat KS_FORMAT = new DecimalFormat("0.0000");
+
 
     public VertexRepairPanel(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
@@ -61,7 +73,7 @@ public final class VertexRepairPanel extends JPanel {
         wireActions();
         updateButtons();
 
-        setPreferredSize(new Dimension(500, 600));
+        setPreferredSize(new Dimension(600, 600));
     }
 
     private static boolean edgeStructurallyEqual(Edge a, Edge b, Node x, Node y) {
@@ -126,6 +138,81 @@ public final class VertexRepairPanel extends JPanel {
         return a + "|" + b + "|" + String.join(",", z);
     }
 
+    private double ksUniformPValue(List<Double> pvals) {
+        if (pvals == null || pvals.size() < 2) return Double.NaN;
+
+        double[] x = pvals.stream().mapToDouble(Double::doubleValue).toArray();
+        KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
+        return ks.kolmogorovSmirnovTest(new UniformRealDistribution(0.0, 1.0), x);
+    }
+
+    private void resetPvalCacheIfNeeded(IndependenceTest test) {
+        if (test == null) {
+            pvalCache.clear();
+            pvalCacheOwner = null;
+            return;
+        }
+        if (pvalCacheOwner != test) {
+            pvalCache.clear();
+            pvalCacheOwner = test;
+        }
+    }
+
+    private double getPValueCached(IndependenceTest test, IndependenceFact fact) {
+        String qKey = queryKey(fact);
+
+        Double cached = pvalCache.get(qKey);
+        if (cached != null) return cached;
+
+        double p;
+        try {
+            Node X = test.getVariable(fact.getX().getName());
+            Node Y = test.getVariable(fact.getY().getName());
+            if (X == null || Y == null) {
+                p = Double.NaN;
+            } else {
+                Set<Node> Z = new HashSet<>();
+                for (Node z : fact.getZ()) {
+                    Node zz = test.getVariable(z.getName());
+                    if (zz != null) Z.add(zz);
+                }
+                IndependenceResult r = test.checkIndependence(X, Y, Z);
+                p = r.getPValue();
+            }
+        } catch (Throwable t) {
+            p = Double.NaN; // match your current “ignore errors” policy
+        }
+
+        pvalCache.put(qKey, p);
+        return p;
+
+    }
+
+    private List<Double> collectAllImpliedPValuesDedup(Graph g) {
+        IndependenceTest test = baseModel.getIndependenceTest();
+        if (test == null) return List.of();
+
+        resetPvalCacheIfNeeded(test);
+
+        List<Double> pvals = new ArrayList<>();
+        Set<String> seenFacts = new HashSet<>();
+
+        for (Node v : g.getNodes()) {
+            List<IndependenceFact> implied = baseModel.computeImpliedFactsForVertex(g, v);
+
+            for (IndependenceFact fact : implied) {
+                String fk = factKey(fact);
+                if (!seenFacts.add(fk)) continue;
+
+                double p = getPValueCached(test, fact);
+                if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
+                    pvals.add(p);
+                }
+            }
+        }
+        return pvals;
+    }
+
     /**
      * Caller reads this after dialog closes.
      */
@@ -187,12 +274,33 @@ public final class VertexRepairPanel extends JPanel {
 
         TableColumnModel cm = resultsTable.getColumnModel();
 
+        TableColumn ksCol =
+                resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_KS);
+
+        ksCol.setCellRenderer(ksRenderer());
+
+
+        resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_KS)
+                .setCellRenderer(new DefaultTableCellRenderer() {
+                    @Override
+                    public void setValue(Object value) {
+                        if (value instanceof Number n) {
+                            double d = n.doubleValue();
+                            setHorizontalAlignment(SwingConstants.RIGHT);
+                            setText(Double.isNaN(d) ? "" : KS_FORMAT.format(d));
+                        } else setText("");
+                    }
+                });
+
+
 //         Column indices assumed; adjust if needed
         TableColumn editIndex = cm.getColumn(0);
         TableColumn baselineIndex = cm.getColumn(1);
         TableColumn afterIndex = cm.getColumn(2);
         TableColumn deltaIndex = cm.getColumn(3);
-        TableColumn applyIndex = cm.getColumn(4);
+        TableColumn kstestIndex = cm.getColumn(4);
+        TableColumn edgesIndex = cm.getColumn(5);
+        TableColumn applyIndex = cm.getColumn(6);
 
         // # column: very skinny
         baselineIndex.setPreferredWidth(50);
@@ -208,6 +316,16 @@ public final class VertexRepairPanel extends JPanel {
         deltaIndex.setMinWidth(50);
         afterIndex.setMaxWidth(50);
         deltaIndex.setPreferredWidth(50);
+
+        // ks delta columns
+        kstestIndex.setMinWidth(70);
+        kstestIndex.setMaxWidth(70);
+        kstestIndex.setPreferredWidth(70);
+
+        // edges columns
+        edgesIndex.setMinWidth(50);
+        edgesIndex.setMaxWidth(50);
+        edgesIndex.setPreferredWidth(50);
 
 //        applyIndex.setWidth(80);
 //        applyIndex.setMaxWidth(80);
@@ -285,6 +403,9 @@ public final class VertexRepairPanel extends JPanel {
 
         int baseline = countImpliedViolationsAllNodesCached(base);
 
+        List<Double> baseP = collectAllImpliedPValuesDedup(base);
+        double baselineKs = ksUniformPValue(baseP);
+
         for (CandidateEdit cand : candidates) {
             Graph g2 = cand.applyTo(safeCopy(base));
             if (g2 == null) continue;
@@ -296,24 +417,37 @@ public final class VertexRepairPanel extends JPanel {
             if (!isLegalGraphType(g2, gt)) continue;
 
             int after = countImpliedViolationsAllNodesCached(g2);
-            scored.add(new ScoredCandidate(cand, baseline, after));
+            List<Double> p2 = collectAllImpliedPValuesDedup(g2);
+            double ksAfter = ksUniformPValue(p2);
+            int edgesAfter = g2.getNumEdges();
+            scored.add(new ScoredCandidate(cand, baseline, after, ksAfter, edgesAfter));
         }
 
         // Sort by improvement (most negative delta first), then by absolute violations
         scored.sort(Comparator
-                .comparingInt(ScoredCandidate::delta)
-                .thenComparingInt(ScoredCandidate::violationsAfter));
+                .comparingInt(ScoredCandidate::violationsAfter)          // lower better
+                .thenComparing(Comparator.comparingDouble(ScoredCandidate::ksAfter).reversed()) // higher better
+                .thenComparingInt(ScoredCandidate::edgesAfter)           // lower better
+        );
 
         resultsModel.set(scored);
+
+        NumberFormat fmt = new DecimalFormat("0.0000");
 
         if (scored.isEmpty()) {
             statusLabel.setText("No legal candidate edits found.");
             ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_NONE);
         } else {
             int best = scored.get(0).violationsAfter();
-            statusLabel.setText("Baseline violations: " + baseline + " | Best candidate: " + best);
+            statusLabel.setText(
+                    "Baseline violations: " + baseline +
+                            " | Best: " + best +
+                            " | KS(all): " + fmt.format(baselineKs) + " → " + fmt.format(scored.get(0).ksAfter())
+            );
             ((CardLayout) resultsCard.getLayout()).show(resultsCard, CARD_TABLE);
         }
+
+
     }
 
     private void applyCandidate(CandidateEdit cand) {
@@ -812,24 +946,43 @@ public final class VertexRepairPanel extends JPanel {
         }
     }
 
-    private record ScoredCandidate(CandidateEdit edit, int baseline, int after) {
-        int violationsAfter() {
-            return after;
-        }
+    private record ScoredCandidate(
+            CandidateEdit edit,
+            int baseline,
+            int after,
+            double ksAfter,
+            int edgesAfter
+    ) {
+        int violationsAfter() { return after; }
+        int delta() { return after - baseline; }
+    }
 
-        int delta() {
-            return after - baseline;
-        } // negative is improvement
+    private static TableCellRenderer ksRenderer() {
+        return new DefaultTableCellRenderer() {
+            @Override
+            public void setValue(Object value) {
+                if (value instanceof Number n) {
+                    double d = n.doubleValue();
+                    setText(Double.isNaN(d) ? "" : KS_FORMAT.format(d));
+                    setHorizontalAlignment(SwingConstants.RIGHT);
+                } else {
+                    setText("");
+                }
+            }
+        };
     }
 
     private static final class CandidateTableModel extends AbstractTableModel {
-        static final int COL_DESC = 0;
-        static final int COL_BASE = 1;
+        static final int COL_DESC  = 0;
+        static final int COL_BASE  = 1;
         static final int COL_AFTER = 2;
         static final int COL_DELTA = 3;
-        static final int COL_APPLY = 4;
+        static final int COL_KS    = 4;
+        static final int COL_EDGES = 5;
+        static final int COL_APPLY = 6;
 
-        private final String[] cols = {"Edit", "Baseline", "After", "Δ", "Apply"};
+        private final String[] cols = {"Edit", "Baseline", "After", "Δ", "Mod-KS", "Edges", "Apply"};
+
         private List<ScoredCandidate> rows = List.of();
 
         void set(List<ScoredCandidate> rows) {
@@ -864,8 +1017,24 @@ public final class VertexRepairPanel extends JPanel {
                 case COL_BASE -> r.baseline();
                 case COL_AFTER -> r.violationsAfter();
                 case COL_DELTA -> r.delta();
+                case COL_KS -> r.ksAfter();
+                case COL_EDGES -> r.edgesAfter();
                 case COL_APPLY -> r.edit().isNoOp() ? "" : "Accept";
                 default -> "";
+            };
+        }
+
+        @Override
+        public Class<?> getColumnClass(int col) {
+            return switch (col) {
+                case COL_DESC -> String.class;
+                case COL_BASE -> Double.class;
+                case COL_AFTER -> Double.class;
+                case COL_DELTA -> Double.class;
+                case COL_KS -> Double.class;
+                case COL_EDGES -> Integer.class;
+                case COL_APPLY -> Object.class;
+                default -> Object.class;
             };
         }
 
