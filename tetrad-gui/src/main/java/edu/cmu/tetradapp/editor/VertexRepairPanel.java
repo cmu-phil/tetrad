@@ -101,7 +101,7 @@ public final class VertexRepairPanel extends JPanel {
     /**
      * Canonical key for de-duping implied facts by names: (X,Y unordered; Z sorted).
      */
-    private static String factKey(IndependenceFact f) {
+    public static String factKey(IndependenceFact f) {
         return queryKey(f);
     }
 

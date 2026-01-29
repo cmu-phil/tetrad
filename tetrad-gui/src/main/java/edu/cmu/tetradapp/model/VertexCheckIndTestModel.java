@@ -34,6 +34,8 @@ import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.stat.inference.BinomialTest;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.Serial;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -652,9 +654,9 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return new ConditioningSetSizeRange(min, max);
     }
 
-    public void setGraph(Graph graph) {
-        this.graph = graph;
-    }
+//    public void setGraph(Graph graph) {
+//        this.graph = graph;
+//    }
 
     public boolean hasViolationsForVertex(Node x) {
         runVertex(graph, x);
@@ -678,5 +680,24 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
                                 double medianP) implements TetradSerializable {
             @Serial
             private static final long serialVersionUID = 1L;
+    }
+
+    public static final String PROP_GRAPH = "graph";
+
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    public void setGraph(Graph g) {
+        Graph old = this.graph;
+        this.graph = g;
+        clearResults(); // strongly recommended since cached results are now invalid
+        pcs.firePropertyChange(PROP_GRAPH, old, g);
     }
 }

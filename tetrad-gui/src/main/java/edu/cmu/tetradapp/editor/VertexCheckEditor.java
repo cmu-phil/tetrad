@@ -50,6 +50,7 @@ import java.util.function.Function;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
+import static edu.cmu.tetradapp.editor.VertexRepairPanel.factKey;
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 
 /**
@@ -71,7 +72,7 @@ public class VertexCheckEditor extends JPanel {
     private final JComboBox<IndependenceTestModel> indTestCombo = new JComboBox<>();
     private final JComboBox<String> conditioningCombo = new JComboBox<>();
     private final JCheckBox verbose = new JCheckBox("Verbose");
-    private final JButton showIndepsForRow = new JButton("Show Independencies For Row");
+    private final JButton showIndepsForRow = new JButton("Independencies");
     private final JButton repairNodeButton = new JButton("Repair Node");
     private JTable overviewTable;
     private JTable factsTable;
@@ -106,6 +107,12 @@ public class VertexCheckEditor extends JPanel {
         repairNodeButton.addActionListener(e -> showRepairNodeDialog());
 
         initializing = false;
+
+        model.addPropertyChangeListener(evt -> {
+            if (VertexCheckIndTestModel.PROP_GRAPH.equals(evt.getPropertyName())) {
+                SwingUtilities.invokeLater(this::onModelGraphChanged);
+            }
+        });
     }
 
     private static DataType guessDataType(DataModel dm) {
@@ -1075,18 +1082,17 @@ public class VertexCheckEditor extends JPanel {
         );
         dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-        // ---- Button bar ----
-        JButton okButton = new JButton("OK");
-//        JButton closeButton = new JButton("Close");
+        final boolean[] accepted = { false };
 
-        okButton.addActionListener(e -> dialog.dispose());
-//        closeButton.addActionListener(e -> dialog.dispose());
+        JButton okButton = new JButton("OK");
+        okButton.addActionListener(e -> {
+            accepted[0] = true;
+            dialog.dispose();
+        });
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.add(okButton);
-//        buttonPanel.add(closeButton);
 
-        // ---- Main container ----
         JPanel content = new JPanel(new BorderLayout());
         content.add(panel, BorderLayout.CENTER);
         content.add(buttonPanel, BorderLayout.SOUTH);
@@ -1096,15 +1102,14 @@ public class VertexCheckEditor extends JPanel {
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true); // blocks until closed
 
-        // ---- After dialog closes ----
+        // Only commit if OK was pressed.
+        if (!accepted[0]) return;
+
         Graph g2 = panel.getGraph();
-
-        if (g2 != null && model != null) {
-            g2 = rebindGraphToModelNodesByName(g2);   // <<--- IMPORTANT
-            model.setGraph(g2);
-
-            refreshDetails(getSelectedVertexName());
-            updateRepairButtonEnabled();
+        if (g2 != null) {
+            g2 = rebindGraphToModelNodesByName(g2);
+            model.setGraph(g2);          // should fire PROP_GRAPH
+            // (don’t manually refresh here if PCS is correct — let onModelGraphChanged do it)
         }
     }
 
@@ -1229,7 +1234,7 @@ public class VertexCheckEditor extends JPanel {
             colFact.setMinWidth(350);
             // no max width → absorbs remaining space
 
-            table.setRowSorter(new TableRowSorter<>(factsModel));
+            table.setRowSorter(new TableRowSorter<>(tableModel));
 
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
@@ -1362,5 +1367,178 @@ public class VertexCheckEditor extends JPanel {
                 default -> "";
             };
         }
+    }
+
+    private void onModelGraphChanged() {
+        var selectedVertexNames = getSelectedOverviewVertexNames();
+        var selectedFactKeys    = getSelectedFactsKeys();
+
+        // Graph changed => cached per-vertex results are stale.
+        model.clearResults();
+
+        // Recompute only what’s visible/selected (or compute nothing and let selection triggers do it)
+        for (String v : selectedVertexNames) {
+            model.ensureVertexComputed(v);
+        }
+
+        overviewModel.fireTableDataChanged();
+        factsModel.fireTableDataChanged();
+
+        reselectOverviewVerticesByName(selectedVertexNames);
+        reselectFactsByKey(selectedFactKeys);
+
+        // Update right-side details for the active vertex (histogram + repair button)
+        String active = getActiveSelectedVertexName();
+        if (active != null) refreshDetails(active);
+    }
+
+    private Set<String> getSelectedOverviewVertexNames() {
+        Set<String> names = new HashSet<>();
+        int[] rows = overviewTable.getSelectedRows();
+        for (int r : rows) {
+            int m = overviewTable.convertRowIndexToModel(r);
+            Node v = model.getGraph().getNode(model.getVertexNames().get(m));
+            if (v != null) {
+                names.add(v.getName());
+            }
+        }
+        return names;
+    }
+
+    private Set<String> getSelectedFactsKeys() {
+        Set<String> keys = new HashSet<>();
+        for (int vr : factsTable.getSelectedRows()) {
+            IndependenceFact f = getIndependenceFactFromFactsRow(vr);
+            if (f != null) keys.add(factKey(f));
+        }
+        return keys;
+    }
+
+    private IndependenceFact getIndependenceFact(int r) {
+        int m = factsTable.convertRowIndexToModel(r);
+        String name = model.getVertexNames().get(m);     // <-- WRONG LIST
+        List<IndependenceResult> rs = model.getResultsForVertex(name);
+        return rs.get(m).getFact();
+    }
+
+    private void recomputeOverviewForSelectedRows() {
+        overviewModel.fireTableRowsUpdated(0, overviewTable.getRowCount() - 1);
+    }
+
+    private void recomputeFactsForSelectedRows() {
+        factsModel.fireTableDataChanged();
+    }
+
+//    private void reselectOverviewVerticesByName(Set<String> names) {
+//        ListSelectionModel sel = overviewTable.getSelectionModel();
+//        sel.clearSelection();
+//
+//        for (int i = 0; i < overviewModel.getRowCount(); i++) {
+//            Node v = model.getGraph().getNode(model.getVertexNames().get(i));
+//            if (v != null && names.contains(v.getName())) {
+//                int viewRow = overviewTable.convertRowIndexToView(i);
+//                sel.addSelectionInterval(viewRow, viewRow);
+//            }
+//        }
+//    }
+
+//    private void reselectFactsByKey(Set<String> keys) {
+//        ListSelectionModel sel = factsTable.getSelectionModel();
+//        sel.clearSelection();
+//
+//        for (int i = 0; i < factsModel.getRowCount(); i++) {
+//            IndependenceFact f = getIndependenceFact(i);
+//            if (f != null && keys.contains(factKey(f))) {
+//                int viewRow = factsTable.convertRowIndexToView(i);
+//                sel.addSelectionInterval(viewRow, viewRow);
+//            }
+//        }
+//    }
+
+//    private Set<String> getSelectedOverviewVertexNames() {
+//        Set<String> names = new HashSet<>();
+//        int[] viewRows = overviewTable.getSelectedRows();
+//        for (int vr : viewRows) {
+//            int mr = overviewTable.convertRowIndexToModel(vr);
+//            if (mr >= 0 && mr < model.getVertexNames().size()) {
+//                names.add(model.getVertexNames().get(mr));
+//            }
+//        }
+//        return names;
+//    }
+
+//    private Set<String> getSelectedFactsKeys() {
+//        Set<String> keys = new HashSet<>();
+//        String v = getActiveSelectedVertexName();
+//        if (v == null) return keys;
+//
+//        int[] viewRows = factsTable.getSelectedRows();
+//        for (int vr : viewRows) {
+//            IndependenceFact f = getFactAtFactsViewRow(v, vr);
+//            if (f != null) keys.add(factKey(f));
+//        }
+//        return keys;
+//    }
+
+    private IndependenceFact getFactAtFactsViewRow(String vertexName, int factsViewRow) {
+        int mr = factsTable.convertRowIndexToModel(factsViewRow);
+        List<IndependenceResult> rs = model.getResultsForVertex(vertexName);
+        if (rs == null) return null;
+        if (mr < 0 || mr >= rs.size()) return null;
+        IndependenceResult r = rs.get(mr);
+        return (r == null) ? null : r.getFact();
+    }
+
+    private IndependenceFact getFactAtFactsModelRow(String vertexName, int factsModelRow) {
+        List<IndependenceResult> rs = model.getResultsForVertex(vertexName);
+        if (rs == null) return null;
+        if (factsModelRow < 0 || factsModelRow >= rs.size()) return null;
+        IndependenceResult r = rs.get(factsModelRow);
+        return (r == null) ? null : r.getFact();
+    }
+
+    private void reselectOverviewVerticesByName(Set<String> names) {
+        ListSelectionModel sel = overviewTable.getSelectionModel();
+        sel.clearSelection();
+
+        for (int mr = 0; mr < model.getVertexNames().size(); mr++) {
+            String name = model.getVertexNames().get(mr);
+            if (names.contains(name)) {
+                int vr = overviewTable.convertRowIndexToView(mr);
+                sel.addSelectionInterval(vr, vr);
+            }
+        }
+    }
+
+    private void reselectFactsByKey(Set<String> keys) {
+        ListSelectionModel sel = factsTable.getSelectionModel();
+        sel.clearSelection();
+
+        String v = getActiveSelectedVertexName();
+        if (v == null) return;
+
+        List<IndependenceResult> rs = model.getResultsForVertex(v);
+        if (rs == null) return;
+
+        for (int modelRow = 0; modelRow < rs.size(); modelRow++) {
+            IndependenceFact f = rs.get(modelRow).getFact();
+            if (f != null && keys.contains(factKey(f))) {
+                int viewRow = factsTable.convertRowIndexToView(modelRow);
+                sel.addSelectionInterval(viewRow, viewRow);
+            }
+        }
+    }
+
+    private IndependenceFact getIndependenceFactFromFactsRow(int factsViewRow) {
+        String v = getActiveSelectedVertexName();
+        if (v == null) return null;
+
+        int factsModelRow = factsTable.convertRowIndexToModel(factsViewRow);
+
+        List<IndependenceResult> rs = model.getResultsForVertex(v);
+        if (rs == null || factsModelRow < 0 || factsModelRow >= rs.size()) return null;
+
+        IndependenceResult r = rs.get(factsModelRow);
+        return (r == null ? null : r.getFact());
     }
 }
