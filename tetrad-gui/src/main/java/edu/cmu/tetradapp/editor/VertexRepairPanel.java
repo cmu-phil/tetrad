@@ -395,7 +395,7 @@ public final class VertexRepairPanel extends JPanel {
         // Ensure “no-op” is present at top (baseline)
         candidates = new ArrayList<>(candidates);
         if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) {
-            candidates.add(0, CandidateEdit.noOp());
+            candidates.addFirst(CandidateEdit.noOp());
         }
 
         // 3) score candidates
