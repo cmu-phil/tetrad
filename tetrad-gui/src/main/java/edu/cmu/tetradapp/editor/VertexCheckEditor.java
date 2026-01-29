@@ -33,6 +33,7 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
 import edu.cmu.tetradapp.util.*;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -83,6 +84,13 @@ public class VertexCheckEditor extends JPanel {
     private IndependenceWrapper independenceWrapper;
     private boolean initializing;
 
+    // --- Graph UX ---
+    private final JButton undoGraphButton = new JButton("Undo");
+    private final JButton showGraphButton = new JButton("Graph");
+    private final Deque<Graph> graphHistory = new ArrayDeque<>();
+
+    private boolean applyingGraphProgrammatically = false; // prevents history double-push
+
     public VertexCheckEditor(VertexCheckIndTestModel model) {
         if (model == null) throw new NullPointerException("Expecting a model.");
         this.model = model;
@@ -102,16 +110,28 @@ public class VertexCheckEditor extends JPanel {
 
         setTestFromCombo();
 
-        repairNodeButton.setEnabled(false);
+        repairNodeButton.setEnabled(true);
 
         repairNodeButton.addActionListener(e -> showRepairNodeDialog());
+
+        undoGraphButton.addActionListener(e -> undoGraph());
+        showGraphButton.addActionListener(e -> showGraphDialog());
+        updateUndoButtonEnabled();
 
         initializing = false;
 
         model.addPropertyChangeListener(evt -> {
-            if (VertexCheckIndTestModel.PROP_GRAPH.equals(evt.getPropertyName())) {
-                SwingUtilities.invokeLater(this::onModelGraphChanged);
+            if (!VertexCheckIndTestModel.PROP_GRAPH.equals(evt.getPropertyName())) return;
+
+            if (!applyingGraphProgrammatically) {
+                Object oldV = evt.getOldValue();
+                if (oldV instanceof Graph oldG) {
+                    graphHistory.push(safeCopy(oldG));
+                    SwingUtilities.invokeLater(this::updateUndoButtonEnabled);
+                }
             }
+
+            SwingUtilities.invokeLater(this::onModelGraphChanged);
         });
     }
 
@@ -633,9 +653,12 @@ public class VertexCheckEditor extends JPanel {
         factsPane.setBorder(BorderFactory.createTitledBorder("Tests implied for selected vertex"));
         factsPane.add(factsScroll, BorderLayout.CENTER);
 
-        JPanel factsButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JPanel factsButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         factsButtons.add(showIndepsForRow);
         factsButtons.add(repairNodeButton);
+        factsButtons.add(undoGraphButton);
+        factsButtons.add(showGraphButton);
+
         factsPane.add(factsButtons, BorderLayout.SOUTH);
 
         histogramPanel.setBorder(BorderFactory.createTitledBorder("P-value Histogram"));
@@ -928,7 +951,7 @@ public class VertexCheckEditor extends JPanel {
         return null;
     }
 
-    private List<IndependenceResult> findIndependencies(Node x, Node y, PoolChoice poolChoice, int maxSetSize) {
+    private List<IndependenceResult>    findIndependencies(Node x, Node y, PoolChoice poolChoice, int maxSetSize) {
         IndependenceTest test = model.getIndependenceTest();
         if (test == null) return Collections.emptyList();
 
@@ -1066,7 +1089,7 @@ public class VertexCheckEditor extends JPanel {
             enable = rs != null && !rs.isEmpty() && rs.stream().anyMatch(r -> r != null && !r.isIndependent());
         }
 
-        repairNodeButton.setEnabled(enable);
+        repairNodeButton.setEnabled(true);
     }
 
     private void showRepairNodeDialog() {
@@ -1080,36 +1103,52 @@ public class VertexCheckEditor extends JPanel {
                 "Repair Node: " + x.getName(),
                 Dialog.ModalityType.APPLICATION_MODAL
         );
-        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
+        // explicit accept/cancel behavior
         final boolean[] accepted = { false };
 
-        JButton okButton = new JButton("OK");
-        okButton.addActionListener(e -> {
-            accepted[0] = true;
-            dialog.dispose();
+        JButton ok = new JButton("OK");
+        JButton cancel = new JButton("Cancel");
+
+        ok.addActionListener(e -> { accepted[0] = true; dialog.dispose(); });
+        cancel.addActionListener(e -> { accepted[0] = false; dialog.dispose(); });
+
+        dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override public void windowClosing(java.awt.event.WindowEvent e) {
+                // red close button = cancel
+                accepted[0] = false;
+                dialog.dispose();
+            }
         });
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        buttonPanel.add(okButton);
+        JPanel buttonBar = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonBar.add(ok);
+        buttonBar.add(cancel);
 
         JPanel content = new JPanel(new BorderLayout());
         content.add(panel, BorderLayout.CENTER);
-        content.add(buttonPanel, BorderLayout.SOUTH);
+        content.add(buttonBar, BorderLayout.SOUTH);
 
         dialog.setContentPane(content);
         dialog.pack();
         dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true); // blocks until closed
+        dialog.setVisible(true); // blocks
 
-        // Only commit if OK was pressed.
-        if (!accepted[0]) return;
+        if (!accepted[0]) return;                 // <-- cancel path: no change
 
         Graph g2 = panel.getGraph();
-        if (g2 != null) {
-            g2 = rebindGraphToModelNodesByName(g2);
-            model.setGraph(g2);          // should fire PROP_GRAPH
-            // (don’t manually refresh here if PCS is correct — let onModelGraphChanged do it)
+        if (g2 == null) return;
+
+        // push current graph onto history, then apply
+        graphHistory.push(safeCopy(model.getGraph()));
+        updateUndoButtonEnabled();
+
+        applyingGraphProgrammatically = true;
+        try {
+            model.setGraph(g2);
+        } finally {
+            applyingGraphProgrammatically = false;
         }
     }
 
@@ -1540,5 +1579,57 @@ public class VertexCheckEditor extends JPanel {
 
         IndependenceResult r = rs.get(factsModelRow);
         return (r == null ? null : r.getFact());
+    }
+
+    private void showGraphDialog() {
+        Graph graph = model.getGraph();
+
+        // --- Tab 1: Text ---
+        JTextArea ta = new JTextArea(String.valueOf(graph));
+        ta.setEditable(false);
+        ta.setCaretPosition(0);
+        JScrollPane textScroll = new JScrollPane(ta);
+        textScroll.setPreferredSize(new Dimension(820, 520));
+
+        // --- Tab 2: Render ---
+        GraphWorkbench workbench = new GraphWorkbench(graph);
+        workbench.setEnableEditing(false);
+        JScrollPane renderScroll = new JScrollPane(workbench);
+        renderScroll.setPreferredSize(new Dimension(820, 520));
+
+        // --- Tabs ---
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Text", textScroll);
+        tabs.addTab("Graph", renderScroll);
+
+        JOptionPane.showMessageDialog(
+                this,
+                tabs,
+                "Current Graph",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    private void updateUndoButtonEnabled() {
+        undoGraphButton.setEnabled(!graphHistory.isEmpty());
+    }
+
+    private Graph safeCopy(Graph g) {
+        if (g == null) return null;
+        try { return g.copy(); }
+        catch (Throwable t) { return new EdgeListGraph(g); }
+    }
+
+    private void undoGraph() {
+        if (graphHistory.isEmpty()) return;
+
+        Graph prev = graphHistory.pop();
+        applyingGraphProgrammatically = true;
+        try {
+            model.setGraph(prev);
+        } finally {
+            applyingGraphProgrammatically = false;
+            updateUndoButtonEnabled();
+        }
     }
 }

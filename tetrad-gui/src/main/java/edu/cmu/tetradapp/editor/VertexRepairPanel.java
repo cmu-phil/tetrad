@@ -4,11 +4,11 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellRenderer;
+import javax.swing.table.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -60,6 +60,8 @@ public final class VertexRepairPanel extends JPanel {
         buildUI();
         wireActions();
         updateButtons();
+
+        setPreferredSize(new Dimension(500, 600));
     }
 
     private static boolean edgeStructurallyEqual(Edge a, Edge b, Node x, Node y) {
@@ -180,6 +182,42 @@ public final class VertexRepairPanel extends JPanel {
                     applyCandidate(cand);
                     runSearch();
                 }));
+
+        resultsTable.setTransferHandler(new DefaultTableTransferHandler(0));
+
+        TableColumnModel cm = resultsTable.getColumnModel();
+
+//         Column indices assumed; adjust if needed
+        TableColumn editIndex = cm.getColumn(0);
+        TableColumn baselineIndex = cm.getColumn(1);
+        TableColumn afterIndex = cm.getColumn(2);
+        TableColumn deltaIndex = cm.getColumn(3);
+        TableColumn applyIndex = cm.getColumn(4);
+
+        // # column: very skinny
+        baselineIndex.setPreferredWidth(50);
+        baselineIndex.setMinWidth(50);
+        baselineIndex.setMaxWidth(50);
+
+        // Result column: "INDEPENDENT"
+        afterIndex.setPreferredWidth(50);
+        afterIndex.setMinWidth(50);
+        afterIndex.setMaxWidth(50);
+
+        // p-value column: ~6–8 chars
+        deltaIndex.setMinWidth(50);
+        afterIndex.setMaxWidth(50);
+        deltaIndex.setPreferredWidth(50);
+
+//        applyIndex.setWidth(80);
+//        applyIndex.setMaxWidth(80);
+        applyIndex.setMinWidth(70);
+
+        // Fact column: stretch
+        editIndex.setPreferredWidth(1000);
+        // no max width → absorbs remaining space
+
+        resultsTable.setRowSorter(new TableRowSorter<>(resultsModel));
 
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.add(new JScrollPane(resultsTable), BorderLayout.CENTER);
@@ -329,12 +367,32 @@ public final class VertexRepairPanel extends JPanel {
     }
 
     private void showGraphDialog() {
-        JTextArea ta = new JTextArea(String.valueOf(workingGraph));
+        Graph graph = workingGraph;
+
+        // --- Tab 1: Text ---
+        JTextArea ta = new JTextArea(String.valueOf(graph));
         ta.setEditable(false);
         ta.setCaretPosition(0);
-        JScrollPane sp = new JScrollPane(ta);
-        sp.setPreferredSize(new Dimension(700, 450));
-        JOptionPane.showMessageDialog(this, sp, "Current Graph", JOptionPane.INFORMATION_MESSAGE);
+        JScrollPane textScroll = new JScrollPane(ta);
+        textScroll.setPreferredSize(new Dimension(820, 520));
+
+        // --- Tab 2: Render ---
+        GraphWorkbench workbench = new GraphWorkbench(graph);
+        workbench.setEnableEditing(false);
+        JScrollPane renderScroll = new JScrollPane(workbench);
+        renderScroll.setPreferredSize(new Dimension(820, 520));
+
+        // --- Tabs ---
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Text", textScroll);
+        tabs.addTab("Graph", renderScroll);
+
+        JOptionPane.showMessageDialog(
+                this,
+                tabs,
+                "Current Graph",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     private List<CandidateEdit> enumerateCandidates(Graph g, Node x, RepairGraphType gt) {
@@ -841,6 +899,8 @@ public final class VertexRepairPanel extends JPanel {
         ButtonEditor(RowAction onClick) {
             super(new JTextField());
             this.onClick = onClick;
+
+            button.setBackground(Color.WHITE);
 
             setClickCountToStart(1);   // <--- critical
 
