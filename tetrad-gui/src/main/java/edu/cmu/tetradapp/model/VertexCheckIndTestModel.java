@@ -656,6 +656,12 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         this.graph = graph;
     }
 
+    public boolean hasViolationsForVertex(Node x) {
+        runVertex(graph, x);
+        VertexSummary defaultValue = new VertexSummary(x.getName(), -1, 0, 0, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, 0, Double.NaN, Double.NaN);
+        return summariesByVertex.getOrDefault(x.getName(), defaultValue).numReject > 0;
+    }
+
     private record ConditioningSetSizeRange(int min, int max) {
     }
 

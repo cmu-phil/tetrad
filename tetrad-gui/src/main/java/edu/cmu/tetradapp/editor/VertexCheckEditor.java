@@ -110,7 +110,7 @@ public class VertexCheckEditor extends JPanel {
 
         setTestFromCombo();
 
-        repairNodeButton.setEnabled(true);
+        repairNodeButton.setEnabled(false);
 
         repairNodeButton.addActionListener(e -> showRepairNodeDialog());
 
@@ -634,7 +634,7 @@ public class VertexCheckEditor extends JPanel {
 
         JPanel factsButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         factsButtons.add(showIndepsForRow);
-//        factsButtons.add(repairNodeButton);
+        factsButtons.add(repairNodeButton);
         factsPane.add(factsButtons, BorderLayout.SOUTH);
 
         histogramPanel.setBorder(BorderFactory.createTitledBorder("P-value Histogram"));
@@ -697,6 +697,9 @@ public class VertexCheckEditor extends JPanel {
     private void refreshDetails(String v) {
         factsModel.fireTableDataChanged();
         updateHistogram(v);
+
+        // Keep "Repair Node" in sync with what's shown in the Result column.
+        updateRepairButtonEnabled();
     }
 
     private void updateHistogram(String vertexName) {
@@ -1240,9 +1243,18 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void updateRepairButtonEnabled() {
-        Node x = getSelectedVertex(); // whatever you already have
-//        boolean enable = x != null && model != null && model.hasViolationsForVertex(x);
-//        repairNodeButton.setEnabled(enable);
+        // Enable "Repair Node" iff the selected vertex has at least one DEPENDENT judgment
+        // in the facts table (i.e., at least one IndependenceResult with isIndependent()==false).
+        String v = getSelectedVertexName();
+
+        boolean enable = false;
+
+        if (v != null && model != null) {
+            List<IndependenceResult> rs = model.getResultsForVertex(v);
+            enable = rs != null && !rs.isEmpty() && rs.stream().anyMatch(r -> r != null && !r.isIndependent());
+        }
+
+        repairNodeButton.setEnabled(enable);
     }
 
     private void showRepairNodeDialog() {
