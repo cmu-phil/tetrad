@@ -533,11 +533,11 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
                 if (graph.paths().isLegalDag()) {
                     mag = graph;
                 } else if (graph.paths().isLegalCpdag()) {
-                    mag = GraphTransforms.dagFromCpdag(graph);
+                    mag = GraphTransforms.dagFromCpdag(alignedGraph);
                 } else if (graph.paths().isLegalMag()) {
                     mag = graph;
                 } else {
-                    mag = GraphTransforms.zhangMagFromPag(graph);
+                    mag = GraphTransforms.zhangMagFromPag(alignedGraph);
                 }
 
                 Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(mag, x);
