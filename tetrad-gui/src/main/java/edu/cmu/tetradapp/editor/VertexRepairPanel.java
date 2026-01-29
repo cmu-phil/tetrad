@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
 
 import javax.swing.*;
@@ -12,7 +13,6 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
-import java.util.function.Supplier;
 
 /**
  * Panel that suggests local edits around a selected vertex x to reduce
@@ -41,7 +41,8 @@ public final class VertexRepairPanel extends JPanel {
 
     // UI
     private final JComboBox<RepairGraphType> graphTypeCombo = new JComboBox<>(RepairGraphType.values());
-    private final JSpinner hopsSpinner = new JSpinner(new SpinnerNumberModel(2, -1, 100, 1));
+    // -1 means "no hop restriction" (i.e., score exactly what VertexChecker would score for x)
+    private final JSpinner hopsSpinner = new JSpinner(new SpinnerNumberModel(-1, -1, 100, 1));
     private final JButton searchButton = new JButton("Search for best node adjustments about x");
     private final JButton backButton = new JButton("Go Back to Previous Graph");
     private final JButton showGraphButton = new JButton("Show Graph");
@@ -59,10 +60,11 @@ public final class VertexRepairPanel extends JPanel {
         this.editor = Objects.requireNonNull(editor, "editor");
         this.x = Objects.requireNonNull(x, "x");
 
-        // Assumes VertexCheckEditor has:
-        //   public VertexCheckIndTestModel getIndTestModel()
         this.baseModel = Objects.requireNonNull(editor.getIndTestModel(), "editor.getIndTestModel()");
         this.workingGraph = safeCopy(baseModel.getGraph());
+
+        // ADD THIS LINE:
+        initGraphTypeComboFromGraph(this.workingGraph);
 
         buildUI();
         wireActions();
@@ -94,7 +96,7 @@ public final class VertexRepairPanel extends JPanel {
         c.gridy = 1;
         c.fill = GridBagConstraints.NONE;
         c.weightx = 0;
-        controls.add(new JLabel("Hops from x:"), c);
+        controls.add(new JLabel("Hops from x (-1 = all):"), c);
 
         c.gridx = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -125,13 +127,6 @@ public final class VertexRepairPanel extends JPanel {
         resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_APPLY)
                 .setCellRenderer(new ButtonRenderer());
 
-//        resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_APPLY)
-//                .setCellEditor(new ButtonEditor(() -> {
-//                    int row = resultsTable.getSelectedRow();
-//                    if (row < 0) return;
-//                    CandidateEdit cand = resultsModel.getCandidate(row);
-//                    applyCandidate(cand);
-//                }));
         resultsTable.getColumnModel().getColumn(CandidateTableModel.COL_APPLY)
                 .setCellEditor(new ButtonEditor(row -> {
                     if (row < 0) return;
@@ -185,7 +180,8 @@ public final class VertexRepairPanel extends JPanel {
         int hops = (Integer) hopsSpinner.getValue();
 
         // 1) enumerate candidate edits around x
-        List<CandidateEdit> candidates = enumerateCandidates(workingGraph, x, gt);
+//        List<CandidateEdit> candidates = enumerateCandidates(workingGraph, x, gt);
+        List<CandidateEdit> candidates = enumerateCandidates(workingGraph, x, gt, hops);
 
         // Ensure “no-op” is present at top (baseline)
         candidates = new ArrayList<>(candidates);
@@ -198,14 +194,52 @@ public final class VertexRepairPanel extends JPanel {
 
         // 3) score candidates
         List<ScoredCandidate> scored = new ArrayList<>();
+//        for (CandidateEdit cand : candidates) {
+//            Graph g2;
+//            try {
+//                g2 = cand.applyTo(safeCopy(workingGraph));
+//
+//                if (Math.abs(workingGraph.getNumEdges() - g2.getNumEdges()) > 2) {
+//                    g2 = null;
+//                }
+//
+//                if (g2 != null && gt == RepairGraphType.CPDAG) {
+//                    g2 = canonicalizeToCpdagOrNull(g2);
+//                }
+//
+//                if (g2 != null) {
+//                    workingGraph = g2;
+//                    statusLabel.setText("Applied: " + cand.description());
+//                } else {
+//                    statusLabel.setText("Failed to apply: " + cand.description());
+//                    if (!history.isEmpty()) history.pop();
+//                }
+//            } catch (Throwable t) {
+//                continue;
+//            }
+//            if (g2 == null) continue;
+//
+//            if (!isLegalGraphType(g2, gt)) continue;
+//
+//            int v = countImpliedViolations(g2, x, hops);
+//            scored.add(new ScoredCandidate(cand, baseline, v));
+//        }
+
+        Graph base = safeCopy(workingGraph);  // snapshot once
+
         for (CandidateEdit cand : candidates) {
             Graph g2;
             try {
-                g2 = cand.applyTo(safeCopy(workingGraph));
+                g2 = cand.applyTo(safeCopy(base));
+                if (g2 == null) continue;
+
+                if (gt == RepairGraphType.CPDAG) {
+                    g2 = canonicalizeToCpdagOrNull(g2);
+                    if (g2 == null) continue;
+                }
             } catch (Throwable t) {
                 continue;
             }
-            if (g2 == null) continue;
 
             if (!isLegalGraphType(g2, gt)) continue;
 
@@ -273,10 +307,22 @@ public final class VertexRepairPanel extends JPanel {
     private List<IndependenceFact> restrictByHops(Graph g, Node x, List<IndependenceFact> facts, int hops) {
         Set<Node> allowed = nodesWithinHops(g, x, hops);
         List<IndependenceFact> out = new ArrayList<>();
+
         for (IndependenceFact f : facts) {
-            // Typical implied-fact convention: fact is <x, y | S> with x fixed and y varying.
-            if (allowed.contains(f.getY())) out.add(f);
+            // Keep the fact only if *everything involved* is within the hop ball.
+            if (!allowed.contains(f.getX())) continue;
+            if (!allowed.contains(f.getY())) continue;
+
+            boolean ok = true;
+            for (Node z : f.getZ()) {
+                if (!allowed.contains(z)) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (ok) out.add(f);
         }
+
         return out;
     }
 
@@ -311,11 +357,13 @@ public final class VertexRepairPanel extends JPanel {
     private void applyCandidate(CandidateEdit cand) {
         history.push(safeCopy(workingGraph));
 
-        Graph g2;
-        try {
-            g2 = cand.applyTo(safeCopy(workingGraph));
-        } catch (Throwable t) {
-            g2 = null;
+        System.out.println("Applying candidate: " + cand.description());
+
+        RepairGraphType gt = (RepairGraphType) graphTypeCombo.getSelectedItem();
+        Graph g2 = cand.applyTo(safeCopy(workingGraph));
+
+        if (g2 != null && gt == RepairGraphType.CPDAG) {
+            g2 = canonicalizeToCpdagOrNull(g2);
         }
 
         if (g2 != null) {
@@ -323,7 +371,6 @@ public final class VertexRepairPanel extends JPanel {
             statusLabel.setText("Applied: " + cand.description());
         } else {
             statusLabel.setText("Failed to apply: " + cand.description());
-            // Revert the push, since we didn't actually change:
             if (!history.isEmpty()) history.pop();
         }
 
@@ -413,6 +460,59 @@ public final class VertexRepairPanel extends JPanel {
         return dedupCandidateEdits(out);
     }
 
+    private List<CandidateEdit> enumerateCandidates(Graph g, Node x, RepairGraphType gt, int hops) {
+        if (g == null || x == null) return List.of(CandidateEdit.noOp());
+
+        List<CandidateEdit> out = new ArrayList<>();
+        out.add(CandidateEdit.noOp());
+
+        // ------------------------
+        // 0) Build the add-edge pool
+        // ------------------------
+        Set<Node> pool = new LinkedHashSet<>();
+
+        if (hops < 0) {
+            // -1 means "consider all nodes" for add-edge suggestions
+            pool.addAll(g.getNodes());
+        } else {
+            // default bounded pool (2 hops), as before
+            pool.addAll(g.getAdjacentNodes(x));
+            for (Node n1 : g.getAdjacentNodes(x)) {
+                pool.addAll(g.getAdjacentNodes(n1));
+            }
+        }
+
+        pool.remove(x);
+
+        // 1) Remove any existing edge incident to x
+        for (Edge e : new ArrayList<>(g.getEdges(x))) {
+            out.add(CandidateEdit.removeEdge(e));
+        }
+
+        // 2) Replace existing edge x—y with type-specific variants
+        for (Edge e : new ArrayList<>(g.getEdges(x))) {
+            Node y = e.getDistalNode(x);
+            if (y == null) continue;
+
+            for (Edge v : edgeMenuForPair(x, y, gt)) {
+                if (edgeStructurallyEqual(e, v, x, y)) continue;
+                out.add(CandidateEdit.replaceEdge(e, v));
+            }
+        }
+
+        // 3) Add edges x—y for non-adjacent y in pool
+        for (Node y : pool) {
+            if (y == null) continue;
+            if (g.isAdjacentTo(x, y)) continue;
+
+            for (Edge add : addMenuForPair(x, y, gt)) {
+                out.add(CandidateEdit.addEdge(add));
+            }
+        }
+
+        return out;
+    }
+
     /**
      * Endpoint/orientation variants you’re willing to consider for an existing adjacency x—y.
      * For replacement edits, it’s fine if some variants are “nonsense” for the graph type—
@@ -475,8 +575,8 @@ public final class VertexRepairPanel extends JPanel {
                 adds.add(edge(x, y, Endpoint.TAIL, Endpoint.TAIL));  // x---y
 
                 // Optional: if you want, include directed adds too.
-                // adds.add(edge(x, y, Endpoint.TAIL, Endpoint.ARROW)); // x->y
-                // adds.add(edge(y, x, Endpoint.TAIL, Endpoint.ARROW)); // y->x
+                 adds.add(edge(x, y, Endpoint.TAIL, Endpoint.ARROW)); // x->y
+                 adds.add(edge(y, x, Endpoint.TAIL, Endpoint.ARROW)); // y->x
             }
             case MAG -> {
                 // MAG: adjacency is directed or bidirected. Adding tail-tail is usually illegal.
@@ -499,6 +599,35 @@ public final class VertexRepairPanel extends JPanel {
         }
 
         return adds;
+    }
+
+    private Graph canonicalizeToCpdagOrNull(Graph h) {
+        try {
+            Graph h2 = new EdgeListGraph(h);
+
+//            System.out.println("h2 before: " + h2);
+//
+//            // Consistent extension -> unique CPDAG representative (completed PDAG).
+//            MeekRules meek = new MeekRules();
+//            meek.setRevertToUnshieldedColliders(true);
+//            meek.orientImplied(h2);
+//
+//            System.out.println("h2 after: " + h2);
+
+//            return h2;
+
+            Graph dag = GraphTransforms.dagFromCpdag(h2);
+
+            Graph graph = GraphTransforms.dagToCpdag(dag);
+
+//            if (Math.abs(dag.getNumEdges() - graph.getNumEdges()) > 1) {
+//                return null;
+//            }
+
+            return graph;
+        } catch (Throwable t) {
+            return null; // no consistent extension => can't be a CPDAG candidate
+        }
     }
 
     /** Small helper so we don’t accidentally swap endpoints wrong. */
@@ -549,7 +678,6 @@ public final class VertexRepairPanel extends JPanel {
             case MAG -> g.paths().isLegalMag();
             case PAG -> g.paths().isLegalPag();
         };
-
     }
 
     private Graph safeCopy(Graph g) {
@@ -732,5 +860,22 @@ public final class VertexRepairPanel extends JPanel {
         @Override public Object getCellEditorValue() {
             return button.getText();
         }
+    }
+
+    private void initGraphTypeComboFromGraph(Graph g) {
+        List<RepairGraphType> plausible = new ArrayList<>();
+        for (RepairGraphType gt : RepairGraphType.values()) {
+            if (isLegalGraphType(g, gt)) {
+                plausible.add(gt);
+            }
+        }
+
+        // If the graph is not legal for any type, offer all types.
+        if (plausible.isEmpty()) {
+            plausible = Arrays.asList(RepairGraphType.values());
+        }
+
+        graphTypeCombo.setModel(new DefaultComboBoxModel<>(plausible.toArray(new RepairGraphType[0])));
+        graphTypeCombo.setSelectedIndex(0);
     }
 }
